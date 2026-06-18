@@ -15,54 +15,29 @@ export default function Home() {
     }
 
     setLoading(true);
-    setError(null);
     setResult(null);
+    setError(null);
+
+    const fd = new FormData();
+    fd.append("cv", file);
+    fd.append("jobText", jobText);
+    fd.append("agencyId", "YOUR-SEED-AGENCY-ID");
 
     try {
-      /**
-       * ⚠️ TEMP PLACEHOLDER:
-       * You should replace this with real PDF text extraction later.
-       */
-      const cvText = `Uploaded file: ${file.name}`;
-
-      // 1. Extract CV
-      const extractRes = await fetch("/api/extract-cv", {
+      const res = await fetch("/api/run", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cvText,
-          agencyId: "d6207b77-821d-4b93-8906-a9bfbcfd0fae",
-        }),
+        body: fd,
       });
 
-      const extractData = await extractRes.json();
+      const data = await res.json();
 
-      if (!extractData.ok) {
-        throw new Error(extractData.error || "CV extraction failed");
+      if (data.ok) {
+        setResult(data.result);
+      } else {
+        setError(data.error || "Something went wrong");
       }
-
-      const candidateId = extractData.candidate.id;
-
-      // 2. Score candidate
-      const scoreRes = await fetch("/api/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidateId,
-          jobId: "cb84f43b-e7b9-4ce4-aca6-fc402d9cfde3", // replace later dynamically
-          agencyId: "d6207b77-821d-4b93-8906-a9bfbcfd0fae",
-        }),
-      });
-
-      const scoreData = await scoreRes.json();
-
-      if (!scoreData.ok) {
-        throw new Error(scoreData.error || "Scoring failed");
-      }
-
-      setResult(scoreData.score);
-    } catch (err) {
-      setError(err.message);
+    } catch (e) {
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -71,7 +46,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-        <h1 className="text-2xl font-bold text-stone-900 mb-1">Helixon</h1>
+        <h1 className="text-2xl font-bold text-stone-900 mb-1">
+          Helixon
+        </h1>
         <p className="text-stone-500 mb-6 text-sm">
           Score a candidate against a role in seconds.
         </p>
@@ -83,7 +60,7 @@ export default function Home() {
         <input
           type="file"
           accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
           className="block w-full text-sm mb-1 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-900 file:text-white"
         />
 
@@ -92,6 +69,8 @@ export default function Home() {
             Selected: {file.name}
           </p>
         )}
+
+        {!file && <div className="mb-5" />}
 
         <label className="block text-sm font-medium text-stone-700 mb-2">
           Job description
@@ -114,20 +93,54 @@ export default function Home() {
         </button>
 
         {error && (
-          <p className="text-red-500 text-sm mt-4">{error}</p>
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            Error: {error}
+          </div>
         )}
 
         {result && (
-          <div className="mt-6 p-4 border rounded-lg bg-stone-50">
-            <p className="font-semibold text-lg">
-              Score: {result.match_score}
-            </p>
-            <p className="text-sm mt-1">
+          <div className="mt-8 border-t border-stone-200 pt-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="text-6xl font-bold text-emerald-700">
+                {result.match_score}
+              </div>
+              <div>
+                <div className="text-stone-400 text-sm">out of 100</div>
+                <div className="font-semibold text-stone-800">
+                  {result.recommendation}
+                </div>
+              </div>
+            </div>
+
+            <p className="italic text-stone-500 text-sm mb-5">
               {result.summary}
             </p>
-            <p className="text-sm mt-2 font-medium">
-              Recommendation: {result.recommendation}
-            </p>
+
+            {result.strengths?.length > 0 && (
+              <>
+                <h3 className="font-semibold text-stone-800 mb-2">
+                  Strengths
+                </h3>
+                <ul className="list-disc ml-5 text-stone-700 text-sm mb-4 space-y-1">
+                  {result.strengths.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {result.weaknesses?.length > 0 && (
+              <>
+                <h3 className="font-semibold text-stone-800 mb-2">
+                  Weaknesses
+                </h3>
+                <ul className="list-disc ml-5 text-stone-700 text-sm space-y-1">
+                  {result.weaknesses.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </div>
