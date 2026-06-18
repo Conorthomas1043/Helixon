@@ -143,6 +143,23 @@ export default function Home() {
             )}
           </div>
         )}
+        <div className="mt-6 border-t border-stone-100 pt-4">
+  <p className="text-sm text-stone-500 mb-2">Did this match your expert read?</p>
+  <div className="flex gap-3">
+    <button
+      onClick={() => submitFeedback("up")}
+      className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100"
+    >
+      👍 Yes, accurate
+    </button>
+    <button
+      onClick={() => submitFeedback("down")}
+      className="px-4 py-2 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100"
+    >
+      👎 Not quite
+    </button>
+  </div>
+</div>
       </div>
     </main>
   );
