@@ -1,5 +1,4 @@
 import Anthropic from "@anthropic-ai/sdk";
-import pdf from "pdf-parse/lib/pdf-parse.js";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
 
@@ -7,7 +6,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// 🔒 safer Claude JSON handler
+// safer Claude JSON handler
 async function askClaude(prompt, maxTokens) {
   const m = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
@@ -16,12 +15,7 @@ async function askClaude(prompt, maxTokens) {
   });
 
   const text = m.content?.[0]?.text || "";
-
-  // safer cleanup (ONLY remove code fences)
-  const cleaned = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+  const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
   try {
     return JSON.parse(cleaned);
@@ -31,13 +25,43 @@ async function askClaude(prompt, maxTokens) {
   }
 }
 
+// read the PDF by sending it straight to Claude — no external PDF library
+async function extractTextFromPdf(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const base64 = Buffer.from(new Uint8Array(arrayBuffer)).toString("base64");
+
+  const m = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: 4000,
+    messages: [{
+      role: "user",
+      content: [
+        {
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: base64,
+          },
+        },
+        {
+          type: "text",
+          text: "Extract all text from this CV exactly as it appears. Return only the raw text, nothing else.",
+        },
+      ],
+    }],
+  });
+
+  return m.content?.[0]?.text || "";
+}
+
 export async function POST(request) {
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error("Missing ANTHROPIC_API_KEY");
     }
 
-    // ✅ RATE LIMIT (FIRST THING)
+    // RATE LIMIT (first thing)
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0] ||
       request.headers.get("x-real-ip") ||
@@ -45,10 +69,7 @@ export async function POST(request) {
 
     if (!rateLimit(ip)) {
       return Response.json(
-        {
-          ok: false,
-          error: "Too many requests. Please try again in an hour.",
-        },
+        { ok: false, error: "Too many requests. Please try again in an hour." },
         { status: 429 }
       );
     }
@@ -65,17 +86,19 @@ export async function POST(request) {
       );
     }
 
-    // 🔹 Step 1: PDF → text (safe)
+    // Step 1: PDF -> text (via Claude, Windows-safe)
     let cvText = "";
     try {
-      const bytes = Buffer.from(await file.arrayBuffer());
-      const parsed = await pdf(bytes);
-      cvText = parsed.text || "";
+      cvText = await extractTextFromPdf(file);
     } catch (err) {
-      throw new Error("Failed to parse PDF");
+      throw new Error("Failed to read PDF");
     }
 
-    // 🔹 Step 2: Extract candidate
+    if (!cvText || cvText.trim().length < 20) {
+      throw new Error("Could not read any text from this PDF. It may be a scanned image.");
+    }
+
+    // Step 2: Extract candidate
     const ex = await askClaude(
       `Extract this candidate's details.
 Return ONLY valid JSON:
@@ -107,7 +130,7 @@ CV:
 
     if (candError) throw new Error(candError.message);
 
-    // 🔹 Step 3: Extract job
+    // Step 3: Extract job
     const jp = await askClaude(
       `Extract this job description.
 
@@ -140,7 +163,7 @@ Job:
 
     if (jobError) throw new Error(jobError.message);
 
-    // 🔹 Step 4: Score candidate
+    // Step 4: Score candidate
     const result = await askClaude(
       `You are a senior technical recruiter with 15 years of experience.
 
@@ -159,7 +182,7 @@ Rules:
 - 85-100 excellent
 - 70-84 solid
 - 50-69 partial
-- <50 weak
+- below 50 weak
 
 CANDIDATE:
 """${cvText}"""

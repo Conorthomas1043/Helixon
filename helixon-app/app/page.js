@@ -21,7 +21,7 @@ export default function Home() {
     const fd = new FormData();
     fd.append("cv", file);
     fd.append("jobText", jobText);
-    fd.append("agencyId", "YOUR-SEED-AGENCY-ID");
+    fd.append("agencyId", "d6207b77-821d-4b93-8906-a9bfbcfd0fae");
 
     try {
       const res = await fetch("/api/run", {
