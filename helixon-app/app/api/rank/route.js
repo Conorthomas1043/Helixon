@@ -57,7 +57,7 @@ async function extractTextFromPdf(file) {
           },
           {
             type: "text",
-            text: "Extract all text from this CV. Return ONLY raw text.",
+            text: "Extract ALL text from this CV. Return ONLY raw text.",
           },
         ],
       },
@@ -68,12 +68,64 @@ async function extractTextFromPdf(file) {
 }
 
 // -----------------------------
-// MAIN API ROUTE
+// MAIN ROUTE
 // -----------------------------
 export async function POST(request) {
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error("Missing ANTHROPIC_API_KEY");
+    }
+
+    const supabase = createSupabaseServerClient();
+
+    // -----------------------------
+    // AUTH USER
+    // -----------------------------
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return Response.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // -----------------------------
+    // FREE TRIAL GATING (3 LIMIT)
+    // -----------------------------
+    const { count, error: countError } = await supabase
+      .from("analyses")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (countError) {
+      throw new Error("Failed to check usage limit");
+    }
+
+    const analysesUsed = count || 0;
+
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select("id, status")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    const isSubscribed = !!subscription;
+
+    if (!isSubscribed && analysesUsed >= 3) {
+      return Response.json(
+        {
+          ok: false,
+          upgrade: true,
+          message: "You've used your 3 free analyses. Upgrade to continue.",
+          analysesUsed,
+        },
+        { status: 402 }
+      );
     }
 
     // -----------------------------
@@ -92,23 +144,6 @@ export async function POST(request) {
     }
 
     // -----------------------------
-    // SUPABASE + USER AUTH
-    // -----------------------------
-    const supabase = createSupabaseServerClient();
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return Response.json(
-        { ok: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // -----------------------------
     // FORM DATA
     // -----------------------------
     const form = await request.formData();
@@ -118,7 +153,7 @@ export async function POST(request) {
 
     if (!(file instanceof File)) {
       return Response.json(
-        { ok: false, error: "Invalid file" },
+        { ok: false, error: "Invalid CV file" },
         { status: 400 }
       );
     }
@@ -131,7 +166,7 @@ export async function POST(request) {
     }
 
     // -----------------------------
-    // STEP 1: CV → TEXT
+    // STEP 1: PDF → TEXT
     // -----------------------------
     const cvText = await extractTextFromPdf(file);
 
@@ -143,18 +178,20 @@ export async function POST(request) {
     // STEP 2: EXTRACT CANDIDATE
     // -----------------------------
     const candidate = await askClaude(
-      `Extract candidate JSON:
+      `
+Extract candidate JSON:
 {
-"name":"string",
-"skills":["string"],
-"years_experience":0,
-"positions":[{"title":"string","company":"string","duration":"string"}],
-"education":["string"],
-"industries":["string"]
+  "name": "string",
+  "skills": ["string"],
+  "years_experience": 0,
+  "positions": [{"title":"string","company":"string","duration":"string"}],
+  "education": ["string"],
+  "industries": ["string"]
 }
 
 CV:
-"""${cvText}"""`,
+"""${cvText}"""
+      `,
       1500
     );
 
@@ -176,18 +213,20 @@ CV:
     // STEP 3: EXTRACT JOB
     // -----------------------------
     const jobParsed = await askClaude(
-      `Extract job JSON:
+      `
+Extract job JSON:
 {
-"title":"string",
-"required_skills":["string"],
-"preferred_skills":["string"],
-"min_years_experience":0,
-"industry":"string",
-"seniority":"string"
+  "title": "string",
+  "required_skills": ["string"],
+  "preferred_skills": ["string"],
+  "min_years_experience": 0,
+  "industry": "string",
+  "seniority": "string"
 }
 
 Job:
-"""${jobText}"""`,
+"""${jobText}"""
+      `,
       1200
     );
 
@@ -206,39 +245,40 @@ Job:
     if (jobError) throw new Error(jobError.message);
 
     // -----------------------------
-    // STEP 4: SCORE
+    // STEP 4: SCORE MATCH
     // -----------------------------
     const result = await askClaude(
-      `You are a recruiter.
+      `
+You are a senior recruiter.
 
 Return JSON:
 {
-"match_score":0,
-"strengths":["string"],
-"weaknesses":["string"],
-"summary":"string",
-"recommendation":"Strong match"
+  "match_score": 0,
+  "strengths": ["string"],
+  "weaknesses": ["string"],
+  "summary": "string",
+  "recommendation": "Strong match"
 }
 
 CANDIDATE:
 """${cvText}"""
 
 JOB:
-"""${jobText}"""`,
+"""${jobText}"""
+      `,
       1500
     );
 
     // -----------------------------
-    // STEP 5: SAVE SCORE
+    // STEP 5: SAVE ANALYSIS (THIS ENABLES FREE TRIAL TRACKING)
     // -----------------------------
-    const { error: scoreError } = await supabase.from("scores").insert({
+    const { error: scoreError } = await supabase.from("analyses").insert({
       user_id: user.id,
       agency_id: agencyId,
-      candidate_id: cand.id,
-      job_id: job.id,
+      cv_name: file.name,
       match_score: result.match_score,
       recommendation: result.recommendation,
-      result,
+      full_result: result,
     });
 
     if (scoreError) throw new Error(scoreError.message);
@@ -248,13 +288,14 @@ JOB:
     // -----------------------------
     return Response.json({
       ok: true,
+      analysesUsed: analysesUsed + 1,
+      result,
       candidateId: cand.id,
       jobId: job.id,
-      result,
     });
   } catch (err) {
     return Response.json(
-      { ok: false, error: err.message },
+      { ok: false, error: err.message || "Server error" },
       { status: 500 }
     );
   }
