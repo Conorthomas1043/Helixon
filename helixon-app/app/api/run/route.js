@@ -10,7 +10,7 @@ const anthropic = new Anthropic({
 async function askClaude(prompt, maxTokens) {
   const m = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
-    max_tokens: maxTokens,
+    max_tokens: maxTokens,  
     messages: [{ role: "user", content: prompt }],
   });
 

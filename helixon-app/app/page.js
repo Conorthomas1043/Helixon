@@ -31,11 +31,32 @@ export default function Home() {
 
       const data = await res.json();
 
-      if (data.ok) {
-        setResult(data.result);
-      } else {
-        setError(data.error || "Something went wrong");
-      }
+     if (data.ok) {
+  setResult(data.result);
+
+  // Save to localStorage history
+  const entry = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    cvName: file.name,
+    matchScore: data.result.match_score,
+    recommendation: data.result.recommendation,
+    summary: data.result.summary
+  };
+
+  const history = JSON.parse(
+    localStorage.getItem("analysisHistory") || "[]"
+  );
+
+  history.unshift(entry);
+
+  localStorage.setItem(
+    "analysisHistory",
+    JSON.stringify(history.slice(0, 50))
+  );
+} else {
+  setError(data.error || "Something went wrong");
+}
     } catch (e) {
       setError("Network error. Please try again.");
     } finally {
@@ -46,13 +67,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-        <h1 className="text-2xl font-bold text-stone-900 mb-1">
-          Helixon
-        </h1>
-        <p className="text-stone-500 mb-6 text-sm">
-          Score a candidate against a role in seconds.
-        </p>
+        <div className="flex items-center justify-between mb-6">
+  <div>
+    <h1 className="text-2xl font-bold text-stone-900">Helixon</h1>
+    <p className="text-stone-500">
+      Score a candidate against a role in seconds.
+    </p>
+  </div>
 
+  <a
+    href="/bulk"
+    className="text-sm border border-stone-300 text-stone-700 px-4 py-2 rounded-lg hover:bg-stone-50"
+  >
+    Bulk Upload
+  </a>
+</div>
         <label className="block text-sm font-medium text-stone-700 mb-2">
           Candidate CV (PDF only)
         </label>
