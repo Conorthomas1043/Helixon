@@ -1,16 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// safer Claude JSON handler
 async function askClaude(prompt, maxTokens) {
   const m = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
-    max_tokens: maxTokens,  
+    max_tokens: maxTokens,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -25,7 +26,6 @@ async function askClaude(prompt, maxTokens) {
   }
 }
 
-// read the PDF by sending it straight to Claude — no external PDF library
 async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer();
   const base64 = Buffer.from(new Uint8Array(arrayBuffer)).toString("base64");
@@ -33,23 +33,25 @@ async function extractTextFromPdf(file) {
   const m = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
     max_tokens: 4000,
-    messages: [{
-      role: "user",
-      content: [
-        {
-          type: "document",
-          source: {
-            type: "base64",
-            media_type: "application/pdf",
-            data: base64,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "document",
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
+              data: base64,
+            },
           },
-        },
-        {
-          type: "text",
-          text: "Extract all text from this CV exactly as it appears. Return only the raw text, nothing else.",
-        },
-      ],
-    }],
+          {
+            type: "text",
+            text: "Extract all text from this CV exactly as it appears. Return only the raw text, nothing else.",
+          },
+        ],
+      },
+    ],
   });
 
   return m.content?.[0]?.text || "";
@@ -74,6 +76,58 @@ export async function POST(request) {
       );
     }
 
+    // GET LOGGED-IN USER (Next.js 15 async cookies)
+    const cookieStore = await cookies();
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+    } = await supabaseAuth.auth.getUser();
+    const userId = user?.id || null;
+
+    // FREE TRIAL CHECK
+    if (userId) {
+      const { count } = await supabase
+        .from("scores")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", userId)
+        .single();
+
+      const isPaid = sub?.status === "active";
+
+      if (!isPaid && (count || 0) >= 3) {
+        return Response.json(
+          {
+            ok: false,
+            upgrade: true,
+            message: "You've used your 3 free analyses. Upgrade to continue.",
+            analysesUsed: count,
+          },
+          { status: 402 }
+        );
+      }
+    }
+
     const form = await request.formData();
     const file = form.get("cv");
     const jobText = form.get("jobText");
@@ -86,7 +140,7 @@ export async function POST(request) {
       );
     }
 
-    // Step 1: PDF -> text (via Claude, Windows-safe)
+    // Step 1: PDF -> text
     let cvText = "";
     try {
       cvText = await extractTextFromPdf(file);
@@ -95,7 +149,9 @@ export async function POST(request) {
     }
 
     if (!cvText || cvText.trim().length < 20) {
-      throw new Error("Could not read any text from this PDF. It may be a scanned image.");
+      throw new Error(
+        "Could not read any text from this PDF. It may be a scanned image."
+      );
     }
 
     // Step 2: Extract candidate
@@ -199,6 +255,7 @@ JOB:
       match_score: result.match_score,
       recommendation: result.recommendation,
       result: result,
+      user_id: userId,
     });
 
     if (scoreError) throw new Error(scoreError.message);
@@ -210,9 +267,6 @@ JOB:
       jobId: job.id,
     });
   } catch (err) {
-    return Response.json(
-      { ok: false, error: err.message },
-      { status: 500 }
-    );
+    return Response.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

@@ -1,228 +1,296 @@
 "use client";
 import { useState } from "react";
-// MOCK DATA — swap this for the real API call when Conor is ready
-const MOCK_RESULTS = [
-  { fileName: "jane_smith.pdf", name: "Jane Smith", match_score: 91,
-    recommendation: "Strong match", strengths: ["5 years React", "SaaS background"],
-    weaknesses: ["No TypeScript listed"], summary: "Strong frontend fit." },
-  { fileName: "tom_lee.pdf", name: "Tom Lee", match_score: 74,
-    recommendation: "Worth reviewing", strengths: ["Solid JavaScript", "Good CSS"],
-    weaknesses: ["Limited React depth", "No production SaaS"],
-    summary: "Solid candidate worth a call." },
-  { fileName: "ava_khan.pdf", name: "Ava Khan", match_score: 52,
-    recommendation: "Worth reviewing", strengths: ["Frontend experience"],
-    weaknesses: ["Junior level", "No relevant industry"], summary: "Borderline fit." },
-  { fileName: "sam_ortiz.pdf", name: "Sam Ortiz", match_score: 31,
-    recommendation: "Likely not a fit", strengths: ["Enthusiasm"],
-    weaknesses: ["Too junior", "Wrong tech stack"], summary: "Not ready for this role." },
-];
-export default function BulkUpload() {
-  const [files, setFiles] = useState([]);
+
+export default function BulkPage() {
   const [jobText, setJobText] = useState("");
+  const [files, setFiles] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
-  const [expandedRow, setExpandedRow] = useState(null);
-  function addFiles(e) {
-    const newFiles = Array.from(e.target.files);
-    setFiles(prev => [...prev, ...newFiles]);
-    e.target.value = ""; // reset so same file can be re-added
+  const [dragOver, setDragOver] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(
+      (f) => f.type === "application/pdf"
+    );
+    if (dropped.length) {
+      setFiles(dropped);
+      setError(null);
+    } else {
+      setError("Please drop PDF files only.");
+    }
   }
-  function removeFile(index) {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  }
+
   async function handleAnalyse() {
-    if (files.length === 0 || !jobText.trim()) {
-      alert("Please add at least one CV and paste a job description.");
+    if (!files.length || !jobText.trim()) {
+      setError("Please add at least one CV and paste a job description.");
       return;
     }
     setLoading(true);
-    setResults(null);
+    setResults([]);
     setError(null);
-    // ===== SWAP THIS BLOCK WHEN CONOR'S BACKEND IS READY =====
-    // For now: simulate a 2-second delay and use mock data
-    await new Promise(r => setTimeout(r, 2000));
-    setResults(MOCK_RESULTS);
-    setLoading(false);
-    // ===== REAL FETCH (uncomment when Conor ships /api/run-bulk) =====
-    // try {
-    //   const fd = new FormData();
-    //   files.forEach(f => fd.append("cvs", f));
-    //   fd.append("jobText", jobText);
-    //   fd.append("agencyId", "d6207b77-821d-4b93-8906-a9bfbcfd0fae");
-    //   const res = await fetch("/api/run-bulk", { method: "POST", body: fd });
-    //   const data = await res.json();
-    //   if (data.ok) setResults(data.results);
-    //   else setError(data.error);
-    // } catch(e) {
-    //   setError("Network error. Please try again.");
-    // } finally {
-    //   setLoading(false);
-    // }
+    setProgress(0);
+
+    const form = new FormData();
+    files.forEach((f) => form.append("cvs", f));
+    form.append("jobText", jobText);
+    form.append("agencyId", "d6207b77-821d-4b93-8906-a9bfbcfd0fae");
+
+    try {
+      const res = await fetch("/api/bulk", { method: "POST", body: form });
+      const data = await res.json();
+      if (data.ok) {
+        setResults(data.results);
+      } else {
+        setError(data.error || "Something went wrong. Please try again.");
+      }
+    } catch (e) {
+      setError("Network error. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
-  function exportCSV() {
-    if (!results) return;
-    const header = "Name,Score,Recommendation,Top Strength\n";
-    const rows = results.map(r =>
-      `"${r.name}",${r.match_score},"${r.recommendation}","${r.strengths[0] || ""}"`
-    ).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "helixon-shortlist.csv"; a.click();
+
+  function ScoreBadge({ score }) {
+    let colour = "bg-red-100 text-red-700";
+    if (score >= 80) colour = "bg-emerald-100 text-emerald-800";
+    else if (score >= 60) colour = "bg-amber-100 text-amber-800";
+    return (
+      <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${colour}`}>
+        {score}/100
+      </span>
+    );
   }
-  function scoreColour(score) {
-    if (score >= 80) return "text-emerald-700 font-bold";
-    if (score >= 60) return "text-amber-600 font-bold";
-    return "text-red-600 font-bold";
-  }
-  function badgeColour(rec) {
-    if (rec === "Strong match") return "bg-emerald-100 text-emerald-800";
-    if (rec === "Worth reviewing") return "bg-amber-100 text-amber-800";
-    return "bg-red-100 text-red-800";
-  }
+
   return (
-    <main className="min-h-screen bg-stone-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <a href="/" className="text-sm text-stone-500 hover:text-stone-800">
-            ‹ Back to single CV
+    <main className="min-h-screen bg-stone-50">
+
+      {/* Nav — identical to home */}
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur border-b border-stone-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-emerald-700 rounded-lg flex items-center justify-center">
+            <span className="text-white text-xs font-bold">H</span>
+          </div>
+          <span className="text-base font-bold text-stone-900">Helixon</span>
+          <span className="text-xs text-stone-400 hidden sm:inline border border-stone-200 px-2 py-0.5 rounded-full">
+            AI Recruitment OS
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <a href="/history" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">History</a>
+          <a href="/bulk" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg bg-stone-100 font-medium hidden sm:block">Bulk Upload</a>
+          <a href="/landing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">About</a>
+          <a href="/pricing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Pricing</a>
+          <a href="/login" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100">Login</a>
+          <a href="/signup" className="text-sm bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg font-medium ml-1">
+            Sign up
           </a>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 mb-6">
-          <h1 className="text-2xl font-bold text-stone-900 mb-1">Bulk Screening</h1>
-          <p className="text-stone-500 mb-6">Upload multiple CVs and rank them all at once.</p>
-          {/* File picker */}
-          <label className="block text-sm font-medium text-stone-700 mb-2">
-            Candidate CVs (PDF — select multiple)
-          </label>
-          <input
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={addFiles}
-            className="block w-full text-sm mb-2 file:mr-4 file:py-2 file:px-4
-              file:rounded-lg file:border-0 file:bg-stone-900 file:text-white"
-          />
-          {/* Selected files list */}
-          {files.length > 0 && (
-            <div className="mb-6 space-y-1">
-              {files.map((f, i) => (
-                <div key={i}
-                  className="flex items-center justify-between bg-stone-50
-                    border border-stone-200 rounded-lg px-3 py-2 text-sm">
-                  <span className="text-stone-700 truncate">{f.name}</span>
-                  <button onClick={() => removeFile(i)}
-                    className="text-stone-400 hover:text-red-500 ml-2 shrink-0">
-                    5
-                  </button>
-                </div>
-              ))}
-              <p className="text-xs text-stone-400 mt-1">
-                {files.length} CV{files.length !== 1 ? "s" : ""} selected
-              </p>
-            </div>
-          )}
-          {/* Job description */}
-          <label className="block text-sm font-medium text-stone-700 mb-2">
-            Job description
-          </label>
-          <textarea
-            value={jobText}
-            onChange={e => setJobText(e.target.value)}
-            placeholder="Paste the full job description here..."
-            className="w-full h-36 border border-stone-300 rounded-lg p-3 text-sm mb-6"
-          />
-          <button
-            onClick={handleAnalyse}
-            disabled={loading}
-            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white
-              font-medium py-3 rounded-lg disabled:opacity-50"
-          >
-            {loading
-              ? `Scoring ${files.length} CVs... (this takes a moment)`
-              : `Score ${files.length || "all"} CVs`}
-          </button>
-          {error && (
-            <p className="mt-3 text-sm text-red-600">{error}</p>
-          )}
-        </div>
-        {/* Results */}
-        {results && (
+      </nav>
+
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+          {/* Left panel — inputs */}
           <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-stone-900">
-                Ranked Shortlist — {results.length} candidates
-              </h2>
-              <button
-                onClick={exportCSV}
-                className="text-sm border border-stone-300 text-stone-700
-                  px-4 py-2 rounded-lg hover:bg-stone-50"
-              >
-                Export CSV
-              </button>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-xl font-bold text-stone-900">Bulk CV scoring</h1>
+                <p className="text-stone-500 text-sm mt-0.5">
+                  Upload multiple CVs and score them all against one job spec.
+                </p>
+              </div>
+              <a href="/" className="text-xs border border-stone-300 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-50 shrink-0 ml-3">
+                Single CV
+              </a>
             </div>
-            <div className="space-y-2">
-              {results.map((r, i) => (
-                <div key={i}
-                  className="border border-stone-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setExpandedRow(expandedRow === i ? null : i)}
-                    className="w-full flex items-center gap-4 p-4 text-left
-                      hover:bg-stone-50"
-                  >
-                    <span className="text-stone-400 font-mono text-sm w-6">
-                      {i + 1}
-                    </span>
-                    <span className={`text-2xl w-12 text-right ${scoreColour(r.match_score)}`}>
-                      {r.match_score}
-                    </span>
-                    <span className="font-medium text-stone-800 flex-1">
-                      {r.name || r.fileName}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${badgeColour(r.recommendation)}`}>
-                      {r.recommendation}
-                    </span>
-                    <span className="text-stone-400 text-sm">
-                      {expandedRow === i ? "s" : "t"}
-                    </span>
-                  </button>
-                  {expandedRow === i && (
-                    <div className="px-4 pb-4 border-t border-stone-100 pt-3">
-                      <p className="text-sm italic text-stone-600 mb-3">{r.summary}</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs font-semibold text-stone-500 mb-1">
-                            STRENGTHS
-                          </p>
-                          <ul className="text-sm text-stone-700 space-y-1">
-                            {r.strengths.map((s, j) => (
-                              <li key={j} className="flex gap-2">
-                                <span className="text-emerald-600">3</span>{s}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-stone-500 mb-1">
-                            WEAKNESSES
-                          </p>
-                          <ul className="text-sm text-stone-700 space-y-1">
-                            {r.weaknesses.map((w, j) => (
-                              <li key={j} className="flex gap-2">
-                                <span className="text-red-400">7</span>{w}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById("bulk-input").click()}
+              className={`relative border-2 border-dashed rounded-xl p-6 text-center mb-5 transition-colors cursor-pointer ${
+                dragOver
+                  ? "border-emerald-500 bg-emerald-50"
+                  : files.length
+                  ? "border-emerald-400 bg-emerald-50/50"
+                  : "border-stone-300 hover:border-stone-400 bg-stone-50"
+              }`}
+            >
+              <input
+                id="bulk-input"
+                type="file"
+                accept="application/pdf"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  setFiles(Array.from(e.target.files));
+                  setError(null);
+                }}
+              />
+              {files.length ? (
+                <div>
+                  <div className="text-2xl mb-1">📄</div>
+                  <p className="text-sm font-medium text-emerald-700">
+                    {files.length} PDF{files.length > 1 ? "s" : ""} selected
+                  </p>
+                  <ul className="mt-2 space-y-0.5 max-h-28 overflow-y-auto">
+                    {files.map((f, i) => (
+                      <li key={i} className="text-xs text-stone-500 truncate px-4">{f.name}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-stone-400 mt-2">Click to change</p>
                 </div>
-              ))}
+              ) : (
+                <div>
+                  <div className="text-2xl mb-1">📂</div>
+                  <p className="text-sm font-medium text-stone-700">Drop CVs here or click to upload</p>
+                  <p className="text-xs text-stone-400 mt-1">PDF only · multiple files supported</p>
+                </div>
+              )}
             </div>
+
+            <label className="block text-sm font-medium text-stone-700 mb-2">Job description</label>
+            <textarea
+              value={jobText}
+              onChange={(e) => setJobText(e.target.value)}
+              placeholder="Paste the full job description here..."
+              rows={6}
+              className="w-full border border-stone-300 rounded-xl p-3 text-sm mb-5 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+
+            {/* Loading stages */}
+            {loading && (
+              <div className="mb-4 bg-stone-50 rounded-xl p-4">
+                <div className="flex items-center gap-3 py-1.5">
+                  <div className="w-4 h-4 rounded-full bg-emerald-200 text-emerald-700 animate-pulse shrink-0" />
+                  <span className="text-sm text-stone-900 font-medium">
+                    Scoring {files.length} CV{files.length > 1 ? "s" : ""}...
+                  </span>
+                </div>
+                <div className="mt-3 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-600 rounded-full animate-pulse w-2/3" />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleAnalyse}
+              disabled={loading}
+              className={`w-full font-medium py-3 rounded-xl transition-all text-sm ${
+                loading
+                  ? "bg-stone-200 text-stone-400 cursor-not-allowed"
+                  : "bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm hover:shadow-md"
+              }`}
+            >
+              {loading
+                ? `Scoring ${files.length} CV${files.length > 1 ? "s" : ""}...`
+                : "Score all CVs"}
+            </button>
+
+            {error && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {error}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Right panel — results */}
+          <div>
+            {!results.length && !loading && (
+              <div className="bg-white rounded-2xl border border-stone-200 p-8 flex flex-col items-center justify-center text-center min-h-64">
+                <div className="text-4xl mb-3">📋</div>
+                <p className="text-stone-500 text-sm">Ranked results will appear here.</p>
+                <p className="text-stone-400 text-xs mt-1">Upload CVs and a job description to start.</p>
+              </div>
+            )}
+
+            {loading && (
+              <div className="bg-white rounded-2xl border border-stone-200 p-8 flex flex-col items-center justify-center text-center min-h-64">
+                <div className="w-20 h-20 rounded-full border-4 border-stone-200 border-t-emerald-600 animate-spin mb-4" />
+                <p className="text-stone-500 text-sm">Analysing {files.length} candidate{files.length > 1 ? "s" : ""}...</p>
+                <p className="text-stone-400 text-xs mt-1">This may take a moment for large batches.</p>
+              </div>
+            )}
+
+            {results.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <h2 className="text-sm font-bold text-stone-700 uppercase tracking-widest">
+                    Results · {results.length} candidate{results.length > 1 ? "s" : ""}
+                  </h2>
+                  <button
+                    onClick={() => { setResults([]); setFiles([]); setJobText(""); }}
+                    className="text-xs text-stone-400 hover:text-stone-600"
+                  >
+                    ← Start over
+                  </button>
+                </div>
+
+                {results.map((r, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl border border-stone-200 p-5 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-stone-900">{r.name || r.fileName}</p>
+                        <p className="text-xs text-stone-400 truncate max-w-48">{r.fileName}</p>
+                      </div>
+                      <ScoreBadge score={r.match_score} />
+                    </div>
+
+                    <div>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        r.recommendation === "Strong match"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : r.recommendation === "Worth reviewing"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {r.recommendation}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-stone-500 leading-relaxed">{r.summary}</p>
+
+                    {r.strengths?.length > 0 && (
+                      <ul className="space-y-1">
+                        {r.strengths.slice(0, 2).map((s, j) => (
+                          <li key={j} className="flex items-start gap-2 text-xs text-stone-600">
+                            <span className="text-emerald-600 font-bold shrink-0 mt-0.5">✓</span>{s}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {r.weaknesses?.length > 0 && (
+                      <ul className="space-y-1">
+                        {r.weaknesses.slice(0, 1).map((w, j) => (
+                          <li key={j} className="flex items-start gap-2 text-xs text-stone-600">
+                            <span className="text-red-400 font-bold shrink-0 mt-0.5">✗</span>{w}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {r.error && (
+                      <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">
+                        ⚠ Could not process this file
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
     </main>
   );
