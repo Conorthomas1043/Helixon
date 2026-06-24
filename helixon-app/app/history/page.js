@@ -1,35 +1,86 @@
 "use client";
 import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("analysisHistory") || "[]");
-    setHistory(stored);
-  }, []);
+    async function init() {
+      // Check if user is logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-  function clearHistory() {
-    if (confirm("Clear all history? This can't be undone.")) {
-      localStorage.removeItem("analysisHistory");
-      setHistory([]);
+      if (user) {
+        // Logged in: fetch their scores from Supabase
+        const { data: scores } = await supabase
+          .from("scores")
+          .select("*, candidates(name), jobs(title)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (scores) {
+          const mapped = scores.map((s) => ({
+            id: s.id,
+            timestamp: s.created_at,
+            cvName: s.candidates?.name || "Unknown candidate",
+            jobTitle: s.jobs?.title || "Unknown role",
+            matchScore: s.match_score,
+            recommendation: s.recommendation,
+            summary: s.result?.summary || "",
+            source: "db",
+          }));
+          setHistory(mapped);
+        }
+      } else {
+        // Logged out: load from localStorage only
+        const stored = JSON.parse(localStorage.getItem("analysisHistory") || "[]");
+        setHistory(stored);
+      }
+      setLoading(false);
     }
-  }
+    init();
+  }, []);
 
   function deleteEntry(id) {
     const updated = history.filter((h) => h.id !== id);
     setHistory(updated);
-    localStorage.setItem("analysisHistory", JSON.stringify(updated));
+    if (!user) {
+      localStorage.setItem("analysisHistory", JSON.stringify(updated));
+    }
+  }
+
+  function clearHistory() {
+    if (confirm("Clear all history? This can't be undone.")) {
+      setHistory([]);
+      if (!user) {
+        localStorage.removeItem("analysisHistory");
+      }
+    }
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
   }
 
   const FILTERS = ["All", "Strong match", "Worth reviewing", "Likely not a fit"];
 
   const filtered = history.filter((h) => {
     const matchesSearch =
-      h.cvName.toLowerCase().includes(search.toLowerCase()) ||
-      h.summary?.toLowerCase().includes(search.toLowerCase());
+      h.cvName?.toLowerCase().includes(search.toLowerCase()) ||
+      h.summary?.toLowerCase().includes(search.toLowerCase()) ||
+      h.jobTitle?.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "All" || h.recommendation === filter;
     return matchesSearch && matchesFilter;
   });
@@ -49,16 +100,9 @@ export default function HistoryPage() {
   function formatDate(iso) {
     const d = new Date(iso);
     return (
-      d.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }) +
+      d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
       " · " +
-      d.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
     );
   }
 
@@ -80,8 +124,19 @@ export default function HistoryPage() {
           <a href="/bulk" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Bulk Upload</a>
           <a href="/landing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">About</a>
           <a href="/pricing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Pricing</a>
-          <a href="/login" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100">Login</a>
-          <a href="/signup" className="text-sm bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg font-medium ml-1">Sign up</a>
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100"
+            >
+              Sign out
+            </button>
+          ) : (
+            <>
+              <a href="/login" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100">Login</a>
+              <a href="/signup" className="text-sm bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg font-medium ml-1">Sign up</a>
+            </>
+          )}
         </div>
       </nav>
 
@@ -91,8 +146,16 @@ export default function HistoryPage() {
           <div>
             <h1 className="text-xl font-bold text-stone-900">Analysis history</h1>
             <p className="text-stone-500 text-sm mt-0.5">
-              {history.length} candidate{history.length !== 1 ? "s" : ""} scored · stored locally in your browser
+              {user
+                ? `${history.length} analysis${history.length !== 1 ? "es" : ""} saved to your account`
+                : `${history.length} analysis${history.length !== 1 ? "es" : ""} · stored locally in your browser`}
             </p>
+            {!user && (
+              <p className="text-xs text-amber-600 mt-1 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 inline-block mt-2">
+                ⚠ You're not logged in — history is only saved on this device.{" "}
+                <a href="/login" className="underline font-medium">Sign in</a> to save across devices.
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <a href="/" className="text-xs border border-stone-300 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-50">+ New analysis</a>
@@ -104,11 +167,17 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {history.length > 0 && (
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 rounded-full border-4 border-stone-200 border-t-emerald-600 animate-spin" />
+          </div>
+        )}
+
+        {!loading && history.length > 0 && (
           <div className="bg-white rounded-2xl border border-stone-200 p-4 mb-4 space-y-3">
             <input
               type="text"
-              placeholder="Search by CV name or summary..."
+              placeholder="Search by name, role or summary..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -122,23 +191,27 @@ export default function HistoryPage() {
                     filter === f ? "bg-emerald-700 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
-                  {f === "All" ? `All (${history.length})` : `${f} (${history.filter((h) => h.recommendation === f).length})`}
+                  {f === "All"
+                    ? `All (${history.length})`
+                    : `${f} (${history.filter((h) => h.recommendation === f).length})`}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {history.length === 0 && (
+        {!loading && history.length === 0 && (
           <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
             <div className="text-4xl mb-3">📭</div>
             <p className="text-stone-500 text-sm font-medium">No analyses yet</p>
             <p className="text-stone-400 text-xs mt-1 mb-5">Score your first candidate to see results here.</p>
-            <a href="/" className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">Score a candidate</a>
+            <a href="/" className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+              Score a candidate
+            </a>
           </div>
         )}
 
-        {history.length > 0 && filtered.length === 0 && (
+        {!loading && history.length > 0 && filtered.length === 0 && (
           <div className="bg-white rounded-2xl border border-stone-200 p-10 text-center">
             <div className="text-3xl mb-3">🔍</div>
             <p className="text-stone-500 text-sm">No results match your search.</p>
@@ -152,14 +225,12 @@ export default function HistoryPage() {
           {filtered.map((entry) => (
             <div key={entry.id} className="bg-white rounded-2xl border border-stone-200 p-5">
               <div className="flex items-start justify-between gap-4">
-
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 border-2 font-bold text-sm"
                   style={{ borderColor: scoreColour(entry.matchScore), color: scoreColour(entry.matchScore) }}
                 >
                   {entry.matchScore}
                 </div>
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <p className="text-sm font-semibold text-stone-900 truncate">{entry.cvName}</p>
@@ -167,26 +238,29 @@ export default function HistoryPage() {
                       {entry.recommendation}
                     </span>
                   </div>
+                  {entry.jobTitle && (
+                    <p className="text-xs text-stone-400 truncate mb-0.5">Role: {entry.jobTitle}</p>
+                  )}
                   {entry.summary && (
                     <p className="text-xs text-stone-500 leading-relaxed line-clamp-2">{entry.summary}</p>
                   )}
                   <p className="text-xs text-stone-400 mt-1.5">{formatDate(entry.timestamp)}</p>
                 </div>
-
-                <button
-                  onClick={() => deleteEntry(entry.id)}
-                  className="text-stone-300 hover:text-red-400 transition-colors shrink-0 text-xl leading-none"
-                  title="Delete"
-                >
-                  &times;
-                </button>
-
+                {!user && (
+                  <button
+                    onClick={() => deleteEntry(entry.id)}
+                    className="text-stone-300 hover:text-red-400 transition-colors shrink-0 text-xl leading-none"
+                    title="Delete"
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {history.length > 0 && (
+        {!loading && history.length > 0 && (
           <div className="mt-8 bg-white rounded-2xl border border-stone-200 p-5 grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-stone-900">{history.length}</p>
