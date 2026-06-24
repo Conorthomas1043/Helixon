@@ -19,6 +19,15 @@ export default function Home() {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [shortlists, setShortlists] = useState([]);
+  const [addedToShortlist, setAddedToShortlist] = useState(false);
+  const [emailDraft, setEmailDraft] = useState(null);
+  const [agency, setAgency] = useState(null);
+  const [emailArtifactId, setEmailArtifactId] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailPurpose, setEmailPurpose] = useState("invite_to_interview");
+  const [emailEdited, setEmailEdited] = useState("");
+  const [emailCopied, setEmailCopied] = useState(false);
 
   useEffect(() => {
     if (!loading) { setStage(0); return; }
@@ -95,7 +104,36 @@ export default function Home() {
       setError("Please drop a PDF file.");
     }
   }
+  async function generateEmail() {
+    if (!result?.candidateId || !result?.jobId) return;
 
+    setEmailLoading(true);
+    setEmailDraft(null);
+    setEmailCopied(false);
+
+    try {
+      const res = await fetch("/api/draft-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidateId: result.candidateId,
+          jobId: result.jobId,
+          agencyId: "d6207b77-821d-4b93-8906-a9bfbcfd0fae",
+          purpose: emailPurpose,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        setEmailDraft(data.artifact.content.original_text);
+        setEmailEdited(data.artifact.content.original_text);
+        setEmailArtifactId(data.artifact.id);
+      }
+    } finally {
+      setEmailLoading(false);
+    }
+  }
   function ScoreRing({ score }) {
     const size = 120;
     const stroke = 10;
@@ -142,8 +180,10 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-1">
           <a href="/history" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">History</a>
+          <a href="/shortlists" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Shortlists</a>
           <a href="/bulk" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Bulk Upload</a>
           <a href="/landing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">About</a>
+          <a href="/dashboard" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Dashboard</a>
           <a href="/pricing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Pricing</a>
           <a href="/login" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100">Login</a>
           <a href="/signup" className="text-sm bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg font-medium ml-1">
@@ -303,7 +343,128 @@ export default function Home() {
                     ✓ Thanks — helps us improve
                   </p>
                 )}
+              
+                {/* Add to shortlist */}
+                {shortlists.length > 0 && result && (
+                  <div className="border-t border-stone-100 pt-4">
+                    <p className="text-xs text-stone-400 mb-2">Add to shortlist</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {shortlists.map((sl) => (
+                        <button
+                          key={sl.id}
+                          onClick={async () => {
+                            await fetch("/api/shortlists/add-candidate", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                shortlistId: sl.id,
+                                candidateId: result.candidateId,
+                                scoreId: null,
+                              }),
+                            });
+                            setAddedToShortlist(true);
+                            setTimeout(() => setAddedToShortlist(false), 2000);
+                          }}
+                          className="text-xs border border-stone-300 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-50"
+                        >
+                          + {sl.name}
+                        </button>
+                      ))}
+                    </div>
+                    {addedToShortlist && (
+                      <p className="text-xs text-emerald-700 mt-2">Added to shortlist</p>
+                    )}
+                  </div>
+                )}
 
+{/* ── Email Draft Section ── */}
+{/* ── Email Draft Section ── */}
+<div className="mt-6 border-t border-stone-200 pt-6">
+  {/* Header row: label on left, purpose picker on right */}
+  <div className="flex items-center justify-between mb-3">
+    <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+      Draft Email
+    </h3>
+    <select
+      value={emailPurpose}
+      onChange={(e) => {
+        setEmailPurpose(e.target.value);
+        setEmailDraft(null); // clear existing draft when purpose changes
+      }}
+      className="text-xs border border-stone-300 rounded-lg px-2 py-1 text-stone-600"
+    >
+      <option value="invite_to_interview">Invite to interview</option>
+      <option value="client_shortlist_update">Client shortlist update</option>
+      <option value="rejection">Rejection email</option>
+      <option value="chase_feedback">Chase client feedback</option>
+    </select>
+  </div>
+
+  {/* Show "Draft email" button when no draft exists yet */}
+  {!emailDraft && (
+    <button
+      onClick={generateEmail}
+      disabled={emailLoading}
+      className="w-full border border-emerald-700 text-emerald-700
+        hover:bg-emerald-50 font-medium py-2 rounded-xl text-sm
+        transition-colors disabled:opacity-50"
+    >
+      {emailLoading ? "Drafting..." : "Draft email"}
+    </button>
+  )}
+
+  {/* Show editable draft and action buttons once a draft exists */}
+  {emailDraft && (
+    <div>
+      <textarea
+        value={emailEdited}
+        onChange={(e) => setEmailEdited(e.target.value)}
+        rows={10}
+        className="w-full border border-stone-300 rounded-xl p-3 text-sm
+          resize-none focus:outline-none focus:ring-2
+          focus:ring-emerald-500 mb-3"
+      />
+      <div className="flex gap-2">
+        {/* Copy button — also saves the final version for tracking */}
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(emailEdited);
+            setEmailCopied(true);
+            setTimeout(() => setEmailCopied(false), 2000);
+
+            // Track what they actually sent vs the original draft
+            if (emailArtifactId) {
+              fetch("/api/update-artifact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  artifactId: emailArtifactId,
+                  finalText: emailEdited,
+                }),
+              });
+            }
+          }}
+          className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white
+            text-sm font-medium py-2 rounded-xl transition-colors"
+        >
+          {emailCopied ? "Copied!" : "Copy and use"}
+        </button>
+
+        {/* Regenerate button — clears draft and calls API again */}
+        <button
+          onClick={() => {
+            setEmailDraft(null);
+            generateEmail();
+          }}
+          className="px-4 border border-stone-300 text-stone-600 text-sm
+            rounded-xl hover:bg-stone-50"
+        >
+          Regenerate
+        </button>
+      </div>
+    </div>
+  )}
+</div>
                 <button
                   onClick={() => { setResult(null); setFile(null); setJobText(""); setFeedback(null); setFeedbackSent(false); }}
                   className="w-full text-sm text-stone-500 hover:text-stone-800 py-2 rounded-lg hover:bg-stone-50 transition-colors border border-stone-200">
