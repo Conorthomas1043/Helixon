@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -16,20 +18,60 @@ const PURPOSES = {
 
 export async function POST(request) {
   try {
-    const { candidateId, jobId, agencyId, purpose } = await request.json();
+    const { candidateId, jobId, purpose } = await request.json();
 
-    // Fetch all the data we need from Supabase
-    const { data: candidate } = await supabase
+    if (!candidateId || !jobId) {
+      return Response.json({ ok: false, error: "Missing candidateId or jobId." }, { status: 400 });
+    }
+
+    // ── Resolve agencyId server-side, same as /api/run ─────────────────────
+    const cookieStore = await cookies();
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          }
+        }
+      }
+    );
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const userId = user?.id || null;
+    const trialAgencyId = cookieStore.get("helixon_trial")?.value || null;
+    const agencyId = userId ? null : trialAgencyId; // logged-in path: look up via user's own agency below if you have that relation
+
+    if (!agencyId && !userId) {
+      return Response.json({ ok: false, error: "No trial session found." }, { status: 401 });
+    }
+
+    // ── Fetch data, scoped to this agency so nobody can draft off someone
+    //    else's candidate/job by guessing IDs ─────────────────────────────
+    const { data: candidate, error: candErr } = await supabase
       .from("candidates")
       .select("*")
       .eq("id", candidateId)
+      .eq("agency_id", agencyId)
       .single();
 
-    const { data: job } = await supabase
+    if (candErr || !candidate) {
+      return Response.json({ ok: false, error: "Candidate not found." }, { status: 404 });
+    }
+
+    const { data: job, error: jobErr } = await supabase
       .from("jobs")
       .select("*")
       .eq("id", jobId)
+      .eq("agency_id", agencyId)
       .single();
+
+    if (jobErr || !job) {
+      return Response.json({ ok: false, error: "Job not found." }, { status: 404 });
+    }
 
     const { data: agency } = await supabase
       .from("agencies")
@@ -46,10 +88,9 @@ export async function POST(request) {
       .limit(1)
       .single();
 
-    // Pull settings from agency record (set in Agency Settings page)
     const signature = agency?.settings?.signature || "";
     const tone = agency?.settings?.tone || "professional";
-    const company = agency?.settings?.company_name || "our agency";
+    const company = agency?.settings?.company_name || agency?.name || "our agency";
 
     const instruction = PURPOSES[purpose] || PURPOSES.invite_to_interview;
 
@@ -72,7 +113,6 @@ Return ONLY the email text. No subject line for candidate emails. No preamble.`;
 
     const emailText = m.content[0].text;
 
-    // Save the draft to the artifacts table
     const { data: artifact, error } = await supabase
       .from("artifacts")
       .insert({
@@ -94,7 +134,14 @@ Return ONLY the email text. No subject line for candidate emails. No preamble.`;
 
     if (error) throw new Error(error.message);
 
-    return Response.json({ ok: true, artifact });
+    // Send back the candidate's email so the frontend can prefill "To"
+    return Response.json({
+      ok: true,
+      artifact,
+      suggestedRecipient: purpose === "client_shortlist_update" || purpose === "chase_feedback"
+        ? null // client email isn't captured anywhere yet — see note below
+        : candidate?.extracted?.email || null,
+    });
   } catch (err) {
     return Response.json({ ok: false, error: err.message }, { status: 500 });
   }

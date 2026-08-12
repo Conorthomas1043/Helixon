@@ -1,121 +1,84 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
+import { scoreCandidate, extractCandidate, extractJob } from "@/lib/cv-analysis";
+import { getScoreBand } from "@/lib/scoreBands";
+import { NextResponse } from "next/server";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-function cleanJson(text) {
-  return text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-}
+// Schema note (Features 1 & 2 — no scoring-logic changes, workflow columns only):
+//   jobs.is_saved   boolean  default false
+//   jobs.status     text     default 'open'
+//   scores.stage    text     default 'new'
 
 export async function POST(request) {
   try {
     const { candidateId, jobId, agencyId } = await request.json();
 
     if (!candidateId || !jobId || !agencyId) {
-      return Response.json(
+      return NextResponse.json(
         { ok: false, error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // fetch candidate
-    const { data: cand, error: candError } = await supabase
-      .from("candidates")
-      .select("*")
-      .eq("id", candidateId)
-      .single();
+    // Fetch candidate + job in parallel
+    const [{ data: cand, error: candError }, { data: job, error: jobError }] =
+      await Promise.all([
+        supabase.from("candidates").select("*").eq("id", candidateId).single(),
+        supabase.from("jobs").select("*").eq("id", jobId).single(),
+      ]);
 
-    if (candError) throw new Error(candError.message);
+    if (candError) throw new Error(`Candidate not found: ${candError.message}`);
+    if (jobError)  throw new Error(`Job not found: ${jobError.message}`);
 
-    // fetch job
-    const { data: job, error: jobError } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("id", jobId)
-      .single();
+    // Feature 2 Part A: a closed job can still be re-scored against (e.g.
+    // re-running an old candidate for record-keeping), but the frontend
+    // should surface job.status so the recruiter knows it's closed.
+    const extracted = cand.extracted  || (await extractCandidate(cand.cv_text));
+    const jobParsed = job.parsed      || (await extractJob(job.job_text));
 
-    if (jobError) throw new Error(jobError.message);
+    const result = await scoreCandidate(
+      cand.cv_text,
+      job.job_text,
+      extracted,
+      jobParsed
+    );
 
-    const prompt = `
-You are a senior technical recruiter with 15 years of experience.
-
-Return ONLY valid JSON. No markdown. No backticks.
-
-JSON format:
-{
-  "match_score": 0,
-  "strengths": ["string"],
-  "weaknesses": ["string"],
-  "summary": "string",
-  "recommendation": "Strong match"
-}
-
-Rules:
-- Recommendation must be exactly one of:
-  "Strong match" | "Worth reviewing" | "Likely not a fit"
-
-Scoring bands:
-85-100: excellent match
-70-84: solid match
-50-69: partial match
-<50: weak match
-
-CANDIDATE CV:
-${cand.cv_text}
-
-JOB DESCRIPTION:
-${job.job_text}
-`;
-
-    const m = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const raw = m.content?.[0]?.text || "";
-    const cleaned = cleanJson(raw);
-
-    let result;
-    try {
-      result = JSON.parse(cleaned);
-    } catch (err) {
-      console.error("Failed JSON parse:", raw);
-      return Response.json(
-        {
-          ok: false,
-          error: "Model returned invalid JSON",
-          raw,
-        },
-        { status: 500 }
-      );
-    }
-
+    // Feature 2 Part B: every new score starts at stage "new", independent
+    // of the job's own status (Feature 2 Part A) and independent of any
+    // other candidate's stage against this same job.
     const { data, error } = await supabase
       .from("scores")
       .insert({
-        agency_id: agencyId,
-        candidate_id: candidateId,
-        job_id: jobId,
-        match_score: result.match_score,
+        agency_id:      agencyId,
+        candidate_id:   candidateId,
+        job_id:         jobId,
+        match_score:    result.match_score,
         recommendation: result.recommendation,
-        result: result,
+        result,
+        stage:          "new",
       })
-      .select();
+      .select()
+      .single();
 
     if (error) throw new Error(error.message);
 
-    return Response.json({
+    return NextResponse.json({
       ok: true,
-      score: data[0],
+      score: data,
+      // Feature 3: display band for this score, computed fresh — no schema change.
+      score_band: getScoreBand(result.match_score),
+      // Feature 1 & 2: job save-state/status alongside the score, so the
+      // frontend can render both without a second call.
+      job: {
+        id:       job.id,
+        title:    job.title,
+        is_saved: job.is_saved ?? false,
+        status:   job.status ?? "open",
+      },
     });
+
   } catch (err) {
-    return Response.json(
+    console.error("[score] Error:", err.message);
+    return NextResponse.json(
       { ok: false, error: err.message },
       { status: 500 }
     );

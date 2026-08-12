@@ -1,505 +1,892 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import CookieConsentBanner, { useCookieBannerVisible } from "../components/CookieConsentBanner";
 
-const STAGES = [
-  "Reading CV",
-  "Parsing job description",
-  "Analysing candidate fit",
-  "Generating score",
-];
+const TRIAL_EMAIL_KEY = "helixon-trial-email";
 
-export default function Home() {
-  const [file, setFile] = useState(null);
-  const [jobText, setJobText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [stage, setStage] = useState(0);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [feedback, setFeedback] = useState(null);
-  const [feedbackSent, setFeedbackSent] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [shortlists, setShortlists] = useState([]);
-  const [addedToShortlist, setAddedToShortlist] = useState(false);
-  const [emailDraft, setEmailDraft] = useState(null);
-  const [agency, setAgency] = useState(null);
-  const [emailArtifactId, setEmailArtifactId] = useState(null);
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailPurpose, setEmailPurpose] = useState("invite_to_interview");
-  const [emailEdited, setEmailEdited] = useState("");
-  const [emailCopied, setEmailCopied] = useState(false);
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = (e) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
+function usePageVisible() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const onChange = () => setVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, []);
+  return visible;
+}
+
+function useInView(ref, options = {}) {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: options.threshold ?? 0.15, rootMargin: options.rootMargin ?? "0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [ref, options.threshold, options.rootMargin]);
+  return inView;
+}
+
+function Reveal({ children, className = "", delay = 0 }) {
+  const ref = useRef(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const [visible, setVisible] = useState(reducedMotion);
 
   useEffect(() => {
-    if (!loading) { setStage(0); return; }
-    const interval = setInterval(() => {
-      setStage(prev => (prev < STAGES.length - 1 ? prev + 1 : prev));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [loading]);
+    if (reducedMotion) return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -32px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [reducedMotion]);
 
-  async function handleAnalyse() {
-    if (!file || !jobText.trim()) {
-      setError("Please add a CV and paste a job description.");
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${visible ? "reveal--visible" : ""} ${className}`}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const DEMO_CANDIDATES = [
+  { name: "R. Okafor",   role: "Sales Executive",        score: 91 },
+  { name: "J. Marchetti",role: "Software Engineer",      score: 74 },
+  { name: "S. Devine",   role: "Operations Manager",     score: 58 },
+  { name: "L. Yang",     role: "Customer Success Mgr",   score: 96 },
+];
+
+const STAGES = ["Reading CV", "Parsing job description", "Analysing candidate fit", "Generating score"];
+
+function scoreColor(score) {
+  if (score >= 80) return "var(--forest)";
+  if (score >= 60) return "#b45309";
+  return "#dc2626";
+}
+
+// ── Live scan demo — the hero's signature element ───────────────────────
+function LiveScanDemo() {
+  const containerRef = useRef(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const pageVisible = usePageVisible();
+  const inView = useInView(containerRef);
+  const animating = pageVisible && inView && !reducedMotion;
+
+  const [index, setIndex]   = useState(0);
+  const [stage, setStage]   = useState(reducedMotion ? STAGES.length - 1 : 0);
+  const [revealed, setRevealed] = useState(reducedMotion);
+
+  useEffect(() => {
+    if (!animating) return;
+    setStage(0);
+    setRevealed(false);
+    const stageIv = setInterval(() => {
+      setStage((s) => {
+        if (s >= STAGES.length - 1) {
+          clearInterval(stageIv);
+          setTimeout(() => setRevealed(true), 250);
+          return s;
+        }
+        return s + 1;
+      });
+    }, 550);
+    return () => clearInterval(stageIv);
+  }, [index, animating]);
+
+  useEffect(() => {
+    if (!animating || !revealed) return;
+    const t = setTimeout(() => setIndex((i) => (i + 1) % DEMO_CANDIDATES.length), 2200);
+    return () => clearTimeout(t);
+  }, [revealed, animating]);
+
+  const candidate = DEMO_CANDIDATES[index];
+
+  return (
+    <div
+      ref={containerRef}
+      className="rounded-[16px] p-6 w-full max-w-sm mx-auto lg:mx-0"
+      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
+      aria-live="polite"
+      aria-label="Live CV scan demonstration"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#8aaa9a" }}>
+          Live scan
+        </span>
+        <span className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: "#5a7a6a" }}>
+          <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: revealed ? "var(--forest)" : "#f59e0b" }} />
+          {revealed ? "Scored" : "Scanning…"}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold truncate" style={{ color: "#13201b" }}>{candidate.name}.pdf</p>
+          <p className="text-[10px]" style={{ color: "#8aaa9a" }}>vs {candidate.role}</p>
+        </div>
+      </div>
+
+      <div className="space-y-1.5 mb-5">
+        {STAGES.map((s, i) => {
+          const complete = i < stage || revealed;
+          const active = i === stage && !revealed;
+          return (
+            <div key={s} className={`flex items-center gap-2.5 transition-opacity duration-300 ${!complete && !active ? "opacity-30" : ""}`}>
+              <div
+                className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[8px] font-bold transition-colors"
+                style={{
+                  background: complete ? "var(--forest)" : active ? "var(--mint)" : "var(--border)",
+                  color: complete ? "white" : active ? "var(--forest)" : "#b0c4ba",
+                }}
+              >
+                {complete ? "✓" : ""}
+              </div>
+              <span className="text-[10px]" style={{ color: active ? "#13201b" : "#8aaa9a", fontWeight: active ? 600 : 400 }}>
+                {s}{active ? "…" : ""}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div
+        className="rounded-[10px] p-4 flex items-center justify-between transition-all duration-500"
+        style={{
+          background: revealed ? "var(--mist)" : "transparent",
+          opacity: revealed ? 1 : 0,
+          transform: revealed ? "translateY(0)" : "translateY(4px)",
+        }}
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#5a7a6a" }}>Match score</span>
+        <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score) }}>
+          {revealed ? candidate.score : "—"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Free-trial email gate — captures email for retention before granting access ──
+function TrialGateModal({ open, onClose, returnFocusRef }) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  // Marketing consent must be an explicit opt-in (unchecked by default) —
+  // a pre-ticked box does not count as valid consent under UK GDPR/PECR.
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const dialogRef = useRef(null);
+  const inputRef = useRef(null);
+  const reducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      try {
+        const saved = sessionStorage.getItem(TRIAL_EMAIL_KEY);
+        if (saved) setEmail(saved);
+      } catch { /* private browsing */ }
+      setTimeout(() => inputRef.current?.focus(), reducedMotion ? 0 : 250);
+    } else {
+      document.body.style.overflow = "";
+      returnFocusRef?.current?.focus({ preventScroll: true });
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open, returnFocusRef, reducedMotion]);
+
+  useEffect(() => {
+    if (!email) return;
+    try { sessionStorage.setItem(TRIAL_EMAIL_KEY, email); } catch { /* ignore */ }
+  }, [email]);
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  // Basic focus trap: keep Tab/Shift+Tab cycling within the dialog while open.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e) {
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  if (!open) return null;
+
+  const active = focused || email.length > 0;
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    if (!EMAIL_RE.test(email.trim())) {
+      setError("Enter a valid email address to continue.");
       return;
     }
     setLoading(true);
-    setResult(null);
-    setError(null);
-    setFeedback(null);
-    setFeedbackSent(false);
-    setShowUpgrade(false);
-
-    const fd = new FormData();
-    fd.append("cv", file);
-    fd.append("jobText", jobText);
-    fd.append("agencyId", "d6207b77-821d-4b93-8906-a9bfbcfd0fae");
-
     try {
-      const res = await fetch("/api/run", { method: "POST", body: fd });
-      const data = await res.json();
-      // if (data.upgrade) { setShowUpgrade(true); return; }
-      if (data.ok) {
-        setResult(data.result);
-        const entry = {
-          id: Date.now(),
-          timestamp: new Date().toISOString(),
-          cvName: file.name,
-          matchScore: data.result.match_score,
-          recommendation: data.result.recommendation,
-          summary: data.result.summary,
-        };
-        const history = JSON.parse(localStorage.getItem("analysisHistory") || "[]");
-        history.unshift(entry);
-        localStorage.setItem("analysisHistory", JSON.stringify(history.slice(0, 50)));
-      } else {
-        setError(data.error || "Something went wrong. Please try again.");
+      const res = await fetch("/api/trial/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), marketingOptIn }),
+      });
+      let data;
+      try { data = await res.json(); } catch { data = null; }
+
+      if (!res.ok || !data?.ok) {
+        setError(data?.error || "Something went wrong. Please try again.");
+        return;
       }
-    } catch (e) {
+
+      try { sessionStorage.removeItem(TRIAL_EMAIL_KEY); } catch { /* ignore */ }
+      router.push(data?.redirectTo || "/analyse");
+      router.refresh();
+    } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  async function submitFeedback(rating) {
-    setFeedback(rating);
-    setFeedbackSent(true);
-    try {
-      await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating }),
-      });
-    } catch {}
-  }
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="trial-gate-title"
+      aria-describedby="trial-gate-desc"
+    >
+      <div
+        className="absolute inset-0"
+        style={{ background: "rgba(11,26,20,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: reducedMotion ? "none" : `fadeIn 0.25s ${EASE}` }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-  function handleDrop(e) {
-    e.preventDefault();
-    setDragOver(false);
-    const dropped = e.dataTransfer.files?.[0];
-    if (dropped?.type === "application/pdf") {
-      setFile(dropped);
-      setError(null);
-    } else {
-      setError("Please drop a PDF file.");
-    }
-  }
-  async function generateEmail() {
-    if (!result?.candidateId || !result?.jobId) return;
+      <div
+        ref={dialogRef}
+        className="relative w-full max-w-[400px] rounded-[22px] p-7 sm:p-8 overflow-hidden"
+        style={{
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255,255,255,0.7)",
+          boxShadow: "0 50px 100px -30px rgba(11,26,20,0.45)",
+          animation: reducedMotion ? "none" : `popIn 0.35s ${EASE}`,
+        }}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="btn-ghost absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+          style={{ color: "#8aaa9a" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M6 6l12 12M6 18L18 6" />
+          </svg>
+        </button>
 
-    setEmailLoading(true);
-    setEmailDraft(null);
-    setEmailCopied(false);
-
-    try {
-      const res = await fetch("/api/draft-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidateId: result.candidateId,
-          jobId: result.jobId,
-          agencyId: "d6207b77-821d-4b93-8906-a9bfbcfd0fae",
-          purpose: emailPurpose,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.ok) {
-        setEmailDraft(data.artifact.content.original_text);
-        setEmailEdited(data.artifact.content.original_text);
-        setEmailArtifactId(data.artifact.id);
-      }
-    } finally {
-      setEmailLoading(false);
-    }
-  }
-  function ScoreRing({ score }) {
-    const size = 120;
-    const stroke = 10;
-    const r = (size - stroke) / 2;
-    const circ = 2 * Math.PI * r;
-    const fill = (score / 100) * circ;
-    let colour = "#b00000";
-    if (score >= 80) colour = "#0b6e4f";
-    else if (score >= 60) colour = "#d97706";
-
-    return (
-      <div className="relative flex items-center justify-center"
-        style={{ width: size, height: size }}>
-        <svg width={size} height={size}
-          style={{ transform: "rotate(-90deg)", position: "absolute" }}>
-          <circle cx={size/2} cy={size/2} r={r}
-            fill="none" stroke="#e7e5e0" strokeWidth={stroke} />
-          <circle cx={size/2} cy={size/2} r={r}
-            fill="none" stroke={colour} strokeWidth={stroke}
-            strokeDasharray={`${fill} ${circ}`}
-            strokeLinecap="round"
-            style={{ transition: "stroke-dasharray 1s ease" }} />
-        </svg>
-        <div className="relative text-center">
-          <div className="text-3xl font-bold" style={{ color: colour }}>{score}</div>
-          <div className="text-xs text-stone-400 leading-tight">out of 100</div>
+        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center mb-5" style={{ background: "var(--mint)" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
         </div>
+
+        <h2 id="trial-gate-title" className="text-[1.4rem] font-semibold tracking-tight mb-1.5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+          Start your 3 free analyses
+        </h2>
+        <p id="trial-gate-desc" className="text-[13px] leading-relaxed mb-6" style={{ color: "#5a7a6a" }}>
+          No card, no signup form — just your email so we can save your results and let you pick up where you left off.
+        </p>
+
+        {error && (
+          <div role="alert" aria-live="assertive" className="mb-4 flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca", animation: reducedMotion ? "none" : "shake 0.4s ease" }}>
+            <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <p id="trial-email-error" className="text-[13px]" style={{ color: "#b91c1c" }}>{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div
+            className="relative rounded-[12px] mb-3.5"
+            style={{
+              border: `1.5px solid ${error ? "rgba(220,38,38,0.5)" : focused ? "var(--forest)" : "var(--border)"}`,
+              boxShadow: focused ? "0 0 0 4px var(--mint)" : "none",
+              transition: `all 0.2s ${EASE}`,
+            }}
+          >
+            <label
+              htmlFor="trial-email"
+              className="absolute left-3.5 select-none pointer-events-none transition-all"
+              style={{
+                top: active ? "7px" : "50%",
+                transform: active ? "translateY(0)" : "translateY(-50%)",
+                fontSize: active ? "10px" : "13.5px",
+                fontWeight: active ? 600 : 400,
+                letterSpacing: active ? "0.03em" : "0",
+                color: active ? "var(--forest)" : "#8aaa9a",
+                textTransform: active ? "uppercase" : "none",
+                transitionTimingFunction: EASE,
+                transitionDuration: "0.2s",
+              }}
+            >
+              Email address
+            </label>
+            <input
+              ref={inputRef}
+              id="trial-email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError("");
+              }}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              autoComplete="email"
+              inputMode="email"
+              spellCheck={false}
+              aria-invalid={error ? "true" : "false"}
+              aria-describedby={error ? "trial-email-error" : undefined}
+              required
+              className="w-full bg-transparent text-sm outline-none"
+              style={{
+                color: "#13201b",
+                padding: active ? "22px 14px 8px" : "14px",
+                transition: `padding 0.2s ${EASE}`,
+              }}
+            />
+          </div>
+
+          <label className="flex items-start gap-2.5 text-[12px] select-none mb-5" style={{ color: "#8aaa9a" }}>
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={(e) => setMarketingOptIn(e.target.checked)}
+              className="mt-0.5 w-3.5 h-3.5 rounded"
+              style={{ accentColor: "var(--forest)" }}
+            />
+            <span>Send me occasional tips on hiring smarter. Unsubscribe anytime.</span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={loading}
+            aria-busy={loading}
+            className="btn-forest w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
+            style={{
+              background: loading ? "#b0c4ba" : "var(--forest)",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",
+            }}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Starting…
+              </>
+            ) : (
+              <>
+                Start scanning — it&apos;s free
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </>
+            )}
+          </button>
+        </form>
+
+        <p className="text-[11px] text-center mt-4" style={{ color: "#b0c4ba" }}>
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium hover:underline" style={{ color: "#8aaa9a" }}>Sign in</Link>
+        </p>
       </div>
-    );
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Pricing plan buy button — calls /api/checkout, then redirects ────────
+function BuyPlanButton({ plan, label, highlight }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleClick() {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      let data;
+      try { data = await res.json(); } catch { data = null; }
+
+      if (!res.ok || !data?.ok || !data?.redirectTo) {
+        setError(data?.error || "Something went wrong. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = data.redirectTo;
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (
-    <main className="min-h-screen bg-stone-50">
+    <div className="flex flex-col gap-1.5">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        aria-busy={loading}
+        className="text-center text-xs font-semibold py-3 rounded-[10px] transition-all w-full min-h-[44px]"
+        style={{
+          background: loading ? "#b0c4ba" : highlight ? "white" : "var(--forest)",
+          color: highlight ? "var(--forest)" : "white",
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Redirecting…" : label}
+      </button>
+      {error && (
+        <p role="alert" aria-live="polite" className="text-[11px] text-center" style={{ color: highlight ? "#fecaca" : "#dc2626" }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
 
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur border-b border-stone-200 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-emerald-700 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs font-bold">H</span>
+// ── Reusable CTA button pair ─────────────────────────────────────────────
+function CtaButtons({ align = "left", onTryFree }) {
+  return (
+    <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
+      <button
+        type="button"
+        onClick={(e) => onTryFree(e)}
+        className="btn-forest inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3.5 rounded-[10px] text-white transition-all w-full sm:w-auto min-h-[48px]"
+        style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
+      >
+        Try it free
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </button>
+      <a
+        href="#pricing"
+        className="btn-outline inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3.5 rounded-[10px] transition-all w-full sm:w-auto min-h-[48px]"
+        style={{ border: "1.5px solid var(--border)", color: "#13201b" }}
+      >
+        See plans &amp; buy
+      </a>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const trialTriggerRef = useRef(null);
+  const gateReturnFocusRef = useRef(null);
+
+  const openGate = useCallback((e) => {
+    gateReturnFocusRef.current = e?.currentTarget || trialTriggerRef.current;
+    setGateOpen(true);
+  }, []);
+  const closeGate = useCallback(() => setGateOpen(false), []);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileNavOpen]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileNavOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    function onKey(e) {
+      if (e.key === "Escape") setMobileNavOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileNavOpen]);
+
+  const plans = [
+    {
+      name: "Free", price: "£0", period: "forever",
+      features: ["3 free analyses", "Match score & summary", "Email drafting"],
+      cta: "Try it free", highlight: false, action: "trial",
+    },
+    {
+      name: "Individual", price: "£149", period: "/ month",
+      features: ["Unlimited analyses", "Bulk upload", "Shortlists & history", "Priority support"],
+      cta: "Buy Individual", highlight: true, plan: "Individual",
+    },
+    {
+      name: "Team", price: "£349", period: "/ month",
+      features: ["Everything in Individual", "Multi-seat access", "Shared templates", "Dedicated onboarding"],
+      cta: "Buy Team", highlight: false, plan: "team",
+    },
+  ];
+
+  return (
+    <>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+
+      <TrialGateModal open={gateOpen} onClose={closeGate} returnFocusRef={gateReturnFocusRef} />
+
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
+        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
+            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
+              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
+                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
+                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
+              </svg>
+            </div>
+            <span className="flex flex-col leading-none">
+              <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
+              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+            <a href="#how" className="nav-link">How it works</a>
+            <a href="#pricing" className="nav-link">Pricing</a>
+            <Link href="/login" className="nav-link">Login</Link>
           </div>
-          <span className="text-base font-bold text-stone-900">Helixon</span>
-          <span className="text-xs text-stone-400 hidden sm:inline border border-stone-200 px-2 py-0.5 rounded-full">
-            AI Recruitment OS
-          </span>
+
+          <div className="flex items-center gap-2">
+            <button
+              ref={trialTriggerRef}
+              type="button"
+              onClick={openGate}
+              className="btn-forest text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block min-h-[36px]"
+              style={{ background: "var(--forest)" }}
+            >
+              Try now
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(v => !v)}
+              aria-expanded={mobileNavOpen}
+              aria-controls="mobile-nav"
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+              className="sm:hidden w-10 h-10 rounded-[8px] flex items-center justify-center"
+              style={{ color: "#13201b" }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
+              </svg>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <a href="/history" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">History</a>
-          <a href="/shortlists" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Shortlists</a>
-          <a href="/bulk" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Bulk Upload</a>
-          <a href="/landing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">About</a>
-          <a href="/dashboard" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Dashboard</a>
-          <a href="/pricing" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100 hidden sm:block">Pricing</a>
-          <a href="/login" className="text-sm text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-100">Login</a>
-          <a href="/signup" className="text-sm bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg font-medium ml-1">
-            Sign up
-          </a>
-        </div>
+        {mobileNavOpen && (
+          <div id="mobile-nav" className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
+            {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"]].map(([label, href]) => (
+              href.startsWith("/") ? (
+                <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "#5a7a6a" }}>{label}</Link>
+              ) : (
+                <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "#5a7a6a" }}>{label}</a>
+              )
+            ))}
+            <button
+              type="button"
+              onClick={(e) => { setMobileNavOpen(false); openGate(e); }}
+              className="btn-forest text-xs font-semibold px-2.5 py-3 rounded-[10px] mt-1 text-white text-center min-h-[44px]"
+              style={{ background: "var(--forest)" }}
+            >
+              Try now
+            </button>
+          </div>
+        )}
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <section id="main-content" className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+              GDPR-ready · Data held in the EU
+            </span>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-xl font-bold text-stone-900">Score a candidate</h1>
-                <p className="text-stone-500 text-sm mt-0.5">Upload a CV and job spec. Get a match score in seconds.</p>
-              </div>
-              <a href="/bulk" className="text-xs border border-stone-300 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-50 shrink-0 ml-3">
-                Bulk Upload
-              </a>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+              Stop reading CVs.<br />Start reading scores.
+            </h1>
+
+            <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "#5a7a6a" }}>
+              Drop in a CV and a job spec. Helixon reads both, scores the fit, flags red flags, and drafts the
+              follow-up email — in under 30 seconds. Built for agency recruiters who screen dozens of CVs a day.
+            </p>
+
+            <CtaButtons onTryFree={openGate} />
+
+            <p className="text-[11px] mt-4" style={{ color: "#8aaa9a" }}>No card required · 3 free analyses · Cancel anytime</p>
+          </div>
+
+          <LiveScanDemo />
+        </div>
+      </section>
+
+      {/* ── Trust strip ─────────────────────────────────────────────────── */}
+      <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
+        <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+          {[
+            { val: "30 sec", label: "Avg. time to score" },
+            { val: "50+", label: "CVs screened per agency/wk" },
+            { val: "GDPR", label: "EU-hosted, never used to train" },
+            { val: "4.8/5", label: "Recruiter satisfaction" },
+          ].map((m) => (
+            <div key={m.label}>
+              <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
+              <p className="text-[10px] mt-1" style={{ color: "#8aaa9a" }}>{m.label}</p>
             </div>
+          ))}
+        </div>
+      </section>
 
+      {/* ── How it works ────────────────────────────────────────────────── */}
+      <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>How it works</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+            Three steps. No spreadsheet required.
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {[
+            { n: "1", title: "Name & pick the job", body: "Name the analysis, then pick a preset role or paste your own job description." },
+            { n: "2", title: "Upload the CV", body: "Drag in a PDF or Word file — Helixon reads it in seconds, no formatting required." },
+            { n: "3", title: "Get your score", body: "A match score, standout factors, red flags, and a ready-to-send email — all in one screen." },
+          ].map((s) => (
+            <div key={s.n} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <span className="w-8 h-8 rounded-[9px] flex items-center justify-center text-xs font-bold mb-4" style={{ background: "var(--mint)", color: "var(--forest)" }}>{s.n}</span>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#13201b" }}>{s.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: "#5a7a6a" }}>{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Pricing / buy ───────────────────────────────────────────────── */}
+      <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>Pricing</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+            Plans that pay for themselves in one placement
+          </h2>
+          <p className="text-xs max-w-md mx-auto" style={{ color: "#5a7a6a" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+          {plans.map((plan) => (
             <div
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-xl p-6 text-center mb-5 transition-colors cursor-pointer ${dragOver ? "border-emerald-500 bg-emerald-50" : file ? "border-emerald-400 bg-emerald-50/50" : "border-stone-300 hover:border-stone-400 bg-stone-50"}`}
-              onClick={() => document.getElementById("cv-input").click()}
+              key={plan.name}
+              className="rounded-[16px] p-6 flex flex-col relative"
+              style={{
+                background: plan.highlight ? "var(--forest)" : "white",
+                border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
+                boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
+              }}
             >
-              <input id="cv-input" type="file" accept="application/pdf"
-                className="hidden"
-                onChange={e => { setFile(e.target.files?.[0] || null); setError(null); }} />
-              {file ? (
-                <div>
-                  <div className="text-2xl mb-1">📄</div>
-                  <p className="text-sm font-medium text-emerald-700 truncate px-4">{file.name}</p>
-                  <p className="text-xs text-stone-400 mt-1">Click to change</p>
-                </div>
+              {plan.highlight && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--signal, #f59e0b)", color: "#13201b" }}>
+                  MOST POPULAR
+                </span>
+              )}
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "#8aaa9a" }}>
+                {plan.name}
+              </h3>
+              <div className="flex items-baseline gap-1 mb-5">
+                <span className="text-3xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "#13201b" }}>{plan.price}</span>
+                <span className="text-[11px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "#8aaa9a" }}>{plan.period}</span>
+              </div>
+              <ul className="space-y-2.5 mb-7 flex-1">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "#5a7a6a" }}>
+                    <span className="shrink-0 mt-0.5">✓</span>{f}
+                  </li>
+                ))}
+              </ul>
+              {plan.action === "trial" ? (
+                <button
+                  type="button"
+                  onClick={openGate}
+                  className="btn-forest text-center text-xs font-semibold py-3 rounded-[10px] transition-all min-h-[44px]"
+                  style={{ background: "var(--forest)", color: "white" }}
+                >
+                  {plan.cta}
+                </button>
               ) : (
-                <div>
-                  <div className="text-2xl mb-1">📂</div>
-                  <p className="text-sm font-medium text-stone-700">Drop CV here or click to upload</p>
-                  <p className="text-xs text-stone-400 mt-1">PDF only</p>
-                </div>
+                <BuyPlanButton plan={plan.plan} label={plan.cta} highlight={plan.highlight} />
               )}
             </div>
+          ))}
+        </div>
+      </section>
 
-            <label className="block text-sm font-medium text-stone-700 mb-2">Job description</label>
-            <textarea
-              value={jobText}
-              onChange={e => setJobText(e.target.value)}
-              placeholder="Paste the full job description here..."
-              rows={6}
-              className="w-full border border-stone-300 rounded-xl p-3 text-sm mb-5 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
-
-            {loading && (
-              <div className="mb-4 bg-stone-50 rounded-xl p-4">
-                {STAGES.map((s, i) => (
-                  <div key={i} className={`flex items-center gap-3 py-1.5 transition-opacity ${i > stage ? "opacity-30" : ""}`}>
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-xs ${i < stage ? "bg-emerald-700 text-white" : i === stage ? "bg-emerald-200 text-emerald-700 animate-pulse" : "bg-stone-200"}`}>
-                      {i < stage ? "✓" : ""}
-                    </div>
-                    <span className={`text-sm ${i === stage ? "text-stone-900 font-medium" : "text-stone-500"}`}>
-                      {s}{i === stage ? "..." : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
+      {/* ── Final CTA ────────────────────────────────────────────────────── */}
+      <section className="max-w-[1100px] mx-auto px-6 pb-24">
+        <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
+            Your next great hire is in that pile of CVs.
+          </h2>
+          <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
+            Find them in seconds, not hours. Try Helixon free — no card needed.
+          </p>
+          <div className="flex justify-center">
             <button
-              onClick={handleAnalyse}
-              disabled={loading}
-              className={`w-full font-medium py-3 rounded-xl transition-all text-sm ${loading ? "bg-stone-200 text-stone-400 cursor-not-allowed" : "bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm hover:shadow-md"}`}
+              type="button"
+              onClick={openGate}
+              className="motion-safe-scale inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02] min-h-[48px]"
+              style={{ background: "white", color: "var(--forest)" }}
             >
-              {loading ? "Analysing..." : "Analyse candidate"}
+              Try it now — it&apos;s free
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
+          </div>
+        </div>
+      </section>
 
-            {error && (
-              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
-            )}
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+        <div className="max-w-[1100px] mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          <div className="col-span-2 sm:col-span-1">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
+                <svg width="15" height="15" viewBox="0 0 28 28" fill="none">
+                  <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
+                  <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+                  <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
+                </svg>
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
+            </div>
+            <p className="text-[11px] leading-relaxed" style={{ color: "#8aaa9a" }}>
+              Screen candidates in seconds. GDPR-ready, EU-hosted.
+            </p>
           </div>
 
           <div>
-            {!result && !loading && (
-              <div className="bg-white rounded-2xl border border-stone-200 p-8 h-full flex flex-col items-center justify-center text-center min-h-64">
-                <div className="text-4xl mb-3">🎯</div>
-                <p className="text-stone-500 text-sm">Your candidate score will appear here.</p>
-                <p className="text-stone-400 text-xs mt-1">Upload a CV and paste a job description to start.</p>
-              </div>
-            )}
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>Product</p>
+            <ul className="space-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
+              <li><a href="/how-it-works" className="hover:underline">How it works</a></li>
+              <li><a href="/pricing" className="hover:underline">Pricing</a></li>
+              <li><a href="/faq" className="hover:underline">FAQ</a></li>
+            </ul>
+          </div>
 
-            {loading && (
-              <div className="bg-white rounded-2xl border border-stone-200 p-8 h-full flex flex-col items-center justify-center text-center min-h-64">
-                <div className="w-20 h-20 rounded-full border-4 border-stone-200 border-t-emerald-600 animate-spin mb-4" />
-                <p className="text-stone-500 text-sm">Analysing...</p>
-              </div>
-            )}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>Company</p>
+            <ul className="space-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
+              <li><a href="/about" className="hover:underline">About</a></li>
+              <li><a href="/careers" className="hover:underline">Careers</a></li>
+              <li><a href="/blog" className="hover:underline">Blog</a></li>
+              <li><a href="/contact" className="hover:underline">Contact</a></li>
+            </ul>
+          </div>
 
-            {result && (
-              <div className="bg-white rounded-2xl border border-stone-200 p-8 space-y-6">
-
-                <div className="flex items-center gap-6 pb-5 border-b border-stone-100">
-                  <ScoreRing score={result.match_score} />
-                  <div>
-                    <div className="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">Match score</div>
-                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${result.recommendation === "Strong match" ? "bg-emerald-100 text-emerald-800" : result.recommendation === "Worth reviewing" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
-                      {result.recommendation}
-                    </div>
-                    <p className="text-stone-500 text-xs mt-2 leading-relaxed max-w-48">{result.summary}</p>
-                  </div>
-                </div>
-
-                {result.strengths?.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Strengths</h3>
-                    <ul className="space-y-2">
-                      {result.strengths.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm text-stone-700">
-                          <span className="mt-0.5 text-emerald-600 shrink-0 font-bold">✓</span>{s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {result.weaknesses?.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Weaknesses</h3>
-                    <ul className="space-y-2">
-                      {result.weaknesses.map((w, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm text-stone-700">
-                          <span className="mt-0.5 text-red-400 shrink-0 font-bold">✗</span>{w}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {!feedbackSent ? (
-                  <div className="border-t border-stone-100 pt-4">
-                    <p className="text-xs text-stone-400 mb-3">Did this match your expert read?</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => submitFeedback("up")}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${feedback === "up" ? "bg-emerald-700 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`}>
-                        👍 Accurate
-                      </button>
-                      <button onClick={() => submitFeedback("down")}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${feedback === "down" ? "bg-red-600 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`}>
-                        👎 Not quite
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-emerald-700 font-medium pt-2 border-t border-stone-100">
-                    ✓ Thanks — helps us improve
-                  </p>
-                )}
-              
-                {/* Add to shortlist */}
-                {shortlists.length > 0 && result && (
-                  <div className="border-t border-stone-100 pt-4">
-                    <p className="text-xs text-stone-400 mb-2">Add to shortlist</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {shortlists.map((sl) => (
-                        <button
-                          key={sl.id}
-                          onClick={async () => {
-                            await fetch("/api/shortlists/add-candidate", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                shortlistId: sl.id,
-                                candidateId: result.candidateId,
-                                scoreId: null,
-                              }),
-                            });
-                            setAddedToShortlist(true);
-                            setTimeout(() => setAddedToShortlist(false), 2000);
-                          }}
-                          className="text-xs border border-stone-300 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-50"
-                        >
-                          + {sl.name}
-                        </button>
-                      ))}
-                    </div>
-                    {addedToShortlist && (
-                      <p className="text-xs text-emerald-700 mt-2">Added to shortlist</p>
-                    )}
-                  </div>
-                )}
-
-{/* ── Email Draft Section ── */}
-{/* ── Email Draft Section ── */}
-<div className="mt-6 border-t border-stone-200 pt-6">
-  {/* Header row: label on left, purpose picker on right */}
-  <div className="flex items-center justify-between mb-3">
-    <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest">
-      Draft Email
-    </h3>
-    <select
-      value={emailPurpose}
-      onChange={(e) => {
-        setEmailPurpose(e.target.value);
-        setEmailDraft(null); // clear existing draft when purpose changes
-      }}
-      className="text-xs border border-stone-300 rounded-lg px-2 py-1 text-stone-600"
-    >
-      <option value="invite_to_interview">Invite to interview</option>
-      <option value="client_shortlist_update">Client shortlist update</option>
-      <option value="rejection">Rejection email</option>
-      <option value="chase_feedback">Chase client feedback</option>
-    </select>
-  </div>
-
-  {/* Show "Draft email" button when no draft exists yet */}
-  {!emailDraft && (
-    <button
-      onClick={generateEmail}
-      disabled={emailLoading}
-      className="w-full border border-emerald-700 text-emerald-700
-        hover:bg-emerald-50 font-medium py-2 rounded-xl text-sm
-        transition-colors disabled:opacity-50"
-    >
-      {emailLoading ? "Drafting..." : "Draft email"}
-    </button>
-  )}
-
-  {/* Show editable draft and action buttons once a draft exists */}
-  {emailDraft && (
-    <div>
-      <textarea
-        value={emailEdited}
-        onChange={(e) => setEmailEdited(e.target.value)}
-        rows={10}
-        className="w-full border border-stone-300 rounded-xl p-3 text-sm
-          resize-none focus:outline-none focus:ring-2
-          focus:ring-emerald-500 mb-3"
-      />
-      <div className="flex gap-2">
-        {/* Copy button — also saves the final version for tracking */}
-        <button
-          onClick={async () => {
-            await navigator.clipboard.writeText(emailEdited);
-            setEmailCopied(true);
-            setTimeout(() => setEmailCopied(false), 2000);
-
-            // Track what they actually sent vs the original draft
-            if (emailArtifactId) {
-              fetch("/api/update-artifact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  artifactId: emailArtifactId,
-                  finalText: emailEdited,
-                }),
-              });
-            }
-          }}
-          className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white
-            text-sm font-medium py-2 rounded-xl transition-colors"
-        >
-          {emailCopied ? "Copied!" : "Copy and use"}
-        </button>
-
-        {/* Regenerate button — clears draft and calls API again */}
-        <button
-          onClick={() => {
-            setEmailDraft(null);
-            generateEmail();
-          }}
-          className="px-4 border border-stone-300 text-stone-600 text-sm
-            rounded-xl hover:bg-stone-50"
-        >
-          Regenerate
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-                <button
-                  onClick={() => { setResult(null); setFile(null); setJobText(""); setFeedback(null); setFeedbackSent(false); }}
-                  className="w-full text-sm text-stone-500 hover:text-stone-800 py-2 rounded-lg hover:bg-stone-50 transition-colors border border-stone-200">
-                  ← Score another candidate
-                </button>
-              </div>
-            )}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>Legal</p>
+            <ul className="space-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
+              <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
+              <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
+              <li><a href="/cookie-policy" className="hover:underline">Cookie Policy</a></li>
+              <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
+              <li><a href="/complaints" className="hover:underline">Complaints</a></li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      {showUpgrade && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center">
-            <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🔒</span>
-            </div>
-            <h2 className="text-xl font-bold text-stone-900 mb-2">Free trial complete</h2>
-            <p className="text-stone-500 text-sm mb-6 leading-relaxed">
-              You&apos;ve used your 3 free analyses. Upgrade to continue screening candidates — plans from £149/month.
-            </p>
-            <div className="space-y-3">
-              <a href="YOUR-SOLO-STRIPE-LINK" className="block w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm transition-colors">
-                Solo plan — £149/month
-              </a>
-              <a href="YOUR-TEAM-STRIPE-LINK" className="block w-full border border-stone-300 text-stone-700 font-medium py-3 rounded-xl text-sm hover:bg-stone-50 transition-colors">
-                Team plan — £349/month
-              </a>
-            </div>
-            <button onClick={() => setShowUpgrade(false)} className="mt-4 text-xs text-stone-400 hover:text-stone-600">
-              Maybe later
-            </button>
+        <div className="border-t" style={{ borderColor: "var(--border)" }}>
+          <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
+            <a href="/login" className="text-[11px] hover:underline" style={{ color: "#8aaa9a" }}>Login</a>
           </div>
         </div>
-      )}
+      </footer>
     </main>
+    </>
   );
 }

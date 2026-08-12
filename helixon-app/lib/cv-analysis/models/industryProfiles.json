@@ -1,0 +1,21 @@
+{
+  "Finance":{
+    "preferred":[
+      "Azure",
+      "C#",
+      ".NET"
+    ]
+  },
+  "Healthcare":{
+    "preferred":[
+      "HL7",
+      "FHIR"
+    ]
+  },
+  "Retail":{
+    "preferred":[
+      "Commerce",
+      "Payments"
+    ]
+  }
+}

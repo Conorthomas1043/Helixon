@@ -1,0 +1,17 @@
+[
+  {
+    "field":"right_to_work",
+    "required":true,
+    "value":"yes"
+  },
+  {
+    "field":"security_clearance",
+    "required":false,
+    "value":"sc"
+  },
+  {
+    "field":"driving_licence",
+    "required":false,
+    "value":"full"
+  }
+]

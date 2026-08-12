@@ -1,26 +1,214 @@
+/* ── Google Fonts must come first, before @import "tailwindcss" ── */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 
+/* ── Design tokens ────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --forest:       #0b6e4f;
+  --forest-deep:  #08533c;
+  --mint:         #e8f3ee;
+  --gold:         #c08a2d;
+  --ink:          #13201b;
+  --mist:         #f3f6f4;
+  --bg:           #ffffff;
+  --border:       #e3e8e5;
+  --border-soft:  #edf0ee;
+
+  /* NEW — the one accent, reserved for score/verdict/live moments only.
+     Never used for nav, buttons, or decoration — that's what keeps it a signal. */
+  --signal:       #ff6b4a;
+  --signal-soft:  #fff1ec;
+
+  /* NEW — semantic score bands, so every component (ring, bars, badges)
+     reads the same three colours instead of each file picking its own. */
+  --score-strong: #0b6e4f;   /* was emerald-600 in CandidateResult */
+  --score-mid:    #b45309;   /* was amber-600 */
+  --score-low:    #c0392b;   /* was red-600 */
+
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-raise: 0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);
+  --radius-card:  14px;
+  --radius-btn:   10px;
+  --radius-input: 10px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Anchor targets clear the sticky nav */
+[id] { scroll-margin-top: 72px; }
+
+/* Skip link — visible only on keyboard focus */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 1rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-btn);
+  background: var(--forest);
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 1rem;
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
 }
 
+/* Reusable hover/focus states (avoids JS onMouseEnter on touch devices) */
+.nav-link {
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.nav-link:hover,
+.nav-link:focus-visible {
+  background: var(--mint);
+  outline: none;
+}
+
+.btn-forest {
+  background: var(--forest);
+  transition: background 0.15s ease;
+}
+.btn-forest:hover:not(:disabled),
+.btn-forest:focus-visible:not(:disabled) {
+  background: var(--forest-deep);
+}
+
+.btn-outline:hover,
+.btn-outline:focus-visible {
+  background: var(--mint);
+  outline: none;
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  background: var(--mist);
+  outline: none;
+}
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:  var(--bg);
+  color:       var(--ink);
+  font-family: var(--font-body);
+  font-size:   16px;
+  line-height: 1.6;
+}
+
+/* ── Card utility ─────────────────────────────────────────────────────────── */
+.card {
+  background:    var(--bg);
+  border:        1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow:    var(--shadow-card);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Signature element: scan sweep ───────────────────────────────────────────
+   Used on the score ring while a score is fresh/loading. One deliberate
+   motion moment tied to the product's actual job (scanning a CV), not
+   ambient decoration. Respects reduced-motion. */
+@keyframes scan-sweep {
+  0%   { transform: translateY(-130%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(130%); opacity: 0; }
+}
+.scan-sweep {
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 45%;
+  background: linear-gradient(180deg, transparent, rgba(255,107,74,0.18), transparent);
+  animation: scan-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-sweep { animation: none; display: none; }
+  .motion-safe-scale:hover { transform: none !important; }
+}
+
+/* ── Landing: scroll reveals & cookie banner ─────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+.cookie-banner[data-visible="true"] > div {
+  animation: cookie-slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes cookie-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cookie-banner[data-visible="true"] > div { animation: none; }
+}
+
+.landing-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
+}
+.landing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raise);
+}
+.landing-card--active {
+  border-color: var(--forest) !important;
+  box-shadow: 0 0 0 3px var(--mint), var(--shadow-raise);
+}
+
+.nav-link--active {
+  background: var(--mint);
+  color: var(--forest) !important;
+  font-weight: 600;
+}
+
+.sticky-mobile-cta {
+  animation: sticky-cta-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes sticky-cta-in {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticky-mobile-cta { animation: none; }
+  .landing-card:hover { transform: none; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot { animation: none; }
 }

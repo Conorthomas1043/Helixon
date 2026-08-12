@@ -1,0 +1,36 @@
+{
+  "javascript":[
+    "ecmascript",
+    "node",
+    "nodejs",
+    "node.js"
+  ],
+  "react":[
+    "reactjs",
+    "react.js",
+    "next",
+    "nextjs",
+    "redux"
+  ],
+  "aws":[
+    "lambda",
+    "ec2",
+    "ecs",
+    "s3",
+    "iam",
+    "cloudformation",
+    "cdk"
+  ],
+  "azure":[
+    "azure functions",
+    "aks",
+    "cosmos db"
+  ],
+  "docker":[
+    "containers",
+    "containerisation"
+  ],
+  "kubernetes":[
+    "k8s"
+  ]
+}

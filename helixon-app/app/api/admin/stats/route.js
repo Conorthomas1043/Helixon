@@ -1,9 +1,16 @@
 import { supabase } from "@/lib/supabase";
+import { getAdminSession } from "@/lib/admin-auth";
 
 export async function GET(request) {
   try {
+    // Accept EITHER a valid admin session cookie (new, used by the dashboard
+    // UI after login) OR the legacy x-admin-key header (kept for any other
+    // internal tooling that already calls this route directly).
+    const session = await getAdminSession();
     const adminKey = request.headers.get("x-admin-key");
-    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+    const keyValid = adminKey && adminKey === process.env.ADMIN_KEY;
+
+    if (!session && !keyValid) {
       return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
