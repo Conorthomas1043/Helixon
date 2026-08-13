@@ -1,4 +1,5 @@
 "use client";
+import { forwardRef } from "react";
 
 const BASE =
   "inline-flex items-center justify-center gap-2 font-semibold rounded-btn transition-colors duration-200 disabled:cursor-not-allowed disabled:bg-border disabled:text-ink/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2";
@@ -23,19 +24,27 @@ const SIZES = {
  * hover state is now a single Tailwind class, colors come from the
  * :root tokens in globals.css via the @theme mapping instead of hardcoded
  * hex/CSS-var strings.
+ *
+ * Wrapped in forwardRef so callers can attach a ref (e.g. the nav "Try now"
+ * button, which needs a ref for the trial modal's focus-return-on-close
+ * behavior) — without this, ref={...} on <Button> would silently no-op.
  */
-export default function Button({
-  as: Tag = "button",
-  variant = "primary",
-  size = "md",
-  loading = false,
-  disabled = false,
-  className = "",
-  children,
-  ...props
-}) {
+const Button = forwardRef(function Button(
+  {
+    as: Tag = "button",
+    variant = "primary",
+    size = "md",
+    loading = false,
+    disabled = false,
+    className = "",
+    children,
+    ...props
+  },
+  ref
+) {
   return (
     <Tag
+      ref={ref}
       className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
@@ -50,4 +59,6 @@ export default function Button({
       )}
     </Tag>
   );
-}
+});
+
+export default Button;

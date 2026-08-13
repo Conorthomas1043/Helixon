@@ -62,8 +62,18 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
             fontFamily: mono ? "var(--font-mono)" : "inherit",
             fontSize: mono ? "18px" : "14px",
             letterSpacing: mono ? "0.5em" : "normal",
-            padding: active ? `22px 14px 8px ${trailing ? "34px" : "14px"}` : `14px 14px 14px ${trailing ? "34px" : "14px"}`,
-            paddingLeft: mono ? "14px" : undefined,
+            // Fix — this used to mix the `padding` shorthand with a
+            // separate `paddingLeft` override for the same property,
+            // which React warns about (order of application to the DOM
+            // isn't guaranteed, so which one "wins" is undefined).
+            // Folded into a single shorthand instead. Also corrected the
+            // unfocused-state value order: it was putting the
+            // trailing-icon gap on the LEFT (`top right bottom left`
+            // order means the 4th value is left, not right), even though
+            // the icon renders on the right via `absolute right-3`.
+            padding: active
+              ? `22px 14px 8px ${trailing ? "34px" : "14px"}`
+              : `14px ${trailing ? "34px" : "14px"} 14px 14px`,
             transition: `padding 0.2s ${EASE}`,
           }}
         />

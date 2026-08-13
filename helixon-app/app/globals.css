@@ -15,6 +15,14 @@
   --border:       #e3e8e5;
   --border-soft:  #edf0ee;
 
+  /* NEW — secondary ink tones used for body copy / captions / faint labels.
+     These were previously hardcoded as literal hex in page.jsx (#5a7a6a,
+     #8aaa9a, #b0c4ba) in dozens of places — pulled out here so there's a
+     single source of truth, same pattern as --ink itself. */
+  --ink-soft:  #5a7a6a;  /* secondary body text */
+  --ink-faint: #8aaa9a;  /* captions, meta labels, placeholder-ish text */
+  --ink-mute:  #b0c4ba;  /* disabled states, very low-emphasis text */
+
   /* NEW — the one accent, reserved for score/verdict/live moments only.
      Never used for nav, buttons, or decoration — that's what keeps it a signal. */
   --signal:       #ff6b4a;
@@ -35,6 +43,58 @@
   --font-display: 'Fraunces', Georgia, serif;
   --font-body:    'Inter', system-ui, sans-serif;
   --font-mono:    'Geist Mono', monospace;
+}
+
+/* ── Tailwind v4 theme mapping ────────────────────────────────────────────
+   This block was MISSING before — that's why bg-forest, text-white,
+   rounded-btn, border-border, text-ink/60, font-display etc. in
+   Button.jsx / page.jsx rendered as nothing. Tailwind only generates a
+   utility class for a name it knows about; "forest", "ink", "btn" etc.
+   aren't in Tailwind's default palette, so those classes were silent no-ops.
+
+   This maps the :root tokens above onto Tailwind's theme so those utility
+   classes actually generate CSS. Color tokens reference :root directly
+   (safe, since the names differ — --color-forest vs --forest). Radius/
+   shadow/font values are duplicated literally rather than referenced,
+   because Tailwind requires the @theme property name to exactly match
+   the :root name for those specific tokens, and referencing an
+   identically-named property from within @theme creates a circular
+   definition that resolves to nothing. Keep these two blocks in sync
+   if you change a value. */
+@theme {
+  --color-forest:        var(--forest);
+  --color-forest-deep:   var(--forest-deep);
+  --color-mint:          var(--mint);
+  --color-gold:          var(--gold);
+  --color-ink:           var(--ink);
+  --color-ink-soft:      var(--ink-soft);
+  --color-ink-faint:     var(--ink-faint);
+  --color-ink-mute:      var(--ink-mute);
+  --color-mist:          var(--mist);
+  --color-border:        var(--border);
+  --color-border-soft:   var(--border-soft);
+  --color-signal:        var(--signal);
+  --color-signal-soft:   var(--signal-soft);
+  --color-score-strong:  var(--score-strong);
+  --color-score-mid:     var(--score-mid);
+  --color-score-low:     var(--score-low);
+
+  /* Literal duplicates — see note above. Keep in sync with :root. */
+  --radius-card:  14px;
+  --radius-btn:   10px;
+  --radius-input: 10px;
+
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-raise: 0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', monospace;
+
+  /* Micro type scale used for text-2xs/text-3xs on nav labels, badges, etc. */
+  --text-2xs: 0.6875rem;
+  --text-3xs: 0.5625rem;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
