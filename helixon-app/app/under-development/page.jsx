@@ -7,13 +7,28 @@ import { useRouter, useSearchParams } from "next/navigation";
 // what the visitor typed and reacts to the server's answer — there's
 // nothing to read out of the shipped JS anymore.
 
-const FUNNY_LINES = [
-  "Our CVs are being screened by an AI that judges *us* now.",
-  "The forest-green paint is still drying. Emotionally.",
-  "We swapped a bug for a slightly different bug.",
-  "Somewhere, a designer is arguing about 2px of padding.",
-  "Helixon is currently 91% match for 'ready', 9% match for 'not quite'.",
-];
+function DiggingScene() {
+  return (
+    <svg
+      viewBox="0 0 200 120"
+      width="152"
+      height="92"
+      aria-hidden="true"
+      style={{ display: "block", margin: "0 auto 20px" }}
+    >
+      <ellipse cx="100" cy="106" rx="70" ry="6" fill="var(--border)" opacity="0.5" />
+      <path d="M55 106 Q70 88 95 92 Q110 94 108 106 Z" fill="var(--mint)" />
+      <g className="dig-arm">
+        <circle cx="86" cy="58" r="9" fill="var(--forest)" />
+        <path d="M86 66 L82 90 M86 66 L94 90" stroke="var(--forest)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M78 72 L60 82" stroke="var(--forest)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M60 82 L52 62" stroke="var(--ink-soft)" strokeWidth="3" strokeLinecap="round" />
+        <path d="M46 58 L58 66" stroke="var(--ink-soft)" strokeWidth="3" strokeLinecap="round" />
+      </g>
+      <path d="M85 88 L100 84 M100 84 L102 92 M100 84 L92 90" stroke="var(--ink-faint)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function GateForm() {
   const router = useRouter();
@@ -25,9 +40,6 @@ function GateForm() {
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [funnyLine] = useState(
-    () => FUNNY_LINES[Math.floor(Math.random() * FUNNY_LINES.length)]
-  );
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -90,22 +102,18 @@ function GateForm() {
         }}
       />
 
-      {/* Floating "CVs" drifting in the background — a little visual joke
-          about a CV-screening product being the thing that's under
-          construction. Purely decorative, respects reduced motion. */}
+      {/* A few drifting specks of dust — quiet ambient motion, not a joke. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden sm:block">
         {[0, 1, 2, 3, 4].map((i) => (
           <span
             key={i}
-            className="drift-doc"
+            className="drift-dust"
             style={{
-              left: `${10 + i * 18}%`,
-              animationDelay: `${i * 1.4}s`,
-              animationDuration: `${9 + i}s`,
+              left: `${18 + i * 16}%`,
+              animationDelay: `${i * 1.6}s`,
+              animationDuration: `${7 + i}s`,
             }}
-          >
-            📄
-          </span>
+          />
         ))}
       </div>
 
@@ -151,37 +159,25 @@ function GateForm() {
                 className="text-[1.6rem] font-semibold tracking-tight mb-2"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
-                Match score: 100
+                You're in
               </h1>
               <p className="text-[13.5px]" style={{ color: "var(--ink-soft)" }}>
-                Correct password, zero red flags. Taking you in…
+                Taking you through now.
               </p>
             </>
           ) : (
             <>
-              <span
-                className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6"
-                style={{ background: "var(--mint)", color: "var(--forest)" }}
-              >
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                  <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M6 3.5v3l2 1.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
-                Screening in progress
-              </span>
+              <DiggingScene />
 
               <h1
                 className="text-[1.7rem] sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
-                We're mid-scan on ourselves
+                Under construction
               </h1>
 
-              <p className="text-[13.5px] leading-relaxed mb-1" style={{ color: "var(--ink-soft)" }}>
-                Helixon is getting some upgrades behind the scenes.
-              </p>
-              <p className="text-[12.5px] leading-relaxed mb-8 italic" style={{ color: "var(--ink-faint)" }}>
-                {funnyLine}
+              <p className="text-[13.5px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+                We're making some changes behind the scenes. If you have the password, you can get through now.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
@@ -200,7 +196,7 @@ function GateForm() {
                       setPassword(e.target.value);
                       if (error) setError("");
                     }}
-                    placeholder="The secret handshake"
+                    placeholder="Password"
                     autoComplete="off"
                     disabled={loading}
                     aria-invalid={error ? "true" : "false"}
@@ -238,7 +234,7 @@ function GateForm() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Scoring your guess…
+                      Checking…
                     </>
                   ) : (
                     "Unlock"
@@ -266,22 +262,35 @@ function GateForm() {
         }
         .pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        @keyframes driftAcross {
-          0%   { transform: translateY(110vh) rotate(-8deg); opacity: 0; }
-          8%   { opacity: 0.35; }
-          92%  { opacity: 0.35; }
-          100% { transform: translateY(-10vh) rotate(8deg); opacity: 0; }
+        @keyframes driftUp {
+          0%   { transform: translateY(100vh); opacity: 0; }
+          10%  { opacity: 0.25; }
+          90%  { opacity: 0.25; }
+          100% { transform: translateY(-5vh); opacity: 0; }
         }
-        .drift-doc {
+        .drift-dust {
           position: absolute;
           top: 0;
-          font-size: 22px;
-          animation-name: driftAcross;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: var(--ink-mute);
+          animation-name: driftUp;
           animation-timing-function: linear;
           animation-iteration-count: infinite;
         }
+
+        @keyframes digSwing {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(-6deg); }
+        }
+        .dig-arm {
+          transform-origin: 86px 58px;
+          animation: digSwing 1.8s ease-in-out infinite;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-          .drift-doc { animation: none; display: none; }
+          .drift-dust, .dig-arm { animation: none; display: none; }
           .pop-in { animation: none; }
         }
       `}</style>
