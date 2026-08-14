@@ -45,7 +45,7 @@ function CtaButtons({ align = "left" }) {
         </svg>
       </a>
       <a
-        href="/landing#pricing"
+        href="/pricing"
         className="inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3.5 rounded-[10px] transition-all"
         style={{ border: "1.5px solid var(--border)", color: "#13201b" }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")}
@@ -120,7 +120,7 @@ export default function AboutPage() {
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <a href="/landing" className="flex items-center gap-3 group" aria-label="Helixon home">
+          <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
             <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
               <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
                 <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
@@ -135,8 +135,8 @@ export default function AboutPage() {
           </a>
 
           <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
-            <a href="/landing#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>How it works</a>
-            <a href="/landing#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>Pricing</a>
+            <a href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>How it works</a>
+            <a href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>Pricing</a>
             <a href="/about" className="px-3 py-1.5 rounded-[8px] transition-colors font-semibold" style={{ color: "var(--forest)" }}>About</a>
             <a href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>Login</a>
           </div>
@@ -156,7 +156,7 @@ export default function AboutPage() {
         </div>
         {mobileNavOpen && (
           <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-            {[["How it works", "/landing#how"], ["Pricing", "/landing#pricing"], ["About", "/about"], ["Login", "/login"]].map(([label, href]) => (
+            {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["About", "/about"], ["Login", "/login"]].map(([label, href]) => (
               <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
             ))}
             <a href="/" onClick={() => setMobileNavOpen(false)} className="text-xs font-semibold px-2.5 py-2.5 rounded-[10px] mt-1 text-white text-center" style={{ background: "var(--forest)" }}>Try now</a>

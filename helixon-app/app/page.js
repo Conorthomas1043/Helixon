@@ -873,7 +873,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
               <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
               <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
-              <li><a href="/cookie-policy" className="hover:underline">Cookie Policy</a></li>
+              <li><a href="/CookiePolicy" className="hover:underline">Cookie Policy</a></li>
               <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
               <li><a href="/complaints" className="hover:underline">Complaints</a></li>
             </ul>

@@ -96,19 +96,19 @@ const CHANNELS = [
     title: "Sales & pricing",
     body: "Questions about Team plans, invoicing, or multi-seat access.",
     icon: <><path d="M3 3v18h18" /><path d="M7 14l4-4 3 3 5-6" /></>,
-    email: "sales@helixon.app",
+    email: "sales@helixon.co.uk",
   },
   {
     title: "Support",
     body: "Something not working, or a question about an existing analysis.",
     icon: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M12 16.5h.01" /></>,
-    email: "support@helixon.app",
+    email: "support@helixon.co.uk",
   },
   {
     title: "Everything else",
     body: "Partnerships, press, or anything that doesn't fit above.",
     icon: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
-    email: "hello@helixon.app",
+    email: "hello@helixon.co.uk",
   },
 ];
 

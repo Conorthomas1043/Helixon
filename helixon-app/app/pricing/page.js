@@ -333,8 +333,8 @@ export default function PricingPage() {
             Find them in seconds, not hours. Try Helixon free — no card needed.
           </p>
           <div className="flex justify-center">
-            <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
-              Try it now — it&apos;s free
+            <a href="/demo" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
+              Get a demo now
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
           </div>

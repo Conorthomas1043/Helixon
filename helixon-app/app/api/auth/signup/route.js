@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = "Helixon <noreply@helixon.co.uk>";
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,6 +15,15 @@ function isStrongPassword(pw) {
     /[0-9]/.test(pw) &&
     /[!@#$%^&*()\-_=+\[\]{};':",.<>?]/.test(pw)
   );
+}
+
+function escapeHtml(str = "") {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export async function POST(request) {
@@ -73,29 +84,21 @@ export async function POST(request) {
       throw new Error(agencyError.message);
     }
 
-    // ── Create the auth user via the anon-key SSR client, so Supabase
-    //    handles the confirmation email and sets the session cookie itself.
-    //    Pass ALL profile fields via user_metadata — a database trigger on
-    //    auth.users (see profile_trigger.sql) creates the profiles row
-    //    inside the same transaction, so there's no race condition between
-    //    signUp() completing and a separate service-role insert. ──────────
-    const cookieStore = await cookies();
-    const supabaseAuth = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          }
-        }
-      }
-    );
+    // ── Create the auth user via admin.generateLink() instead of the
+    //    anon-key signUp(). generateLink() creates the user (still
+    //    unconfirmed) AND returns the verification action link — but,
+    //    unlike signUp(), it does NOT trigger Supabase's own confirmation
+    //    email. That lets us send the email ourselves via Resend, in the
+    //    same branded template as the rest of the app, instead of
+    //    Supabase's default mailer/template.
+    //
+    //    The profile_trigger.sql trigger on auth.users still fires here
+    //    exactly as before, since generateLink() performs a real insert
+    //    into auth.users under the hood. ─────────────────────────────────
+    const redirectTo = new URL("/api/auth/verify", request.url).toString();
 
-    const { data: signUpData, error: signUpError } = await supabaseAuth.auth.signUp({
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: "signup",
       email,
       password,
       options: {
@@ -105,38 +108,66 @@ export async function POST(request) {
           username,
           agency_id: agency.id,
         },
+        redirectTo,
       },
     });
 
-    if (signUpError) {
+    if (linkError) {
       // Roll back the agency row so a failed signup doesn't leave orphan data
       await supabase.from("agencies").delete().eq("id", agency.id);
 
       // The trigger enforces the same unique username constraint — surface
       // that specific case with the same friendly message as before.
-      if (signUpError.message?.includes("duplicate key") && signUpError.message?.includes("username")) {
+      if (linkError.message?.includes("duplicate key") && linkError.message?.includes("username")) {
         return NextResponse.json({ ok: false, error: "That username is already taken." }, { status: 409 });
       }
-      return NextResponse.json({ ok: false, error: signUpError.message }, { status: 400 });
+      if (linkError.message?.toLowerCase().includes("already registered")) {
+        return NextResponse.json({ ok: false, error: "An account already exists for this email." }, { status: 409 });
+      }
+      return NextResponse.json({ ok: false, error: linkError.message }, { status: 400 });
     }
 
-    const user = signUpData?.user;
-    if (!user) {
+    const user = linkData?.user;
+    const verificationUrl = linkData?.properties?.action_link;
+
+    if (!user || !verificationUrl) {
       await supabase.from("agencies").delete().eq("id", agency.id);
       return NextResponse.json({ ok: false, error: "Signup failed. Please try again." }, { status: 500 });
     }
 
-    // If email confirmation is required, Supabase returns a user but no
-    // active session — signUpData.session will be null in that case.
-    // The frontend treats `!data.user` as "check your email"; since we
-    // always have `user` here, check session instead and surface the same
-    // UX signal by nulling `user` in the response when unconfirmed.
-    const emailConfirmationRequired = !signUpData.session;
+    // ── Send the verification email ourselves via Resend ───────────────────
+    if (process.env.RESEND_API_KEY) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: "Verify your Helixon account",
+          html: `
+            <p>Hi ${escapeHtml(firstName)},</p>
+            <p>Thanks for signing up for Helixon. Click the button below to verify your email and activate your account:</p>
+            <p style="margin: 24px 0;">
+              <a href="${verificationUrl}" style="background:#0b6e4f;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+                Verify email
+              </a>
+            </p>
+            <p>Or paste this link into your browser:</p>
+            <p style="word-break:break-all;color:#5a7a6a;">${verificationUrl}</p>
+            <p style="color:#8aaa9a;font-size:12px;">If you didn't create a Helixon account, you can ignore this email.</p>
+          `,
+        });
+      } catch (emailErr) {
+        // Don't fail the signup over a delivery hiccup — the account and
+        // agency both exist; a resend-verification flow can retry later.
+        console.error("[signup] Failed to send verification email:", emailErr);
+      }
+    } else {
+      console.error("[signup] RESEND_API_KEY is not set — verification email not sent.");
+    }
 
-    return NextResponse.json({
-      ok: true,
-      user: emailConfirmationRequired ? null : { id: user.id, email: user.email },
-    });
+    // generateLink() never returns an active session (unlike signUp()),
+    // so email confirmation is always required here — no session cookie
+    // to set. Frontend already treats `user: null` as "check your email".
+    return NextResponse.json({ ok: true, user: null });
   } catch (err) {
     console.error("[signup] Error:", err.message);
     return NextResponse.json({ ok: false, error: "Something went wrong. Please try again." }, { status: 500 });
