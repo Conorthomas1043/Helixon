@@ -33,8 +33,10 @@ export async function middleware(request: NextRequest) {
           ip, ua, method, path: pathname,
           ts: new Date().toISOString(),
           referer: request.headers.get("referer") || "",
-          country: request.geo?.country || "",
-          city: request.geo?.city || "",
+          // Fix — request.geo was removed from the Edge Runtime API;
+          // geolocation now comes through Vercel-injected headers instead.
+          country: request.headers.get("x-vercel-ip-country") || "",
+          city: request.headers.get("x-vercel-ip-city") || "",
         }),
       }
     );
@@ -53,8 +55,12 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // ── 3. NEW: Gate /analyze behind the trial-signup cookie ─────────────────
-  if (pathname.startsWith("/analyze") && !request.cookies.get("helixon_trial")) {
+  // ── 3. Gate /analyse behind the trial-signup cookie ───────────────────────
+  // Fix — was checking "/analyze" (US spelling); the actual route in this
+  // app is "/analyse" (see redirects in trial/verify/route.js and
+  // TrialGateModal's default fallback). The old spelling meant this gate
+  // never actually matched the real route.
+  if (pathname.startsWith("/analyse") && !request.cookies.get("helixon_trial")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
