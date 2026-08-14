@@ -10,22 +10,43 @@ import { useRouter, useSearchParams } from "next/navigation";
 function DiggingScene() {
   return (
     <svg
-      viewBox="0 0 200 120"
-      width="152"
-      height="92"
+      viewBox="0 0 200 130"
+      width="160"
+      height="104"
       aria-hidden="true"
       style={{ display: "block", margin: "0 auto 20px" }}
     >
-      <ellipse cx="100" cy="106" rx="70" ry="6" fill="var(--border)" opacity="0.5" />
-      <path d="M55 106 Q70 88 95 92 Q110 94 108 106 Z" fill="var(--mint)" />
-      <g className="dig-arm">
-        <circle cx="86" cy="58" r="9" fill="var(--forest)" />
-        <path d="M86 66 L82 90 M86 66 L94 90" stroke="var(--forest)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M78 72 L60 82" stroke="var(--forest)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M60 82 L52 62" stroke="var(--ink-soft)" strokeWidth="3" strokeLinecap="round" />
-        <path d="M46 58 L58 66" stroke="var(--ink-soft)" strokeWidth="3" strokeLinecap="round" />
+      {/* ground */}
+      <ellipse cx="100" cy="112" rx="72" ry="7" fill="var(--border)" opacity="0.6" />
+      {/* dirt mound */}
+      <path d="M60 112 Q78 92 104 98 Q122 101 118 112 Z" fill="var(--mint)" />
+
+      <g className="dig-figure">
+        {/* legs, bent in a digging crouch */}
+        <path d="M94 76 L88 108 L98 108 L101 84" fill="var(--forest)" />
+        <path d="M101 84 L112 106 L122 106 L107 76" fill="var(--forest)" />
+
+        {/* torso */}
+        <path d="M88 50 Q86 66 93 80 L109 80 Q114 65 110 48 Z" fill="var(--forest)" />
+
+        {/* back arm, reaching down to the shovel handle */}
+        <path d="M92 54 Q78 62 70 78" stroke="var(--forest)" strokeWidth="7" strokeLinecap="round" fill="none" />
+        {/* front arm, gripping higher on the handle */}
+        <path d="M106 52 Q92 58 78 68" stroke="var(--forest)" strokeWidth="7" strokeLinecap="round" fill="none" />
+
+        {/* head */}
+        <circle cx="100" cy="38" r="12" fill="var(--forest)" />
+
+        {/* hard hat */}
+        <path d="M87 34 Q100 18 113 34 Z" fill="var(--gold, #e0a72e)" />
+        <rect x="85" y="32" width="30" height="5" rx="2.5" fill="var(--gold, #e0a72e)" />
       </g>
-      <path d="M85 88 L100 84 M100 84 L102 92 M100 84 L92 90" stroke="var(--ink-faint)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+
+      {/* shovel */}
+      <g className="dig-shovel">
+        <line x1="70" y1="78" x2="54" y2="118" stroke="var(--ink-soft)" strokeWidth="4" strokeLinecap="round" />
+        <path d="M46 112 L62 112 L58 128 Q54 132 50 128 Z" fill="var(--ink-faint)" />
+      </g>
     </svg>
   );
 }
@@ -280,17 +301,25 @@ function GateForm() {
           animation-iteration-count: infinite;
         }
 
-        @keyframes digSwing {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(-6deg); }
+        @keyframes digBob {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-3px) rotate(-3deg); }
         }
-        .dig-arm {
-          transform-origin: 86px 58px;
-          animation: digSwing 1.8s ease-in-out infinite;
+        .dig-figure {
+          transform-origin: 100px 90px;
+          animation: digBob 1.6s ease-in-out infinite;
+        }
+        @keyframes shovelPoke {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(-3px, -4px) rotate(-8deg); }
+        }
+        .dig-shovel {
+          transform-origin: 70px 78px;
+          animation: shovelPoke 1.6s ease-in-out infinite;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .drift-dust, .dig-arm { animation: none; display: none; }
+          .drift-dust, .dig-figure, .dig-shovel { animation: none; display: none; }
           .pop-in { animation: none; }
         }
       `}</style>
