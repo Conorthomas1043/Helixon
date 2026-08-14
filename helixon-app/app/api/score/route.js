@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { scoreCandidate, extractCandidate, extractJob } from "@/lib/cv-analysis";
+import { scoreCandidate, candidateExtractor, jobExtractor } from "@/lib/cv-analysis";
 import { getScoreBand } from "@/lib/scoreBands";
 import { NextResponse } from "next/server";
 
@@ -7,6 +7,20 @@ import { NextResponse } from "next/server";
 //   jobs.is_saved   boolean  default false
 //   jobs.status     text     default 'open'
 //   scores.stage    text     default 'new'
+//
+// Fix: was importing non-existent `extractCandidate`/`extractJob` — the
+// real exports are `candidateExtractor`/`jobExtractor` (see
+// lib/cv-analysis/extraction/*.js). Also corrected the scoreCandidate
+// call: its real signature is (candidate, job, rawCV) — this was calling
+// it as (cvText, jobText, extracted, jobParsed), which doesn't match at
+// all. Now passes extracted candidate JSON, parsed job JSON, and the raw
+// CV text (previously dropped entirely, which weakens the
+// achievement/evidence scoring inside scoreCandidate).
+//
+// Same match_score/recommendation mapping fix as add-candidates/route.js
+// — scoreCandidate returns `overall`, not `match_score`, and has no
+// `recommendation` field right now. recommendation is left null pending
+// that being reinstated upstream.
 
 export async function POST(request) {
   try {
@@ -32,14 +46,13 @@ export async function POST(request) {
     // Feature 2 Part A: a closed job can still be re-scored against (e.g.
     // re-running an old candidate for record-keeping), but the frontend
     // should surface job.status so the recruiter knows it's closed.
-    const extracted = cand.extracted  || (await extractCandidate(cand.cv_text));
-    const jobParsed = job.parsed      || (await extractJob(job.job_text));
+    const extracted = cand.extracted  || (await candidateExtractor(cand.cv_text));
+    const jobParsed = job.parsed      || (await jobExtractor(job.job_text));
 
     const result = await scoreCandidate(
-      cand.cv_text,
-      job.job_text,
       extracted,
-      jobParsed
+      jobParsed,
+      cand.cv_text
     );
 
     // Feature 2 Part B: every new score starts at stage "new", independent
@@ -51,8 +64,8 @@ export async function POST(request) {
         agency_id:      agencyId,
         candidate_id:   candidateId,
         job_id:         jobId,
-        match_score:    result.match_score,
-        recommendation: result.recommendation,
+        match_score:    result.overall,
+        recommendation: result.recommendation ?? null,
         result,
         stage:          "new",
       })
@@ -65,7 +78,7 @@ export async function POST(request) {
       ok: true,
       score: data,
       // Feature 3: display band for this score, computed fresh — no schema change.
-      score_band: getScoreBand(result.match_score),
+      score_band: getScoreBand(result.overall),
       // Feature 1 & 2: job save-state/status alongside the score, so the
       // frontend can render both without a second call.
       job: {

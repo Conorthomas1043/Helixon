@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { analyseSingleCv } from "@/lib/cv-analysis";
+import { analyseCV } from "@/lib/cv-analysis";
 import { getScoreBand } from "@/lib/scoreBands";
 import { NextResponse } from "next/server";
 
@@ -7,6 +7,14 @@ import { NextResponse } from "next/server";
 // an existing jobId instead of new job text, so the recruiter just
 // uploads more CVs against a role they've already saved. Nothing about
 // the evidence-based scoring prompt changes — this only reuses job_text.
+//
+// Fix: was importing a non-existent `analyseSingleCv` — lib/cv-analysis
+// only ever exported `analyseCV` (see pipeline/analyseCV.js). Also,
+// scoreCandidate's real return shape has no `match_score`/`recommendation`
+// fields — it returns `overall` instead, and doesn't produce a
+// recommendation string at all right now. match_score is mapped from
+// `overall` below; recommendation is left null until that's reinstated
+// upstream in scoreCandidate (flagged, not silently invented here).
 
 const BATCH_SIZE = 5;
 
@@ -58,7 +66,7 @@ export async function POST(request, { params }) {
       const batchResults = await Promise.all(
         batch.map(async (file) => {
           const { cvText, extracted: ex, result } =
-            await analyseSingleCv(file, job.job_text);
+            await analyseCV(file, job.job_text);
 
           const { data: candidate, error: candError } = await supabase
             .from("candidates")
@@ -78,8 +86,8 @@ export async function POST(request, { params }) {
               agency_id:      agencyId,
               candidate_id:   candidate.id,
               job_id:         jobId,
-              match_score:    result.match_score,
-              recommendation: result.recommendation,
+              match_score:    result.overall,
+              recommendation: result.recommendation ?? null,
               result,
               stage:          "new",
               source:         "bulk",
@@ -94,7 +102,7 @@ export async function POST(request, { params }) {
             candidateId:  candidate.id,
             score_id:     scoreRow.id,
             stage:        scoreRow.stage,
-            score_band:   getScoreBand(result.match_score),
+            score_band:   getScoreBand(result.overall),
           };
         })
       );
@@ -102,7 +110,7 @@ export async function POST(request, { params }) {
       allResults.push(...batchResults);
     }
 
-    allResults.sort((a, b) => b.match_score - a.match_score);
+    allResults.sort((a, b) => b.overall - a.overall);
 
     return NextResponse.json({ ok: true, results: allResults, jobId });
 
