@@ -10,48 +10,47 @@ import { useRouter, useSearchParams } from "next/navigation";
 function DiggingScene() {
   return (
     <svg
-      viewBox="0 0 200 140"
+      viewBox="0 0 200 130"
       width="168"
-      height="118"
+      height="109"
       aria-hidden="true"
       style={{ display: "block", margin: "0 auto 20px" }}
     >
       {/* ground */}
-      <ellipse cx="98" cy="120" rx="80" ry="8" fill="var(--border)" opacity="0.6" />
+      <ellipse cx="100" cy="108" rx="66" ry="6" fill="var(--border)" opacity="0.6" />
       {/* dirt mound */}
-      <path d="M50 120 Q60 96 90 100 Q130 104 128 120 Z" fill="var(--mint)" />
+      <path d="M64 108 Q76 92 100 96 Q120 99 116 108 Z" fill="var(--mint)" />
 
-      <g className="dig-figure">
-        {/* back leg */}
-        <path d="M100 78 L94 112 L104 112 L108 84" fill="var(--forest)" />
-        {/* front leg */}
-        <path d="M108 84 L120 110 L131 108 L114 78" fill="var(--forest)" />
-
-        {/* torso, leaning forward */}
-        <path d="M92 48 Q88 64 96 82 L112 80 Q118 62 112 46 Z" fill="var(--forest)" />
-
-        {/* arms to shovel grip */}
-        <path d="M96 52 Q80 58 68 76" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" fill="none" />
-        <path d="M108 50 Q94 54 76 64" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" fill="none" />
-
-        {/* head */}
-        <circle cx="102" cy="36" r="12" fill="var(--forest)" />
-
-        {/* hard hat */}
-        <path d="M90 32 Q102 14 114 32 Z" fill="var(--gold, #e0a72e)" />
-        <rect x="87" y="30" width="30" height="6" rx="3" fill="var(--gold, #e0a72e)" />
+      <g
+        className="dig-figure"
+        stroke="var(--forest)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      >
+        <circle cx="104" cy="42" r="9" fill="var(--forest)" stroke="none" />
+        <path d="M104 51 L100 78" />
+        <path d="M100 78 L92 104" />
+        <path d="M100 78 L112 102" />
+        <path d="M101 58 L82 72" />
+        <path d="M103 56 L88 64" />
       </g>
+
+      {/* hard hat — thin outline, matches icon language elsewhere on the site */}
+      <path d="M95 36 Q104 24 113 36" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <line x1="93" y1="36" x2="115" y2="36" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" strokeLinecap="round" />
 
       {/* shovel */}
       <g className="dig-shovel">
-        <line x1="68" y1="76" x2="46" y2="118" stroke="var(--ink-soft)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M37 110 L55 110 L50 130 Q46 135 41 130 Z" fill="var(--ink-faint)" stroke="var(--ink-soft)" strokeWidth="1.5" />
+        <line x1="82" y1="72" x2="66" y2="106" stroke="var(--ink-soft)" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M60 100 L74 100 L70 114 Q66 118 62 114 Z" fill="none" stroke="var(--ink-soft)" strokeWidth="2.2" strokeLinejoin="round" />
       </g>
 
-      {/* flying dirt — three flecks looping on staggered timers */}
-      <circle className="dirt-fleck dirt-fleck-1" cx="42" cy="112" r="3" fill="var(--forest)" />
-      <circle className="dirt-fleck dirt-fleck-2" cx="42" cy="112" r="2.5" fill="var(--forest)" />
-      <circle className="dirt-fleck dirt-fleck-3" cx="42" cy="112" r="2" fill="var(--forest)" />
+      {/* flying dirt */}
+      <circle className="dirt-fleck dirt-fleck-1" cx="56" cy="98" r="2" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-2" cx="56" cy="98" r="1.6" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-3" cx="56" cy="98" r="1.3" fill="var(--forest)" />
     </svg>
   );
 }
