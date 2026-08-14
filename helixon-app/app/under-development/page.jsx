@@ -10,43 +10,48 @@ import { useRouter, useSearchParams } from "next/navigation";
 function DiggingScene() {
   return (
     <svg
-      viewBox="0 0 200 130"
-      width="160"
-      height="104"
+      viewBox="0 0 200 140"
+      width="168"
+      height="118"
       aria-hidden="true"
       style={{ display: "block", margin: "0 auto 20px" }}
     >
       {/* ground */}
-      <ellipse cx="100" cy="112" rx="72" ry="7" fill="var(--border)" opacity="0.6" />
+      <ellipse cx="98" cy="120" rx="80" ry="8" fill="var(--border)" opacity="0.6" />
       {/* dirt mound */}
-      <path d="M60 112 Q78 92 104 98 Q122 101 118 112 Z" fill="var(--mint)" />
+      <path d="M50 120 Q60 96 90 100 Q130 104 128 120 Z" fill="var(--mint)" />
 
       <g className="dig-figure">
-        {/* legs, bent in a digging crouch */}
-        <path d="M94 76 L88 108 L98 108 L101 84" fill="var(--forest)" />
-        <path d="M101 84 L112 106 L122 106 L107 76" fill="var(--forest)" />
+        {/* back leg */}
+        <path d="M100 78 L94 112 L104 112 L108 84" fill="var(--forest)" />
+        {/* front leg */}
+        <path d="M108 84 L120 110 L131 108 L114 78" fill="var(--forest)" />
 
-        {/* torso */}
-        <path d="M88 50 Q86 66 93 80 L109 80 Q114 65 110 48 Z" fill="var(--forest)" />
+        {/* torso, leaning forward */}
+        <path d="M92 48 Q88 64 96 82 L112 80 Q118 62 112 46 Z" fill="var(--forest)" />
 
-        {/* back arm, reaching down to the shovel handle */}
-        <path d="M92 54 Q78 62 70 78" stroke="var(--forest)" strokeWidth="7" strokeLinecap="round" fill="none" />
-        {/* front arm, gripping higher on the handle */}
-        <path d="M106 52 Q92 58 78 68" stroke="var(--forest)" strokeWidth="7" strokeLinecap="round" fill="none" />
+        {/* arms to shovel grip */}
+        <path d="M96 52 Q80 58 68 76" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" fill="none" />
+        <path d="M108 50 Q94 54 76 64" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" fill="none" />
 
         {/* head */}
-        <circle cx="100" cy="38" r="12" fill="var(--forest)" />
+        <circle cx="102" cy="36" r="12" fill="var(--forest)" />
 
         {/* hard hat */}
-        <path d="M87 34 Q100 18 113 34 Z" fill="var(--gold, #e0a72e)" />
-        <rect x="85" y="32" width="30" height="5" rx="2.5" fill="var(--gold, #e0a72e)" />
+        <path d="M90 32 Q102 14 114 32 Z" fill="var(--gold, #e0a72e)" />
+        <rect x="87" y="30" width="30" height="6" rx="3" fill="var(--gold, #e0a72e)" />
       </g>
 
       {/* shovel */}
       <g className="dig-shovel">
-        <line x1="70" y1="78" x2="54" y2="118" stroke="var(--ink-soft)" strokeWidth="4" strokeLinecap="round" />
-        <path d="M46 112 L62 112 L58 128 Q54 132 50 128 Z" fill="var(--ink-faint)" />
+        <line x1="68" y1="76" x2="46" y2="118" stroke="var(--ink-soft)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M37 110 L55 110 L50 130 Q46 135 41 130 Z" fill="var(--ink-faint)" stroke="var(--ink-soft)" strokeWidth="1.5" />
       </g>
+
+      {/* flying dirt — three flecks looping on staggered timers */}
+      <circle className="dirt-fleck dirt-fleck-1" cx="42" cy="112" r="3" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-2" cx="42" cy="112" r="2.5" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-3" cx="42" cy="112" r="2" fill="var(--forest)" />
     </svg>
   );
 }
@@ -314,12 +319,27 @@ function GateForm() {
           50% { transform: translate(-3px, -4px) rotate(-8deg); }
         }
         .dig-shovel {
-          transform-origin: 70px 78px;
+          transform-origin: 68px 76px;
           animation: shovelPoke 1.6s ease-in-out infinite;
         }
 
+        @keyframes flyDirt {
+          0%   { transform: translate(0, 0); opacity: 0; }
+          15%  { opacity: 1; }
+          100% { transform: translate(-34px, -46px); opacity: 0; }
+        }
+        .dirt-fleck {
+          animation-name: flyDirt;
+          animation-duration: 1.6s;
+          animation-timing-function: ease-out;
+          animation-iteration-count: infinite;
+        }
+        .dirt-fleck-1 { animation-delay: 0s; }
+        .dirt-fleck-2 { animation-delay: 0.35s; }
+        .dirt-fleck-3 { animation-delay: 0.7s; }
+
         @media (prefers-reduced-motion: reduce) {
-          .drift-dust, .dig-figure, .dig-shovel { animation: none; display: none; }
+          .drift-dust, .dig-figure, .dig-shovel, .dirt-fleck { animation: none; display: none; }
           .pop-in { animation: none; }
         }
       `}</style>
