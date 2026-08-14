@@ -17,40 +17,47 @@ function DiggingScene() {
       style={{ display: "block", margin: "0 auto 20px" }}
     >
       {/* ground */}
-      <ellipse cx="100" cy="108" rx="66" ry="6" fill="var(--border)" opacity="0.6" />
-      {/* dirt mound */}
-      <path d="M64 108 Q76 92 100 96 Q120 99 116 108 Z" fill="var(--mint)" />
+      <ellipse cx="100" cy="112" rx="66" ry="6" fill="var(--border)" opacity="0.6" />
+      {/* dirt mound (where the shovel is digging into) */}
+      <path d="M58 112 Q68 96 88 98 Q108 100 104 112 Z" fill="var(--mint)" />
 
+      {/* bent-over figure: head down, back arched over the mound, legs planted */}
       <g
         className="dig-figure"
         stroke="var(--forest)"
-        strokeWidth="2.2"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       >
-        <circle cx="104" cy="42" r="9" fill="var(--forest)" stroke="none" />
-        <path d="M104 51 L100 78" />
-        <path d="M100 78 L92 104" />
-        <path d="M100 78 L112 102" />
-        <path d="M101 58 L82 72" />
-        <path d="M103 56 L88 64" />
+        {/* head */}
+        <circle cx="122" cy="52" r="8.5" fill="var(--forest)" stroke="none" />
+        {/* spine, leaning forward over the mound */}
+        <path d="M117 59 Q104 70 92 78" />
+        {/* back leg, braced behind */}
+        <path d="M92 78 L100 104" />
+        {/* front leg, planted near the mound */}
+        <path d="M92 78 L80 106" />
+        {/* rear arm, tucked, hand near hip */}
+        <path d="M110 64 L118 74" />
+        {/* front arm, reaching down to grip the shovel handle */}
+        <path d="M106 61 L84 84" />
       </g>
 
       {/* hard hat — thin outline, matches icon language elsewhere on the site */}
-      <path d="M95 36 Q104 24 113 36" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      <line x1="93" y1="36" x2="115" y2="36" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M113 46 Q122 34 131 46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <line x1="111" y1="46" x2="133" y2="46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" strokeLinecap="round" />
 
-      {/* shovel */}
+      {/* shovel: handle from hand down to blade planted in the mound */}
       <g className="dig-shovel">
-        <line x1="82" y1="72" x2="66" y2="106" stroke="var(--ink-soft)" strokeWidth="2.2" strokeLinecap="round" />
-        <path d="M60 100 L74 100 L70 114 Q66 118 62 114 Z" fill="none" stroke="var(--ink-soft)" strokeWidth="2.2" strokeLinejoin="round" />
+        <line x1="84" y1="84" x2="70" y2="108" stroke="var(--ink-soft)" strokeWidth="2.4" strokeLinecap="round" />
+        <path d="M62 104 L78 104 L74 116 Q70 120 66 116 Z" fill="none" stroke="var(--ink-soft)" strokeWidth="2.4" strokeLinejoin="round" />
       </g>
 
-      {/* flying dirt */}
-      <circle className="dirt-fleck dirt-fleck-1" cx="56" cy="98" r="2" fill="var(--forest)" />
-      <circle className="dirt-fleck dirt-fleck-2" cx="56" cy="98" r="1.6" fill="var(--forest)" />
-      <circle className="dirt-fleck dirt-fleck-3" cx="56" cy="98" r="1.3" fill="var(--forest)" />
+      {/* flying dirt, kicked up from the blade */}
+      <circle className="dirt-fleck dirt-fleck-1" cx="66" cy="100" r="2" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-2" cx="66" cy="100" r="1.6" fill="var(--forest)" />
+      <circle className="dirt-fleck dirt-fleck-3" cx="66" cy="100" r="1.3" fill="var(--forest)" />
     </svg>
   );
 }
@@ -310,7 +317,7 @@ function GateForm() {
           50% { transform: translateY(-3px) rotate(-3deg); }
         }
         .dig-figure {
-          transform-origin: 100px 90px;
+          transform-origin: 92px 78px;
           animation: digBob 1.6s ease-in-out infinite;
         }
         @keyframes shovelPoke {
@@ -318,7 +325,7 @@ function GateForm() {
           50% { transform: translate(-3px, -4px) rotate(-8deg); }
         }
         .dig-shovel {
-          transform-origin: 68px 76px;
+          transform-origin: 72px 84px;
           animation: shovelPoke 1.6s ease-in-out infinite;
         }
 
