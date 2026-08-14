@@ -90,10 +90,6 @@ const DEMO_CANDIDATES = [
 
 const STAGES = ["Reading CV", "Parsing job description", "Analysing candidate fit", "Generating score"];
 
-// Fix — was hardcoding "#dc2626" here, which does NOT match the
-// --score-low token (#c0392b) defined in globals.css and used correctly
-// elsewhere (e.g. ChatWidget's text-score-low). Now references the
-// actual token so this can never drift out of sync again.
 function scoreColor(score) {
   if (score >= 80) return "var(--forest)";
   if (score >= 60) return "var(--score-mid)";
@@ -215,8 +211,6 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
   const [focused, setFocused] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Marketing consent must be an explicit opt-in (unchecked by default) —
-  // a pre-ticked box does not count as valid consent under UK GDPR/PECR.
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const dialogRef = useRef(null);
   const inputRef = useRef(null);
@@ -248,7 +242,6 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Basic focus trap: keep Tab/Shift+Tab cycling within the dialog while open.
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e) {
@@ -524,9 +517,6 @@ function BuyPlanButton({ plan, label, highlight }) {
         {loading ? "Redirecting…" : label}
       </button>
       {error && (
-        // Fix — was "#dc2626" (doesn't match any token) on non-highlight
-        // cards. Now uses var(--score-low), same token used everywhere
-        // else for error/negative states.
         <p role="alert" aria-live="polite" className="text-[11px] text-center" style={{ color: highlight ? "#fecaca" : "var(--score-low)" }}>
           {error}
         </p>
@@ -580,10 +570,6 @@ export default function LandingPage() {
   }, [mobileNavOpen]);
 
   useEffect(() => {
-    // Fix — nav dead-zone: this used to check `>= 768` while the mobile
-    // hamburger disappeared at `>= 640` (sm:hidden), so anything in
-    // between (640–767px) showed neither the desktop links nor the
-    // hamburger. Both sides now key off the same md (768px) breakpoint.
     const onResize = () => {
       if (window.innerWidth >= 768) setMobileNavOpen(false);
     };
@@ -647,6 +633,7 @@ export default function LandingPage() {
             <a href="#how" className="nav-link">How it works</a>
             <a href="#pricing" className="nav-link">Pricing</a>
             <Link href="/login" className="nav-link">Login</Link>
+            <Link href="/signup" className="nav-link">Sign up</Link>
           </div>
 
           <div className="flex items-center gap-2">
@@ -676,7 +663,7 @@ export default function LandingPage() {
         </div>
         {mobileNavOpen && (
           <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-            {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"]].map(([label, href]) => (
+            {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
               href.startsWith("/") ? (
                 <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
               ) : (
@@ -785,11 +772,6 @@ export default function LandingPage() {
               }}
             >
               {plan.highlight && (
-                // Fix #2 — was var(--signal, #f59e0b), the coral accent
-                // that globals.css explicitly reserves for score/verdict
-                // moments only ("never used for nav, buttons, or
-                // decoration"). Swapped to --gold, which exists in the
-                // theme specifically for this kind of decorative badge.
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--gold)", color: "white" }}>
                   MOST POPULAR
                 </span>
@@ -836,11 +818,12 @@ export default function LandingPage() {
           </p>
           <div className="flex justify-center">
             <Button
+              as="a"
+              href="/demo"
               variant="onForest"
-              onClick={openGate}
               className="motion-safe-scale hover:scale-[1.02] min-h-[48px]"
             >
-              Try it now — it&apos;s free
+              Get a demo
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </Button>
           </div>
