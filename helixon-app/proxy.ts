@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/site-gate";
 
 // Flip to false to go live again — routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
@@ -16,11 +17,20 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── 0. Maintenance gate — checked first, before anything else ────────────
+  // Fix: previously this only checked whether the helixon_dev_unlocked
+  // cookie was PRESENT. httpOnly stops JS from setting it, but it doesn't
+  // stop a visitor from opening devtools → Application → Cookies and
+  // typing the name/value in by hand — that's a plain text match with no
+  // secret involved, so anyone could "unlock" the site without ever
+  // knowing the password. The cookie now carries an HMAC signature
+  // (lib/site-gate.ts) that only the server can produce, so a hand-typed
+  // cookie fails verification and gets bounced back to the gate.
   if (
     DEV_MODE &&
     pathname !== "/under-development" &&
     !pathname.startsWith("/_next") &&
-    !pathname.startsWith("/api")
+    !pathname.startsWith("/api") &&
+    !(await verifyGateCookie(request.cookies.get(GATE_COOKIE_NAME)?.value))
   ) {
     return NextResponse.redirect(new URL("/under-development", request.url));
   }
@@ -78,4 +88,3 @@ export async function proxy(request: NextRequest) {
   response.headers.set("x-client-ip", ip);
   return response;
 }
-
