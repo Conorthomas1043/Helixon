@@ -1,5 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 
+// Flip to false to go live again — routes all page traffic to
+// /under-development while true, leaving /api and static assets alone.
+const DEV_MODE = true;
+
 const SKIP_LOG = ["/api/internal/", "/_next/", "/favicon", "/robots"];
 
 export const config = {
@@ -10,6 +14,17 @@ export const config = {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── 0. Maintenance gate — checked first, before anything else ────────────
+  if (
+    DEV_MODE &&
+    pathname !== "/under-development" &&
+    !pathname.startsWith("/_next") &&
+    !pathname.startsWith("/api")
+  ) {
+    return NextResponse.redirect(new URL("/under-development", request.url));
+  }
+
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
@@ -33,8 +48,6 @@ export async function proxy(request: NextRequest) {
           ip, ua, method, path: pathname,
           ts: new Date().toISOString(),
           referer: request.headers.get("referer") || "",
-          // Fix — request.geo was removed from the Edge Runtime API;
-          // geolocation now comes through Vercel-injected headers instead.
           country: request.headers.get("x-vercel-ip-country") || "",
           city: request.headers.get("x-vercel-ip-city") || "",
         }),
@@ -56,10 +69,6 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── 3. Gate /analyse behind the trial-signup cookie ───────────────────────
-  // Fix — was checking "/analyze" (US spelling); the actual route in this
-  // app is "/analyse" (see redirects in trial/verify/route.js and
-  // TrialGateModal's default fallback). The old spelling meant this gate
-  // never actually matched the real route.
   if (pathname.startsWith("/analyse") && !request.cookies.get("helixon_trial")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -69,3 +78,4 @@ export async function proxy(request: NextRequest) {
   response.headers.set("x-client-ip", ip);
   return response;
 }
+
