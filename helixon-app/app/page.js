@@ -770,12 +770,6 @@ export default function LandingPage() {
                 border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
                 boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
               }}
-            >
-              {plan.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--gold)", color: "white" }}>
-                  MOST POPULAR
-                </span>
-              )}
               <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
                 {plan.name}
               </h3>
