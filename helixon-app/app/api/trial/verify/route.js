@@ -50,7 +50,7 @@ export async function GET(req) {
     // see a scary "invalid link" message if they're already verified.
     // No welcome email here — it already went out the first time this
     // token was used, so a repeat click shouldn't fire a second one.
-    return NextResponse.redirect(`${origin}/analyse`);
+    return NextResponse.redirect(`${origin}/dashboard`);
   }
 
   if (new Date(verification.expires_at) < new Date()) {
@@ -80,7 +80,7 @@ export async function GET(req) {
         subject: "You're verified — your 3 free analyses are ready",
         react: WelcomeEmail({
           email: verification.email,
-          analyseUrl: `${origin}/analyse`,
+          analyseUrl: `${origin}/dashboard`,
         }),
       })
       .catch((err) => {
@@ -90,7 +90,7 @@ export async function GET(req) {
     console.error("[trial/verify] Skipped welcome email — RESEND_API_KEY not configured.");
   }
 
-  const res = NextResponse.redirect(`${origin}/analyse`);
+  const res = NextResponse.redirect(`${origin}/dashboard`);
 
   // This is the ONLY place the real access cookie gets set now —
   // moved here from trial/start, so access requires having actually

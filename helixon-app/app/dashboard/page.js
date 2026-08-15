@@ -1,94 +1,81 @@
 "use client";
-
-import { useState, useEffect, useRef } from "react";
-
-const AGENCY_ID = "YOUR-SEED-AGENCY-ID"; // replace with real auth later
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Shared app nav — same shell as the landing page's <nav>, extended with
-// product links (Scoring / Dashboard) and an account menu.
+// Agency dashboard — lands here after email verification. Same nav/footer/
+// tokens as the landing page, but authenticated (no "Try now" CTA).
+//
+// NOTE: this is scaffolded with placeholder data + fetch stubs. Swap the
+// `fetchDashboardData()` stub for a real API route (e.g. GET /api/agency/me)
+// once you have one — it currently returns mock data so the page renders.
 // ═══════════════════════════════════════════════════════════════════════════
-function AppNav({ active }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, []);
-
-  const navLink = (label, href, key) => (
-    <a
-      key={key}
-      href={href}
-      className="px-3 py-1.5 rounded-[8px] transition-colors"
-      style={{ color: active === key ? "#13201b" : "#5a7a6a", background: active === key ? "var(--mint)" : "transparent", fontWeight: active === key ? 600 : 500 }}
-      onMouseEnter={(e) => { if (active !== key) e.currentTarget.style.background = "var(--mint)"; }}
-      onMouseLeave={(e) => { if (active !== key) e.currentTarget.style.background = "transparent"; }}
-    >
-      {label}
-    </a>
+async function fetchDashboardData() {
+  // TODO: replace with a real call, e.g.:
+  // const res = await fetch("/api/agency/me");
+  // if (!res.ok) throw new Error("Failed to load dashboard");
+  // return res.json();
+  return new Promise((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          agencyName: "Your Agency",
+          email: "you@example.com",
+          plan: "trial",
+          analysesUsed: 0,
+          analysesLimit: 3,
+          recentAnalyses: [],
+        }),
+      300
+    )
   );
+}
 
+function DashboardNav({ email }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
       <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-              </svg>
-            </div>
-            <span className="text-sm font-semibold tracking-tight hidden sm:block" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-          </a>
-          <div className="hidden sm:flex items-center gap-1 text-xs">
-            {navLink("Scoring", "/", "scoring")}
-            {navLink("Dashboard", "/dashboard", "dashboard")}
+        <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
+          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
+            <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
+              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
+              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+              <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
+            </svg>
           </div>
+          <span className="flex flex-col leading-none">
+            <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
+            <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+          </span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+          <Link href="/dashboard" className="px-3 py-1.5 rounded-[8px]" style={{ background: "var(--mint)", color: "var(--forest)", fontWeight: 600 }}>Dashboard</Link>
+          <Link href="/analyse" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>New analysis</Link>
+          <Link href="/contact" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>Contact</Link>
         </div>
 
-        <div className="relative" ref={menuRef}>
+        <div className="relative flex items-center gap-2">
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            aria-haspopup="menu"
-            className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors"
+            aria-label="Account menu"
+            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors"
             style={{ border: "1px solid var(--border)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <span className="w-7 h-7 rounded-full text-white text-xs font-semibold flex items-center justify-center" style={{ background: "var(--forest)" }}>
-              AV
-            </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8aaa9a" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
+              {(email || "?").charAt(0).toUpperCase()}
+            </div>
+            <span className="text-[11px] font-medium hidden sm:block" style={{ color: "#13201b" }}>{email}</span>
           </button>
-
           {menuOpen && (
-            <div role="menu" className="absolute right-0 mt-2 w-52 rounded-[14px] py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
-              <div className="px-3.5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
-                <p className="text-sm font-medium truncate" style={{ color: "#13201b" }}>Acme Recruiting</p>
-                <p className="text-xs truncate" style={{ color: "#8aaa9a" }}>agency@acme.com</p>
-              </div>
-              <a href="/account" role="menuitem" className="block px-3.5 py-2 text-sm" style={{ color: "#5a7a6a" }} onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                Account settings
-              </a>
-              <a href="/billing" role="menuitem" className="block px-3.5 py-2 text-sm" style={{ color: "#5a7a6a" }} onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                Billing
-              </a>
-              <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
-                <a href="/logout" role="menuitem" className="block px-3.5 py-2 text-sm" style={{ color: "#dc2626" }} onMouseEnter={(e) => (e.currentTarget.style.background = "#fef2f2")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                  Log out
-                </a>
-              </div>
+            <div className="absolute right-0 top-[calc(100%+8px)] w-44 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+              <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
+              <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
+              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#b91c1c" }}>Log out</a>
             </div>
           )}
         </div>
@@ -97,267 +84,159 @@ function AppNav({ active }) {
   );
 }
 
-// ── Small icon set (inline, matches the landing page's line-icon style) ──
-const ICONS = {
-  analyses: <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
-  all_time: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></>,
-  candidates: <><circle cx="9" cy="8" r="3" /><path d="M2.5 20a6.5 6.5 0 0113 0" /><path d="M16 8.5a3 3 0 110 6" /><path d="M17.5 14.5c2.5.5 4 2 4 5.5" /></>,
-  accuracy: <path d="M4 6l1.5 1.5L8 4M4 12l1.5 1.5L8 10M4 18l1.5 1.5L8 16M12 6h8M12 12h8M12 18h8" />,
-  strong: <><path d="M12 2l2.6 6.2L21 9l-5 4.5L17.4 21 12 17.6 6.6 21 8 13.5 3 9l6.4-.8z" /></>,
-  review: <><circle cx="12" cy="12" r="9" /><path d="M12 8v4l2.5 1.5" /></>,
-  summaries: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
-  emails: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
-};
-
-function MetricCardSkeleton() {
+function StatCard({ label, value, sub }) {
   return (
-    <div className="rounded-[14px] p-5 animate-pulse" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="w-8 h-8 rounded-[9px] mb-4" style={{ background: "var(--mist)" }} />
-      <div className="h-6 w-16 rounded" style={{ background: "var(--border)" }} />
-      <div className="h-2.5 w-24 rounded mt-3" style={{ background: "var(--mist)" }} />
+    <div className="rounded-[14px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>{label}</p>
+      <p className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "#13201b" }}>{value}</p>
+      {sub && <p className="text-[11px] mt-1" style={{ color: "#5a7a6a" }}>{sub}</p>}
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyAnalyses() {
   return (
-    <div className="rounded-[16px] py-16 px-6 text-center" style={{ background: "white", border: "1.5px dashed var(--border)" }}>
-      <div className="w-12 h-12 rounded-[12px] flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.6" strokeLinecap="round">
-          {ICONS.analyses}
+    <div className="rounded-[16px] p-10 text-center" style={{ background: "white", border: "1px dashed var(--border)" }}>
+      <div className="w-11 h-11 rounded-[12px] flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
         </svg>
       </div>
-      <h2 className="font-semibold mb-1.5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>No analyses yet</h2>
-      <p className="text-sm max-w-xs mx-auto mb-6" style={{ color: "#5a7a6a" }}>
-        Run your first CV against a job description and your analytics will show up here.
+      <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#13201b" }}>No analyses yet</h3>
+      <p className="text-xs max-w-xs mx-auto mb-5" style={{ color: "#5a7a6a" }}>
+        Upload your first CV against a job spec to see a match score, standout factors, and a ready-to-send email.
       </p>
-      <a
-        href="/"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold px-5 py-3 rounded-[10px] text-white transition-transform hover:scale-[1.02]"
-        style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
+      <Link
+        href="/analyse"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-[10px] text-white"
+        style={{ background: "var(--forest)" }}
       >
-        Score your first CV
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-      </a>
+        Run your first analysis
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </Link>
     </div>
   );
 }
 
-function StatCard({ label, value, icon, accent }) {
+function scoreColor(score) {
+  if (score >= 80) return "var(--forest)";
+  if (score >= 60) return "#c9922e";
+  return "#c0392b";
+}
+
+function AnalysesList({ items }) {
   return (
-    <div
-      className="rounded-[14px] p-5 transition-transform hover:-translate-y-0.5"
-      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}
-    >
-      <div className="w-8 h-8 rounded-[9px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={accent || "var(--forest)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          {icon}
-        </svg>
-      </div>
-      <div className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "#13201b" }}>{value ?? 0}</div>
-      <div className="text-[10px] font-medium uppercase tracking-wide mt-1.5" style={{ color: "#8aaa9a" }}>{label}</div>
+    <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+      {items.map((a, i) => (
+        <Link
+          key={a.id}
+          href={`/analyse/${a.id}`}
+          className="flex items-center gap-4 px-5 py-4 transition-colors"
+          style={{ borderBottom: i < items.length - 1 ? "1px solid var(--border)" : "none" }}
+        >
+          <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold truncate" style={{ color: "#13201b" }}>{a.candidateName}</p>
+            <p className="text-[11px]" style={{ color: "#8aaa9a" }}>vs {a.role} · {a.createdAt}</p>
+          </div>
+          <span className="text-lg font-semibold shrink-0" style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}>{a.score}</span>
+        </Link>
+      ))}
     </div>
   );
 }
 
-export default function Dashboard() {
+export default function AgencyDashboardPage() {
   const [data, setData] = useState(null);
-  const [days, setDays] = useState(30);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    load();
-  }, [days]);
+    let cancelled = false;
+    fetchDashboardData()
+      .then((d) => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setError("Couldn't load your dashboard. Please refresh."); });
+    return () => { cancelled = true; };
+  }, []);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/analytics?agencyId=${AGENCY_ID}&days=${days}`);
-      let json;
-      try {
-        json = await res.json();
-      } catch {
-        throw new Error(`Server returned an unexpected response (status ${res.status}).`);
-      }
-      if (!res.ok || !json.ok) {
-        throw new Error(json?.error || `Couldn't load analytics (status ${res.status}).`);
-      }
-      setData(json.analytics);
-    } catch (err) {
-      setError(err.message || "Network error. Please check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function exportCSV() {
-    if (!data?.time_series) return;
-    const rows = [
-      "Date,Analyses,Avg Score",
-      ...data.time_series.map((r) => `${r.date},${r.count},${r.avg}`),
-    ].join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([rows], { type: "text/csv" }));
-    a.download = `helixon-${days}days.csv`;
-    a.click();
-  }
-
-  const metrics = data
-    ? [
-        { label: "Analyses (period)", value: data.totals.period, icon: ICONS.analyses },
-        { label: "All time analyses", value: data.totals.all_time, icon: ICONS.all_time },
-        { label: "Candidates", value: data.totals.candidates, icon: ICONS.candidates },
-        { label: "Accuracy rate", value: data.accuracy.rate !== null ? `${data.accuracy.rate}%` : "No feedback", icon: ICONS.accuracy },
-        { label: "Strong matches", value: data.recommendations["Strong match"], icon: ICONS.strong, accent: "var(--forest)" },
-        { label: "Worth reviewing", value: data.recommendations["Worth reviewing"], icon: ICONS.review, accent: "#b45309" },
-        { label: "Summaries", value: data.totals.summaries, icon: ICONS.summaries },
-        { label: "Emails drafted", value: data.totals.emails, icon: ICONS.emails },
-      ]
-    : [];
-
-  const isEmpty = data && data.totals.all_time === 0;
-  const rangeLabel = { 7: "last 7 days", 30: "last 30 days", 90: "last 90 days" }[days];
+  const used = data?.analysesUsed ?? 0;
+  const limit = data?.analysesLimit ?? 3;
+  const remaining = Math.max(limit - used, 0);
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-      <AppNav active="dashboard" />
+      <DashboardNav email={data?.email} />
 
-      {/* ── Page header — echoes the landing hero's eyebrow + heading rhythm ── */}
-      <section className="max-w-[1100px] mx-auto px-6 pt-12 pb-6">
-        <div className="flex items-end justify-between gap-4 flex-wrap">
+      <section className="max-w-[1100px] mx-auto px-6 pt-12 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-4" style={{ background: "var(--mint)", color: "var(--forest)" }}>
-              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: "var(--forest)" }} />
-              {loading ? "Loading overview…" : `Showing ${rangeLabel}`}
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
-              Your screening, at a glance.
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>
+              {data?.plan === "trial" ? "Free trial" : data?.plan || "\u00A0"}
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+              {data ? `Welcome back${data.agencyName ? `, ${data.agencyName}` : ""}` : "Loading your dashboard…"}
             </h1>
           </div>
-
-          <div className="flex items-center gap-2.5">
-            <select
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
-              aria-label="Date range"
-              disabled={loading}
-              className="text-xs font-medium rounded-[10px] px-3 py-3 disabled:opacity-50 focus:outline-none"
-              style={{ border: "1px solid var(--border)", color: "#13201b", background: "white" }}
-            >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-            <button
-              onClick={exportCSV}
-              disabled={!data?.time_series?.length}
-              className="text-xs font-semibold px-4 py-3 rounded-[10px] transition-colors disabled:opacity-40 whitespace-nowrap"
-              style={{ border: "1px solid var(--border)", color: "#5a7a6a", background: "white" }}
-              onMouseEnter={(e) => { if (data?.time_series?.length) e.currentTarget.style.background = "var(--mint)"; }}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
-            >
-              Export CSV
-            </button>
-          </div>
+          <Link
+            href="/analyse"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-3 rounded-[10px] text-white shrink-0"
+            style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
+          >
+            New analysis
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </Link>
         </div>
       </section>
 
-      <div className="max-w-[1100px] mx-auto px-6 pb-20">
-
-        {error && (
-          <div role="alert" className="mb-6 flex items-start justify-between gap-4 p-4 rounded-[14px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-            <div className="flex items-start gap-3">
-              <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
-              <p className="text-sm" style={{ color: "#b91c1c" }}>{error}</p>
-            </div>
-            <button onClick={load} className="text-sm font-semibold whitespace-nowrap hover:underline" style={{ color: "#b91c1c" }}>
-              Retry
-            </button>
+      {error && (
+        <section className="max-w-[1100px] mx-auto px-6 pb-4">
+          <div role="alert" className="flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+            <p className="text-xs" style={{ color: "#b91c1c" }}>{error}</p>
           </div>
-        )}
+        </section>
+      )}
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <MetricCardSkeleton key={i} />)}
+      <section className="max-w-[1100px] mx-auto px-6 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard label="Analyses used" value={data ? used : "—"} sub={data ? `of ${limit} on your plan` : undefined} />
+          <StatCard label="Remaining" value={data ? remaining : "—"} sub={data?.plan === "trial" ? "on your free trial" : undefined} />
+          <StatCard label="Plan" value={data ? (data.plan === "trial" ? "Free" : data.plan) : "—"} sub={data?.plan === "trial" ? "Upgrade anytime" : undefined} />
+        </div>
+      </section>
+
+      <section className="max-w-[1100px] mx-auto px-6 pb-24">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold" style={{ color: "#13201b" }}>Recent analyses</h2>
+          {data?.recentAnalyses?.length > 0 && (
+            <Link href="/analyse/history" className="text-xs font-semibold" style={{ color: "var(--forest)" }}>View all</Link>
+          )}
+        </div>
+        {!data ? (
+          <div className="rounded-[16px] p-10 text-center" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <p className="text-xs" style={{ color: "#5a7a6a" }}>Loading…</p>
           </div>
-        ) : isEmpty ? (
-          <EmptyState />
-        ) : data && (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {metrics.map((m) => <StatCard key={m.label} {...m} />)}
-            </div>
-
-            {data.time_series.length > 0 && (
-              <div className="rounded-[16px] p-6 mb-6" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-sm font-semibold" style={{ color: "#13201b" }}>Analyses over time</h2>
-                  <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "#8aaa9a" }}>{rangeLabel}</span>
-                </div>
-                <div className="flex items-end gap-1 h-28">
-                  {data.time_series.map((day, i) => {
-                    const max = Math.max(...data.time_series.map((d) => d.count), 1);
-                    const heightPct = Math.max((day.count / max) * 100, 3);
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center group relative">
-                        <div
-                          className="w-full rounded-[3px] transition-colors"
-                          style={{ height: `${heightPct}%`, background: "var(--forest)" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}
-                        />
-                        <span className="pointer-events-none absolute bottom-full mb-1.5 hidden group-hover:block whitespace-nowrap text-white text-[10px] px-2 py-1 rounded-[6px]" style={{ background: "#13201b" }}>
-                          {day.date}: {day.count} analyses
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex justify-between mt-3">
-                  <span className="text-[10px]" style={{ color: "#8aaa9a" }}>{data.time_series[0]?.date}</span>
-                  <span className="text-[10px]" style={{ color: "#8aaa9a" }}>{data.time_series[data.time_series.length - 1]?.date}</span>
-                </div>
-              </div>
-            )}
-
-            {data.top_roles.length > 0 && (
-              <div className="rounded-[16px] p-6" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
-                <h2 className="text-sm font-semibold mb-5" style={{ color: "#13201b" }}>Most screened roles</h2>
-                <div className="space-y-3.5">
-                  {data.top_roles.map((role, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span
-                          className="text-[10px] font-bold w-5 h-5 rounded-full shrink-0 flex items-center justify-center"
-                          style={{ background: i === 0 ? "var(--mint)" : "var(--mist)", color: i === 0 ? "var(--forest)" : "#8aaa9a" }}
-                        >
-                          {i + 1}
-                        </span>
-                        <span className="text-sm font-medium truncate" style={{ color: "#13201b" }}>{role.title}</span>
-                      </div>
-                      <div className="flex items-center gap-4 shrink-0">
-                        <span className="text-[11px]" style={{ color: "#8aaa9a" }}>{role.count} CVs</span>
-                        <span
-                          className="text-sm font-semibold"
-                          style={{ fontFamily: "var(--font-mono)", color: role.avg >= 70 ? "var(--forest)" : role.avg >= 50 ? "#b45309" : "#dc2626" }}
-                        >
-                          avg {role.avg}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+        ) : data.recentAnalyses.length === 0 ? (
+          <EmptyAnalyses />
+        ) : (
+          <AnalysesList items={data.recentAnalyses} />
         )}
-      </div>
+      </section>
+
+      <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+        <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
+          <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
+            <Link href="/faq">FAQ</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/privacy">Privacy</Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

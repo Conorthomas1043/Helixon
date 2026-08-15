@@ -112,10 +112,18 @@ const CHANNELS = [
   },
 ];
 
+// Topic select — value IS the destination inbox, so the form and the API
+// route (TOPIC_ROUTING) always agree with no separate label-to-email mapping.
+const TOPICS = [
+  "support@helixon.co.uk",
+  "sales@helixon.co.uk",
+  "hello@helixon.co.uk",
+];
+
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [topic, setTopic] = useState("Support");
+  const [topic, setTopic] = useState(TOPICS[0]);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -131,10 +139,13 @@ export default function ContactPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, topic, message }),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || "Couldn't send your message.");
+      }
       setSent(true);
-    } catch {
-      setError("Couldn't send your message — please try again, or email us directly below.");
+    } catch (err) {
+      setError(err.message || "Couldn't send your message — please try again, or email us directly below.");
     } finally {
       setSending(false);
     }
@@ -216,15 +227,28 @@ export default function ContactPage() {
 
                 <div>
                   <label htmlFor="topic" className="block text-xs font-semibold mb-1.5" style={{ color: "#13201b" }}>Topic</label>
-                  <select
-                    id="topic" value={topic} onChange={(e) => setTopic(e.target.value)}
-                    style={inputStyle} className="focus:outline-none transition-shadow"
-                    onFocus={inputFocus} onBlur={inputBlur}
-                  >
-                    <option>Support</option>
-                    <option>Sales & pricing</option>
-                    <option>Something else</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="topic"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      style={{ ...inputStyle, appearance: "none", paddingRight: "36px", cursor: "pointer" }}
+                      className="focus:outline-none transition-shadow"
+                      onFocus={inputFocus}
+                      onBlur={inputBlur}
+                    >
+                      {TOPICS.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                    <svg
+                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a7a6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ right: "14px" }}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
                 </div>
 
                 <div>

@@ -1,4 +1,4 @@
-import { Body, Container, Head, Heading, Html, Img, Link, Preview, Section, Text, Row, Column } from "@react-email/components";
+import { Body, Container, Head, Heading, Html, Link, Preview, Section, Text, Row, Column } from "@react-email/components";
 
 const COLORS = {
   forest: "#0b6e4f",
@@ -15,8 +15,6 @@ const COLORS = {
 };
 const FONT_DISPLAY = "Georgia, 'Times New Roman', serif";
 const FONT_BODY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
-
-const LOGO_URL = `${process.env.NEXT_PUBLIC_SITE_URL || "https://helixon.co.uk"}/logo-mark.png`;
 
 // Small reusable "step" row for the "how it works" mini-recap —
 // mirrors the numbered 1/2/3 cards in the "How it works" section
@@ -53,8 +51,6 @@ function StepRow({ number, title, body }) {
 }
 
 export default function WelcomeEmail({ email = "there", analyseUrl }) {
-  const firstName = email && email.includes("@") ? "" : email;
-
   return (
     <Html>
       <Head />
@@ -70,20 +66,33 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             overflow: "hidden",
           }}
         >
-          {/* ── Logo ── */}
+          {/* ── Logo — same nested-table mark as VerifyEmail (two bars +
+              signal dot on a forest square). Drawn with tables rather
+              than an <Img>, so it never depends on an externally-hosted
+              asset existing or NEXT_PUBLIC_SITE_URL being set correctly —
+              renders identically to VerifyEmail in every client. ── */}
           <Section style={{ padding: "32px 32px 0" }}>
             <Row>
               <Column>
                 <table role="presentation" cellPadding="0" cellSpacing="0">
                   <tr>
-                    <td style={{ verticalAlign: "middle" }}>
-                      <Img
-                        src={LOGO_URL}
-                        width="32"
-                        height="32"
-                        alt="Helixon"
-                        style={{ borderRadius: "9px", display: "block" }}
-                      />
+                    <td style={{ width: "32px", height: "32px", borderRadius: "9px", backgroundColor: COLORS.forest, textAlign: "center", verticalAlign: "middle" }}>
+                      <table role="presentation" cellPadding="0" cellSpacing="0" width="32" height="32">
+                        <tr>
+                          <td style={{ position: "relative", width: "32px", height: "32px" }}>
+                            <table role="presentation" cellPadding="0" cellSpacing="0" style={{ margin: "9px auto 0" }}>
+                              <tr>
+                                <td style={{ width: "16px", height: "4px", borderRadius: "2px", backgroundColor: "rgba(255,255,255,0.55)" }} />
+                              </tr>
+                            </table>
+                            <table role="presentation" cellPadding="0" cellSpacing="0" style={{ margin: "2px auto 0" }}>
+                              <tr>
+                                <td style={{ width: "16px", height: "4px", borderRadius: "2px", backgroundColor: "#ffffff" }} />
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
                     </td>
                     <td style={{ paddingLeft: "10px", verticalAlign: "middle" }}>
                       <span style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: "15px", color: COLORS.ink }}>Helixon</span>
