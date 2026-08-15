@@ -608,282 +608,282 @@ export default function LandingPage() {
     <>
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <CookieConsentBanner />
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
-      <TrialGateModal open={gateOpen} onClose={closeGate} returnFocusRef={gateReturnFocusRef} />
+        <TrialGateModal open={gateOpen} onClose={closeGate} returnFocusRef={gateReturnFocusRef} />
 
-      {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
-        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-              </svg>
-            </div>
-            <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-            <a href="#how" className="nav-link">How it works</a>
-            <a href="#pricing" className="nav-link">Pricing</a>
-            <Link href="/login" className="nav-link">Login</Link>
-            <Link href="/signup" className="nav-link">Sign up</Link>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              ref={trialTriggerRef}
-              variant="primary"
-              size="sm"
-              onClick={openGate}
-              className="hidden md:inline-flex min-h-[36px]"
-            >
-              Try now
-            </Button>
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(v => !v)}
-              aria-expanded={mobileNavOpen}
-              aria-controls="mobile-nav"
-              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-              className="md:hidden w-10 h-10 rounded-[8px] flex items-center justify-center"
-              style={{ color: "var(--ink)" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-              </svg>
-            </button>
-          </div>
-        </div>
-        {mobileNavOpen && (
-          <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-            {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
-              href.startsWith("/") ? (
-                <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
-              ) : (
-                <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</a>
-              )
-            ))}
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={(e) => { setMobileNavOpen(false); openGate(e); }}
-              className="mt-1 min-h-[44px]"
-            >
-              Try now
-            </Button>
-          </div>
-        )}
-      </nav>
-
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <section id="main-content" className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-              GDPR-ready · Data held in the EU
-            </span>
-
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Stop reading CVs.<br />Start reading scores.
-            </h1>
-
-            <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-              Drop in a CV and a job spec. Helixon reads both, scores the fit, flags red flags, and drafts the
-              follow-up email — in under 30 seconds. Built for agency recruiters who screen dozens of CVs a day.
-            </p>
-
-            <CtaButtons onTryFree={openGate} />
-
-            <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>No card required · 3 free analyses · Cancel anytime</p>
-          </div>
-
-          <LiveScanDemo />
-        </div>
-      </section>
-
-      {/* ── Trust strip ─────────────────────────────────────────────────── */}
-      <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
-        <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-          {[
-            { val: "30 sec", label: "Avg. time to score" },
-            { val: "50+", label: "CVs screened per agency/wk" },
-            { val: "GDPR", label: "EU-hosted, never used to train" },
-            { val: "4.8/5", label: "Recruiter satisfaction" },
-          ].map((m) => (
-            <div key={m.label}>
-              <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
-              <p className="text-[10px] mt-1" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ────────────────────────────────────────────────── */}
-      <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>How it works</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Three steps. No spreadsheet required.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {[
-            { n: "1", title: "Name & pick the job", body: "Name the analysis, then pick a preset role or paste your own job description." },
-            { n: "2", title: "Upload the CV", body: "Drag in a PDF or Word file — Helixon reads it in seconds, no formatting required." },
-            { n: "3", title: "Get your score", body: "A match score, standout factors, red flags, and a ready-to-send email — all in one screen." },
-          ].map((s) => (
-            <div key={s.n} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <span className="w-8 h-8 rounded-[9px] flex items-center justify-center text-xs font-bold mb-4" style={{ background: "var(--mint)", color: "var(--forest)" }}>{s.n}</span>
-              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.title}</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Pricing / buy ───────────────────────────────────────────────── */}
-      <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Plans that pay for themselves in one placement
-          </h2>
-          <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto items-stretch">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className="rounded-[16px] p-6 flex flex-col relative h-full"
-              style={{
-                background: plan.highlight ? "var(--forest)" : "white",
-                border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
-                boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
-                >
-              }}
-              <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
-                {plan.name}
-              </h3>
-              <div className="flex items-baseline gap-1 mb-5">
-                <span className="text-3xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
-                <span className="text-[11px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>{plan.period}</span>
-              </div>
-              <ul className="space-y-2.5 mb-7 flex-1">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
-                    <span className="shrink-0 mt-0.5">✓</span>{f}
-                  </li>
-                ))}
-              </ul>
-              {plan.action === "trial" ? (
-                <Button
-                  variant="primary"
-                  size="block"
-                  onClick={openGate}
-                  className="min-h-[44px]"
-                >
-                  {plan.cta}
-                </Button>
-              ) : (
-                <BuyPlanButton plan={plan.plan} label={plan.cta} highlight={plan.highlight} />
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Final CTA ────────────────────────────────────────────────────── */}
-      <section className="max-w-[1100px] mx-auto px-6 pb-24">
-        <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
-            Your next great hire is in that pile of CVs.
-          </h2>
-          <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Find them in seconds, not hours. Try Helixon free — no card needed.
-          </p>
-          <div className="flex justify-center">
-            <Button
-              as="a"
-              href="/demo"
-              variant="onForest"
-              className="motion-safe-scale hover:scale-[1.02] min-h-[48px]"
-            >
-              Get a demo
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="border-t" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
-          <div className="col-span-2 sm:col-span-1">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-                <svg width="15" height="15" viewBox="0 0 28 28" fill="none">
+        {/* ── Nav ─────────────────────────────────────────────────────────── */}
+        <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
+          <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
+              <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
+                <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
                   <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
                   <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
                   <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
                 </svg>
               </div>
-              <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
+              <span className="flex flex-col leading-none">
+                <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
+                <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
+              </span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+              <a href="#how" className="nav-link">How it works</a>
+              <a href="#pricing" className="nav-link">Pricing</a>
+              <Link href="/login" className="nav-link">Login</Link>
+              <Link href="/signup" className="nav-link">Sign up</Link>
             </div>
-            <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
-              Screen candidates in seconds. GDPR-ready, EU-hosted.
+
+            <div className="flex items-center gap-2">
+              <Button
+                ref={trialTriggerRef}
+                variant="primary"
+                size="sm"
+                onClick={openGate}
+                className="hidden md:inline-flex min-h-[36px]"
+              >
+                Try now
+              </Button>
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(v => !v)}
+                aria-expanded={mobileNavOpen}
+                aria-controls="mobile-nav"
+                aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+                className="md:hidden w-10 h-10 rounded-[8px] flex items-center justify-center"
+                style={{ color: "var(--ink)" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
+                </svg>
+              </button>
+            </div>
+          </div>
+          {mobileNavOpen && (
+            <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
+              {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
+                href.startsWith("/") ? (
+                  <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
+                ) : (
+                  <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</a>
+                )
+              ))}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={(e) => { setMobileNavOpen(false); openGate(e); }}
+                className="mt-1 min-h-[44px]"
+              >
+                Try now
+              </Button>
+            </div>
+          )}
+        </nav>
+
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <section id="main-content" className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                GDPR-ready · Data held in the EU
+              </span>
+
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Stop reading CVs.<br />Start reading scores.
+              </h1>
+
+              <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
+                Drop in a CV and a job spec. Helixon reads both, scores the fit, flags red flags, and drafts the
+                follow-up email — in under 30 seconds. Built for agency recruiters who screen dozens of CVs a day.
+              </p>
+
+              <CtaButtons onTryFree={openGate} />
+
+              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>No card required · 3 free analyses · Cancel anytime</p>
+            </div>
+
+            <LiveScanDemo />
+          </div>
+        </section>
+
+        {/* ── Trust strip ─────────────────────────────────────────────────── */}
+        <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
+          <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+            {[
+              { val: "30 sec", label: "Avg. time to score" },
+              { val: "50+", label: "CVs screened per agency/wk" },
+              { val: "GDPR", label: "EU-hosted, never used to train" },
+              { val: "4.8/5", label: "Recruiter satisfaction" },
+            ].map((m) => (
+              <div key={m.label}>
+                <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
+                <p className="text-[10px] mt-1" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── How it works ────────────────────────────────────────────────── */}
+        <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>How it works</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Three steps. No spreadsheet required.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[
+              { n: "1", title: "Name & pick the job", body: "Name the analysis, then pick a preset role or paste your own job description." },
+              { n: "2", title: "Upload the CV", body: "Drag in a PDF or Word file — Helixon reads it in seconds, no formatting required." },
+              { n: "3", title: "Get your score", body: "A match score, standout factors, red flags, and a ready-to-send email — all in one screen." },
+            ].map((s) => (
+              <div key={s.n} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+                <span className="w-8 h-8 rounded-[9px] flex items-center justify-center text-xs font-bold mb-4" style={{ background: "var(--mint)", color: "var(--forest)" }}>{s.n}</span>
+                <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.title}</h3>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Pricing / buy ───────────────────────────────────────────────── */}
+        <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Plans that pay for themselves in one placement
+            </h2>
+            <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto items-stretch">
+            {plans.map((plan) => (
+              <div
+                key={plan.name}
+                className="rounded-[16px] p-6 flex flex-col relative h-full"
+                style={{
+                  background: plan.highlight ? "var(--forest)" : "white",
+                  border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
+                  boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
+                }}
+              >
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-1 mb-5">
+                  <span className="text-3xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
+                  <span className="text-[11px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>{plan.period}</span>
+                </div>
+                <ul className="space-y-2.5 mb-7 flex-1">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
+                      <span className="shrink-0 mt-0.5">✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                {plan.action === "trial" ? (
+                  <Button
+                    variant="primary"
+                    size="block"
+                    onClick={openGate}
+                    className="min-h-[44px]"
+                  >
+                    {plan.cta}
+                  </Button>
+                ) : (
+                  <BuyPlanButton plan={plan.plan} label={plan.cta} highlight={plan.highlight} />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Final CTA ────────────────────────────────────────────────────── */}
+        <section className="max-w-[1100px] mx-auto px-6 pb-24">
+          <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
+              Your next great hire is in that pile of CVs.
+            </h2>
+            <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
+              Find them in seconds, not hours. Try Helixon free — no card needed.
             </p>
+            <div className="flex justify-center">
+              <Button
+                as="a"
+                href="/demo"
+                variant="onForest"
+                className="motion-safe-scale hover:scale-[1.02] min-h-[48px]"
+              >
+                Get a demo
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Footer ───────────────────────────────────────────────────────── */}
+        <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+          <div className="max-w-[1100px] mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <div className="col-span-2 sm:col-span-1">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
+                  <svg width="15" height="15" viewBox="0 0 28 28" fill="none">
+                    <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
+                    <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+                    <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
+                  </svg>
+                </div>
+                <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
+              </div>
+              <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+                Screen candidates in seconds. GDPR-ready, EU-hosted.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Product</p>
+              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                <li><a href="/how-it-works" className="hover:underline">How it works</a></li>
+                <li><a href="/pricing" className="hover:underline">Pricing</a></li>
+                <li><a href="/faq" className="hover:underline">FAQ</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Company</p>
+              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                <li><a href="/about" className="hover:underline">About</a></li>
+                <li><a href="/careers" className="hover:underline">Careers</a></li>
+                <li><a href="/blog" className="hover:underline">Blog</a></li>
+                <li><a href="/contact" className="hover:underline">Contact</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Legal</p>
+              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
+                <li><a href="/CookiePolicy" className="hover:underline">Cookie Policy</a></li>
+                <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
+                <li><a href="/complaints" className="hover:underline">Complaints</a></li>
+              </ul>
+            </div>
           </div>
 
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Product</p>
-            <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-              <li><a href="/how-it-works" className="hover:underline">How it works</a></li>
-              <li><a href="/pricing" className="hover:underline">Pricing</a></li>
-              <li><a href="/faq" className="hover:underline">FAQ</a></li>
-            </ul>
+          <div className="border-t" style={{ borderColor: "var(--border)" }}>
+            <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
+              <a href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</a>
+            </div>
           </div>
-
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Company</p>
-            <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-              <li><a href="/about" className="hover:underline">About</a></li>
-              <li><a href="/careers" className="hover:underline">Careers</a></li>
-              <li><a href="/blog" className="hover:underline">Blog</a></li>
-              <li><a href="/contact" className="hover:underline">Contact</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Legal</p>
-            <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-              <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
-              <li><a href="/CookiePolicy" className="hover:underline">Cookie Policy</a></li>
-              <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
-              <li><a href="/complaints" className="hover:underline">Complaints</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-            <a href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</a>
-          </div>
-        </div>
-      </footer>
-    </main>
-    <ChatWidget />
+        </footer>
+      </main>
+      <ChatWidget />
     </>
   );
 }
