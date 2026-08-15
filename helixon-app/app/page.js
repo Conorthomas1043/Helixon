@@ -769,6 +769,7 @@ export default function LandingPage() {
                 background: plan.highlight ? "var(--forest)" : "white",
                 border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
                 boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
+                >
               }}
               <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
                 {plan.name}
