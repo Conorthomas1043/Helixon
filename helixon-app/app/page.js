@@ -588,7 +588,7 @@ export default function LandingPage() {
 
   const plans = [
     {
-      name: "Free", price: "£0", period: "forever",
+      name: "Free", price: "trial",period: "/ 3 uses",
       features: ["3 free analyses", "Match score & summary", "Email drafting"],
       cta: "Try it free", highlight: false, action: "trial",
     },
