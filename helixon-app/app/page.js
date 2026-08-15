@@ -696,7 +696,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-                Drop in a CV and a job requirement. Helixon reads both, scores the fit, flags red flags, and drafts the
+                Drop in a CV and your job requirement. Helixon reads both, scores the fit, flags red flags, and drafts the
                 follow-up email — in under 30 seconds. Built for agency recruiters who screen dozens of CVs a day.
               </p>
 
