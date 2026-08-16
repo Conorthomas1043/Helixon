@@ -786,7 +786,7 @@ export default function LandingPage() {
     {
       name: "Individual", price: "£249", period: "/ month",
       features: ["Unlimited analyses", "Bulk upload", "Shortlists & history", "Priority support"],
-      cta: "Buy Individual", highlight: true, plan: "individual",
+      cta: "Buy Individual", highlight: false, plan: "individual",
     },
     {
       name: "Agency", price: "£349", period: "/ month",
