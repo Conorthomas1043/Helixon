@@ -112,17 +112,21 @@ function LiveScanDemo() {
     if (!animating) return;
     setStage(0);
     setRevealed(false);
+    let revealTimeout;
     const stageIv = setInterval(() => {
       setStage((s) => {
         if (s >= STAGES.length - 1) {
           clearInterval(stageIv);
-          setTimeout(() => setRevealed(true), 250);
+          revealTimeout = setTimeout(() => setRevealed(true), 250);
           return s;
         }
         return s + 1;
       });
     }, 550);
-    return () => clearInterval(stageIv);
+    return () => {
+      clearInterval(stageIv);
+      clearTimeout(revealTimeout);
+    };
   }, [index, animating]);
 
   useEffect(() => {
@@ -217,18 +221,22 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
   const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
+    let focusTimeout;
     if (open) {
       document.body.style.overflow = "hidden";
       try {
         const saved = sessionStorage.getItem(TRIAL_EMAIL_KEY);
         if (saved) setEmail(saved);
       } catch { /* private browsing */ }
-      setTimeout(() => inputRef.current?.focus(), reducedMotion ? 0 : 250);
+      focusTimeout = setTimeout(() => inputRef.current?.focus(), reducedMotion ? 0 : 250);
     } else {
       document.body.style.overflow = "";
       returnFocusRef?.current?.focus({ preventScroll: true });
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+      clearTimeout(focusTimeout);
+    };
   }, [open, returnFocusRef, reducedMotion]);
 
   useEffect(() => {
@@ -551,6 +559,189 @@ function CtaButtons({ align = "left", onTryFree }) {
   );
 }
 
+// ── Feature grid — expanded product detail beyond the 3-step overview ────
+const FEATURES = [
+  {
+    title: "Works with any CV format",
+    body: "PDF, Word, or scanned and photographed documents — Helixon extracts the text either way, so candidates never get missed over formatting.",
+    icon: (
+      <path d="M9 12h6m-6 4h6m-8 5h10a2 2 0 0 0 2-2V7l-5-5H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z" />
+    ),
+  },
+  {
+    title: "Bias-aware scoring",
+    body: "Scores are based on skills, experience, and role fit — not on names, photos, or demographic signals — so shortlists stay defensible.",
+    icon: (
+      <path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8z" />
+    ),
+  },
+  {
+    title: "Bulk upload",
+    body: "Drop in up to 50 CVs against one role at once and come back to a ranked, sortable list instead of 50 separate PDFs.",
+    icon: (
+      <>
+        <rect x="3" y="4" width="7" height="9" rx="1" />
+        <rect x="14" y="4" width="7" height="5" rx="1" />
+        <rect x="14" y="12" width="7" height="8" rx="1" />
+        <rect x="3" y="16" width="7" height="4" rx="1" />
+      </>
+    ),
+  },
+  {
+    title: "Shared shortlists",
+    body: "Tag a candidate, leave a note, and your whole team sees it instantly — no more forwarding CVs over email or Slack.",
+    icon: (
+      <>
+        <circle cx="9" cy="7" r="3" />
+        <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" />
+        <circle cx="19" cy="8" r="2.5" />
+      </>
+    ),
+  },
+  {
+    title: "Full audit trail",
+    body: "Every score, note, and status change is timestamped and attributed — useful for compliance and for settling 'who screened this' questions.",
+    icon: (
+      <>
+        <path d="M12 2a10 10 0 1 0 10 10" />
+        <path d="M12 6v6l4 2" />
+      </>
+    ),
+  },
+  {
+    title: "EU-hosted & GDPR-ready",
+    body: "Candidate data stays on EU infrastructure, is encrypted at rest, and is never used to train models — yours or anyone else's.",
+    icon: (
+      <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
+    ),
+  },
+];
+
+function FeatureGrid() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {FEATURES.map((f) => (
+        <div key={f.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <span className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              {f.icon}
+            </svg>
+          </span>
+          <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{f.title}</h3>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Testimonials — replace with real customer quotes before shipping ─────
+const TESTIMONIALS = [
+  {
+    quote: "We used to spend a full afternoon triaging CVs for one role. Now it's the first ten minutes of the morning, and the shortlist is more consistent than when we did it by eye.",
+    name: "Founder, 6-person recruitment agency",
+  },
+  {
+    quote: "The red-flag summary caught an employment gap our team had missed twice. It doesn't replace judgement, but it stops things slipping through.",
+    name: "Talent Acquisition Lead, mid-size agency",
+  },
+  {
+    quote: "Bulk upload alone paid for the subscription in the first week. We screen against three or four roles a day and it just keeps up.",
+    name: "Operations Manager, contract staffing firm",
+  },
+];
+
+function Testimonials() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {TESTIMONIALS.map((t) => (
+        <figure key={t.name} className="rounded-[14px] p-6 flex flex-col" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <svg width="20" height="16" viewBox="0 0 20 16" fill="var(--mint)" className="mb-3" aria-hidden="true">
+            <path d="M0 16V9.6C0 3.2 3.6 0 8.4 0v3.2c-2.4 0-4 1.6-4 4h4V16H0zm10.4 0V9.6c0-6.4 3.6-9.6 8.4-9.6v3.2c-2.4 0-4 1.6-4 4h4V16h-8.4z" />
+          </svg>
+          <blockquote className="text-xs leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>
+            &ldquo;{t.quote}&rdquo;
+          </blockquote>
+          <figcaption className="text-[11px] font-medium mt-4" style={{ color: "var(--ink-faint)" }}>{t.name}</figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
+
+// ── FAQ accordion ──────────────────────────────────────────────────────
+const FAQS = [
+  {
+    q: "How accurate is the match score?",
+    a: "The score reflects how closely a CV's skills, experience, and seniority align with the job description you provide. It's a screening aid to help you prioritise who to review first — treat it as a strong signal, not a hiring decision.",
+  },
+  {
+    q: "Does Helixon replace human judgement?",
+    a: "No. Helixon surfaces the score, standout factors, and possible red flags so you can review candidates faster — the final call on who to interview or hire is always yours.",
+  },
+  {
+    q: "What file formats can I upload?",
+    a: "PDF and Word documents (.pdf, .doc, .docx) are supported, including scanned or photographed CVs. If a file won't parse, you'll see a clear error rather than a silent failure.",
+  },
+  {
+    q: "Is my data secure and GDPR compliant?",
+    a: "Yes. Candidate data is hosted on EU infrastructure, encrypted at rest and in transit, and is never used to train any model. See our Data Processing Agreement for full detail.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes — Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period.",
+  },
+  {
+    q: "What happens after my 3 free analyses?",
+    a: "You'll be prompted to upgrade to Individual or Agency to keep going. Your existing results and history are kept, so nothing is lost when you upgrade.",
+  },
+];
+
+function FaqItem({ q, a, open, onToggle }) {
+  return (
+    <div className="border-b" style={{ borderColor: "var(--border)" }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
+      >
+        <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{q}</span>
+        <svg
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round"
+          className="shrink-0 transition-transform duration-200"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      <div
+        className="overflow-hidden transition-all duration-300"
+        style={{ maxHeight: open ? "240px" : "0px", opacity: open ? 1 : 0 }}
+      >
+        <p className="text-xs leading-relaxed pb-4 pr-8" style={{ color: "var(--ink-soft)" }}>{a}</p>
+      </div>
+    </div>
+  );
+}
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(0);
+  return (
+    <div className="max-w-2xl mx-auto">
+      {FAQS.map((f, i) => (
+        <FaqItem
+          key={f.q}
+          q={f.q}
+          a={f.a}
+          open={openIndex === i}
+          onToggle={() => setOpenIndex(openIndex === i ? -1 : i)}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
@@ -588,7 +779,7 @@ export default function LandingPage() {
 
   const plans = [
     {
-      name: "TRIAL", price: "£0",period: "/ 3 uses",
+      name: "Trial", price: "£0", period: "/ 3 uses",
       features: ["3 free uses", "Match score & summary", "Email drafting"],
       cta: "Try it free", highlight: false, action: "trial",
     },
@@ -602,6 +793,13 @@ export default function LandingPage() {
       features: ["Everything in Individual", "Multi-seat access", "Shared templates", "Dedicated onboarding"],
       cta: "Buy Agency", highlight: false, plan: "agency",
     },
+  ];
+
+  const navLinks = [
+    ["How it works", "#how"],
+    ["Features", "#features"],
+    ["Pricing", "#pricing"],
+    ["FAQ", "#faq"],
   ];
 
   return (
@@ -630,8 +828,9 @@ export default function LandingPage() {
             </Link>
 
             <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-              <a href="#how" className="nav-link">How it works</a>
-              <a href="#pricing" className="nav-link">Pricing</a>
+              {navLinks.map(([label, href]) => (
+                <a key={label} href={href} className="nav-link">{label}</a>
+              ))}
               <Link href="/login" className="nav-link">Login</Link>
               <Link href="/signup" className="nav-link">Sign up</Link>
             </div>
@@ -663,7 +862,7 @@ export default function LandingPage() {
           </div>
           {mobileNavOpen && (
             <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-              {[["How it works", "#how"], ["Pricing", "#pricing"], ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
+              {[...navLinks, ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
                 href.startsWith("/") ? (
                   <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
                 ) : (
@@ -696,8 +895,8 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-                Drop in a CV and your job requirement. Helixon reads both, scores the fit, flags red flags, and drafts the
-                follow-up email — in under 30 seconds. Built for agency recruiters who screen dozens of CVs a day.
+                Drop in a CV and your job requirement. Helixon reads both, scores the fit, flags possible red flags, and
+                drafts the follow-up email — in under 30 seconds. Built for agency recruiters screening dozens of CVs a day.
               </p>
 
               <CtaButtons onTryFree={openGate} />
@@ -750,6 +949,31 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ── Features ─────────────────────────────────────────────────────── */}
+        <section id="features" className="max-w-[1100px] mx-auto px-6 py-20">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Features</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Built for the volume agency recruiters actually deal with
+            </h2>
+            <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+              Not a toy demo — the parts that matter when you're screening dozens of CVs a week.
+            </p>
+          </div>
+          <FeatureGrid />
+        </section>
+
+        {/* ── Testimonials ─────────────────────────────────────────────────── */}
+        <section className="max-w-[1100px] mx-auto px-6 py-20">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>What recruiters say</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Fewer hours screening. More time interviewing.
+            </h2>
+          </div>
+          <Testimonials />
+        </section>
+
         {/* ── Pricing / buy ───────────────────────────────────────────────── */}
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
           <div className="text-center mb-12">
@@ -771,6 +995,14 @@ export default function LandingPage() {
                   boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
                 }}
               >
+                {plan.highlight && (
+                  <span
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full"
+                    style={{ background: "var(--signal, #f5a623)", color: "var(--forest)" }}
+                  >
+                    Most popular
+                  </span>
+                )}
                 <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
                   {plan.name}
                 </h3>
@@ -800,6 +1032,17 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+        <section id="faq" className="max-w-[1100px] mx-auto px-6 py-20">
+          <div className="text-center mb-10">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>FAQ</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Questions recruiters usually ask
+            </h2>
+          </div>
+          <FAQSection />
         </section>
 
         {/* ── Final CTA ────────────────────────────────────────────────────── */}
@@ -847,9 +1090,10 @@ export default function LandingPage() {
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Product</p>
               <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                <li><a href="/how-it-works" className="hover:underline">How it works</a></li>
-                <li><a href="/pricing" className="hover:underline">Pricing</a></li>
-                <li><a href="/faq" className="hover:underline">FAQ</a></li>
+                <li><a href="#how" className="hover:underline">How it works</a></li>
+                <li><a href="#features" className="hover:underline">Features</a></li>
+                <li><a href="#pricing" className="hover:underline">Pricing</a></li>
+                <li><a href="#faq" className="hover:underline">FAQ</a></li>
               </ul>
             </div>
 
@@ -868,7 +1112,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
                 <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
                 <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
-                <li><a href="/CookiePolicy" className="hover:underline">Cookie Policy</a></li>
+                <li><a href="/cookie-policy" className="hover:underline">Cookie Policy</a></li>
                 <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
                 <li><a href="/complaints" className="hover:underline">Complaints</a></li>
               </ul>
