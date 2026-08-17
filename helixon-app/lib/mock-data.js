@@ -1,290 +1,154 @@
-// lib/mock-data.js
-//
-// REFERENCE IMPLEMENTATION
-// ------------------------
-// Built against two real consumers now confirmed from your project:
-//   - app/analyse/[id]/page.jsx  → needs getAnalysisById(id), and reads
-//     analysis.candidate.{name,currentTitle,...} and analysis.job.{title,...}
-//     UNCONDITIONALLY (outside any status check), so every record — even
-//     failed ones — must carry a candidate object, and every non-failed
-//     record must carry a job object.
-//   - AgencyDashboardPage.jsx    → needs getMockData() + STAGE_LABELS, and
-//     reads candidate/job either flat (candidateName, jobTitle, company) or
-//     nested (candidate.name, job.title, job.company) via its
-//     normalizeAnalysis() adapter. This file uses the nested shape, which
-//     that adapter already prefers as a fallback — no dashboard changes
-//     needed.
-//
-// If your real lib/mock-data.js differs from this, merge field names rather
-// than replacing the whole file, and paste it here if you'd like it aligned
-// exactly.
+// Deterministic mock data generator for the dashboard.
+// Swap this out for real API calls later — the shape is what matters.
+
+export const STAGES = [
+  "new",
+  "screened",
+  "shortlisted",
+  "submitted_to_client",
+  "interviewing",
+  "offer",
+  "placed",
+  "rejected",
+];
 
 export const STAGE_LABELS = {
   new: "New",
-  review: "Review",
+  screened: "Screened",
   shortlisted: "Shortlisted",
-  interview: "Interview",
+  submitted_to_client: "Submitted to client",
+  interviewing: "Interviewing",
   offer: "Offer",
   placed: "Placed",
+  rejected: "Rejected",
 };
 
-const RECRUITERS = ["Priya Shah", "Marcus Webb", "Elena Torres"];
+const RECRUITERS = [
+  { id: "r1", name: "Priya Shah" },
+  { id: "r2", name: "Tom Ellery" },
+  { id: "r3", name: "Nadia Osei" },
+];
 
 const JOBS = [
-  { title: "Senior Software Engineer", company: "Nova Systems", seniority: "Senior", location: "London, UK" },
-  { title: "Product Manager", company: "Fieldstone Health", seniority: "Mid-level", location: "Manchester, UK" },
-  { title: "UX Researcher", company: "Brightlane Digital", seniority: "Mid-level", location: "Remote (UK)" },
-  { title: "Data Analyst", company: "Nova Systems", seniority: "Junior", location: "London, UK" },
-  { title: "DevOps Engineer", company: "Vantage Cloud", seniority: "Senior", location: "Bristol, UK" },
-  { title: "Customer Success Lead", company: "Fieldstone Health", seniority: "Mid-level", location: "Remote (UK)" },
+  { id: "j1", title: "Senior Frontend Engineer", company: "Fenwick & Co", seniority: "Senior", location: "London, UK" },
+  { id: "j2", title: "Product Manager", company: "Northbridge", seniority: "Mid", location: "Remote" },
+  { id: "j3", title: "Data Analyst", company: "Harlow Group", seniority: "Junior", location: "Manchester, UK" },
+  { id: "j4", title: "DevOps Engineer", company: "Coriolis Systems", seniority: "Senior", location: "Bristol, UK" },
 ];
 
-const CANDIDATES = [
-  "Jordan Williams", "Sarah Evans", "Michael Chen", "Aisha Patel",
-  "Tom Fletcher", "Priya Nair", "Daniel Osei", "Grace Kim",
-  "Liam O'Connor", "Fatima Al-Sayed", "Noah Bergstrom", "Ruth Adeyemi",
-  "Ethan Brooks", "Chloe Martin", "Omar Haddad", "Ines Costa",
-  "Jack Sullivan", "Maya Lindqvist",
-];
+const FIRST_NAMES = ["Amara", "Liam", "Sofia", "Kwame", "Elena", "Marcus", "Priya", "Daniel", "Yuki", "Oscar", "Freya", "Idris", "Chloe", "Ravi", "Maya", "Callum", "Isla", "Noah", "Zara", "Theo"];
+const LAST_NAMES = ["Osei", "Bennett", "Ricci", "Adeyemi", "Novak", "Turner", "Nair", "Hughes", "Sato", "Wallace", "Grant", "Farouk", "Dubois", "Malhotra", "Byrne", "Mensah", "Larsen", "Coleman", "Petrov", "Fitzgerald"];
+const CITIES = ["London, UK", "Manchester, UK", "Bristol, UK", "Leeds, UK", "Edinburgh, UK", "Remote", "Birmingham, UK", "Cardiff, UK"];
+const SOURCES = ["LinkedIn", "Referral", "Job board", "Agency network", "Direct application"];
+const SKILLS_POOL = ["React", "TypeScript", "Node.js", "Python", "SQL", "AWS", "Figma", "Product strategy", "SEO", "Data visualization", "GraphQL", "Docker", "Kubernetes", "Excel", "Stakeholder management", "A/B testing", "CI/CD", "Terraform"];
+const STANDOUT_POOL = ["Led a team of 5+ engineers", "Shipped a major feature in under a quarter", "Strong portfolio of relevant work", "Excellent communication in screening call", "Directly relevant industry experience", "Consistently exceeded targets in previous role"];
+const GAPS_POOL = ["Limited experience at this seniority level", "No direct industry background", "Salary expectation above range", "Notice period longer than ideal", "Gap in employment history", "Skills lean junior for this role"];
 
-const TITLES = [
-  "Software Engineer", "Senior Developer", "Product Analyst", "UX Designer",
-  "Platform Engineer", "Support Lead", "Data Engineer", "Engineering Manager",
-];
-
-const SKILL_POOL = [
-  "JavaScript", "TypeScript", "React", "Node.js", "AWS", "SQL", "Python",
-  "Product strategy", "Stakeholder management", "User research", "Figma",
-  "Kubernetes", "Docker", "CI/CD", "Terraform", "Data visualisation",
-  "A/B testing", "Salesforce", "Roadmapping", "GraphQL",
-];
-
-const SOURCES = ["LinkedIn", "Referral", "Job board", "Agency database"];
-const NOTICE_PERIODS = ["Immediate", "2 weeks", "1 month", "3 months"];
-
-const ERROR_MESSAGES = [
-  "Unable to parse the uploaded resume — the file appears to be corrupted or password protected.",
-  "No matching job requisition was found for this analysis. Re-run once the role is linked.",
-];
-
-function daysAgo(n, hour = 9) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  d.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
-  return d.toISOString();
-}
-
-function pick(arr, i) {
-  return arr[i % arr.length];
-}
-
-function slugify(name) {
-  return name.toLowerCase().replace(/[^a-z\s]/g, "").trim().replace(/\s+/g, "-");
-}
-
-function buildCandidate(i, { full }) {
-  const name = pick(CANDIDATES, i);
-  const slug = slugify(name);
-
-  if (!full) {
-    // Failed analyses: we know who was uploaded, not much else.
-    return {
-      name,
-      currentTitle: pick(TITLES, i),
-      currentEmployer: null,
-      email: null,
-      phone: null,
-      location: null,
-      yearsExperience: null,
-      noticePeriod: null,
-      salaryExpectation: null,
-      source: pick(SOURCES, i),
-      linkedinUrl: null,
-      skills: [],
-      resumeUrl: "#",
-    };
-  }
-
-  return {
-    name,
-    currentTitle: pick(TITLES, i),
-    currentEmployer: pick(JOBS, i + 2).company,
-    email: `${slug}@example.com`,
-    phone: `+44 7${String(100000000 + i * 137).slice(0, 9)}`,
-    location: pick(JOBS, i).location,
-    yearsExperience: 2 + (i % 12),
-    noticePeriod: pick(NOTICE_PERIODS, i),
-    salaryExpectation: `£${45 + (i % 8) * 5}k - £${55 + (i % 8) * 5}k`,
-    source: pick(SOURCES, i),
-    linkedinUrl: `https://www.linkedin.com/in/${slug}`,
-    skills: [0, 1, 2, 3].map((offset) => pick(SKILL_POOL, i + offset)).filter((s, idx, arr) => arr.indexOf(s) === idx),
-    resumeUrl: "#",
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-function buildScoreBreakdown(score, i) {
-  const jitter = (n) => Math.max(10, Math.min(100, n + (((i * 7) % 11) - 5)));
-  return {
-    skillsMatch: jitter(score + 4),
-    experienceMatch: jitter(score - 6),
-    culturalFit: jitter(score + 2),
-    availability: jitter(score - 2),
-  };
+function pick(rand, arr) { return arr[Math.floor(rand() * arr.length)]; }
+function pickMany(rand, arr, n) {
+  const copy = [...arr];
+  const out = [];
+  for (let i = 0; i < n && copy.length; i++) out.push(copy.splice(Math.floor(rand() * copy.length), 1)[0]);
+  return out;
 }
 
-function buildStandoutFactors(score, i) {
-  const pool = [
-    "Directly relevant experience for this role's core responsibilities",
-    "Progressed quickly through similar roles at comparable companies",
-    "Strong overlap with the must-have skills on the job spec",
-    "Available on short notice, matching the role's urgency",
-    "Referred by an existing employee at the hiring company",
-  ];
-  const count = score >= 80 ? 3 : 2;
-  return Array.from({ length: count }, (_, k) => pool[(i + k) % pool.length]);
-}
-
-function buildGaps(score, i) {
-  const pool = [
-    "Limited exposure to the specific tech stack listed in the job spec",
-    "Notice period is longer than the hiring manager's stated timeline",
-    "No direct experience at this company's scale",
-    "Salary expectation sits above the advertised band",
-  ];
-  const count = score >= 80 ? 1 : 2;
-  return Array.from({ length: count }, (_, k) => pool[(i + k) % pool.length]);
-}
-
-function buildDraftEmail(candidateName, job) {
-  const firstName = candidateName.split(" ")[0];
-  return `Hi ${firstName},
-
-I came across your profile while recruiting for the ${job.title} role at ${job.company}, and your background looks like a strong fit.
-
-Would you be open to a short call this week to talk through the role and see whether it's the right next step for you?
-
-Best,
-Your recruiter`;
-}
-
-// Deterministic-ish generation so the dashboard has a believable spread of
-// scores, stages, statuses and dates across roughly the last three weeks.
-// [daysAgoCreated, status, stage, score, recruiterIdx, jobIdx]
-const BLUEPRINT = [
-  [0, "completed", "new", 92, 0, 0],
-  [0, "failed", "new", null, 1, null],
-  [0, "processing", "new", null, 2, 1],
-  [1, "completed", "new", 88, 0, 0],
-  [1, "completed", "review", 74, 1, 1],
-  [1, "completed", "shortlisted", 81, 2, 2],
-  [2, "completed", "interview", 69, 0, 3],
-  [2, "completed", "new", 54, 1, 4],
-  [2, "processing", "new", null, 0, 5],
-  [3, "completed", "offer", 90, 2, 0],
-  [3, "completed", "review", 63, 0, 1],
-  [3, "failed", "new", null, 1, null],
-  [4, "completed", "placed", 95, 2, 2],
-  [4, "completed", "new", 84, 1, 3],
-  [4, "completed", "shortlisted", 71, 0, 4],
-  [5, "completed", "review", 58, null, 5],
-  [5, "completed", "interview", 77, 2, 0],
-  [6, "completed", "new", 66, 0, 1],
-  [8, "completed", "review", 85, 1, 2],
-  [9, "completed", "placed", 89, 0, 3],
-  [10, "completed", "new", 47, 2, 4],
-  [11, "completed", "shortlisted", 79, 1, 5],
-  [12, "completed", "offer", 91, 0, 0],
-  [13, "completed", "new", 60, null, 1],
-  [14, "completed", "interview", 73, 2, 2],
-  [16, "completed", "placed", 97, 1, 3],
-  [18, "completed", "review", 55, 0, 4],
-  [20, "completed", "new", 82, 2, 5],
+const STAGE_WEIGHTS = [
+  ["new", 20], ["screened", 18], ["shortlisted", 14], ["submitted_to_client", 12],
+  ["interviewing", 10], ["offer", 6], ["placed", 12], ["rejected", 8],
 ];
-
-let _errorIdx = 0;
+function weightedStage(rand) {
+  const total = STAGE_WEIGHTS.reduce((s, [, w]) => s + w, 0);
+  let r = rand() * total;
+  for (const [stage, w] of STAGE_WEIGHTS) { if ((r -= w) <= 0) return stage; }
+  return "new";
+}
 
 function buildAnalyses() {
-  return BLUEPRINT.map(([age, status, stage, score, recruiterIdx, jobIdx], i) => {
-    const id = `an_${String(i + 1).padStart(3, "0")}`;
-    const full = status !== "failed";
-    const candidate = buildCandidate(i, { full });
-    const job = status === "failed" ? null : pick(JOBS, jobIdx ?? i);
-    const recruiterName = recruiterIdx === null || recruiterIdx === undefined ? null : pick(RECRUITERS, recruiterIdx);
+  const rand = mulberry32(42);
+  const analyses = [];
+  let counter = 1;
 
-    const base = {
-      id,
-      candidate,
-      job,
-      recruiterName,
-      status,
-      stage,
-      score,
-      createdAt: daysAgo(age, 8 + (i % 9)),
-    };
+  JOBS.forEach((job) => {
+    const count = 8 + Math.floor(rand() * 6); // 8–13 per job
+    for (let i = 0; i < count; i++) {
+      const id = `a${counter++}`;
+      const recruiter = pick(rand, RECRUITERS);
+      const failed = rand() < 0.06;
+      const status = failed ? "failed" : "completed";
+      const score = failed ? null : Math.round(35 + rand() * 60);
+      const stage = failed ? "new" : weightedStage(rand);
+      const daysAgo = Math.floor(Math.pow(rand(), 1.5) * 110); // skew recent
+      const createdAt = new Date(Date.now() - daysAgo * 86400000).toISOString();
+      const first = pick(rand, FIRST_NAMES);
+      const last = pick(rand, LAST_NAMES);
+      const name = `${first} ${last}`;
+      const skills = pickMany(rand, SKILLS_POOL, 3 + Math.floor(rand() * 4));
 
-    if (status === "failed") {
-      return {
-        ...base,
-        errorMessage: ERROR_MESSAGES[_errorIdx++ % ERROR_MESSAGES.length],
-        scoreBreakdown: null,
-        standoutFactors: [],
-        gaps: [],
-        draftEmail: null,
+      const scoreBreakdown = failed ? null : {
+        skillsMatch: Math.min(100, Math.max(0, Math.round(score + (rand() * 20 - 10)))),
+        experienceMatch: Math.min(100, Math.max(0, Math.round(score + (rand() * 20 - 10)))),
+        educationMatch: Math.min(100, Math.max(0, Math.round(score + (rand() * 20 - 10)))),
+        seniorityMatch: Math.min(100, Math.max(0, Math.round(score + (rand() * 20 - 10)))),
       };
-    }
 
-    if (status === "processing") {
-      return {
-        ...base,
-        scoreBreakdown: null,
-        standoutFactors: [],
-        gaps: [],
-        draftEmail: null,
-      };
-    }
-
-    // completed
-    return {
-      ...base,
-      scoreBreakdown: buildScoreBreakdown(score, i),
-      standoutFactors: buildStandoutFactors(score, i),
-      gaps: buildGaps(score, i),
-      draftEmail: buildDraftEmail(candidate.name, job),
-    };
-  });
-}
-
-// Generated once and cached so every caller (the dashboard via
-// getMockData(), a detail page via getAnalysisById()) sees the exact same
-// records rather than a freshly-randomised set on every call.
-let _cachedData = null;
-
-function loadData() {
-  if (!_cachedData) {
-    _cachedData = {
-      agency: {
-        name: "Bright Path Recruitment",
-        plan: {
-          name: "Growth",
-          analysesUsed: 32,
-          analysesLimit: 50,
+      analyses.push({
+        id,
+        createdAt,
+        status,
+        errorMessage: failed ? "Could not parse resume file — unsupported format or corrupted upload." : null,
+        stage,
+        score,
+        scoreBreakdown,
+        recruiterId: recruiter.id,
+        recruiterName: recruiter.name,
+        job: { id: job.id, title: job.title, company: job.company, seniority: job.seniority, location: job.location },
+        daysToPlacement: stage === "placed" ? 12 + Math.floor(rand() * 70) : undefined,
+        timeInStageDays: Math.floor(rand() * 25),
+        standoutFactors: failed ? [] : pickMany(rand, STANDOUT_POOL, 2),
+        gaps: failed ? [] : pickMany(rand, GAPS_POOL, 1 + Math.floor(rand() * 2)),
+        draftEmail: failed ? null : `Hi ${first},\n\nThanks for applying to the ${job.title} role at ${job.company}. Your background in ${skills[0]} stood out and we'd love to set up a quick call this week — does Wednesday or Thursday afternoon work?\n\nBest,\n${recruiter.name}`,
+        candidate: {
+          name,
+          email: `${first.toLowerCase()}.${last.toLowerCase()}@example.com`,
+          phone: `+44 7${Math.floor(100000000 + rand() * 899999999)}`,
+          location: pick(rand, CITIES),
+          currentTitle: job.title.replace("Senior ", "").replace("Lead ", ""),
+          currentEmployer: `${pick(rand, LAST_NAMES)} ${pick(rand, ["Ltd", "Group", "Partners", "Studio"])}`,
+          yearsExperience: 1 + Math.floor(rand() * 14),
+          noticePeriod: pick(rand, ["Immediate", "2 weeks", "1 month", "3 months"]),
+          salaryExpectation: `£${(35 + Math.floor(rand() * 55)) * 1000}`,
+          source: pick(rand, SOURCES),
+          linkedinUrl: rand() > 0.15 ? `https://linkedin.com/in/${first.toLowerCase()}-${last.toLowerCase()}` : null,
+          skills,
+          resumeUrl: `https://example.com/resumes/${id}.pdf`,
         },
-      },
-      recentAnalyses: buildAnalyses(),
-    };
-  }
-  return _cachedData;
+      });
+    }
+  });
+
+  return analyses;
 }
+
+const RECENT_ANALYSES = buildAnalyses();
 
 export function getMockData() {
-  return loadData();
+  return {
+    email: "you@helixon.io",
+    jobs: JOBS,
+    recruiters: RECRUITERS,
+    recentAnalyses: RECENT_ANALYSES,
+  };
 }
 
-// Used by app/analyse/[id]/page.jsx. Returns the full nested record —
-// candidate.name/currentTitle are read unconditionally by that page (even
-// for failed analyses), so every record here always carries a candidate
-// object; job is only required for non-failed statuses.
 export function getAnalysisById(id) {
-  const { recentAnalyses } = loadData();
-  return recentAnalyses.find((a) => a.id === id) ?? null;
+  return RECENT_ANALYSES.find((a) => a.id === id) ?? null;
 }
