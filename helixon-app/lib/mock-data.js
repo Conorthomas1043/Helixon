@@ -1,160 +1,130 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// Shared mock data for the agency dashboard suite. Every dashboard page
-// imports from here so numbers stay consistent across pages. Replace
-// `getMockData()` with a real fetch to your API once the backend exists —
-// every page consuming this keeps the same shape, so swapping is a
-// one-line change per page.
-// ═══════════════════════════════════════════════════════════════════════════
+// lib/mock-data.js
+//
+// REFERENCE IMPLEMENTATION
+// ------------------------
+// The real project's lib/mock-data.js was not available while building this
+// redesign, so this file documents the exact data shape the new
+// AgencyDashboardPage expects: `getMockData()` and `STAGE_LABELS`.
+//
+// If your existing lib/mock-data.js already exists with different field
+// names, you do NOT need to replace it — just align field names, or adjust
+// the `normalizeAnalysis()` adapter near the top of AgencyDashboardPage.jsx,
+// which is the single place the page translates raw records into the shape
+// every dashboard section relies on.
 
-export const STAGES = [
-  "new",
-  "screened",
-  "shortlisted",
-  "submitted_to_client",
-  "interviewing",
-  "offer",
-  "placed",
-  "rejected",
-];
-
+// Stage keys are the source of truth for the pipeline. Order matters — it
+// defines the left-to-right order the pipeline is rendered in. Do not add or
+// remove stages here without also checking that recruiters using
+// /dashboard/pipeline expect the same set.
 export const STAGE_LABELS = {
   new: "New",
-  screened: "Screened",
+  review: "Review",
   shortlisted: "Shortlisted",
-  submitted_to_client: "Submitted to client",
-  interviewing: "Interviewing",
+  interview: "Interview",
   offer: "Offer",
   placed: "Placed",
-  rejected: "Rejected",
 };
 
-const RECRUITERS = [
-  { id: "rec_1", name: "Aisha Bello" },
-  { id: "rec_2", name: "Conor Reyes" },
-  { id: "rec_3", name: "Marcus Webb" },
+const RECRUITERS = ["Priya Shah", "Marcus Webb", "Elena Torres"];
+
+const ROLES = [
+  { jobTitle: "Senior Software Engineer", company: "Nova Systems" },
+  { jobTitle: "Product Manager", company: "Fieldstone Health" },
+  { jobTitle: "UX Researcher", company: "Brightlane Digital" },
+  { jobTitle: "Data Analyst", company: "Nova Systems" },
+  { jobTitle: "DevOps Engineer", company: "Vantage Cloud" },
+  { jobTitle: "Customer Success Lead", company: "Fieldstone Health" },
 ];
 
-const JOBS = [
-  { id: "job_1", title: "Senior Platform Engineer", company: "Acme Robotics", seniority: "Senior", location: "Remote (UK)" },
-  { id: "job_2", title: "Backend Engineer", company: "Northwind Logistics", seniority: "Mid", location: "Leeds, UK (Hybrid)" },
-  { id: "job_3", title: "DevOps Engineer", company: "Acme Robotics", seniority: "Mid", location: "Remote" },
-  { id: "job_4", title: "Frontend Engineer", company: "Marlow Retail", seniority: "Mid", location: "London, UK (Hybrid)" },
-  { id: "job_5", title: "Engineering Manager", company: "Vertex Systems", seniority: "Lead", location: "Remote (UK)" },
+const CANDIDATES = [
+  "Jordan Williams", "Sarah Evans", "Michael Chen", "Aisha Patel",
+  "Tom Fletcher", "Priya Nair", "Daniel Osei", "Grace Kim",
+  "Liam O'Connor", "Fatima Al-Sayed", "Noah Bergström", "Ruth Adeyemi",
+  "Ethan Brooks", "Chloe Martin", "Omar Haddad", "Ines Costa",
+  "Jack Sullivan", "Maya Lindqvist", "Ben Carter", "Zara Ahmed",
+  "Leo Fontaine", "Amara Okafor",
 ];
 
-const FIRST_NAMES = ["Priya", "Tom", "Elena", "Jamal", "Sofia", "Liam", "Chidi", "Rosa", "Kenji", "Freya", "Omar", "Nadia", "Callum", "Ines", "Declan"];
-const LAST_NAMES = ["Nandakumar", "Ashworth", "Volkov", "Idris", "Marino", "Osei", "Reyes", "Tanaka", "Fitzgerald", "Haddad", "Byrne", "Solano"];
-const SKILLS_POOL = ["Kubernetes", "Go", "Terraform", "AWS", "PostgreSQL", "CI/CD", "Node.js", "React", "TypeScript", "Python", "Docker", "GCP", "GraphQL", "Redis", "Kafka"];
-const SOURCES = ["Direct upload", "Email intake", "LinkedIn import", "Referral"];
-
-function seededRandom(seed) {
-  let s = seed;
-  return () => {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
+function daysAgo(n, hour = 9) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  d.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
+  return d.toISOString();
 }
 
-function pick(rand, arr) {
-  return arr[Math.floor(rand() * arr.length)];
+function pick(arr, i) {
+  return arr[i % arr.length];
 }
 
-function pickN(rand, arr, n) {
-  const copy = [...arr];
-  const out = [];
-  for (let i = 0; i < n && copy.length; i++) {
-    out.push(copy.splice(Math.floor(rand() * copy.length), 1)[0]);
-  }
-  return out;
-}
-
+// Deterministic-ish generation so the dashboard has a believable spread of
+// scores, stages, statuses and dates across roughly the last three weeks.
 function buildAnalyses() {
-  const rand = seededRandom(42);
-  const now = new Date("2026-08-17T09:00:00Z").getTime();
-  const analyses = [];
+  const rows = [];
+  let id = 1;
 
-  for (let i = 0; i < 86; i++) {
-    const daysAgo = Math.floor(rand() * 90); // last 90 days
-    const createdAt = new Date(now - daysAgo * 86400000 - Math.floor(rand() * 86400000)).toISOString();
-    const job = pick(rand, JOBS);
-    const recruiter = pick(rand, RECRUITERS);
-    const failed = rand() < 0.05;
-    const score = failed ? null : Math.round(30 + rand() * 68);
-    const stage = failed ? "rejected" : pick(rand, STAGES.filter((s) => s !== "new" || rand() < 0.3));
-    const placed = stage === "placed";
-    const daysToStage = placed ? Math.round(8 + rand() * 34) : null;
+  const blueprint = [
+    // [daysAgoCreated, status, stage, score, recruiter?]
+    [0, "completed", "new", 92, 0],
+    [0, "failed", null, null, 1],
+    [0, "processing", null, null, 2],
+    [1, "completed", "new", 88, 0],
+    [1, "completed", "review", 74, 1],
+    [1, "completed", "shortlisted", 81, 2],
+    [2, "completed", "interview", 69, 0],
+    [2, "completed", "new", 54, 1],
+    [2, "processing", null, null, 0],
+    [3, "completed", "offer", 90, 2],
+    [3, "completed", "review", 63, 0],
+    [3, "failed", null, null, 1],
+    [4, "completed", "placed", 95, 2],
+    [4, "completed", "new", 84, 1],
+    [4, "completed", "shortlisted", 71, 0],
+    [5, "completed", "review", 58, null],
+    [5, "completed", "interview", 77, 2],
+    [6, "completed", "new", 66, 0],
+    [8, "completed", "review", 85, 1],
+    [9, "completed", "placed", 89, 0],
+    [10, "completed", "new", 47, 2],
+    [11, "completed", "shortlisted", 79, 1],
+    [12, "completed", "offer", 91, 0],
+    [13, "completed", "new", 60, null],
+    [14, "completed", "interview", 73, 2],
+    [16, "completed", "placed", 97, 1],
+    [18, "completed", "review", 55, 0],
+    [20, "completed", "new", 82, 2],
+  ];
 
-    analyses.push({
-      id: `an_${1000 + i}`,
-      status: failed ? "failed" : "completed",
+  blueprint.forEach(([age, status, stage, score, recruiterIdx], i) => {
+    const role = pick(ROLES, i);
+    rows.push({
+      id: `an_${String(id).padStart(3, "0")}`,
+      candidateName: pick(CANDIDATES, i),
+      jobTitle: role.jobTitle,
+      company: role.company,
+      recruiterName: recruiterIdx === null ? null : pick(RECRUITERS, recruiterIdx),
+      status,
       stage,
-      createdAt,
       score,
-      scoreBreakdown: score
-        ? {
-            skillsMatch: Math.min(100, Math.round(score + (rand() * 20 - 10))),
-            experienceMatch: Math.min(100, Math.round(score + (rand() * 20 - 10))),
-            educationMatch: Math.min(100, Math.round(score + (rand() * 20 - 10))),
-            seniorityFit: Math.min(100, Math.round(score + (rand() * 20 - 10))),
-          }
-        : null,
-      standoutFactors: failed ? [] : pickN(rand, [
-        "Direct experience with the exact stack",
-        "Led a small engineering team",
-        "Strong open-source contribution history",
-        "Prior experience at a company of similar scale",
-        "Excellent written communication in cover letter",
-      ], 1 + Math.floor(rand() * 3)),
-      gaps: failed ? [] : pickN(rand, [
-        "No formal certification in required area",
-        "Limited experience with one core requirement",
-        "Career gap in last 2 years",
-        "Slightly under years-of-experience threshold",
-      ], Math.floor(rand() * 2)),
-      errorMessage: failed ? "Could not parse resume — corrupted or password-protected file" : undefined,
-      recruiterId: recruiter.id,
-      recruiterName: recruiter.name,
-      daysToPlacement: placed ? daysToStage : null,
-      timeInStageDays: Math.round(1 + rand() * 12),
-      job,
-      candidate: {
-        name: `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`,
-        email: "candidate@example.com",
-        phone: "+44 7700 900123",
-        location: pick(rand, ["Manchester, UK", "Leeds, UK", "London, UK", "Bristol, UK", "Remote"]),
-        currentTitle: pick(rand, ["Software Engineer", "Platform Engineer II", "Senior Developer", "DevOps Engineer", "Engineering Lead"]),
-        currentEmployer: pick(rand, ["Vertex Systems", "Bramwell Digital", "Northlake Co", "Fenwick Tech", "Independent / Freelance"]),
-        yearsExperience: Math.round((1 + rand() * 12) * 10) / 10,
-        noticePeriod: pick(rand, ["Immediate", "2 weeks", "1 month", "4 weeks", "3 months"]),
-        salaryExpectation: `£${30 + Math.round(rand() * 60)}k–£${40 + Math.round(rand() * 70)}k`,
-        linkedinUrl: "https://linkedin.com/in/example",
-        resumeUrl: "/files/resume.pdf",
-        skills: pickN(rand, SKILLS_POOL, 3 + Math.floor(rand() * 4)),
-        source: pick(rand, SOURCES),
-      },
-      draftEmail: failed ? "" : "Hi there, your background looks like a strong match for this role...",
-      recruiterNotes: "",
+      createdAt: daysAgo(age, 8 + (i % 9)),
     });
-  }
+    id += 1;
+  });
 
-  return analyses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return rows;
 }
 
 export function getMockData() {
   const recentAnalyses = buildAnalyses();
+
   return {
-    agencyName: "Your Agency",
-    email: "you@example.com",
-    plan: "trial",
-    analysesUsed: recentAnalyses.length,
-    analysesLimit: 150,
-    recruiters: RECRUITERS,
-    jobs: JOBS,
+    agency: {
+      name: "Bright Path Recruitment",
+      plan: {
+        name: "Growth",
+        analysesUsed: 32,
+        analysesLimit: 50,
+      },
+    },
     recentAnalyses,
   };
-}
-
-export function getAnalysisById(id) {
-  const { recentAnalyses } = getMockData();
-  return recentAnalyses.find((a) => a.id === id) || null;
 }
