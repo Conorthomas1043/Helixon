@@ -7,6 +7,10 @@ import Button from "@/components/landing/Button";
 import ChatWidget from "@/components/landing/ChatWidget";
 
 const TRIAL_EMAIL_KEY = "helixon-trial-email";
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/* ── Shared hooks ─────────────────────────────────────────────────────── */
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -78,113 +82,94 @@ function Reveal({ children, className = "", delay = 0 }) {
   );
 }
 
-const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const DEMO_CANDIDATES = [
-  { name: "R. Okafor",   role: "Sales Executive",        score: 91 },
-  { name: "J. Marchetti",role: "Software Engineer",      score: 74 },
-  { name: "S. Devine",   role: "Operations Manager",     score: 58 },
-  { name: "L. Yang",     role: "Customer Success Mgr",   score: 96 },
-];
-
-const STAGES = ["Reading CV", "Parsing job description", "Analysing candidate fit", "Generating score"];
+/* ── Score helpers ────────────────────────────────────────────────────── */
 
 function scoreColor(score) {
+  if (score === null || score === undefined) return "var(--ink-faint)";
   if (score >= 80) return "var(--forest)";
   if (score >= 60) return "var(--score-mid)";
   return "var(--score-low)";
 }
 
-// ── Live scan demo — the hero's signature element ───────────────────────
-function LiveScanDemo() {
+function scoreLabel(score) {
+  if (score >= 80) return "Strong";
+  if (score >= 60) return "Review";
+  return "Weak";
+}
+
+/* ── Hero product visual — a miniature recruiter workspace, not a toy demo ─
+   This replaces a single-CV "scanning" animation with the thing a recruiter
+   actually wants to see: several candidates, ranked, against one role. */
+
+const WORKSPACE_ROLE = "Senior Software Engineer";
+const WORKSPACE_CANDIDATES = [
+  { name: "Jordan Williams", score: 94 },
+  { name: "Sarah Evans", score: 88 },
+  { name: "James Martin", score: 73 },
+  { name: "Alex Jones", score: 51 },
+];
+const WORKSPACE_TOP_BREAKDOWN = {
+  strengths: ["React", "TypeScript", "5 years' experience"],
+  watch: ["Notice period"],
+};
+
+function RecruiterWorkspaceDemo() {
   const containerRef = useRef(null);
   const reducedMotion = usePrefersReducedMotion();
   const pageVisible = usePageVisible();
   const inView = useInView(containerRef);
-  const animating = pageVisible && inView && !reducedMotion;
+  const animate = pageVisible && inView && !reducedMotion;
 
-  const [index, setIndex]   = useState(0);
-  const [stage, setStage]   = useState(reducedMotion ? STAGES.length - 1 : 0);
-  const [revealed, setRevealed] = useState(reducedMotion);
-
-  useEffect(() => {
-    if (!animating) return;
-    setStage(0);
-    setRevealed(false);
-    let revealTimeout;
-    const stageIv = setInterval(() => {
-      setStage((s) => {
-        if (s >= STAGES.length - 1) {
-          clearInterval(stageIv);
-          revealTimeout = setTimeout(() => setRevealed(true), 250);
-          return s;
-        }
-        return s + 1;
-      });
-    }, 550);
-    return () => {
-      clearInterval(stageIv);
-      clearTimeout(revealTimeout);
-    };
-  }, [index, animating]);
+  const [revealedCount, setRevealedCount] = useState(reducedMotion ? WORKSPACE_CANDIDATES.length : 0);
+  const [breakdownVisible, setBreakdownVisible] = useState(reducedMotion);
 
   useEffect(() => {
-    if (!animating || !revealed) return;
-    const t = setTimeout(() => setIndex((i) => (i + 1) % DEMO_CANDIDATES.length), 2200);
-    return () => clearTimeout(t);
-  }, [revealed, animating]);
+    if (!animate) return;
+    setRevealedCount(0);
+    setBreakdownVisible(false);
+    const timeouts = [];
+    WORKSPACE_CANDIDATES.forEach((_, i) => {
+      timeouts.push(setTimeout(() => setRevealedCount((c) => Math.max(c, i + 1)), 260 * (i + 1)));
+    });
+    timeouts.push(setTimeout(() => setBreakdownVisible(true), 260 * WORKSPACE_CANDIDATES.length + 350));
+    return () => timeouts.forEach(clearTimeout);
+  }, [animate]);
 
-  const candidate = DEMO_CANDIDATES[index];
+  const topCandidate = WORKSPACE_CANDIDATES[0];
 
   return (
     <div
       ref={containerRef}
-      className="rounded-[16px] p-6 w-full max-w-sm mx-auto lg:mx-0"
+      className="rounded-[18px] p-6 w-full max-w-sm mx-auto lg:mx-0"
       style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
-      aria-live="polite"
-      aria-label="Live CV scan demonstration"
+      aria-label="Example recruiter workspace showing ranked candidates for one role"
     >
-      <div className="flex items-center justify-between mb-5">
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--ink-faint)" }}>
-          Live scan
-        </span>
-        <span className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: "var(--ink-soft)" }}>
-          <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: revealed ? "var(--forest)" : "var(--score-mid)" }} />
-          {revealed ? "Scored" : "Scanning…"}
-        </span>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{WORKSPACE_ROLE}</span>
+        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
       </div>
+      <p className="text-[10px] mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
 
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.8" strokeLinecap="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{candidate.name}.pdf</p>
-          <p className="text-[10px]" style={{ color: "var(--ink-faint)" }}>vs {candidate.role}</p>
-        </div>
-      </div>
-
-      <div className="space-y-1.5 mb-5">
-        {STAGES.map((s, i) => {
-          const complete = i < stage || revealed;
-          const active = i === stage && !revealed;
+      <div className="rounded-[12px] overflow-hidden mb-5" style={{ border: "1px solid var(--border)" }}>
+        {WORKSPACE_CANDIDATES.map((c, i) => {
+          const shown = i < revealedCount;
           return (
-            <div key={s} className={`flex items-center gap-2.5 transition-opacity duration-300 ${!complete && !active ? "opacity-30" : ""}`}>
-              <div
-                className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[8px] font-bold transition-colors"
-                style={{
-                  background: complete ? "var(--forest)" : active ? "var(--mint)" : "var(--border)",
-                  color: complete ? "white" : active ? "var(--forest)" : "var(--ink-mute)",
-                }}
-              >
-                {complete ? "✓" : ""}
-              </div>
-              <span className="text-[10px]" style={{ color: active ? "var(--ink)" : "var(--ink-faint)", fontWeight: active ? 600 : 400 }}>
-                {s}{active ? "…" : ""}
+            <div
+              key={c.name}
+              className="flex items-center justify-between px-3 py-2.5 transition-all duration-300"
+              style={{
+                borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                background: i % 2 === 0 ? "white" : "var(--mist)",
+                opacity: shown ? 1 : 0,
+                transform: shown ? "translateY(0)" : "translateY(4px)",
+              }}
+            >
+              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>{c.name}</span>
+              <span className="flex items-center gap-2 shrink-0">
+                <span className="text-[9px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
+                <span className="text-xs font-semibold w-6 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
+                  {shown ? c.score : "—"}
+                </span>
               </span>
             </div>
           );
@@ -192,23 +177,36 @@ function LiveScanDemo() {
       </div>
 
       <div
-        className="rounded-[10px] p-4 flex items-center justify-between transition-all duration-500"
+        className="rounded-[10px] p-4 transition-all duration-500"
         style={{
-          background: revealed ? "var(--mist)" : "transparent",
-          opacity: revealed ? 1 : 0,
-          transform: revealed ? "translateY(0)" : "translateY(4px)",
+          background: "var(--mist)",
+          opacity: breakdownVisible ? 1 : 0,
+          transform: breakdownVisible ? "translateY(0)" : "translateY(4px)",
         }}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Match score</span>
-        <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score) }}>
-          {revealed ? candidate.score : "—"}
-        </span>
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
+          <span className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{topCandidate.score}</span>
+        </div>
+        <ul className="space-y-1">
+          {WORKSPACE_TOP_BREAKDOWN.strengths.map((s) => (
+            <li key={s} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
+              <span style={{ color: "var(--forest)" }}>✓</span>{s}
+            </li>
+          ))}
+          {WORKSPACE_TOP_BREAKDOWN.watch.map((w) => (
+            <li key={w} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-faint)" }}>
+              <span style={{ color: "var(--signal, #c9922e)" }}>△</span>{w}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
 }
 
-// ── Free-trial email gate — captures email for retention before granting access ──
+/* ── Free-trial email gate — logic preserved exactly; framing rewritten so
+   it reads as "here's what you get" rather than a lead-capture interruption ── */
 function TrialGateModal({ open, onClose, returnFocusRef }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -355,11 +353,19 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
         </div>
 
         <h2 id="trial-gate-title" className="text-[1.4rem] font-semibold tracking-tight mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-          Start your 3 free analyses
+          Start screening your first 3 candidates free
         </h2>
-        <p id="trial-gate-desc" className="text-[13px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
-          No card, no signup form — just your email so we can save your results and let you pick up where you left off.
+        <p id="trial-gate-desc" className="text-[13px] leading-relaxed mb-4" style={{ color: "var(--ink-soft)" }}>
+          Just your email so we can save your results and let you pick up where you left off.
         </p>
+
+        <ul className="space-y-1.5 mb-6">
+          {["3 free analyses", "No card required", "Results saved", "Built for recruiter workflows"].map((item) => (
+            <li key={item} className="text-[12px] flex items-center gap-2" style={{ color: "var(--ink-soft)" }}>
+              <span style={{ color: "var(--forest)" }}>✓</span>{item}
+            </li>
+          ))}
+        </ul>
 
         {error && (
           <div role="alert" aria-live="assertive" className="mb-4 flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca", animation: reducedMotion ? "none" : "shake 0.4s ease" }}>
@@ -478,7 +484,7 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
   );
 }
 
-// ── Pricing plan buy button — calls /api/checkout, then redirects ────────
+/* ── Pricing plan buy button — unchanged: calls /api/checkout, then redirects ── */
 function BuyPlanButton({ plan, label, highlight }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -533,109 +539,391 @@ function BuyPlanButton({ plan, label, highlight }) {
   );
 }
 
-// ── Reusable CTA button pair ─────────────────────────────────────────────
-function CtaButtons({ align = "left", onTryFree }) {
+/* ── Reusable CTA pair — label/target vary by context, never more than two ── */
+function CtaButtons({ onTryFree, secondaryLabel = "Book a demo", secondaryHref = "/demo", align = "left" }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
-      <Button
-        variant="primary"
-        onClick={onTryFree}
-        className="w-full sm:w-auto min-h-[48px]"
-      >
-        Try it free
+      <Button variant="primary" onClick={onTryFree} className="w-full sm:w-auto min-h-[48px]">
+        Try 3 analyses free
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </Button>
-      <Button
-        as="a"
-        href="#pricing"
-        variant="outline"
-        className="w-full sm:w-auto min-h-[48px]"
-      >
-        See plans &amp; buy
+      <Button as="a" href={secondaryHref} variant="outline" className="w-full sm:w-auto min-h-[48px]">
+        {secondaryLabel}
       </Button>
     </div>
   );
 }
 
-// ── Feature grid — expanded product detail beyond the 3-step overview ────
-const FEATURES = [
-  {
-    title: "Works with any CV format",
-    body: "PDF, Word, or scanned and photographed documents — Helixon extracts the text either way, so candidates never get missed over formatting.",
-    icon: (
-      <path d="M9 12h6m-6 4h6m-8 5h10a2 2 0 0 0 2-2V7l-5-5H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z" />
-    ),
-  },
-  {
-    title: "Bias-aware scoring",
-    body: "Scores are based on skills, experience, and role fit — not on names, photos, or demographic signals — so shortlists stay defensible.",
-    icon: (
-      <path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8z" />
-    ),
-  },
-  {
-    title: "Bulk upload",
-    body: "Drop in up to 50 CVs against one role at once and come back to a ranked, sortable list instead of 50 separate PDFs.",
-    icon: (
-      <>
-        <rect x="3" y="4" width="7" height="9" rx="1" />
-        <rect x="14" y="4" width="7" height="5" rx="1" />
-        <rect x="14" y="12" width="7" height="8" rx="1" />
-        <rect x="3" y="16" width="7" height="4" rx="1" />
-      </>
-    ),
-  },
-  {
-    title: "Shared shortlists",
-    body: "Tag a candidate, leave a note, and your whole team sees it instantly — no more forwarding CVs over email or Slack.",
-    icon: (
-      <>
-        <circle cx="9" cy="7" r="3" />
-        <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" />
-        <circle cx="19" cy="8" r="2.5" />
-      </>
-    ),
-  },
-  {
-    title: "Full audit trail",
-    body: "Every score, note, and status change is timestamped and attributed — useful for compliance and for settling 'who screened this' questions.",
-    icon: (
-      <>
-        <path d="M12 2a10 10 0 1 0 10 10" />
-        <path d="M12 6v6l4 2" />
-      </>
-    ),
-  },
-  {
-    title: "EU-hosted & GDPR-ready",
-    body: "Candidate data stays on EU infrastructure, is encrypted at rest, and is never used to train models — yours or anyone else's.",
-    icon: (
-      <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
-    ),
-  },
-];
+/* ── Pain / before-after: two workflows, side by side ────────────────────── */
 
-function FeatureGrid() {
+const MANUAL_STEPS = ["Open the CV", "Read it top to bottom", "Open the job description", "Compare by eye", "Note it down somewhere", "Decide", "Repeat, 50 times"];
+const HELIXON_STEPS = ["Upload the CVs", "Helixon analyses each one", "Candidates are ranked", "Review the strongest matches", "Shortlist and move on"];
+
+function TimelineColumn({ label, steps, tone }) {
+  const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {FEATURES.map((f) => (
-        <div key={f.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <span className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              {f.icon}
-            </svg>
+    <div className="rounded-[16px] p-6 h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest mb-5" style={{ color: tone === "forest" ? "var(--forest)" : "var(--ink-faint)" }}>{label}</p>
+      <ol className="relative pl-5">
+        <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
+        {steps.map((step) => (
+          <li key={step} className="relative pb-5 last:pb-0">
+            <span className="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full" style={{ background: tone === "forest" ? accent : "white", border: `2px solid ${accent}` }} aria-hidden="true" />
+            <span className="text-xs" style={{ color: "var(--ink)" }}>{step}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function BeforeAfterSection() {
+  return (
+    <section className="max-w-[1100px] mx-auto px-6 py-20">
+      <Reveal>
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>The problem</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Your candidates shouldn&apos;t be waiting on a spreadsheet.
+          </h2>
+          <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+            Most agencies still screen the same way they did ten years ago — one CV, one tab, one spreadsheet at a time.
+          </p>
+        </div>
+      </Reveal>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <Reveal><TimelineColumn label="The manual way" steps={MANUAL_STEPS} tone="muted" /></Reveal>
+        <Reveal delay={80}><TimelineColumn label="With Helixon" steps={HELIXON_STEPS} tone="forest" /></Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ── Product workflow — interactive tabs standing in for the real product ── */
+
+const WORKFLOW_TABS = ["Upload", "Analyse", "Compare", "Act"];
+
+function UploadTabContent() {
+  const files = ["A. Chen — CV.pdf", "R. Osei — CV.pdf", "M. Laurent — CV.docx"];
+  return (
+    <div>
+      <div className="rounded-[12px] p-6 text-center mb-4" style={{ border: "1.5px dashed var(--border)" }}>
+        <svg className="mx-auto mb-2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 16V4m0 0L7 9m5-5 5 5" />
+          <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+        </svg>
+        <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>Drop up to 50 CVs</p>
+        <p className="text-[10px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word, scanned or typed</p>
+      </div>
+      <div className="space-y-1.5">
+        {files.map((f) => (
+          <div key={f} className="flex items-center gap-2 text-[11px] px-3 py-2 rounded-[8px]" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
+            {f}
+          </div>
+        ))}
+        <p className="text-[10px] text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
+      </div>
+    </div>
+  );
+}
+
+function AnalyseTabContent() {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs font-semibold" style={{ color: "var(--ink)" }}>Match score</span>
+        <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>92</span>
+      </div>
+      <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
+      <ul className="space-y-1 mb-4">
+        {["5 years' React experience", "TypeScript", "SaaS product experience"].map((s) => (
+          <li key={s} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--forest)" }}>✓</span>{s}</li>
+        ))}
+      </ul>
+      <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
+      <ul className="space-y-1">
+        <li className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--signal, #c9922e)" }}>△</span>2-month notice period</li>
+      </ul>
+    </div>
+  );
+}
+
+function CompareTabContent() {
+  return (
+    <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+      {WORKSPACE_CANDIDATES.map((c, i) => (
+        <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "white" : "var(--mist)" }}>
+          <span className="text-[11px] font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-[9px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
+            <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>{c.score}</span>
           </span>
-          <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{f.title}</h3>
-          <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.body}</p>
         </div>
       ))}
     </div>
   );
 }
 
-// ── Testimonials — replace with real customer quotes before shipping ─────
+function ActTabContent() {
+  const actions = ["Shortlist", "Tag: Strong lead", "Send draft email", "Move to interviewing"];
+  return (
+    <div className="flex flex-wrap gap-2">
+      {actions.map((a) => (
+        <span key={a} className="text-[11px] font-medium px-3 py-2 rounded-[8px]" style={{ background: "var(--mint)", color: "var(--forest)" }}>{a}</span>
+      ))}
+    </div>
+  );
+}
+
+const WORKFLOW_TAB_CONTENT = [UploadTabContent, AnalyseTabContent, CompareTabContent, ActTabContent];
+
+function ProductWorkflowSection() {
+  const [activeTab, setActiveTab] = useState(0);
+  const TabContent = WORKFLOW_TAB_CONTENT[activeTab];
+
+  return (
+    <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
+      <Reveal>
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>How it works</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            From CV to shortlist, without the spreadsheet
+          </h2>
+          <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+            One workflow, from the first CV to the candidate you call.
+          </p>
+        </div>
+      </Reveal>
+
+      <Reveal>
+        <div className="rounded-[18px] overflow-hidden max-w-lg mx-auto" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
+          <div className="flex items-center gap-1 px-3 pt-3" aria-hidden="true">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
+          </div>
+          <div className="flex gap-1 px-3 pt-3 overflow-x-auto" role="tablist" aria-label="Product workflow steps">
+            {WORKFLOW_TABS.map((tab, i) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === i}
+                onClick={() => setActiveTab(i)}
+                className="text-[11px] font-semibold px-3 py-2 rounded-t-[8px] whitespace-nowrap transition-colors min-h-[36px]"
+                style={{
+                  color: activeTab === i ? "var(--forest)" : "var(--ink-faint)",
+                  background: activeTab === i ? "var(--mist)" : "transparent",
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="p-6" style={{ background: "var(--mist)", minHeight: "260px" }}>
+            <TabContent />
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/* ── Built for recruiters — outcome pillars + the commercial "why" ───────── */
+
+const BENEFIT_PILLARS = [
+  { title: "Screen faster", body: "Stop reading every CV top to bottom — see the fit before you open the file.", icon: (<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />) },
+  { title: "Prioritise instantly", body: "The strongest candidates rise to the top of every role automatically.", icon: (<path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8z" />) },
+  { title: "Decide consistently", body: "Every candidate is compared against the same role criteria, every time.", icon: (<><rect x="3" y="10" width="4" height="10" /><rect x="10" y="6" width="4" height="14" /><rect x="17" y="3" width="4" height="17" /></>) },
+  { title: "Work as a team", body: "Notes, tags and shortlists stay in one place instead of scattered across email.", icon: (<><circle cx="9" cy="7" r="3" /><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" /><circle cx="19" cy="8" r="2.5" /></>) },
+];
+
+function BenefitsSection() {
+  return (
+    <section id="benefits" className="max-w-[1100px] mx-auto px-6 py-20">
+      <Reveal>
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Built for recruiters</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Helixon helps you decide. It doesn&apos;t decide for you.
+          </h2>
+        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        {BENEFIT_PILLARS.map((b, i) => (
+          <Reveal key={b.title} delay={i * 60}>
+            <div className="rounded-[14px] p-6 h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <span className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
+              </span>
+              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{b.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{b.body}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal>
+        <div className="rounded-[16px] p-8 text-center" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Why it matters</p>
+          <p className="text-sm sm:text-base font-medium leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>
+            Less time screening + more candidates reviewed + faster shortlists
+            <br className="hidden sm:block" /> = more time for calls, sourcing and placements.
+          </p>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/* ── Bulk screening — the volume story, told without invented numbers ────── */
+
+function BulkScreeningSection() {
+  const stages = [
+    { label: "CVs in", detail: "Upload up to 50 at once, for one role" },
+    { label: "Helixon analyses", detail: "Every CV compared against your job spec" },
+    { label: "Ranked shortlist", detail: "Ready to review, no manual sorting" },
+  ];
+
+  const nodes = stages.flatMap((s, i) => {
+    const items = [
+      <Reveal key={`stage-${i}`} delay={i * 80}>
+        <div className="rounded-[14px] p-6 text-center h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold mb-3" style={{ background: "var(--mint)", color: "var(--forest)" }}>{i + 1}</span>
+          <p className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{s.label}</p>
+          <p className="text-[11px]" style={{ color: "var(--ink-soft)" }}>{s.detail}</p>
+        </div>
+      </Reveal>,
+    ];
+    if (i < stages.length - 1) {
+      items.push(
+        <svg key={`arrow-${i}`} className="hidden sm:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      );
+    }
+    return items;
+  });
+
+  return (
+    <section className="max-w-[1100px] mx-auto px-6 py-20">
+      <Reveal>
+        <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Bulk screening</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            One role. Dozens of CVs. One ranked shortlist.
+          </h2>
+        </div>
+      </Reveal>
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-center">
+        {nodes}
+      </div>
+    </section>
+  );
+}
+
+/* ── Agency workflow — collaboration is visible, not a footnote ──────────── */
+
+const AGENCY_FLOW = [
+  { role: "Recruiter", action: "Screens candidates against the role" },
+  { role: "Recruiter", action: "Adds notes and tags" },
+  { role: "Team", action: "Shares the shortlist" },
+  { role: "Hiring manager", action: "Reviews and moves candidates forward" },
+];
+
+function AgencyWorkflowSection() {
+  return (
+    <section id="agency" className="max-w-[1100px] mx-auto px-6 py-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <Reveal>
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>For agencies</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Built for the way agency teams already work
+          </h2>
+          <p className="text-xs leading-relaxed mb-6 max-w-md" style={{ color: "var(--ink-soft)" }}>
+            One recruiter screens, the whole team sees the result. Notes, tags and shortlists stay together — with a clear record of who screened what, and when.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {["Shared shortlists", "Notes & tags", "Audit trail", "Multi-seat access"].map((chip) => (
+              <span key={chip} className="text-[11px] font-medium px-3 py-1.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>{chip}</span>
+            ))}
+          </div>
+          <Button as="a" href="/demo" variant="outline" className="min-h-[44px]">Book a demo</Button>
+        </Reveal>
+
+        <Reveal delay={80}>
+          <div className="rounded-[16px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <ol className="relative pl-6">
+              <div className="absolute left-[9px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
+              {AGENCY_FLOW.map((step, i) => (
+                <li key={`${step.role}-${i}`} className="relative pb-6 last:pb-0">
+                  <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "var(--forest)" }} aria-hidden="true">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: "white" }} />
+                  </span>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--forest)" }}>{step.role}</p>
+                  <p className="text-xs" style={{ color: "var(--ink)" }}>{step.action}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ── Features — grouped by recruiter outcome, not by feature name ────────── */
+
+const FEATURE_GROUPS = [
+  {
+    title: "Screen faster",
+    body: "Get through a full pile of CVs in the time it used to take to read three.",
+    items: ["Bulk CV upload, up to 50 at once", "PDF, Word, scanned and photographed CVs", "Fast, consistent parsing"],
+  },
+  {
+    title: "Make better screening decisions",
+    body: "See more than a score — see why.",
+    items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Bias-aware scoring"],
+  },
+  {
+    title: "Work as a team",
+    body: "Keep every recruiter on the same shortlist.",
+    items: ["Shared shortlists", "Tags & notes", "Full candidate history"],
+  },
+  {
+    title: "Stay compliant",
+    body: "Built for candidate data from the ground up.",
+    items: ["EU-hosted infrastructure", "Encryption at rest & in transit", "Full audit trail", "GDPR-ready workflow"],
+  },
+];
+
+function FeatureGroups() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {FEATURE_GROUPS.map((g) => (
+        <div key={g.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{g.title}</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--ink-soft)" }}>{g.body}</p>
+          <ul className="space-y-2">
+            {g.items.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-xs" style={{ color: "var(--ink-soft)" }}>
+                <span className="shrink-0 mt-0.5" style={{ color: "var(--forest)" }}>✓</span>{item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Testimonials — structured so real quotes can drop straight in ───────── */
+/* TODO before launch: replace with verified customer quotes. Kept generic  */
+/* by role/company-type (no fabricated names, logos or stats) until then.  */
 const TESTIMONIALS = [
   {
     quote: "We used to spend a full afternoon triaging CVs for one role. Now it's the first ten minutes of the morning, and the shortlist is more consistent than when we did it by eye.",
@@ -646,7 +934,7 @@ const TESTIMONIALS = [
     name: "Talent Acquisition Lead, mid-size agency",
   },
   {
-    quote: "Bulk upload alone paid for the subscription in the first week. We screen against three or four roles a day and it just keeps up.",
+    quote: "Bulk upload alone changed how we work. We screen against three or four roles a day and it just keeps up.",
     name: "Operations Manager, contract staffing firm",
   },
 ];
@@ -669,32 +957,74 @@ function Testimonials() {
   );
 }
 
-// ── FAQ accordion ──────────────────────────────────────────────────────
+/* ── Trust / GDPR — a dedicated, weightier section since candidates' data is involved ── */
+
+const TRUST_PILLARS = [
+  { title: "EU-hosted infrastructure", body: "Candidate data stays on servers within the EU." },
+  { title: "Encrypted throughout", body: "Encrypted at rest and in transit, end to end." },
+  { title: "Never used to train models", body: "Candidate data is never used to train Helixon or anyone else's models." },
+  { title: "Full audit trail", body: "Every score, note and status change is timestamped and attributed." },
+];
+
+function TrustSection() {
+  return (
+    <section className="py-20" style={{ background: "var(--forest)" }}>
+      <div className="max-w-[1100px] mx-auto px-6">
+        <Reveal>
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.65)" }}>Trust & compliance</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white" style={{ fontFamily: "var(--font-display)" }}>
+              Candidate data, handled properly
+            </h2>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {TRUST_PILLARS.map((p) => (
+            <div key={p.title} className="rounded-[14px] p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
+              <h3 className="text-xs font-semibold mb-1.5 text-white">{p.title}</h3>
+              <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>{p.body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="text-center">
+          <a href="/dpa" className="text-[11px] font-medium hover:underline" style={{ color: "rgba(255,255,255,0.75)" }}>Read our Data Processing Agreement →</a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Pricing plans — same plans/prices as before; Agency is now the visual anchor ── */
+
+const PLANS = [
+  {
+    name: "Trial", price: "£0", period: "/ 3 uses",
+    features: ["3 free uses", "Match score & summary", "Email drafting"],
+    cta: "Try it free", highlight: false, action: "trial",
+  },
+  {
+    name: "Individual", price: "£249", period: "/ month",
+    features: ["Unlimited analyses", "Bulk upload", "Shortlists & history", "Priority support"],
+    cta: "Buy Individual", highlight: false, plan: "individual",
+  },
+  {
+    name: "Agency", price: "£349", period: "/ month",
+    features: ["Everything in Individual", "Multi-seat access", "Shared templates", "Dedicated onboarding"],
+    cta: "Buy Agency", highlight: true, plan: "agency",
+  },
+];
+
+/* ── FAQ — reordered around actual buying objections ──────────────────────── */
+
 const FAQS = [
-  {
-    q: "How accurate is the match score?",
-    a: "The score reflects how closely a CV's skills, experience, and seniority align with the job description you provide. It's a screening aid to help you prioritise who to review first — treat it as a strong signal, not a hiring decision.",
-  },
-  {
-    q: "Does Helixon replace human judgement?",
-    a: "No. Helixon surfaces the score, standout factors, and possible red flags so you can review candidates faster — the final call on who to interview or hire is always yours.",
-  },
-  {
-    q: "What file formats can I upload?",
-    a: "PDF and Word documents (.pdf, .doc, .docx) are supported, including scanned or photographed CVs. If a file won't parse, you'll see a clear error rather than a silent failure.",
-  },
-  {
-    q: "Is my data secure and GDPR compliant?",
-    a: "Yes. Candidate data is hosted on EU infrastructure, encrypted at rest and in transit, and is never used to train any model. See our Data Processing Agreement for full detail.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes — Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period.",
-  },
-  {
-    q: "What happens after my 3 free analyses?",
-    a: "You'll be prompted to upgrade to Individual or Agency to keep going. Your existing results and history are kept, so nothing is lost when you upgrade.",
-  },
+  { q: "How does Helixon score candidates?", a: "Each CV is compared against the job description you provide — skills, experience, seniority and role fit — to produce a single match score, plus the standout factors and possible red flags behind it." },
+  { q: "Does Helixon replace recruiter judgement?", a: "No. Helixon surfaces the score, standout factors and possible red flags so you can review candidates faster — the final call on who to interview or hire is always yours." },
+  { q: "Can I upload multiple CVs for one role?", a: "Yes. Drop in up to 50 CVs against a single role at once and come back to a ranked, sortable shortlist instead of dozens of separate files." },
+  { q: "What happens to candidate data?", a: "It's hosted on EU infrastructure, encrypted at rest and in transit, and never used to train any model. See our Data Processing Agreement for full detail." },
+  { q: "Can my recruiting team collaborate?", a: "Yes, on the Agency plan. Shortlists, notes and tags are shared across your team, with a full audit trail of who screened what." },
+  { q: "How does the free trial work?", a: "You get 3 free analyses with no card required. Enter your email, upload a CV and job description, and see your first score in under a minute." },
+  { q: "What happens after my 3 free analyses?", a: "You'll be prompted to upgrade to Individual or Agency to keep going. Your existing results and history are kept, so nothing is lost when you upgrade." },
+  { q: "Can I cancel anytime?", a: "Yes — Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period." },
 ];
 
 function FaqItem({ q, a, open, onToggle }) {
@@ -742,6 +1072,19 @@ function FAQSection() {
   );
 }
 
+/* ── Above-the-fold trust strip metrics ───────────────────────────────────── */
+/* NOTE: only claims we can currently stand behind — real usage/satisfaction  */
+/* figures should replace or extend this array once available. No invented   */
+/* percentages, ratings or volume stats.                                     */
+const TRUST_METRICS = [
+  { val: "< 1 min", label: "To analyse one CV" },
+  { val: "50", label: "CVs per bulk upload" },
+  { val: "EU", label: "Hosted infrastructure" },
+  { val: "3", label: "Free analyses, no card" },
+];
+
+/* ── Page ──────────────────────────────────────────────────────────────── */
+
 export default function LandingPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
@@ -777,26 +1120,9 @@ export default function LandingPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileNavOpen]);
 
-  const plans = [
-    {
-      name: "Trial", price: "£0", period: "/ 3 uses",
-      features: ["3 free uses", "Match score & summary", "Email drafting"],
-      cta: "Try it free", highlight: false, action: "trial",
-    },
-    {
-      name: "Individual", price: "£249", period: "/ month",
-      features: ["Unlimited analyses", "Bulk upload", "Shortlists & history", "Priority support"],
-      cta: "Buy Individual", highlight: false, plan: "individual",
-    },
-    {
-      name: "Agency", price: "£349", period: "/ month",
-      features: ["Everything in Individual", "Multi-seat access", "Shared templates", "Dedicated onboarding"],
-      cta: "Buy Agency", highlight: false, plan: "agency",
-    },
-  ];
-
   const navLinks = [
     ["How it works", "#how"],
+    ["For agencies", "#agency"],
     ["Features", "#features"],
     ["Pricing", "#pricing"],
     ["FAQ", "#faq"],
@@ -823,7 +1149,7 @@ export default function LandingPage() {
               </div>
               <span className="flex flex-col leading-none">
                 <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-                <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
+                <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
               </span>
             </Link>
 
@@ -843,7 +1169,7 @@ export default function LandingPage() {
                 onClick={openGate}
                 className="hidden md:inline-flex min-h-[36px]"
               >
-                Try now
+                Try free
               </Button>
               <button
                 type="button"
@@ -875,7 +1201,7 @@ export default function LandingPage() {
                 onClick={(e) => { setMobileNavOpen(false); openGate(e); }}
                 className="mt-1 min-h-[44px]"
               >
-                Try now
+                Try free
               </Button>
             </div>
           )}
@@ -887,36 +1213,30 @@ export default function LandingPage() {
             <div>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-                GDPR-ready · Data held in the EU
+                AI screening built for recruiters
               </span>
 
               <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-                Stop reading CVs.<br />Start reading scores.
+                Turn a pile of CVs into a ranked shortlist in minutes.
               </h1>
 
               <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-                Drop in a CV and your job requirement. Helixon reads both, scores the fit, flags possible red flags, and
-                drafts the follow-up email — in under 30 seconds. Built for agency recruiters screening dozens of CVs a day.
+                Helixon reads each CV against your job spec, scores the fit, flags what&apos;s worth a second look, and hands you a ranked shortlist — not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day.
               </p>
 
-              <CtaButtons onTryFree={openGate} />
+              <CtaButtons onTryFree={openGate} secondaryLabel="See how it works" secondaryHref="#how" />
 
-              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>No card required · 3 free analyses · Cancel anytime</p>
+              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>No card required · GDPR-ready · Built for agency recruiters</p>
             </div>
 
-            <LiveScanDemo />
+            <RecruiterWorkspaceDemo />
           </div>
         </section>
 
         {/* ── Trust strip ─────────────────────────────────────────────────── */}
         <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
           <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-            {[
-              { val: "30 sec", label: "Avg. time to score" },
-              { val: "50+", label: "CVs screened per agency/wk" },
-              { val: "GDPR", label: "EU-hosted, never used to train" },
-              { val: "4.8/5", label: "Recruiter satisfaction" },
-            ].map((m) => (
+            {TRUST_METRICS.map((m) => (
               <div key={m.label}>
                 <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
                 <p className="text-[10px] mt-1" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
@@ -925,147 +1245,160 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── How it works ────────────────────────────────────────────────── */}
-        <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>How it works</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Three steps. No spreadsheet required.
-            </h2>
-          </div>
+        {/* ── Pain → before/after ─────────────────────────────────────────── */}
+        <BeforeAfterSection />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {[
-              { n: "1", title: "Name & pick the job", body: "Name the analysis, then pick a preset role or paste your own job description." },
-              { n: "2", title: "Upload the CV", body: "Drag in a PDF or Word file — Helixon reads it in seconds, no formatting required." },
-              { n: "3", title: "Get your score", body: "A match score, standout factors, red flags, and a ready-to-send email — all in one screen." },
-            ].map((s) => (
-              <div key={s.n} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-                <span className="w-8 h-8 rounded-[9px] flex items-center justify-center text-xs font-bold mb-4" style={{ background: "var(--mint)", color: "var(--forest)" }}>{s.n}</span>
-                <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* ── Product workflow (interactive) ──────────────────────────────── */}
+        <ProductWorkflowSection />
 
-        {/* ── Features ─────────────────────────────────────────────────────── */}
+        {/* ── Built for recruiters + ROI ───────────────────────────────────── */}
+        <BenefitsSection />
+
+        {/* ── Bulk screening ───────────────────────────────────────────────── */}
+        <BulkScreeningSection />
+
+        {/* ── Agency workflow ──────────────────────────────────────────────── */}
+        <AgencyWorkflowSection />
+
+        {/* ── Features, grouped by outcome ─────────────────────────────────── */}
         <section id="features" className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Features</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Built for the volume agency recruiters actually deal with
-            </h2>
-            <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
-              Not a toy demo — the parts that matter when you're screening dozens of CVs a week.
-            </p>
-          </div>
-          <FeatureGrid />
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Features</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Built for the volume agency recruiters actually deal with
+              </h2>
+              <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+                Not a toy demo — the parts that matter when you&apos;re screening dozens of CVs a week.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal><FeatureGroups /></Reveal>
         </section>
 
         {/* ── Testimonials ─────────────────────────────────────────────────── */}
         <section className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>What recruiters say</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Fewer hours screening. More time interviewing.
-            </h2>
-          </div>
-          <Testimonials />
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>What recruiters say</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Fewer hours screening. More time interviewing.
+              </h2>
+            </div>
+          </Reveal>
+          <Reveal><Testimonials /></Reveal>
         </section>
+
+        {/* ── Trust / GDPR ─────────────────────────────────────────────────── */}
+        <TrustSection />
 
         {/* ── Pricing / buy ───────────────────────────────────────────────── */}
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Plans that pay for themselves in one placement
-            </h2>
-            <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
-          </div>
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Plans built around how agencies actually screen
+              </h2>
+              <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
+            </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto items-stretch">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className="rounded-[16px] p-6 flex flex-col relative h-full"
-                style={{
-                  background: plan.highlight ? "var(--forest)" : "white",
-                  border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
-                  boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
-                }}
-              >
-                {plan.highlight && (
-                  <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full"
-                    style={{ background: "var(--signal, #f5a623)", color: "var(--forest)" }}
-                  >
-                    Most popular
-                  </span>
-                )}
-                <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
-                  {plan.name}
-                </h3>
-                <div className="flex items-baseline gap-1 mb-5">
-                  <span className="text-3xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
-                  <span className="text-[11px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>{plan.period}</span>
+            {PLANS.map((plan) => (
+              <Reveal key={plan.name}>
+                <div
+                  className="rounded-[16px] p-6 flex flex-col relative h-full"
+                  style={{
+                    background: plan.highlight ? "var(--forest)" : "white",
+                    border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
+                    boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
+                  }}
+                >
+                  {plan.highlight && (
+                    <span
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
+                      style={{ background: "var(--signal, #f5a623)", color: "var(--forest)" }}
+                    >
+                      Recommended for agencies
+                    </span>
+                  )}
+                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-baseline gap-1 mb-5">
+                    <span className="text-3xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
+                    <span className="text-[11px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>{plan.period}</span>
+                  </div>
+                  <ul className="space-y-2.5 mb-7 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
+                        <span className="shrink-0 mt-0.5">✓</span>{f}
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.action === "trial" ? (
+                    <Button
+                      variant="primary"
+                      size="block"
+                      onClick={openGate}
+                      className="min-h-[44px]"
+                    >
+                      {plan.cta}
+                    </Button>
+                  ) : (
+                    <BuyPlanButton plan={plan.plan} label={plan.cta} highlight={plan.highlight} />
+                  )}
                 </div>
-                <ul className="space-y-2.5 mb-7 flex-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
-                      <span className="shrink-0 mt-0.5">✓</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                {plan.action === "trial" ? (
-                  <Button
-                    variant="primary"
-                    size="block"
-                    onClick={openGate}
-                    className="min-h-[44px]"
-                  >
-                    {plan.cta}
-                  </Button>
-                ) : (
-                  <BuyPlanButton plan={plan.plan} label={plan.cta} highlight={plan.highlight} />
-                )}
-              </div>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
         <section id="faq" className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="text-center mb-10">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>FAQ</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-              Questions recruiters usually ask
-            </h2>
-          </div>
-          <FAQSection />
+          <Reveal>
+            <div className="text-center mb-10">
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>FAQ</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Questions recruiters usually ask
+              </h2>
+            </div>
+          </Reveal>
+          <Reveal><FAQSection /></Reveal>
         </section>
 
         {/* ── Final CTA ────────────────────────────────────────────────────── */}
         <section className="max-w-[1100px] mx-auto px-6 pb-24">
-          <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
-              Your next great hire is in that pile of CVs.
-            </h2>
-            <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-              Find them in seconds, not hours. Try Helixon free — no card needed.
-            </p>
-            <div className="flex justify-center">
-              <Button
-                as="a"
-                href="/demo"
-                variant="onForest"
-                className="motion-safe-scale hover:scale-[1.02] min-h-[48px]"
-              >
-                Get a demo
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </Button>
+          <Reveal>
+            <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
+                Your next great hire is already in that pile of CVs.
+              </h2>
+              <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
+                Find them in minutes, not hours. Start screening free — no card needed.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <Button
+                  variant="onForest"
+                  onClick={openGate}
+                  className="motion-safe-scale hover:scale-[1.02] min-h-[48px] w-full sm:w-auto"
+                >
+                  Try 3 analyses free
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </Button>
+                <Button
+                  as="a"
+                  href="/demo"
+                  variant="outline"
+                  className="min-h-[48px] w-full sm:w-auto"
+                  style={{ borderColor: "rgba(255,255,255,0.4)", color: "white" }}
+                >
+                  Book a demo
+                </Button>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* ── Footer ───────────────────────────────────────────────────────── */}
@@ -1083,7 +1416,7 @@ export default function LandingPage() {
                 <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
               </div>
               <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
-                Screen candidates in seconds. GDPR-ready, EU-hosted.
+                Candidate screening built for recruitment agencies. GDPR-ready, EU-hosted.
               </p>
             </div>
 
@@ -1091,6 +1424,7 @@ export default function LandingPage() {
               <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Product</p>
               <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
                 <li><a href="#how" className="hover:underline">How it works</a></li>
+                <li><a href="#agency" className="hover:underline">For agencies</a></li>
                 <li><a href="#features" className="hover:underline">Features</a></li>
                 <li><a href="#pricing" className="hover:underline">Pricing</a></li>
                 <li><a href="#faq" className="hover:underline">FAQ</a></li>
