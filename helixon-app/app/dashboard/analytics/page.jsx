@@ -1,275 +1,329 @@
 "use client";
-import { useMemo, useState } from "react";
+
+/* ------------------------------------------------------------------------
+ * ASSUMPTIONS
+ * ------------------------------------------------------------------------
+ * - Route: /dashboard/analytics. DashboardNav already linked here before
+ *   any of this work started — if a real analytics page already exists,
+ *   treat this as a reference implementation to reconcile, not a
+ *   replacement.
+ * - Every number here comes from getAnalyticsSnapshot() in
+ *   lib/mock-data.js, computed over the current in-memory candidate set —
+ *   nothing on this page is a fabricated/static figure. See that
+ *   function's comment for the production caveat (server-side
+ *   aggregation, not client-side reduction over the full table).
+ * - No charting library is used, to match the existing dashboard's
+ *   hand-rolled bar/funnel visuals (plain divs) rather than introducing a
+ *   new dependency for this pass.
+ * ---------------------------------------------------------------------- */
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { useDashboardData } from "@/lib/DashboardDataContext";
-import { downloadCsv } from "@/lib/csv";
-import {
-  ResponsiveContainer, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
-} from "recharts";
+import { getAnalyticsSnapshot, STAGE_LABELS } from "@/lib/mock-data";
+import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
 
-const COLORS = { forest: "#0b6e4f", mint: "#bfe3d0", amber: "#c9922e", red: "#c0392b", faint: "#8aaa9a" };
+async function fetchAnalytics() {
+  try {
+    return await new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          resolve(getAnalyticsSnapshot());
+        } catch (err) {
+          reject(err);
+        }
+      }, 200);
+    });
+  } catch (err) {
+    throw new Error("Failed to load analytics");
+  }
+}
 
-function Panel({ title, sub, children, empty }) {
+function SectionHeading({ eyebrow, title, action }) {
   return (
-    <div className="rounded-[16px] p-5 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold" style={{ color: "#13201b" }}>{title}</h3>
-        {sub && <p className="text-[11px] mt-0.5" style={{ color: "#5a7a6a" }}>{sub}</p>}
+    <div className="flex items-end justify-between gap-4 mb-4">
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          {eyebrow}
+        </p>
+        <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+          {title}
+        </h2>
       </div>
-      {empty ? (
-        <div className="rounded-[10px] py-10 text-center" style={{ background: "var(--mist)" }}>
-          <p className="text-[11px]" style={{ color: "#8aaa9a" }}>No data for this range/filter.</p>
-        </div>
-      ) : children}
+      {action}
     </div>
   );
 }
 
-function weekKey(dateIso) {
-  const d = new Date(dateIso);
-  const day = d.getUTCDay();
-  const monday = new Date(d);
-  monday.setUTCDate(d.getUTCDate() - ((day + 6) % 7));
-  return monday.toISOString().slice(0, 10);
+function StatCard({ label, value, sub }) {
+  return (
+    <div className="rounded-[14px] p-5" style={CARD}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+        {label}
+      </p>
+      <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>
+        {value}
+      </p>
+      {sub && (
+        <p className="text-[11px] mt-1" style={{ color: INK_MUTED }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function FunnelChart({ funnel }) {
+  const max = funnel[0]?.count || 1;
+  return (
+    <div className="space-y-2.5">
+      {funnel.map((stage, i) => {
+        const pct = Math.max(4, Math.round((stage.count / max) * 100));
+        const prevCount = i > 0 ? funnel[i - 1].count : stage.count;
+        const dropOff = i > 0 && prevCount > 0 ? Math.round(((prevCount - stage.count) / prevCount) * 100) : 0;
+        return (
+          <div key={stage.key} className="flex items-center gap-3">
+            <span className="text-[11px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
+              {stage.label}
+            </span>
+            <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+              <div
+                className="h-full rounded-[6px] flex items-center justify-end px-2"
+                style={{ width: `${pct}%`, background: stage.key === "placed" ? "var(--forest)" : "#a9c4b5" }}
+              >
+                <span className="text-[11px] font-semibold tabular-nums text-white">{stage.count}</span>
+              </div>
+            </div>
+            <span className="text-[10px] w-16 text-right shrink-0" style={{ color: INK_FAINT }}>
+              {i > 0 && dropOff > 0 ? `-${dropOff}%` : ""}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function QualityDistribution({ quality }) {
+  const total = quality.scoredCount || 1;
+  const segments = [
+    { key: "strong", label: "80+ Strong", count: quality.strong, color: "var(--forest)" },
+    { key: "moderate", label: "60–79 Moderate", count: quality.moderate, color: AMBER },
+    { key: "weak", label: "Below 60", count: quality.weak, color: RED },
+  ];
+  return (
+    <div>
+      <div className="h-3 rounded-full overflow-hidden flex mb-3" style={{ background: "var(--mist)" }}>
+        {segments.map((s) =>
+          s.count > 0 ? <div key={s.key} style={{ width: `${(s.count / total) * 100}%`, background: s.color }} /> : null
+        )}
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+        {segments.map((s) => (
+          <div key={s.key} className="flex items-center gap-1.5 text-[12px]" style={{ color: INK_MUTED }}>
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.color }} />
+            {s.label} <span style={{ color: INK, fontFamily: "var(--font-mono)" }}>{s.count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PipelineBar({ pipeline }) {
+  const stages = Object.keys(STAGE_LABELS);
+  const max = Math.max(1, ...stages.map((k) => pipeline.stageCounts[k] ?? 0));
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      {stages.map((key) => {
+        const count = pipeline.stageCounts[key] ?? 0;
+        const heightPct = Math.max(6, Math.round((count / max) * 100));
+        const isPlaced = key === "placed";
+        return (
+          <div key={key} className="flex flex-col items-center">
+            <span className="text-base font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>
+              {count}
+            </span>
+            <div className="w-full rounded-full mt-2 mb-2 flex items-end" style={{ height: 36, background: "var(--mist)" }}>
+              <div className="w-full rounded-full" style={{ height: `${heightPct}%`, background: isPlaced ? "var(--forest)" : "#a9c4b5" }} />
+            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
+              {STAGE_LABELS[key]}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Block({ className = "" }) {
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
+}
+
+function AnalyticsSkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-label="Loading analytics">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-[14px] p-5" style={CARD}>
+            <Block className="h-3 w-20 mb-3" />
+            <Block className="h-7 w-14" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-[14px] p-6" style={CARD}>
+        <Block className="h-4 w-40 mb-5" />
+        <Block className="h-40 w-full" />
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }) {
+  return (
+    <div className="rounded-[16px] p-10 flex flex-col items-center text-center" style={CARD}>
+      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+        Unable to load analytics
+      </p>
+      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+        Something went wrong while loading recruitment analytics.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ background: "var(--forest)", color: "white" }}
+      >
+        Try again
+      </button>
+    </div>
+  );
 }
 
 export default function AnalyticsPage() {
-  const { data, error } = useDashboardData();
-  const [range, setRange] = useState("90");
+  const [snapshot, setSnapshot] = useState(null);
+  const [status, setStatus] = useState("loading");
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const scoped = useMemo(() => {
-    if (!data) return [];
-    const cutoff = Date.now() - Number(range) * 86400000;
-    return data.recentAnalyses.filter((a) => new Date(a.createdAt).getTime() >= cutoff);
-  }, [data, range]);
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    fetchAnalytics()
+      .then((s) => {
+        if (cancelled) return;
+        setSnapshot(s);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
-  const scoreOverTime = useMemo(() => {
-    const buckets = {};
-    scoped.forEach((a) => {
-      if (a.score === null) return;
-      const wk = weekKey(a.createdAt);
-      if (!buckets[wk]) buckets[wk] = { week: wk, sum: 0, count: 0 };
-      buckets[wk].sum += a.score;
-      buckets[wk].count += 1;
-    });
-    return Object.values(buckets)
-      .sort((a, b) => a.week.localeCompare(b.week))
-      .map((b) => ({ week: b.week.slice(5), avgScore: Math.round(b.sum / b.count), volume: b.count }));
-  }, [scoped]);
-
-  const scoreDistribution = useMemo(() => {
-    const bands = [
-      { label: "0–19", min: 0, max: 19 }, { label: "20–39", min: 20, max: 39 },
-      { label: "40–59", min: 40, max: 59 }, { label: "60–79", min: 60, max: 79 },
-      { label: "80–100", min: 80, max: 100 },
-    ];
-    return bands.map((b) => ({
-      band: b.label,
-      count: scoped.filter((a) => a.score !== null && a.score >= b.min && a.score <= b.max).length,
-    }));
-  }, [scoped]);
-
-  const skillsDemand = useMemo(() => {
-    const counts = {};
-    scoped.forEach((a) => a.candidate.skills.forEach((s) => { counts[s] = (counts[s] || 0) + 1; }));
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([skill, count]) => ({ skill, count }));
-  }, [scoped]);
-
-  const volumeByStage = useMemo(() => {
-    const counts = {};
-    scoped.forEach((a) => { counts[a.stage] = (counts[a.stage] || 0) + 1; });
-    return counts;
-  }, [scoped]);
-
-  const recruiterStats = useMemo(() => {
-    if (!data) return [];
-    return data.recruiters.map((r) => {
-      const items = scoped.filter((a) => a.recruiterId === r.id);
-      const completed = items.filter((a) => a.status === "completed");
-      const placed = items.filter((a) => a.stage === "placed");
-      const rejected = items.filter((a) => a.stage === "rejected");
-      const avgScore = completed.length ? Math.round(completed.reduce((s, a) => s + a.score, 0) / completed.length) : 0;
-      const placementTimes = placed.map((a) => a.daysToPlacement).filter(Boolean);
-      const avgTimeToPlacement = placementTimes.length ? Math.round(placementTimes.reduce((s, v) => s + v, 0) / placementTimes.length) : null;
-      const conversionRate = items.length ? Math.round((placed.length / items.length) * 100) : 0;
-      return { ...r, total: items.length, placed: placed.length, rejected: rejected.length, avgScore, avgTimeToPlacement, conversionRate };
-    }).sort((a, b) => b.placed - a.placed);
-  }, [data, scoped]);
-
-  const funnelStages = ["new", "screened", "shortlisted", "submitted_to_client", "interviewing", "offer", "placed"];
-  const funnelData = funnelStages.map((s) => ({ stage: s, count: scoped.filter((a) => funnelStages.indexOf(a.stage) >= funnelStages.indexOf(s)).length }));
-
-  function exportScorecardCsv() {
-    downloadCsv("recruiter-scorecard.csv", recruiterStats.map((r) => ({
-      recruiter: r.name, total: r.total, placed: r.placed, rejected: r.rejected,
-      conversionRate: `${r.conversionRate}%`, avgScore: r.avgScore, avgDaysToPlacement: r.avgTimeToPlacement ?? "",
-    })));
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-        <DashboardNav />
-        <p className="max-w-[1200px] mx-auto px-6 pt-10 text-xs" style={{ color: "#b91c1c" }}>{error}</p>
-      </main>
-    );
-  }
+  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-      <DashboardNav email={data?.email} />
-
-      <section className="max-w-[1200px] mx-auto px-6 pt-10 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <DashboardNav />
+      <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+        <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>Analytics</p>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
-              Recruiter performance & candidate quality
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+              Recruitment analytics
+            </p>
+            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+              Analytics
             </h1>
           </div>
-          <div className="flex gap-2">
-            <select value={range} onChange={(e) => setRange(e.target.value)} className="text-xs px-3 py-2.5 rounded-[10px]" style={{ border: "1px solid var(--border)", background: "white", color: "#13201b" }}>
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-            </select>
-            <button onClick={exportScorecardCsv} disabled={!data} className="text-xs font-semibold px-3 py-2.5 rounded-[10px]" style={{ border: "1px solid var(--border)", color: "#13201b", background: "white" }}>
-              Export CSV
-            </button>
-          </div>
-        </div>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            ← Dashboard
+          </Link>
+        </header>
 
-        <div className="rounded-[10px] p-3 mt-4" style={{ background: "#fff8e6", border: "1px solid #f5e0a3" }}>
-          <p className="text-[11px]" style={{ color: "#8a6a1f" }}>
-            <strong>Data note:</strong> per-dimension sub-scores (skills/experience/education/seniority match) are placeholder values derived from the overall score with random variance — they are not yet backed by real scoring logic. "Avg days to placement" only counts candidates who have already been placed, so it skews optimistic as your active pipeline grows. Treat both as illustrative until a real scoring model and full-pipeline timing are built.
-          </p>
-        </div>
-      </section>
+        {status === "loading" && <AnalyticsSkeleton />}
+        {status === "error" && <ErrorState onRetry={retry} />}
 
-      {!data ? (
-        <div className="max-w-[1200px] mx-auto px-6"><p className="text-xs" style={{ color: "#5a7a6a" }}>Loading…</p></div>
-      ) : (
-        <section className="max-w-[1200px] mx-auto px-6 pb-24 pt-4">
-
-          <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>Recruiter performance</h2>
-
-          <Panel title="Placements by recruiter" sub="Total analyses run vs. candidates successfully placed, this period" empty={recruiterStats.every((r) => r.total === 0)}>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={recruiterStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="total" name="Total analyses" fill={COLORS.mint} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="placed" name="Placed" fill={COLORS.forest} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
-
-          <Panel title="Recruiter scorecard" sub="Conversion rate = placements ÷ total candidates screened">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr style={{ color: "#8aaa9a" }}>
-                    <th className="text-left font-semibold uppercase tracking-wider text-[10px] pb-2">Recruiter</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Total</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Placed</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Rejected</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Conversion</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Avg score</th>
-                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] pb-2">Avg days to placement</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recruiterStats.map((r) => (
-                    <tr key={r.id} style={{ borderTop: "1px solid var(--border)" }}>
-                      <td className="py-2.5 font-semibold" style={{ color: "#13201b" }}>{r.name}</td>
-                      <td className="py-2.5 text-right" style={{ color: "#13201b" }}>{r.total}</td>
-                      <td className="py-2.5 text-right" style={{ color: "var(--forest)" }}>{r.placed}</td>
-                      <td className="py-2.5 text-right" style={{ color: "#c0392b" }}>{r.rejected}</td>
-                      <td className="py-2.5 text-right" style={{ color: "#13201b" }}>{r.total === 0 ? "—" : `${r.conversionRate}%`}</td>
-                      <td className="py-2.5 text-right" style={{ color: "#13201b" }}>{r.avgScore || "—"}</td>
-                      <td className="py-2.5 text-right" style={{ color: "#13201b" }}>{r.avgTimeToPlacement ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {status === "ready" && snapshot && (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Candidates analysed" value={snapshot.totals.completed} sub={`${snapshot.totals.processing} processing · ${snapshot.totals.failed} failed`} />
+              <StatCard label="Avg. match score" value={snapshot.quality.avgScore} sub={`${snapshot.quality.strong} strong matches`} />
+              <StatCard label="Shortlist rate" value={`${snapshot.conversion.shortlistRate}%`} sub="of analysed candidates" />
+              <StatCard label="Placement rate" value={`${snapshot.conversion.placementRate}%`} sub="of analysed candidates" />
             </div>
-          </Panel>
 
-          <Panel title="Pipeline funnel" sub="How many candidates have reached at least this stage, this period" empty={funnelData.every((f) => f.count === 0)}>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={funnelData} layout="vertical" margin={{ left: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                <YAxis type="category" dataKey="stage" tick={{ fontSize: 11 }} width={130} />
-                <Tooltip />
-                <Bar dataKey="count" fill={COLORS.forest} radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Funnel" title="Analysed → Placed" />
+              <FunnelChart funnel={snapshot.funnel} />
+            </div>
 
-          <h2 className="text-xs font-semibold uppercase tracking-widest mb-3 mt-8" style={{ color: "#8aaa9a" }}>Candidate quality trends</h2>
-
-          <Panel title="Average match score over time" sub="Weekly average, with analysis volume" empty={scoreOverTime.length === 0}>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={scoreOverTime}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" domain={[0, 100]} tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Line yAxisId="left" type="monotone" dataKey="avgScore" name="Avg score" stroke={COLORS.forest} strokeWidth={2} dot={false} />
-                <Line yAxisId="right" type="monotone" dataKey="volume" name="Analyses run" stroke={COLORS.amber} strokeWidth={2} dot={false} strokeDasharray="4 3" />
-              </LineChart>
-            </ResponsiveContainer>
-          </Panel>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Panel title="Score distribution" sub="Candidates by match-score band, this period" empty={scoreDistribution.every((d) => d.count === 0)}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={scoreDistribution}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="band" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                    {scoreDistribution.map((d, i) => (
-                      <Cell key={i} fill={["#c0392b", "#c0392b", "#c9922e", "#c9922e", "#0b6e4f"][i]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
-
-            <Panel title="Most in-demand skills" sub="Top skills across candidates analysed this period" empty={skillsDemand.length === 0}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={skillsDemand} layout="vertical" margin={{ left: 30 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                  <YAxis type="category" dataKey="skill" tick={{ fontSize: 11 }} width={90} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill={COLORS.forest} radius={[0, 6, 6, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
-          </div>
-
-          <Panel title="Stage snapshot" sub="Where every candidate stands right now, this period" empty={Object.keys(volumeByStage).length === 0}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {Object.entries(volumeByStage).map(([stage, count]) => (
-                <div key={stage} className="rounded-[10px] p-3 text-center" style={{ background: "var(--mist)" }}>
-                  <p className="text-lg font-semibold" style={{ fontFamily: "var(--font-mono)", color: "#13201b" }}>{count}</p>
-                  <p className="text-[10px] capitalize" style={{ color: "#5a7a6a" }}>{stage.replace(/_/g, " ")}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+                <SectionHeading eyebrow="Candidate quality" title="Score distribution" />
+                <QualityDistribution quality={snapshot.quality} />
+              </div>
+              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+                <SectionHeading eyebrow="Conversion" title="Stage conversion rates" />
+                <div className="grid grid-cols-2 gap-3">
+                  <StatCard label="Interview rate" value={`${snapshot.conversion.interviewRate}%`} />
+                  <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} />
                 </div>
-              ))}
+              </div>
             </div>
-          </Panel>
-        </section>
-      )}
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading
+                eyebrow="Pipeline health"
+                title="Candidates by stage"
+                action={
+                  snapshot.pipeline.stalled > 0 && (
+                    <span className="text-[12px] font-semibold" style={{ color: AMBER }}>
+                      {snapshot.pipeline.stalled} stalled 5+ days
+                    </span>
+                  )
+                }
+              />
+              <PipelineBar pipeline={snapshot.pipeline} />
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading
+                eyebrow="Team"
+                title="Recruiter summary"
+                action={
+                  <Link href="/dashboard/team" className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
+                    Full team view →
+                  </Link>
+                }
+              />
+              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                {snapshot.team.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between gap-3 py-3">
+                    <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+                      {r.name}
+                    </p>
+                    <div className="flex items-center gap-4 text-[12px] shrink-0" style={{ color: INK_MUTED }}>
+                      <span>
+                        <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.activeCandidates}</strong> active
+                      </span>
+                      <span>
+                        <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{r.placed}</strong> placed
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
     </main>
   );
 }
