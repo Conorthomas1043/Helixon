@@ -1,16 +1,16 @@
 import { Geist_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
-
 export const metadata = {
   title: "Helixon — screen candidates in seconds",
   description: "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing — in under 30 seconds. Built for recruiters who screen at volume.",
 };
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistMono.variable} h-full`}>
@@ -24,6 +24,8 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-full flex flex-col antialiased">
         {children}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
