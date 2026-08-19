@@ -16,9 +16,13 @@
  * - Bulk stage-change and bulk tag-add call the same mock mutation
  *   functions the candidate profile page uses, once per selected
  *   candidate, then refetch. There's no bulk endpoint assumed to exist.
+ * - CandidateDatabasePage reads `useSearchParams()` for deep-linking
+ *   (?jobId=, ?recruiterId=, ?stage=), so the part of the tree that uses
+ *   it is wrapped in <Suspense> — required by Next.js for any component
+ *   that reads search params, or static prerendering fails the build.
  * ---------------------------------------------------------------------- */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
@@ -372,10 +376,11 @@ function ErrorState({ onRetry }) {
 }
 
 /* ------------------------------------------------------------------------
- * Page
+ * Page content — reads useSearchParams(), so it must live inside the
+ * <Suspense> boundary set up by the default export below.
  * ---------------------------------------------------------------------- */
 
-export default function CandidateDatabasePage() {
+function CandidateDatabaseContent() {
   // Supports deep-linking from Jobs/Team ("?jobId=…", "?recruiterId=…",
   // "?stage=…") so those pages can hand off into a pre-filtered view of
   // the same underlying candidate data rather than duplicating it.
@@ -689,5 +694,30 @@ export default function CandidateDatabasePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Fallback shown during the (very brief) moment Suspense needs before
+ * useSearchParams() resolves — reuses the same skeleton as the loading
+ * state so there's no visible flash between the two.
+ * ---------------------------------------------------------------------- */
+
+function CandidateDatabaseFallback() {
+  return (
+    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <DashboardNav />
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <ListSkeleton />
+      </div>
+    </main>
+  );
+}
+
+export default function CandidateDatabasePage() {
+  return (
+    <Suspense fallback={<CandidateDatabaseFallback />}>
+      <CandidateDatabaseContent />
+    </Suspense>
   );
 }
