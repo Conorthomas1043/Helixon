@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
+  { href: "/dashboard/candidates", label: "Candidates" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
-  { href: "/dashboard/analytics", label: "Analytics" },
   { href: "/dashboard/jobs", label: "Jobs" },
+  { href: "/dashboard/team", label: "Team" },
+  { href: "/dashboard/analytics", label: "Analytics" },
 ];
 
 export default function DashboardNav({ email }) {
@@ -33,7 +35,7 @@ export default function DashboardNav({ email }) {
 
         <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
           {TABS.map((t) => {
-            const active = pathname === t.href;
+            const active = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`);
             return (
               <Link
                 key={t.href}
@@ -74,7 +76,7 @@ export default function DashboardNav({ email }) {
       {/* Mobile tab row */}
       <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "#5a7a6a" }}>
         {TABS.map((t) => {
-          const active = pathname === t.href;
+          const active = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`);
           return (
             <Link
               key={t.href}
