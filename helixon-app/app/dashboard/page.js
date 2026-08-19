@@ -31,6 +31,24 @@ import { getMockData, STAGE_LABELS } from "@/lib/mock-data";
  *    swap in a real `updatedAt` if/when one exists.
  * 5. `DashboardNav` is imported as-is, assumed to already exist in the
  *    project (as in the original file).
+ *
+ * ------------------------------------------------------------------------
+ * UPDATE — candidate database + candidate workspace added
+ * ------------------------------------------------------------------------
+ * A dedicated candidate database (/dashboard/candidates) and candidate
+ * workspace (/dashboard/candidates/[id]) now exist alongside this page,
+ * backed by a richer lib/mock-data.js (candidates, jobs, recruiters, tags
+ * — still mock, but shaped like a real API). Three links below were
+ * repointed from /analyse/[id] to /dashboard/candidates/[id] so opening a
+ * *completed* candidate from the dashboard lands in the new recruiter
+ * workspace (stage, recruiter, tags, notes, activity) rather than the
+ * analysis-result view. Links tied to an in-flight or failed *analysis*
+ * (the "still processing" and "failed" attention items, and every row in
+ * Recent analyses, since it mixes all three statuses) were deliberately
+ * left pointing at /analyse/[id] — those are about the analysis run
+ * itself, and a "failed"/"processing" candidate has no workspace to open
+ * yet. A "Browse candidates" link was added to the header. Nothing else
+ * in this file changed.
  * ---------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------
@@ -295,6 +313,13 @@ function DashboardHeader({ agencyName, plan, subtitle }) {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        <Link
+          href="/dashboard/candidates"
+          className="hidden sm:inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        >
+          Browse candidates
+        </Link>
         <Link
           href="/dashboard/pipeline"
           className="hidden sm:inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -595,7 +620,7 @@ function TopCandidates({ candidates }) {
           {candidates.map((c) => (
             <li key={c.id}>
               <Link
-                href={`/analyse/${c.id}`}
+                href={`/dashboard/candidates/${c.id}`}
                 className="flex items-center gap-4 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <div className="min-w-0 flex-1">
@@ -1132,7 +1157,7 @@ export default function AgencyDashboardPage() {
           reasonLabel: `Strong match · ${STAGE_LABELS[a.stage]}`,
           tone: { bg: GREEN_BG, fg: "var(--forest)" },
           actionLabel: "Review candidate",
-          actionHref: `/analyse/${a.id}`,
+          actionHref: `/dashboard/candidates/${a.id}`,
           priority: 2,
         });
       });
@@ -1155,7 +1180,7 @@ export default function AgencyDashboardPage() {
           reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`,
           tone: { bg: AMBER_BG, fg: AMBER },
           actionLabel: "Review candidate",
-          actionHref: `/analyse/${a.id}`,
+          actionHref: `/dashboard/candidates/${a.id}`,
           priority: 3,
         });
       });
