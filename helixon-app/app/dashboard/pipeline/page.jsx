@@ -14,9 +14,13 @@
  *   mutation the candidate profile page uses. No drag-and-drop — button-
  *   based movement is more robust for a first pass and fully keyboard-
  *   accessible without extra work.
+ * - PipelinePage reads `useSearchParams()` for the "?stage=" deep link
+ *   from the dashboard, so the part of the tree that uses it is wrapped
+ *   in <Suspense> — required by Next.js for any component that reads
+ *   search params, or static prerendering fails the build.
  * ---------------------------------------------------------------------- */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
@@ -163,7 +167,12 @@ function ErrorState({ onRetry }) {
   );
 }
 
-export default function PipelinePage() {
+/* ------------------------------------------------------------------------
+ * Page content — reads useSearchParams(), so it must live inside the
+ * <Suspense> boundary set up by the default export below.
+ * ---------------------------------------------------------------------- */
+
+function PipelineContent() {
   // The dashboard's per-stage pipeline bars link here as
   // "/dashboard/pipeline?stage=shortlisted" etc. — that stage's column
   // gets a highlighted border on arrival so the link actually lands
@@ -280,5 +289,30 @@ export default function PipelinePage() {
         )}
       </div>
     </main>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Fallback shown during the (very brief) moment Suspense needs before
+ * useSearchParams() resolves — reuses the same skeleton as the loading
+ * state so there's no visible flash between the two.
+ * ---------------------------------------------------------------------- */
+
+function PipelineFallback() {
+  return (
+    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <DashboardNav />
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <PipelineSkeleton />
+      </div>
+    </main>
+  );
+}
+
+export default function PipelinePage() {
+  return (
+    <Suspense fallback={<PipelineFallback />}>
+      <PipelineContent />
+    </Suspense>
   );
 }
