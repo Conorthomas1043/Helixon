@@ -1077,10 +1077,10 @@ function FAQSection() {
 /* figures should replace or extend this array once available. No invented   */
 /* percentages, ratings or volume stats.                                     */
 const TRUST_METRICS = [
-  { val: "< 1 min", label: "To analyse one CV" },
+  { val: "< 1 min", label: "To screen a full CV batch" },
   { val: "50", label: "CVs per bulk upload" },
-  { val: "EU", label: "Hosted infrastructure" },
-  { val: "3", label: "Free analyses, no card" },
+  { val: "EU", label: "EU-hosted infrastructure" },
+  { val: "3", label: "Free analyses, no card required" },
 ];
 
 /* ── Page ──────────────────────────────────────────────────────────────── */

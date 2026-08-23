@@ -1,47 +1,60 @@
-import { supabase } from "@/lib/supabase";
-import { NextResponse } from "next/server";
+import { createClient, getCurrentRecruiter, unauthorized } from "@/lib/supabase/server";
 
-// Feature 1: list every saved job role for an agency, with a running
-// candidate count, for the /jobs list page.
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const agencyId = searchParams.get("agencyId");
+export async function GET() {
+  const supabase = createClient();
+  const recruiter = await getCurrentRecruiter(supabase);
+  if (!recruiter) return unauthorized();
 
-    if (!agencyId) {
-      return NextResponse.json({ ok: false, error: "Missing agencyId" }, { status: 400 });
-    }
+  const { data: jobs, error } = await supabase
+    .from("jobs")
+    .select("*, candidates(id, status, stage, match_score)")
+    .order("created_at", { ascending: false });
 
-    const { data: jobs, error: jobsError } = await supabase
-      .from("jobs")
-      .select("id, title, status, is_saved, created_at")
-      .eq("agency_id", agencyId)
-      .eq("is_saved", true)
-      .order("created_at", { ascending: false });
+  if (error) return Response.json({ error: "Failed to load jobs" }, { status: 500 });
 
-    if (jobsError) throw new Error(jobsError.message);
+  return Response.json(
+    jobs.map((job) => {
+      const completed = job.candidates.filter((c) => c.status === "completed");
+      return {
+        ...job,
+        candidates: undefined,
+        candidateCount: job.candidates.length,
+        strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,
+        shortlisted: completed.filter((c) => c.stage === "Shortlisted").length,
+        interviewing: completed.filter((c) => c.stage === "Interview").length,
+        offers: completed.filter((c) => c.stage === "Offer").length,
+        placed: completed.filter((c) => c.stage === "Placed").length,
+      };
+    })
+  );
+}
 
-    if (!jobs || jobs.length === 0) {
-      return NextResponse.json({ ok: true, jobs: [] });
-    }
+export async function POST(request) {
+  const supabase = createClient();
+  const recruiter = await getCurrentRecruiter(supabase);
+  if (!recruiter) return unauthorized();
 
-    // One count query per job kept simple/explicit rather than a join,
-    // since saved-job lists are small (an agency's open roles, not its
-    // whole history).
-    const jobsWithCounts = await Promise.all(
-      jobs.map(async (job) => {
-        const { count } = await supabase
-          .from("scores")
-          .select("*", { count: "exact", head: true })
-          .eq("job_id", job.id);
-        return { ...job, candidate_count: count || 0 };
-      })
-    );
+  const body = await request.json();
+  if (!body.title?.trim()) return Response.json({ error: "title required" }, { status: 400 });
 
-    return NextResponse.json({ ok: true, jobs: jobsWithCounts });
+  const { data, error } = await supabase
+    .from("jobs")
+    .insert({
+      agency_id: recruiter.agency_id,
+      title: body.title.trim(),
+      company: body.company ?? null,
+      location: body.location ?? null,
+      employment_type: body.employmentType ?? null,
+      seniority: body.seniority ?? null,
+      salary_range: body.salaryRange ?? null,
+      required_skills: body.requiredSkills ?? [],
+      preferred_skills: body.preferredSkills ?? [],
+      min_years_experience: body.minYearsExperience ?? null,
+      job_text: body.jobText ?? null,
+    })
+    .select()
+    .single();
 
-  } catch (err) {
-    console.error("[jobs] Error:", err.message);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
-  }
+  if (error) return Response.json({ error: "Failed to create job" }, { status: 500 });
+  return Response.json(data, { status: 201 });
 }

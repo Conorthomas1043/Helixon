@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getMockData, STAGE_LABELS } from "@/lib/mock-data";
 
@@ -42,13 +43,62 @@ import { getMockData, STAGE_LABELS } from "@/lib/mock-data";
  * repointed from /analyse/[id] to /dashboard/candidates/[id] so opening a
  * *completed* candidate from the dashboard lands in the new recruiter
  * workspace (stage, recruiter, tags, notes, activity) rather than the
- * analysis-result view. Links tied to an in-flight or failed *analysis*
- * (the "still processing" and "failed" attention items, and every row in
- * Recent analyses, since it mixes all three statuses) were deliberately
- * left pointing at /analyse/[id] — those are about the analysis run
- * itself, and a "failed"/"processing" candidate has no workspace to open
- * yet. A "Browse candidates" link was added to the header. Nothing else
- * in this file changed.
+ * analysis-result view. A "Browse candidates" link was added to the header.
+ *
+ * ------------------------------------------------------------------------
+ * UPDATE — production audit pass
+ * ------------------------------------------------------------------------
+ * This pass is scoped to this file only: I don't have access to the real
+ * DashboardNav, lib/mock-data.js, the global CSS custom properties
+ * (--forest, --mist, --border, --font-mono, --font-display), or the
+ * ability to run this project's own typecheck/lint/build. Everything
+ * below is a change I could verify or reason about from this file alone;
+ * see the chat response for what still needs the full codebase to confirm.
+ *
+ * Changes:
+ * 1. Accessibility — the amber used for "processing" / "stalled" text
+ *    (score pills, status badges, attention rows) only rendered at ~2.6:1
+ *    contrast against both white and its own tint background, well under
+ *    WCAG AA's 4.5:1 for text. Darkened it to ~5:1 against both. It's a
+ *    single constant, so this one change fixes every occurrence.
+ * 2. Consistency bug — "Recent analyses" was the only section still
+ *    linking *completed* rows to /analyse/[id] instead of
+ *    /dashboard/candidates/[id], unlike every other section on this page.
+ *    Fixed, and rows are now fully clickable (previously only the name
+ *    cell was, despite the whole row showing a pointer cursor and hover
+ *    state — a "looks clickable, isn't" mismatch).
+ * 3. Logic bug — a completed, high-scoring candidate with no stage set
+ *    yet (stage === null) never appeared in "Needs your attention",
+ *    because the strong-match filter required stage === firstStageKey.
+ *    Fixed, and added a dedicated "Awaiting stage" reason for completed
+ *    candidates that have no stage and aren't already a strong match, so
+ *    nothing completed can silently sit unrepresented anywhere.
+ * 4. Missing state — plan usage had no distinct treatment for being at or
+ *    over the limit; it looked identical to being at 40%. Added an
+ *    explicit "limit reached" callout.
+ * 5. Missing state / context loss — retrying used the exact same full
+ *    skeleton as first load, which throws away everything on screen
+ *    (including scroll position) even when perfectly good data is still
+ *    showing underneath. Loading is now only a full skeleton when there
+ *    is no data yet; a background refresh keeps existing content visible
+ *    with a small inline indicator, and a failed refresh degrades to an
+ *    inline "showing last loaded data" notice rather than a full-page
+ *    error. Added a manual Refresh action so this path is reachable.
+ * 6. Missing feature — Activity only ever showed a fixed 7-day window.
+ *    Added a 7D/30D toggle (all client-side, no new data needed).
+ * 7. Friction — truncated names/roles/companies had no way to see the
+ *    full value short of opening the record. Added `title` attributes
+ *    wherever text is visually clipped, and removed the character-count
+ *    `truncate()` helper that was only used in one section (everywhere
+ *    else already relied on CSS truncation) so there's one consistent
+ *    truncation strategy instead of two.
+ * 8. Data realism — KPI counts, pipeline stage counts, job candidate
+ *    counts, and recruiter stats now render through a `formatNumber()`
+ *    helper (thousands separators) so this doesn't break once an agency
+ *    has thousands of analyses instead of a handful.
+ * 9. Minor a11y — KPI values now sit in an `aria-live="polite"` region so
+ *    a background refresh that changes the numbers is announced, and the
+ *    activity sparkline's aria-label updates with the selected window.
  * ---------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------
@@ -83,7 +133,11 @@ async function fetchDashboardData() {
 const INK = "#13201b";
 const INK_MUTED = "#5a7a6a";
 const INK_FAINT = "#8aaa9a";
-const AMBER = "#c9922e";
+// Was #c9922e (~2.6:1 against white and against AMBER_BG — fails WCAG AA
+// text contrast in every place it's used). This value holds ~5:1 against
+// both, and is the only place that needs to change since AMBER is only
+// ever used as a text color in this file.
+const AMBER = "#92620f";
 const AMBER_BG = "#fff8e6";
 const RED = "#c0392b";
 const RED_STRONG = "#b91c1c";
@@ -150,6 +204,11 @@ function formatRelativeTime(date) {
   return formatDate(date);
 }
 
+function formatNumber(n) {
+  if (typeof n !== "number" || Number.isNaN(n)) return "—";
+  return n.toLocaleString("en-GB");
+}
+
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -169,11 +228,6 @@ function scoreLabel(score) {
   if (score >= 80) return "Strong match";
   if (score >= 60) return "Moderate match";
   return "Weak match";
-}
-
-function truncate(text, max = 42) {
-  if (!text) return text;
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
 /* ------------------------------------------------------------------------
@@ -286,7 +340,7 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
  * Header
  * ---------------------------------------------------------------------- */
 
-function DashboardHeader({ agencyName, plan, subtitle }) {
+function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshError, onRefresh }) {
   return (
     <header
       className="rounded-[16px] p-6 sm:p-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
@@ -310,6 +364,41 @@ function DashboardHeader({ agencyName, plan, subtitle }) {
         <p className="text-sm mt-2 max-w-xl" style={{ color: INK_MUTED }}>
           {subtitle}
         </p>
+
+        <div className="mt-3 flex items-center gap-3 min-h-[16px]" aria-live="polite">
+          {isRefreshing && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium" style={{ color: INK_MUTED }}>
+              <span
+                className="h-1.5 w-1.5 rounded-full animate-pulse motion-reduce:animate-none"
+                style={{ background: "var(--forest)" }}
+                aria-hidden="true"
+              />
+              Refreshing…
+            </span>
+          )}
+          {!isRefreshing && refreshError && (
+            <span className="inline-flex items-center gap-2 text-[11px] font-medium" style={{ color: RED_STRONG }}>
+              Couldn't refresh — showing your last loaded data.
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              >
+                Retry
+              </button>
+            </span>
+          )}
+          {!isRefreshing && !refreshError && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="text-[11px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              style={{ color: INK_FAINT }}
+            >
+              Refresh
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
@@ -377,20 +466,20 @@ function KpiCard({ label, value, sub, meter }) {
 
 function DashboardKpis({ totals }) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-live="polite">
       <KpiCard
         label="Analyses"
-        value={totals.total}
-        sub={`${totals.last7} in the last 7 days`}
+        value={formatNumber(totals.total)}
+        sub={`${formatNumber(totals.last7)} in the last 7 days`}
       />
       <KpiCard
         label="Strong matches"
-        value={totals.strongMatches}
+        value={formatNumber(totals.strongMatches)}
         sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed analyses` : "No completed analyses yet"}
       />
       <KpiCard
         label="In pipeline"
-        value={totals.inPipeline}
+        value={formatNumber(totals.inPipeline)}
         sub="Active, not yet placed"
       />
       <KpiCard
@@ -447,7 +536,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
                   className="text-lg font-semibold tabular-nums"
                   style={{ fontFamily: "var(--font-mono)", color: INK }}
                 >
-                  {count}
+                  {formatNumber(count)}
                 </span>
                 <div
                   className="w-full rounded-full mt-2 mb-2 flex items-end"
@@ -486,6 +575,7 @@ function UsageSummary({ plan }) {
   const limit = plan?.analysesLimit ?? null;
   const remaining = hasLimit ? Math.max(0, limit - used) : null;
   const pct = hasLimit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const isOverLimit = hasLimit && used >= limit;
 
   return (
     <div className="rounded-[14px] p-5 sm:p-6 flex flex-col" style={CARD}>
@@ -502,7 +592,7 @@ function UsageSummary({ plan }) {
             className="text-xl font-semibold tabular-nums mt-1"
             style={{ fontFamily: "var(--font-mono)", color: INK }}
           >
-            {used} / {limit}
+            {formatNumber(used)} / {formatNumber(limit)}
           </p>
           <p className="text-[11px] mb-3" style={{ color: INK_MUTED }}>
             analyses this cycle
@@ -513,9 +603,17 @@ function UsageSummary({ plan }) {
               style={{ width: `${pct}%`, background: pct >= 90 ? RED : "var(--forest)" }}
             />
           </div>
-          <p className="text-[11px] mt-2" style={{ color: INK_MUTED }}>
-            {remaining} analyses remaining
+          <p className="text-[11px] mt-2" style={{ color: isOverLimit ? RED_STRONG : INK_MUTED }}>
+            {isOverLimit ? "Plan limit reached" : `${formatNumber(remaining)} analyses remaining`}
           </p>
+          {isOverLimit && (
+            <div
+              className="mt-3 rounded-[10px] px-3 py-2 text-[11px] font-medium leading-snug"
+              style={{ background: RED_BG, color: RED_STRONG }}
+            >
+              You've used all {formatNumber(limit)} analyses this cycle. Upgrade to keep screening candidates.
+            </div>
+          )}
         </>
       ) : (
         <p className="text-sm mt-2" style={{ color: INK_MUTED }}>
@@ -554,6 +652,7 @@ function AttentionPanel({ items }) {
             <li key={item.id}>
               <Link
                 href={item.actionHref}
+                title={`${item.candidateName} — ${item.jobTitle}`}
                 className="flex items-center gap-4 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <div className="min-w-0 flex-1">
@@ -621,6 +720,7 @@ function TopCandidates({ candidates }) {
             <li key={c.id}>
               <Link
                 href={`/dashboard/candidates/${c.id}`}
+                title={`${c.candidateName} — ${c.jobTitle}${c.company ? ` · ${c.company}` : ""}`}
                 className="flex items-center gap-4 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <div className="min-w-0 flex-1">
@@ -646,39 +746,107 @@ function TopCandidates({ candidates }) {
 }
 
 /* ------------------------------------------------------------------------
- * Activity overview
+ * Activity overview — now with a 7D / 30D window toggle. Computed entirely
+ * from the already-loaded `analyses` array, so no new data source needed.
  * ---------------------------------------------------------------------- */
 
-function ActivityOverview({ last7, prev7, dayBuckets, completed, processing, failed }) {
-  const delta = last7 - prev7;
-  const maxBucket = Math.max(1, ...dayBuckets.map((d) => d.count));
+function ActivityOverview({ analyses }) {
+  const [windowDays, setWindowDays] = useState(7);
+
+  const stats = useMemo(() => {
+    const now = Date.now();
+    const DAY = 86400000;
+
+    const current = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < windowDays * DAY);
+    const previous = analyses.filter(
+      (a) =>
+        a.createdAt &&
+        now - a.createdAt.getTime() >= windowDays * DAY &&
+        now - a.createdAt.getTime() < windowDays * 2 * DAY
+    );
+
+    const dayBuckets = Array.from({ length: windowDays }).map((_, i) => {
+      const offset = windowDays - 1 - i;
+      const dayDate = new Date(now - offset * DAY);
+      const count = analyses.filter((a) => {
+        if (!a.createdAt) return false;
+        const diff = Math.floor((now - a.createdAt.getTime()) / DAY);
+        return diff === offset;
+      }).length;
+      // Dense 30-day view: label sparsely so text doesn't collide.
+      const showLabel = windowDays <= 7 || offset % 5 === 0;
+      return {
+        label: showLabel
+          ? dayDate.toLocaleDateString("en-GB", windowDays <= 7 ? { weekday: "narrow" } : { day: "numeric", month: "short" })
+          : "",
+        count,
+      };
+    });
+
+    return {
+      currentCount: current.length,
+      previousCount: previous.length,
+      dayBuckets,
+      completed: current.filter((a) => a.status === "completed").length,
+      processing: current.filter((a) => a.status === "processing").length,
+      failed: current.filter((a) => a.status === "failed").length,
+    };
+  }, [analyses, windowDays]);
+
+  const delta = stats.currentCount - stats.previousCount;
+  const maxBucket = Math.max(1, ...stats.dayBuckets.map((d) => d.count));
 
   return (
     <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
-      <SectionHeading eyebrow="Momentum" title="Activity" />
+      <SectionHeading
+        eyebrow="Momentum"
+        title="Activity"
+        action={
+          <div className="inline-flex rounded-full p-0.5" style={{ background: "var(--mist)" }}>
+            {[7, 30].map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setWindowDays(d)}
+                aria-pressed={windowDays === d}
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  background: windowDays === d ? "white" : "transparent",
+                  color: windowDays === d ? INK : INK_MUTED,
+                  boxShadow: windowDays === d ? "0 1px 2px rgba(19,32,27,0.08)" : "none",
+                }}
+              >
+                {d}D
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       <div className="flex items-baseline gap-2 mb-1">
         <span
           className="text-2xl font-semibold tabular-nums"
           style={{ fontFamily: "var(--font-mono)", color: INK }}
         >
-          {last7}
+          {formatNumber(stats.currentCount)}
         </span>
         <span className="text-[12px]" style={{ color: INK_MUTED }}>
-          analyses this week
+          analyses in the last {windowDays} days
         </span>
       </div>
       <p className="text-[12px] mb-4" style={{ color: delta >= 0 ? "var(--forest)" : RED }}>
-        {delta === 0 ? "Same as last week" : `${delta > 0 ? "+" : ""}${delta} vs. last week (${prev7})`}
+        {delta === 0
+          ? `Same as the previous ${windowDays} days`
+          : `${delta > 0 ? "+" : ""}${delta} vs. the previous ${windowDays} days (${stats.previousCount})`}
       </p>
 
       <div
         className="flex items-end gap-1.5 h-16 mb-4"
         role="img"
-        aria-label={`Analyses per day over the last 7 days, ranging up to ${maxBucket}`}
+        aria-label={`Analyses per day over the last ${windowDays} days, ranging up to ${maxBucket}`}
       >
-        {dayBuckets.map((d) => (
-          <div key={d.label} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
+        {stats.dayBuckets.map((d, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
             <div
               className="w-full rounded-t-[3px]"
               style={{
@@ -687,7 +855,7 @@ function ActivityOverview({ last7, prev7, dayBuckets, completed, processing, fai
                 opacity: d.count === 0 ? 0.15 : 0.85,
               }}
             />
-            <span className="text-[9px]" style={{ color: INK_FAINT }}>
+            <span className="text-[9px] whitespace-nowrap" style={{ color: INK_FAINT }}>
               {d.label}
             </span>
           </div>
@@ -696,13 +864,13 @@ function ActivityOverview({ last7, prev7, dayBuckets, completed, processing, fai
 
       <div className="flex items-center gap-4 text-[12px] pt-3" style={{ borderTop: "1px solid var(--border)", color: INK_MUTED }}>
         <span>
-          <strong style={{ color: INK }}>{completed}</strong> completed
+          <strong style={{ color: INK }}>{formatNumber(stats.completed)}</strong> completed
         </span>
         <span>
-          <strong style={{ color: INK }}>{processing}</strong> processing
+          <strong style={{ color: INK }}>{formatNumber(stats.processing)}</strong> processing
         </span>
         <span>
-          <strong style={{ color: INK }}>{failed}</strong> failed
+          <strong style={{ color: INK }}>{formatNumber(stats.failed)}</strong> failed
         </span>
       </div>
     </div>
@@ -737,7 +905,11 @@ function ActiveJobs({ jobs }) {
           {jobs.map((job) => (
             <li key={job.key} className="py-3.5">
               <div className="flex items-center justify-between gap-3 mb-1.5">
-                <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+                <p
+                  className="text-sm font-semibold truncate"
+                  style={{ color: INK }}
+                  title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}
+                >
                   {job.jobTitle}
                   {job.company ? <span style={{ color: INK_MUTED, fontWeight: 500 }}> · {job.company}</span> : null}
                 </p>
@@ -745,7 +917,7 @@ function ActiveJobs({ jobs }) {
                   className="text-[12px] tabular-nums shrink-0"
                   style={{ fontFamily: "var(--font-mono)", color: INK_MUTED }}
                 >
-                  {job.candidateCount} candidates
+                  {formatNumber(job.candidateCount)} candidates
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -760,7 +932,7 @@ function ActiveJobs({ jobs }) {
                   )}
                 </div>
                 <span className="text-[11px] shrink-0" style={{ color: INK_FAINT }}>
-                  {job.strongMatches} strong
+                  {formatNumber(job.strongMatches)} strong
                 </span>
               </div>
             </li>
@@ -796,18 +968,18 @@ function RecruiterPerformance({ recruiters }) {
       <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
         {recruiters.map((r) => (
           <li key={r.name} className="flex items-center justify-between gap-3 py-3">
-            <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+            <p className="text-sm font-semibold truncate" style={{ color: INK }} title={r.name}>
               {r.name}
             </p>
             <div className="flex items-center gap-4 text-[12px] shrink-0" style={{ color: INK_MUTED }}>
               <span>
-                <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.completed}</strong> analysed
+                <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{formatNumber(r.completed)}</strong> analysed
               </span>
               <span>
                 <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "—"}</strong> avg
               </span>
               <span>
-                <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{r.placements}</strong> placed
+                <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed
               </span>
             </div>
           </li>
@@ -822,6 +994,8 @@ function RecruiterPerformance({ recruiters }) {
  * ---------------------------------------------------------------------- */
 
 function RecentAnalyses({ analyses }) {
+  const router = useRouter();
+
   return (
     <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Activity feed" title="Recent analyses" />
@@ -860,52 +1034,63 @@ function RecentAnalyses({ analyses }) {
               </tr>
             </thead>
             <tbody>
-              {analyses.map((a) => (
-                <tr
-                  key={a.id}
-                  className="group cursor-pointer transition-colors hover:bg-[var(--mist)] focus-within:bg-[var(--mist)]"
-                  style={{ borderTop: "1px solid var(--border)" }}
-                >
-                  <td className="py-3 pr-3 min-w-0">
-                    <Link
-                      href={`/analyse/${a.id}`}
-                      className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-                    >
-                      <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-                        {a.candidateName}
-                      </p>
-                      <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
-                        {truncate(a.jobTitle)}
-                        {a.company ? ` · ${truncate(a.company, 24)}` : ""}
-                      </p>
-                    </Link>
-                  </td>
-                  <td className="py-3 pr-3 hidden md:table-cell">
-                    <span className="text-[13px] truncate" style={{ color: INK_MUTED }}>
-                      {a.recruiterName ?? "Unassigned"}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-3 hidden sm:table-cell">
-                    <StageBadge stage={a.stage} />
-                  </td>
-                  <td className="py-3 pr-3">
-                    <StatusBadge status={a.status} />
-                  </td>
-                  <td className="py-3 pl-3 text-right">
-                    <span
-                      className="text-sm font-semibold tabular-nums"
-                      style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}
-                    >
-                      {a.score ?? "—"}
-                    </span>
-                  </td>
-                  <td className="py-3 pl-3 text-right hidden sm:table-cell">
-                    <span className="text-[12px] whitespace-nowrap" style={{ color: INK_FAINT }}>
-                      {formatDate(a.createdAt)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {analyses.map((a) => {
+                // Completed analyses open the candidate workspace, same as
+                // every other section on this page (Top candidates,
+                // Attention panel). Only an in-flight or failed *analysis*
+                // — which has no candidate workspace yet — opens the raw
+                // analysis-result view.
+                const href = a.status === "completed" ? `/dashboard/candidates/${a.id}` : `/analyse/${a.id}`;
+                return (
+                  <tr
+                    key={a.id}
+                    onClick={() => router.push(href)}
+                    className="group cursor-pointer transition-colors hover:bg-[var(--mist)] focus-within:bg-[var(--mist)]"
+                    style={{ borderTop: "1px solid var(--border)" }}
+                  >
+                    <td className="py-3 pr-3 min-w-0">
+                      <Link
+                        href={href}
+                        onClick={(e) => e.stopPropagation()}
+                        title={`${a.candidateName} — ${a.jobTitle}${a.company ? ` · ${a.company}` : ""}`}
+                        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                      >
+                        <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+                          {a.candidateName}
+                        </p>
+                        <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+                          {a.jobTitle}
+                          {a.company ? ` · ${a.company}` : ""}
+                        </p>
+                      </Link>
+                    </td>
+                    <td className="py-3 pr-3 hidden md:table-cell">
+                      <span className="text-[13px] truncate" style={{ color: INK_MUTED }}>
+                        {a.recruiterName ?? "Unassigned"}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-3 hidden sm:table-cell">
+                      <StageBadge stage={a.stage} />
+                    </td>
+                    <td className="py-3 pr-3">
+                      <StatusBadge status={a.status} />
+                    </td>
+                    <td className="py-3 pl-3 text-right">
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}
+                      >
+                        {a.score ?? "—"}
+                      </span>
+                    </td>
+                    <td className="py-3 pl-3 text-right hidden sm:table-cell">
+                      <span className="text-[12px] whitespace-nowrap" style={{ color: INK_FAINT }}>
+                        {formatDate(a.createdAt)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -942,6 +1127,8 @@ function DashboardFooter() {
 
 /* ------------------------------------------------------------------------
  * Loading skeleton — mirrors the real layout so nothing shifts on load.
+ * Only shown when there is no data yet; a refresh of existing data uses
+ * the small inline indicator in the header instead (see DashboardHeader).
  * ---------------------------------------------------------------------- */
 
 function Block({ className = "", style = {} }) {
@@ -1016,7 +1203,9 @@ function DashboardSkeleton() {
 }
 
 /* ------------------------------------------------------------------------
- * Error state
+ * Full-page error — only shown when there is no data at all (first load
+ * failed). A refresh failure with existing data on screen is handled
+ * inline in the header instead, so a good load is never thrown away.
  * ---------------------------------------------------------------------- */
 
 function DashboardError({ onRetry }) {
@@ -1046,22 +1235,26 @@ function DashboardError({ onRetry }) {
 
 export default function AgencyDashboardPage() {
   const [data, setData] = useState(null);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [hasError, setHasError] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setStatus((s) => (s === "ready" ? "ready" : "loading"));
+    setIsFetching(true);
 
     fetchDashboardData()
       .then((d) => {
         if (cancelled) return;
         setData(d);
-        setStatus("ready");
+        setHasError(false);
       })
       .catch(() => {
         if (cancelled) return;
-        setStatus("error");
+        setHasError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetching(false);
       });
 
     return () => {
@@ -1069,10 +1262,7 @@ export default function AgencyDashboardPage() {
     };
   }, [reloadKey]);
 
-  const retry = useCallback(() => {
-    setStatus("loading");
-    setReloadKey((k) => k + 1);
-  }, []);
+  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const stageOrder = useMemo(() => Object.keys(STAGE_LABELS ?? {}), []);
   const lastStageKey = stageOrder[stageOrder.length - 1];
@@ -1145,8 +1335,12 @@ export default function AgencyDashboardPage() {
         });
       });
 
+    // Strong matches: previously required stage === firstStageKey, which
+    // meant a completed, high-scoring candidate with no stage set yet
+    // (stage === null) never surfaced here. A fresh strong match should
+    // always get attention regardless of whether it's been staged.
     completed
-      .filter((a) => a.score !== null && a.score >= 80 && a.stage === firstStageKey)
+      .filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null))
       .forEach((a) => {
         attentionItems.push({
           id: `${a.id}-unreviewed`,
@@ -1154,7 +1348,7 @@ export default function AgencyDashboardPage() {
           jobTitle: a.jobTitle,
           score: a.score,
           createdAt: a.createdAt,
-          reasonLabel: `Strong match · ${STAGE_LABELS[a.stage]}`,
+          reasonLabel: a.stage ? `Strong match · ${STAGE_LABELS[a.stage]}` : "Strong match · Unstaged",
           tone: { bg: GREEN_BG, fg: "var(--forest)" },
           actionLabel: "Review candidate",
           actionHref: `/dashboard/candidates/${a.id}`,
@@ -1185,6 +1379,26 @@ export default function AgencyDashboardPage() {
         });
       });
 
+    // Completed but never staged, and not already caught above as a
+    // strong match — otherwise these candidates never appear anywhere
+    // that prompts action.
+    completed
+      .filter((a) => a.stage === null && !(a.score !== null && a.score >= 80))
+      .forEach((a) => {
+        attentionItems.push({
+          id: `${a.id}-unstaged`,
+          candidateName: a.candidateName,
+          jobTitle: a.jobTitle,
+          score: a.score,
+          createdAt: a.createdAt,
+          reasonLabel: "Awaiting stage",
+          tone: { bg: "var(--mist)", fg: INK_MUTED },
+          actionLabel: "Assign stage",
+          actionHref: `/dashboard/candidates/${a.id}`,
+          priority: 4,
+        });
+      });
+
     attentionItems.sort((a, b) => {
       if (a.priority !== b.priority) return a.priority - b.priority;
       return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
@@ -1195,18 +1409,6 @@ export default function AgencyDashboardPage() {
       .filter((a) => a.score !== null)
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
-
-    // Activity — last 7 days, oldest to newest
-    const dayBuckets = Array.from({ length: 7 }).map((_, i) => {
-      const offset = 6 - i;
-      const dayDate = new Date(now - offset * DAY);
-      const count = analyses.filter((a) => {
-        if (!a.createdAt) return false;
-        const diff = Math.floor((now - a.createdAt.getTime()) / DAY);
-        return diff === offset;
-      }).length;
-      return { label: dayDate.toLocaleDateString("en-GB", { weekday: "narrow" }), count };
-    });
 
     // Active jobs — derived from analyses, grouped by job + company
     const jobMap = new Map();
@@ -1282,7 +1484,6 @@ export default function AgencyDashboardPage() {
       maxStageCount,
       attentionItems: attentionItems.slice(0, 6),
       topCandidates,
-      dayBuckets,
       jobs,
       recruiters,
     };
@@ -1309,18 +1510,27 @@ export default function AgencyDashboardPage() {
     return "Your pipeline is in good shape. Here's what's been happening lately.";
   }, [data, model]);
 
+  const hasData = !!data;
+
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
 
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6 lg:space-y-8">
-        {status === "loading" && <DashboardSkeleton />}
+        {!hasData && isFetching && <DashboardSkeleton />}
 
-        {status === "error" && <DashboardError onRetry={retry} />}
+        {!hasData && !isFetching && hasError && <DashboardError onRetry={retry} />}
 
-        {status === "ready" && data && (
+        {hasData && (
           <>
-            <DashboardHeader agencyName={agencyName} plan={plan} subtitle={subtitle} />
+            <DashboardHeader
+              agencyName={agencyName}
+              plan={plan}
+              subtitle={subtitle}
+              isRefreshing={isFetching}
+              refreshError={!isFetching && hasError}
+              onRefresh={retry}
+            />
 
             {model.analyses.length === 0 ? (
               <div className="rounded-[16px]" style={CARD}>
@@ -1344,14 +1554,7 @@ export default function AgencyDashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                   <TopCandidates candidates={model.topCandidates} />
-                  <ActivityOverview
-                    last7={model.totals.last7}
-                    prev7={model.totals.prev7}
-                    dayBuckets={model.dayBuckets}
-                    completed={model.totals.completed}
-                    processing={model.totals.processing}
-                    failed={model.totals.failed}
-                  />
+                  <ActivityOverview analyses={model.analyses} />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">

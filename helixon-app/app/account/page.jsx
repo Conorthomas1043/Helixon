@@ -1,9 +1,5 @@
-import AccountSettings from "@/components/AccountSettings";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Account settings — Helixon",
-};
-
-export default function AccountPage() {
-  return <AccountSettings />;
+export default function AccountIndexPage() {
+  redirect("/account/profile");
 }
