@@ -6,164 +6,65 @@ import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getMockData, STAGE_LABELS } from "@/lib/mock-data";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS — read before wiring up real data
- * ------------------------------------------------------------------------
- * The real lib/mock-data.js and DashboardNav were not available while this
- * was built, so a few things are inferred rather than inspected directly:
- *
- * 1. Shape of each record in `data.recentAnalyses`: id, candidateName,
- *    jobTitle, company, recruiterName, status ("completed" | "processing" |
- *    "failed"), stage (one of the STAGE_LABELS keys, or null/absent while
- *    processing or failed), score (0-100 or null), createdAt (ISO string).
- *    `normalizeAnalysis()` below is the single adapter that maps raw
- *    records into this shape — if field names differ in the real file,
- *    fix them there rather than in each section.
- * 2. `data.agency.name` and `data.agency.plan.{name,analysesUsed,
- *    analysesLimit}` for the header and usage widget. Both degrade
- *    gracefully (fallback copy, hidden progress bar) if absent.
- * 3. Jobs and recruiter performance are *derived* entirely from
- *    `recentAnalyses` (grouped by job/company and by recruiterName) rather
- *    than assumed to exist as separate top-level fields, per the brief's
- *    instruction not to invent backend data.
- * 4. "Stalled" = completed, mid-pipeline, and not updated for 5+ days;
- *    "still processing" surfaces after 12+ hours. Both use `createdAt` as
- *    a stand-in for "last updated" since no separate field was available —
- *    swap in a real `updatedAt` if/when one exists.
- * 5. `DashboardNav` is imported as-is, assumed to already exist in the
- *    project (as in the original file).
- *
- * ------------------------------------------------------------------------
- * UPDATE — candidate database + candidate workspace added
- * ------------------------------------------------------------------------
- * A dedicated candidate database (/dashboard/candidates) and candidate
- * workspace (/dashboard/candidates/[id]) now exist alongside this page,
- * backed by a richer lib/mock-data.js (candidates, jobs, recruiters, tags
- * — still mock, but shaped like a real API). Three links below were
- * repointed from /analyse/[id] to /dashboard/candidates/[id] so opening a
- * *completed* candidate from the dashboard lands in the new recruiter
- * workspace (stage, recruiter, tags, notes, activity) rather than the
- * analysis-result view. A "Browse candidates" link was added to the header.
- *
- * ------------------------------------------------------------------------
- * UPDATE — production audit pass
- * ------------------------------------------------------------------------
- * This pass is scoped to this file only: I don't have access to the real
- * DashboardNav, lib/mock-data.js, the global CSS custom properties
- * (--forest, --mist, --border, --font-mono, --font-display), or the
- * ability to run this project's own typecheck/lint/build. Everything
- * below is a change I could verify or reason about from this file alone;
- * see the chat response for what still needs the full codebase to confirm.
- *
- * Changes:
- * 1. Accessibility — the amber used for "processing" / "stalled" text
- *    (score pills, status badges, attention rows) only rendered at ~2.6:1
- *    contrast against both white and its own tint background, well under
- *    WCAG AA's 4.5:1 for text. Darkened it to ~5:1 against both. It's a
- *    single constant, so this one change fixes every occurrence.
- * 2. Consistency bug — "Recent analyses" was the only section still
- *    linking *completed* rows to /analyse/[id] instead of
- *    /dashboard/candidates/[id], unlike every other section on this page.
- *    Fixed, and rows are now fully clickable (previously only the name
- *    cell was, despite the whole row showing a pointer cursor and hover
- *    state — a "looks clickable, isn't" mismatch).
- * 3. Logic bug — a completed, high-scoring candidate with no stage set
- *    yet (stage === null) never appeared in "Needs your attention",
- *    because the strong-match filter required stage === firstStageKey.
- *    Fixed, and added a dedicated "Awaiting stage" reason for completed
- *    candidates that have no stage and aren't already a strong match, so
- *    nothing completed can silently sit unrepresented anywhere.
- * 4. Missing state — plan usage had no distinct treatment for being at or
- *    over the limit; it looked identical to being at 40%. Added an
- *    explicit "limit reached" callout.
- * 5. Missing state / context loss — retrying used the exact same full
- *    skeleton as first load, which throws away everything on screen
- *    (including scroll position) even when perfectly good data is still
- *    showing underneath. Loading is now only a full skeleton when there
- *    is no data yet; a background refresh keeps existing content visible
- *    with a small inline indicator, and a failed refresh degrades to an
- *    inline "showing last loaded data" notice rather than a full-page
- *    error. Added a manual Refresh action so this path is reachable.
- * 6. Missing feature — Activity only ever showed a fixed 7-day window.
- *    Added a 7D/30D toggle (all client-side, no new data needed).
- * 7. Friction — truncated names/roles/companies had no way to see the
- *    full value short of opening the record. Added `title` attributes
- *    wherever text is visually clipped, and removed the character-count
- *    `truncate()` helper that was only used in one section (everywhere
- *    else already relied on CSS truncation) so there's one consistent
- *    truncation strategy instead of two.
- * 8. Data realism — KPI counts, pipeline stage counts, job candidate
- *    counts, and recruiter stats now render through a `formatNumber()`
- *    helper (thousands separators) so this doesn't break once an agency
- *    has thousands of analyses instead of a handful.
- * 9. Minor a11y — KPI values now sit in an `aria-live="polite"` region so
- *    a background refresh that changes the numbers is announced, and the
- *    activity sparkline's aria-label updates with the selected window.
- * ---------------------------------------------------------------------- */
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
 
-/* ------------------------------------------------------------------------
- * Data loading
- * ---------------------------------------------------------------------- */
+const BG        = "#07090F";
+const SURFACE   = "#0D1117";
+const SURFACE2  = "#111827";
+const BORDER    = "#1A2333";
+const BORDER2   = "#243044";
 
-// TODO: replace with `await fetch("/api/agency/me")` once the backend exists.
-// The try/catch keeps the failure path real: once this becomes a network
-// call, a non-2xx response or thrown error lands in the same `error` state
-// the UI already knows how to render.
+const TEXT      = "#F1F5F9";
+const TEXT_SUB  = "#94A3B8";
+const TEXT_FAINT= "#475569";
+
+const VIOLET    = "#7C3AED";
+const VIOLET_FG = "#A78BFA";
+const VIOLET_BG = "rgba(124,58,237,0.12)";
+
+const CYAN      = "#06B6D4";
+const CYAN_BG   = "rgba(6,182,212,0.10)";
+
+const GREEN     = "#10B981";
+const GREEN_FG  = "#34D399";
+const GREEN_BG  = "rgba(16,185,129,0.10)";
+
+const AMBER     = "#B45309";
+const AMBER_FG  = "#FCD34D";
+const AMBER_BG  = "rgba(251,191,36,0.10)";
+
+const RED       = "#EF4444";
+const RED_STRONG= "#DC2626";
+const RED_BG    = "rgba(239,68,68,0.10)";
+
+const CARD = {
+  background: SURFACE,
+  border: `1px solid ${BORDER}`,
+  borderRadius: 12,
+};
+
+/* ─── Data loading ──────────────────────────────────────────────────────── */
+
 async function fetchDashboardData() {
   try {
     const data = await new Promise((resolve, reject) => {
       setTimeout(() => {
-        try {
-          resolve(getMockData());
-        } catch (err) {
-          reject(err);
-        }
+        try { resolve(getMockData()); } catch (err) { reject(err); }
       }, 200);
     });
     return data;
-  } catch (err) {
+  } catch {
     throw new Error("Failed to load dashboard data");
   }
 }
 
-/* ------------------------------------------------------------------------
- * Design tokens (existing Helixon visual language)
- * ---------------------------------------------------------------------- */
-
-const INK = "#13201b";
-const INK_MUTED = "#5a7a6a";
-const INK_FAINT = "#8aaa9a";
-// Was #c9922e (~2.6:1 against white and against AMBER_BG — fails WCAG AA
-// text contrast in every place it's used). This value holds ~5:1 against
-// both, and is the only place that needs to change since AMBER is only
-// ever used as a text color in this file.
-const AMBER = "#92620f";
-const AMBER_BG = "#fff8e6";
-const RED = "#c0392b";
-const RED_STRONG = "#b91c1c";
-const RED_BG = "#fef2f2";
-const GREEN_BG = "#eef7f1";
-
-const CARD = {
-  background: "white",
-  border: "1px solid var(--border)",
-};
-
-/* ------------------------------------------------------------------------
- * Normalisation — the one place raw records are translated into the shape
- * every section below relies on. If the real lib/mock-data.js (or future
- * API response) uses slightly different field names, adjust the fallbacks
- * here rather than each section.
- * ---------------------------------------------------------------------- */
+/* ─── Normalisation ─────────────────────────────────────────────────────── */
 
 function normalizeAnalysis(raw, index) {
   if (!raw || typeof raw !== "object") return null;
-
   const score = typeof raw.score === "number" && !Number.isNaN(raw.score) ? raw.score : null;
-
   const createdDate = raw.createdAt ? new Date(raw.createdAt) : null;
   const createdAt = createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate : null;
-
   return {
     id: raw.id ?? raw._id ?? `analysis-${index}`,
     candidateName: raw.candidateName ?? raw.candidate?.name ?? raw.candidate ?? "Unnamed candidate",
@@ -177,22 +78,15 @@ function normalizeAnalysis(raw, index) {
   };
 }
 
-/* ------------------------------------------------------------------------
- * Small formatting helpers
- * ---------------------------------------------------------------------- */
+/* ─── Helpers ───────────────────────────────────────────────────────────── */
 
 function formatDate(date) {
-  if (!date) return "Unknown date";
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  if (!date) return "—";
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
 function formatRelativeTime(date) {
-  if (!date) return "Unknown date";
+  if (!date) return "—";
   const diffMs = Date.now() - date.getTime();
   const diffMins = Math.round(diffMs / 60000);
   if (diffMins < 1) return "Just now";
@@ -217,57 +111,50 @@ function getGreeting() {
 }
 
 function scoreColor(score) {
-  if (score === null || score === undefined) return INK_FAINT;
-  if (score >= 80) return "var(--forest)";
-  if (score >= 60) return AMBER;
+  if (score === null || score === undefined) return TEXT_FAINT;
+  if (score >= 80) return GREEN_FG;
+  if (score >= 60) return AMBER_FG;
   return RED;
 }
 
 function scoreLabel(score) {
   if (score === null || score === undefined) return "No score";
-  if (score >= 80) return "Strong match";
-  if (score >= 60) return "Moderate match";
-  return "Weak match";
+  if (score >= 80) return "Strong";
+  if (score >= 60) return "Moderate";
+  return "Weak";
 }
 
-/* ------------------------------------------------------------------------
- * Shared presentational pieces
- * ---------------------------------------------------------------------- */
+/* ─── Shared components ─────────────────────────────────────────────────── */
 
 function ScorePill({ score }) {
   const color = scoreColor(score);
   return (
-    <div className="flex items-center gap-2 shrink-0">
-      <span
-        className="text-sm font-semibold tabular-nums"
-        style={{ fontFamily: "var(--font-mono)", color }}
-      >
+    <div className="flex items-center gap-1.5 shrink-0">
+      <span style={{ fontFamily: "var(--font-mono)", color, fontSize: 14, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         {score === null || score === undefined ? "—" : score}
       </span>
-      <span className="text-[11px]" style={{ color: INK_MUTED }}>
-        {scoreLabel(score)}
-      </span>
+      <span style={{ color: TEXT_FAINT, fontSize: 11 }}>{scoreLabel(score)}</span>
     </div>
   );
 }
 
 function StageBadge({ stage }) {
   if (!stage || !STAGE_LABELS[stage]) {
-    return (
-      <span className="text-[11px]" style={{ color: INK_FAINT }}>
-        No stage
-      </span>
-    );
+    return <span style={{ color: TEXT_FAINT, fontSize: 11 }}>No stage</span>;
   }
   const isPlaced = stage === Object.keys(STAGE_LABELS)[Object.keys(STAGE_LABELS).length - 1];
   return (
-    <span
-      className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full"
-      style={{
-        background: isPlaced ? GREEN_BG : "var(--mist)",
-        color: isPlaced ? "var(--forest)" : INK_MUTED,
-      }}
-    >
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      fontSize: 10,
+      fontWeight: 600,
+      padding: "2px 8px",
+      borderRadius: 9999,
+      background: isPlaced ? GREEN_BG : VIOLET_BG,
+      color: isPlaced ? GREEN_FG : VIOLET_FG,
+      border: `1px solid ${isPlaced ? "rgba(52,211,153,0.2)" : "rgba(167,139,250,0.2)"}`,
+    }}>
       {STAGE_LABELS[stage]}
     </span>
   );
@@ -275,16 +162,23 @@ function StageBadge({ stage }) {
 
 function StatusBadge({ status }) {
   const map = {
-    completed: { bg: GREEN_BG, fg: "var(--forest)", label: "Completed" },
-    processing: { bg: AMBER_BG, fg: AMBER, label: "Processing" },
-    failed: { bg: RED_BG, fg: RED_STRONG, label: "Failed" },
+    completed: { bg: GREEN_BG, fg: GREEN_FG, border: "rgba(52,211,153,0.2)", label: "Completed" },
+    processing: { bg: AMBER_BG, fg: AMBER_FG, border: "rgba(252,211,77,0.2)", label: "Processing" },
+    failed: { bg: RED_BG, fg: RED, border: "rgba(239,68,68,0.2)", label: "Failed" },
   };
   const s = map[status] || map.completed;
   return (
-    <span
-      className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full"
-      style={{ background: s.bg, color: s.fg }}
-    >
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      fontSize: 10,
+      fontWeight: 600,
+      padding: "2px 8px",
+      borderRadius: 9999,
+      background: s.bg,
+      color: s.fg,
+      border: `1px solid ${s.border}`,
+    }}>
       {s.label}
     </span>
   );
@@ -292,20 +186,14 @@ function StatusBadge({ status }) {
 
 function SectionHeading({ eyebrow, title, action }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-4">
+    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
       <div>
         {eyebrow && (
-          <p
-            className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-            style={{ color: INK_FAINT }}
-          >
+          <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
             {eyebrow}
           </p>
         )}
-        <h2
-          className="text-lg font-semibold"
-          style={{ fontFamily: "var(--font-display)", color: INK }}
-        >
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: TEXT, margin: 0 }}>
           {title}
         </h2>
       </div>
@@ -316,19 +204,26 @@ function SectionHeading({ eyebrow, title, action }) {
 
 function EmptyState({ title, body, actionLabel, actionHref }) {
   return (
-    <div className="flex flex-col items-center text-center py-10 px-6">
-      <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
-        {title}
-      </p>
-      <p className="text-[13px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
-        {body}
-      </p>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "40px 24px" }}>
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={VIOLET_FG} strokeWidth="1.5">
+          <path d="M9 12h6m-3-3v6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+      </div>
+      <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginBottom: 4 }}>{title}</p>
+      <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 16 }}>{body}</p>
       {actionLabel && actionHref && (
-        <Link
-          href={actionHref}
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--forest)", color: "white" }}
-        >
+        <Link href={actionHref} style={{
+          display: "inline-flex",
+          alignItems: "center",
+          fontSize: 13,
+          fontWeight: 600,
+          padding: "8px 16px",
+          borderRadius: 8,
+          background: VIOLET,
+          color: "#fff",
+          textDecoration: "none",
+        }}>
           {actionLabel}
         </Link>
       )}
@@ -336,91 +231,88 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Header
- * ---------------------------------------------------------------------- */
+/* ─── Header ────────────────────────────────────────────────────────────── */
 
 function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshError, onRefresh }) {
   return (
-    <header
-      className="rounded-[16px] p-6 sm:p-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
-      style={{ ...CARD, background: "linear-gradient(180deg, white 0%, var(--mist) 240%)" }}
-    >
-      <div className="min-w-0">
-        {plan && (
-          <span
-            className="inline-flex items-center text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3"
-            style={{ background: GREEN_BG, color: "var(--forest)" }}
-          >
-            {plan.name} plan
-          </span>
-        )}
-        <h1
-          className="text-2xl sm:text-[28px] font-semibold leading-tight truncate"
-          style={{ fontFamily: "var(--font-display)", color: INK }}
-        >
-          {getGreeting()}, {agencyName}
+    <header style={{
+      ...CARD,
+      padding: "28px 32px",
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 20,
+      alignItems: "center",
+      justifyContent: "space-between",
+      background: `linear-gradient(135deg, ${SURFACE} 0%, rgba(124,58,237,0.06) 100%)`,
+    }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          {plan && (
+            <span style={{
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              padding: "3px 10px",
+              borderRadius: 9999,
+              background: VIOLET_BG,
+              color: VIOLET_FG,
+              border: `1px solid rgba(167,139,250,0.2)`,
+            }}>
+              {plan.name} plan
+            </span>
+          )}
+        </div>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 28px)", fontWeight: 600, color: TEXT, marginBottom: 6, marginTop: 0 }}>
+          {getGreeting()}, <span style={{ color: VIOLET_FG }}>{agencyName}</span>
         </h1>
-        <p className="text-sm mt-2 max-w-xl" style={{ color: INK_MUTED }}>
-          {subtitle}
-        </p>
+        <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 520, marginBottom: 10, marginTop: 0 }}>{subtitle}</p>
 
-        <div className="mt-3 flex items-center gap-3 min-h-[16px]" aria-live="polite">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 20 }} aria-live="polite">
           {isRefreshing && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium" style={{ color: INK_MUTED }}>
-              <span
-                className="h-1.5 w-1.5 rounded-full animate-pulse motion-reduce:animate-none"
-                style={{ background: "var(--forest)" }}
-                aria-hidden="true"
-              />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: TEXT_FAINT }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN_FG, display: "inline-block", animation: "pulse 1.5s infinite" }} aria-hidden="true" />
               Refreshing…
             </span>
           )}
           {!isRefreshing && refreshError && (
-            <span className="inline-flex items-center gap-2 text-[11px] font-medium" style={{ color: RED_STRONG }}>
-              Couldn't refresh — showing your last loaded data.
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-              >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, color: RED }}>
+              Couldn't refresh — showing last data.
+              <button type="button" onClick={onRefresh} style={{ color: RED, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 11 }}>
                 Retry
               </button>
             </span>
           )}
           {!isRefreshing && !refreshError && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="text-[11px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-              style={{ color: INK_FAINT }}
-            >
-              Refresh
+            <button type="button" onClick={onRefresh} style={{ fontSize: 11, color: TEXT_FAINT, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              Refresh ↺
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <Link
-          href="/dashboard/candidates"
-          className="hidden sm:inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
-        >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
+        <Link href="/dashboard/candidates" style={{
+          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          padding: "8px 16px", borderRadius: 8, border: `1px solid ${BORDER2}`,
+          color: TEXT_SUB, textDecoration: "none", background: SURFACE2,
+        }}>
           Browse candidates
         </Link>
-        <Link
-          href="/dashboard/pipeline"
-          className="hidden sm:inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
-        >
-          View pipeline
+        <Link href="/dashboard/pipeline" style={{
+          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          padding: "8px 16px", borderRadius: 8, border: `1px solid ${BORDER2}`,
+          color: TEXT_SUB, textDecoration: "none", background: SURFACE2,
+        }}>
+          Pipeline
         </Link>
-        <Link
-          href="/analyse"
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--forest)", color: "white" }}
-        >
+        <Link href="/analyse" style={{
+          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          padding: "8px 16px", borderRadius: 8,
+          background: VIOLET, color: "#fff", textDecoration: "none",
+        }}>
           + New analysis
         </Link>
       </div>
@@ -428,38 +320,23 @@ function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshErro
   );
 }
 
-/* ------------------------------------------------------------------------
- * KPI layer
- * ---------------------------------------------------------------------- */
+/* ─── KPIs ──────────────────────────────────────────────────────────────── */
 
-function KpiCard({ label, value, sub, meter }) {
+function KpiCard({ label, value, sub, meter, accent }) {
   return (
-    <div className="rounded-[14px] p-5" style={CARD}>
-      <p
-        className="text-[10px] font-semibold uppercase tracking-widest mb-2"
-        style={{ color: INK_FAINT }}
-      >
+    <div style={{ ...CARD, padding: 20 }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
         {label}
       </p>
-      <p
-        className="text-2xl font-semibold tabular-nums"
-        style={{ fontFamily: "var(--font-mono)", color: INK }}
-      >
+      <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
         {value}
       </p>
       {typeof meter === "number" && (
-        <div className="h-1 rounded-full mt-3 mb-1" style={{ background: "var(--mist)" }}>
-          <div
-            className="h-1 rounded-full"
-            style={{ width: `${Math.min(100, Math.max(0, meter))}%`, background: "var(--forest)" }}
-          />
+        <div style={{ height: 3, background: BORDER2, borderRadius: 9999, marginTop: 12, marginBottom: 6, overflow: "hidden" }}>
+          <div style={{ height: 3, width: `${Math.min(100, Math.max(0, meter))}%`, background: VIOLET, borderRadius: 9999 }} />
         </div>
       )}
-      {sub && (
-        <p className="text-[11px] mt-1" style={{ color: INK_MUTED }}>
-          {sub}
-        </p>
-      )}
+      {sub && <p style={{ fontSize: 12, color: TEXT_FAINT, marginTop: typeof meter === "number" ? 2 : 8, marginBottom: 0 }}>{sub}</p>}
     </div>
   );
 }
@@ -467,93 +344,43 @@ function KpiCard({ label, value, sub, meter }) {
 function DashboardKpis({ totals }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-live="polite">
-      <KpiCard
-        label="Analyses"
-        value={formatNumber(totals.total)}
-        sub={`${formatNumber(totals.last7)} in the last 7 days`}
-      />
-      <KpiCard
-        label="Strong matches"
-        value={formatNumber(totals.strongMatches)}
-        sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed analyses` : "No completed analyses yet"}
-      />
-      <KpiCard
-        label="In pipeline"
-        value={formatNumber(totals.inPipeline)}
-        sub="Active, not yet placed"
-      />
-      <KpiCard
-        label="Avg. match score"
-        value={totals.completed > 0 ? totals.avgScore : "—"}
-        sub={totals.completed > 0 ? "Across completed analyses" : "No completed analyses yet"}
-        meter={totals.completed > 0 ? totals.avgScore : undefined}
-      />
+      <KpiCard label="Total analyses" value={formatNumber(totals.total)} sub={`${formatNumber(totals.last7)} in the last 7 days`} />
+      <KpiCard label="Strong matches" value={formatNumber(totals.strongMatches)} sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed` : "No completed yet"} accent={GREEN_FG} />
+      <KpiCard label="In pipeline" value={formatNumber(totals.inPipeline)} sub="Active, not yet placed" accent={CYAN} />
+      <KpiCard label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "—"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Pipeline
- * ---------------------------------------------------------------------- */
+/* ─── Pipeline ──────────────────────────────────────────────────────────── */
 
 function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
         eyebrow="Candidate pipeline"
         title="Where candidates stand"
         action={
-          <Link
-            href="/dashboard/pipeline"
-            className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-            style={{ color: "var(--forest)" }}
-          >
+          <Link href="/dashboard/pipeline" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>
             Open pipeline →
           </Link>
         }
       />
-
       {maxCount === 0 ? (
-        <EmptyState
-          title="No candidates in progress"
-          body="Once analyses complete, candidates will appear here as they move through your pipeline."
-          actionLabel="New analysis"
-          actionHref="/analyse"
-        />
+        <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${stageOrder.length}, 1fr)`, gap: 10 }}>
           {stageOrder.map((stageKey) => {
             const count = stageCounts[stageKey] ?? 0;
-            const heightPct = maxCount > 0 ? Math.max(6, Math.round((count / maxCount) * 100)) : 0;
+            const heightPct = maxCount > 0 ? Math.max(8, Math.round((count / maxCount) * 100)) : 0;
             const isPlaced = stageKey === stageOrder[stageOrder.length - 1];
             return (
-              <Link
-                key={stageKey}
-                href={`/dashboard/pipeline?stage=${stageKey}`}
-                className="group flex flex-col items-center rounded-[10px] p-3 transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                <span
-                  className="text-lg font-semibold tabular-nums"
-                  style={{ fontFamily: "var(--font-mono)", color: INK }}
-                >
-                  {formatNumber(count)}
-                </span>
-                <div
-                  className="w-full rounded-full mt-2 mb-2 flex items-end"
-                  style={{ height: 40, background: "var(--mist)" }}
-                >
-                  <div
-                    className="w-full rounded-full transition-all"
-                    style={{
-                      height: `${heightPct}%`,
-                      background: isPlaced ? "var(--forest)" : "#a9c4b5",
-                    }}
-                  />
+              <Link key={stageKey} href={`/dashboard/pipeline?stage=${stageKey}`} style={{ textDecoration: "none", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 8px", borderRadius: 10, border: `1px solid ${BORDER}`, background: SURFACE2 }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: TEXT, lineHeight: 1 }}>{formatNumber(count)}</span>
+                <div style={{ width: "100%", height: 36, background: BORDER2, borderRadius: 6, marginTop: 8, marginBottom: 8, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
+                  <div style={{ width: "100%", height: `${heightPct}%`, background: isPlaced ? GREEN : VIOLET, borderRadius: "0 0 4px 4px", transition: "height 0.3s" }} />
                 </div>
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight"
-                  style={{ color: INK_MUTED }}
-                >
+                <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
                   {STAGE_LABELS[stageKey]}
                 </span>
               </Link>
@@ -565,9 +392,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Plan usage
- * ---------------------------------------------------------------------- */
+/* ─── Usage ─────────────────────────────────────────────────────────────── */
 
 function UsageSummary({ plan }) {
   const hasLimit = plan && typeof plan.analysesLimit === "number" && plan.analysesLimit > 0;
@@ -578,119 +403,71 @@ function UsageSummary({ plan }) {
   const isOverLimit = hasLimit && used >= limit;
 
   return (
-    <div className="rounded-[14px] p-5 sm:p-6 flex flex-col" style={CARD}>
-      <p
-        className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-        style={{ color: INK_FAINT }}
-      >
+    <div style={{ ...CARD, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>
         {plan?.name ? `${plan.name} plan` : "Plan usage"}
       </p>
-
       {hasLimit ? (
         <>
-          <p
-            className="text-xl font-semibold tabular-nums mt-1"
-            style={{ fontFamily: "var(--font-mono)", color: INK }}
-          >
-            {formatNumber(used)} / {formatNumber(limit)}
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: "0 0 2px 0", fontVariantNumeric: "tabular-nums" }}>
+            {formatNumber(used)} <span style={{ color: TEXT_FAINT, fontWeight: 400 }}>/ {formatNumber(limit)}</span>
           </p>
-          <p className="text-[11px] mb-3" style={{ color: INK_MUTED }}>
-            analyses this cycle
-          </p>
-          <div className="h-2 rounded-full" style={{ background: "var(--mist)" }}>
-            <div
-              className="h-2 rounded-full"
-              style={{ width: `${pct}%`, background: pct >= 90 ? RED : "var(--forest)" }}
-            />
+          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "0 0 12px 0" }}>analyses this cycle</p>
+          <div style={{ height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden" }}>
+            <div style={{ height: 4, width: `${pct}%`, background: pct >= 90 ? RED : VIOLET, borderRadius: 9999 }} />
           </div>
-          <p className="text-[11px] mt-2" style={{ color: isOverLimit ? RED_STRONG : INK_MUTED }}>
+          <p style={{ fontSize: 12, marginTop: 6, color: isOverLimit ? RED : TEXT_FAINT, marginBottom: 0 }}>
             {isOverLimit ? "Plan limit reached" : `${formatNumber(remaining)} analyses remaining`}
           </p>
           {isOverLimit && (
-            <div
-              className="mt-3 rounded-[10px] px-3 py-2 text-[11px] font-medium leading-snug"
-              style={{ background: RED_BG, color: RED_STRONG }}
-            >
-              You've used all {formatNumber(limit)} analyses this cycle. Upgrade to keep screening candidates.
+            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 8, background: RED_BG, border: `1px solid rgba(239,68,68,0.2)`, fontSize: 12, color: RED, lineHeight: 1.5 }}>
+              Upgrade your plan to continue screening.
             </div>
           )}
         </>
       ) : (
-        <p className="text-sm mt-2" style={{ color: INK_MUTED }}>
-          No plan limit on file.
-        </p>
+        <p style={{ fontSize: 13, color: TEXT_SUB, marginTop: 8 }}>No plan limit on file.</p>
       )}
-
-      <Link
-        href="/dashboard/billing"
-        className="text-[12px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded self-start"
-        style={{ color: "var(--forest)" }}
-      >
+      <Link href="/dashboard/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: VIOLET_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
         Upgrade plan →
       </Link>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Needs attention
- * ---------------------------------------------------------------------- */
+/* ─── Attention panel ───────────────────────────────────────────────────── */
 
 function AttentionPanel({ items }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Priority" title="Needs your attention" />
-
       {items.length === 0 ? (
-        <EmptyState
-          title="Nothing needs attention"
-          body="No failed analyses, stalled candidates, or unreviewed strong matches right now — nice work."
-        />
+        <EmptyState title="Nothing needs attention" body="No failed analyses, stalled candidates, or unreviewed strong matches right now." />
       ) : (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {items.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={item.actionHref}
-                title={`${item.candidateName} — ${item.jobTitle}`}
-                className="flex items-center gap-4 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            <li key={item.id} style={{ borderTop: `1px solid ${BORDER}` }}>
+              <Link href={item.actionHref} title={`${item.candidateName} — ${item.jobTitle}`} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
+                borderRadius: 10, textDecoration: "none",
+              }}
+                className="hover:bg-[#111827] transition-colors"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-                    {item.candidateName}
-                  </p>
-                  <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
-                    {item.jobTitle}
-                  </p>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.candidateName}</p>
+                  <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.jobTitle}</p>
                 </div>
-
-                <div className="hidden sm:flex flex-col items-start w-44 shrink-0">
-                  <span
-                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full mb-1"
-                    style={{ background: item.tone.bg, color: item.tone.fg }}
-                  >
-                    {item.reasonLabel}
-                  </span>
-                  <span className="text-[11px]" style={{ color: INK_FAINT }}>
-                    {formatRelativeTime(item.createdAt)}
-                  </span>
-                </div>
-
-                {item.score !== null && (
-                  <span
-                    className="text-sm font-semibold tabular-nums w-10 text-right shrink-0"
-                    style={{ fontFamily: "var(--font-mono)", color: scoreColor(item.score) }}
-                  >
-                    {item.score}
-                  </span>
-                )}
-
-                <span
-                  className="text-[12px] font-semibold shrink-0 hidden sm:inline"
-                  style={{ color: "var(--forest)" }}
-                >
-                  {item.actionLabel} →
+                <span style={{
+                  display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 600,
+                  padding: "3px 10px", borderRadius: 9999, whiteSpace: "nowrap",
+                  background: item.tone.bg, color: item.tone.fg,
+                }}>
+                  {item.reasonLabel}
                 </span>
+                <span style={{ fontSize: 11, color: TEXT_FAINT, whiteSpace: "nowrap", flexShrink: 0 }}>{formatRelativeTime(item.createdAt)}</span>
+                {item.score !== null && (
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(item.score), flexShrink: 0, width: 32, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{item.score}</span>
+                )}
               </Link>
             </li>
           ))}
@@ -700,41 +477,36 @@ function AttentionPanel({ items }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Strongest candidates
- * ---------------------------------------------------------------------- */
+/* ─── Top candidates ────────────────────────────────────────────────────── */
 
 function TopCandidates({ candidates }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Top talent" title="Strongest candidates" />
-
       {candidates.length === 0 ? (
-        <EmptyState
-          title="No strong matches yet"
-          body="Candidates scoring 80 or above on completed analyses will surface here."
-        />
+        <EmptyState title="No strong matches yet" body="Candidates scoring 80 or above will appear here." />
       ) : (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
-          {candidates.map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`/dashboard/candidates/${c.id}`}
-                title={`${c.candidateName} — ${c.jobTitle}${c.company ? ` · ${c.company}` : ""}`}
-                className="flex items-center gap-4 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-                    {c.candidateName}
-                  </p>
-                  <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
-                    {c.jobTitle}
-                    {c.company ? ` · ${c.company}` : ""}
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+          {candidates.map((c, i) => (
+            <li key={c.id} style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : "none" }}>
+              <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} — ${c.jobTitle}`} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
+                borderRadius: 10, textDecoration: "none",
+              }} className="hover:bg-[#111827] transition-colors">
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: VIOLET_BG, color: VIOLET_FG, fontSize: 12, fontWeight: 700,
+                }}>
+                  {c.candidateName[0]}
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.candidateName}</p>
+                  <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c.jobTitle}{c.company ? ` · ${c.company}` : ""}
                   </p>
                 </div>
-                <div className="hidden sm:block shrink-0">
-                  <StageBadge stage={c.stage} />
-                </div>
+                <StageBadge stage={c.stage} />
                 <ScorePill score={c.score} />
               </Link>
             </li>
@@ -745,10 +517,7 @@ function TopCandidates({ candidates }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Activity overview — now with a 7D / 30D window toggle. Computed entirely
- * from the already-loaded `analyses` array, so no new data source needed.
- * ---------------------------------------------------------------------- */
+/* ─── Activity overview ─────────────────────────────────────────────────── */
 
 function ActivityOverview({ analyses }) {
   const [windowDays, setWindowDays] = useState(7);
@@ -756,33 +525,21 @@ function ActivityOverview({ analyses }) {
   const stats = useMemo(() => {
     const now = Date.now();
     const DAY = 86400000;
-
     const current = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < windowDays * DAY);
-    const previous = analyses.filter(
-      (a) =>
-        a.createdAt &&
-        now - a.createdAt.getTime() >= windowDays * DAY &&
-        now - a.createdAt.getTime() < windowDays * 2 * DAY
-    );
-
+    const previous = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() >= windowDays * DAY && now - a.createdAt.getTime() < windowDays * 2 * DAY);
     const dayBuckets = Array.from({ length: windowDays }).map((_, i) => {
       const offset = windowDays - 1 - i;
       const dayDate = new Date(now - offset * DAY);
       const count = analyses.filter((a) => {
         if (!a.createdAt) return false;
-        const diff = Math.floor((now - a.createdAt.getTime()) / DAY);
-        return diff === offset;
+        return Math.floor((now - a.createdAt.getTime()) / DAY) === offset;
       }).length;
-      // Dense 30-day view: label sparsely so text doesn't collide.
       const showLabel = windowDays <= 7 || offset % 5 === 0;
       return {
-        label: showLabel
-          ? dayDate.toLocaleDateString("en-GB", windowDays <= 7 ? { weekday: "narrow" } : { day: "numeric", month: "short" })
-          : "",
+        label: showLabel ? dayDate.toLocaleDateString("en-GB", windowDays <= 7 ? { weekday: "narrow" } : { day: "numeric", month: "short" }) : "",
         count,
       };
     });
-
     return {
       currentCount: current.length,
       previousCount: previous.length,
@@ -797,143 +554,85 @@ function ActivityOverview({ analyses }) {
   const maxBucket = Math.max(1, ...stats.dayBuckets.map((d) => d.count));
 
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
         eyebrow="Momentum"
         title="Activity"
         action={
-          <div className="inline-flex rounded-full p-0.5" style={{ background: "var(--mist)" }}>
+          <div style={{ display: "inline-flex", borderRadius: 9999, padding: 2, background: SURFACE2, border: `1px solid ${BORDER}` }}>
             {[7, 30].map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setWindowDays(d)}
-                aria-pressed={windowDays === d}
-                className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{
-                  background: windowDays === d ? "white" : "transparent",
-                  color: windowDays === d ? INK : INK_MUTED,
-                  boxShadow: windowDays === d ? "0 1px 2px rgba(19,32,27,0.08)" : "none",
-                }}
-              >
-                {d}D
-              </button>
+              <button key={d} type="button" onClick={() => setWindowDays(d)} aria-pressed={windowDays === d} style={{
+                fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 9999,
+                background: windowDays === d ? VIOLET : "transparent",
+                color: windowDays === d ? "#fff" : TEXT_FAINT,
+                border: "none", cursor: "pointer",
+              }}>{d}D</button>
             ))}
           </div>
         }
       />
-
-      <div className="flex items-baseline gap-2 mb-1">
-        <span
-          className="text-2xl font-semibold tabular-nums"
-          style={{ fontFamily: "var(--font-mono)", color: INK }}
-        >
-          {formatNumber(stats.currentCount)}
-        </span>
-        <span className="text-[12px]" style={{ color: INK_MUTED }}>
-          analyses in the last {windowDays} days
-        </span>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 600, color: TEXT, fontVariantNumeric: "tabular-nums" }}>{formatNumber(stats.currentCount)}</span>
+        <span style={{ fontSize: 12, color: TEXT_SUB }}>in the last {windowDays} days</span>
       </div>
-      <p className="text-[12px] mb-4" style={{ color: delta >= 0 ? "var(--forest)" : RED }}>
-        {delta === 0
-          ? `Same as the previous ${windowDays} days`
-          : `${delta > 0 ? "+" : ""}${delta} vs. the previous ${windowDays} days (${stats.previousCount})`}
+      <p style={{ fontSize: 12, marginBottom: 16, color: delta >= 0 ? GREEN_FG : RED }}>
+        {delta === 0 ? `Same as previous ${windowDays} days` : `${delta > 0 ? "+" : ""}${delta} vs. previous ${windowDays} days`}
       </p>
 
-      <div
-        className="flex items-end gap-1.5 h-16 mb-4"
-        role="img"
-        aria-label={`Analyses per day over the last ${windowDays} days, ranging up to ${maxBucket}`}
-      >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 56, marginBottom: 12 }} role="img" aria-label={`Analyses per day over ${windowDays} days`}>
         {stats.dayBuckets.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
-            <div
-              className="w-full rounded-t-[3px]"
-              style={{
-                height: `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%`,
-                background: "var(--forest)",
-                opacity: d.count === 0 ? 0.15 : 0.85,
-              }}
-            />
-            <span className="text-[9px] whitespace-nowrap" style={{ color: INK_FAINT }}>
-              {d.label}
-            </span>
+          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 3 }}>
+            <div style={{
+              width: "100%", borderRadius: "3px 3px 0 0",
+              height: `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%`,
+              background: VIOLET, opacity: d.count === 0 ? 0.15 : 0.85,
+            }} />
+            <span style={{ fontSize: 9, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center gap-4 text-[12px] pt-3" style={{ borderTop: "1px solid var(--border)", color: INK_MUTED }}>
-        <span>
-          <strong style={{ color: INK }}>{formatNumber(stats.completed)}</strong> completed
-        </span>
-        <span>
-          <strong style={{ color: INK }}>{formatNumber(stats.processing)}</strong> processing
-        </span>
-        <span>
-          <strong style={{ color: INK }}>{formatNumber(stats.failed)}</strong> failed
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, paddingTop: 12, borderTop: `1px solid ${BORDER}`, color: TEXT_SUB }}>
+        <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.completed)}</strong> completed</span>
+        <span><strong style={{ color: AMBER_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.processing)}</strong> processing</span>
+        <span><strong style={{ color: RED, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.failed)}</strong> failed</span>
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Active jobs
- * ---------------------------------------------------------------------- */
+/* ─── Active jobs ───────────────────────────────────────────────────────── */
 
 function ActiveJobs({ jobs }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
         eyebrow="Roles"
         title="Active jobs"
-        action={
-          <Link
-            href="/dashboard/jobs"
-            className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-            style={{ color: "var(--forest)" }}
-          >
-            All jobs →
-          </Link>
-        }
+        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>All jobs →</Link>}
       />
-
       {jobs.length === 0 ? (
-        <EmptyState title="No active jobs" body="Jobs will appear here once candidates have been analysed against them." />
+        <EmptyState title="No active jobs" body="Jobs appear here once candidates have been analysed against them." />
       ) : (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {jobs.map((job) => (
-            <li key={job.key} className="py-3.5">
-              <div className="flex items-center justify-between gap-3 mb-1.5">
-                <p
-                  className="text-sm font-semibold truncate"
-                  style={{ color: INK }}
-                  title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}
-                >
+            <li key={job.key} style={{ padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}>
                   {job.jobTitle}
-                  {job.company ? <span style={{ color: INK_MUTED, fontWeight: 500 }}> · {job.company}</span> : null}
+                  {job.company && <span style={{ color: TEXT_SUB, fontWeight: 400 }}> · {job.company}</span>}
                 </p>
-                <span
-                  className="text-[12px] tabular-nums shrink-0"
-                  style={{ fontFamily: "var(--font-mono)", color: INK_MUTED }}
-                >
-                  {formatNumber(job.candidateCount)} candidates
-                </span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: TEXT_SUB, flexShrink: 0 }}>{formatNumber(job.candidateCount)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden flex" style={{ background: "var(--mist)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ flex: 1, height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden", display: "flex" }}>
                   {job.stageSegments.map((seg) =>
                     seg.pct > 0 ? (
-                      <div
-                        key={seg.key}
-                        style={{ width: `${seg.pct}%`, background: seg.isPlaced ? "var(--forest)" : "#a9c4b5" }}
-                      />
+                      <div key={seg.key} style={{ width: `${seg.pct}%`, background: seg.isPlaced ? GREEN : VIOLET, opacity: 0.8 }} />
                     ) : null
                   )}
                 </div>
-                <span className="text-[11px] shrink-0" style={{ color: INK_FAINT }}>
-                  {formatNumber(job.strongMatches)} strong
-                </span>
+                <span style={{ fontSize: 11, color: TEXT_FAINT, flexShrink: 0 }}>{formatNumber(job.strongMatches)} strong</span>
               </div>
             </li>
           ))}
@@ -943,44 +642,30 @@ function ActiveJobs({ jobs }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Recruiter performance
- * ---------------------------------------------------------------------- */
+/* ─── Recruiter performance ─────────────────────────────────────────────── */
 
 function RecruiterPerformance({ recruiters }) {
   if (recruiters.length === 0) return null;
-
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
         eyebrow="Team"
         title="Recruiter performance"
-        action={
-          <Link
-            href="/dashboard/analytics"
-            className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-            style={{ color: "var(--forest)" }}
-          >
-            Full analytics →
-          </Link>
-        }
+        action={<Link href="/dashboard/analytics" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>Full analytics →</Link>}
       />
-      <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+      <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {recruiters.map((r) => (
-          <li key={r.name} className="flex items-center justify-between gap-3 py-3">
-            <p className="text-sm font-semibold truncate" style={{ color: INK }} title={r.name}>
-              {r.name}
-            </p>
-            <div className="flex items-center gap-4 text-[12px] shrink-0" style={{ color: INK_MUTED }}>
-              <span>
-                <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{formatNumber(r.completed)}</strong> analysed
-              </span>
-              <span>
-                <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "—"}</strong> avg
-              </span>
-              <span>
-                <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed
-              </span>
+          <li key={r.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: VIOLET_FG, flexShrink: 0 }}>
+                {r.name[0]}
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.name}>{r.name}</p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, color: TEXT_SUB, flexShrink: 0 }}>
+              <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{formatNumber(r.completed)}</strong> analysed</span>
+              <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "—"}</strong> avg</span>
+              <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed</span>
             </div>
           </li>
         ))}
@@ -989,105 +674,51 @@ function RecruiterPerformance({ recruiters }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Recent analyses
- * ---------------------------------------------------------------------- */
+/* ─── Recent analyses ───────────────────────────────────────────────────── */
 
 function RecentAnalyses({ analyses }) {
   const router = useRouter();
-
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Activity feed" title="Recent analyses" />
-
       {analyses.length === 0 ? (
-        <EmptyState
-          title="No analyses yet"
-          body="Upload your first CV to start screening candidates against your roles."
-          actionLabel="New analysis"
-          actionHref="/analyse"
-        />
+        <EmptyState title="No analyses yet" body="Upload your first CV to start screening candidates." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
-        <div className="overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
             <caption className="sr-only">Recent candidate analyses</caption>
             <thead>
-              <tr className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
-                <th scope="col" className="py-2 font-semibold">
-                  Candidate
-                </th>
-                <th scope="col" className="py-2 font-semibold hidden md:table-cell">
-                  Recruiter
-                </th>
-                <th scope="col" className="py-2 font-semibold hidden sm:table-cell">
-                  Stage
-                </th>
-                <th scope="col" className="py-2 font-semibold">
-                  Status
-                </th>
-                <th scope="col" className="py-2 font-semibold text-right">
-                  Score
-                </th>
-                <th scope="col" className="py-2 font-semibold text-right hidden sm:table-cell">
-                  Date
-                </th>
+              <tr>
+                {["Candidate", "Recruiter", "Stage", "Status", "Score", "Date"].map((h, i) => (
+                  <th key={h} scope="col" style={{
+                    padding: "8px 12px 8px 0",
+                    fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
+                    borderBottom: `1px solid ${BORDER}`,
+                    display: h === "Recruiter" ? "table-cell" : undefined,
+                  }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {analyses.map((a) => {
-                // Completed analyses open the candidate workspace, same as
-                // every other section on this page (Top candidates,
-                // Attention panel). Only an in-flight or failed *analysis*
-                // — which has no candidate workspace yet — opens the raw
-                // analysis-result view.
                 const href = a.status === "completed" ? `/dashboard/candidates/${a.id}` : `/analyse/${a.id}`;
                 return (
-                  <tr
-                    key={a.id}
-                    onClick={() => router.push(href)}
-                    className="group cursor-pointer transition-colors hover:bg-[var(--mist)] focus-within:bg-[var(--mist)]"
-                    style={{ borderTop: "1px solid var(--border)" }}
-                  >
-                    <td className="py-3 pr-3 min-w-0">
-                      <Link
-                        href={href}
-                        onClick={(e) => e.stopPropagation()}
-                        title={`${a.candidateName} — ${a.jobTitle}${a.company ? ` · ${a.company}` : ""}`}
-                        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-                      >
-                        <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-                          {a.candidateName}
-                        </p>
-                        <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
-                          {a.jobTitle}
-                          {a.company ? ` · ${a.company}` : ""}
-                        </p>
+                  <tr key={a.id} onClick={() => router.push(href)} style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}` }} className="hover:bg-[#111827] transition-colors">
+                    <td style={{ padding: "12px 12px 12px 0", minWidth: 0 }}>
+                      <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} — ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.candidateName}</p>
+                        <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.jobTitle}{a.company ? ` · ${a.company}` : ""}</p>
                       </Link>
                     </td>
-                    <td className="py-3 pr-3 hidden md:table-cell">
-                      <span className="text-[13px] truncate" style={{ color: INK_MUTED }}>
-                        {a.recruiterName ?? "Unassigned"}
-                      </span>
+                    <td style={{ padding: "12px 12px 12px 0", fontSize: 13, color: TEXT_SUB, whiteSpace: "nowrap" }}>{a.recruiterName ?? "Unassigned"}</td>
+                    <td style={{ padding: "12px 12px 12px 0" }}><StageBadge stage={a.stage} /></td>
+                    <td style={{ padding: "12px 12px 12px 0" }}><StatusBadge status={a.status} /></td>
+                    <td style={{ padding: "12px 12px 12px 0", textAlign: "right" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(a.score), fontVariantNumeric: "tabular-nums" }}>{a.score ?? "—"}</span>
                     </td>
-                    <td className="py-3 pr-3 hidden sm:table-cell">
-                      <StageBadge stage={a.stage} />
-                    </td>
-                    <td className="py-3 pr-3">
-                      <StatusBadge status={a.status} />
-                    </td>
-                    <td className="py-3 pl-3 text-right">
-                      <span
-                        className="text-sm font-semibold tabular-nums"
-                        style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}
-                      >
-                        {a.score ?? "—"}
-                      </span>
-                    </td>
-                    <td className="py-3 pl-3 text-right hidden sm:table-cell">
-                      <span className="text-[12px] whitespace-nowrap" style={{ color: INK_FAINT }}>
-                        {formatDate(a.createdAt)}
-                      </span>
-                    </td>
+                    <td style={{ padding: "12px 0 12px 12px", textAlign: "right", fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{formatDate(a.createdAt)}</td>
                   </tr>
                 );
               })}
@@ -1099,139 +730,68 @@ function RecentAnalyses({ analyses }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Footer
- * ---------------------------------------------------------------------- */
+/* ─── Footer ────────────────────────────────────────────────────────────── */
 
 function DashboardFooter() {
   return (
-    <footer
-      className="flex flex-wrap items-center justify-between gap-3 pt-4 text-[12px]"
-      style={{ color: INK_FAINT, borderTop: "1px solid var(--border)" }}
-    >
+    <footer style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 20, fontSize: 12, color: TEXT_FAINT, borderTop: `1px solid ${BORDER}` }}>
       <span>Helixon — recruiter dashboard</span>
-      <nav className="flex items-center gap-4" aria-label="Support links">
-        <Link href="/faq" className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
-          FAQ
-        </Link>
-        <Link href="/contact" className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
-          Contact
-        </Link>
-        <Link href="/privacy" className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
-          Privacy
-        </Link>
+      <nav style={{ display: "flex", alignItems: "center", gap: 20 }} aria-label="Support links">
+        {[["FAQ", "/faq"], ["Contact", "/contact"], ["Privacy", "/privacy"]].map(([label, href]) => (
+          <Link key={href} href={href} style={{ color: TEXT_FAINT, textDecoration: "none" }} className="hover:text-white transition-colors">{label}</Link>
+        ))}
       </nav>
     </footer>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Loading skeleton — mirrors the real layout so nothing shifts on load.
- * Only shown when there is no data yet; a refresh of existing data uses
- * the small inline indicator in the header instead (see DashboardHeader).
- * ---------------------------------------------------------------------- */
+/* ─── Skeleton ──────────────────────────────────────────────────────────── */
 
-function Block({ className = "", style = {} }) {
-  return (
-    <div
-      className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`}
-      style={{ background: "var(--mist)", ...style }}
-    />
-  );
+function Block({ style = {} }) {
+  return <div className="animate-pulse motion-reduce:animate-none" style={{ background: SURFACE2, borderRadius: 8, ...style }} />;
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6 lg:space-y-8" aria-busy="true" aria-label="Loading dashboard">
-      <div className="rounded-[16px] p-6 sm:p-8" style={CARD}>
-        <Block className="h-4 w-24 mb-4" />
-        <Block className="h-7 w-64 mb-3" />
-        <Block className="h-4 w-80" />
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }} aria-busy="true" aria-label="Loading dashboard">
+      <div style={{ ...CARD, padding: 28 }}>
+        <Block style={{ height: 14, width: 120, marginBottom: 14 }} />
+        <Block style={{ height: 28, width: 280, marginBottom: 10 }} />
+        <Block style={{ height: 14, width: 360 }} />
       </div>
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-[14px] p-5" style={CARD}>
-            <Block className="h-3 w-20 mb-3" />
-            <Block className="h-7 w-14" />
+        {[...Array(4)].map((_, i) => (
+          <div key={i} style={{ ...CARD, padding: 20 }}>
+            <Block style={{ height: 10, width: 80, marginBottom: 12 }} />
+            <Block style={{ height: 28, width: 60 }} />
           </div>
         ))}
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
-        <div className="rounded-[14px] p-6" style={CARD}>
-          <Block className="h-4 w-40 mb-5" />
-          <div className="grid grid-cols-6 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Block key={i} className="h-20" />
-            ))}
-          </div>
+      <div style={{ ...CARD, padding: 24 }}>
+        <Block style={{ height: 16, width: 180, marginBottom: 20 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10 }}>
+          {[...Array(6)].map((_, i) => <Block key={i} style={{ height: 80 }} />)}
         </div>
-        <div className="rounded-[14px] p-6" style={CARD}>
-          <Block className="h-4 w-24 mb-5" />
-          <Block className="h-6 w-full mb-3" />
-          <Block className="h-2 w-full" />
-        </div>
-      </div>
-
-      <div className="rounded-[14px] p-6" style={CARD}>
-        <Block className="h-4 w-48 mb-5" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Block key={i} className="h-12 w-full mb-2" />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="rounded-[14px] p-6" style={CARD}>
-            <Block className="h-4 w-40 mb-5" />
-            {Array.from({ length: 4 }).map((_, j) => (
-              <Block key={j} className="h-10 w-full mb-2" />
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-[14px] p-6" style={CARD}>
-        <Block className="h-4 w-40 mb-5" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Block key={i} className="h-10 w-full mb-2" />
-        ))}
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Full-page error — only shown when there is no data at all (first load
- * failed). A refresh failure with existing data on screen is handled
- * inline in the header instead, so a good load is never thrown away.
- * ---------------------------------------------------------------------- */
+/* ─── Error ─────────────────────────────────────────────────────────────── */
 
 function DashboardError({ onRetry }) {
   return (
-    <div className="rounded-[16px] p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
-        Unable to load dashboard
-      </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
-        Something went wrong while loading your recruitment data.
-      </p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
-      >
+    <div style={{ ...CARD, padding: 40, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+      <p style={{ fontSize: 15, fontWeight: 600, color: TEXT, marginBottom: 6 }}>Unable to load dashboard</p>
+      <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
+      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 8, background: VIOLET, color: "#fff", border: "none", cursor: "pointer" }}>
         Try again
       </button>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Page
- * ---------------------------------------------------------------------- */
+/* ─── Page ──────────────────────────────────────────────────────────────── */
 
 export default function AgencyDashboardPage() {
   const [data, setData] = useState(null);
@@ -1242,24 +802,11 @@ export default function AgencyDashboardPage() {
   useEffect(() => {
     let cancelled = false;
     setIsFetching(true);
-
     fetchDashboardData()
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setHasError(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setHasError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setIsFetching(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .then((d) => { if (!cancelled) { setData(d); setHasError(false); } })
+      .catch(() => { if (!cancelled) setHasError(true); })
+      .finally(() => { if (!cancelled) setIsFetching(false); });
+    return () => { cancelled = true; };
   }, [reloadKey]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
@@ -1270,223 +817,64 @@ export default function AgencyDashboardPage() {
 
   const model = useMemo(() => {
     const rawAnalyses = data?.recentAnalyses ?? [];
-    const analyses = rawAnalyses
-      .map((raw, i) => normalizeAnalysis(raw, i))
-      .filter(Boolean)
-      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+    const analyses = rawAnalyses.map((raw, i) => normalizeAnalysis(raw, i)).filter(Boolean).sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
 
     const completed = analyses.filter((a) => a.status === "completed");
     const processing = analyses.filter((a) => a.status === "processing");
     const failed = analyses.filter((a) => a.status === "failed");
 
     const strongMatches = completed.filter((a) => a.score !== null && a.score >= 80);
-    const avgScore = completed.length
-      ? Math.round(completed.reduce((sum, a) => sum + (a.score ?? 0), 0) / completed.length)
-      : 0;
+    const avgScore = completed.length ? Math.round(completed.reduce((sum, a) => sum + (a.score ?? 0), 0) / completed.length) : 0;
 
     const now = Date.now();
     const DAY = 86400000;
     const last7 = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < 7 * DAY);
-    const prev7 = analyses.filter(
-      (a) => a.createdAt && now - a.createdAt.getTime() >= 7 * DAY && now - a.createdAt.getTime() < 14 * DAY
-    );
 
     const inPipeline = completed.filter((a) => a.stage && a.stage !== lastStageKey).length;
 
-    // Pipeline stage counts
     const stageCounts = {};
-    stageOrder.forEach((key) => {
-      stageCounts[key] = completed.filter((a) => a.stage === key).length;
-    });
+    stageOrder.forEach((key) => { stageCounts[key] = completed.filter((a) => a.stage === key).length; });
     const maxStageCount = Math.max(0, ...Object.values(stageCounts));
 
-    // Needs attention
     const attentionItems = [];
-
-    failed.forEach((a) => {
-      attentionItems.push({
-        id: `${a.id}-failed`,
-        candidateName: a.candidateName,
-        jobTitle: a.jobTitle,
-        score: null,
-        createdAt: a.createdAt,
-        reasonLabel: "Analysis failed",
-        tone: { bg: RED_BG, fg: RED_STRONG },
-        actionLabel: "Retry analysis",
-        actionHref: `/analyse/${a.id}`,
-        priority: 0,
-      });
-    });
-
-    processing
-      .filter((a) => a.createdAt && now - a.createdAt.getTime() > 12 * 60 * 60 * 1000)
-      .forEach((a) => {
-        attentionItems.push({
-          id: `${a.id}-processing`,
-          candidateName: a.candidateName,
-          jobTitle: a.jobTitle,
-          score: null,
-          createdAt: a.createdAt,
-          reasonLabel: "Still processing",
-          tone: { bg: AMBER_BG, fg: AMBER },
-          actionLabel: "Open analysis",
-          actionHref: `/analyse/${a.id}`,
-          priority: 1,
-        });
-      });
-
-    // Strong matches: previously required stage === firstStageKey, which
-    // meant a completed, high-scoring candidate with no stage set yet
-    // (stage === null) never surfaced here. A fresh strong match should
-    // always get attention regardless of whether it's been staged.
-    completed
-      .filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null))
-      .forEach((a) => {
-        attentionItems.push({
-          id: `${a.id}-unreviewed`,
-          candidateName: a.candidateName,
-          jobTitle: a.jobTitle,
-          score: a.score,
-          createdAt: a.createdAt,
-          reasonLabel: a.stage ? `Strong match · ${STAGE_LABELS[a.stage]}` : "Strong match · Unstaged",
-          tone: { bg: GREEN_BG, fg: "var(--forest)" },
-          actionLabel: "Review candidate",
-          actionHref: `/dashboard/candidates/${a.id}`,
-          priority: 2,
-        });
-      });
-
     const midStages = stageOrder.slice(1, -1);
-    completed
-      .filter(
-        (a) =>
-          midStages.includes(a.stage) &&
-          a.createdAt &&
-          now - a.createdAt.getTime() > 5 * DAY
-      )
-      .forEach((a) => {
-        attentionItems.push({
-          id: `${a.id}-stalled`,
-          candidateName: a.candidateName,
-          jobTitle: a.jobTitle,
-          score: a.score,
-          createdAt: a.createdAt,
-          reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`,
-          tone: { bg: AMBER_BG, fg: AMBER },
-          actionLabel: "Review candidate",
-          actionHref: `/dashboard/candidates/${a.id}`,
-          priority: 3,
-        });
-      });
 
-    // Completed but never staged, and not already caught above as a
-    // strong match — otherwise these candidates never appear anywhere
-    // that prompts action.
-    completed
-      .filter((a) => a.stage === null && !(a.score !== null && a.score >= 80))
-      .forEach((a) => {
-        attentionItems.push({
-          id: `${a.id}-unstaged`,
-          candidateName: a.candidateName,
-          jobTitle: a.jobTitle,
-          score: a.score,
-          createdAt: a.createdAt,
-          reasonLabel: "Awaiting stage",
-          tone: { bg: "var(--mist)", fg: INK_MUTED },
-          actionLabel: "Assign stage",
-          actionHref: `/dashboard/candidates/${a.id}`,
-          priority: 4,
-        });
-      });
+    failed.forEach((a) => attentionItems.push({ id: `${a.id}-failed`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: null, createdAt: a.createdAt, reasonLabel: "Analysis failed", tone: { bg: RED_BG, fg: RED }, actionLabel: "Retry", actionHref: `/analyse/${a.id}`, priority: 0 }));
+    processing.filter((a) => a.createdAt && now - a.createdAt.getTime() > 12 * 3600000).forEach((a) => attentionItems.push({ id: `${a.id}-processing`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: null, createdAt: a.createdAt, reasonLabel: "Still processing", tone: { bg: AMBER_BG, fg: AMBER_FG }, actionLabel: "Open", actionHref: `/analyse/${a.id}`, priority: 1 }));
+    completed.filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null)).forEach((a) => attentionItems.push({ id: `${a.id}-unreviewed`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: a.stage ? `Strong match · ${STAGE_LABELS[a.stage]}` : "Strong match · Unstaged", tone: { bg: GREEN_BG, fg: GREEN_FG }, actionLabel: "Review", actionHref: `/dashboard/candidates/${a.id}`, priority: 2 }));
+    completed.filter((a) => midStages.includes(a.stage) && a.createdAt && now - a.createdAt.getTime() > 5 * DAY).forEach((a) => attentionItems.push({ id: `${a.id}-stalled`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`, tone: { bg: AMBER_BG, fg: AMBER_FG }, actionLabel: "Review", actionHref: `/dashboard/candidates/${a.id}`, priority: 3 }));
+    completed.filter((a) => a.stage === null && !(a.score !== null && a.score >= 80)).forEach((a) => attentionItems.push({ id: `${a.id}-unstaged`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: "Awaiting stage", tone: { bg: `rgba(71,85,105,0.15)`, fg: TEXT_SUB }, actionLabel: "Stage", actionHref: `/dashboard/candidates/${a.id}`, priority: 4 }));
 
-    attentionItems.sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
-    });
+    attentionItems.sort((a, b) => a.priority !== b.priority ? a.priority - b.priority : (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
 
-    // Strongest candidates
-    const topCandidates = [...completed]
-      .filter((a) => a.score !== null)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+    const topCandidates = [...completed].filter((a) => a.score !== null).sort((a, b) => b.score - a.score).slice(0, 5);
 
-    // Active jobs — derived from analyses, grouped by job + company
     const jobMap = new Map();
     completed.forEach((a) => {
       const key = `${a.jobTitle}__${a.company ?? ""}`;
-      if (!jobMap.has(key)) {
-        jobMap.set(key, {
-          key,
-          jobTitle: a.jobTitle,
-          company: a.company,
-          candidateCount: 0,
-          strongMatches: 0,
-          stageCounts: {},
-        });
-      }
+      if (!jobMap.has(key)) jobMap.set(key, { key, jobTitle: a.jobTitle, company: a.company, candidateCount: 0, strongMatches: 0, stageCounts: {} });
       const job = jobMap.get(key);
       job.candidateCount += 1;
       if (a.score !== null && a.score >= 80) job.strongMatches += 1;
       if (a.stage) job.stageCounts[a.stage] = (job.stageCounts[a.stage] ?? 0) + 1;
     });
+    const jobs = Array.from(jobMap.values()).map((job) => ({
+      ...job,
+      stageSegments: stageOrder.map((key) => ({ key, pct: job.candidateCount > 0 ? Math.round(((job.stageCounts[key] ?? 0) / job.candidateCount) * 100) : 0, isPlaced: key === lastStageKey })),
+    })).sort((a, b) => b.candidateCount - a.candidateCount).slice(0, 5);
 
-    const jobs = Array.from(jobMap.values())
-      .map((job) => {
-        const segments = stageOrder.map((key) => ({
-          key,
-          pct: job.candidateCount > 0 ? Math.round(((job.stageCounts[key] ?? 0) / job.candidateCount) * 100) : 0,
-          isPlaced: key === lastStageKey,
-        }));
-        return { ...job, stageSegments: segments };
-      })
-      .sort((a, b) => b.candidateCount - a.candidateCount)
-      .slice(0, 5);
-
-    // Recruiter performance — derived from analyses
     const recruiterMap = new Map();
     completed.forEach((a) => {
       if (!a.recruiterName) return;
-      if (!recruiterMap.has(a.recruiterName)) {
-        recruiterMap.set(a.recruiterName, { name: a.recruiterName, completed: 0, scoreSum: 0, scoreCount: 0, placements: 0 });
-      }
+      if (!recruiterMap.has(a.recruiterName)) recruiterMap.set(a.recruiterName, { name: a.recruiterName, completed: 0, scoreSum: 0, scoreCount: 0, placements: 0 });
       const r = recruiterMap.get(a.recruiterName);
       r.completed += 1;
-      if (a.score !== null) {
-        r.scoreSum += a.score;
-        r.scoreCount += 1;
-      }
+      if (a.score !== null) { r.scoreSum += a.score; r.scoreCount += 1; }
       if (a.stage === lastStageKey) r.placements += 1;
     });
+    const recruiters = Array.from(recruiterMap.values()).map((r) => ({ ...r, avgScore: r.scoreCount > 0 ? Math.round(r.scoreSum / r.scoreCount) : null })).sort((a, b) => b.placements - a.placements || (b.avgScore ?? 0) - (a.avgScore ?? 0)).slice(0, 4);
 
-    const recruiters = Array.from(recruiterMap.values())
-      .map((r) => ({
-        ...r,
-        avgScore: r.scoreCount > 0 ? Math.round(r.scoreSum / r.scoreCount) : null,
-      }))
-      .sort((a, b) => b.placements - a.placements || (b.avgScore ?? 0) - (a.avgScore ?? 0))
-      .slice(0, 4);
-
-    return {
-      analyses,
-      totals: {
-        total: analyses.length,
-        completed: completed.length,
-        processing: processing.length,
-        failed: failed.length,
-        strongMatches: strongMatches.length,
-        strongMatchPct: completed.length ? Math.round((strongMatches.length / completed.length) * 100) : 0,
-        avgScore,
-        last7: last7.length,
-        prev7: prev7.length,
-        inPipeline,
-      },
-      stageCounts,
-      maxStageCount,
-      attentionItems: attentionItems.slice(0, 6),
-      topCandidates,
-      jobs,
-      recruiters,
-    };
+    return { analyses, totals: { total: analyses.length, completed: completed.length, processing: processing.length, failed: failed.length, strongMatches: strongMatches.length, strongMatchPct: completed.length ? Math.round((strongMatches.length / completed.length) * 100) : 0, avgScore, last7: last7.length, inPipeline }, stageCounts, maxStageCount, attentionItems: attentionItems.slice(0, 6), topCandidates, jobs, recruiters };
   }, [data, stageOrder, lastStageKey, firstStageKey]);
 
   const agencyName = data?.agency?.name ?? "your agency";
@@ -1494,70 +882,45 @@ export default function AgencyDashboardPage() {
 
   const subtitle = useMemo(() => {
     if (!data) return "";
-    if (model.analyses.length === 0) {
-      return "Upload your first CV to start screening candidates against your roles.";
-    }
-    const attentionCount = model.attentionItems.length;
-    const strongCount = model.totals.strongMatches;
-    if (attentionCount > 0) {
-      return `${attentionCount} ${attentionCount === 1 ? "item needs" : "items need"} your attention, and ${strongCount} strong ${
-        strongCount === 1 ? "candidate is" : "candidates are"
-      } ready to move forward.`;
-    }
-    if (strongCount > 0) {
-      return `Your pipeline is in good shape — ${strongCount} strong ${strongCount === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
-    }
+    if (model.analyses.length === 0) return "Upload your first CV to start screening candidates.";
+    const ac = model.attentionItems.length;
+    const sc = model.totals.strongMatches;
+    if (ac > 0) return `${ac} ${ac === 1 ? "item needs" : "items need"} your attention, and ${sc} strong ${sc === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
+    if (sc > 0) return `Your pipeline is in good shape — ${sc} strong ${sc === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
     return "Your pipeline is in good shape. Here's what's been happening lately.";
   }, [data, model]);
 
-  const hasData = !!data;
-
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main style={{ minHeight: "100vh", background: BG }}>
       <DashboardNav />
-
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6 lg:space-y-8">
-        {!hasData && isFetching && <DashboardSkeleton />}
-
-        {!hasData && !isFetching && hasError && <DashboardError onRetry={retry} />}
-
-        {hasData && (
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+        {!data && isFetching && <DashboardSkeleton />}
+        {!data && !isFetching && hasError && <DashboardError onRetry={retry} />}
+        {data && (
           <>
-            <DashboardHeader
-              agencyName={agencyName}
-              plan={plan}
-              subtitle={subtitle}
-              isRefreshing={isFetching}
-              refreshError={!isFetching && hasError}
-              onRefresh={retry}
-            />
+            <DashboardHeader agencyName={agencyName} plan={plan} subtitle={subtitle} isRefreshing={isFetching} refreshError={!isFetching && hasError} onRefresh={retry} />
 
             {model.analyses.length === 0 ? (
-              <div className="rounded-[16px]" style={CARD}>
-                <EmptyState
-                  title="No candidates yet"
-                  body="Your pipeline is empty. Upload your first CV to start screening candidates against your roles."
-                  actionLabel="New analysis"
-                  actionHref="/analyse"
-                />
+              <div style={CARD}>
+                <EmptyState title="No candidates yet" body="Your pipeline is empty. Upload your first CV to get started." actionLabel="New analysis" actionHref="/analyse" />
               </div>
             ) : (
               <>
                 <DashboardKpis totals={model.totals} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} />
                   <UsageSummary plan={plan} />
                 </div>
 
                 <AttentionPanel items={model.attentionItems} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <TopCandidates candidates={model.topCandidates} />
                   <ActivityOverview analyses={model.analyses} />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <ActiveJobs jobs={model.jobs} />
                   <RecruiterPerformance recruiters={model.recruiters} />
                 </div>
