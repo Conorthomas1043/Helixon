@@ -3,6 +3,17 @@ import { cookies } from "next/headers";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
+// Applies the exact cookies Supabase's setAll gave us (name, value, AND its
+// own options) onto the outgoing response. Never reconstruct these by hand -
+// Supabase's options carry maxAge/expires/domain/sameSite that a hardcoded
+// object will silently drop.
+function applyCookies(response, cookiesToSet) {
+  cookiesToSet.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options);
+  });
+  return response;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => null);
@@ -19,16 +30,27 @@ export async function POST(request) {
     }
 
     const cookieStore = await cookies();
-    const supabase    = createServerClient(
+
+    // Capture exactly what Supabase wants set, with its own options, so we
+    // can replay it onto whichever NextResponse we end up returning below.
+    let pendingCookies = [];
+
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
           getAll() { return cookieStore.getAll(); },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            pendingCookies = cookiesToSet;
+            cookiesToSet.forEach(({ name, value, options }) => {
+              try {
+                cookieStore.set(name, value, options);
+              } catch {
+                // response-level set via applyCookies() below is what
+                // actually matters for the client.
+              }
+            });
           },
         },
       }
@@ -42,7 +64,9 @@ export async function POST(request) {
     }
 
     // challengeAndVerify creates a challenge and verifies the TOTP code in
-    // one call. On success the session is upgraded to AAL2.
+    // one call. On success the session is upgraded to AAL2, and this call
+    // itself triggers another setAll() with the upgraded session cookies -
+    // pendingCookies will hold those, not the AAL1 ones from getUser().
     const { data, error } = await supabase.auth.mfa.challengeAndVerify({
       factorId,
       code,
@@ -74,19 +98,8 @@ export async function POST(request) {
       user: { id: user.id, email: user.email },
     });
 
-    cookieStore.getAll().forEach(({ name, value }) => {
-      if (name.startsWith("sb-")) {
-        response.cookies.set(name, value, {
-          httpOnly: true,
-          secure:   process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path:     "/",
-        });
-      }
-    });
-
     console.log(`[mfa-verify] Success - ${user.id}, isAdmin: ${isAdmin}, aal: ${data?.currentLevel}`);
-    return response;
+    return applyCookies(response, pendingCookies);
 
   } catch (err) {
     console.error("[mfa-verify] Unexpected error:", err);

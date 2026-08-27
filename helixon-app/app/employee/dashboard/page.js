@@ -30,7 +30,6 @@ function isOverdue(dueDate) {
 
 export default function EmployeeDashboard() {
   const router = useRouter();
-  const [employee, setEmployee] = useState(null);
   const [checking, setChecking] = useState(true);
   const [todos, setTodos] = useState([]);
   const [todosLoading, setTodosLoading] = useState(false);
@@ -219,12 +218,20 @@ export default function EmployeeDashboard() {
           {stats && (
             <>
               <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.totalCandidates}</span>
-                <span className="text-xs text-slate-500">Platform candidates</span>
+                <span className="text-xl font-bold text-slate-300">{stats.totalUsers}</span>
+                <span className="text-xs text-slate-500">Total users</span>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.avgScore}</span>
-                <span className="text-xs text-slate-500">Avg match score</span>
+                <span className="text-xl font-bold text-slate-300">{stats.activeToday}</span>
+                <span className="text-xs text-slate-500">Active today</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
+                <span className="text-xl font-bold text-slate-300">{stats.uptimePct}%</span>
+                <span className="text-xs text-slate-500">Uptime</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
+                <span className="text-xl font-bold text-slate-300">{stats.openTickets}</span>
+                <span className="text-xs text-slate-500">Open tickets</span>
               </div>
             </>
           )}

@@ -63,7 +63,15 @@ function VerifyRing({ state }) {
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams?.get("token");
+
+  // Supabase's confirmation link carries token_hash + type, not a bare
+  // "token" - both are required by verifyOtp(). We also expect the email
+  // itself to be present in the link (added when the link is generated -
+  // see note on the signup route) purely so the resend button below has
+  // something to resend to; it isn't sent to verifyOtp.
+  const tokenHash = searchParams?.get("token_hash");
+  const type = searchParams?.get("type") || "signup";
+  const email = searchParams?.get("email");
 
   const [state, setState] = useState("verifying"); // verifying | success | expired | error
   const [resending, setResending] = useState(false);
@@ -73,12 +81,12 @@ function VerifyEmailContent() {
     let cancelled = false;
 
     async function verify() {
-      if (!token) { setState("error"); return; }
+      if (!tokenHash) { setState("error"); return; }
       try {
         const res = await fetch("/api/auth/verify-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token_hash: tokenHash, type }),
         });
         const data = await res.json().catch(() => null);
         if (cancelled) return;
@@ -98,12 +106,17 @@ function VerifyEmailContent() {
 
     const t = setTimeout(verify, 900); // brief delay so the ring animation reads intentionally, not flashy
     return () => { cancelled = true; clearTimeout(t); };
-  }, [token, router]);
+  }, [tokenHash, type, router]);
 
   async function handleResend() {
+    if (!email) return; // no address to send to - link was malformed/missing it
     setResending(true);
     try {
-      await fetch("/api/auth/resend-verification", { method: "POST" });
+      await fetch("/api/auth/resend-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       setResent(true);
     } catch {
       // silent — resend failures aren't critical path, the button stays available
@@ -145,18 +158,19 @@ function VerifyEmailContent() {
               <button
                 type="button"
                 onClick={handleResend}
-                disabled={resending || resent}
+                disabled={resending || resent || !email}
+                title={!email ? "This link is missing the email address needed to resend" : undefined}
                 className="w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
-                style={{ background: resending || resent ? "#b0c4ba" : "var(--forest)", cursor: resending || resent ? "not-allowed" : "pointer", boxShadow: resending || resent ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)" }}
-                onMouseEnter={(e) => { if (!resending && !resent) e.currentTarget.style.background = "var(--forest-deep)"; }}
-                onMouseOut={(e) => { if (!resending && !resent) e.currentTarget.style.background = "var(--forest)"; }}
+                style={{ background: resending || resent || !email ? "#b0c4ba" : "var(--forest)", cursor: resending || resent || !email ? "not-allowed" : "pointer", boxShadow: resending || resent || !email ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)" }}
+                onMouseEnter={(e) => { if (!resending && !resent && email) e.currentTarget.style.background = "var(--forest-deep)"; }}
+                onMouseOut={(e) => { if (!resending && !resent && email) e.currentTarget.style.background = "var(--forest)"; }}
               >
                 {resending ? (
                   <>
                     <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                     Sending…
                   </>
-                ) : resent ? "New link sent — check your inbox" : "Resend verification email"}
+                ) : resent ? "New link sent — check your inbox" : !email ? "Go to sign in to resend" : "Resend verification email"}
               </button>
               <a href="/login" className="block text-[13px] font-medium hover:underline" style={{ color: "var(--forest)" }}>Back to sign in</a>
             </div>

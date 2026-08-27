@@ -5,11 +5,6 @@ import { NextResponse } from "next/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ── Rate limiting ────────────────────────────────────────────────────────
-// Simple sliding-window check against the login_attempts table (service
-// role). Blocks on too many recent failures for either the email or the
-// IP, whichever trips first - catches both "one account being brute
-// forced" and "one IP spraying many accounts".
 const RATE_LIMIT_WINDOW_MINUTES = 15;
 const MAX_FAILURES_PER_EMAIL = 5;
 const MAX_FAILURES_PER_IP = 20;
@@ -43,9 +38,6 @@ async function checkRateLimit(email, ip) {
     }
     return { blocked: false };
   } catch (e) {
-    // Fail open on the rate-limit check itself (a DB hiccup here shouldn't
-    // lock out every legitimate login) - but this is logged so an outage
-    // in login_attempts doesn't silently disable rate limiting for long.
     console.error("[login] Rate limit check failed (failing open):", e.message);
     return { blocked: false };
   }
@@ -59,8 +51,17 @@ async function recordAttempt(email, ip, success) {
   }
 }
 
-// Verifies a reCAPTCHA v3 token server-side. Never trust a client-only check -
-// the secret key lives only here and is never shipped to the browser.
+// Applies the exact cookies Supabase's setAll gave us (name, value, AND its
+// own options) onto the outgoing response. Never reconstruct these by hand -
+// Supabase's options carry maxAge/expires/domain/sameSite that a hardcoded
+// object will silently drop.
+function applyCookies(response, cookiesToSet) {
+  cookiesToSet.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options);
+  });
+  return response;
+}
+
 async function verifyRecaptcha(token, remoteIp) {
   if (!token) return { ok: false, reason: "Missing CAPTCHA token." };
 
@@ -70,8 +71,6 @@ async function verifyRecaptcha(token, remoteIp) {
   });
   if (remoteIp) params.append("remoteip", remoteIp);
 
-  // Guard against a hung upstream - without this, a slow/unresponsive
-  // reCAPTCHA endpoint stalls every login indefinitely.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -92,8 +91,6 @@ async function verifyRecaptcha(token, remoteIp) {
   const data = await res.json().catch(() => null);
   if (!data) return { ok: false, reason: "CAPTCHA verification failed." };
 
-  // v3 returns a 0.0–1.0 bot-likelihood score instead of a pass/fail checkbox.
-  // 0.5 is Google's own suggested default threshold; tighten if you see abuse.
   const minScore = Number(process.env.RECAPTCHA_MIN_SCORE || 0.5);
   if (!data.success) return { ok: false, reason: "CAPTCHA validation failed." };
   if (data.action !== "login") return { ok: false, reason: "CAPTCHA action mismatch." };
@@ -123,49 +120,43 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Enter a valid email address." }, { status: 400 });
     }
 
-    // 1. CAPTCHA - checked before we touch Supabase at all, so bots never
-    //    even reach the password check / rate limit budget.
     const captcha = await verifyRecaptcha(recaptchaToken, remoteIp);
     if (!captcha.ok) {
       return NextResponse.json({ ok: false, error: captcha.reason }, { status: 400 });
     }
 
-    // 2. Rate limit - checked before Supabase auth so a brute-force run
-    //    against one account (or a spray across many from one IP) gets
-    //    stopped without burning further Supabase auth calls.
     const rateLimit = await checkRateLimit(email, remoteIp);
     if (rateLimit.blocked) {
-      // Not recorded as an attempt - the account/IP is already over the
-      // threshold, no need to keep counting past it.
       return NextResponse.json({ ok: false, error: rateLimit.reason }, { status: 429 });
     }
 
-    // NOTE: password strength rules intentionally are NOT enforced here.
-    // That belongs at signup time - checking "strength" on login only
-    // punishes real users whose password predates a rules change, or
-    // if the rules are ever tightened later. Login should just pass
-    // whatever was typed straight to Supabase and let it be the judge
-    // of correctness.
-
     const cookieStore = await cookies();
-    const supabase    = createServerClient(
+
+    // Capture exactly what Supabase wants set, with its own options, so we
+    // can replay it onto whichever NextResponse we end up returning below.
+    let pendingCookies = [];
+
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
           getAll() { return cookieStore.getAll(); },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            pendingCookies = cookiesToSet;
+            cookiesToSet.forEach(({ name, value, options }) => {
+              try {
+                cookieStore.set(name, value, options);
+              } catch {
+                // response-level set via applyCookies() below is what
+                // actually matters for the client.
+              }
+            });
           },
         },
       }
     );
 
-    // 3. Password auth. Note: this succeeds and issues an AAL1 session even
-    //    for users enrolled in MFA - Supabase intentionally separates "who
-    //    are you" from "are you fully verified" so we can gate on AAL below.
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -182,15 +173,25 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Authentication failed. Please try again." }, { status: 500 });
     }
 
-    // 4. MFA check - does this user have a verified TOTP factor enrolled?
-    //
-    //    Fail CLOSED here: if the factor lookup itself errors, we must
-    //    NOT fall through and treat the user as "no MFA enrolled" - that
-    //    would let an MFA-enrolled user bypass their second factor
-    //    entirely just because listFactors() had a bad moment. Instead,
-    //    treat a failed lookup as if MFA is required but unconfirmed,
-    //    and ask the user to retry rather than silently granting a full
-    //    AAL1-only session.
+    // 3b. Email verification gate. If "Confirm email" is enabled in the
+    //     Supabase Auth settings, signInWithPassword() above already
+    //     refuses unconfirmed users with an "Email not confirmed" error,
+    //     so this is normally unreachable - but we check explicitly too
+    //     as defense-in-depth (e.g. if that project setting is ever
+    //     toggled off, or a user was created via admin API bypassing it).
+    //     We do NOT set any session cookies in this branch.
+    if (!data.user.email_confirmed_at) {
+      await recordAttempt(email, remoteIp, false);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Please verify your email before logging in. Check your inbox for the confirmation link.",
+          code: "EMAIL_NOT_CONFIRMED",
+        },
+        { status: 403 }
+      );
+    }
+
     const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
 
     if (factorsError) {
@@ -205,30 +206,15 @@ export async function POST(request) {
     const totpFactor = factorsData?.totp?.find((f) => f.status === "verified");
 
     if (totpFactor) {
-      // Session exists at AAL1 only. Don't reveal admin status or finish
-      // the response with a "logged in" shape - the client must complete
-      // the MFA challenge via /api/auth/mfa-verify before we treat this
-      // as a real session.
       await recordAttempt(email, remoteIp, true);
       const response = NextResponse.json({
         ok: true,
         needsMfa: true,
         factorId: totpFactor.id,
       });
-      cookieStore.getAll().forEach(({ name, value }) => {
-        if (name.startsWith("sb-")) {
-          response.cookies.set(name, value, {
-            httpOnly: true,
-            secure:   process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path:     "/",
-          });
-        }
-      });
-      return response;
+      return applyCookies(response, pendingCookies);
     }
 
-    // 5. No MFA enrolled - log in normally at AAL1.
     let isAdmin = false;
     try {
       const { data: adminRow } = await supabaseAdmin
@@ -250,19 +236,8 @@ export async function POST(request) {
       user: { id: data.user.id, email: data.user.email },
     });
 
-    cookieStore.getAll().forEach(({ name, value }) => {
-      if (name.startsWith("sb-")) {
-        response.cookies.set(name, value, {
-          httpOnly: true,
-          secure:   process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path:     "/",
-        });
-      }
-    });
-
     console.log(`[login] Success - ${data.user.id}, isAdmin: ${isAdmin}`);
-    return response;
+    return applyCookies(response, pendingCookies);
 
   } catch (err) {
     console.error("[login] Unexpected error:", err);
