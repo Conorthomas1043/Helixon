@@ -1,6 +1,6 @@
 // Shared account-settings data helpers.
 //
-// Swap useAgencyId() for a real session/context lookup once auth lands —
+// Swap useAgencyId() for a real session/context lookup once auth lands -
 // every page reads through this hook, so nothing else needs to change.
 
 const AGENCY_ID = "YOUR-SEED-AGENCY-ID";
@@ -42,7 +42,7 @@ export async function apiRequest(path, { method = "GET", body } = {}) {
   try {
     data = await res.json();
   } catch {
-    // No JSON body — fine for empty success responses.
+    // No JSON body - fine for empty success responses.
   }
 
   if (!res.ok || (data && data.ok === false)) {

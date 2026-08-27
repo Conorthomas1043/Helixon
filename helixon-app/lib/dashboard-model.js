@@ -3,7 +3,7 @@
 // shape. If you keep a client fallback for any reason, both should call
 // this one function rather than drifting into two implementations.
 //
-// `candidates` — normalized rows, one per candidate:
+// `candidates` - normalized rows, one per candidate:
 //   { id, candidateName, jobTitle, company, recruiterName, status,
 //     stage, score, createdAt (Date) }
 
@@ -19,7 +19,7 @@ const TONE = {
 };
 
 export function computeCandidateStats(candidates, now = Date.now()) {
-  // Funnel-only order — excludes "Rejected", which is a terminal exit
+  // Funnel-only order - excludes "Rejected", which is a terminal exit
   // rather than a step every candidate is expected to pass through.
   const stageOrder = FUNNEL_ORDER;
   const firstStageKey = stageOrder[0];
@@ -89,7 +89,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       });
     });
 
-  // Strong match should surface whether or not it's been staged yet —
+  // Strong match should surface whether or not it's been staged yet -
   // requiring stage === firstStageKey used to hide unstaged strong matches.
   completed
     .filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null))
@@ -125,7 +125,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       });
     });
 
-  // Completed, never staged, and not already caught as a strong match —
+  // Completed, never staged, and not already caught as a strong match -
   // otherwise these candidates never prompt any action anywhere.
   completed
     .filter((a) => a.stage === null && !(a.score !== null && a.score >= 80))

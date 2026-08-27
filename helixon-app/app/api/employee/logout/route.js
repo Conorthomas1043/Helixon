@@ -4,10 +4,12 @@ import { destroySession } from "@/lib/employee-store";
 import { SESSION_COOKIE } from "@/lib/session";
 
 export async function POST() {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (token) destroySession(token);
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
   return res;
 }
+

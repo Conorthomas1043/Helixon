@@ -112,7 +112,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
 
             <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
               You&apos;ve been sending requests a little too quickly. Give it a
-              moment and try again — your account and results are safe.
+              moment and try again - your account and results are safe.
             </p>
 
             {remaining !== null && remaining > 0 ? (

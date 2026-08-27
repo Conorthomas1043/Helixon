@@ -3,7 +3,7 @@ import { getCurrentEmployeeId } from "@/lib/session";
 import { getTodos, addTodo, updateTodo, deleteTodo } from "@/lib/employee-store";
 
 export async function GET() {
-  const employeeId = getCurrentEmployeeId();
+  const employeeId = await getCurrentEmployeeId();
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -11,7 +11,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const employeeId = getCurrentEmployeeId();
+  const employeeId = await getCurrentEmployeeId();
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -58,3 +58,5 @@ export async function POST(request) {
 
   return NextResponse.json({ ok: false, error: "Unknown action." }, { status: 400 });
 }
+
+

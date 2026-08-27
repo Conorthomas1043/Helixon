@@ -4,7 +4,7 @@
  * Small, dependency-free formatting/scoring helpers shared by the
  * candidate database, candidate workspace, and (eventually) the jobs and
  * analytics pages. Pulled out of dashboard/page.js's local copies so the
- * new candidate pages don't fork the logic — dashboard/page.js can adopt
+ * new candidate pages don't fork the logic - dashboard/page.js can adopt
  * these too when it's next touched, but it hasn't been changed here to
  * keep this change-set focused.
  * ---------------------------------------------------------------------- */
@@ -111,7 +111,7 @@ export function initials(name) {
 }
 
 /** Human label + tone for an activity-log event type. Only covers event
- * types actually produced by lib/mock-data.js's mutation helpers — add a
+ * types actually produced by lib/mock-data.js's mutation helpers - add a
  * case here whenever a new event type is introduced there. */
 export function activityMeta(type) {
   const map = {

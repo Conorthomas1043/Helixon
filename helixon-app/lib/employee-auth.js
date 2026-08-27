@@ -17,7 +17,7 @@ const SESSION_HOURS = 12;
 // ── Utility ────────────────────────────────────────────────────────────────
 
 function hashPassword(password) {
-  // Simple SHA-256 + SALT — match however admin-auth does it.
+  // Simple SHA-256 + SALT - match however admin-auth does it.
   // If admin-auth uses bcrypt, switch this to bcrypt too.
   const salt = process.env.PASSWORD_SALT || "helixon_salt";
   return crypto.createHash("sha256").update(password + salt).digest("hex");
@@ -107,7 +107,7 @@ export async function logoutEmployee() {
 }
 
 /* ============================================================
-   SUPABASE SCHEMA — run these once in your Supabase SQL editor
+   SUPABASE SCHEMA - run these once in your Supabase SQL editor
    ============================================================
 
 -- Employees table

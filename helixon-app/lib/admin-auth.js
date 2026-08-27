@@ -5,7 +5,7 @@ import crypto from "crypto";
 // Replaces the old pattern of a USERS map + a hardcoded admin key sitting
 // inside client-side JS (admin/page.js). That meant anyone could open the
 // browser dev tools, read the JS bundle, and pull out both the admin
-// usernames/passwords AND the permanent backend admin key — giving them full
+// usernames/passwords AND the permanent backend admin key - giving them full
 // read access to every agency's candidates, scores, and subscriptions
 // forever, with no way to revoke it short of redeploying new code.
 //
@@ -74,7 +74,7 @@ function allowedUsernames() {
 }
 
 // ── Called by the login API route ────────────────────────────────────────────
-// Returns { ok, error } — never throws, so the route can respond cleanly.
+// Returns { ok, error } - never throws, so the route can respond cleanly.
 export function checkAdminCredentials(username, password) {
   const allowed = allowedUsernames();
   if (!allowed.includes(username)) {
@@ -82,7 +82,7 @@ export function checkAdminCredentials(username, password) {
   }
   const expected = expectedHashFor(username);
   if (!expected) {
-    // Misconfiguration — env var missing for an otherwise-allowed username
+    // Misconfiguration - env var missing for an otherwise-allowed username
     return { ok: false, error: "Admin account not configured." };
   }
   const actual = hash(password);
@@ -145,7 +145,7 @@ export async function requireAdminSession() {
 
 // ── Used by other API routes (e.g. bulk, run) to grant admin perks ───────────
 // like bypassing the free-trial paywall. Reads the same httpOnly cookie via
-// the incoming request — works in route handlers that receive `request`.
+// the incoming request - works in route handlers that receive `request`.
 export async function isAdminUser(request) {
   try {
     const cookieHeader = request.headers.get("cookie") || "";

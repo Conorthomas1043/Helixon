@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react";
 
 // ============================================================================
-// CandidateResult — the full rich result panel, extracted from app/page.js so
+// CandidateResult - the full rich result panel, extracted from app/page.js so
 // BOTH single-CV and bulk-upload pages render the exact same UI per
 // candidate. This is the single source of truth for "what a scored
-// candidate looks like" — if you want to change how results are displayed,
+// candidate looks like" - if you want to change how results are displayed,
 // change it here ONCE and both pages update.
 //
-// v3 — rebuilt as a tabbed, multi-page view instead of one long scroll,
+// v3 - rebuilt as a tabbed, multi-page view instead of one long scroll,
 // mirroring the tab pattern already used in app/page.js so both surfaces
 // feel like the same product. Sections are grouped into:
 //   Overview · Skills · Experience · Evidence · Prep · Contact · Pipeline
@@ -37,7 +37,7 @@ function scoreColour(v) {
   return "var(--score-low)";
 }
 
-// ── localStorage helpers — reads happen only inside useEffect below, never
+// ── localStorage helpers - reads happen only inside useEffect below, never
 // during render, to avoid SSR/client hydration mismatches. ──────────────────
 function ls(key, fallback) {
   if (typeof window === "undefined") return fallback;
@@ -71,7 +71,7 @@ const TabIcons = {
   pipeline: (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>),
 };
 
-// ── Score ring — signature element, scan-sweeps once on fresh results ───────
+// ── Score ring - signature element, scan-sweeps once on fresh results ───────
 function ScoreRing({ score }) {
   const [animated, setAnimated] = useState(false);
   const [fresh, setFresh] = useState(true);
@@ -121,7 +121,7 @@ function ConfidenceBadge({ confidence }) {
   if (!confidence || confidence === "High") return null;
   const map = {
     Medium: { bg: "#fef3e8", text: "#b45309", label: "Medium confidence" },
-    Low:    { bg: "#fef2f2", text: "#dc2626", label: "Low confidence — CV was sparse or ambiguous" },
+    Low:    { bg: "#fef2f2", text: "#dc2626", label: "Low confidence - CV was sparse or ambiguous" },
   };
   const style = map[confidence] || map.Medium;
   return <span className="inline-flex items-center gap-1 mt-1.5 ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: style.bg, color: style.text }}>⚠ {style.label}</span>;
@@ -132,7 +132,7 @@ function DuplicateWarning({ duplicateOf }) {
   return (
     <div className="px-6 py-3" style={{ background: "#fef3e8", borderBottom: "1px solid #fbdcb4" }}>
       <p className="text-xs flex items-center gap-2" style={{ color: "#92400e" }}>
-        <span>⚠</span> Possible duplicate — same contact details as <span className="font-semibold">{duplicateOf}</span> in this batch
+        <span>⚠</span> Possible duplicate - same contact details as <span className="font-semibold">{duplicateOf}</span> in this batch
       </p>
     </div>
   );
@@ -301,7 +301,7 @@ export default function CandidateResult({
 
       <DuplicateWarning duplicateOf={result.duplicate_of} />
 
-      {/* Score header — always visible, collapses the whole card if defaultExpanded=false */}
+      {/* Score header - always visible, collapses the whole card if defaultExpanded=false */}
       <div className={`p-6 flex items-center gap-5 ${!defaultExpanded ? "cursor-pointer" : ""}`}
         onClick={!defaultExpanded ? () => setExpanded((v) => !v) : undefined}>
         <ScoreRing score={result.match_score} />
@@ -425,7 +425,7 @@ export default function CandidateResult({
                 )}
                 {missingRequired.length > 0 && (
                   <div>
-                    <SectionLabel>Missing — required</SectionLabel>
+                    <SectionLabel>Missing - required</SectionLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {missingRequired.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fbd0d0" }}>✗ {s}</span>)}
                     </div>
@@ -433,7 +433,7 @@ export default function CandidateResult({
                 )}
                 {missingPreferred.length > 0 && (
                   <div>
-                    <SectionLabel>Missing — preferred</SectionLabel>
+                    <SectionLabel>Missing - preferred</SectionLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {missingPreferred.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef3e8", color: "#b45309" }}>~ {s}</span>)}
                     </div>
@@ -581,7 +581,7 @@ export default function CandidateResult({
               </div>
             )}
 
-            {/* Pipeline / shortlist / notes — the "action" tab */}
+            {/* Pipeline / shortlist / notes - the "action" tab */}
             {activeTab === "pipeline" && showInteractive && (
               <div className="space-y-6">
                 {candidateId && <PipelineStage candidateId={candidateId} toast={safeToast} />}

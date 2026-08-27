@@ -1,5 +1,5 @@
 // Every mutation route calls this after its own write, so
-// candidate_activity and candidates.last_activity_at never drift apart —
+// candidate_activity and candidates.last_activity_at never drift apart -
 // same spirit as the historyVersion/feedbackVersion bump-on-write pattern
 // in the current localStorage code, just server-side.
 export async function logActivity(supabase, candidateId, type, actor, meta = null) {

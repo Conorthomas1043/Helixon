@@ -24,7 +24,7 @@
  * WHY THIS SHAPE
  * Every "mutation" below mutates the module-level CANDIDATES array in
  * place and appends an activity entry, so the app behaves consistently
- * across pages for the lifetime of the session — without a database.
+ * across pages for the lifetime of the session - without a database.
  * When a real backend exists, each function's *body* is what gets
  * replaced with a `fetch()` call; the call sites in the UI (which only
  * know about the function signatures below) should not need to change.
@@ -35,7 +35,7 @@
  *
  * WHAT'S DELIBERATELY NOT HERE
  * Auth/permissions, jobs CRUD, team CRUD, notifications, and analytics
- * aggregation are out of scope for this pass — see ASSUMPTIONS.md in this
+ * aggregation are out of scope for this pass - see ASSUMPTIONS.md in this
  * delivery for the full list of what's built vs. deferred.
  * ---------------------------------------------------------------------- */
 
@@ -49,7 +49,7 @@ function agoISO(daysAgo, hour = 9, minute = 0) {
 }
 
 /* ------------------------------------------------------------------------
- * Pipeline stages — single source of truth for ordering everywhere
+ * Pipeline stages - single source of truth for ordering everywhere
  * (dashboard, candidate list, candidate profile, job rankings).
  * ---------------------------------------------------------------------- */
 
@@ -65,7 +65,7 @@ export const STAGE_LABELS = {
 export const STAGE_ORDER = Object.keys(STAGE_LABELS);
 
 /* ------------------------------------------------------------------------
- * Tag catalogue — small and backend-driven in spirit: the UI reads from
+ * Tag catalogue - small and backend-driven in spirit: the UI reads from
  * this list rather than hard-coding tag names inline.
  * ---------------------------------------------------------------------- */
 
@@ -99,7 +99,7 @@ function recruiterName(id) {
 }
 
 /* ------------------------------------------------------------------------
- * Jobs — real entities (not derived from analyses) so job requirements,
+ * Jobs - real entities (not derived from analyses) so job requirements,
  * status and candidate counts have somewhere honest to live.
  * ---------------------------------------------------------------------- */
 
@@ -195,7 +195,7 @@ function jobById(id) {
 }
 
 /* ------------------------------------------------------------------------
- * Candidates — the core dataset. `stage`/`score` are null for candidates
+ * Candidates - the core dataset. `stage`/`score` are null for candidates
  * whose analysis hasn't completed (status: "processing" | "failed"),
  * matching the existing dashboard's normalizeAnalysis contract.
  * ---------------------------------------------------------------------- */
@@ -229,7 +229,7 @@ const RAW_CANDIDATES = [
     stage: "shortlisted",
     score: 94,
     matchSummary:
-      "Strong alignment with the Senior Software Engineer requirements — six years building React/TypeScript products, including two as a lead on a SaaS platform comparable in scale to Acme's.",
+      "Strong alignment with the Senior Software Engineer requirements - six years building React/TypeScript products, including two as a lead on a SaaS platform comparable in scale to Acme's.",
     strengths: ["React", "TypeScript", "SaaS product experience", "5+ years"],
     concerns: ["2 month notice period", "Limited people-management experience"],
     skills: ["React", "TypeScript", "Node.js", "GraphQL", "AWS"],
@@ -330,7 +330,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "reviewing",
     score: 68,
-    matchSummary: "Capable React developer but junior relative to the seniority this role needs — worth keeping warm for a mid-level opening rather than this one.",
+    matchSummary: "Capable React developer but junior relative to the seniority this role needs - worth keeping warm for a mid-level opening rather than this one.",
     strengths: ["React", "Willing to relocate"],
     concerns: ["Below the role's seniority bar", "No backend experience"],
     skills: ["React", "JavaScript", "CSS"],
@@ -359,7 +359,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "reviewing",
     score: 58,
-    matchSummary: "Freelance web development background without TypeScript, and a two-year career gap the CV doesn't explain — likely not a fit for this role as written.",
+    matchSummary: "Freelance web development background without TypeScript, and a two-year career gap the CV doesn't explain - likely not a fit for this role as written.",
     strengths: ["Client-facing experience"],
     concerns: ["No TypeScript", "Unexplained 2-year gap"],
     skills: ["JavaScript", "WordPress", "PHP"],
@@ -396,7 +396,7 @@ const RAW_CANDIDATES = [
     workHistory: [{ title: "Product Designer", company: "Kestrel Health", start: "2020", end: "Present", description: "Owns the design system for a patient-facing health app." }],
     resume: resumeFor("Sophie-Nguyen", 10, 231),
     tags: ["client-ready"],
-    notes: [note("Priya Anand", 4, 15, 10, "Portfolio is excellent — client should love this one.")],
+    notes: [note("Priya Anand", 4, 15, 10, "Portfolio is excellent - client should love this one.")],
     nextAction: { id: "na-06", label: "Share portfolio with Brightline hiring panel", dueAt: agoISO(-1), completed: false },
     createdAt: agoISO(10),
     lastActivityAt: agoISO(4),
@@ -489,7 +489,7 @@ const RAW_CANDIDATES = [
     workHistory: [{ title: "Senior Product Designer", company: "Alder Financial", start: "2019", end: "Present", description: "Leads the design system for Alder's internal banking tools." }],
     resume: resumeFor("Owen-Bright", 16, 267),
     tags: ["urgent", "client-ready"],
-    notes: [note("Priya Anand", 3, 9, 45, "Client wants to move fast on this one — chase offer approval today.")],
+    notes: [note("Priya Anand", 3, 9, 45, "Client wants to move fast on this one - chase offer approval today.")],
     nextAction: { id: "na-09", label: "Chase offer sign-off with Brightline", dueAt: agoISO(1), completed: false },
     createdAt: agoISO(16),
     lastActivityAt: agoISO(3),
@@ -603,7 +603,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "placed",
     score: 88,
-    matchSummary: "Placed. Strong SQL/Power BI skillset with direct retail-sector experience — a near-perfect fit that moved through the pipeline in under three weeks.",
+    matchSummary: "Placed. Strong SQL/Power BI skillset with direct retail-sector experience - a near-perfect fit that moved through the pipeline in under three weeks.",
     strengths: ["SQL", "Power BI", "Retail domain expert"],
     concerns: [],
     skills: ["SQL", "Power BI", "Excel", "Python"],
@@ -611,7 +611,7 @@ const RAW_CANDIDATES = [
     workHistory: [{ title: "Senior Data Analyst", company: "Northfield Retail", start: "2024", end: "Present", description: "Placed via Helixon; leads store-performance reporting." }],
     resume: resumeFor("Chloe-Dean", 40, 199),
     tags: ["referral"],
-    notes: [note("Sarah Evans", 5, 16, 0, "Great placement — client already asking if she knows anyone else like her.")],
+    notes: [note("Sarah Evans", 5, 16, 0, "Great placement - client already asking if she knows anyone else like her.")],
     nextAction: null,
     createdAt: agoISO(40),
     lastActivityAt: agoISO(5),
@@ -668,7 +668,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "reviewing",
     score: 64,
-    matchSummary: "Support-side background rather than account management — strong on customer relationships, thinner on renewals and commercial ownership.",
+    matchSummary: "Support-side background rather than account management - strong on customer relationships, thinner on renewals and commercial ownership.",
     strengths: ["Customer relationships", "Support operations"],
     concerns: ["No renewals ownership experience"],
     skills: ["Customer support", "Zendesk"],
@@ -726,7 +726,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "interview",
     score: 85,
-    matchSummary: "Direct CSM experience at a comparable SaaS company, including Salesforce use and a renewals quota — a close fit on paper.",
+    matchSummary: "Direct CSM experience at a comparable SaaS company, including Salesforce use and a renewals quota - a close fit on paper.",
     strengths: ["Salesforce", "SaaS renewals", "Direct CSM experience"],
     concerns: [],
     skills: ["Salesforce", "SaaS account management", "Renewals", "Onboarding"],
@@ -755,15 +755,15 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "shortlisted",
     score: 90,
-    matchSummary: "Strong AWS/Kubernetes/Terraform background from a regulated fintech environment — directly transferable to Acme's infrastructure.",
+    matchSummary: "Strong AWS/Kubernetes/Terraform background from a regulated fintech environment - directly transferable to Acme's infrastructure.",
     strengths: ["Kubernetes", "Terraform", "AWS", "Security-conscious"],
-    concerns: ["Currently on a visa — sponsorship needs confirming"],
+    concerns: ["Currently on a visa - sponsorship needs confirming"],
     skills: ["AWS", "Kubernetes", "Terraform", "CI/CD pipelines"],
     education: [{ school: "Queen's University Belfast", degree: "BEng Computer Engineering", years: "2013 – 2017" }],
     workHistory: [{ title: "Platform Engineer", company: "Ferro Finance", start: "2019", end: "Present", description: "Owns the Kubernetes platform for a regulated payments environment." }],
     resume: resumeFor("Aaron-Fitzgerald", 17, 224),
     tags: ["strong-technical", "senior-profile"],
-    notes: [note("Sarah Evans", 7, 9, 30, "Excellent technically — just need to confirm sponsorship status with him directly.")],
+    notes: [note("Sarah Evans", 7, 9, 30, "Excellent technically - just need to confirm sponsorship status with him directly.")],
     nextAction: { id: "na-18", label: "Confirm visa sponsorship status", dueAt: agoISO(1), completed: false },
     createdAt: agoISO(17),
     lastActivityAt: agoISO(7),
@@ -789,7 +789,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "new",
     score: 66,
-    matchSummary: "Solid AWS support background but limited hands-on Terraform/Kubernetes ownership — more operations than platform engineering so far.",
+    matchSummary: "Solid AWS support background but limited hands-on Terraform/Kubernetes ownership - more operations than platform engineering so far.",
     strengths: ["AWS", "Incident response"],
     concerns: ["Limited Terraform/Kubernetes ownership"],
     skills: ["AWS", "Linux", "Monitoring"],
@@ -882,7 +882,7 @@ const RAW_CANDIDATES = [
     status: "completed",
     stage: "reviewing",
     score: 59,
-    matchSummary: "Generalist marketing executive without a clear content-strategy specialism — likely under-qualified for this role's seniority.",
+    matchSummary: "Generalist marketing executive without a clear content-strategy specialism - likely under-qualified for this role's seniority.",
     strengths: ["Social media", "Campaign execution"],
     concerns: ["Below required seniority", "No content-strategy ownership"],
     skills: ["Social media", "Email marketing"],
@@ -1010,18 +1010,18 @@ const RAW_CANDIDATES = [
     nextAction: null,
     createdAt: agoISO(1, 10, 0),
     lastActivityAt: agoISO(1, 10, 0),
-    activityLog: [activity("cv_uploaded", 1, 10, 0, "System"), activity("analysis_completed", 1, 10, 2, "System", { note: "Analysis failed — unreadable CV file" })],
+    activityLog: [activity("cv_uploaded", 1, 10, 0, "System"), activity("analysis_completed", 1, 10, 2, "System", { note: "Analysis failed - unreadable CV file" })],
   },
 ];
 
 // Mutable in-memory "table". Cloned from RAW_CANDIDATES once at module load
 // so repeated getCandidates()/mutation calls operate on live, shared state
-// for the lifetime of the server/session — same trade-off any in-memory
+// for the lifetime of the server/session - same trade-off any in-memory
 // mock API makes. A real backend replaces this whole block.
 const CANDIDATES = RAW_CANDIDATES.map((c) => ({ ...c, tags: [...c.tags], notes: [...c.notes], activityLog: [...c.activityLog] }));
 
 /* ------------------------------------------------------------------------
- * Existing dashboard contract — unchanged shape, now sourced from the
+ * Existing dashboard contract - unchanged shape, now sourced from the
  * richer CANDIDATES table instead of its own separate fixtures.
  * ---------------------------------------------------------------------- */
 
@@ -1075,7 +1075,7 @@ function candidateToSummary(c) {
 const DATE_RANGE_DAYS = { today: 1, "7d": 7, "30d": 30 };
 
 /**
- * getCandidates — filter, sort and paginate the candidate table.
+ * getCandidates - filter, sort and paginate the candidate table.
  * Written as if `query` were serialised onto a GET /api/candidates request,
  * so swapping the body for a real fetch() later shouldn't change call sites.
  */
@@ -1142,7 +1142,7 @@ export function getCandidates(query = {}) {
 }
 
 /**
- * getStageCounts — candidate counts per stage under the current filters
+ * getStageCounts - candidate counts per stage under the current filters
  * (ignoring the stage filter itself and pagination), for the filter-pill
  * badges on the candidate database page. A real backend would return this
  * as a `facets` block alongside the main /api/candidates response rather
@@ -1249,7 +1249,7 @@ export function getTagCatalog() {
 }
 
 /**
- * getAnalyticsSnapshot — aggregate funnel/quality/pipeline/team metrics
+ * getAnalyticsSnapshot - aggregate funnel/quality/pipeline/team metrics
  * for the analytics page. Computed client-side over the mock dataset
  * (26 candidates) for now; a real backend should aggregate this
  * server-side rather than shipping the full candidate table to compute
@@ -1264,7 +1264,7 @@ export function getAnalyticsSnapshot() {
   const funnel = STAGE_ORDER.map((key, idx) => ({
     key,
     label: STAGE_LABELS[key],
-    // "Reached this stage or further" — a true funnel, not just a
+    // "Reached this stage or further" - a true funnel, not just a
     // point-in-time headcount per stage.
     count: completed.filter((c) => STAGE_ORDER.indexOf(c.stage) >= idx).length,
   }));
@@ -1311,7 +1311,7 @@ export function getAnalyticsSnapshot() {
 }
 
 /* ------------------------------------------------------------------------
- * Mutations — mock stand-ins for PATCH/POST endpoints. Each returns the
+ * Mutations - mock stand-ins for PATCH/POST endpoints. Each returns the
  * updated candidate (via getCandidateById) so callers can just re-read
  * state rather than manually reconciling a partial response.
  * ---------------------------------------------------------------------- */
