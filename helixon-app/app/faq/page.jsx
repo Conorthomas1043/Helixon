@@ -1,7 +1,7 @@
 import FaqPage from "@/components/FaqPage";
 
 export const metadata = {
-  title: "FAQ — Helixon",
+  title: "FAQ - Helixon",
 };
 
 export default function Page() {

@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export const metadata = {
-  title: "You're all set — Helixon",
+  title: "You're all set - Helixon",
 };
 
 const PLAN_LABELS = {

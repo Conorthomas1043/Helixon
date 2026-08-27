@@ -1130,7 +1130,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <a href="#main-content" className="skip-link">Skip to main content</a>
       <CookieConsentBanner />
       <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
@@ -1208,7 +1207,7 @@ export default function LandingPage() {
         </nav>
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
-        <section id="main-content" className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
+        <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
