@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!correct) {
     // Fail closed if misconfigured, never open.
     return NextResponse.json(
-      { ok: false, error: "Gate isn't configured yet — nice try though." },
+      { ok: false, error: "Gate isn't configured yet, nice try though." },
       { status: 500 }
     );
   }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   // is already rate-limited above, which matters more in practice.)
 
   if (!matches) {
-    return NextResponse.json({ ok: false, error: "That's not it — try again." }, { status: 401 });
+    return NextResponse.json({ ok: false, error: "That's not it, try again." }, { status: 401 });
   }
 
   const res = NextResponse.json({ ok: true });
