@@ -3,14 +3,17 @@
 // Lower-privilege dashboard: personal to-do list + read-only platform stats.
 // No access to: admin controls, security tab, traffic tab, agency management.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const PRIORITY_META = {
-  high:   { label: "High",   dot: "bg-red-500",    badge: "bg-red-950 text-red-300 border-red-800" },
-  medium: { label: "Medium", dot: "bg-amber-400",  badge: "bg-amber-950 text-amber-300 border-amber-800" },
-  low:    { label: "Low",    dot: "bg-slate-500",  badge: "bg-slate-800 text-slate-400 border-slate-700" },
+  high: { label: "High", dot: "#e0554f", badge: "text-rose-700 border-rose-200", badgeBg: "#fdf1f0" },
+  medium: { label: "Medium", dot: "#d99a3a", badge: "text-amber-700 border-amber-200", badgeBg: "#fdf5e9" },
+  low: { label: "Low", dot: "#94a3b8", badge: "text-slate-600 border-slate-200", badgeBg: "#f4f4f5" },
 };
+
+const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
 
 function formatDate(iso) {
   if (!iso) return "-";
@@ -28,6 +31,14 @@ function isOverdue(dueDate) {
   return new Date(dueDate) < new Date();
 }
 
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 5) return "Working late";
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function EmployeeDashboard() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -39,6 +50,8 @@ export default function EmployeeDashboard() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [filter, setFilter] = useState("all"); // all | active | done
+  const [sortBy, setSortBy] = useState("priority"); // priority | due | newest
+  const [query, setQuery] = useState("");
   const [stats, setStats] = useState(null);
 
   // ── Session check ──────────────────────────────────────────────────────────
@@ -149,123 +162,268 @@ export default function EmployeeDashboard() {
     router.replace("/employee/login");
   }
 
-  // ── Filtering ─────────────────────────────────────────────────────────────
-  const filteredTodos = todos.filter((t) => {
-    if (filter === "active") return !t.done;
-    if (filter === "done") return t.done;
-    return true;
-  });
-
+  // ── Filtering / sorting / search ─────────────────────────────────────────
   const activeTodos = todos.filter((t) => !t.done);
   const doneTodos = todos.filter((t) => t.done);
   const overdueTodos = activeTodos.filter((t) => isOverdue(t.due_date));
+  const dueSoonTodos = activeTodos.filter((t) => isDueSoon(t.due_date));
+
+  const priorityCounts = useMemo(() => ({
+    high: activeTodos.filter((t) => (t.priority || "medium") === "high").length,
+    medium: activeTodos.filter((t) => (t.priority || "medium") === "medium").length,
+    low: activeTodos.filter((t) => (t.priority || "medium") === "low").length,
+  }), [activeTodos]);
+
+  const visibleTodos = useMemo(() => {
+    let list = todos.filter((t) => {
+      if (filter === "active" && t.done) return false;
+      if (filter === "done" && !t.done) return false;
+      if (query.trim()) {
+        const q = query.trim().toLowerCase();
+        const hay = `${t.title} ${t.notes || ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    list = [...list].sort((a, b) => {
+      if (sortBy === "priority") {
+        return (PRIORITY_ORDER[a.priority || "medium"] ?? 1) - (PRIORITY_ORDER[b.priority || "medium"] ?? 1);
+      }
+      if (sortBy === "due") {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date) - new Date(b.due_date);
+      }
+      return 0; // newest = API order
+    });
+
+    return list;
+  }, [todos, filter, query, sortBy]);
 
   if (checking) {
     return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-slate-700 border-t-emerald-500 animate-spin" />
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }}
+        />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs font-bold">H</span>
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <nav
+        className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b"
+        style={{ borderColor: "var(--border)" }}
+        aria-label="Main"
+      >
+        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
+            <div
+              className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105"
+              style={{ background: "var(--forest)" }}
+            >
+              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
+                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
+                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
+              </svg>
+            </div>
+            <span className="flex flex-col leading-none">
+              <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                Helixon
+              </span>
+              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                Employee portal
+              </span>
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <span
+              className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: "var(--mint)", color: "var(--forest)" }}
+            >
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+                <path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+              Dashboard
+            </span>
+            <a href="/" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
+              Back to app
+            </a>
+            <button
+              onClick={handleLogout}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:bg-white"
+              style={{ borderColor: "var(--border)", color: "var(--ink-soft)" }}
+            >
+              Sign out
+            </button>
           </div>
-          <span className="text-base font-bold text-white">Helixon</span>
-          <span className="text-xs text-emerald-400 border border-emerald-800 bg-emerald-950 px-2 py-0.5 rounded-full font-medium">
-            Employee
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <a href="/" className="text-sm text-slate-400 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition">
-            Back to app
-          </a>
-          <button
-            onClick={handleLogout}
-            className="text-sm bg-red-950 border border-red-900 text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-900 transition"
-          >
-            Sign out
-          </button>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
 
-        {/* Header */}
+        {/* ── Header ────────────────────────────────────────────────────── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">My Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">Your tasks and platform overview</p>
+          <h1
+            className="text-2xl sm:text-3xl font-semibold tracking-tight"
+            style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+          >
+            {getGreeting()}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+            Here's your task list and a quick read of the platform.
+          </p>
         </div>
 
-        {/* Summary chips */}
-        <div className="flex gap-3 flex-wrap mb-8">
+        {/* ── Attention banner ──────────────────────────────────────────── */}
+        {(overdueTodos.length > 0 || dueSoonTodos.length > 0) && (
+          <div
+            className="flex items-center gap-3 rounded-[14px] px-4 py-3 mb-6"
+            style={{
+              background: overdueTodos.length > 0 ? "#fdf1f0" : "var(--mint)",
+              border: `1px solid ${overdueTodos.length > 0 ? "#f4d4d2" : "var(--border)"}`,
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ background: overdueTodos.length > 0 ? "#e0554f" : "var(--forest)" }}
+            />
+            <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>
+              {overdueTodos.length > 0
+                ? `${overdueTodos.length} task${overdueTodos.length === 1 ? "" : "s"} overdue`
+                : `${dueSoonTodos.length} task${dueSoonTodos.length === 1 ? "" : "s"} due within 48 hours`}
+              {overdueTodos.length > 0 && dueSoonTodos.length > 0 && ` · ${dueSoonTodos.length} due soon`}
+            </p>
+          </div>
+        )}
+
+        {/* ── Summary cards ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
           {[
-            { label: "Active tasks", value: activeTodos.length, color: "text-white" },
-            { label: "Completed", value: doneTodos.length, color: "text-emerald-400" },
-            { label: "Overdue", value: overdueTodos.length, color: overdueTodos.length > 0 ? "text-red-400" : "text-slate-500" },
+            { label: "Active tasks", value: activeTodos.length },
+            { label: "Completed", value: doneTodos.length },
+            { label: "Overdue", value: overdueTodos.length, warn: overdueTodos.length > 0 },
           ].map((s) => (
-            <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-              <span className={`text-xl font-bold ${s.color}`}>{s.value}</span>
-              <span className="text-xs text-slate-500">{s.label}</span>
+            <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <p
+                className="text-xl font-semibold"
+                style={{ color: s.warn ? "#e0554f" : "var(--ink)", fontFamily: "var(--font-display)" }}
+              >
+                {s.value}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
             </div>
           ))}
-          {stats && (
-            <>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.totalUsers}</span>
-                <span className="text-xs text-slate-500">Total users</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.activeToday}</span>
-                <span className="text-xs text-slate-500">Active today</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.uptimePct}%</span>
-                <span className="text-xs text-slate-500">Uptime</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 flex items-center gap-3">
-                <span className="text-xl font-bold text-slate-300">{stats.openTickets}</span>
-                <span className="text-xs text-slate-500">Open tickets</span>
-              </div>
-            </>
-          )}
+          {stats && [
+            { label: "Total users", value: stats.totalUsers },
+            { label: "Active today", value: stats.activeToday },
+            { label: "Uptime", value: `${stats.uptimePct}%` },
+            { label: "Open tickets", value: stats.openTickets },
+          ].map((s) => (
+            <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.value}</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
+            </div>
+          ))}
         </div>
 
-        {/* To-do panel */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        {/* ── Priority breakdown ────────────────────────────────────────── */}
+        {activeTodos.length > 0 && (
+          <div className="rounded-[14px] p-4 mb-8" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="flex items-center justify-between mb-2.5">
+              <p className="text-xs font-semibold" style={{ color: "var(--ink)" }}>Active tasks by priority</p>
+              <p className="text-[11px]" style={{ color: "var(--ink-faint)" }}>{activeTodos.length} total</p>
+            </div>
+            <div className="flex w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
+              {["high", "medium", "low"].map((p) => {
+                const pct = activeTodos.length ? (priorityCounts[p] / activeTodos.length) * 100 : 0;
+                if (pct === 0) return null;
+                return <div key={p} style={{ width: `${pct}%`, background: PRIORITY_META[p].dot }} />;
+              })}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2.5">
+              {["high", "medium", "low"].map((p) => (
+                <span key={p} className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: PRIORITY_META[p].dot }} />
+                  {PRIORITY_META[p].label} · {priorityCounts[p]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── To-do panel ───────────────────────────────────────────────── */}
+        <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
 
           {/* Panel header */}
-          <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-4">
+          <div
+            className="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            style={{ borderColor: "var(--border)" }}
+          >
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white">My Tasks</h2>
+              <h2 className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                My Tasks
+              </h2>
               {todosLoading && (
-                <div className="w-4 h-4 rounded-full border-2 border-slate-700 border-t-emerald-500 animate-spin" />
+                <div
+                  className="w-3.5 h-3.5 rounded-full animate-spin"
+                  style={{ border: "2px solid var(--border)", borderTopColor: "var(--forest)" }}
+                />
               )}
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search */}
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search tasks…"
+                className="text-xs rounded-lg px-3 py-1.5 w-36 sm:w-44 focus:outline-none focus:ring-2 transition"
+                style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+              />
+
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 transition"
+                style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+              >
+                <option value="priority">Sort: Priority</option>
+                <option value="due">Sort: Due date</option>
+                <option value="newest">Sort: Newest</option>
+              </select>
+
               {/* Filter pills */}
-              <div className="flex bg-slate-800 rounded-lg p-0.5 gap-0.5">
+              <div className="flex rounded-lg p-0.5 gap-0.5" style={{ background: "var(--mist)" }}>
                 {["all", "active", "done"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`text-xs px-3 py-1 rounded-md font-medium capitalize transition ${
-                      filter === f ? "bg-slate-600 text-white" : "text-slate-400 hover:text-white"
-                    }`}
+                    className="text-xs px-3 py-1 rounded-md font-medium capitalize transition"
+                    style={filter === f
+                      ? { background: "var(--forest)", color: "white" }
+                      : { color: "var(--ink-soft)" }}
                   >
                     {f}
                   </button>
                 ))}
               </div>
+
               <button
                 onClick={openAdd}
-                className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-lg transition"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                style={{ background: "var(--forest)", color: "white" }}
               >
                 <span className="text-base leading-none">+</span> Add task
               </button>
@@ -274,36 +432,39 @@ export default function EmployeeDashboard() {
 
           {/* Add / Edit form */}
           {showAddForm && (
-            <div className="border-b border-slate-800 px-6 py-5 bg-slate-950">
+            <div className="border-b px-6 py-5" style={{ borderColor: "var(--border)", background: "var(--mist)" }}>
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Task title *</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Task title *</label>
                     <input
                       autoFocus
                       type="text"
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                       placeholder="What needs doing?"
-                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                      className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
+                      style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Notes</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Notes</label>
                     <textarea
                       value={form.notes}
                       onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                       placeholder="Optional details…"
                       rows={2}
-                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition resize-none"
+                      className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none"
+                      style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Priority</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Priority</label>
                     <select
                       value={form.priority}
                       onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
-                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                      className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
+                      style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
                     >
                       <option value="high">High</option>
                       <option value="medium">Medium</option>
@@ -311,32 +472,37 @@ export default function EmployeeDashboard() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">Due date</label>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Due date</label>
                     <input
                       type="date"
                       value={form.due_date}
                       onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
-                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                      className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
+                      style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
                     />
                   </div>
                 </div>
 
                 {formError && (
-                  <p className="text-xs text-red-400 bg-red-950 border border-red-900 rounded-lg px-3 py-2">{formError}</p>
+                  <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>
+                    {formError}
+                  </p>
                 )}
 
                 <div className="flex gap-2">
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                    className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90"
+                    style={{ background: "var(--forest)", color: "white" }}
                   >
                     {saving ? "Saving…" : editingId ? "Save changes" : "Add task"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddForm(false)}
-                    className="text-sm text-slate-400 hover:text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition"
+                    className="text-sm px-4 py-2 rounded-lg transition hover:bg-white"
+                    style={{ color: "var(--ink-soft)" }}
                   >
                     Cancel
                   </button>
@@ -346,16 +512,26 @@ export default function EmployeeDashboard() {
           )}
 
           {/* Todo list */}
-          <div className="divide-y divide-slate-800/50">
-            {filteredTodos.length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <p className="text-slate-500 text-sm">
-                  {filter === "done" ? "No completed tasks yet." : "No tasks yet - add one above."}
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+            {visibleTodos.length === 0 && (
+              <div className="px-6 py-14 text-center">
+                <div
+                  className="w-11 h-11 rounded-[12px] flex items-center justify-center mx-auto mb-3"
+                  style={{ background: "var(--mint)" }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
+                  {query.trim()
+                    ? "No tasks match your search."
+                    : filter === "done" ? "No completed tasks yet." : "No tasks yet — add one above."}
                 </p>
               </div>
             )}
 
-            {filteredTodos.map((todo) => {
+            {visibleTodos.map((todo) => {
               const pm = PRIORITY_META[todo.priority] || PRIORITY_META.medium;
               const overdue = isOverdue(todo.due_date) && !todo.done;
               const dueSoon = isDueSoon(todo.due_date) && !todo.done;
@@ -363,18 +539,18 @@ export default function EmployeeDashboard() {
               return (
                 <div
                   key={todo.id}
-                  className={`px-6 py-4 flex items-start gap-4 group transition ${
-                    todo.done ? "opacity-50" : ""
-                  }`}
+                  className={`px-6 py-4 flex items-start gap-4 group transition ${todo.done ? "opacity-50" : ""}`}
                 >
+                  {/* Priority dot */}
+                  <span className="mt-2.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: pm.dot }} />
+
                   {/* Checkbox */}
                   <button
                     onClick={() => toggleDone(todo)}
-                    className={`mt-0.5 w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition ${
-                      todo.done
-                        ? "bg-emerald-600 border-emerald-600"
-                        : "border-slate-600 hover:border-emerald-500"
-                    }`}
+                    className="mt-0.5 w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center transition"
+                    style={todo.done
+                      ? { background: "var(--forest)", border: "2px solid var(--forest)" }
+                      : { border: "2px solid var(--border)" }}
                     aria-label={todo.done ? "Mark incomplete" : "Mark complete"}
                   >
                     {todo.done && (
@@ -387,22 +563,29 @@ export default function EmployeeDashboard() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-sm font-medium ${todo.done ? "line-through text-slate-500" : "text-white"}`}>
+                      <p
+                        className={`text-sm font-medium ${todo.done ? "line-through" : ""}`}
+                        style={{ color: todo.done ? "var(--ink-faint)" : "var(--ink)" }}
+                      >
                         {todo.title}
                       </p>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${pm.badge}`}>
+                      <span
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${pm.badge}`}
+                        style={{ background: pm.badgeBg }}
+                      >
                         {pm.label}
                       </span>
                     </div>
 
                     {todo.notes && (
-                      <p className="text-xs text-slate-500 mt-1 truncate">{todo.notes}</p>
+                      <p className="text-xs mt-1 truncate" style={{ color: "var(--ink-faint)" }}>{todo.notes}</p>
                     )}
 
                     {todo.due_date && (
-                      <p className={`text-xs mt-1 font-medium ${
-                        overdue ? "text-red-400" : dueSoon ? "text-amber-400" : "text-slate-500"
-                      }`}>
+                      <p
+                        className="text-xs mt-1 font-medium"
+                        style={{ color: overdue ? "#e0554f" : dueSoon ? "#d99a3a" : "var(--ink-faint)" }}
+                      >
                         {overdue ? "Overdue · " : dueSoon ? "Due soon · " : "Due "}
                         {formatDate(todo.due_date)}
                       </p>
@@ -413,13 +596,15 @@ export default function EmployeeDashboard() {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                     <button
                       onClick={() => openEdit(todo)}
-                      className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded-md hover:bg-slate-800 transition"
+                      className="text-xs px-2 py-1 rounded-md transition hover:bg-white"
+                      style={{ color: "var(--ink-soft)" }}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(todo.id)}
-                      className="text-xs text-red-500 hover:text-red-300 px-2 py-1 rounded-md hover:bg-red-950 transition"
+                      className="text-xs px-2 py-1 rounded-md transition"
+                      style={{ color: "#e0554f" }}
                     >
                       Delete
                     </button>
@@ -431,8 +616,8 @@ export default function EmployeeDashboard() {
 
           {/* Footer */}
           {todos.length > 0 && (
-            <div className="px-6 py-3 border-t border-slate-800 flex items-center justify-between">
-              <p className="text-xs text-slate-600">
+            <div className="px-6 py-3 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+              <p className="text-xs" style={{ color: "var(--ink-faint)" }}>
                 {activeTodos.length} active · {doneTodos.length} completed
               </p>
               {doneTodos.length > 0 && (
@@ -449,7 +634,8 @@ export default function EmployeeDashboard() {
                     ));
                     fetchTodos();
                   }}
-                  className="text-xs text-slate-500 hover:text-red-400 transition"
+                  className="text-xs transition"
+                  style={{ color: "var(--ink-faint)" }}
                 >
                   Clear completed
                 </button>
