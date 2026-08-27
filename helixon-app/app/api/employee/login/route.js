@@ -18,10 +18,18 @@ export async function POST(request) {
     employee: { id: employee.id, name: employee.name, email: employee.email },
   });
 
+  // Determine whether the request actually arrived over HTTPS, rather than
+  // trusting NODE_ENV alone — a production build served over plain http://
+  // (e.g. local `next start` on localhost) would otherwise silently drop
+  // a cookie marked Secure, breaking the session with no visible error.
+  const isHttps =
+    request.nextUrl.protocol === "https:" ||
+    request.headers.get("x-forwarded-proto") === "https";
+
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isHttps,
     path: "/",
     maxAge: 60 * 60 * 8, // 8 hours
   });
