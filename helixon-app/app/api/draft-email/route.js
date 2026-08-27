@@ -139,7 +139,7 @@ Return ONLY the email text. No subject line for candidate emails. No preamble.`;
       ok: true,
       artifact,
       suggestedRecipient: purpose === "client_shortlist_update" || purpose === "chase_feedback"
-        ? null // client email isn't captured anywhere yet — see note below
+        ? null // client email isn't captured anywhere yet - see note below
         : candidate?.extracted?.email || null,
     });
   } catch (err) {

@@ -64,7 +64,7 @@ export async function GET(request) {
       supabase.from("feedback").select("rating"),
     ]);
 
-    // Build time series — group scores by day
+    // Build time series - group scores by day
     const byDay = {};
     (periodScores || []).forEach((s) => {
       const day = s.created_at.substring(0, 10); // "YYYY-MM-DD"
@@ -78,7 +78,7 @@ export async function GET(request) {
       avg: Math.round(d.total / d.count),
     }));
 
-    // Recommendations breakdown — how many strong / worth reviewing / not a fit
+    // Recommendations breakdown - how many strong / worth reviewing / not a fit
     const recs = {
       "Strong match": 0,
       "Worth reviewing": 0,
@@ -88,12 +88,12 @@ export async function GET(request) {
       if (recs[s.recommendation] !== undefined) recs[s.recommendation]++;
     });
 
-    // Accuracy rate — what % of feedback ratings were thumbs up
+    // Accuracy rate - what % of feedback ratings were thumbs up
     const up = (feedback || []).filter((f) => f.rating === "up").length;
     const down = (feedback || []).filter((f) => f.rating === "down").length;
     const accuracyRate = up + down > 0 ? Math.round((up / (up + down)) * 100) : null;
 
-    // Top roles — join scores with jobs to get job titles, group and count
+    // Top roles - join scores with jobs to get job titles, group and count
     const { data: scoredJobs } = await supabase
       .from("scores")
       .select("match_score, jobs(title)")

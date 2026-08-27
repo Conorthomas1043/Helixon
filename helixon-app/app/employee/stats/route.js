@@ -1,5 +1,5 @@
 // app/api/employee/stats/route.js
-// Read-only stats visible to employees — no sensitive data, no agency detail.
+// Read-only stats visible to employees - no sensitive data, no agency detail.
 
 import { supabase } from "@/lib/supabase";
 import { getEmployeeSession } from "@/lib/employee-auth";

@@ -2,20 +2,20 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Helixon — About page. Same tokens/nav/footer as the landing page so the
+// Helixon - About page. Same tokens/nav/footer as the landing page so the
 // jump between them is seamless. Signature element: a "before/after" desk
-// strip showing the pile-of-CVs problem collapsing into a single score —
+// strip showing the pile-of-CVs problem collapsing into a single score -
 // the same visual idea as the product itself, told as an origin story.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const VALUES = [
   {
     title: "Built for the inbox, not the demo",
-    body: "Every decision — the score, the tone, the speed — is made for someone with 40 CVs and one coffee break, not a boardroom pitch.",
+    body: "Every decision - the score, the tone, the speed - is made for someone with 40 CVs and one coffee break, not a boardroom pitch.",
   },
   {
     title: "The recruiter stays the decision-maker",
-    body: "Helixon narrows the pile and shows its working. It never rejects a candidate on your behalf — you always see the evidence behind a score.",
+    body: "Helixon narrows the pile and shows its working. It never rejects a candidate on your behalf - you always see the evidence behind a score.",
   },
   {
     title: "Candidate data is not the product",
@@ -24,9 +24,9 @@ const VALUES = [
 ];
 
 const TIMELINE = [
-  { year: "2024", label: "The problem", body: "Three recruiters at a 12-person agency were losing entire afternoons to first-pass CV screening — the same judgment call, made hundreds of times a week." },
-  { year: "2025", label: "First scan", body: "The first working prototype scored a single CV against a single job spec in under a minute. It felt obvious in hindsight — which is usually a good sign." },
-  { year: "2026", label: "Helixon today", body: "Now used by agency recruiters to screen, compare, and shortlist candidates — with every score explained, not just asserted." },
+  { year: "2024", label: "The problem", body: "Three recruiters at a 12-person agency were losing entire afternoons to first-pass CV screening - the same judgment call, made hundreds of times a week." },
+  { year: "2025", label: "First scan", body: "The first working prototype scored a single CV against a single job spec in under a minute. It felt obvious in hindsight - which is usually a good sign." },
+  { year: "2026", label: "Helixon today", body: "Now used by agency recruiters to screen, compare, and shortlist candidates - with every score explained, not just asserted." },
 ];
 
 function CtaButtons({ align = "left" }) {
@@ -105,7 +105,7 @@ function PileToScore() {
       </div>
 
       <p className="text-xs leading-relaxed" style={{ color: "#5a7a6a" }}>
-        That collapse — a pile of unread PDFs into one defensible number — is the whole reason Helixon exists.
+        That collapse - a pile of unread PDFs into one defensible number - is the whole reason Helixon exists.
       </p>
     </div>
   );
@@ -176,7 +176,7 @@ export default function AboutPage() {
             </h1>
             <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "#5a7a6a" }}>
               Helixon started as a way to save one recruiter a Monday morning. It's now the first pass for agencies
-              who'd rather spend their day on conversations than skim-reading — without handing the decision to a black box.
+              who'd rather spend their day on conversations than skim-reading - without handing the decision to a black box.
             </p>
             <CtaButtons />
           </div>
@@ -238,7 +238,7 @@ export default function AboutPage() {
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>Who's behind it</p>
           <p className="text-sm leading-relaxed max-w-lg mx-auto" style={{ color: "#5a7a6a" }}>
             Helixon is built by a small team that spent years on the agency side of recruitment before switching to
-            the product side. We still take support tickets ourselves — if something's off, you'll hear back from
+            the product side. We still take support tickets ourselves - if something's off, you'll hear back from
             someone who's done the job you're doing.
           </p>
         </div>
@@ -251,11 +251,11 @@ export default function AboutPage() {
             See it collapse your own pile.
           </h2>
           <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Try Helixon on a real CV and a real job spec — takes less time than reading this page did.
+            Try Helixon on a real CV and a real job spec - takes less time than reading this page did.
           </p>
           <div className="flex justify-center">
             <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
-              Try it now — it&apos;s free
+              Try it now - it&apos;s free
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
           </div>

@@ -97,7 +97,7 @@ function GateForm() {
       }
 
       if (!res.ok || !data?.ok) {
-        setError(data?.error || "That's not it — try again.");
+        setError(data?.error || "That's not it, try again.");
         setShake(true);
         setTimeout(() => setShake(false), 400);
         setPassword("");

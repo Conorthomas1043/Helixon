@@ -2,9 +2,9 @@
 import { useMemo, useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Helixon — Job description library (in-app, behind login).
+// Helixon - Job description library (in-app, behind login).
 // Signature element: each card shows a live "used in N analyses" count and
-// last-used date — the library's job is to get reused, so recency/frequency
+// last-used date - the library's job is to get reused, so recency/frequency
 // is the one signal worth surfacing, not a generic card grid.
 // ═══════════════════════════════════════════════════════════════════════════
 

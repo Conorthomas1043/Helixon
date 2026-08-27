@@ -13,7 +13,7 @@ const PRIORITY_META = {
 };
 
 function formatDate(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
@@ -343,7 +343,7 @@ export default function EmployeeDashboard() {
             {filteredTodos.length === 0 && (
               <div className="px-6 py-12 text-center">
                 <p className="text-slate-500 text-sm">
-                  {filter === "done" ? "No completed tasks yet." : "No tasks yet — add one above."}
+                  {filter === "done" ? "No completed tasks yet." : "No tasks yet - add one above."}
                 </p>
               </div>
             )}

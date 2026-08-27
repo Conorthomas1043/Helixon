@@ -80,13 +80,13 @@ export async function POST(request) {
     const userId = user?.id || null;
     const isAdmin = await isAdminUser(request);
 
-    // ── Resolve agencyId server-side — never trust the client form value ──
+    // ── Resolve agencyId server-side - never trust the client form value ──
     // Logged-in users: agencyId should come from their own agency record via
     // a users<->agencies relationship if you have one; for now we still
     // honour form agencyId ONLY when userId is present, matching existing
     // behaviour, since authenticated requests already carry a verified
     // identity. Anonymous/trial requests get their agencyId from the
-    // httpOnly cookie set by /api/trial/start — the client never controls it.
+    // httpOnly cookie set by /api/trial/start - the client never controls it.
     const trialAgencyId = cookieStore.get("helixon_trial")?.value || null;
     const formAgencyId = (await request.clone().formData().catch(() => null))?.get?.("agencyId") || null;
 

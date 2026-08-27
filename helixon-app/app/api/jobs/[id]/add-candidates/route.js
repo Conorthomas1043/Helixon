@@ -6,12 +6,12 @@ import { NextResponse } from "next/server";
 // Feature 1: same scoring logic as the single-CV /api/run flow, but takes
 // an existing jobId instead of new job text, so the recruiter just
 // uploads more CVs against a role they've already saved. Nothing about
-// the evidence-based scoring prompt changes — this only reuses job_text.
+// the evidence-based scoring prompt changes - this only reuses job_text.
 //
-// Fix: was importing a non-existent `analyseSingleCv` — lib/cv-analysis
+// Fix: was importing a non-existent `analyseSingleCv` - lib/cv-analysis
 // only ever exported `analyseCV` (see pipeline/analyseCV.js). Also,
 // scoreCandidate's real return shape has no `match_score`/`recommendation`
-// fields — it returns `overall` instead, and doesn't produce a
+// fields - it returns `overall` instead, and doesn't produce a
 // recommendation string at all right now. match_score is mapped from
 // `overall` below; recommendation is left null until that's reinstated
 // upstream in scoreCandidate (flagged, not silently invented here).

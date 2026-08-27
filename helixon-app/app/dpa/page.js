@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Helixon — Data Processing Agreement.
+// Helixon - Data Processing Agreement.
 // Reuses the marketing site's nav/footer shell and token system so the
 // jump from product → legal reads as one site. Signature element: a
-// sticky, scroll-spy table of contents — the one thing a DPA reader
+// sticky, scroll-spy table of contents - the one thing a DPA reader
 // actually needs that a plain long-form doc doesn't give them.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -23,9 +23,9 @@ const SECTIONS = [
   { id: "transfers", label: "11. International transfers" },
   { id: "audit", label: "12. Audit rights" },
   { id: "liability", label: "13. Liability & term" },
-  { id: "annex-a", label: "Annex A — Processing details" },
-  { id: "annex-b", label: "Annex B — Sub-processors" },
-  { id: "annex-c", label: "Annex C — Security measures" },
+  { id: "annex-a", label: "Annex A - Processing details" },
+  { id: "annex-b", label: "Annex B - Sub-processors" },
+  { id: "annex-c", label: "Annex C - Security measures" },
 ];
 
 const SUBPROCESSORS = [
@@ -309,7 +309,7 @@ export default function DpaPage() {
               as Helixon processes personal data on Customer’s behalf.</p>
           </Section>
 
-          <Section id="annex-a" title="Annex A — Processing details">
+          <Section id="annex-a" title="Annex A - Processing details">
             <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: "var(--border)" }}>
               {[
                 ["Subject matter", "Provision of the Helixon CV screening service"],
@@ -327,7 +327,7 @@ export default function DpaPage() {
             </div>
           </Section>
 
-          <Section id="annex-b" title="Annex B — Sub-processors">
+          <Section id="annex-b" title="Annex B - Sub-processors">
             <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: "var(--border)" }}>
               <div className="grid grid-cols-[1fr_1fr_120px] text-[11px] font-semibold uppercase tracking-wide px-4 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <span>Sub-processor</span><span>Purpose</span><span>Location</span>
@@ -342,7 +342,7 @@ export default function DpaPage() {
             </div>
           </Section>
 
-          <Section id="annex-c" title="Annex C — Technical & organisational measures">
+          <Section id="annex-c" title="Annex C - Technical & organisational measures">
             <ul className="list-disc pl-5 space-y-1.5">
               <li>Encryption of personal data in transit (TLS 1.2+) and at rest (AES-256)</li>
               <li>Role-based access control and single sign-on for internal systems</li>

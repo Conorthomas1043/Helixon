@@ -6,7 +6,7 @@ export async function GET() {
   const recruiter = await getCurrentRecruiter(supabase);
   if (!recruiter) return unauthorized();
 
-  // agency_id is never taken from the client — RLS scopes every query
+  // agency_id is never taken from the client - RLS scopes every query
   // below to recruiter.agency_id automatically via current_agency_id().
 
   const [{ data: agency }, { data: candidateRows, error: candErr }, { data: jobRows }, { data: recruiterRows }] =
@@ -41,7 +41,7 @@ export async function GET() {
 
   const stats = computeCandidateStats(analyses);
 
-  // Active jobs — real entities now, not derived-from-analyses groupings.
+  // Active jobs - real entities now, not derived-from-analyses groupings.
   const jobCandidateCounts = new Map();
   analyses
     .filter((a) => a.status === "completed")
@@ -65,7 +65,7 @@ export async function GET() {
     .sort((a, b) => b.candidateCount - a.candidateCount)
     .slice(0, 5);
 
-  // Recruiter performance — now a real per-seat query instead of grouping
+  // Recruiter performance - now a real per-seat query instead of grouping
   // by a free-text name string.
   const recruiterStats = new Map();
   analyses

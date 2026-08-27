@@ -176,7 +176,7 @@ export default function DemoRequestPage() {
                   Request sent
                 </h1>
                 <p className="text-[13.5px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
-                  Thanks, {name.split(" ")[0]} — someone from our team will reach out to
+                  Thanks, {name.split(" ")[0]} - someone from our team will reach out to
                   {" "}{email} within one business day to find a time.
                 </p>
                 <Link

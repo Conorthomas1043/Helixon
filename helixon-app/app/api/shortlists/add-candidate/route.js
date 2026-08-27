@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-// POST — adds a candidate to a shortlist (prevents duplicates)
+// POST - adds a candidate to a shortlist (prevents duplicates)
 export async function POST(request) {
   const { shortlistId, candidateId, scoreId, note } = await request.json();
 

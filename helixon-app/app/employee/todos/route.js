@@ -1,6 +1,6 @@
 // app/api/employee/todos/route.js
-// GET  — list todos for the current employee
-// POST — create | update | delete a todo
+// GET  - list todos for the current employee
+// POST - create | update | delete a todo
 
 import { supabase } from "@/lib/supabase";
 import { getEmployeeSession } from "@/lib/employee-auth";

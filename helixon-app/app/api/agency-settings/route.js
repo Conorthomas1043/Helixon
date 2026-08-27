@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-// GET — returns the current settings for an agency
+// GET - returns the current settings for an agency
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const agencyId = searchParams.get("agencyId");
@@ -18,7 +18,7 @@ export async function GET(request) {
   return Response.json({ ok: true, settings: data.settings || {}, name: data.name });
 }
 
-// POST — saves updated settings for an agency
+// POST - saves updated settings for an agency
 export async function POST(request) {
   try {
     const { agencyId, settings } = await request.json();

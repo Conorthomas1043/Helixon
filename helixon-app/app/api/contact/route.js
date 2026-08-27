@@ -46,7 +46,7 @@ export async function POST(req) {
       from: FROM_NOTIFICATION,
       to,
       reply_to: email,
-      subject: `New contact form message — ${topic} — ${name}`,
+      subject: `New contact form message - ${topic} - ${name}`,
       html: internalNotificationHtml({ name, email, topic, message }),
     });
 
@@ -54,7 +54,7 @@ export async function POST(req) {
     await resend.emails.send({
       from: FROM_AUTOREPLY,
       to: email,
-      subject: "We've got your message — Helixon",
+      subject: "We've got your message - Helixon",
       html: autoReplyHtml({ name }),
     });
 
@@ -66,7 +66,7 @@ export async function POST(req) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Email templates — table-based HTML for client compatibility, styled to
+// Email templates - table-based HTML for client compatibility, styled to
 // match the Helixon landing page (forest green / mint / mist palette).
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -149,7 +149,7 @@ function internalNotificationHtml({ name, email, topic, message }) {
     </div>
     <a href="mailto:${escapeHtml(email)}" style="display:inline-block;margin-top:20px;background:${COLORS.forest};color:#ffffff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:10px;text-decoration:none;">Reply to ${escapeHtml(name.split(" ")[0] || "sender")}</a>
   `;
-  return emailShell({ preheader: `${topic} — ${message.slice(0, 80)}`, bodyHtml: body });
+  return emailShell({ preheader: `${topic} - ${message.slice(0, 80)}`, bodyHtml: body });
 }
 
 function autoReplyHtml({ name }) {
@@ -158,9 +158,9 @@ function autoReplyHtml({ name }) {
     <div style="width:44px;height:44px;background:${COLORS.mint};border-radius:12px;text-align:center;line-height:44px;margin-bottom:20px;">
       <span style="font-size:20px;">✓</span>
     </div>
-    <h1 style="margin:0 0 10px;font-size:22px;font-weight:600;color:${COLORS.ink};">Thanks, ${firstName} — we've got it.</h1>
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:600;color:${COLORS.ink};">Thanks, ${firstName} - we've got it.</h1>
     <p style="margin:0 0 20px;font-size:13px;line-height:1.7;color:${COLORS.inkSoft};">
-      Your message has been sent to the right team at Helixon. We usually reply within a day —
+      Your message has been sent to the right team at Helixon. We usually reply within a day -
       we'll get back to you soon.
     </p>
     <div style="background:${COLORS.mist};border:1px solid ${COLORS.border};border-radius:10px;padding:16px;margin-bottom:8px;">

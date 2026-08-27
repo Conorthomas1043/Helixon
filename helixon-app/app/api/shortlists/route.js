@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-// GET — returns all shortlists for an agency, with their candidates nested inside
+// GET - returns all shortlists for an agency, with their candidates nested inside
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const agencyId = searchParams.get("agencyId");
@@ -26,7 +26,7 @@ export async function GET(request) {
   return Response.json({ ok: true, shortlists: data });
 }
 
-// POST — creates a new shortlist
+// POST - creates a new shortlist
 export async function POST(request) {
   const { agencyId, jobId, name } = await request.json();
 

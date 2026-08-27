@@ -26,7 +26,7 @@ export async function GET(req) {
     return NextResponse.redirect(`${origin}/trial/check-email?error=missing`);
   }
 
-  // Added `email` to the select — needed to send the welcome email below.
+  // Added `email` to the select - needed to send the welcome email below.
   // Wasn't selected before since nothing used it yet.
   const { data: verification, error: findErr } = await supabase
     .from("trial_verifications")
@@ -45,10 +45,10 @@ export async function GET(req) {
 
   if (verification.used_at) {
     // Already-verified links redirect straight into the app rather than
-    // erroring — someone clicking an old confirmation email a second
+    // erroring - someone clicking an old confirmation email a second
     // time (e.g. from an email client that pre-fetches links) shouldn't
     // see a scary "invalid link" message if they're already verified.
-    // No welcome email here — it already went out the first time this
+    // No welcome email here - it already went out the first time this
     // token was used, so a repeat click shouldn't fire a second one.
     return NextResponse.redirect(`${origin}/dashboard`);
   }
@@ -70,14 +70,14 @@ export async function GET(req) {
   // Fire the welcome email now that verification has actually succeeded.
   // Best-effort: a failed send here should never block access, so this
   // is deliberately not awaited-and-checked the way the verification
-  // update above is — a Resend hiccup shouldn't turn into a broken
+  // update above is - a Resend hiccup shouldn't turn into a broken
   // login for someone who just proved they own the inbox.
   if (resend && verification.email) {
     resend.emails
       .send({
         from: "Helixon <hello@helixon.co.uk>",
         to: verification.email,
-        subject: "You're verified — your 3 free analyses are ready",
+        subject: "You're verified - your 3 free analyses are ready",
         react: WelcomeEmail({
           email: verification.email,
           analyseUrl: `${origin}/dashboard`,
@@ -87,12 +87,12 @@ export async function GET(req) {
         console.error("[trial/verify] Welcome email send failed:", err);
       });
   } else if (!resend) {
-    console.error("[trial/verify] Skipped welcome email — RESEND_API_KEY not configured.");
+    console.error("[trial/verify] Skipped welcome email - RESEND_API_KEY not configured.");
   }
 
   const res = NextResponse.redirect(`${origin}/dashboard`);
 
-  // This is the ONLY place the real access cookie gets set now —
+  // This is the ONLY place the real access cookie gets set now -
   // moved here from trial/start, so access requires having actually
   // clicked a link delivered to the claimed inbox.
   res.cookies.set("helixon_trial", verification.agency_id, {

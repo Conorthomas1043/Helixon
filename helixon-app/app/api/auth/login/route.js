@@ -8,7 +8,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // ── Rate limiting ────────────────────────────────────────────────────────
 // Simple sliding-window check against the login_attempts table (service
 // role). Blocks on too many recent failures for either the email or the
-// IP, whichever trips first — catches both "one account being brute
+// IP, whichever trips first - catches both "one account being brute
 // forced" and "one IP spraying many accounts".
 const RATE_LIMIT_WINDOW_MINUTES = 15;
 const MAX_FAILURES_PER_EMAIL = 5;
@@ -44,7 +44,7 @@ async function checkRateLimit(email, ip) {
     return { blocked: false };
   } catch (e) {
     // Fail open on the rate-limit check itself (a DB hiccup here shouldn't
-    // lock out every legitimate login) — but this is logged so an outage
+    // lock out every legitimate login) - but this is logged so an outage
     // in login_attempts doesn't silently disable rate limiting for long.
     console.error("[login] Rate limit check failed (failing open):", e.message);
     return { blocked: false };
@@ -59,7 +59,7 @@ async function recordAttempt(email, ip, success) {
   }
 }
 
-// Verifies a reCAPTCHA v3 token server-side. Never trust a client-only check —
+// Verifies a reCAPTCHA v3 token server-side. Never trust a client-only check -
 // the secret key lives only here and is never shipped to the browser.
 async function verifyRecaptcha(token, remoteIp) {
   if (!token) return { ok: false, reason: "Missing CAPTCHA token." };
@@ -70,7 +70,7 @@ async function verifyRecaptcha(token, remoteIp) {
   });
   if (remoteIp) params.append("remoteip", remoteIp);
 
-  // Guard against a hung upstream — without this, a slow/unresponsive
+  // Guard against a hung upstream - without this, a slow/unresponsive
   // reCAPTCHA endpoint stalls every login indefinitely.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
@@ -123,25 +123,25 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Enter a valid email address." }, { status: 400 });
     }
 
-    // 1. CAPTCHA — checked before we touch Supabase at all, so bots never
+    // 1. CAPTCHA - checked before we touch Supabase at all, so bots never
     //    even reach the password check / rate limit budget.
     const captcha = await verifyRecaptcha(recaptchaToken, remoteIp);
     if (!captcha.ok) {
       return NextResponse.json({ ok: false, error: captcha.reason }, { status: 400 });
     }
 
-    // 2. Rate limit — checked before Supabase auth so a brute-force run
+    // 2. Rate limit - checked before Supabase auth so a brute-force run
     //    against one account (or a spray across many from one IP) gets
     //    stopped without burning further Supabase auth calls.
     const rateLimit = await checkRateLimit(email, remoteIp);
     if (rateLimit.blocked) {
-      // Not recorded as an attempt — the account/IP is already over the
+      // Not recorded as an attempt - the account/IP is already over the
       // threshold, no need to keep counting past it.
       return NextResponse.json({ ok: false, error: rateLimit.reason }, { status: 429 });
     }
 
     // NOTE: password strength rules intentionally are NOT enforced here.
-    // That belongs at signup time — checking "strength" on login only
+    // That belongs at signup time - checking "strength" on login only
     // punishes real users whose password predates a rules change, or
     // if the rules are ever tightened later. Login should just pass
     // whatever was typed straight to Supabase and let it be the judge
@@ -164,7 +164,7 @@ export async function POST(request) {
     );
 
     // 3. Password auth. Note: this succeeds and issues an AAL1 session even
-    //    for users enrolled in MFA — Supabase intentionally separates "who
+    //    for users enrolled in MFA - Supabase intentionally separates "who
     //    are you" from "are you fully verified" so we can gate on AAL below.
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -182,10 +182,10 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Authentication failed. Please try again." }, { status: 500 });
     }
 
-    // 4. MFA check — does this user have a verified TOTP factor enrolled?
+    // 4. MFA check - does this user have a verified TOTP factor enrolled?
     //
     //    Fail CLOSED here: if the factor lookup itself errors, we must
-    //    NOT fall through and treat the user as "no MFA enrolled" — that
+    //    NOT fall through and treat the user as "no MFA enrolled" - that
     //    would let an MFA-enrolled user bypass their second factor
     //    entirely just because listFactors() had a bad moment. Instead,
     //    treat a failed lookup as if MFA is required but unconfirmed,
@@ -206,7 +206,7 @@ export async function POST(request) {
 
     if (totpFactor) {
       // Session exists at AAL1 only. Don't reveal admin status or finish
-      // the response with a "logged in" shape — the client must complete
+      // the response with a "logged in" shape - the client must complete
       // the MFA challenge via /api/auth/mfa-verify before we treat this
       // as a real session.
       await recordAttempt(email, remoteIp, true);
@@ -228,7 +228,7 @@ export async function POST(request) {
       return response;
     }
 
-    // 5. No MFA enrolled — log in normally at AAL1.
+    // 5. No MFA enrolled - log in normally at AAL1.
     let isAdmin = false;
     try {
       const { data: adminRow } = await supabaseAdmin
@@ -261,7 +261,7 @@ export async function POST(request) {
       }
     });
 
-    console.log(`[login] Success — ${data.user.id}, isAdmin: ${isAdmin}`);
+    console.log(`[login] Success - ${data.user.id}, isAdmin: ${isAdmin}`);
     return response;
 
   } catch (err) {

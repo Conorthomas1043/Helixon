@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-// ── Floating-label field — matches /login ─────────────────────────────────
+// ── Floating-label field - matches /login ─────────────────────────────────
 function FloatField({ id, label, value, onChange, type = "text", autoFocus, autoComplete, required, status }) {
   const [focused, setFocused] = useState(false);
   const active = focused || value.length > 0;
@@ -60,7 +60,7 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
   );
 }
 
-// ── Magnetic primary button — matches /login ──────────────────────────────
+// ── Magnetic primary button - matches /login ──────────────────────────────
 function MagneticButton({ children, type = "button", onClick, disabled, loading }) {
   const ref = useRef(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
       catch { data = null; }
 
       // Always show the same success state whether or not the email is on
-      // file — avoids leaking which addresses have accounts.
+      // file - avoids leaking which addresses have accounts.
       if (res.ok || res.status === 404) {
         setSent(true);
       } else {
@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
   return (
     <main className="min-h-screen flex relative overflow-hidden">
 
-      {/* ── Ambient mesh background — matches /login ────────────────────── */}
+      {/* ── Ambient mesh background - matches /login ────────────────────── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #eef4f0 0%, #e7f0ea 45%, #dcebe0 100%)" }} />
         <div className="absolute w-[620px] h-[620px] rounded-full blur-3xl animate-[driftA_20s_ease-in-out_infinite]" style={{ background: "var(--mint)", opacity: 0.5, top: "-14%", left: "32%" }} />
@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
         </svg>
       </div>
 
-      {/* ── Left panel — branding, matches /login gradient + copy tone ──── */}
+      {/* ── Left panel - branding, matches /login gradient + copy tone ──── */}
       <div className="hidden lg:flex lg:w-[46%] flex-col justify-between p-12 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #0b3a2a 0%, var(--forest) 55%, #0e4531 100%)" }}>
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: "30px 30px" }} />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `repeating-linear-gradient(115deg, white 0px, white 1px, transparent 1px, transparent 64px)` }} />
@@ -212,7 +212,7 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
 
-      {/* ── Right panel — glass card form ───────────────────────────────── */}
+      {/* ── Right panel - glass card form ───────────────────────────────── */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
         <a href="/" className="flex lg:hidden items-center gap-2.5 mb-8" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: "var(--forest)" }}>

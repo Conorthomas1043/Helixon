@@ -23,7 +23,7 @@ function validatePassword(password) {
     .map(([key]) => key);
 }
 
-// Verifies a reCAPTCHA v3 token server-side. Never trust a client-only check —
+// Verifies a reCAPTCHA v3 token server-side. Never trust a client-only check -
 // the secret key lives only here and is never shipped to the browser.
 async function verifyRecaptcha(token, remoteIp) {
   if (!token) return { ok: false, reason: "Missing CAPTCHA token." };
@@ -67,7 +67,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Email and password are required." }, { status: 400 });
     }
 
-    // 1. CAPTCHA — checked before we touch Supabase at all, so bots never
+    // 1. CAPTCHA - checked before we touch Supabase at all, so bots never
     //    even reach the password hasher / rate limit budget.
     const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
     const captcha  = await verifyRecaptcha(recaptchaToken, remoteIp);
@@ -102,7 +102,7 @@ export async function POST(request) {
     );
 
     // 3. Password auth. Note: this succeeds and issues an AAL1 session even
-    //    for users enrolled in MFA — Supabase intentionally separates "who
+    //    for users enrolled in MFA - Supabase intentionally separates "who
     //    are you" from "are you fully verified" so we can gate on AAL below.
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -118,7 +118,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Authentication failed. Please try again." }, { status: 500 });
     }
 
-    // 4. MFA check — does this user have a verified TOTP factor enrolled?
+    // 4. MFA check - does this user have a verified TOTP factor enrolled?
     const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
     if (factorsError) {
       console.error("[login] MFA factor lookup failed:", factorsError.message);
@@ -127,7 +127,7 @@ export async function POST(request) {
 
     if (totpFactor) {
       // Session exists at AAL1 only. Don't reveal admin status or finish
-      // the response with a "logged in" shape — the client must complete
+      // the response with a "logged in" shape - the client must complete
       // the MFA challenge via /api/auth/mfa-verify before we treat this
       // as a real session.
       const response = NextResponse.json({
@@ -148,7 +148,7 @@ export async function POST(request) {
       return response;
     }
 
-    // 5. No MFA enrolled — log in normally at AAL1.
+    // 5. No MFA enrolled - log in normally at AAL1.
     let isAdmin = false;
     try {
       const { data: adminRow } = await supabaseAdmin
@@ -179,7 +179,7 @@ export async function POST(request) {
       }
     });
 
-    console.log(`[login] Success — ${data.user.id}, isAdmin: ${isAdmin}`);
+    console.log(`[login] Success - ${data.user.id}, isAdmin: ${isAdmin}`);
     return response;
 
   } catch (err) {

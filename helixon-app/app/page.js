@@ -97,7 +97,7 @@ function scoreLabel(score) {
   return "Weak";
 }
 
-/* ── Hero product visual — a miniature recruiter workspace, not a toy demo ─
+/* ── Hero product visual - a miniature recruiter workspace, not a toy demo ─
    This replaces a single-CV "scanning" animation with the thing a recruiter
    actually wants to see: several candidates, ranked, against one role. */
 
@@ -168,7 +168,7 @@ function RecruiterWorkspaceDemo() {
               <span className="flex items-center gap-2 shrink-0">
                 <span className="text-[9px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
                 <span className="text-xs font-semibold w-6 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
-                  {shown ? c.score : "—"}
+                  {shown ? c.score : "-"}
                 </span>
               </span>
             </div>
@@ -205,7 +205,7 @@ function RecruiterWorkspaceDemo() {
   );
 }
 
-/* ── Free-trial email gate — logic preserved exactly; framing rewritten so
+/* ── Free-trial email gate - logic preserved exactly; framing rewritten so
    it reads as "here's what you get" rather than a lead-capture interruption ── */
 function TrialGateModal({ open, onClose, returnFocusRef }) {
   const router = useRouter();
@@ -460,7 +460,7 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
               </>
             ) : (
               <>
-                Start scanning — it&apos;s free
+                Start scanning - it&apos;s free
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -484,7 +484,7 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
   );
 }
 
-/* ── Pricing plan buy button — unchanged: calls /api/checkout, then redirects ── */
+/* ── Pricing plan buy button - unchanged: calls /api/checkout, then redirects ── */
 function BuyPlanButton({ plan, label, highlight }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -539,7 +539,7 @@ function BuyPlanButton({ plan, label, highlight }) {
   );
 }
 
-/* ── Reusable CTA pair — label/target vary by context, never more than two ── */
+/* ── Reusable CTA pair - label/target vary by context, never more than two ── */
 function CtaButtons({ onTryFree, secondaryLabel = "Book a demo", secondaryHref = "/demo", align = "left" }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
@@ -589,7 +589,7 @@ function BeforeAfterSection() {
             Your candidates shouldn&apos;t be waiting on a spreadsheet.
           </h2>
           <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
-            Most agencies still screen the same way they did ten years ago — one CV, one tab, one spreadsheet at a time.
+            Most agencies still screen the same way they did ten years ago - one CV, one tab, one spreadsheet at a time.
           </p>
         </div>
       </Reveal>
@@ -601,12 +601,12 @@ function BeforeAfterSection() {
   );
 }
 
-/* ── Product workflow — interactive tabs standing in for the real product ── */
+/* ── Product workflow - interactive tabs standing in for the real product ── */
 
 const WORKFLOW_TABS = ["Upload", "Analyse", "Compare", "Act"];
 
 function UploadTabContent() {
-  const files = ["A. Chen — CV.pdf", "R. Osei — CV.pdf", "M. Laurent — CV.docx"];
+  const files = ["A. Chen - CV.pdf", "R. Osei - CV.pdf", "M. Laurent - CV.docx"];
   return (
     <div>
       <div className="rounded-[12px] p-6 text-center mb-4" style={{ border: "1.5px dashed var(--border)" }}>
@@ -732,10 +732,10 @@ function ProductWorkflowSection() {
   );
 }
 
-/* ── Built for recruiters — outcome pillars + the commercial "why" ───────── */
+/* ── Built for recruiters - outcome pillars + the commercial "why" ───────── */
 
 const BENEFIT_PILLARS = [
-  { title: "Screen faster", body: "Stop reading every CV top to bottom — see the fit before you open the file.", icon: (<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />) },
+  { title: "Screen faster", body: "Stop reading every CV top to bottom - see the fit before you open the file.", icon: (<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />) },
   { title: "Prioritise instantly", body: "The strongest candidates rise to the top of every role automatically.", icon: (<path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8z" />) },
   { title: "Decide consistently", body: "Every candidate is compared against the same role criteria, every time.", icon: (<><rect x="3" y="10" width="4" height="10" /><rect x="10" y="6" width="4" height="14" /><rect x="17" y="3" width="4" height="17" /></>) },
   { title: "Work as a team", body: "Notes, tags and shortlists stay in one place instead of scattered across email.", icon: (<><circle cx="9" cy="7" r="3" /><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" /><circle cx="19" cy="8" r="2.5" /></>) },
@@ -780,7 +780,7 @@ function BenefitsSection() {
   );
 }
 
-/* ── Bulk screening — the volume story, told without invented numbers ────── */
+/* ── Bulk screening - the volume story, told without invented numbers ────── */
 
 function BulkScreeningSection() {
   const stages = [
@@ -826,7 +826,7 @@ function BulkScreeningSection() {
   );
 }
 
-/* ── Agency workflow — collaboration is visible, not a footnote ──────────── */
+/* ── Agency workflow - collaboration is visible, not a footnote ──────────── */
 
 const AGENCY_FLOW = [
   { role: "Recruiter", action: "Screens candidates against the role" },
@@ -845,7 +845,7 @@ function AgencyWorkflowSection() {
             Built for the way agency teams already work
           </h2>
           <p className="text-xs leading-relaxed mb-6 max-w-md" style={{ color: "var(--ink-soft)" }}>
-            One recruiter screens, the whole team sees the result. Notes, tags and shortlists stay together — with a clear record of who screened what, and when.
+            One recruiter screens, the whole team sees the result. Notes, tags and shortlists stay together - with a clear record of who screened what, and when.
           </p>
           <div className="flex flex-wrap gap-2 mb-6">
             {["Shared shortlists", "Notes & tags", "Audit trail", "Multi-seat access"].map((chip) => (
@@ -876,7 +876,7 @@ function AgencyWorkflowSection() {
   );
 }
 
-/* ── Features — grouped by recruiter outcome, not by feature name ────────── */
+/* ── Features - grouped by recruiter outcome, not by feature name ────────── */
 
 const FEATURE_GROUPS = [
   {
@@ -886,7 +886,7 @@ const FEATURE_GROUPS = [
   },
   {
     title: "Make better screening decisions",
-    body: "See more than a score — see why.",
+    body: "See more than a score - see why.",
     items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Bias-aware scoring"],
   },
   {
@@ -921,7 +921,7 @@ function FeatureGroups() {
   );
 }
 
-/* ── Testimonials — structured so real quotes can drop straight in ───────── */
+/* ── Testimonials - structured so real quotes can drop straight in ───────── */
 /* TODO before launch: replace with verified customer quotes. Kept generic  */
 /* by role/company-type (no fabricated names, logos or stats) until then.  */
 const TESTIMONIALS = [
@@ -957,7 +957,7 @@ function Testimonials() {
   );
 }
 
-/* ── Trust / GDPR — a dedicated, weightier section since candidates' data is involved ── */
+/* ── Trust / GDPR - a dedicated, weightier section since candidates' data is involved ── */
 
 const TRUST_PILLARS = [
   { title: "EU-hosted infrastructure", body: "Candidate data stays on servers within the EU." },
@@ -994,7 +994,7 @@ function TrustSection() {
   );
 }
 
-/* ── Pricing plans — same plans/prices as before; Agency is now the visual anchor ── */
+/* ── Pricing plans - same plans/prices as before; Agency is now the visual anchor ── */
 
 const PLANS = [
   {
@@ -1014,17 +1014,17 @@ const PLANS = [
   },
 ];
 
-/* ── FAQ — reordered around actual buying objections ──────────────────────── */
+/* ── FAQ - reordered around actual buying objections ──────────────────────── */
 
 const FAQS = [
-  { q: "How does Helixon score candidates?", a: "Each CV is compared against the job description you provide — skills, experience, seniority and role fit — to produce a single match score, plus the standout factors and possible red flags behind it." },
-  { q: "Does Helixon replace recruiter judgement?", a: "No. Helixon surfaces the score, standout factors and possible red flags so you can review candidates faster — the final call on who to interview or hire is always yours." },
+  { q: "How does Helixon score candidates?", a: "Each CV is compared against the job description you provide - skills, experience, seniority and role fit - to produce a single match score, plus the standout factors and possible red flags behind it." },
+  { q: "Does Helixon replace recruiter judgement?", a: "No. Helixon surfaces the score, standout factors and possible red flags so you can review candidates faster - the final call on who to interview or hire is always yours." },
   { q: "Can I upload multiple CVs for one role?", a: "Yes. Drop in up to 50 CVs against a single role at once and come back to a ranked, sortable shortlist instead of dozens of separate files." },
   { q: "What happens to candidate data?", a: "It's hosted on EU infrastructure, encrypted at rest and in transit, and never used to train any model. See our Data Processing Agreement for full detail." },
   { q: "Can my recruiting team collaborate?", a: "Yes, on the Agency plan. Shortlists, notes and tags are shared across your team, with a full audit trail of who screened what." },
   { q: "How does the free trial work?", a: "You get 3 free analyses with no card required. Enter your email, upload a CV and job description, and see your first score in under a minute." },
   { q: "What happens after my 3 free analyses?", a: "You'll be prompted to upgrade to Individual or Agency to keep going. Your existing results and history are kept, so nothing is lost when you upgrade." },
-  { q: "Can I cancel anytime?", a: "Yes — Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period." },
+  { q: "Can I cancel anytime?", a: "Yes - Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period." },
 ];
 
 function FaqItem({ q, a, open, onToggle }) {
@@ -1073,7 +1073,7 @@ function FAQSection() {
 }
 
 /* ── Above-the-fold trust strip metrics ───────────────────────────────────── */
-/* NOTE: only claims we can currently stand behind — real usage/satisfaction  */
+/* NOTE: only claims we can currently stand behind - real usage/satisfaction  */
 /* figures should replace or extend this array once available. No invented   */
 /* percentages, ratings or volume stats.                                     */
 const TRUST_METRICS = [
@@ -1221,7 +1221,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-                Helixon reads each CV against your job spec, scores the fit, flags what&apos;s worth a second look, and hands you a ranked shortlist — not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day.
+                Helixon reads each CV against your job spec, scores the fit, flags what&apos;s worth a second look, and hands you a ranked shortlist - not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day.
               </p>
 
               <CtaButtons onTryFree={openGate} secondaryLabel="See how it works" secondaryHref="#how" />
@@ -1269,7 +1269,7 @@ export default function LandingPage() {
                 Built for the volume agency recruiters actually deal with
               </h2>
               <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
-                Not a toy demo — the parts that matter when you&apos;re screening dozens of CVs a week.
+                Not a toy demo - the parts that matter when you&apos;re screening dozens of CVs a week.
               </p>
             </div>
           </Reveal>
@@ -1376,7 +1376,7 @@ export default function LandingPage() {
                 Your next great hire is already in that pile of CVs.
               </h2>
               <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Find them in minutes, not hours. Start screening free — no card needed.
+                Find them in minutes, not hours. Start screening free - no card needed.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                 <Button

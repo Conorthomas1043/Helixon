@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Complaints Policy — legal/policy content page. Same nav/footer/tokens as
+// Complaints Policy - legal/policy content page. Same nav/footer/tokens as
 // the rest of the marketing site, formatted as readable prose sections
 // rather than cards, since this is a document people need to actually read.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,12 +78,12 @@ const SECTIONS = [
   {
     n: "1",
     title: "Our commitment",
-    body: "We want Helixon to work well for every agency that uses it. If something falls short — a bug, a billing issue, a scoring result that seems off, or how you've been treated by our team — we want to know, and we'll take it seriously.",
+    body: "We want Helixon to work well for every agency that uses it. If something falls short - a bug, a billing issue, a scoring result that seems off, or how you've been treated by our team - we want to know, and we'll take it seriously.",
   },
   {
     n: "2",
     title: "How to raise a complaint",
-    body: "Email complaints@helixon.app with a description of the issue, your agency name, and any relevant account or analysis details. You can also use the Contact page and select \"Support\" as the topic. There's no formal template required — just tell us what happened.",
+    body: "Email complaints@helixon.app with a description of the issue, your agency name, and any relevant account or analysis details. You can also use the Contact page and select \"Support\" as the topic. There's no formal template required - just tell us what happened.",
   },
   {
     n: "3",
@@ -98,7 +98,7 @@ const SECTIONS = [
   {
     n: "5",
     title: "Data and scoring disputes",
-    body: "If your complaint relates to a specific match score or analysis, include the analysis ID and candidate name so we can review the exact inputs and output. We treat scoring disputes as valuable feedback and use them to improve the model — not just to resolve individual cases.",
+    body: "If your complaint relates to a specific match score or analysis, include the analysis ID and candidate name so we can review the exact inputs and output. We treat scoring disputes as valuable feedback and use them to improve the model - not just to resolve individual cases.",
   },
   {
     n: "6",

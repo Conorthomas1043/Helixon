@@ -23,7 +23,7 @@ function scoreBg(score) {
   return "#fef2f2";
 }
 function formatDate(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
@@ -148,7 +148,7 @@ export default function HistoryPage() {
     const next = ls("analysisHistory", []).filter((h) => h.id !== id);
     lsSet("analysisHistory", next);
     // Keep shortlist entries even if the source analysis is deleted from
-    // history — a recruiter may still want the shortlist record — but drop
+    // history - a recruiter may still want the shortlist record - but drop
     // the entryId link since it no longer resolves to a live analysis.
     setConfirmDeleteId(null);
     refresh();
@@ -158,7 +158,7 @@ export default function HistoryPage() {
   async function copySummary(entry) {
     const lines = [
       `Candidate: ${entry.cvName}`,
-      `Match score: ${entry.matchScore} — ${entry.recommendation}`,
+      `Match score: ${entry.matchScore} - ${entry.recommendation}`,
       entry.summary ? `\nSummary: ${entry.summary}` : "",
     ].filter(Boolean).join("\n");
     await navigator.clipboard.writeText(lines);
@@ -291,7 +291,7 @@ export default function HistoryPage() {
 
                 <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-xs font-semibold"
                   style={{ background: scoreBg(h.matchScore || 0), color: scoreColor(h.matchScore || 0), fontFamily: "var(--font-mono)" }}>
-                  {h.matchScore ?? "—"}
+                  {h.matchScore ?? "-"}
                 </div>
 
                 <div className="min-w-0 flex-1">

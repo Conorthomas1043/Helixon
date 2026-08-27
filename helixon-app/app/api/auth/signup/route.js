@@ -36,7 +36,7 @@ export async function POST(request) {
     const password = body?.password || "";
     const agencyName = (body?.agencyName || "").trim();
 
-    // ── Server-side validation — never trust the client's step gating ─────
+    // ── Server-side validation - never trust the client's step gating ─────
     if (!firstName || !lastName) {
       return NextResponse.json({ ok: false, error: "First and last name are required." }, { status: 400 });
     }
@@ -76,7 +76,7 @@ export async function POST(request) {
       .single();
 
     if (agencyError) {
-      // Likely the unique constraint on intake_email — someone already
+      // Likely the unique constraint on intake_email - someone already
       // started a trial or signed up with this email.
       if (agencyError.code === "23505") {
         return NextResponse.json({ ok: false, error: "Error try another email"}, { status: 409 });
@@ -86,7 +86,7 @@ export async function POST(request) {
 
     // ── Create the auth user via admin.generateLink() instead of the
     //    anon-key signUp(). generateLink() creates the user (still
-    //    unconfirmed) AND returns the verification action link — but,
+    //    unconfirmed) AND returns the verification action link - but,
     //    unlike signUp(), it does NOT trigger Supabase's own confirmation
     //    email. That lets us send the email ourselves via Resend, in the
     //    same branded template as the rest of the app, instead of
@@ -116,7 +116,7 @@ export async function POST(request) {
       // Roll back the agency row so a failed signup doesn't leave orphan data
       await supabase.from("agencies").delete().eq("id", agency.id);
 
-      // The trigger enforces the same unique username constraint — surface
+      // The trigger enforces the same unique username constraint - surface
       // that specific case with the same friendly message as before.
       if (linkError.message?.includes("duplicate key") && linkError.message?.includes("username")) {
         return NextResponse.json({ ok: false, error: "That username is already taken." }, { status: 409 });
@@ -156,16 +156,16 @@ export async function POST(request) {
           `,
         });
       } catch (emailErr) {
-        // Don't fail the signup over a delivery hiccup — the account and
+        // Don't fail the signup over a delivery hiccup - the account and
         // agency both exist; a resend-verification flow can retry later.
         console.error("[signup] Failed to send verification email:", emailErr);
       }
     } else {
-      console.error("[signup] RESEND_API_KEY is not set — verification email not sent.");
+      console.error("[signup] RESEND_API_KEY is not set - verification email not sent.");
     }
 
     // generateLink() never returns an active session (unlike signUp()),
-    // so email confirmation is always required here — no session cookie
+    // so email confirmation is always required here - no session cookie
     // to set. Frontend already treats `user: null` as "check your email".
     return NextResponse.json({ ok: true, user: null });
   } catch (err) {

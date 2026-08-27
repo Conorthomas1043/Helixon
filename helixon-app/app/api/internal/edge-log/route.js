@@ -3,7 +3,7 @@
 // - Inserts a row into request_logs
 // - Returns { isBlocked: bool } so middleware can gate the request
 //
-// This route intentionally has NO auth guard — it's called by our own
+// This route intentionally has NO auth guard - it's called by our own
 // middleware. It is protected from external abuse because:
 //   a) It only INSERTs/SELECTs and never exposes sensitive data in its response
 //   b) You can add Vercel's trusted-IP header check here if needed

@@ -61,7 +61,7 @@ const PLANS = [
 const FAQS = [
   {
     q: "How does the free plan work?",
-    a: "You get 3 analyses at no cost and no card required. Once you need a 4th, upgrade to Solo or Team — your history carries over.",
+    a: "You get 3 analyses at no cost and no card required. Once you need a 4th, upgrade to Solo or Team - your history carries over.",
   },
   {
     q: "What counts as an analysis?",
@@ -196,7 +196,7 @@ export default function PricingPage() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
-      {/* ── Nav — identical to landing page ────────────────────────────── */}
+      {/* ── Nav - identical to landing page ────────────────────────────── */}
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
@@ -249,7 +249,7 @@ export default function PricingPage() {
           Plans that pay for themselves<br className="hidden sm:block" /> in one placement
         </h1>
         <p className="text-sm max-w-md mx-auto" style={{ color: "#5a7a6a" }}>
-          Start free with 3 analyses. Upgrade the moment you need more — cancel anytime, no lock-in.
+          Start free with 3 analyses. Upgrade the moment you need more - cancel anytime, no lock-in.
         </p>
 
         {/* Billing toggle */}
@@ -286,7 +286,7 @@ export default function PricingPage() {
         </p>
       </section>
 
-      {/* ── Trust strip — reused from landing page ─────────────────────── */}
+      {/* ── Trust strip - reused from landing page ─────────────────────── */}
       <section className="border-y" style={{ borderColor: "var(--border)", background: "white" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {[
@@ -323,14 +323,14 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Final CTA — matches landing page ──────────────────────────── */}
+      {/* ── Final CTA - matches landing page ──────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-24">
         <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
             Your next great hire is in that pile of CVs.
           </h2>
           <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Find them in seconds, not hours. Try Helixon free — no card needed.
+            Find them in seconds, not hours. Try Helixon free - no card needed.
           </p>
           <div className="flex justify-center">
             <a href="/demo" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
@@ -341,7 +341,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Footer — identical to landing page ─────────────────────────── */}
+      {/* ── Footer - identical to landing page ─────────────────────────── */}
       <footer className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>

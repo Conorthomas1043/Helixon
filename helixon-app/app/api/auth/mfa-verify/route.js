@@ -34,7 +34,7 @@ export async function POST(request) {
       }
     );
 
-    // Must run against the AAL1 session set by /api/auth/login — this is
+    // Must run against the AAL1 session set by /api/auth/login - this is
     // why that route persists sb- cookies even on the needsMfa branch.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -85,7 +85,7 @@ export async function POST(request) {
       }
     });
 
-    console.log(`[mfa-verify] Success — ${user.id}, isAdmin: ${isAdmin}, aal: ${data?.currentLevel}`);
+    console.log(`[mfa-verify] Success - ${user.id}, isAdmin: ${isAdmin}, aal: ${data?.currentLevel}`);
     return response;
 
   } catch (err) {

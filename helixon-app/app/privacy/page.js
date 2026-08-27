@@ -44,9 +44,9 @@ export default function Privacy() {
 
         <h2>Third party processors</h2>
         <ul>
-          <li>Anthropic (Claude API) — AI processing of CV and job data</li>
-          <li>Supabase — Database hosting (EU region)</li>
-          <li>Vercel — Application hosting</li>
+          <li>Anthropic (Claude API) - AI processing of CV and job data</li>
+          <li>Supabase - Database hosting (EU region)</li>
+          <li>Vercel - Application hosting</li>
         </ul>
 
         <h2>Data retention</h2>

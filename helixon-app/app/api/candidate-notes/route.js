@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-// GET — returns all notes for a specific candidate
+// GET - returns all notes for a specific candidate
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const candidateId = searchParams.get("candidateId");
@@ -18,7 +18,7 @@ export async function GET(request) {
   return Response.json({ ok: true, notes: data });
 }
 
-// POST — saves a new note against a candidate
+// POST - saves a new note against a candidate
 export async function POST(request) {
   const { agencyId, candidateId, note } = await request.json();
 

@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Service-role client — server-side only, never exposed to the browser.
+// Service-role client - server-side only, never exposed to the browser.
 // Bypasses RLS, which is fine here since this route is the only writer.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -55,7 +55,7 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "One of the fields is too long." }, { status: 400 });
   }
 
-  // Attribution — sent from the client, captured from URL query params
+  // Attribution - sent from the client, captured from URL query params
   // and document.referrer at the point of submit.
   const utm_source = clean(body?.utm_source);
   const utm_medium = clean(body?.utm_medium);
@@ -64,7 +64,7 @@ export async function POST(request) {
   const utm_content = clean(body?.utm_content);
   const referrer = clean(body?.referrer, 500);
 
-  // Persist first — a request should never be lost even if Resend has
+  // Persist first - a request should never be lost even if Resend has
   // an outage. Email delivery is best-effort on top of this.
   let insertedId = null;
   try {
@@ -95,7 +95,7 @@ export async function POST(request) {
     );
   }
 
-  // Email is best-effort — if it fails, the request is still saved and
+  // Email is best-effort - if it fails, the request is still saved and
   // visible in Supabase, so we don't fail the whole submission for it.
   let emailSent = false;
   if (process.env.RESEND_API_KEY) {
@@ -104,14 +104,14 @@ export async function POST(request) {
         from: FROM_EMAIL,
         to: SALES_EMAIL,
         replyTo: email,
-        subject: `New demo request — ${name}${company ? ` (${company})` : ""}`,
+        subject: `New demo request - ${name}${company ? ` (${company})` : ""}`,
         html: `
           <h2>New demo request</h2>
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          <p><strong>Company:</strong> ${escapeHtml(company) || "—"}</p>
+          <p><strong>Company:</strong> ${escapeHtml(company) || "-"}</p>
           <p><strong>What they're hoping to solve:</strong></p>
-          <p>${escapeHtml(message) || "—"}</p>
+          <p>${escapeHtml(message) || "-"}</p>
           ${utm_source || referrer ? `
             <hr />
             <p style="color:#666;font-size:12px;">
@@ -130,19 +130,19 @@ export async function POST(request) {
         subject: "We've got your demo request",
         html: `
           <p>Hi ${escapeHtml(name.split(" ")[0])},</p>
-          <p>Thanks for your interest in Helixon — someone from our team will reach out within one business day to find a time that works.</p>
+          <p>Thanks for your interest in Helixon - someone from our team will reach out within one business day to find a time that works.</p>
           <p>In the meantime, feel free to reply directly to this email with any questions.</p>
-          <p>— The Helixon team</p>
+          <p>- The Helixon team</p>
         `,
       });
 
       emailSent = true;
     } catch (err) {
       console.error("Failed to send demo request email:", err);
-      // Don't fail the request — it's already saved.
+      // Don't fail the request - it's already saved.
     }
   } else {
-    console.error("RESEND_API_KEY is not set — demo request email not sent.");
+    console.error("RESEND_API_KEY is not set - demo request email not sent.");
   }
 
   if (emailSent && insertedId) {

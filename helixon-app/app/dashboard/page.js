@@ -81,12 +81,12 @@ function normalizeAnalysis(raw, index) {
 /* ─── Helpers ───────────────────────────────────────────────────────────── */
 
 function formatDate(date) {
-  if (!date) return "—";
+  if (!date) return "-";
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
 function formatRelativeTime(date) {
-  if (!date) return "—";
+  if (!date) return "-";
   const diffMs = Date.now() - date.getTime();
   const diffMins = Math.round(diffMs / 60000);
   if (diffMins < 1) return "Just now";
@@ -99,7 +99,7 @@ function formatRelativeTime(date) {
 }
 
 function formatNumber(n) {
-  if (typeof n !== "number" || Number.isNaN(n)) return "—";
+  if (typeof n !== "number" || Number.isNaN(n)) return "-";
   return n.toLocaleString("en-GB");
 }
 
@@ -131,7 +131,7 @@ function ScorePill({ score }) {
   return (
     <div className="flex items-center gap-1.5 shrink-0">
       <span style={{ fontFamily: "var(--font-mono)", color, fontSize: 14, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-        {score === null || score === undefined ? "—" : score}
+        {score === null || score === undefined ? "-" : score}
       </span>
       <span style={{ color: TEXT_FAINT, fontSize: 11 }}>{scoreLabel(score)}</span>
     </div>
@@ -279,7 +279,7 @@ function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshErro
           )}
           {!isRefreshing && refreshError && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, color: RED }}>
-              Couldn't refresh — showing last data.
+              Couldn't refresh - showing last data.
               <button type="button" onClick={onRefresh} style={{ color: RED, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 11 }}>
                 Retry
               </button>
@@ -347,7 +347,7 @@ function DashboardKpis({ totals }) {
       <KpiCard label="Total analyses" value={formatNumber(totals.total)} sub={`${formatNumber(totals.last7)} in the last 7 days`} />
       <KpiCard label="Strong matches" value={formatNumber(totals.strongMatches)} sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed` : "No completed yet"} accent={GREEN_FG} />
       <KpiCard label="In pipeline" value={formatNumber(totals.inPipeline)} sub="Active, not yet placed" accent={CYAN} />
-      <KpiCard label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "—"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
+      <KpiCard label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "-"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
     </div>
   );
 }
@@ -447,7 +447,7 @@ function AttentionPanel({ items }) {
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {items.map((item) => (
             <li key={item.id} style={{ borderTop: `1px solid ${BORDER}` }}>
-              <Link href={item.actionHref} title={`${item.candidateName} — ${item.jobTitle}`} style={{
+              <Link href={item.actionHref} title={`${item.candidateName} - ${item.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
               }}
@@ -489,7 +489,7 @@ function TopCandidates({ candidates }) {
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {candidates.map((c, i) => (
             <li key={c.id} style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : "none" }}>
-              <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} — ${c.jobTitle}`} style={{
+              <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} - ${c.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
               }} className="hover:bg-[#111827] transition-colors">
@@ -664,7 +664,7 @@ function RecruiterPerformance({ recruiters }) {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, color: TEXT_SUB, flexShrink: 0 }}>
               <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{formatNumber(r.completed)}</strong> analysed</span>
-              <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "—"}</strong> avg</span>
+              <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "-"}</strong> avg</span>
               <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed</span>
             </div>
           </li>
@@ -707,7 +707,7 @@ function RecentAnalyses({ analyses }) {
                 return (
                   <tr key={a.id} onClick={() => router.push(href)} style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}` }} className="hover:bg-[#111827] transition-colors">
                     <td style={{ padding: "12px 12px 12px 0", minWidth: 0 }}>
-                      <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} — ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
+                      <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} - ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.candidateName}</p>
                         <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.jobTitle}{a.company ? ` · ${a.company}` : ""}</p>
                       </Link>
@@ -716,7 +716,7 @@ function RecentAnalyses({ analyses }) {
                     <td style={{ padding: "12px 12px 12px 0" }}><StageBadge stage={a.stage} /></td>
                     <td style={{ padding: "12px 12px 12px 0" }}><StatusBadge status={a.status} /></td>
                     <td style={{ padding: "12px 12px 12px 0", textAlign: "right" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(a.score), fontVariantNumeric: "tabular-nums" }}>{a.score ?? "—"}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(a.score), fontVariantNumeric: "tabular-nums" }}>{a.score ?? "-"}</span>
                     </td>
                     <td style={{ padding: "12px 0 12px 12px", textAlign: "right", fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{formatDate(a.createdAt)}</td>
                   </tr>
@@ -735,7 +735,7 @@ function RecentAnalyses({ analyses }) {
 function DashboardFooter() {
   return (
     <footer style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 20, fontSize: 12, color: TEXT_FAINT, borderTop: `1px solid ${BORDER}` }}>
-      <span>Helixon — recruiter dashboard</span>
+      <span>Helixon - recruiter dashboard</span>
       <nav style={{ display: "flex", alignItems: "center", gap: 20 }} aria-label="Support links">
         {[["FAQ", "/faq"], ["Contact", "/contact"], ["Privacy", "/privacy"]].map(([label, href]) => (
           <Link key={href} href={href} style={{ color: TEXT_FAINT, textDecoration: "none" }} className="hover:text-white transition-colors">{label}</Link>
@@ -886,7 +886,7 @@ export default function AgencyDashboardPage() {
     const ac = model.attentionItems.length;
     const sc = model.totals.strongMatches;
     if (ac > 0) return `${ac} ${ac === 1 ? "item needs" : "items need"} your attention, and ${sc} strong ${sc === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
-    if (sc > 0) return `Your pipeline is in good shape — ${sc} strong ${sc === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
+    if (sc > 0) return `Your pipeline is in good shape - ${sc} strong ${sc === 1 ? "candidate is" : "candidates are"} ready to move forward.`;
     return "Your pipeline is in good shape. Here's what's been happening lately.";
   }, [data, model]);
 

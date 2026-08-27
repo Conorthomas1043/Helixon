@@ -38,7 +38,7 @@ const EXTRACTED_FIELDS = [
 ];
 
 // A CV under ~15KB is unusually small for a real document and is often a
-// scanned image, a near-empty template, or a corrupted export — all of
+// scanned image, a near-empty template, or a corrupted export - all of
 // which reduce scoring accuracy since there's little text to extract from.
 // This is a soft, non-blocking warning shown pre-scan, not a hard reject.
 const THIN_CV_BYTES = 15 * 1024;
@@ -175,7 +175,7 @@ function formatBytes(bytes) {
 
 // ── localStorage helpers ─────────────────────────────────────────────────────
 // NOTE: these must only ever be called from inside useEffect/event handlers,
-// never directly in JSX during render — calling them in render caused a
+// never directly in JSX during render - calling them in render caused a
 // server/client hydration mismatch (server always sees the `fallback` since
 // there's no localStorage in Node; client may see real data on first paint).
 function ls(key, fallback) {
@@ -430,7 +430,7 @@ function StaleCandidatesBanner({ version }) {
         style={{ background: "#fde3bd", color: "#b45309" }} aria-hidden="true">⏰</span>
       <p className="flex-1 text-xs" style={{ color: "#92400e" }}>
         <span className="font-semibold">{stale.length} strong {stale.length === 1 ? "match hasn't" : "matches haven't"}</span> been
-        followed up on in over a week{stale[0]?.cvName ? ` — including ${stale[0].cvName}` : ""}. Worth a nudge before they go cold.
+        followed up on in over a week{stale[0]?.cvName ? ` - including ${stale[0].cvName}` : ""}. Worth a nudge before they go cold.
       </p>
       <button type="button" onClick={() => setDismissed(true)} aria-label="Dismiss stale candidates notice"
         className="shrink-0 text-[11px] px-2 py-1 rounded-md transition-colors"
@@ -448,12 +448,12 @@ function FeedbackTrustNote({ version }) {
   if (!count) return null;
   return (
     <p className="text-[10px] mt-2" style={{ color: "#8aaa9a" }}>
-      You&apos;ve rated {count} analys{count === 1 ? "is" : "es"} — thanks, this tunes future scoring for your agency.
+      You&apos;ve rated {count} analys{count === 1 ? "is" : "es"} - thanks, this tunes future scoring for your agency.
     </p>
   );
 }
 
-// ── Score ring — empty state illustration, now with the scan-sweep signature
+// ── Score ring - empty state illustration, now with the scan-sweep signature
 // element from globals.css so it doesn't read as a dead/static placeholder. ──
 function EmptyScoreRing() {
   return (
@@ -469,7 +469,7 @@ function EmptyScoreRing() {
           opacity="0.25" />
         <text x="36" y="41" textAnchor="middle"
           style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, fill: "#c8d8ce" }}>
-          —
+          -
         </text>
       </svg>
     </div>
@@ -489,7 +489,7 @@ function UploadIcon({ className }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ── Onboarding wizard — full-page steps: Name → Job → Upload → Scanning ──
+// ── Onboarding wizard - full-page steps: Name → Job → Upload → Scanning ──
 // Each step is a full viewport screen that clears and is replaced by the
 // next. Step index and progress dots live here; the actual analyse call
 // and its loading state are owned by AnalyzePage and passed down as props so
@@ -527,7 +527,7 @@ function AnalysisFlow({
 }) {
   const [step, setStep] = useState(0); // 0 name, 1 job, 2 upload, 3 scanning
   const [selectedPreset, setSelectedPreset] = useState(null);
-  const [jobMode, setJobMode] = useState(null); // "preset" | "upload" | "custom" — the coverage-style path picker
+  const [jobMode, setJobMode] = useState(null); // "preset" | "upload" | "custom" - the coverage-style path picker
   const [activeCategory, setActiveCategory] = useState("All");
   const [jobDragOver, setJobDragOver] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
@@ -599,7 +599,7 @@ function AnalysisFlow({
             Name this analysis
           </h1>
           <p className="text-xs mb-9 leading-relaxed" style={{ color: "#5a7a6a" }}>
-            e.g. the role or client it&apos;s for — this helps you find it later in your History.
+            e.g. the role or client it&apos;s for - this helps you find it later in your History.
           </p>
 
           <input
@@ -607,7 +607,7 @@ function AnalysisFlow({
             value={analysisName}
             onChange={(e) => setAnalysisName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && analysisName.trim()) goTo(1); }}
-            placeholder="e.g. Senior Sales Exec — Acme Ltd"
+            placeholder="e.g. Senior Sales Exec - Acme Ltd"
             className="w-full text-sm text-center px-4 py-3.5 rounded-[10px] outline-none transition-all mb-6"
             style={{
               border: "1px solid var(--border)",
@@ -636,7 +636,7 @@ function AnalysisFlow({
         </div>
       )}
 
-      {/* ── Step 1: Job — insurance-style "pick your path" selector ────── */}
+      {/* ── Step 1: Job - insurance-style "pick your path" selector ────── */}
       {step === 1 && (
         <div className="w-full max-w-2xl">
           <button
@@ -658,11 +658,11 @@ function AnalysisFlow({
             How do you want to add the role?
           </h1>
           <p className="text-xs mb-7" style={{ color: "#5a7a6a" }}>
-            Pick a preset role, upload the job spec you already have, or write your own — like choosing a plan
+            Pick a preset role, upload the job spec you already have, or write your own - like choosing a plan
             before you get a quote.
           </p>
 
-          {/* Path picker — three big selectable "coverage" cards */}
+          {/* Path picker - three big selectable "coverage" cards */}
           <div className="grid grid-cols-3 gap-3 mb-7">
             {[
               { id: "preset", label: "Preset role", sub: `${PRESET_JOBS.length} templates`, icon: "📋" },
@@ -738,7 +738,7 @@ function AnalysisFlow({
                       ))}
                     </ul>
                     {selectedPreset === preset.id && (
-                      <p className="text-[10px] mt-2 font-medium" style={{ color: "var(--forest)" }}>✓ Selected — you can still edit it below</p>
+                      <p className="text-[10px] mt-2 font-medium" style={{ color: "var(--forest)" }}>✓ Selected - you can still edit it below</p>
                     )}
                   </button>
                 ))}
@@ -812,7 +812,7 @@ function AnalysisFlow({
                 )}
               </div>
               <p className="text-[10px] mt-3" style={{ color: "#8aaa9a" }}>
-                We&apos;ll extract the text from your file automatically — no need to retype it.
+                We&apos;ll extract the text from your file automatically - no need to retype it.
               </p>
             </div>
           )}
@@ -832,7 +832,7 @@ function AnalysisFlow({
             />
           )}
 
-          {/* ── Optional client email — used later to send client-facing
+          {/* ── Optional client email - used later to send client-facing
               emails (shortlist updates, chasing feedback) without having
               to retype the address each time. ─────────────────────────── */}
           {jobMode && (
@@ -898,10 +898,10 @@ function AnalysisFlow({
             Upload the CV
           </h1>
           <p className="text-xs mb-6 text-center" style={{ color: "#5a7a6a" }}>
-            Drop it in or click to browse — PDF or Word, max 10 MB.
+            Drop it in or click to browse - PDF or Word, max 10 MB.
           </p>
 
-          {/* Format chips — sets accuracy expectations up front: text-based
+          {/* Format chips - sets accuracy expectations up front: text-based
               files score best, scanned/flattened PDFs have less to extract. */}
           <div className="flex items-center justify-center gap-1.5 mb-6 flex-wrap">
             {[".pdf", ".doc", ".docx"].map((ext) => (
@@ -977,7 +977,7 @@ function AnalysisFlow({
               style={{ background: "#fef3e8", border: "1px solid #fbdcb4", color: "#92400e" }}>
               <span className="shrink-0 mt-0.5">ⓘ</span>
               <span className="flex-1">
-                This file is unusually small ({formatBytes(file.size)}) for a CV — it may be a scanned image or
+                This file is unusually small ({formatBytes(file.size)}) for a CV - it may be a scanned image or
                 mostly-empty document. Scanned pages with no text layer can reduce scoring accuracy since there's
                 little to extract. Worth double-checking it's the right file.
               </span>
@@ -1048,7 +1048,7 @@ function AnalysisFlow({
 // ── Step 3 content: animated full-page scan ─────────────────────────────
 // Signature visual: a scan-line sweeps down a stylised CV document while
 // "extracted field" chips light up in sync with the real stage the app is
-// on. This does two jobs at once — it looks polished, and it makes the
+// on. This does two jobs at once - it looks polished, and it makes the
 // scan's accuracy legible (recruiters can see *what* was read, not just a
 // spinner), which builds trust in the eventual score.
 function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error, onRetry, onChangeFile, onViewResult }) {
@@ -1063,7 +1063,7 @@ function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error,
   }, [loading]);
 
   // Fields "revealed" so far, derived from how far the real stage has
-  // progressed — not a fixed timer, so it always matches actual progress.
+  // progressed - not a fixed timer, so it always matches actual progress.
   const revealedFields = new Set();
   for (let i = 0; i <= stage && i < STAGE_DETAILS.length; i++) {
     if (i < stage || done) STAGE_DETAILS[i].reveals.forEach((f) => revealedFields.add(f));
@@ -1071,14 +1071,14 @@ function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error,
   if (done) EXTRACTED_FIELDS.forEach((f) => revealedFields.add(f.key));
   const confidence = done ? 100 : Math.round(((stage + 0.5) / STAGE_DETAILS.length) * 92);
 
-  // Specific, actionable guidance instead of a generic failure message —
+  // Specific, actionable guidance instead of a generic failure message -
   // recruiters can act on this immediately rather than guessing why a scan
   // failed.
   function errorGuidance(message) {
     const m = (message || "").toLowerCase();
-    if (m.includes("network")) return "Check your connection and try again — the file wasn't sent.";
+    if (m.includes("network")) return "Check your connection and try again - the file wasn't sent.";
     if (m.includes("cv") && m.includes("job")) return "Make sure both a CV and a job description were provided before scanning.";
-    if (m.includes("trial session")) return "Your trial session couldn't be found — head back to the homepage and start a new free trial.";
+    if (m.includes("trial session")) return "Your trial session couldn't be found - head back to the homepage and start a new free trial.";
     return "This can happen with scanned/image-only PDFs, password-protected files, or a corrupted export. Try a different file, or re-export the CV as text-based PDF.";
   }
 
@@ -1171,7 +1171,7 @@ function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error,
             })}
           </div>
 
-          {/* Live "what we found" chips — extraction transparency */}
+          {/* Live "what we found" chips - extraction transparency */}
           <div className="flex flex-wrap gap-1.5 justify-center mb-5">
             {EXTRACTED_FIELDS.map((f) => {
               const found = revealedFields.has(f.key);
@@ -1190,7 +1190,7 @@ function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error,
             })}
           </div>
 
-          {/* Confidence meter — builds as the scan progresses */}
+          {/* Confidence meter - builds as the scan progresses */}
           <div className="mb-7">
             <div className="flex items-center justify-between text-[10px] mb-1.5" style={{ color: "#8aaa9a" }}>
               <span>Extraction confidence</span>
@@ -1238,7 +1238,7 @@ function ScanningStep({ analysisName, fileName, fileSize, loading, stage, error,
 export default function AnalyzePage() {
   const { toasts, toast } = useToast();
 
-  // Onboarding wizard state — `flowDone` gates the full-page Name→Job wizard
+  // Onboarding wizard state - `flowDone` gates the full-page Name→Job wizard
   // vs. the main upload/score screen. `analysisName` is carried through into
   // history entries so it's identifiable later.
   const [flowDone,      setFlowDone]      = useState(false);
@@ -1284,7 +1284,7 @@ export default function AnalyzePage() {
   const [feedbackReason,  setFeedbackReason]  = useState(null);
   const [showReasonPicker, setShowReasonPicker] = useState(false);
   const [analysesUsed,    setAnalysesUsed]    = useState(0);
-  // Was `ls("analysisHistory", []).length === 0` called directly in JSX —
+  // Was `ls("analysisHistory", []).length === 0` called directly in JSX -
   // caused a hydration mismatch since SSR always sees an empty fallback.
   // Now read only inside useEffect below, default false so SSR and first
   // client paint agree.
@@ -1325,7 +1325,7 @@ export default function AnalyzePage() {
   }, [loading, file, jobText]);
 
   useEffect(() => {
-    if (result && !isRerun) { /* new (non-rerun) result — nothing extra to reset now that CandidateResult owns its own tab state */ }
+    if (result && !isRerun) { /* new (non-rerun) result - nothing extra to reset now that CandidateResult owns its own tab state */ }
     if (result) setIsRerun(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
@@ -1397,13 +1397,13 @@ export default function AnalyzePage() {
   // Handles the job-description file input from the wizard's "Upload spec"
   // path. Accepts .txt (read directly into jobText, no backend needed) or
   // PDF/Word (kept as a File and sent to the backend, mirroring how the CV
-  // itself is uploaded — the /api/run endpoint needs a matching `jobFile`
+  // itself is uploaded - the /api/run endpoint needs a matching `jobFile`
   // field alongside `jobText` to extract text server-side).
   function handleJobFileChange(eOrNull) {
     const chosen = eOrNull === null ? null : (eOrNull.target?.files?.[0] || null);
     if (!chosen) { setJobFile(null); return; }
     if (!isAcceptedJobFile(chosen)) { setError("Please upload a PDF, Word (.doc/.docx) or .txt file."); return; }
-    if (chosen.size > MAX_FILE_BYTES) { setError(`That file is ${formatBytes(chosen.size)} — please choose a file under 10MB.`); return; }
+    if (chosen.size > MAX_FILE_BYTES) { setError(`That file is ${formatBytes(chosen.size)} - please choose a file under 10MB.`); return; }
     setError(null);
     if (chosen.type === "text/plain" || chosen.name.toLowerCase().endsWith(".txt")) {
       const reader = new FileReader();
@@ -1509,7 +1509,7 @@ export default function AnalyzePage() {
     const count = ls("feedbackCount", 0) + 1;
     lsSet("feedbackCount", count);
     setFeedbackVersion((v) => v + 1);
-    toast(rating === "up" ? "Thanks for the feedback 👍" : "Thanks — we'll use this to improve");
+    toast(rating === "up" ? "Thanks for the feedback 👍" : "Thanks - we'll use this to improve");
     try {
       await fetch("/api/feedback", {
         method: "POST",
@@ -1523,11 +1523,11 @@ export default function AnalyzePage() {
     e.preventDefault(); setDragOver(false);
     const dropped = e.dataTransfer.files?.[0];
     if (!isAcceptedCvFile(dropped)) { setError("Please drop a PDF or Word (.doc/.docx) file."); return; }
-    if (dropped.size > MAX_FILE_BYTES) { setError(`That file is ${formatBytes(dropped.size)} — please drop a file under 10MB.`); return; }
+    if (dropped.size > MAX_FILE_BYTES) { setError(`That file is ${formatBytes(dropped.size)} - please drop a file under 10MB.`); return; }
     setFile(dropped); setError(null);
     setUploadAnnounce(`CV uploaded: ${dropped.name}`);
     const dupe = findDuplicateCv(dropped);
-    setDuplicateWarning(dupe ? `You already analysed a file named "${dropped.name}" ${dupe.timestamp ? "on " + new Date(dupe.timestamp).toLocaleDateString() : "previously"} — scored ${dupe.matchScore}. This looks like a re-upload rather than a new candidate.` : null);
+    setDuplicateWarning(dupe ? `You already analysed a file named "${dropped.name}" ${dupe.timestamp ? "on " + new Date(dupe.timestamp).toLocaleDateString() : "previously"} - scored ${dupe.matchScore}. This looks like a re-upload rather than a new candidate.` : null);
   }
 
   const generateEmail = useCallback(async () => {
@@ -1537,7 +1537,7 @@ export default function AnalyzePage() {
       const res  = await fetch("/api/draft-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // agencyId no longer sent — the server resolves it from the trial
+        // agencyId no longer sent - the server resolves it from the trial
         // cookie / session, same as /api/run.
         body: JSON.stringify({ candidateId, jobId, purpose: emailPurpose }),
       });
@@ -1547,10 +1547,10 @@ export default function AnalyzePage() {
         setEmailDraft(data.artifact.content.original_text);
         setEmailEdited(data.artifact.content.original_text);
       } else {
-        toast(data.error || "Couldn't draft that email — try again", "error");
+        toast(data.error || "Couldn't draft that email - try again", "error");
       }
     } catch {
-      toast("Network error while drafting the email — try again", "error");
+      toast("Network error while drafting the email - try again", "error");
     } finally {
       setEmailLoading(false);
     }
@@ -1576,10 +1576,10 @@ export default function AnalyzePage() {
         setSent(true);
         toast(`Email sent to ${recipientEmail.trim()}`);
       } else {
-        toast(data.error || "Failed to send email — try again", "error");
+        toast(data.error || "Failed to send email - try again", "error");
       }
     } catch {
-      toast("Network error while sending — try again", "error");
+      toast("Network error while sending - try again", "error");
     } finally {
       setSending(false);
     }
@@ -1619,7 +1619,7 @@ export default function AnalyzePage() {
     if (!result) return;
     const lines = [
       `Candidate: ${result.blind_mode ? "Candidate (blind screened)" : (result.name || "Candidate")}`,
-      `Match score: ${result.match_score} — ${result.recommendation}`,
+      `Match score: ${result.match_score} - ${result.recommendation}`,
       result.summary ? `\nSummary: ${result.summary}` : "",
       result.standout_factors?.length ? `\nStandout factors:\n${result.standout_factors.map((s) => `• ${s}`).join("\n")}` : "",
       result.missing_required?.length ? `\nMissing (required):\n${result.missing_required.map((s) => `• ${s}`).join("\n")}` : "",
@@ -1636,7 +1636,7 @@ export default function AnalyzePage() {
       return;
     }
     if (chosen && chosen.size > MAX_FILE_BYTES) {
-      setError(`That file is ${formatBytes(chosen.size)} — please choose a file under 10MB.`);
+      setError(`That file is ${formatBytes(chosen.size)} - please choose a file under 10MB.`);
       setFile(null);
       return;
     }
@@ -1645,7 +1645,7 @@ export default function AnalyzePage() {
     if (chosen) {
       setUploadAnnounce(`CV uploaded: ${chosen.name}`);
       const dupe = findDuplicateCv(chosen);
-      setDuplicateWarning(dupe ? `You already analysed a file named "${chosen.name}" ${dupe.timestamp ? "on " + new Date(dupe.timestamp).toLocaleDateString() : "previously"} — scored ${dupe.matchScore}. This looks like a re-upload rather than a new candidate.` : null);
+      setDuplicateWarning(dupe ? `You already analysed a file named "${chosen.name}" ${dupe.timestamp ? "on " + new Date(dupe.timestamp).toLocaleDateString() : "previously"} - scored ${dupe.matchScore}. This looks like a re-upload rather than a new candidate.` : null);
     } else {
       setDuplicateWarning(null);
     }
@@ -1794,7 +1794,7 @@ export default function AnalyzePage() {
         <StaleCandidatesBanner version={historyVersion} />
         <DashboardPanel version={historyVersion} onCleared={() => { setHistoryVersion((v) => v + 1); setAnalysesUsed(0); setTemplates([]); toast("Your data has been deleted"); }} />
 
-        {/* Current analysis name — shows what was set in the wizard, with a
+        {/* Current analysis name - shows what was set in the wizard, with a
             way to jump back into it without losing the job text already
             chosen. */}
         {analysisName && !result && !loading && (
@@ -1843,7 +1843,7 @@ export default function AnalyzePage() {
                 <p className="text-[#5a7a6a] text-xs mt-1">
                   {compareMode
                     ? "Drop a second CV to compare against the same role."
-                    : "Upload a CV and job spec — get a match score in seconds."}
+                    : "Upload a CV and job spec - get a match score in seconds."}
                 </p>
               </div>
               <a href="/bulk"
@@ -1861,7 +1861,7 @@ export default function AnalyzePage() {
                 <span className="shrink-0 mt-0.5">✎</span>
                 <span>
                   Re-scoring the same CV (<span className="font-semibold">{file?.name}</span>). Adjust the job
-                  spec or requirements below, then hit Analyse — no need to re-upload.
+                  spec or requirements below, then hit Analyse - no need to re-upload.
                 </span>
               </div>
             )}
@@ -2008,7 +2008,7 @@ export default function AnalyzePage() {
             {compareMode && (
               <p className="text-xs mb-5 px-3.5 py-3 rounded-[10px]"
                 style={{ color: "#5a7a6a", background: "var(--mist)", border: "1px solid var(--border-soft)" }}>
-                Reusing the same job description — drop a second CV and hit Analyse.
+                Reusing the same job description - drop a second CV and hit Analyse.
               </p>
             )}
 
@@ -2022,7 +2022,7 @@ export default function AnalyzePage() {
                     style={{ transform: blindMode ? "translateX(18px)" : "translateX(2px)" }} />
                 </button>
                 <span className="text-xs transition-colors" style={{ color: "#5a7a6a" }}>
-                  Blind screening — hide name, location &amp; university
+                  Blind screening - hide name, location &amp; university
                 </span>
               </label>
             )}
@@ -2186,14 +2186,14 @@ export default function AnalyzePage() {
               </div>
             )}
 
-            {/* Results — delegates the candidate-detail tabs entirely to
+            {/* Results - delegates the candidate-detail tabs entirely to
                 CandidateResult (single source of truth, shared with bulk
                 upload). Only page-specific extras live here. */}
             {result && !loading && (
               <div className="space-y-4">
 
-                {/* Page-specific action row — confidence flag, client summary
-                    copy, and re-run — sits above the shared component instead
+                {/* Page-specific action row - confidence flag, client summary
+                    copy, and re-run - sits above the shared component instead
                     of duplicating its score header. */}
                 <div className="card px-5 py-3.5 flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
@@ -2225,17 +2225,17 @@ export default function AnalyzePage() {
                     style={{ background: "#fef3e8", color: "#92400e", border: "1px solid #fbdcb4" }}>
                     <span className="shrink-0 mt-0.5">ⓘ</span>
                     <span>
-                      This score was capped by our floor check{capReason ? ` — ${capReason}` : ""}. If the CV looks
+                      This score was capped by our floor check{capReason ? ` - ${capReason}` : ""}. If the CV looks
                       stronger than the number suggests, check the Evidence tab for what was discounted.
                     </span>
                   </div>
                 )}
 
-                {/* Shared candidate view — score ring, tabs (Overview, Skills,
+                {/* Shared candidate view - score ring, tabs (Overview, Skills,
                     Experience, Evidence, Prep, Contact, Pipeline) */}
                 <CandidateResult result={result} candidateId={candidateId} toast={toast} />
 
-                {/* Must-have requirements — page-specific, since it's tied to
+                {/* Must-have requirements - page-specific, since it's tied to
                     the requirements the recruiter typed on the left. Not part
                     of CandidateResult because bulk upload doesn't collect
                     per-CV custom requirements the same way today. */}
@@ -2274,7 +2274,7 @@ export default function AnalyzePage() {
                   </div>
                 )}
 
-                {/* Email drafting + sending — page-specific, tied to
+                {/* Email drafting + sending - page-specific, tied to
                     candidateId + jobId. Drafting calls /api/draft-email;
                     sending calls the new /api/send-email endpoint using the
                     saved artifact so the copy that gets emailed always
@@ -2367,7 +2367,7 @@ export default function AnalyzePage() {
                         />
                         {isClientFacingEmail && !jobClientEmail && !recipientEmail && (
                           <p className="text-[10px] mb-2" style={{ color: "#b45309" }}>
-                            No client email saved for this job — enter one above to send.
+                            No client email saved for this job - enter one above to send.
                           </p>
                         )}
                         <button type="button" onClick={handleSendEmail} disabled={sending || !recipientEmail.trim()}
@@ -2386,7 +2386,7 @@ export default function AnalyzePage() {
                   )}
                 </div>
 
-                {/* Feedback — always visible, independent of tab */}
+                {/* Feedback - always visible, independent of tab */}
                 <div className="card px-6 py-5">
                   {!feedbackSent ? (
                     <>
@@ -2432,7 +2432,7 @@ export default function AnalyzePage() {
                   ) : (
                     <>
                       <p className="text-[11px] font-semibold" style={{ color: "var(--forest)" }}>
-                        ✓ Thanks — helps us improve{feedbackReason ? ` (noted: ${feedbackReason})` : ""}
+                        ✓ Thanks - helps us improve{feedbackReason ? ` (noted: ${feedbackReason})` : ""}
                       </p>
                       <FeedbackTrustNote version={feedbackVersion} />
                     </>
@@ -2496,7 +2496,7 @@ export default function AnalyzePage() {
               Free trial complete
             </h2>
             <p className="text-xs mb-6 leading-relaxed" style={{ color: "#5a7a6a" }}>
-              You&apos;ve used your 3 free analyses. Upgrade to continue — plans from £149/month.
+              You&apos;ve used your 3 free analyses. Upgrade to continue - plans from £149/month.
             </p>
             <div className="space-y-2.5">
               <a href="YOUR-SOLO-STRIPE-LINK"
@@ -2504,14 +2504,14 @@ export default function AnalyzePage() {
                 style={{ background: "var(--forest)" }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--forest-deep)"}
                 onMouseLeave={e => e.currentTarget.style.background = "var(--forest)"}>
-                Solo — £149 / month
+                Solo - £149 / month
               </a>
               <a href="YOUR-TEAM-STRIPE-LINK"
                 className="block w-full font-semibold py-3 rounded-[10px] text-xs transition-all"
                 style={{ border: "1px solid var(--border)", color: "#13201b" }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--mist)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                Team — £349 / month
+                Team - £349 / month
               </a>
             </div>
             <button type="button" onClick={() => setShowUpgrade(false)}

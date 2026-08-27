@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Uses the SERVICE ROLE key — this must stay server-side only, never exposed
+// Uses the SERVICE ROLE key - this must stay server-side only, never exposed
 // to the browser. Needed because we're creating an `agencies` row and a
 // matching `users` row right after sign-up, before the new user's own RLS
 // session is necessarily usable for this insert.
@@ -20,7 +20,7 @@ export async function POST(request) {
       );
     }
 
-    // Create the agency — matches the real `agencies` table:
+    // Create the agency - matches the real `agencies` table:
     // id, name, created_at, settings (jsonb), intake_email
     const { data: agency, error: agencyError } = await supabaseAdmin
       .from("agencies")
@@ -35,7 +35,7 @@ export async function POST(request) {
 
     // Link the auth user to the agency via the `users` table:
     // id, agency_id, email, full_name, created_at
-    // `id` matches the Supabase Auth user's UUID (userId) — this is the
+    // `id` matches the Supabase Auth user's UUID (userId) - this is the
     // standard "shadow profile row" pattern, not a separately generated id.
     const { error: userRowError } = await supabaseAdmin
       .from("users")

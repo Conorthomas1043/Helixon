@@ -9,12 +9,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 // Map your internal plan ids (sent from BuyPlanButton in page.jsx) to
 // Stripe Price ids. Create these in the Stripe Dashboard → Products first
-// (screenshot step 1 — "Create a product"), then paste the resulting
+// (screenshot step 1 - "Create a product"), then paste the resulting
 // price_... ids here. Never hardcode raw amounts here; let Stripe's
 // Price object be the single source of truth for what people pay.
 const PRICE_IDS = {
-  individual: process.env.STRIPE_PRICE_INDIVIDUAL, // £249/mo — matches the "Individual" product in Stripe
-  agency:     process.env.STRIPE_PRICE_AGENCY,      // £349/mo — matches the "Agency" product in Stripe (was "team")
+  individual: process.env.STRIPE_PRICE_INDIVIDUAL, // £249/mo - matches the "Individual" product in Stripe
+  agency:     process.env.STRIPE_PRICE_AGENCY,      // £349/mo - matches the "Agency" product in Stripe (was "team")
 };
 
 export async function POST(request) {
@@ -28,7 +28,7 @@ export async function POST(request) {
 
     const priceId = PRICE_IDS[plan];
     if (!priceId) {
-      // Env var not set — fail with a clear message rather than a raw
+      // Env var not set - fail with a clear message rather than a raw
       // Stripe 500 further down.
       return NextResponse.json(
         { ok: false, error: "This plan isn't available for checkout right now." },
@@ -37,7 +37,7 @@ export async function POST(request) {
     }
 
     // Require a logged-in user so we know who to attach the subscription
-    // to. Adjust this block if you want to allow checkout before signup —
+    // to. Adjust this block if you want to allow checkout before signup -
     // in that case, collect email in the Checkout Session itself instead.
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -61,7 +61,7 @@ export async function POST(request) {
 
     const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
 
-    // Step 2 from the Stripe guide — "Create a Checkout Session"
+    // Step 2 from the Stripe guide - "Create a Checkout Session"
     // (POST /v1/checkout/sessions). The Stripe SDK wraps that call here.
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

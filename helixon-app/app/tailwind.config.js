@@ -25,7 +25,7 @@ module.exports = {
         "2xs": ["10px", { lineHeight: "1.4" }],
       },
       fontFamily: {
-        // Fraunces gives headlines real character — a wonky, high-contrast
+        // Fraunces gives headlines real character - a wonky, high-contrast
         // serif built for display sizes, not just "a serif" as a signal.
         display: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

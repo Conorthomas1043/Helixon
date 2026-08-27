@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook
-// signature — this is the "raw request body access" caveat that makes
+// signature - this is the "raw request body access" caveat that makes
 // webhook routes runtime-sensitive. On Vercel's Node runtime this just
 // works via request.text(); it's the thing that's fiddly on edge/Workers
 // runtimes, which is part of why Vercel was the right call for this stack.
@@ -25,14 +25,14 @@ export async function POST(request) {
 
   try {
     switch (event.type) {
-      // Step 4 from the Stripe guide — "Listen for checkout.session.completed"
+      // Step 4 from the Stripe guide - "Listen for checkout.session.completed"
       case "checkout.session.completed": {
         const session = event.data.object;
         const userId = session.client_reference_id || session.metadata?.userId;
         const plan = session.metadata?.plan;
 
         if (!userId) {
-          console.error("[stripe-webhook] checkout.session.completed with no userId — cannot fulfill.");
+          console.error("[stripe-webhook] checkout.session.completed with no userId - cannot fulfill.");
           break;
         }
 
@@ -52,7 +52,7 @@ export async function POST(request) {
       }
 
       // Keep entitlement in sync if the subscription is later cancelled
-      // or a renewal payment fails — otherwise a churned customer keeps
+      // or a renewal payment fails - otherwise a churned customer keeps
       // "Unlimited analyses" forever.
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
@@ -67,7 +67,7 @@ export async function POST(request) {
       }
 
       default:
-        // Unhandled event types are fine to ignore — Stripe sends many
+        // Unhandled event types are fine to ignore - Stripe sends many
         // more than any single app needs to act on.
         break;
     }
@@ -75,7 +75,7 @@ export async function POST(request) {
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("[stripe-webhook] Handler error:", err);
-    // Return 500 so Stripe retries — don't swallow errors as a 200, or a
+    // Return 500 so Stripe retries - don't swallow errors as a 200, or a
     // failed fulfillment silently never gets fixed.
     return NextResponse.json({ error: "Webhook handler failed." }, { status: 500 });
   }

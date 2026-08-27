@@ -14,7 +14,7 @@ if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
   supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 } else {
   console.error(
-    "[trial/start] Missing Supabase env vars — NEXT_PUBLIC_SUPABASE_URL:",
+    "[trial/start] Missing Supabase env vars - NEXT_PUBLIC_SUPABASE_URL:",
     !!SUPABASE_URL,
     "SUPABASE_SERVICE_ROLE_KEY:",
     !!SUPABASE_SERVICE_ROLE_KEY
@@ -24,7 +24,7 @@ if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 if (!RESEND_API_KEY) {
-  console.error("[trial/start] Missing RESEND_API_KEY — verification emails cannot be sent.");
+  console.error("[trial/start] Missing RESEND_API_KEY - verification emails cannot be sent.");
 }
 
 export async function POST(req) {
@@ -36,7 +36,7 @@ export async function POST(req) {
   }
 
   // Without Resend configured, there's no way to deliver the verification
-  // link at all — fail clearly instead of silently granting unverified
+  // link at all - fail clearly instead of silently granting unverified
   // access (which is the exact problem this change is meant to fix).
   if (!resend) {
     return NextResponse.json(
@@ -98,7 +98,7 @@ export async function POST(req) {
     agencyId = created.id;
   }
 
-  // Create a fresh verification token every time — even for a repeat
+  // Create a fresh verification token every time - even for a repeat
   // submission of an already-registered email. This doubles as a
   // "resend the link" mechanism: resubmitting the trial gate form just
   // issues a new token/email rather than needing a separate resend flow.
@@ -128,7 +128,7 @@ export async function POST(req) {
     });
   } catch (emailErr) {
     console.error("[trial/start] Resend send failed:", emailErr);
-    // This one DOES matter for the response — if the email genuinely
+    // This one DOES matter for the response - if the email genuinely
     // couldn't be sent, the user has no way to get in, so tell them
     // rather than showing a false-success "check your email" screen.
     return NextResponse.json(
@@ -137,7 +137,7 @@ export async function POST(req) {
     );
   }
 
-  // No access cookie is set here anymore — that now only happens in
+  // No access cookie is set here anymore - that now only happens in
   // /api/trial/verify, once the link has actually been clicked.
   return NextResponse.json({ ok: true, redirectTo: "/trial/check-email" });
 }

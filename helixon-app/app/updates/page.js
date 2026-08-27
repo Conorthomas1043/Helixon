@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Helixon — What's new.
+// Helixon - What's new.
 // Signature element: entries carry the same "stage" language as the
 // live-scan demo on the homepage (New / Improved / Fixed act like the
 // scan's own status pills) so the changelog feels like part of the same
@@ -30,7 +30,7 @@ const UPDATES = [
     version: "2.8.2",
     title: "Faster scoring on longer CVs",
     type: "improved",
-    body: "Analyses on multi-page CVs now complete in under 20 seconds on average, down from 35 — no change needed on your end.",
+    body: "Analyses on multi-page CVs now complete in under 20 seconds on average, down from 35 - no change needed on your end.",
   },
   {
     date: "22 July 2026",
@@ -156,7 +156,7 @@ export default function AppUpdatesPage() {
             What&apos;s new in Helixon
           </h1>
           <p className="text-sm leading-relaxed max-w-xl" style={{ color: "#5a7a6a" }}>
-            Every scoring improvement, new feature, and fix — in one place. Shipped continuously, logged here weekly.
+            Every scoring improvement, new feature, and fix - in one place. Shipped continuously, logged here weekly.
           </p>
         </div>
       </header>

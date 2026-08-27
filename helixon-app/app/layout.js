@@ -10,9 +10,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Helixon — screen candidates in seconds",
+  title: "Helixon - screen candidates in seconds",
   description:
-    "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing — in under 30 seconds. Built for recruiters who screen at volume.",
+    "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under 30 seconds. Built for recruiters who screen at volume.",
 };
 
 export default function RootLayout({ children }) {
