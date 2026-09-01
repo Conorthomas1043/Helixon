@@ -9,6 +9,10 @@
 export const GATE_COOKIE_NAME = "helixon_dev_unlocked";
 const GATE_VALUE = "granted";
 
+// Shared with app/api/site-gate/route.ts so the cookie's browser-side
+// maxAge and this file's server-side expiry check can never drift apart.
+export const GATE_MAX_AGE_SECONDS = 60 * 60 * 8; // 8 hours
+
 function getSecret(): string {
   const secret = process.env.SITE_GATE_SECRET;
   if (!secret) {
@@ -43,10 +47,31 @@ function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0;
 }
 
-/** Builds the signed cookie value to hand back to the browser on success. */
+function randomHex(byteLen: number): string {
+  const bytes = new Uint8Array(byteLen);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Builds the signed cookie value to hand back to the browser on success.
+ *
+ * FIX: this used to sign the constant string "granted", so every issued
+ * cookie had the exact same value forever - anyone who ever saw one copy
+ * of it (a screenshot, a log line, a shared machine) could replay it
+ * indefinitely. Each call now mints a random nonce and embeds the issue
+ * time, both covered by the signature, so every issuance is unique and
+ * verifyGateCookie() can enforce its own expiry independent of whatever
+ * maxAge/expires attributes did or didn't survive on the copy.
+ */
 export async function signGateCookie(): Promise<string> {
-  const sig = await hmacHex(GATE_VALUE);
-  return `${GATE_VALUE}.${sig}`;
+  const nonce = randomHex(16);
+  const issuedAt = Date.now().toString();
+  const payload = `${GATE_VALUE}.${nonce}.${issuedAt}`;
+  const sig = await hmacHex(payload);
+  return `${payload}.${sig}`;
 }
 
 /**
@@ -54,17 +79,27 @@ export async function signGateCookie(): Promise<string> {
  * typed into devtools by a visitor. httpOnly stops JS from reading or
  * writing the cookie, but it doesn't stop someone manually adding a
  * cookie named the same thing in their own browser's dev tools — the
- * signature is what actually stops that from working.
+ * signature is what actually stops that from working. The embedded
+ * issue timestamp additionally caps how long any single issued value
+ * stays valid, even if it's copied into a context where the cookie's
+ * own maxAge doesn't apply (e.g. hand-set with no expiry).
  */
 export async function verifyGateCookie(cookieValue: string | undefined): Promise<boolean> {
   if (!cookieValue) return false;
-  const idx = cookieValue.lastIndexOf(".");
-  if (idx === -1) return false;
-  const value = cookieValue.slice(0, idx);
-  const sig = cookieValue.slice(idx + 1);
-  if (value !== GATE_VALUE) return false;
-  const expected = await hmacHex(GATE_VALUE);
-  return timingSafeEqual(sig, expected);
+  const parts = cookieValue.split(".");
+  if (parts.length !== 4) return false;
+  const [value, nonce, issuedAtStr, sig] = parts;
+  if (value !== GATE_VALUE || !nonce || !issuedAtStr) return false;
+
+  const payload = `${value}.${nonce}.${issuedAtStr}`;
+  const expected = await hmacHex(payload);
+  if (!timingSafeEqual(sig, expected)) return false;
+
+  const issuedAt = Number(issuedAtStr);
+  if (!Number.isFinite(issuedAt)) return false;
+  if (Date.now() - issuedAt > GATE_MAX_AGE_SECONDS * 1000) return false;
+
+  return true;
 }
 
 // Simple in-memory rate limit for the unlock endpoint. Resets on

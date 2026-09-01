@@ -65,9 +65,17 @@ async function recordAttempt(email, ip, success) {
 // own options) onto the outgoing response. Never reconstruct these by hand -
 // Supabase's options carry maxAge/expires/domain/sameSite that a hardcoded
 // object will silently drop.
-function applyCookies(response, cookiesToSet) {
+//
+// FIX: `persist` is new. The page has always sent `rememberMe` in the POST
+// body, but this route never read it, so the checkbox did nothing - every
+// login persisted regardless. When persist is false we keep every other
+// Supabase-provided option (domain/sameSite/secure/httpOnly) and only drop
+// maxAge/expires, which turns the cookie into a browser-session cookie that
+// disappears when the tab/browser closes, instead of surviving 30 days.
+function applyCookies(response, cookiesToSet, persist = true) {
   cookiesToSet.forEach(({ name, value, options }) => {
-    response.cookies.set(name, value, options);
+    const finalOptions = persist ? options : { ...options, maxAge: undefined, expires: undefined };
+    response.cookies.set(name, value, finalOptions);
   });
   return response;
 }
@@ -121,6 +129,7 @@ export async function POST(request) {
     }
 
     const { password, recaptchaToken } = body;
+    const rememberMe = !!body?.rememberMe;
     email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
 
     if (!email || !password) {
@@ -222,7 +231,7 @@ export async function POST(request) {
         needsMfa: true,
         factorId: totpFactor.id,
       });
-      return applyCookies(response, pendingCookies);
+      return applyCookies(response, pendingCookies, rememberMe);
     }
 
     let isAdmin = false;
@@ -247,7 +256,7 @@ export async function POST(request) {
     });
 
     console.log(`[login] Success - ${data.user.id}, isAdmin: ${isAdmin}`);
-    return applyCookies(response, pendingCookies);
+    return applyCookies(response, pendingCookies, rememberMe);
 
   } catch (err) {
     console.error("[login] Unexpected error:", err);

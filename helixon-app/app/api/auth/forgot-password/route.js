@@ -42,10 +42,13 @@ export async function POST(request) {
     }
 
     // Our own link, not Supabase's hosted action_link - lands on our
-    // /reset-password page, which verifies the token_hash itself via the
-    // same verifyOtp route used for signup confirmation (type differs).
+    // /update-password page, which verifies the token_hash itself via the
+    // same /api/auth/verify-email route used for signup confirmation (type
+    // differs). FIX: this was pointing at /reset-password, which isn't a
+    // real page in this app (only /update-password exists) — every
+    // password-reset email sent people to a 404.
     const resetUrl = new URL(
-      `/reset-password?token_hash=${encodeURIComponent(data.properties.hashed_token)}&type=recovery`,
+      `/update-password?token_hash=${encodeURIComponent(data.properties.hashed_token)}&type=recovery`,
       request.url
     ).toString();
 

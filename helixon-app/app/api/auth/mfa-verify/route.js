@@ -43,9 +43,16 @@ async function recordMfaAttempt(userId, success) {
 // own options) onto the outgoing response. Never reconstruct these by hand -
 // Supabase's options carry maxAge/expires/domain/sameSite that a hardcoded
 // object will silently drop.
-function applyCookies(response, cookiesToSet) {
+//
+// `persist` mirrors the same option in /api/auth/login - the AAL2 cookies
+// set here on MFA success need to honor the same rememberMe choice the
+// person made on the credentials step, or a "remember me" login would get
+// silently downgraded back to a session-only cookie the moment MFA kicks
+// in.
+function applyCookies(response, cookiesToSet, persist = true) {
   cookiesToSet.forEach(({ name, value, options }) => {
-    response.cookies.set(name, value, options);
+    const finalOptions = persist ? options : { ...options, maxAge: undefined, expires: undefined };
+    response.cookies.set(name, value, finalOptions);
   });
   return response;
 }
@@ -58,6 +65,7 @@ export async function POST(request) {
     }
 
     const { factorId, code } = body;
+    const rememberMe = !!body?.rememberMe;
     if (!factorId || !code) {
       return NextResponse.json({ ok: false, error: "Verification code is required." }, { status: 400 });
     }
@@ -143,7 +151,7 @@ export async function POST(request) {
     });
 
     console.log(`[mfa-verify] Success - ${user.id}, isAdmin: ${isAdmin}, aal: ${data?.currentLevel}`);
-    return applyCookies(response, pendingCookies);
+    return applyCookies(response, pendingCookies, rememberMe);
 
   } catch (err) {
     console.error("[mfa-verify] Unexpected error:", err);

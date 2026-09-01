@@ -202,7 +202,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/mfa-verify", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ factorId, code: mfaCode }),
+        body:    JSON.stringify({ factorId, code: mfaCode, rememberMe }),
       });
 
       let data;

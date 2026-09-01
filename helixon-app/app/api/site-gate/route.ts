@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GATE_COOKIE_NAME, signGateCookie, tooManyGateAttempts } from "@/lib/site-gate";
+import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/site-gate";
 
 // Server-side password check for the "under construction" gate. The
 // password itself now lives only here (env var), never in shipped JS —
@@ -10,7 +10,10 @@ import { GATE_COOKIE_NAME, signGateCookie, tooManyGateAttempts } from "@/lib/sit
 //   SITE_GATE_PASSWORD=whatever-you-want
 //   SITE_GATE_SECRET=some-long-random-string
 
-const MAX_AGE = 60 * 60 * 8; // 8 hours
+// FIX: was a second, separately-maintained "60 * 60 * 8" - now imported
+// from lib/site-gate.ts so the cookie's browser-side maxAge and the
+// server-side expiry check in verifyGateCookie() can't drift apart.
+const MAX_AGE = GATE_MAX_AGE_SECONDS;
 
 export async function POST(request: NextRequest) {
   const ip =
