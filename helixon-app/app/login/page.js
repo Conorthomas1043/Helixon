@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Script from "next/script";
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-const RESEND_COOLDOWN_SECONDS = 30;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 // ── Floating-label field - same signature treatment as /signup ───────────
@@ -62,15 +61,6 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
             fontFamily: mono ? "var(--font-mono)" : "inherit",
             fontSize: mono ? "18px" : "14px",
             letterSpacing: mono ? "0.5em" : "normal",
-            // Fix - this used to mix the `padding` shorthand with a
-            // separate `paddingLeft` override for the same property,
-            // which React warns about (order of application to the DOM
-            // isn't guaranteed, so which one "wins" is undefined).
-            // Folded into a single shorthand instead. Also corrected the
-            // unfocused-state value order: it was putting the
-            // trailing-icon gap on the LEFT (`top right bottom left`
-            // order means the 4th value is left, not right), even though
-            // the icon renders on the right via `absolute right-3`.
             padding: active
               ? `22px 14px 8px ${trailing ? "34px" : "14px"}`
               : `14px ${trailing ? "34px" : "14px"} 14px 14px`,
@@ -143,8 +133,6 @@ export default function LoginPage() {
 
   const [factorId, setFactorId] = useState(null);
   const [mfaCode, setMfaCode] = useState("");
-  const [resendState, setResendState] = useState("idle");
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   const errorRef = useRef(null);
   const cardRef = useRef(null);
@@ -159,12 +147,6 @@ export default function LoginPage() {
   useEffect(() => {
     if (error && errorRef.current) errorRef.current.focus();
   }, [error]);
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendCooldown]);
 
   const getRecaptchaToken = useCallback(async () => {
     // Guard against a missing env var producing a confusing runtime error -
@@ -235,26 +217,6 @@ export default function LoginPage() {
       setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleResendCode() {
-    if (resendCooldown > 0 || resendState === "sending") return;
-    setResendState("sending");
-    setError("");
-    try {
-      const res = await fetch("/api/auth/mfa-resend", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ factorId }),
-      });
-      if (!res.ok) { setError("Couldn't resend the code. Please try again."); setResendState("idle"); return; }
-      setResendState("sent");
-      setResendCooldown(RESEND_COOLDOWN_SECONDS);
-      setTimeout(() => setResendState("idle"), RESEND_COOLDOWN_SECONDS * 1000);
-    } catch {
-      setError("Network error. Please check your connection and try again.");
-      setResendState("idle");
     }
   }
 
@@ -495,28 +457,13 @@ export default function LoginPage() {
                     mono
                   />
 
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: "#8aaa9a" }} aria-live="polite">
-                      {resendState === "sent" && resendCooldown > 0 ? `Code sent · resend in ${resendCooldown}s` : "Didn't get a code?"}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleResendCode}
-                      disabled={resendCooldown > 0 || resendState === "sending"}
-                      className="font-medium hover:underline disabled:no-underline transition"
-                      style={{ color: resendCooldown > 0 || resendState === "sending" ? "#b0c4ba" : "var(--forest)" }}
-                    >
-                      {resendState === "sending" ? "Sending…" : "Resend code"}
-                    </button>
-                  </div>
-
                   <MagneticButton type="submit" onClick={handleVerifyMfa} disabled={loading || mfaCode.length !== 6} loading={loading}>
                     Verify and sign in
                   </MagneticButton>
 
                   <button
                     type="button"
-                    onClick={() => { setStep("credentials"); setMfaCode(""); setError(""); setResendState("idle"); setResendCooldown(0); }}
+                    onClick={() => { setStep("credentials"); setMfaCode(""); setError(""); }}
                     className="w-full text-sm py-1.5 transition focus:outline-none focus-visible:ring-2 rounded"
                     style={{ color: "#5a7a6a" }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#13201b")}

@@ -79,7 +79,9 @@ export async function POST(request) {
       // Likely the unique constraint on intake_email - someone already
       // started a trial or signed up with this email.
       if (agencyError.code === "23505") {
-        return NextResponse.json({ ok: false, error: "Error try another email"}, { status: 409 });
+        // FIX: was "Error try another email" — not actually a sentence, and
+        // didn't tell the person what happened or what to do next.
+        return NextResponse.json({ ok: false, error: "An account already exists for this email. Try logging in instead." }, { status: 409 });
       }
       throw new Error(agencyError.message);
     }
@@ -95,8 +97,6 @@ export async function POST(request) {
     //    The profile_trigger.sql trigger on auth.users still fires here
     //    exactly as before, since generateLink() performs a real insert
     //    into auth.users under the hood. ─────────────────────────────────
-    const redirectTo = new URL("/api/auth/verify", request.url).toString();
-
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "signup",
       email,
@@ -108,7 +108,6 @@ export async function POST(request) {
           username,
           agency_id: agency.id,
         },
-        redirectTo,
       },
     });
 
@@ -128,12 +127,24 @@ export async function POST(request) {
     }
 
     const user = linkData?.user;
-    const verificationUrl = linkData?.properties?.action_link;
+    const tokenHash = linkData?.properties?.hashed_token;
 
-    if (!user || !verificationUrl) {
+    if (!user || !tokenHash) {
       await supabase.from("agencies").delete().eq("id", agency.id);
       return NextResponse.json({ ok: false, error: "Signup failed. Please try again." }, { status: 500 });
     }
+
+    // FIX: was linkData.properties.action_link, which points at Supabase's
+    // own hosted /auth/v1/verify endpoint - clicking it never reaches our
+    // /verify-email page at all, so the verifyOtp POST route never gets
+    // called. Building our own link from the raw hashed_token keeps the
+    // whole flow on our domain and actually reaches that route.
+    // Also includes email - /verify-email's resend button needs it and
+    // has nowhere else to get it from.
+    const verificationUrl = new URL(
+      `/verify-email?token_hash=${encodeURIComponent(tokenHash)}&type=signup&email=${encodeURIComponent(email)}`,
+      request.url
+    ).toString();
 
     // ── Send the verification email ourselves via Resend ───────────────────
     if (process.env.RESEND_API_KEY) {

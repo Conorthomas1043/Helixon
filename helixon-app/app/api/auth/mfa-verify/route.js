@@ -3,6 +3,42 @@ import { cookies } from "next/headers";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
+const RATE_LIMIT_WINDOW_MINUTES = 15;
+const MAX_MFA_FAILURES = 5;
+
+// Requires: migration-mfa-attempts.sql applied to the project (creates
+// public.mfa_attempts). Mirrors the same fail-open, same-window pattern as
+// checkRateLimit()/recordAttempt() in /api/auth/login - this route
+// previously had zero brute-force protection on the 6-digit code.
+async function checkMfaRateLimit(userId) {
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
+
+  try {
+    const { count } = await supabaseAdmin
+      .from("mfa_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("success", false)
+      .gte("created_at", since);
+
+    if ((count || 0) >= MAX_MFA_FAILURES) {
+      return { blocked: true, reason: "Too many incorrect codes. Please try again in a few minutes." };
+    }
+    return { blocked: false };
+  } catch (e) {
+    console.error("[mfa-verify] Rate limit check failed (failing open):", e.message);
+    return { blocked: false };
+  }
+}
+
+async function recordMfaAttempt(userId, success) {
+  try {
+    await supabaseAdmin.from("mfa_attempts").insert({ user_id: userId, success });
+  } catch (e) {
+    console.error("[mfa-verify] Failed to record MFA attempt:", e.message);
+  }
+}
+
 // Applies the exact cookies Supabase's setAll gave us (name, value, AND its
 // own options) onto the outgoing response. Never reconstruct these by hand -
 // Supabase's options carry maxAge/expires/domain/sameSite that a hardcoded
@@ -63,6 +99,11 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Session expired. Please sign in again." }, { status: 401 });
     }
 
+    const rateLimit = await checkMfaRateLimit(user.id);
+    if (rateLimit.blocked) {
+      return NextResponse.json({ ok: false, error: rateLimit.reason }, { status: 429 });
+    }
+
     // challengeAndVerify creates a challenge and verifies the TOTP code in
     // one call. On success the session is upgraded to AAL2, and this call
     // itself triggers another setAll() with the upgraded session cookies -
@@ -74,11 +115,14 @@ export async function POST(request) {
 
     if (error) {
       console.error("[mfa-verify] Supabase error:", error.message);
+      await recordMfaAttempt(user.id, false);
       const msg = error.message.toLowerCase().includes("invalid")
         ? "Incorrect code. Please try again."
         : error.message;
       return NextResponse.json({ ok: false, error: msg }, { status: 401 });
     }
+
+    await recordMfaAttempt(user.id, true);
 
     let isAdmin = false;
     try {

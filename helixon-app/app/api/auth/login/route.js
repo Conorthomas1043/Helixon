@@ -9,20 +9,30 @@ const RATE_LIMIT_WINDOW_MINUTES = 15;
 const MAX_FAILURES_PER_EMAIL = 5;
 const MAX_FAILURES_PER_IP = 20;
 
+// FIX: this was reading/writing "login_attempts" — that table's schema is
+// (id, ts, ip, username, login_type, success), built for the employee/admin
+// login flow. It has no "email" or "created_at" columns, so every query and
+// insert below was throwing, getting caught, and (because checkRateLimit
+// fails open) silently disabling rate limiting entirely — nobody was ever
+// actually blocked. "auth_login_attempts" (id, created_at, email, ip,
+// success) is the table that was actually built to match this code —
+// switching to it makes the queries below work as originally intended.
+const RATE_LIMIT_TABLE = "auth_login_attempts";
+
 async function checkRateLimit(email, ip) {
   const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
 
   try {
     const [{ count: emailFailures }, { count: ipFailures }] = await Promise.all([
       supabaseAdmin
-        .from("login_attempts")
+        .from(RATE_LIMIT_TABLE)
         .select("id", { count: "exact", head: true })
         .eq("email", email)
         .eq("success", false)
         .gte("created_at", since),
       ip
         ? supabaseAdmin
-            .from("login_attempts")
+            .from(RATE_LIMIT_TABLE)
             .select("id", { count: "exact", head: true })
             .eq("ip", ip)
             .eq("success", false)
@@ -45,7 +55,7 @@ async function checkRateLimit(email, ip) {
 
 async function recordAttempt(email, ip, success) {
   try {
-    await supabaseAdmin.from("login_attempts").insert({ email, ip, success });
+    await supabaseAdmin.from(RATE_LIMIT_TABLE).insert({ email, ip, success });
   } catch (e) {
     console.error("[login] Failed to record login attempt:", e.message);
   }
