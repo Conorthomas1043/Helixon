@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // Adjust if your real verifyOtp route lives at a different path.
@@ -14,7 +14,7 @@ function isStrongPassword(pw) {
   );
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -184,5 +184,17 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </main>
+  );
+}
+
+// ── Default export — wraps the content in Suspense, required by Next.js
+//    App Router whenever a page reads useSearchParams(). Without this the
+//    route bails out of static rendering / fails the build, exactly the
+//    same issue verify-email/page.js already guards against. ─────────────
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

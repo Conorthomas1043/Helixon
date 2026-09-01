@@ -9,7 +9,7 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 export default function EmployeeLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function EmployeeLogin() {
       const res = await fetch("/api/employee/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
       if (!data.ok) {
@@ -87,20 +87,20 @@ export default function EmployeeLogin() {
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
-                Email
+                Username
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setFocusedField("email")}
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onFocus={() => setFocusedField("username")}
                 onBlur={() => setFocusedField(null)}
                 required
                 autoFocus
-                autoComplete="email"
-                placeholder="you@helixon.dev"
+                autoComplete="username"
+                placeholder="yourusername"
                 className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
-                style={{ color: "var(--ink)", ...fieldStyle("email") }}
+                style={{ color: "var(--ink)", ...fieldStyle("username") }}
               />
             </div>
             <div>
@@ -154,10 +154,6 @@ export default function EmployeeLogin() {
               )}
             </button>
           </form>
-
-          <p className="text-[11px] mt-5 text-center" style={{ color: "var(--ink-mute)" }}>
-            Demo login: alex@helixon.dev / password123
-          </p>
         </div>
       </div>
     </main>
