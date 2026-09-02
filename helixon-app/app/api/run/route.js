@@ -452,6 +452,10 @@ export async function POST(request) {
           result?.interview_questions ||
           [],
 
+        requirements_met:
+          result?.requirements_met ||
+          [],
+
         experience_breakdown:
           displayEx.experience_breakdown ||
           [],

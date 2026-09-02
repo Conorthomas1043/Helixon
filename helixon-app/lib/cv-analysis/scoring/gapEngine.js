@@ -26,17 +26,17 @@ const next=sorted[i+1];
 
 if(
 
-current.end_year&&
+current.start_year&&
 
-next.start_year
+next.end_year
 
 ){
 
 const gap=
 
-current.end_year-
+current.start_year-
 
-next.start_year;
+next.end_year;
 
 if(gap>1){
 

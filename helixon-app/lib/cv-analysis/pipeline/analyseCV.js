@@ -184,7 +184,8 @@ export default async function analyseCV(
     const result =
         await scoreCandidate(
             extracted,
-            jobParsed
+            jobParsed,
+            cvText
         );
 
 

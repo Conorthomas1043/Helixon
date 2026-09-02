@@ -7,14 +7,6 @@ import { NextResponse } from "next/server";
 // an existing jobId instead of new job text, so the recruiter just
 // uploads more CVs against a role they've already saved. Nothing about
 // the evidence-based scoring prompt changes - this only reuses job_text.
-//
-// Fix: was importing a non-existent `analyseSingleCv` - lib/cv-analysis
-// only ever exported `analyseCV` (see pipeline/analyseCV.js). Also,
-// scoreCandidate's real return shape has no `match_score`/`recommendation`
-// fields - it returns `overall` instead, and doesn't produce a
-// recommendation string at all right now. match_score is mapped from
-// `overall` below; recommendation is left null until that's reinstated
-// upstream in scoreCandidate (flagged, not silently invented here).
 
 const BATCH_SIZE = 5;
 
@@ -86,7 +78,7 @@ export async function POST(request, { params }) {
               agency_id:      agencyId,
               candidate_id:   candidate.id,
               job_id:         jobId,
-              match_score:    result.overall,
+              match_score:    result.match_score,
               recommendation: result.recommendation ?? null,
               result,
               stage:          "new",
@@ -102,7 +94,7 @@ export async function POST(request, { params }) {
             candidateId:  candidate.id,
             score_id:     scoreRow.id,
             stage:        scoreRow.stage,
-            score_band:   getScoreBand(result.overall),
+            score_band:   getScoreBand(result.match_score),
           };
         })
       );
@@ -110,7 +102,7 @@ export async function POST(request, { params }) {
       allResults.push(...batchResults);
     }
 
-    allResults.sort((a, b) => b.overall - a.overall);
+    allResults.sort((a, b) => b.match_score - a.match_score);
 
     return NextResponse.json({ ok: true, results: allResults, jobId });
 
