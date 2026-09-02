@@ -1,31 +1,54 @@
-import { createClient } from "@supabase/supabase-js";
+import { getAdminSupabase } from "@/lib/admin-supabase";
 
-let client;
-
-export function getAdminSupabase() {
-  if (client) return client;
-
-  const url =
-    process.env.SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url) {
-    throw new Error("Missing SUPABASE_URL");
+export async function writeAdminAudit({
+  adminUsername,
+  action,
+  targetType = null,
+  targetId = null,
+  targetEmail = null,
+  metadata = {},
+  request = null,
+}) {
+  if (!adminUsername) {
+    throw new Error("adminUsername is required");
   }
 
-  if (!key) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+  if (!action) {
+    throw new Error("action is required");
   }
 
-  client = createClient(url, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false,
-    },
-  });
+  const supabase = getAdminSupabase();
 
-  return client;
+  const forwardedFor = request?.headers?.get("x-forwarded-for");
+  const ip =
+    forwardedFor?.split(",")[0]?.trim() ||
+    request?.headers?.get("x-real-ip") ||
+    null;
+
+  const userAgent =
+    request?.headers?.get("user-agent") || null;
+
+  const { error } = await supabase
+    .from("admin_audit_logs")
+    .insert({
+      admin_username: String(adminUsername),
+      action: String(action),
+      target_type: targetType ? String(targetType) : null,
+      target_id: targetId || null,
+      target_email: targetEmail ? String(targetEmail) : null,
+      metadata:
+        metadata && typeof metadata === "object"
+          ? metadata
+          : {},
+      ip,
+      user_agent: userAgent,
+    });
+
+  if (error) {
+    throw new Error(
+      `Failed to write admin audit log: ${error.message}`
+    );
+  }
+
+  return { ok: true };
 }
