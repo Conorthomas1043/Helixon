@@ -793,11 +793,45 @@ function DashboardError({ onRetry }) {
 
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 
+/* ─── Welcome back banner ───────────────────────────────────────────────── */
+
+function WelcomeBackBanner({ name, onDismiss }) {
+  return (
+    <div
+      role="status"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        padding: "12px 16px",
+        borderRadius: 12,
+        background: GREEN_BG,
+        border: `1px solid rgba(16,185,129,0.25)`,
+      }}
+    >
+      <span style={{ fontSize: 13, fontWeight: 500, color: GREEN_FG }}>
+        Welcome back{name ? `, ${name}` : ""}! 👋
+      </span>
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label="Dismiss"
+        style={{ background: "none", border: "none", color: GREEN_FG, cursor: "pointer", fontSize: 13, padding: 4, opacity: 0.7 }}
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
 export default function AgencyDashboardPage() {
   const [data, setData] = useState(null);
   const [hasError, setHasError] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const [me, setMe] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -808,6 +842,33 @@ export default function AgencyDashboardPage() {
       .finally(() => { if (!cancelled) setIsFetching(false); });
     return () => { cancelled = true; };
   }, [reloadKey]);
+
+  // Current user, for the account menu and the welcome banner's name.
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.ok) setMe(d.user); })
+      .catch(() => {});
+  }, []);
+
+  // Shows the "Welcome back" banner exactly once per login, using a flag
+  // the login page sets right before redirecting here. Cleared immediately
+  // so a manual refresh (or navigating back to /dashboard later) doesn't
+  // show it again until the next actual login.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("helixon_just_logged_in")) {
+        setShowWelcome(true);
+        sessionStorage.removeItem("helixon_just_logged_in");
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (!showWelcome) return;
+    const t = setTimeout(() => setShowWelcome(false), 6000);
+    return () => clearTimeout(t);
+  }, [showWelcome]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -892,8 +953,11 @@ export default function AgencyDashboardPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: BG }}>
-      <DashboardNav />
+      <DashboardNav email={me?.email} />
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+        {showWelcome && (
+          <WelcomeBackBanner name={me?.firstName} onDismiss={() => setShowWelcome(false)} />
+        )}
         {!data && isFetching && <DashboardSkeleton />}
         {!data && !isFetching && hasError && <DashboardError onRetry={retry} />}
         {data && (

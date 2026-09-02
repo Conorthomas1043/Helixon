@@ -185,7 +185,14 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(data.isAdmin ? "/admin" : "/");
+      if (!data.isAdmin) {
+        // One-time flag the dashboard reads on next load to show a
+        // "Welcome back" banner, then clears — so it doesn't reappear on
+        // every refresh, only right after an actual login.
+        try { sessionStorage.setItem("helixon_just_logged_in", "1"); } catch { /* ignore */ }
+      }
+
+      router.push(data.isAdmin ? "/admin" : "/dashboard");
       router.refresh();
     } catch (err) {
       setError(err.message || "Network error. Please check your connection and try again.");
@@ -211,7 +218,11 @@ export default function LoginPage() {
 
       if (!res.ok || !data.ok) { setError(data?.error || `Verification failed (status ${res.status}).`); return; }
 
-      router.push(data.isAdmin ? "/admin" : "/");
+      if (!data.isAdmin) {
+        try { sessionStorage.setItem("helixon_just_logged_in", "1"); } catch { /* ignore */ }
+      }
+
+      router.push(data.isAdmin ? "/admin" : "/dashboard");
       router.refresh();
     } catch {
       setError("Network error. Please check your connection and try again.");

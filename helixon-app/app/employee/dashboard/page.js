@@ -39,6 +39,11 @@ function getGreeting() {
   return "Good evening";
 }
 
+function firstNameOf(name) {
+  if (!name) return "";
+  return String(name).trim().split(/\s+/)[0];
+}
+
 export default function EmployeeDashboard() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -53,17 +58,18 @@ export default function EmployeeDashboard() {
   const [sortBy, setSortBy] = useState("priority"); // priority | due | newest
   const [query, setQuery] = useState("");
   const [stats, setStats] = useState(null);
+  const [employee, setEmployee] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
-  // ── Session check ──────────────────────────────────────────────────────────
+  // ── Session check + current employee ────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
-        // Probe the todos endpoint to verify session
-        const res = await fetch("/api/employee/todos");
+        const res = await fetch("/api/employee/me");
         if (!res.ok) { router.replace("/employee/login"); return; }
         const data = await res.json();
         if (!data.ok) { router.replace("/employee/login"); return; }
-        setTodos(data.todos);
+        setEmployee(data.employee);
       } catch {
         router.replace("/employee/login");
       } finally {
@@ -71,6 +77,27 @@ export default function EmployeeDashboard() {
       }
     })();
   }, [router]);
+
+  // Shows the "Welcome back" banner exactly once per login, using a flag
+  // the login page sets right before redirecting here.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("employee_just_logged_in")) {
+        setShowWelcome(true);
+        sessionStorage.removeItem("employee_just_logged_in");
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (!showWelcome) return;
+    const t = setTimeout(() => setShowWelcome(false), 6000);
+    return () => clearTimeout(t);
+  }, [showWelcome]);
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
 
   // ── Fetch read-only platform stats (subset of admin stats) ────────────────
   useEffect(() => {
@@ -271,13 +298,34 @@ export default function EmployeeDashboard() {
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
 
+        {showWelcome && (
+          <div
+            role="status"
+            className="flex items-center justify-between gap-3 rounded-[14px] px-4 py-3 mb-6"
+            style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+          >
+            <p className="text-xs font-medium" style={{ color: "var(--forest)" }}>
+              Welcome back{employee?.fullName ? `, ${firstNameOf(employee.fullName)}` : ""}! 👋
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowWelcome(false)}
+              aria-label="Dismiss"
+              className="text-xs opacity-70 hover:opacity-100"
+              style={{ color: "var(--forest)", background: "none", border: "none", cursor: "pointer" }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className="mb-8">
           <h1
             className="text-2xl sm:text-3xl font-semibold tracking-tight"
             style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
           >
-            {getGreeting()}
+            {getGreeting()}{employee?.fullName ? `, ${firstNameOf(employee.fullName)}` : ""}
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
             Here's your task list and a quick read of the platform.
