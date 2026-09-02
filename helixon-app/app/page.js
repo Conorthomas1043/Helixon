@@ -6,7 +6,6 @@ import CookieConsentBanner from "../components/CookieConsentBanner";
 import Button from "@/components/landing/Button";
 import ChatWidget from "@/components/landing/ChatWidget";
 
-const TRIAL_EMAIL_KEY = "helixon-trial-email";
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -205,15 +204,19 @@ function RecruiterWorkspaceDemo() {
   );
 }
 
-/* ── Free-trial email gate - logic preserved exactly; framing rewritten so
-   it reads as "here's what you get" rather than a lead-capture interruption ── */
-function TrialGateModal({ open, onClose, returnFocusRef }) {
-  const router = useRouter();
+/* ── Get-a-quote lead capture - replaces the old 3-free-analyses trial gate.
+   Posts to /api/quote/request; on success shows a thank-you state instead
+   of redirecting anywhere - there's no free area of the product left to
+   send people to, a human follows up instead. ── */
+function GetQuoteModal({ open, onClose, returnFocusRef }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [focused, setFocused] = useState(false);
+  const [company, setCompany] = useState("");
+  const [focusedField, setFocusedField] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const dialogRef = useRef(null);
   const inputRef = useRef(null);
   const reducedMotion = usePrefersReducedMotion();
@@ -222,25 +225,23 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
     let focusTimeout;
     if (open) {
       document.body.style.overflow = "hidden";
-      try {
-        const saved = sessionStorage.getItem(TRIAL_EMAIL_KEY);
-        if (saved) setEmail(saved);
-      } catch { /* private browsing */ }
       focusTimeout = setTimeout(() => inputRef.current?.focus(), reducedMotion ? 0 : 250);
     } else {
       document.body.style.overflow = "";
       returnFocusRef?.current?.focus({ preventScroll: true });
+      // Reset for the next time the modal is opened.
+      setSubmitted(false);
+      setName("");
+      setEmail("");
+      setCompany("");
+      setError("");
+      setMarketingOptIn(false);
     }
     return () => {
       document.body.style.overflow = "";
       clearTimeout(focusTimeout);
     };
   }, [open, returnFocusRef, reducedMotion]);
-
-  useEffect(() => {
-    if (!email) return;
-    try { sessionStorage.setItem(TRIAL_EMAIL_KEY, email); } catch { /* ignore */ }
-  }, [email]);
 
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
@@ -272,21 +273,28 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
 
   if (!open) return null;
 
-  const active = focused || email.length > 0;
-
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (!name.trim()) {
+      setError("Enter your name to continue.");
+      return;
+    }
     if (!EMAIL_RE.test(email.trim())) {
       setError("Enter a valid email address to continue.");
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/trial/start", {
+      const res = await fetch("/api/quote/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), marketingOptIn }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          company: company.trim(),
+          marketingOptIn,
+        }),
       });
       let data;
       try { data = await res.json(); } catch { data = null; }
@@ -296,9 +304,7 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
         return;
       }
 
-      try { sessionStorage.removeItem(TRIAL_EMAIL_KEY); } catch { /* ignore */ }
-      router.push(data?.redirectTo || "/analyse");
-      router.refresh();
+      setSubmitted(true);
     } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {
@@ -311,8 +317,8 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="trial-gate-title"
-      aria-describedby="trial-gate-desc"
+      aria-labelledby="quote-gate-title"
+      aria-describedby="quote-gate-desc"
     >
       <div
         className="absolute inset-0"
@@ -352,127 +358,230 @@ function TrialGateModal({ open, onClose, returnFocusRef }) {
           </svg>
         </div>
 
-        <h2 id="trial-gate-title" className="text-[1.4rem] font-semibold tracking-tight mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-          Start screening your first 3 candidates free
-        </h2>
-        <p id="trial-gate-desc" className="text-[13px] leading-relaxed mb-4" style={{ color: "var(--ink-soft)" }}>
-          Just your email so we can save your results and let you pick up where you left off.
-        </p>
-
-        <ul className="space-y-1.5 mb-6">
-          {["3 free analyses", "No card required", "Results saved", "Built for recruiter workflows"].map((item) => (
-            <li key={item} className="text-[12px] flex items-center gap-2" style={{ color: "var(--ink-soft)" }}>
-              <span style={{ color: "var(--forest)" }}>✓</span>{item}
-            </li>
-          ))}
-        </ul>
-
-        {error && (
-          <div role="alert" aria-live="assertive" className="mb-4 flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca", animation: reducedMotion ? "none" : "shake 0.4s ease" }}>
-            <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-            <p id="trial-email-error" className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div
-            className="relative rounded-[12px] mb-3.5"
-            style={{
-              border: `1.5px solid ${error ? "rgba(192,57,43,0.5)" : focused ? "var(--forest)" : "var(--border)"}`,
-              boxShadow: focused ? "0 0 0 4px var(--mint)" : "none",
-              transition: `all 0.2s ${EASE}`,
-            }}
-          >
-            <label
-              htmlFor="trial-email"
-              className="absolute left-3.5 select-none pointer-events-none transition-all"
-              style={{
-                top: active ? "7px" : "50%",
-                transform: active ? "translateY(0)" : "translateY(-50%)",
-                fontSize: active ? "10px" : "13.5px",
-                fontWeight: active ? 600 : 400,
-                letterSpacing: active ? "0.03em" : "0",
-                color: active ? "var(--forest)" : "var(--ink-faint)",
-                textTransform: active ? "uppercase" : "none",
-                transitionTimingFunction: EASE,
-                transitionDuration: "0.2s",
-              }}
+        {submitted ? (
+          <>
+            <h2 id="quote-gate-title" className="text-[1.4rem] font-semibold tracking-tight mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Thanks - we&apos;ve got it
+            </h2>
+            <p id="quote-gate-desc" className="text-[13px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+              Someone from our team will be in touch at <strong>{email}</strong> within one business day with pricing tailored to your team.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-forest w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all"
+              style={{ background: "var(--forest)", boxShadow: "0 12px 24px -10px rgba(11,58,42,0.5)" }}
             >
-              Email address
-            </label>
-            <input
-              ref={inputRef}
-              id="trial-email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (error) setError("");
-              }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              autoComplete="email"
-              inputMode="email"
-              spellCheck={false}
-              aria-invalid={error ? "true" : "false"}
-              aria-describedby={error ? "trial-email-error" : undefined}
-              required
-              className="w-full bg-transparent text-sm outline-none"
-              style={{
-                color: "var(--ink)",
-                padding: active ? "22px 14px 8px" : "14px",
-                transition: `padding 0.2s ${EASE}`,
-              }}
-            />
-          </div>
+              Done
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 id="quote-gate-title" className="text-[1.4rem] font-semibold tracking-tight mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              Get a quote
+            </h2>
+            <p id="quote-gate-desc" className="text-[13px] leading-relaxed mb-4" style={{ color: "var(--ink-soft)" }}>
+              Tell us a little about your team and we&apos;ll follow up with pricing that fits.
+            </p>
 
-          <label className="flex items-start gap-2.5 text-[12px] select-none mb-5" style={{ color: "var(--ink-faint)" }}>
-            <input
-              type="checkbox"
-              checked={marketingOptIn}
-              onChange={(e) => setMarketingOptIn(e.target.checked)}
-              className="mt-0.5 w-3.5 h-3.5 rounded"
-              style={{ accentColor: "var(--forest)" }}
-            />
-            <span>Send me occasional tips on hiring smarter. Unsubscribe anytime.</span>
-          </label>
+            <ul className="space-y-1.5 mb-6">
+              {["Tailored to your hiring volume", "Full platform walkthrough", "No obligation"].map((item) => (
+                <li key={item} className="text-[12px] flex items-center gap-2" style={{ color: "var(--ink-soft)" }}>
+                  <span style={{ color: "var(--forest)" }}>✓</span>{item}
+                </li>
+              ))}
+            </ul>
 
-          <button
-            type="submit"
-            disabled={loading}
-            aria-busy={loading}
-            className="btn-forest w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
-            style={{
-              background: loading ? "var(--ink-mute)" : "var(--forest)",
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",
-            }}
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            {error && (
+              <div role="alert" aria-live="assertive" className="mb-4 flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca", animation: reducedMotion ? "none" : "shake 0.4s ease" }}>
+                <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
-                Starting…
-              </>
-            ) : (
-              <>
-                Start scanning - it&apos;s free
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </>
+                <p id="quote-email-error" className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
+              </div>
             )}
-          </button>
-        </form>
 
-        <p className="text-[11px] text-center mt-4" style={{ color: "var(--ink-mute)" }}>
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>Sign in</Link>
-        </p>
+            <form onSubmit={handleSubmit} noValidate>
+              <div
+                className="relative rounded-[12px] mb-3"
+                style={{
+                  border: `1.5px solid ${focusedField === "name" ? "var(--forest)" : "var(--border)"}`,
+                  boxShadow: focusedField === "name" ? "0 0 0 4px var(--mint)" : "none",
+                  transition: `all 0.2s ${EASE}`,
+                }}
+              >
+                <label
+                  htmlFor="quote-name"
+                  className="absolute left-3.5 select-none pointer-events-none transition-all"
+                  style={{
+                    top: name || focusedField === "name" ? "7px" : "50%",
+                    transform: name || focusedField === "name" ? "translateY(0)" : "translateY(-50%)",
+                    fontSize: name || focusedField === "name" ? "10px" : "13.5px",
+                    fontWeight: name || focusedField === "name" ? 600 : 400,
+                    letterSpacing: name || focusedField === "name" ? "0.03em" : "0",
+                    color: name || focusedField === "name" ? "var(--forest)" : "var(--ink-faint)",
+                    textTransform: name || focusedField === "name" ? "uppercase" : "none",
+                    transitionTimingFunction: EASE,
+                    transitionDuration: "0.2s",
+                  }}
+                >
+                  Name
+                </label>
+                <input
+                  ref={inputRef}
+                  id="quote-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); if (error) setError(""); }}
+                  onFocus={() => setFocusedField("name")}
+                  onBlur={() => setFocusedField(null)}
+                  autoComplete="name"
+                  required
+                  className="w-full bg-transparent text-sm outline-none"
+                  style={{
+                    color: "var(--ink)",
+                    padding: name || focusedField === "name" ? "22px 14px 8px" : "14px",
+                    transition: `padding 0.2s ${EASE}`,
+                  }}
+                />
+              </div>
+
+              <div
+                className="relative rounded-[12px] mb-3"
+                style={{
+                  border: `1.5px solid ${focusedField === "email" ? "var(--forest)" : "var(--border)"}`,
+                  boxShadow: focusedField === "email" ? "0 0 0 4px var(--mint)" : "none",
+                  transition: `all 0.2s ${EASE}`,
+                }}
+              >
+                <label
+                  htmlFor="quote-email"
+                  className="absolute left-3.5 select-none pointer-events-none transition-all"
+                  style={{
+                    top: email || focusedField === "email" ? "7px" : "50%",
+                    transform: email || focusedField === "email" ? "translateY(0)" : "translateY(-50%)",
+                    fontSize: email || focusedField === "email" ? "10px" : "13.5px",
+                    fontWeight: email || focusedField === "email" ? 600 : 400,
+                    letterSpacing: email || focusedField === "email" ? "0.03em" : "0",
+                    color: email || focusedField === "email" ? "var(--forest)" : "var(--ink-faint)",
+                    textTransform: email || focusedField === "email" ? "uppercase" : "none",
+                    transitionTimingFunction: EASE,
+                    transitionDuration: "0.2s",
+                  }}
+                >
+                  Email address
+                </label>
+                <input
+                  id="quote-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+                  onFocus={() => setFocusedField("email")}
+                  onBlur={() => setFocusedField(null)}
+                  autoComplete="email"
+                  inputMode="email"
+                  spellCheck={false}
+                  aria-invalid={error ? "true" : "false"}
+                  aria-describedby={error ? "quote-email-error" : undefined}
+                  required
+                  className="w-full bg-transparent text-sm outline-none"
+                  style={{
+                    color: "var(--ink)",
+                    padding: email || focusedField === "email" ? "22px 14px 8px" : "14px",
+                    transition: `padding 0.2s ${EASE}`,
+                  }}
+                />
+              </div>
+
+              <div
+                className="relative rounded-[12px] mb-3.5"
+                style={{
+                  border: `1.5px solid ${focusedField === "company" ? "var(--forest)" : "var(--border)"}`,
+                  boxShadow: focusedField === "company" ? "0 0 0 4px var(--mint)" : "none",
+                  transition: `all 0.2s ${EASE}`,
+                }}
+              >
+                <label
+                  htmlFor="quote-company"
+                  className="absolute left-3.5 select-none pointer-events-none transition-all"
+                  style={{
+                    top: company || focusedField === "company" ? "7px" : "50%",
+                    transform: company || focusedField === "company" ? "translateY(0)" : "translateY(-50%)",
+                    fontSize: company || focusedField === "company" ? "10px" : "13.5px",
+                    fontWeight: company || focusedField === "company" ? 600 : 400,
+                    letterSpacing: company || focusedField === "company" ? "0.03em" : "0",
+                    color: company || focusedField === "company" ? "var(--forest)" : "var(--ink-faint)",
+                    textTransform: company || focusedField === "company" ? "uppercase" : "none",
+                    transitionTimingFunction: EASE,
+                    transitionDuration: "0.2s",
+                  }}
+                >
+                  Company (optional)
+                </label>
+                <input
+                  id="quote-company"
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  onFocus={() => setFocusedField("company")}
+                  onBlur={() => setFocusedField(null)}
+                  autoComplete="organization"
+                  className="w-full bg-transparent text-sm outline-none"
+                  style={{
+                    color: "var(--ink)",
+                    padding: company || focusedField === "company" ? "22px 14px 8px" : "14px",
+                    transition: `padding 0.2s ${EASE}`,
+                  }}
+                />
+              </div>
+
+              <label className="flex items-start gap-2.5 text-[12px] select-none mb-5" style={{ color: "var(--ink-faint)" }}>
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(e) => setMarketingOptIn(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded"
+                  style={{ accentColor: "var(--forest)" }}
+                />
+                <span>Send me occasional tips on hiring smarter. Unsubscribe anytime.</span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={loading}
+                aria-busy={loading}
+                className="btn-forest w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
+                style={{
+                  background: loading ? "var(--ink-mute)" : "var(--forest)",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",
+                }}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    Request a quote
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
+
+            <p className="text-[11px] text-center mt-4" style={{ color: "var(--ink-mute)" }}>
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>Sign in</Link>
+            </p>
+          </>
+        )}
       </div>
 
       <style>{`
@@ -540,11 +649,11 @@ function BuyPlanButton({ plan, label, highlight }) {
 }
 
 /* ── Reusable CTA pair - label/target vary by context, never more than two ── */
-function CtaButtons({ onTryFree, secondaryLabel = "Book a demo", secondaryHref = "/demo", align = "left" }) {
+function CtaButtons({ onGetQuote, secondaryLabel = "Book a demo", secondaryHref = "/demo", align = "left" }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
-      <Button variant="primary" onClick={onTryFree} className="w-full sm:w-auto min-h-[48px]">
-        Try 3 analyses free
+      <Button variant="primary" onClick={onGetQuote} className="w-full sm:w-auto min-h-[48px]">
+        Get a quote
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
@@ -994,13 +1103,14 @@ function TrustSection() {
   );
 }
 
-/* ── Pricing plans - same plans/prices as before; Agency is now the visual anchor ── */
+/* ── Pricing plans - Trial tile replaced with a "get a quote" tile; paid
+   plans/prices unchanged ── */
 
 const PLANS = [
   {
-    name: "Trial", price: "£0", period: "/ 3 uses",
-    features: ["3 free uses", "Match score & summary", "Email drafting"],
-    cta: "Try it free", highlight: false, action: "trial",
+    name: "Not sure yet?", price: "Get a quote", period: "",
+    features: ["Tailored to your hiring volume", "Full platform walkthrough", "No obligation"],
+    cta: "Get a quote", highlight: false, action: "quote",
   },
   {
     name: "Individual", price: "£249", period: "/ month",
@@ -1022,8 +1132,7 @@ const FAQS = [
   { q: "Can I upload multiple CVs for one role?", a: "Yes. Drop in up to 50 CVs against a single role at once and come back to a ranked, sortable shortlist instead of dozens of separate files." },
   { q: "What happens to candidate data?", a: "It's hosted on EU infrastructure, encrypted at rest and in transit, and never used to train any model. See our Data Processing Agreement for full detail." },
   { q: "Can my recruiting team collaborate?", a: "Yes, on the Agency plan. Shortlists, notes and tags are shared across your team, with a full audit trail of who screened what." },
-  { q: "How does the free trial work?", a: "You get 3 free analyses with no card required. Enter your email, upload a CV and job description, and see your first score in under a minute." },
-  { q: "What happens after my 3 free analyses?", a: "You'll be prompted to upgrade to Individual or Agency to keep going. Your existing results and history are kept, so nothing is lost when you upgrade." },
+  { q: "How do I get pricing for my team?", a: "Request a quote and we'll follow up within one business day with pricing tailored to your team size and hiring volume." },
   { q: "Can I cancel anytime?", a: "Yes - Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period." },
 ];
 
@@ -1080,22 +1189,21 @@ const TRUST_METRICS = [
   { val: "< 1 min", label: "To screen a full CV batch" },
   { val: "50", label: "CVs per bulk upload" },
   { val: "EU", label: "EU-hosted infrastructure" },
-  { val: "3", label: "Free analyses, no card required" },
 ];
 
 /* ── Page ──────────────────────────────────────────────────────────────── */
 
 export default function LandingPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [gateOpen, setGateOpen] = useState(false);
-  const trialTriggerRef = useRef(null);
-  const gateReturnFocusRef = useRef(null);
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const quoteTriggerRef = useRef(null);
+  const quoteReturnFocusRef = useRef(null);
 
-  const openGate = useCallback((e) => {
-    gateReturnFocusRef.current = e?.currentTarget || trialTriggerRef.current;
-    setGateOpen(true);
+  const openQuoteModal = useCallback((e) => {
+    quoteReturnFocusRef.current = e?.currentTarget || quoteTriggerRef.current;
+    setQuoteOpen(true);
   }, []);
-  const closeGate = useCallback(() => setGateOpen(false), []);
+  const closeQuoteModal = useCallback(() => setQuoteOpen(false), []);
 
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -1133,7 +1241,7 @@ export default function LandingPage() {
       <CookieConsentBanner />
       <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
-        <TrialGateModal open={gateOpen} onClose={closeGate} returnFocusRef={gateReturnFocusRef} />
+        <GetQuoteModal open={quoteOpen} onClose={closeQuoteModal} returnFocusRef={quoteReturnFocusRef} />
 
         {/* ── Nav ─────────────────────────────────────────────────────────── */}
         <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
@@ -1162,13 +1270,13 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-2">
               <Button
-                ref={trialTriggerRef}
+                ref={quoteTriggerRef}
                 variant="primary"
                 size="sm"
-                onClick={openGate}
+                onClick={openQuoteModal}
                 className="hidden md:inline-flex min-h-[36px]"
               >
-                Try free
+                Get a quote
               </Button>
               <button
                 type="button"
@@ -1197,10 +1305,10 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={(e) => { setMobileNavOpen(false); openGate(e); }}
+                onClick={(e) => { setMobileNavOpen(false); openQuoteModal(e); }}
                 className="mt-1 min-h-[44px]"
               >
-                Try free
+                Get a quote
               </Button>
             </div>
           )}
@@ -1223,9 +1331,9 @@ export default function LandingPage() {
                 Helixon reads each CV against your job spec, scores the fit, flags what&apos;s worth a second look, and hands you a ranked shortlist - not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day.
               </p>
 
-              <CtaButtons onTryFree={openGate} secondaryLabel="See how it works" secondaryHref="#how" />
+              <CtaButtons onGetQuote={openQuoteModal} secondaryLabel="See how it works" secondaryHref="#how" />
 
-              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>No card required · GDPR-ready · Built for agency recruiters</p>
+              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>GDPR-ready · Built for agency recruiters · Quotes within one business day</p>
             </div>
 
             <RecruiterWorkspaceDemo />
@@ -1234,7 +1342,7 @@ export default function LandingPage() {
 
         {/* ── Trust strip ─────────────────────────────────────────────────── */}
         <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
-          <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+          <div className="max-w-[1100px] mx-auto px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             {TRUST_METRICS.map((m) => (
               <div key={m.label}>
                 <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
@@ -1299,7 +1407,7 @@ export default function LandingPage() {
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 Plans built around how agencies actually screen
               </h2>
-              <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Start free. Upgrade the moment you need more than 3 analyses.</p>
+              <p className="text-xs max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>Get a quote tailored to your team, or choose a plan below.</p>
             </div>
           </Reveal>
 
@@ -1336,11 +1444,11 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  {plan.action === "trial" ? (
+                  {plan.action === "quote" ? (
                     <Button
                       variant="primary"
                       size="block"
-                      onClick={openGate}
+                      onClick={openQuoteModal}
                       className="min-h-[44px]"
                     >
                       {plan.cta}
@@ -1375,15 +1483,15 @@ export default function LandingPage() {
                 Your next great hire is already in that pile of CVs.
               </h2>
               <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Find them in minutes, not hours. Start screening free - no card needed.
+                Find them in minutes, not hours. Get a quote and we&apos;ll show you how.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                 <Button
                   variant="onForest"
-                  onClick={openGate}
+                  onClick={openQuoteModal}
                   className="motion-safe-scale hover:scale-[1.02] min-h-[48px] w-full sm:w-auto"
                 >
-                  Try 3 analyses free
+                  Get a quote
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </Button>
                 <Button

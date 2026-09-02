@@ -68,7 +68,7 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // ── 0. Maintenance gate — checked first, before anything else ────────────
   // Fix: previously this only checked whether the helixon_dev_unlocked
@@ -140,9 +140,16 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  // ── 3. Gate /analyse behind the trial-signup cookie ───────────────────────
-  if (pathname.startsWith("/analyse") && !request.cookies.get("helixon_trial")) {
-    return copyCookies(NextResponse.redirect(new URL("/", request.url)), pendingCookies);
+  // ── 3. Gate /analyse behind authentication ────────────────────────────────
+  // Trial access has been removed - there is no more anonymous/cookie-based
+  // path into /analyse. A signed-in session is required just to reach the
+  // page at all. Whether that user is actually on an active paid plan is
+  // checked deeper in (in /api/run, which does the real subscription-status
+  // query) - middleware only answers "are they logged in", since doing a
+  // second DB round-trip for subscription status on every request here
+  // would be redundant with that check.
+  if (pathname.startsWith("/analyse") && !user) {
+    return copyCookies(NextResponse.redirect(new URL("/login", request.url)), pendingCookies);
   }
 
   // ── 4. Continue — attach IP header for downstream API routes ─────────────
