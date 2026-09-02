@@ -23,7 +23,7 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
   return (
     <Html>
       <Head />
-      <Preview>Confirm your email to start your free Helixon trial.</Preview>
+      <Preview>Verify your Helixon account.</Preview>
       <Body style={{ backgroundColor: COLORS.mist, margin: 0, padding: "32px 0", fontFamily: FONT_BODY }}>
         <Container
           style={{

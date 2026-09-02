@@ -1,31 +1,96 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 // Keep this on the server only - never expose ANTHROPIC_API_KEY to the client.
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 const SYSTEM_PROMPT = `You are Helixon's website assistant, embedded in the chat widget on the Helixon landing page.
 
-Helixon is a CV-screening tool for agency recruiters. Facts you can rely on:
-- What it does: upload a CV + a job description, Helixon scores the match, flags red flags, and drafts a follow-up email - in under 30 seconds.
-- Pricing: Free (£0/forever, 3 free analyses, match score & summary, email drafting), Solo (£149/month, unlimited analyses, bulk upload, shortlists & history, priority support), Team (£349/month, everything in Solo plus multi-seat access, shared templates, dedicated onboarding).
-- No card required for the free trial. GDPR-ready, data held in the EU, never used to train models.
-- Sign-up is via the "Try it free" button - just an email address, no card.
+Helixon is a CV-screening tool for agency recruiters.
 
-Tone: concise, helpful, a little warm - you're talking to time-pressed recruiters, not enterprise buyers. Keep answers short (2-4 sentences) unless asked for detail. If someone asks something you don't know (specific integrations, exact processing times for their use case, contract terms), say so plainly and suggest they reach out via /contact rather than guessing. Don't make up features, integrations, or numbers that aren't listed above. If someone seems ready to sign up, point them at the "Try it free" button rather than trying to collect their email yourself.`;
+Facts you can rely on:
+- Upload a CV and a job description and Helixon scores the match.
+- Helixon can flag red flags and other concerns in a candidate's CV.
+- Helixon can draft follow-up recruitment emails.
+- Screening is designed to be fast, typically completing in under 30 seconds.
+- Individual costs £249/month.
+- Agency costs £349/month.
+- There is no free trial or free three-analysis plan.
+- An active subscription is required to use candidate screening.
+
+Tone:
+Be concise, helpful, and a little warm. You're talking to time-pressed recruiters, not enterprise buyers. Keep answers short (2-4 sentences) unless the user asks for more detail.
+
+Accuracy:
+- Never invent features, integrations, pricing, processing times, contract terms, or capabilities.
+- If you don't know something, say so plainly.
+- For questions about specific integrations, exact processing times for a particular use case, contract terms, or anything else you cannot verify from these instructions, direct the user to /contact.
+- Do not pretend Helixon supports an integration or feature unless it is explicitly listed above.
+
+Navigation:
+- If someone is ready to create an account, direct them to /signup.
+- If someone asks about pricing or purchasing, direct them to /pricing.
+- If someone needs support or asks about something you cannot verify, direct them to /contact.
+- Never ask for or collect the user's email address yourself.
+
+Do not describe a free trial, free analyses, Solo, Team, or £149 pricing because those are no longer current.`;
 
 export async function POST(req) {
   try {
-    const { messages } = await req.json();
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error(
+        "Assistant route error: ANTHROPIC_API_KEY is not configured."
+      );
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ ok: false, error: "No messages provided." }, { status: 400 });
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "The assistant is unavailable right now. Please try again.",
+        },
+        { status: 500 }
+      );
     }
 
-    // Basic shape/length guarding before it reaches the model.
+    const body = await req.json().catch(() => null);
+    const messages = body?.messages;
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: "No messages provided.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Only accept the two roles supported by the conversation.
+    // Limit the number and size of messages before sending them to Anthropic.
     const cleaned = messages
-      .filter((m) => m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant"))
+      .filter(
+        (message) =>
+          message &&
+          typeof message.content === "string" &&
+          (message.role === "user" ||
+            message.role === "assistant")
+      )
       .slice(-20)
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
+      .map((message) => ({
+        role: message.role,
+        content: message.content.slice(0, 4000),
+      }));
+
+    if (cleaned.length === 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: "No valid messages provided.",
+        },
+        { status: 400 }
+      );
+    }
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
@@ -35,13 +100,41 @@ export async function POST(req) {
     });
 
     const text = response.content
-      .map((block) => (block.type === "text" ? block.text : ""))
+      .map((block) =>
+        block.type === "text" ? block.text : ""
+      )
       .filter(Boolean)
-      .join("\n");
+      .join("\n")
+      .trim();
 
-    return Response.json({ ok: true, reply: text });
+    if (!text) {
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "The assistant did not return a response.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return Response.json({
+      ok: true,
+      reply: text,
+    });
   } catch (err) {
-    console.error("Assistant route error:", err);
-    return Response.json({ ok: false, error: "The assistant is unavailable right now. Please try again." }, { status: 500 });
+    console.error(
+      "Assistant route error:",
+      err
+    );
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "The assistant is unavailable right now. Please try again.",
+      },
+      { status: 500 }
+    );
   }
 }
