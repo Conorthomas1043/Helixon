@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const roles = [
   "super_admin",
@@ -148,6 +149,8 @@ function SectionHeading({ title, description }) {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
+
   const [tab, setTab] = useState("overview");
 
   const [stats, setStats] = useState(null);
@@ -155,6 +158,7 @@ export default function AdminPage() {
   const [employees, setEmployees] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -218,6 +222,19 @@ export default function AdminPage() {
   useEffect(() => {
     loadAll();
   }, []);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } finally {
+      // Full navigation, same reasoning as the login page: makes sure the
+      // now-cleared session cookie is what proxy.ts sees on the very next
+      // request, rather than racing a client-side route transition.
+      window.location.href = "/admin/login";
+    }
+  }
 
   async function createTestUser(event) {
     event.preventDefault();
@@ -457,6 +474,9 @@ export default function AdminPage() {
           <div className="flex items-center gap-2 shrink-0">
             <OutlineButton type="button" onClick={loadAll}>
               Refresh
+            </OutlineButton>
+            <OutlineButton type="button" onClick={handleLogout} disabled={loggingOut}>
+              {loggingOut ? "Signing out…" : "Log out"}
             </OutlineButton>
             <Link
               href="/dashboard"

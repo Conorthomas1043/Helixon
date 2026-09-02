@@ -1,10 +1,19 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/site-gate";
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from "@/lib/admin-session";
 
 // Flip to false to go live again — routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
 const DEV_MODE = true;
+
+// Path admins are sent to when they hit /admin* without a valid session.
+// NOTE: adjust this if your real admin login page lives somewhere else —
+// this is the one place that needs to change.
+const ADMIN_LOGIN_PATH = "/admin/login";
 
 const SKIP_LOG = ["/api/internal/", "/_next/", "/favicon", "/robots"];
 
@@ -150,6 +159,31 @@ export async function proxy(request: NextRequest) {
   // would be redundant with that check.
   if (pathname.startsWith("/analyse") && !user) {
     return copyCookies(NextResponse.redirect(new URL("/login", request.url)), pendingCookies);
+  }
+
+  // ── 3b. Gate /admin behind a valid admin session ──────────────────────────
+  // Previously nothing checked this at the middleware level. The /api/admin/*
+  // routes correctly return 401 for unauthenticated requests (they call
+  // requireAdminSession()), but admin/page.js is a client component that
+  // fetches those routes only *after* mounting — so the page shell itself
+  // (nav, tabs, forms, buttons for banning/deleting users, creating
+  // employees with role up to super_admin) rendered for anyone who found the
+  // URL, logged-in admin or not. This uses the same signed, httpOnly
+  // helixon_admin_session cookie the API routes check (verified here via
+  // lib/admin-session.js, an Edge-Runtime-safe reimplementation of the same
+  // check lib/admin-auth.js uses server-side — see that file for why it's
+  // not just imported directly). Excludes the login page itself so this
+  // doesn't redirect-loop.
+  if (pathname.startsWith("/admin") && pathname !== ADMIN_LOGIN_PATH) {
+    const adminToken = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const adminSession = await verifyAdminSessionToken(adminToken);
+
+    if (!adminSession) {
+      return copyCookies(
+        NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url)),
+        pendingCookies
+      );
+    }
   }
 
   // ── 4. Continue — attach IP header for downstream API routes ─────────────

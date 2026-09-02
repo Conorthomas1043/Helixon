@@ -1,5 +1,9 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from "@/lib/admin-session";
 
 // ── Admin session handling ───────────────────────────────────────────────────
 // Replaces the old pattern of a USERS map + a hardcoded admin key sitting
@@ -15,6 +19,12 @@ import crypto from "crypto";
 //  - Issues a signed, httpOnly, short-lived session cookie instead of a
 //    permanent static key the client can read or copy out of localStorage
 //
+// Token *verification* lives in lib/admin-session.js (Web Crypto, no
+// Node-only APIs) rather than here, so proxy.ts — which runs on the Edge
+// Runtime and can't import Node's `crypto` module — can check the same
+// session cookie before /admin ever renders. Signing (below) stays on
+// Node's `crypto` since it only ever runs from the login route.
+//
 // Required env vars (set these in your hosting provider, e.g. Vercel):
 //   ADMIN_USERS               e.g. "Tanaka:Conor"  (comma-separated usernames)
 //   ADMIN_PASSWORD_HASH_TANAKA   sha256 hex hash of Tanaka's password
@@ -22,7 +32,7 @@ import crypto from "crypto";
 //   ADMIN_SESSION_SECRET      a long random string used to sign session cookies
 //   ADMIN_KEY                 (already existed) used by /api/admin/stats
 
-const SESSION_COOKIE = "helixon_admin_session";
+const SESSION_COOKIE = ADMIN_SESSION_COOKIE;
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 
 function hash(input) {
@@ -35,29 +45,6 @@ function sign(payload) {
   const data = JSON.stringify(payload);
   const sig = crypto.createHmac("sha256", secret).update(data).digest("hex");
   return Buffer.from(data).toString("base64url") + "." + sig;
-}
-
-function verify(token) {
-  try {
-    const secret = process.env.ADMIN_SESSION_SECRET;
-    if (!secret) return null;
-    const [dataB64, sig] = token.split(".");
-    if (!dataB64 || !sig) return null;
-    const data = Buffer.from(dataB64, "base64url").toString("utf8");
-    const expectedSig = crypto.createHmac("sha256", secret).update(data).digest("hex");
-    // Constant-time comparison to avoid timing attacks
-    if (
-      sig.length !== expectedSig.length ||
-      !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))
-    ) {
-      return null;
-    }
-    const payload = JSON.parse(data);
-    if (!payload.exp || Date.now() > payload.exp) return null;
-    return payload;
-  } catch {
-    return null;
-  }
 }
 
 // Looks up the env-stored hash for a username, e.g. ADMIN_PASSWORD_HASH_TANAKA
@@ -119,7 +106,7 @@ export async function getAdminSession() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const payload = verify(token);
+  const payload = await verifyAdminSessionToken(token);
   if (!payload) return null;
   return { username: payload.username };
 }
@@ -155,7 +142,7 @@ export async function isAdminUser(request) {
       .find((c) => c.startsWith(`${SESSION_COOKIE}=`));
     if (!match) return false;
     const token = decodeURIComponent(match.split("=").slice(1).join("="));
-    const payload = verify(token);
+    const payload = await verifyAdminSessionToken(token);
     return !!payload;
   } catch {
     return false;
