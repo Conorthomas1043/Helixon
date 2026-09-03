@@ -1,63 +1,79 @@
+// app/api/employee/shared-todos/route.js
+// Team-visible task list — see lib/employee-shared-todos.js.
+//
+// Previously this route authenticated via a Supabase Auth Bearer token and
+// looked the caller up by `employees.email` — but employees don't have
+// Supabase Auth accounts or an email column; they log in through
+// lib/employee-auth.js's own username/password + cookie-session system
+// (see lib/session.js). That mismatch meant this route could never
+// actually be called by the employee dashboard: it 403'd unconditionally.
+// Rewritten to use the same getCurrentEmployeeId() session check every
+// other /api/employee/* route uses.
+
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getCurrentEmployeeId } from "@/lib/session";
+import {
+  getSharedTodos,
+  addSharedTodo,
+  updateSharedTodo,
+  deleteSharedTodo,
+} from "@/lib/employee-shared-todos";
 
-function client() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Missing Supabase server credentials");
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
-}
-
-async function authEmployee(request) {
-  const auth = request.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return null;
-  const supabase = client();
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) return null;
-  const email = data.user.email?.toLowerCase();
-  const employee = await supabase.from("employees").select("id,email").ilike("email", email).maybeSingle();
-  if (employee.error || !employee.data) return null;
-  return { supabase, user: data.user, employee: employee.data };
-}
-
-export async function GET(request) {
-  const session = await authEmployee(request);
-  if (!session) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
-  const { data, error } = await session.supabase.from("shared_todos").select("*").or(`created_by.eq.${session.user.id},assigned_to.eq.${session.user.id}`).order("created_at", { ascending: false });
-  if (error) return NextResponse.json({ error: "Unable to load shared tasks" }, { status: 500 });
-  return NextResponse.json({ items: data || [] });
+export async function GET() {
+  const employeeId = await getCurrentEmployeeId();
+  if (!employeeId) {
+    return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
+  }
+  return NextResponse.json({ ok: true, todos: await getSharedTodos() });
 }
 
 export async function POST(request) {
-  const session = await authEmployee(request);
-  if (!session) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
-  const body = await request.json();
-  const payload = { title: String(body.title || "").trim(), description: body.description ? String(body.description) : null, priority: body.priority || "normal", due_at: body.due_at || null, assigned_to: body.assigned_to || session.user.id, created_by: session.user.id, list_id: body.list_id || null };
-  if (!payload.title || payload.title.length > 200) return NextResponse.json({ error: "Invalid title" }, { status: 400 });
-  const { data, error } = await session.supabase.from("shared_todos").insert(payload).select("*").single();
-  if (error) return NextResponse.json({ error: "Unable to create shared task" }, { status: 500 });
-  return NextResponse.json({ item: data }, { status: 201 });
-}
+  const employeeId = await getCurrentEmployeeId();
+  if (!employeeId) {
+    return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
+  }
 
-export async function PATCH(request) {
-  const session = await authEmployee(request);
-  if (!session) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
-  const body = await request.json();
-  if (!body.id) return NextResponse.json({ error: "Missing task id" }, { status: 400 });
-  const changes = {};
-  for (const key of ["title", "description", "priority", "due_at", "completed"]) if (key in body) changes[key] = body[key];
-  const { data, error } = await session.supabase.from("shared_todos").update(changes).eq("id", body.id).or(`created_by.eq.${session.user.id},assigned_to.eq.${session.user.id}`).select("*").single();
-  if (error || !data) return NextResponse.json({ error: "Task not found or not permitted" }, { status: 404 });
-  return NextResponse.json({ item: data });
-}
+  const body = await request.json().catch(() => ({}));
+  const { action } = body;
 
-export async function DELETE(request) {
-  const session = await authEmployee(request);
-  if (!session) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
-  const body = await request.json();
-  if (!body.id) return NextResponse.json({ error: "Missing task id" }, { status: 400 });
-  const { error } = await session.supabase.from("shared_todos").delete().eq("id", body.id).eq("created_by", session.user.id);
-  if (error) return NextResponse.json({ error: "Unable to delete task" }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  if (action === "create") {
+    if (!body.title || !body.title.trim()) {
+      return NextResponse.json({ ok: false, error: "Title is required." }, { status: 400 });
+    }
+    const todo = await addSharedTodo(employeeId, body);
+    if (!todo) return NextResponse.json({ ok: false, error: "Could not create task." }, { status: 500 });
+    return NextResponse.json({ ok: true, todo });
+  }
+
+  if (action === "update") {
+    if (!body.id) return NextResponse.json({ ok: false, error: "Missing id." }, { status: 400 });
+    if (body.title !== undefined && !body.title.trim()) {
+      return NextResponse.json({ ok: false, error: "Title is required." }, { status: 400 });
+    }
+    const todo = await updateSharedTodo(employeeId, body.id, {
+      title: body.title,
+      notes: body.notes,
+      priority: body.priority,
+      due_date: body.due_date,
+      assigned_to: body.assigned_to,
+    });
+    if (!todo) return NextResponse.json({ ok: false, error: "Task not found or not permitted." }, { status: 404 });
+    return NextResponse.json({ ok: true, todo });
+  }
+
+  if (action === "toggle") {
+    if (!body.id) return NextResponse.json({ ok: false, error: "Missing id." }, { status: 400 });
+    const todo = await updateSharedTodo(employeeId, body.id, { done: !!body.done });
+    if (!todo) return NextResponse.json({ ok: false, error: "Task not found or not permitted." }, { status: 404 });
+    return NextResponse.json({ ok: true, todo });
+  }
+
+  if (action === "delete") {
+    if (!body.id) return NextResponse.json({ ok: false, error: "Missing id." }, { status: 400 });
+    const removed = await deleteSharedTodo(employeeId, body.id);
+    if (!removed) return NextResponse.json({ ok: false, error: "Task not found or you're not the creator." }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  }
+
+  return NextResponse.json({ ok: false, error: "Unknown action." }, { status: 400 });
 }

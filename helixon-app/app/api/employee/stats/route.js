@@ -7,7 +7,7 @@ export async function GET() {
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
-  return NextResponse.json({ ok: true, stats: getStats() });
+  return NextResponse.json({ ok: true, stats: await getStats() });
 }
 
 

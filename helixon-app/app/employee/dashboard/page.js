@@ -6,6 +6,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import OnboardingPanel from "./onboarding-panel";
+import TeamTasksPanel from "./team-tasks-panel";
 
 const PRIORITY_META = {
   high: { label: "High", dot: "#e0554f", badge: "text-rose-700 border-rose-200", badgeBg: "#fdf1f0" },
@@ -60,6 +62,7 @@ export default function EmployeeDashboard() {
   const [stats, setStats] = useState(null);
   const [employee, setEmployee] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [taskView, setTaskView] = useState("mine"); // mine | team
 
   // ── Session check + current employee ────────────────────────────────────
   useEffect(() => {
@@ -332,6 +335,8 @@ export default function EmployeeDashboard() {
           </p>
         </div>
 
+        <OnboardingPanel />
+
         {/* ── Attention banner ──────────────────────────────────────────── */}
         {(overdueTodos.length > 0 || dueSoonTodos.length > 0) && (
           <div
@@ -372,10 +377,10 @@ export default function EmployeeDashboard() {
             </div>
           ))}
           {stats && [
-            { label: "Total users", value: stats.totalUsers },
-            { label: "Active today", value: stats.activeToday },
-            { label: "Uptime", value: `${stats.uptimePct}%` },
-            { label: "Open tickets", value: stats.openTickets },
+            { label: "Total users", value: stats.totalUsers ?? "—" },
+            { label: "Site views today", value: stats.siteViewsToday ?? "—" },
+            { label: "Unique visitors today", value: stats.uniqueVisitorsToday ?? "—" },
+            { label: "Blocked today", value: stats.blockedToday ?? "—" },
           ].map((s) => (
             <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
               <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.value}</p>
@@ -409,7 +414,27 @@ export default function EmployeeDashboard() {
           </div>
         )}
 
+        {/* ── My Tasks / Team Tasks toggle ──────────────────────────────── */}
+        <div className="flex rounded-lg p-0.5 gap-0.5 mb-4 w-fit" style={{ background: "var(--mist)" }}>
+          {[
+            { key: "mine", label: "My Tasks" },
+            { key: "team", label: "Team Tasks" },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTaskView(t.key)}
+              className="text-xs px-3.5 py-1.5 rounded-md font-medium transition"
+              style={taskView === t.key ? { background: "var(--forest)", color: "white" } : { color: "var(--ink-soft)" }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {taskView === "team" && <TeamTasksPanel currentEmployeeId={employee?.id} />}
+
         {/* ── To-do panel ───────────────────────────────────────────────── */}
+        {taskView === "mine" && (
         <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
 
           {/* Panel header */}
@@ -691,6 +716,7 @@ export default function EmployeeDashboard() {
             </div>
           )}
         </div>
+        )}
 
       </div>
     </main>

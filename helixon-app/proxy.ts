@@ -121,7 +121,13 @@ export async function proxy(request: NextRequest) {
       new URL("/api/internal/edge-log", request.url),
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Shared secret so /api/internal/edge-log can tell this call came
+          // from our own proxy and not an external POST forging traffic
+          // data — see the comment at the top of that route.
+          "x-internal-secret": process.env.INTERNAL_EDGE_LOG_SECRET || "",
+        },
         body: JSON.stringify({
           ip, ua, method, path: pathname,
           ts: new Date().toISOString(),
