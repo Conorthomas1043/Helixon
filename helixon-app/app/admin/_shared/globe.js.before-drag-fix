@@ -243,7 +243,6 @@ function GlobeScene({
   onZoomDistanceChange,
 }) {
   const globeRef = useRef(null);
-  const interactingRef = useRef(false);
   const controlsRef = useRef(null);
 
   const [hovered, setHovered] = useState(false);
@@ -521,22 +520,15 @@ function GlobeScene({
           color="#e4e9ee"
         />
       </group>
+
       <OrbitControls
         ref={controlsRef}
         enablePan={false}
         enableZoom
-        enableDamping
-        dampingFactor={0.08}
         minDistance={4.5}
         maxDistance={9}
         rotateSpeed={0.55}
         zoomSpeed={0.7}
-        onStart={() => {
-          interactingRef.current = true;
-        }}
-        onEnd={() => {
-          interactingRef.current = false;
-        }}
         onChange={handleControlsChange}
       />
     </>
@@ -613,9 +605,6 @@ export function useGlobePoints(rawGlobe) {
       }));
   }, [rawGlobe]);
 }
-
-
-
 
 
 
