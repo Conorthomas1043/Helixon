@@ -128,6 +128,11 @@ export async function proxy(request: NextRequest) {
           referer: request.headers.get("referer") || "",
           country: request.headers.get("x-vercel-ip-country") || "",
           city: request.headers.get("x-vercel-ip-city") || "",
+          // Vercel enriches every request with these for free (no external
+          // geolocation call, no rate limit) - see
+          // https://vercel.com/docs/headers/request-headers
+          lat: request.headers.get("x-vercel-ip-latitude") || "",
+          lon: request.headers.get("x-vercel-ip-longitude") || "",
         }),
       }
     );

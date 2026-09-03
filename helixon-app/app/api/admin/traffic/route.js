@@ -96,136 +96,6 @@ function isPrivateOrReservedIp(ip) {
   return false;
 }
 
-/*
- * Module-local cache.
- *
- * This prevents repeated IP lookups during the lifetime of the server
- * instance. On serverless platforms the cache is intentionally treated as
- * best-effort; it is not relied upon for correctness.
- */
-const geoCache = new Map();
-
-const GEO_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
-
-async function geolocateIp(ip) {
-  if (!isValidIp(ip) || isPrivateOrReservedIp(ip)) {
-    return null;
-  }
-
-  const cached = geoCache.get(ip);
-
-  if (
-    cached &&
-    Date.now() - cached.timestamp < GEO_CACHE_TTL_MS
-  ) {
-    return cached.data;
-  }
-
-  try {
-    const response = await fetch(
-      `https://ipapi.co/${encodeURIComponent(ip)}/json/`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "Helixon-SOC/1.0",
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(5000),
-      },
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-
-    const latitude = Number(data?.latitude);
-    const longitude = Number(data?.longitude);
-
-    if (
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      return null;
-    }
-
-    const result = {
-      ip,
-      city: data?.city || null,
-      country: data?.country_name || data?.country || null,
-      countryCode:
-        data?.country_code || null,
-      region: data?.region || null,
-      lat: latitude,
-      lon: longitude,
-      asn: data?.asn || null,
-      org: data?.org || null,
-    };
-
-    geoCache.set(ip, {
-      timestamp: Date.now(),
-      data: result,
-    });
-
-    return result;
-  } catch {
-    return null;
-  }
-}
-
-/*
- * Geolocate unique IPs with bounded concurrency.
- *
- * We do not fire thousands of simultaneous requests at the geolocation
- * provider when the admin opens the Traffic page.
- */
-async function geolocateIps(ips) {
-  const uniqueIps = [
-    ...new Set(
-      ips
-        .filter(Boolean)
-        .map((ip) => String(ip).trim())
-        .filter(isValidIp)
-        .filter(
-          (ip) => !isPrivateOrReservedIp(ip),
-        ),
-    ),
-  ].slice(0, 200);
-
-  const results = [];
-  const concurrency = 8;
-
-  for (
-    let index = 0;
-    index < uniqueIps.length;
-    index += concurrency
-  ) {
-    const batch = uniqueIps.slice(
-      index,
-      index + concurrency,
-    );
-
-    const batchResults =
-      await Promise.all(
-        batch.map(geolocateIp),
-      );
-
-    for (const result of batchResults) {
-      if (result) {
-        results.push(result);
-      }
-    }
-  }
-
-  return results;
-}
-
 export async function GET(request) {
   try {
     const admin =
@@ -268,6 +138,8 @@ export async function GET(request) {
             "path",
             "country",
             "city",
+            "lat",
+            "lon",
             "referer",
             "blocked",
             "ts",
@@ -318,81 +190,65 @@ export async function GET(request) {
       blockedIpsResult.data || [];
 
     /*
-     * Build real geographic points from
-     * the request source IPs.
-     */
-    const ips = rows
-      .map((row) => row.ip)
-      .filter(Boolean);
-
-    const geolocations =
-      await geolocateIps(ips);
-
-    const geoByIp = new Map(
-      geolocations.map(
-        (location) => [
-          location.ip,
-          location,
-        ],
-      ),
-    );
-
-    /*
-     * Aggregate traffic at each geographic
-     * coordinate so the globe doesn't render
-     * hundreds of duplicate points for the same
-     * source.
+     * Build geographic points from lat/lon captured at request time
+     * (proxy.ts reads Vercel's x-vercel-ip-latitude/-longitude headers -
+     * see app/api/internal/edge-log/route.js). No external geolocation
+     * call, no rate limit, no added latency on this page load.
+     *
+     * Aggregate traffic at each geographic coordinate so the globe
+     * doesn't render hundreds of duplicate points for the same source.
+     * Coordinates are rounded to ~1km so IPs in the same city collapse
+     * into one point instead of scattering into a cluster of near-
+     * identical dots.
      */
     const globeMap = new Map();
+    let resolvedCount = 0;
+    let unresolvedCount = 0;
 
     for (const row of rows) {
       if (!row.ip) {
         continue;
       }
 
-      const location =
-        geoByIp.get(row.ip);
+      const lat = Number(row.lat);
+      const lon = Number(row.lon);
 
-      if (!location) {
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        unresolvedCount += 1;
         continue;
       }
 
+      resolvedCount += 1;
+
+      const roundedLat = Math.round(lat * 100) / 100;
+      const roundedLon = Math.round(lon * 100) / 100;
+
       const key = [
-        location.countryCode ||
-          location.country ||
-          "",
-        location.city || "",
-        location.lat,
-        location.lon,
+        row.country || "",
+        row.city || "",
+        roundedLat,
+        roundedLon,
       ].join("|");
 
       const existing =
         globeMap.get(key) || {
-          city: location.city,
-          country: location.country,
-          countryCode:
-            location.countryCode,
-          region: location.region,
-          lat: location.lat,
-          lon: location.lon,
+          city: row.city || null,
+          country: row.country || null,
+          lat: roundedLat,
+          lon: roundedLon,
           count: 0,
           blocked: 0,
           uniqueIps: new Set(),
         };
 
       existing.count += 1;
-      existing.uniqueIps.add(
-        row.ip,
-      );
+      existing.uniqueIps.add(row.ip);
 
       if (row.blocked) {
         existing.blocked += 1;
       }
 
-      globeMap.set(
-        key,
-        existing,
-      );
+      globeMap.set(key, existing);
     }
 
     const globe =
@@ -426,23 +282,15 @@ export async function GET(request) {
       blockedIps,
 
       /*
-       * These are genuine coordinates returned
-       * for the source public IPs.
+       * Real coordinates for the source IPs, captured for free by
+       * Vercel at request time.
        */
       globe,
 
       geolocation: {
-        provider: "ipapi.co",
-        resolvedIps:
-          geolocations.length,
-        unresolvedIps:
-          Math.max(
-            0,
-            new Set(
-              ips,
-            ).size -
-              geolocations.length,
-          ),
+        source: "vercel-edge-headers",
+        resolvedIps: resolvedCount,
+        unresolvedIps: unresolvedCount,
       },
     });
   } catch (error) {

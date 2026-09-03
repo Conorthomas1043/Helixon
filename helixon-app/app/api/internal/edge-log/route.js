@@ -13,7 +13,19 @@ import { supabase } from "@/lib/supabase";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { ip, ua, method, path, ts, referer, country, city } = body;
+    const { ip, ua, method, path, ts, referer, country, city, lat, lon } =
+      body;
+
+    const latitude = Number(lat);
+    const longitude = Number(lon);
+
+    const hasCoords =
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180;
 
     // Check if IP is blocked (fast single-row lookup)
     const { data: blockedRow } = await supabase
@@ -35,6 +47,8 @@ export async function POST(request) {
         path,
         country: country || null,
         city: city || null,
+        lat: hasCoords ? latitude : null,
+        lon: hasCoords ? longitude : null,
         referer: referer || null,
         blocked: isBlocked,
         ts: ts || new Date().toISOString(),

@@ -328,6 +328,19 @@ button,input,select{font:inherit}
 .actions{display:flex;gap:7px;flex-wrap:wrap}
 .empty{padding:34px 20px;text-align:center;color:var(--text-muted);font-size:13px}
 
+.search-input{
+  width:100%;
+  max-width:320px;
+  padding:9px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px
+}
+
+.search-input:focus{border-color:var(--accent)}
+
 .notice{
   border:1px solid var(--border);
   background:var(--surface-raised);
@@ -834,12 +847,29 @@ function TrafficPage({ trafficRows, blockedSet, onBlock, range, setRange }) {
   );
 }
 
-function UsersPage({ users }) {
+function UsersPage({
+  users,
+  userSearch,
+  setUserSearch,
+  onAction,
+  onDelete,
+  onResetPassword,
+  busy,
+}) {
   return (
     <>
       <PageHeader title="Users" description="Everyone with a Helixon account.">
         <div className="muted">{users.length} loaded</div>
       </PageHeader>
+
+      <div className="section-head">
+        <input
+          className="search-input"
+          placeholder="Search by email, name, or ID…"
+          value={userSearch}
+          onChange={(event) => setUserSearch(event.target.value)}
+        />
+      </div>
 
       <div className="table-wrap">
         <table className="table">
@@ -850,13 +880,14 @@ function UsersPage({ users }) {
               <th>Agency</th>
               <th>Plan</th>
               <th>State</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan="5" className="empty">
+                <td colSpan="6" className="empty">
                   No users yet.
                 </td>
               </tr>
@@ -878,11 +909,64 @@ function UsersPage({ users }) {
                   <td>{user.subscription?.plan || "—"}</td>
 
                   <td>
-                    {user.bannedUntil ? (
-                      <span className="pill bad">Banned</span>
-                    ) : (
-                      <span className="pill good">Active</span>
-                    )}
+                    <div className="actions" style={{ gap: 5 }}>
+                      {user.bannedUntil ? (
+                        <span className="pill bad">Banned</span>
+                      ) : (
+                        <span className="pill good">Active</span>
+                      )}
+
+                      {!user.emailConfirmedAt && (
+                        <span className="pill warn">Unverified</span>
+                      )}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className="actions">
+                      <button
+                        className="btn small"
+                        onClick={() =>
+                          onAction(
+                            user.id,
+                            user.bannedUntil ? "unban" : "ban",
+                          )
+                        }
+                        disabled={busy}
+                      >
+                        {user.bannedUntil ? "Unban" : "Ban"}
+                      </button>
+
+                      {!user.emailConfirmedAt && (
+                        <button
+                          className="btn small"
+                          onClick={() =>
+                            onAction(user.id, "confirm_email")
+                          }
+                          disabled={busy}
+                        >
+                          Confirm email
+                        </button>
+                      )}
+
+                      <button
+                        className="btn small"
+                        onClick={() =>
+                          onResetPassword(user.id, user.email)
+                        }
+                        disabled={busy}
+                      >
+                        Reset password
+                      </button>
+
+                      <button
+                        className="btn small danger"
+                        onClick={() => onDelete(user.id, user.email)}
+                        disabled={busy}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -1099,6 +1183,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null);
   const [traffic, setTraffic] = useState(null);
   const [users, setUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [userSearchInput, setUserSearchInput] = useState("");
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -1122,9 +1208,10 @@ export default function AdminPage() {
           fetch(`/api/admin/traffic?range=${range}`, {
             cache: "no-store",
           }).then((r) => r.json()),
-          fetch(`/api/admin/users?perPage=100`, { cache: "no-store" }).then(
-            (r) => r.json(),
-          ),
+          fetch(
+            `/api/admin/users?perPage=100&search=${encodeURIComponent(userSearch)}`,
+            { cache: "no-store" },
+          ).then((r) => r.json()),
           fetch(`/api/admin/employees`, { cache: "no-store" }).then((r) =>
             r.json(),
           ),
@@ -1142,7 +1229,15 @@ export default function AdminPage() {
     } catch (err) {
       setError(err?.message || "Failed to load admin data.");
     }
-  }, [range]);
+  }, [range, userSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUserSearch(userSearchInput);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [userSearchInput]);
 
   useEffect(() => {
     load();
@@ -1198,6 +1293,81 @@ export default function AdminPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function userAction(userId, action, extra = {}) {
+    setBusy(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userId, action, ...extra }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "User action failed.");
+      }
+
+      await load();
+    } catch (err) {
+      setError(err?.message || "User action failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteUser(userId, email) {
+    const confirmed = window.confirm(
+      `Permanently delete ${email || "this user"}? This cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete user.");
+      }
+
+      await load();
+    } catch (err) {
+      setError(err?.message || "Failed to delete user.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetUserPassword(userId, email) {
+    const password = window.prompt(
+      `New password for ${email || "this user"} (min 8 characters):`,
+    );
+
+    if (password === null) {
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    await userAction(userId, "reset_password", { password });
   }
 
   async function block(ip) {
@@ -1369,7 +1539,17 @@ export default function AdminPage() {
               />
             )}
 
-            {tab === "Users" && <UsersPage users={users} />}
+            {tab === "Users" && (
+              <UsersPage
+                users={users}
+                userSearch={userSearchInput}
+                setUserSearch={setUserSearchInput}
+                onAction={userAction}
+                onDelete={deleteUser}
+                onResetPassword={resetUserPassword}
+                busy={busy}
+              />
+            )}
 
             {tab === "Employees" && (
               <EmployeesPage
