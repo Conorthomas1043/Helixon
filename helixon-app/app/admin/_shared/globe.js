@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -25,17 +25,15 @@ function latLonToVector(lat, lon, radius = 2.02) {
 }
 
 /**
- * Convert a GeoJSON coordinate ring into Three.js line segments.
+ * Append a GeoJSON coordinate ring directly into the destination array.
  *
- * Important:
- * GeoJSON is [longitude, latitude].
+ * GeoJSON coordinates are [longitude, latitude].
+ * This avoids spreading large Natural Earth 10m rings.
  */
-function ringToPositions(ring, radius) {
+function appendRingPositions(target, ring, radius) {
   if (!Array.isArray(ring) || ring.length < 2) {
-    return [];
+    return;
   }
-
-  const positions = [];
 
   for (let i = 0; i < ring.length - 1; i += 1) {
     const a = ring[i];
@@ -62,7 +60,7 @@ function ringToPositions(ring, radius) {
     const start = latLonToVector(latA, lonA, radius);
     const end = latLonToVector(latB, lonB, radius);
 
-    positions.push(
+    target.push(
       start.x,
       start.y,
       start.z,
@@ -71,10 +69,7 @@ function ringToPositions(ring, radius) {
       end.z,
     );
   }
-
-  return positions;
 }
-
 /**
  * Extract Polygon/MultiPolygon rings.
  */
@@ -109,11 +104,7 @@ function buildBoundaryGeometry(data, radius) {
     const rings = getFeatureRings(feature);
 
     for (const ring of rings) {
-      const ringPositions = ringToPositions(ring, radius);
-
-      for (let i = 0; i < ringPositions.length; i += 1) {
-        positions.push(ringPositions[i]);
-      }
+      appendRingPositions(positions, ring, radius);
     }
   }
 
@@ -614,3 +605,7 @@ export function useGlobePoints(rawGlobe) {
       }));
   }, [rawGlobe]);
 }
+
+
+
+
