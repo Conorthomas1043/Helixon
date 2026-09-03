@@ -109,7 +109,11 @@ function buildBoundaryGeometry(data, radius) {
     const rings = getFeatureRings(feature);
 
     for (const ring of rings) {
-      positions.push(...ringToPositions(ring, radius));
+      const ringPositions = ringToPositions(ring, radius);
+
+      for (let i = 0; i < ringPositions.length; i += 1) {
+        positions.push(ringPositions[i]);
+      }
     }
   }
 
