@@ -4,6 +4,7 @@ import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
+import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
 
 // ── Admin session handling ───────────────────────────────────────────────────
 // Replaces the old pattern of a USERS map + a hardcoded admin key sitting
@@ -93,11 +94,24 @@ export async function createAdminSession(username) {
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   });
+
+  // CSRF token cookie — deliberately NOT httpOnly, since client JS needs to
+  // read it and echo it back as a header on every mutating fetch (see
+  // lib/admin-csrf.js for why this defeats CSRF despite being readable).
+  // Same lifetime/scope as the session it protects.
+  cookieStore.set(ADMIN_CSRF_COOKIE, generateCsrfToken(), {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_TTL_MS / 1000,
+  });
 }
 
 export async function destroyAdminSession() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(ADMIN_CSRF_COOKIE);
 }
 
 // ── Reads the current admin session, if any ──────────────────────────────────

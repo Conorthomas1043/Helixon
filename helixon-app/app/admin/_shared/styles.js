@@ -368,4 +368,14 @@ button,input,select{font:inherit}
   .globe-panel{min-height:340px}
   .page-header{align-items:flex-start}
 }
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal-card{background:var(--panel,#111);border:1px solid var(--border,#333);border-radius:10px;padding:20px;width:360px;max-width:90vw}
+.modal-title{font-weight:600;margin-bottom:10px}
+.modal-message{margin:0 0 12px;color:var(--muted,#aaa);font-size:14px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+.findings-list{display:flex;flex-direction:column;gap:14px}
+.finding-row{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-raised)}
+.finding-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 `;

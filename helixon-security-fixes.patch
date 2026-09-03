@@ -1,0 +1,1276 @@
+diff --git a/helixon-app/app/admin/_shared/hooks.js b/helixon-app/app/admin/_shared/hooks.js
+index ac2a37c..503023f 100644
+--- a/helixon-app/app/admin/_shared/hooks.js
++++ b/helixon-app/app/admin/_shared/hooks.js
+@@ -1,6 +1,22 @@
+ "use client";
+ 
+ import { useCallback, useEffect, useState } from "react";
++import { confirmAction, promptNewPassword, promptText } from "./modal";
++import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin-csrf-constants";
++
++// ── CSRF header helper ────────────────────────────────────────────────────
++// Reads the non-httpOnly helixon_admin_csrf cookie (set by /api/admin/login,
++// see lib/admin-csrf.js) and echoes it back as a header on every mutating
++// admin fetch. The server compares cookie === header; see lib/admin-csrf.js
++// for why this defeats CSRF without needing server-side token storage.
++function csrfHeaders(extra = {}) {
++  const match = document.cookie
++    .split(";")
++    .map((c) => c.trim())
++    .find((c) => c.startsWith(`${ADMIN_CSRF_COOKIE}=`));
++  const token = match ? decodeURIComponent(match.split("=").slice(1).join("=")) : "";
++  return { ...extra, [ADMIN_CSRF_HEADER]: token };
++}
+ 
+ export function useAdminStats(range) {
+   const [stats, setStats] = useState(null);
+@@ -70,7 +86,9 @@ export function useAdminTraffic(range) {
+ 
+   const block = useCallback(
+     async (ip) => {
+-      const reason = window.prompt("Reason for blocking this IP:", "Admin block");
++      const reason = await promptText("Reason for blocking this IP:", {
++        defaultValue: "Admin block",
++      });
+       if (reason === null) return;
+ 
+       setBusy(true);
+@@ -79,7 +97,7 @@ export function useAdminTraffic(range) {
+       try {
+         const response = await fetch("/api/admin/traffic", {
+           method: "POST",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify({ ip, reason }),
+         });
+ 
+@@ -107,7 +125,7 @@ export function useAdminTraffic(range) {
+       try {
+         const response = await fetch("/api/admin/traffic", {
+           method: "DELETE",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify({ ip }),
+         });
+ 
+@@ -178,7 +196,7 @@ export function useAdminUsers() {
+       try {
+         const response = await fetch("/api/admin/users", {
+           method: "PATCH",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify({ userId, action: actionName, ...extra }),
+         });
+ 
+@@ -200,8 +218,9 @@ export function useAdminUsers() {
+ 
+   const remove = useCallback(
+     async (userId, email) => {
+-      const confirmed = window.confirm(
++      const confirmed = await confirmAction(
+         `Permanently delete ${email || "this user"}? This cannot be undone.`,
++        { title: "Delete user", danger: true },
+       );
+       if (!confirmed) return;
+ 
+@@ -211,7 +230,7 @@ export function useAdminUsers() {
+       try {
+         const response = await fetch("/api/admin/users", {
+           method: "DELETE",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify({ userId }),
+         });
+ 
+@@ -233,8 +252,9 @@ export function useAdminUsers() {
+ 
+   const resetPassword = useCallback(
+     async (userId, email) => {
+-      const password = window.prompt(
+-        `New password for ${email || "this user"} (min 8 characters):`,
++      const password = await promptNewPassword(
++        `New password for ${email || "this user"}:`,
++        { minLength: 8 },
+       );
+       if (password === null) return;
+ 
+@@ -306,7 +326,7 @@ export function useAdminEmployees() {
+       try {
+         const response = await fetch("/api/admin/employees", {
+           method: "PATCH",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify({ employeeId, action: actionName, ...extra }),
+         });
+ 
+@@ -335,7 +355,7 @@ export function useAdminEmployees() {
+       try {
+         const response = await fetch("/api/admin/employees", {
+           method: "POST",
+-          headers: { "content-type": "application/json" },
++          headers: csrfHeaders({ "content-type": "application/json" }),
+           body: JSON.stringify(form),
+         });
+ 
+diff --git a/helixon-app/app/admin/_shared/modal.js b/helixon-app/app/admin/_shared/modal.js
+new file mode 100644
+index 0000000..496cb9d
+--- /dev/null
++++ b/helixon-app/app/admin/_shared/modal.js
+@@ -0,0 +1,175 @@
++"use client";
++
++// ── Modal-based replacement for window.prompt()/window.confirm() ───────────
++// window.prompt() for the password-reset flow showed the new password in
++// plaintext in a native browser dialog with no confirm field — anyone
++// glancing at the admin's screen, or a screen-share, saw it; there was no
++// "type it twice" guard against a fat-fingered reset locking a real user
++// out. window.confirm()/prompt() are also unstyleable and easy to
++// dismiss-and-forget on a busy admin console. This replaces both with an
++// in-app modal, driven imperatively (so existing hook call sites barely
++// change) via a small pub-sub: ModalHost renders whatever the current
++// request is, and confirmAction()/promptPassword() return a Promise that
++// resolves the same way window.confirm/prompt did (null/false for
++// cancelled) so callers don't need to change their control flow.
++
++import { useEffect, useState } from "react";
++
++let listeners = [];
++let current = null;
++
++function emit() {
++  listeners.forEach((fn) => fn(current));
++}
++
++function open(request) {
++  return new Promise((resolve) => {
++    current = { ...request, resolve };
++    emit();
++  });
++}
++
++function close(result) {
++  if (current) current.resolve(result);
++  current = null;
++  emit();
++}
++
++// Replacement for window.confirm(message) — resolves true/false.
++export function confirmAction(message, { title = "Confirm", danger = false } = {}) {
++  return open({ kind: "confirm", message, title, danger });
++}
++
++// Replacement for window.prompt() specifically for setting a new password.
++// Requires the value to be typed twice so a typo doesn't silently lock the
++// user out, and masks the input like any other password field.
++export function promptNewPassword(label, { minLength = 8 } = {}) {
++  return open({ kind: "password", label, minLength });
++}
++
++// Replacement for the free-text window.prompt() used for the IP block
++// reason. Not a secret, so a single plain text field is fine.
++export function promptText(label, { defaultValue = "" } = {}) {
++  return open({ kind: "text", label, defaultValue });
++}
++
++function ConfirmBody({ request, onDone }) {
++  return (
++    <>
++      <p className="modal-message">{request.message}</p>
++      <div className="modal-actions">
++        <button className="btn small" onClick={() => onDone(false)}>
++          Cancel
++        </button>
++        <button
++          className={`btn small ${request.danger ? "danger" : ""}`}
++          onClick={() => onDone(true)}
++        >
++          Confirm
++        </button>
++      </div>
++    </>
++  );
++}
++
++function PasswordBody({ request, onDone }) {
++  const [pw1, setPw1] = useState("");
++  const [pw2, setPw2] = useState("");
++  const [error, setError] = useState("");
++
++  const submit = () => {
++    if (pw1.length < request.minLength) {
++      setError(`Must be at least ${request.minLength} characters.`);
++      return;
++    }
++    if (pw1 !== pw2) {
++      setError("Passwords don't match.");
++      return;
++    }
++    onDone(pw1);
++  };
++
++  return (
++    <>
++      <p className="modal-message">{request.label}</p>
++      <input
++        type="password"
++        className="search-input"
++        placeholder="New password"
++        value={pw1}
++        onChange={(e) => setPw1(e.target.value)}
++        autoFocus
++      />
++      <input
++        type="password"
++        className="search-input"
++        style={{ marginTop: 8 }}
++        placeholder="Confirm new password"
++        value={pw2}
++        onChange={(e) => setPw2(e.target.value)}
++      />
++      {error && <div className="notice error" style={{ marginTop: 8 }}>{error}</div>}
++      <div className="modal-actions">
++        <button className="btn small" onClick={() => onDone(null)}>
++          Cancel
++        </button>
++        <button className="btn small" onClick={submit}>
++          Set password
++        </button>
++      </div>
++    </>
++  );
++}
++
++function TextBody({ request, onDone }) {
++  const [value, setValue] = useState(request.defaultValue || "");
++
++  return (
++    <>
++      <p className="modal-message">{request.label}</p>
++      <input
++        type="text"
++        className="search-input"
++        value={value}
++        onChange={(e) => setValue(e.target.value)}
++        autoFocus
++      />
++      <div className="modal-actions">
++        <button className="btn small" onClick={() => onDone(null)}>
++          Cancel
++        </button>
++        <button className="btn small" onClick={() => onDone(value)}>
++          Confirm
++        </button>
++      </div>
++    </>
++  );
++}
++
++// Mount once, near the root of the admin layout. Renders nothing when no
++// modal is open.
++export function ModalHost() {
++  const [request, setRequest] = useState(current);
++
++  useEffect(() => {
++    listeners.push(setRequest);
++    return () => {
++      listeners = listeners.filter((fn) => fn !== setRequest);
++    };
++  }, []);
++
++  if (!request) return null;
++
++  const onDone = (result) => close(result);
++
++  return (
++    <div className="modal-overlay" role="dialog" aria-modal="true">
++      <div className="modal-card">
++        <div className="modal-title">{request.title || "Confirm action"}</div>
++        {request.kind === "confirm" && <ConfirmBody request={request} onDone={onDone} />}
++        {request.kind === "password" && <PasswordBody request={request} onDone={onDone} />}
++        {request.kind === "text" && <TextBody request={request} onDone={onDone} />}
++      </div>
++    </div>
++  );
++}
+diff --git a/helixon-app/app/admin/_shared/styles.js b/helixon-app/app/admin/_shared/styles.js
+index fc00881..9562d6a 100644
+--- a/helixon-app/app/admin/_shared/styles.js
++++ b/helixon-app/app/admin/_shared/styles.js
+@@ -368,4 +368,14 @@ button,input,select{font:inherit}
+   .globe-panel{min-height:340px}
+   .page-header{align-items:flex-start}
+ }
++
++.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000}
++.modal-card{background:var(--panel,#111);border:1px solid var(--border,#333);border-radius:10px;padding:20px;width:360px;max-width:90vw}
++.modal-title{font-weight:600;margin-bottom:10px}
++.modal-message{margin:0 0 12px;color:var(--muted,#aaa);font-size:14px}
++.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
++
++.findings-list{display:flex;flex-direction:column;gap:14px}
++.finding-row{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-raised)}
++.finding-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+ `;
+diff --git a/helixon-app/app/admin/layout.js b/helixon-app/app/admin/layout.js
+index 3d3b4dc..16f848c 100644
+--- a/helixon-app/app/admin/layout.js
++++ b/helixon-app/app/admin/layout.js
+@@ -5,6 +5,7 @@ import Link from "next/link";
+ import { usePathname } from "next/navigation";
+ 
+ import { css } from "./_shared/styles";
++import { ModalHost } from "./_shared/modal";
+ 
+ const NAV_GROUPS = [
+   {
+@@ -16,8 +17,14 @@ const NAV_GROUPS = [
+     items: [
+       { href: "/admin/traffic", label: "Traffic" },
+       { href: "/admin/security", label: "Security" },
++      { href: "/admin/security/investigate", label: "Investigate" },
++      { href: "/admin/pentester", label: "Pentester" },
+     ],
+   },
++  {
++    label: "Growth",
++    items: [{ href: "/admin/seo", label: "SEO" }],
++  },
+   {
+     label: "Accounts",
+     items: [
+@@ -41,6 +48,7 @@ export default function AdminLayout({ children }) {
+   return (
+     <>
+       <style>{css}</style>
++      <ModalHost />
+ 
+       <div className="admin-shell">
+         <aside className="sidebar">
+diff --git a/helixon-app/app/admin/pentester/page.js b/helixon-app/app/admin/pentester/page.js
+new file mode 100644
+index 0000000..4aa0ece
+--- /dev/null
++++ b/helixon-app/app/admin/pentester/page.js
+@@ -0,0 +1,319 @@
++"use client";
++
++import { useEffect, useMemo, useState } from "react";
++
++import { PageHeader, KpiCard, Panel, BarList } from "../_shared/ui";
++import { useAdminTraffic } from "../_shared/hooks";
++
++// Human-readable labels for the signal names scoreRequest() (lib/security/
++// threat-score.js) attaches to a request. Kept here rather than in the
++// scoring lib so the lib stays UI-agnostic.
++const SIGNAL_LABELS = {
++  "path-traversal": "Path traversal (../, %2e%2e)",
++  "sql-injection-probe": "SQL injection probe",
++  "xss-probe": "XSS probe",
++  "sensitive-path-probe": "Sensitive path probe (.git, .env, wp-admin…)",
++  "scanner-ua": "Known scanner user-agent",
++  "blocked-by-control": "Blocked by existing control",
++  "sensitive-write": "Write attempt on auth/admin route",
++};
++
++// A dated, curated findings log — separate from live telemetry below, since
++// "what did we find and fix" is a different question from "what's
++// happening on the wire right now", and a pentester needs both. Update this
++// list by hand as findings are opened/closed; it is not auto-derived.
++const FINDINGS_LOG = [
++  {
++    title: "CSRF protection missing on all mutating admin routes",
++    severity: "critical",
++    status: "fixed",
++    date: "2026-09-03",
++    detail:
++      "No token of any kind was sent or checked on POST/PATCH/DELETE to /api/admin/traffic, /users, or /employees — any page the admin's browser rendered could forge those requests. Fixed with a double-submit cookie token (lib/admin-csrf.js), verified on every mutating handler.",
++  },
++  {
++    title: "SEO/SOC dashboards 403'd for every admin (auth wiring bug)",
++    severity: "high",
++    status: "fixed",
++    date: "2026-09-03",
++    detail:
++      "/api/admin/ops checked for a Supabase Bearer token that the real (cookie-based) admin login never produces. Not an access gap — the opposite: the sales, ops, SEO, and investigate pages were unusable. Fixed by switching to requireAdminSession(), the same check every other admin route uses.",
++  },
++  {
++    title: "Password reset and IP-block reason used window.prompt()",
++    severity: "medium",
++    status: "fixed",
++    date: "2026-09-03",
++    detail:
++      "New passwords were shown in plaintext in a native browser dialog with no confirm field — visible on screen-share, no typo protection. Replaced with an in-app modal requiring the password to be typed twice, masked (app/admin/_shared/modal.js).",
++  },
++  {
++    title: "Dead employees/provision route with its own auth implementation",
++    severity: "low",
++    status: "fixed",
++    date: "2026-09-03",
++    detail:
++      "A third, separately-implemented Bearer-token auth check, called by no client code or cron. Unused code with its own auth logic is unaudited attack surface by definition. Removed rather than patched.",
++  },
++  {
++    title: "/api/internal/edge-log accepts unauthenticated POSTs",
++    severity: "low",
++    status: "open",
++    date: "2026-09-03",
++    detail:
++      "Called by proxy.ts on every request with no auth guard, by design, so it can log traffic before a session exists. It inserts caller-supplied ip/ua/path/country/lat/lon directly into request_logs. An external caller can POST directly to this route (bypassing normal request flow) and insert arbitrary rows — a log-forgery path that could pollute the threat-scoring and geo data every other page on this admin panel relies on. Worth adding an internal-only check (e.g. a shared secret header, or Vercel's trusted-IP header, both already noted as options in the route's own comments) before treating this data as fully trustworthy.",
++  },
++];
++
++const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
++
++function severityFromScore(score) {
++  if (score >= 70) return "critical";
++  if (score >= 40) return "high";
++  if (score >= 20) return "medium";
++  return "low";
++}
++
++function SeverityPill({ severity }) {
++  const tone = severity === "critical" || severity === "high" ? "bad" : severity === "medium" ? "warn" : "good";
++  return <span className={`pill ${tone}`}>{severity}</span>;
++}
++
++function StatusPill({ status }) {
++  return <span className={`pill ${status === "open" ? "warn" : "good"}`}>{status}</span>;
++}
++
++export default function PentesterPage() {
++  const [data, setData] = useState(null);
++  const [error, setError] = useState("");
++  const [loading, setLoading] = useState(true);
++  const [query, setQuery] = useState("");
++
++  const { block, busy: blocking } = useAdminTraffic("24h");
++
++  useEffect(() => {
++    fetch("/api/admin/ops", { cache: "no-store" })
++      .then(async (r) => {
++        const body = await r.json();
++        if (!r.ok) throw new Error(body.error || "Request failed");
++        return body;
++      })
++      .then(setData)
++      .catch((e) => setError(e.message))
++      .finally(() => setLoading(false));
++  }, []);
++
++  const threats = data?.threats || [];
++  const ipInvestigations = data?.ipInvestigations || [];
++  const kpis = data?.kpis;
++
++  const signalCounts = useMemo(() => {
++    const counts = new Map();
++    for (const row of threats) {
++      for (const signal of row.threat?.signals || []) {
++        counts.set(signal, (counts.get(signal) || 0) + 1);
++      }
++    }
++    return [...counts.entries()]
++      .map(([signal, count]) => ({ name: SIGNAL_LABELS[signal] || signal, count }))
++      .sort((a, b) => b.count - a.count);
++  }, [threats]);
++
++  const scannerUaCount = useMemo(
++    () => threats.filter((row) => (row.threat?.signals || []).includes("scanner-ua")).length,
++    [threats],
++  );
++  const sensitivePathCount = useMemo(
++    () => threats.filter((row) => (row.threat?.signals || []).includes("sensitive-path-probe")).length,
++    [threats],
++  );
++  const criticalCount = threats.filter((r) => r.threat.score >= 70).length;
++  const highCount = threats.filter((r) => r.threat.score >= 40 && r.threat.score < 70).length;
++
++  const q = query.trim().toLowerCase();
++  const visibleThreats = threats
++    .filter(
++      (row) =>
++        !q ||
++        `${row.ip} ${row.path} ${row.user_agent} ${row.country} ${(row.threat.signals || []).join(" ")}`
++          .toLowerCase()
++          .includes(q),
++    )
++    .slice(0, 150);
++
++  const sortedFindings = [...FINDINGS_LOG].sort(
++    (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],
++  );
++
++  return (
++    <>
++      <PageHeader
++        title="Pentester"
++        description="Live exploit-attempt telemetry, scored and classified, plus the standing findings log for this app."
++      />
++
++      {error && <div className="notice error section">{error}</div>}
++
++      {loading ? (
++        <div className="empty section">Loading…</div>
++      ) : (
++        <>
++          <div className="kpi-grid cols-6">
++            <KpiCard label="Critical (≥70)" value={criticalCount} tone="var(--critical)" />
++            <KpiCard label="High (40–69)" value={highCount} tone="var(--warn)" />
++            <KpiCard label="Flagged requests" value={kpis?.threats ?? threats.length} />
++            <KpiCard label="Attacking IPs tracked" value={ipInvestigations.length} />
++            <KpiCard label="Scanner user-agents" value={scannerUaCount} tone={scannerUaCount ? "var(--warn)" : undefined} />
++            <KpiCard label="Sensitive-path probes" value={sensitivePathCount} tone={sensitivePathCount ? "var(--warn)" : undefined} />
++          </div>
++
++          <div className="notice section">
++            Scoring is signature-based (path/UA pattern matching in
++            lib/security/threat-score.js) — treat this as a triage aid, not a
++            verdict. A high score means "worth a human look," not "confirmed
++            malicious."
++          </div>
++
++          <div className="grid-2 section">
++            <Panel title="Attack technique breakdown" sub="Signals seen across flagged requests, most common first.">
++              <BarList items={signalCounts} limit={8} />
++            </Panel>
++
++            <Panel title="Top offending IPs" sub="Ranked by peak threat score, then request volume.">
++              {ipInvestigations.length === 0 ? (
++                <div className="empty">No flagged IPs in the tracked window.</div>
++              ) : (
++                <div className="table-wrap">
++                  <table className="table">
++                    <thead>
++                      <tr>
++                        <th>IP</th>
++                        <th>Peak score</th>
++                        <th>Requests</th>
++                        <th>Blocked</th>
++                        <th>Signals</th>
++                        <th></th>
++                      </tr>
++                    </thead>
++                    <tbody>
++                      {ipInvestigations.slice(0, 15).map((row) => (
++                        <tr key={row.ip}>
++                          <td className="mono">{row.ip}</td>
++                          <td>
++                            <SeverityPill severity={severityFromScore(row.maxScore)} />
++                          </td>
++                          <td className="mono">{row.requests}</td>
++                          <td className="mono" style={row.blocked ? { color: "var(--critical)" } : undefined}>
++                            {row.blocked}
++                          </td>
++                          <td className="muted">{row.signals.slice(0, 2).join(", ") || "—"}</td>
++                          <td>
++                            <button
++                              className="btn small danger"
++                              disabled={blocking || row.ip === "unknown"}
++                              onClick={() => block(row.ip)}
++                            >
++                              Block
++                            </button>
++                          </td>
++                        </tr>
++                      ))}
++                    </tbody>
++                  </table>
++                </div>
++              )}
++            </Panel>
++          </div>
++
++          <Panel
++            title="Flagged request log"
++            sub="Individual requests scoring ≥20. Search by IP, path, user-agent, country, or signal."
++            className="section"
++          >
++            <input
++              className="search-input"
++              placeholder="Filter by IP, path, UA, country, or signal…"
++              value={query}
++              onChange={(e) => setQuery(e.target.value)}
++              style={{ marginBottom: 14, maxWidth: 420 }}
++            />
++
++            {visibleThreats.length === 0 ? (
++              <div className="empty">No flagged requests match.</div>
++            ) : (
++              <div className="table-wrap">
++                <table className="table">
++                  <thead>
++                    <tr>
++                      <th>Time</th>
++                      <th>IP</th>
++                      <th>Country</th>
++                      <th>Method</th>
++                      <th>Path</th>
++                      <th>Severity</th>
++                      <th>Signals</th>
++                      <th>Blocked</th>
++                    </tr>
++                  </thead>
++                  <tbody>
++                    {visibleThreats.map((row, i) => (
++                      <tr key={`${row.ip}-${row.created_at}-${i}`}>
++                        <td className="mono">
++                          {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
++                        </td>
++                        <td className="mono">{row.ip}</td>
++                        <td className="muted">{row.country || "—"}</td>
++                        <td className="mono">{row.method}</td>
++                        <td className="mono" title={row.path}>
++                          {row.path}
++                        </td>
++                        <td>
++                          <SeverityPill severity={severityFromScore(row.threat.score)} />
++                        </td>
++                        <td className="muted">{(row.threat.signals || []).join(", ") || "—"}</td>
++                        <td className="mono" style={row.blocked ? { color: "var(--critical)" } : undefined}>
++                          {row.blocked ? "yes" : "no"}
++                        </td>
++                      </tr>
++                    ))}
++                  </tbody>
++                </table>
++              </div>
++            )}
++          </Panel>
++
++          <Panel
++            title="Findings log"
++            sub="Curated, dated record of security findings on this app — separate from live telemetry above."
++            className="section"
++          >
++            <div className="findings-list">
++              {sortedFindings.map((finding) => (
++                <div className="finding-row" key={finding.title}>
++                  <div className="finding-row-head">
++                    <SeverityPill severity={finding.severity} />
++                    <b>{finding.title}</b>
++                    <StatusPill status={finding.status} />
++                    <span className="muted mono" style={{ marginLeft: "auto" }}>
++                      {finding.date}
++                    </span>
++                  </div>
++                  <p className="muted" style={{ margin: "6px 0 0" }}>
++                    {finding.detail}
++                  </p>
++                </div>
++              ))}
++            </div>
++          </Panel>
++
++          <div className="footer-note section">
++            Raw response bodies are not stored — CVs, tokens, credentials, and
++            generated documents never enter request_logs, so this view is
++            safe to share with an external pentester without a separate
++            redaction pass.
++          </div>
++        </>
++      )}
++    </>
++  );
++}
+diff --git a/helixon-app/app/admin/security/investigate/page.js b/helixon-app/app/admin/security/investigate/page.js
+index a425e6b..713a2bb 100644
+--- a/helixon-app/app/admin/security/investigate/page.js
++++ b/helixon-app/app/admin/security/investigate/page.js
+@@ -2,14 +2,130 @@
+ 
+ import { useEffect, useState } from "react";
+ 
++import { PageHeader, KpiCard, Panel } from "../../_shared/ui";
++
++function SeverityPill({ score }) {
++  const severity = score >= 70 ? "critical" : score >= 40 ? "high" : score >= 20 ? "medium" : "low";
++  const tone = severity === "critical" || severity === "high" ? "bad" : severity === "medium" ? "warn" : "good";
++  return <span className={`pill ${tone}`}>{severity}</span>;
++}
++
+ export default function SecurityInvestigatePage() {
+   const [data, setData] = useState(null);
+   const [query, setQuery] = useState("");
+   const [error, setError] = useState("");
+-  useEffect(() => { fetch("/api/admin/ops").then(async r => { const b = await r.json(); if (!r.ok) throw new Error(b.error || "Request failed"); return b; }).then(setData).catch(e => setError(e.message)); }, []);
+-  if (error) return <main style={{ padding: 24 }}><h1>Security Investigation</h1><p>{error}</p></main>;
+-  if (!data) return <main style={{ padding: 24 }}><h1>Security Investigation</h1><p>Loading…</p></main>;
++  const [loading, setLoading] = useState(true);
++
++  useEffect(() => {
++    fetch("/api/admin/ops", { cache: "no-store" })
++      .then(async (r) => {
++        const body = await r.json();
++        if (!r.ok) throw new Error(body.error || "Request failed");
++        return body;
++      })
++      .then(setData)
++      .catch((e) => setError(e.message))
++      .finally(() => setLoading(false));
++  }, []);
++
+   const q = query.trim().toLowerCase();
+-  const rows = (data.requests || []).filter(x => !q || `${x.ip} ${x.path} ${x.user_agent} ${x.country}`.toLowerCase().includes(q)).slice(0, 200);
+-  return <main style={{ padding: 24 }}><h1>Security Investigation</h1><input value={query} onChange={e => setQuery(e.target.value)} placeholder="IP, path, country or user-agent" style={{ width: "100%", maxWidth: 620, padding: 10 }} /><div style={{ overflowX: "auto", marginTop: 18 }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr>{["Time","IP","Country","Method","Path","UA","Risk","Signals","Blocked"].map(h=><th key={h} style={{ textAlign: "left", padding: 8 }}>{h}</th>)}</tr></thead><tbody>{rows.map((x,i)=><tr key={i}>{[x.created_at,x.ip,x.country,x.method,x.path,x.user_agent,x.threat.score,x.threat.signals.join(", "),x.blocked ? "yes":"no"].map((v,j)=><td key={j} style={{ padding: 8 }}>{String(v ?? "—")}</td>)}</tr>)}</tbody></table></div></main>;
++  const allRequests = data?.requests || [];
++  const rows = allRequests
++    .filter(
++      (x) =>
++        !q || `${x.ip} ${x.path} ${x.user_agent} ${x.country}`.toLowerCase().includes(q),
++    )
++    .slice(0, 200);
++
++  return (
++    <>
++      <PageHeader
++        title="Investigate"
++        description="Raw, searchable request log with threat scoring — for tracing a specific IP, path, or user-agent across the tracked window."
++      />
++
++      {error && <div className="notice error section">{error}</div>}
++
++      {loading ? (
++        <div className="empty section">Loading…</div>
++      ) : (
++        <>
++          <div className="kpi-grid cols-3">
++            <KpiCard label="Requests in window" value={allRequests.length} />
++            <KpiCard
++              label="Flagged (score ≥20)"
++              value={data?.kpis?.threats ?? "—"}
++              tone="var(--warn)"
++            />
++            <KpiCard
++              label="Denied at the edge"
++              value={data?.kpis?.blockedRequests ?? "—"}
++              tone="var(--critical)"
++            />
++          </div>
++
++          <Panel
++            title="Request log"
++            sub="Searches IP, path, user-agent, and country simultaneously."
++            className="section"
++          >
++            <input
++              className="search-input"
++              placeholder="IP, path, country, or user-agent…"
++              value={query}
++              onChange={(e) => setQuery(e.target.value)}
++              style={{ marginBottom: 14, maxWidth: 420 }}
++            />
++
++            {rows.length === 0 ? (
++              <div className="empty">No requests match.</div>
++            ) : (
++              <div className="table-wrap">
++                <table className="table">
++                  <thead>
++                    <tr>
++                      <th>Time</th>
++                      <th>IP</th>
++                      <th>Country</th>
++                      <th>Method</th>
++                      <th>Path</th>
++                      <th>User-agent</th>
++                      <th>Risk</th>
++                      <th>Signals</th>
++                      <th>Blocked</th>
++                    </tr>
++                  </thead>
++                  <tbody>
++                    {rows.map((x, i) => (
++                      <tr key={`${x.ip}-${x.created_at}-${i}`}>
++                        <td className="mono">
++                          {x.created_at ? new Date(x.created_at).toLocaleString() : "—"}
++                        </td>
++                        <td className="mono">{x.ip}</td>
++                        <td className="muted">{x.country || "—"}</td>
++                        <td className="mono">{x.method}</td>
++                        <td className="mono" title={x.path}>
++                          {x.path}
++                        </td>
++                        <td className="muted mono" title={x.user_agent}>
++                          {(x.user_agent || "—").slice(0, 40)}
++                        </td>
++                        <td>
++                          <SeverityPill score={x.threat.score} />
++                        </td>
++                        <td className="muted">{(x.threat.signals || []).join(", ") || "—"}</td>
++                        <td className="mono" style={x.blocked ? { color: "var(--critical)" } : undefined}>
++                          {x.blocked ? "yes" : "no"}
++                        </td>
++                      </tr>
++                    ))}
++                  </tbody>
++                </table>
++              </div>
++            )}
++          </Panel>
++        </>
++      )}
++    </>
++  );
+ }
+diff --git a/helixon-app/app/admin/seo/page.js b/helixon-app/app/admin/seo/page.js
+index 5c73862..49696eb 100644
+--- a/helixon-app/app/admin/seo/page.js
++++ b/helixon-app/app/admin/seo/page.js
+@@ -2,11 +2,90 @@
+ 
+ import { useEffect, useState } from "react";
+ 
+-export default function SeoPage() {
++import { PageHeader, KpiCard, Panel, BarList } from "../_shared/ui";
++
++function useOpsData() {
+   const [data, setData] = useState(null);
+   const [error, setError] = useState("");
+-  useEffect(() => { fetch("/api/admin/ops").then(async r => { const b = await r.json(); if (!r.ok) throw new Error(b.error || "Request failed"); return b; }).then(setData).catch(e => setError(e.message)); }, []);
+-  if (error) return <main style={{ padding: 24 }}><h1>SEO / Acquisition</h1><p>{error}</p></main>;
+-  if (!data) return <main style={{ padding: 24 }}><h1>SEO / Acquisition</h1><p>Loading…</p></main>;
+-  return <main style={{ padding: 24 }}><h1>SEO / Acquisition</h1><p>Derived from UTM, referrer and request telemetry; no synthetic traffic.</p><h2>Channels</h2><pre>{JSON.stringify(data.seo.channels, null, 2)}</pre><h2>Campaigns</h2><pre>{JSON.stringify(data.seo.campaigns, null, 2)}</pre><h2>Top referrers</h2><pre>{JSON.stringify(data.seo.referrers, null, 2)}</pre><h2>Top paths</h2><pre>{JSON.stringify(data.seo.topPaths, null, 2)}</pre><h2>Top countries</h2><pre>{JSON.stringify(data.seo.topCountries, null, 2)}</pre></main>;
++  const [loading, setLoading] = useState(true);
++
++  useEffect(() => {
++    fetch("/api/admin/ops", { cache: "no-store" })
++      .then(async (r) => {
++        const body = await r.json();
++        if (!r.ok) throw new Error(body.error || "Request failed");
++        return body;
++      })
++      .then(setData)
++      .catch((e) => setError(e.message))
++      .finally(() => setLoading(false));
++  }, []);
++
++  return { data, error, loading };
++}
++
++function asBarItems(rows = [], nameKey) {
++  return rows.map((row) => ({ name: row[nameKey] || "—", count: row.count }));
++}
++
++export default function SeoPage() {
++  const { data, error, loading } = useOpsData();
++  const seo = data?.seo;
++  const kpis = data?.kpis;
++
++  return (
++    <>
++      <PageHeader
++        title="SEO / Acquisition"
++        description="Channel mix, campaign performance, and organic reach — derived from UTM and referrer telemetry, no synthetic traffic."
++      />
++
++      {error && <div className="notice error section">{error}</div>}
++
++      {loading ? (
++        <div className="empty section">Loading…</div>
++      ) : (
++        <>
++          <div className="kpi-grid cols-3">
++            <KpiCard label="Demo requests" value={kpis?.demos ?? "—"} />
++            <KpiCard label="Trial verifications" value={kpis?.trials ?? "—"} />
++            <KpiCard
++              label="Tracked requests"
++              value={kpis?.requests?.toLocaleString?.() ?? kpis?.requests ?? "—"}
++            />
++          </div>
++
++          <div className="grid-3 section">
++            <Panel title="Acquisition channels" sub="Where sessions are classified as originating.">
++              <BarList items={asBarItems(seo?.channels, "channel")} limit={8} />
++            </Panel>
++
++            <Panel title="Top referrers" sub="External sites sending the most traffic.">
++              <BarList items={asBarItems(seo?.referrers, "referrer")} limit={8} />
++            </Panel>
++
++            <Panel title="Top countries" sub="Geographic spread of inbound requests.">
++              <BarList items={asBarItems(seo?.topCountries, "country")} limit={8} />
++            </Panel>
++          </div>
++
++          <div className="grid-2 section">
++            <Panel title="Top campaigns" sub="UTM source / medium / campaign combinations, most requests first.">
++              <BarList items={asBarItems(seo?.campaigns, "campaign")} limit={12} />
++            </Panel>
++
++            <Panel title="Top landing paths" sub="Most-requested paths across the tracked window.">
++              <BarList items={asBarItems(seo?.topPaths, "path")} limit={12} />
++            </Panel>
++          </div>
++
++          <div className="footer-note section">
++            Figures are derived from server-side request and demo-request
++            telemetry only — no third-party analytics pixel, no cookie-based
++            tracking beyond the admin session itself.
++          </div>
++        </>
++      )}
++    </>
++  );
+ }
+diff --git a/helixon-app/app/api/admin/employees/provision/route.js b/helixon-app/app/api/admin/employees/provision/route.js
+deleted file mode 100644
+index 59ccc2d..0000000
+--- a/helixon-app/app/api/admin/employees/provision/route.js
++++ /dev/null
+@@ -1,87 +0,0 @@
+-import { NextResponse } from "next/server";
+-import { createClient } from "@supabase/supabase-js";
+-
+-function adminClient() {
+-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+-  if (!url || !key) throw new Error("Missing Supabase server credentials");
+-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+-}
+-
+-function configuredAdmins() {
+-  return String(process.env.HELIXON_ADMIN_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+-}
+-
+-async function requireAdmin(request, supabase) {
+-  const auth = request.headers.get("authorization") || "";
+-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+-  if (!token) return false;
+-  const { data, error } = await supabase.auth.getUser(token);
+-  if (error || !data.user?.email) return false;
+-  return configuredAdmins().includes(data.user.email.toLowerCase());
+-}
+-
+-async function sendDetailsEmail({ to, name, loginEmail, testUserEmail }) {
+-  const apiKey = process.env.RESEND_API_KEY;
+-  const from = process.env.RESEND_FROM;
+-  if (!apiKey || !from) return { sent: false, reason: "RESEND_API_KEY/RESEND_FROM not configured" };
+-
+-  const html = `<!doctype html><html><body><h2>Helixon employee created</h2><p>Hello ${escapeHtml(name || "")},</p><p>Your employee record has been created.</p><p><strong>Login email:</strong> ${escapeHtml(loginEmail)}</p>${testUserEmail ? `<p><strong>Linked test user:</strong> ${escapeHtml(testUserEmail)}</p>` : ""}<p>Use the normal Helixon authentication/invitation flow to set access credentials. This email intentionally does not contain passwords or secrets.</p></body></html>`;
+-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: "Your Helixon employee account", html }) });
+-  const body = await response.json().catch(() => ({}));
+-  if (!response.ok) throw new Error(body?.message || `Resend HTTP ${response.status}`);
+-  return { sent: true, id: body?.id || null };
+-}
+-
+-function escapeHtml(value) {
+-  return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+-}
+-
+-export async function POST(request) {
+-  const supabase = adminClient();
+-  if (!(await requireAdmin(request, supabase))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+-
+-  const body = await request.json();
+-  const name = String(body.name || "").trim();
+-  const email = String(body.email || "").trim().toLowerCase();
+-  const createTestUser = Boolean(body.createTestUser);
+-  const sendEmail = Boolean(body.sendEmail);
+-
+-  if (!name || !email || !/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: "Valid name and email are required" }, { status: 400 });
+-
+-  let authUserId = null;
+-  let testUser = null;
+-  let employee = null;
+-
+-  try {
+-    const created = await supabase.auth.admin.createUser({ email, email_confirm: false, user_metadata: { helixon_employee: true, name } });
+-    if (created.error) return NextResponse.json({ error: created.error.message }, { status: 400 });
+-    authUserId = created.data.user?.id;
+-    if (!authUserId) throw new Error("Auth user was not created");
+-
+-    if (createTestUser) {
+-      const testEmail = `test+${authUserId.slice(0, 12)}@helixon.local`;
+-      const testCreated = await supabase.auth.admin.createUser({ email: testEmail, email_confirm: true, user_metadata: { is_test_user: true, test_label: `Employee test user for ${name}`, test_created_by: authUserId } });
+-      if (testCreated.error) throw new Error(testCreated.error.message);
+-      testUser = { id: testCreated.data.user.id, email: testEmail };
+-
+-      const userInsert = await supabase.from("users").insert({ id: testUser.id, email: testEmail, is_test_user: true, test_label: `Employee test user for ${name}`, test_created_by: authUserId });
+-      if (userInsert.error) throw new Error(userInsert.error.message);
+-    }
+-
+-    const insert = await supabase.from("employees").insert({ name, email, linked_test_user_id: testUser?.id || null }).select("*").single();
+-    if (insert.error) throw new Error(insert.error.message);
+-    employee = insert.data;
+-
+-    let emailResult = { sent: false, reason: "disabled" };
+-    if (sendEmail) emailResult = await sendDetailsEmail({ to: email, name, loginEmail: email, testUserEmail: testUser?.email || null });
+-
+-    return NextResponse.json({ employee, testUser, email: emailResult }, { status: 201 });
+-  } catch (error) {
+-    console.error("Employee provisioning failed", error);
+-    if (authUserId && !employee) {
+-      await supabase.auth.admin.deleteUser(authUserId).catch(() => undefined);
+-    }
+-    return NextResponse.json({ error: "Employee provisioning failed", detail: process.env.NODE_ENV === "development" ? error.message : undefined }, { status: 500 });
+-  }
+-}
+diff --git a/helixon-app/app/api/admin/employees/route.js b/helixon-app/app/api/admin/employees/route.js
+index 8183086..e146191 100644
+--- a/helixon-app/app/api/admin/employees/route.js
++++ b/helixon-app/app/api/admin/employees/route.js
+@@ -1,5 +1,6 @@
+ import { NextResponse } from "next/server";
+ import { requireAdminSession } from "@/lib/admin-auth";
++import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
+ import { getAdminSupabase } from "@/lib/admin-supabase";
+ import { hashEmployeePassword } from "@/lib/employee-auth";
+ import { writeAdminAudit } from "@/lib/admin-audit";
+@@ -65,6 +66,9 @@ export async function GET(request) {
+ export async function POST(request) {
+   try {
+     const admin = await requireAdminSession();
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
+     const supabase = getAdminSupabase();
+     const body = await request.json();
+ 
+@@ -133,6 +137,9 @@ export async function POST(request) {
+ export async function PATCH(request) {
+   try {
+     const admin = await requireAdminSession();
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
+     const supabase = getAdminSupabase();
+     const body = await request.json();
+ 
+diff --git a/helixon-app/app/api/admin/ops/route.js b/helixon-app/app/api/admin/ops/route.js
+index 55455fc..6ea19f8 100644
+--- a/helixon-app/app/api/admin/ops/route.js
++++ b/helixon-app/app/api/admin/ops/route.js
+@@ -1,30 +1,23 @@
+ import { NextResponse } from "next/server";
+-import { createClient } from "@supabase/supabase-js";
++import { requireAdminSession } from "@/lib/admin-auth";
+ import { getAdminOpsData } from "../../../../lib/ops/admin-data";
+ 
+-function adminClient() {
+-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+-  if (!url || !key) throw new Error("Missing Supabase server credentials");
+-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+-}
+-
+-async function isAllowedAdmin(request) {
+-  const auth = request.headers.get("authorization") || "";
+-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+-  if (!token) return false;
+-  const supabase = adminClient();
+-  const { data, error } = await supabase.auth.getUser(token);
+-  if (error || !data.user?.email) return false;
+-  const admins = String(process.env.HELIXON_ADMIN_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+-  return admins.includes(data.user.email.toLowerCase());
+-}
+-
+-export async function GET(request) {
+-  if (!(await isAllowedAdmin(request))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
++// Was previously gated by isAllowedAdmin(), a second, separately-implemented
++// auth check expecting a Supabase Bearer token — but the real admin login
++// (lib/admin-auth.js) is a hardcoded-credential system that only ever
++// produces the httpOnly helixon_admin_session cookie, never a Supabase
++// token. That meant every admin, on every load, got 403'd on the four pages
++// that call this route (sales, ops, seo, security/investigate) — a wiring
++// bug, not a missing feature. Swapped to the same requireAdminSession() used
++// by every other /api/admin/* route, which reads that cookie correctly.
++export async function GET() {
+   try {
++    await requireAdminSession();
+     return NextResponse.json(await getAdminOpsData());
+   } catch (error) {
++    if (error?.message === "Unauthorized") {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++    }
+     console.error("Admin ops data error", error);
+     return NextResponse.json({ error: "Unable to load operational data" }, { status: 500 });
+   }
+diff --git a/helixon-app/app/api/admin/traffic/route.js b/helixon-app/app/api/admin/traffic/route.js
+index 2d9df9e..740eff6 100644
+--- a/helixon-app/app/api/admin/traffic/route.js
++++ b/helixon-app/app/api/admin/traffic/route.js
+@@ -1,6 +1,7 @@
+ import { NextResponse } from "next/server";
+ import { isIP } from "node:net";
+ import { requireAdminSession } from "@/lib/admin-auth";
++import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
+ import { getAdminSupabase } from "@/lib/admin-supabase";
+ import { writeAdminAudit } from "@/lib/admin-audit";
+ 
+@@ -315,6 +316,10 @@ export async function POST(
+     const admin =
+       await requireAdminSession();
+ 
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
++
+     const supabase =
+       getAdminSupabase();
+ 
+@@ -404,6 +409,10 @@ export async function DELETE(
+     const admin =
+       await requireAdminSession();
+ 
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
++
+     const supabase =
+       getAdminSupabase();
+ 
+diff --git a/helixon-app/app/api/admin/users/route.js b/helixon-app/app/api/admin/users/route.js
+index 184fb20..95eb75d 100644
+--- a/helixon-app/app/api/admin/users/route.js
++++ b/helixon-app/app/api/admin/users/route.js
+@@ -1,5 +1,6 @@
+ import { NextResponse } from "next/server";
+ import { requireAdminSession } from "@/lib/admin-auth";
++import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
+ import { getAdminSupabase } from "@/lib/admin-supabase";
+ import { writeAdminAudit } from "@/lib/admin-audit";
+ 
+@@ -207,6 +208,9 @@ export async function GET(request) {
+ export async function POST(request) {
+   try {
+     const admin = await requireAdminSession();
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
+     const supabase = getAdminSupabase();
+ 
+     const body = await request.json();
+@@ -398,6 +402,9 @@ export async function POST(request) {
+ export async function PATCH(request) {
+   try {
+     const admin = await requireAdminSession();
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
+     const supabase = getAdminSupabase();
+ 
+     const body = await request.json();
+@@ -566,6 +573,9 @@ export async function PATCH(request) {
+ export async function DELETE(request) {
+   try {
+     const admin = await requireAdminSession();
++    if (!verifyCsrf(request)) {
++      return json(CSRF_REJECTION, 403);
++    }
+     const supabase = getAdminSupabase();
+ 
+     const body = await request.json();
+diff --git a/helixon-app/lib/admin-auth.js b/helixon-app/lib/admin-auth.js
+index ba94e0b..dfafbec 100644
+--- a/helixon-app/lib/admin-auth.js
++++ b/helixon-app/lib/admin-auth.js
+@@ -4,6 +4,7 @@ import {
+   ADMIN_SESSION_COOKIE,
+   verifyAdminSessionToken,
+ } from "@/lib/admin-session";
++import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
+ 
+ // ── Admin session handling ───────────────────────────────────────────────────
+ // Replaces the old pattern of a USERS map + a hardcoded admin key sitting
+@@ -93,11 +94,24 @@ export async function createAdminSession(username) {
+     path: "/",
+     maxAge: SESSION_TTL_MS / 1000,
+   });
++
++  // CSRF token cookie — deliberately NOT httpOnly, since client JS needs to
++  // read it and echo it back as a header on every mutating fetch (see
++  // lib/admin-csrf.js for why this defeats CSRF despite being readable).
++  // Same lifetime/scope as the session it protects.
++  cookieStore.set(ADMIN_CSRF_COOKIE, generateCsrfToken(), {
++    httpOnly: false,
++    secure: process.env.NODE_ENV === "production",
++    sameSite: "lax",
++    path: "/",
++    maxAge: SESSION_TTL_MS / 1000,
++  });
+ }
+ 
+ export async function destroyAdminSession() {
+   const cookieStore = await cookies();
+   cookieStore.delete(SESSION_COOKIE);
++  cookieStore.delete(ADMIN_CSRF_COOKIE);
+ }
+ 
+ // ── Reads the current admin session, if any ──────────────────────────────────
+diff --git a/helixon-app/lib/admin-csrf-constants.js b/helixon-app/lib/admin-csrf-constants.js
+new file mode 100644
+index 0000000..45f1e80
+--- /dev/null
++++ b/helixon-app/lib/admin-csrf-constants.js
+@@ -0,0 +1,8 @@
++// Isomorphic constants shared between server (lib/admin-csrf.js, Node
++// `crypto`) and client code (app/admin/_shared/hooks.js) that reads the
++// cookie in the browser. Kept in a separate file with zero Node-only
++// imports so client components can import it without crypto ending up in
++// the browser bundle — same split as admin-session.js / admin-auth.js.
++
++export const ADMIN_CSRF_COOKIE = "helixon_admin_csrf";
++export const ADMIN_CSRF_HEADER = "x-helixon-csrf";
+diff --git a/helixon-app/lib/admin-csrf.js b/helixon-app/lib/admin-csrf.js
+new file mode 100644
+index 0000000..901ef1e
+--- /dev/null
++++ b/helixon-app/lib/admin-csrf.js
+@@ -0,0 +1,56 @@
++// ── Admin CSRF protection (double-submit cookie) ────────────────────────────
++// The admin session itself is a signed, httpOnly cookie, which stops it being
++// read or stolen by JS — but httpOnly cookies are still sent automatically by
++// the browser on cross-site requests, which is exactly what makes CSRF
++// possible: a malicious page can make the admin's browser fire a POST/PATCH/
++// DELETE to /api/admin/* and the session cookie rides along for free, no
++// attacker access to the cookie required.
++//
++// Fix: issue a second, non-httpOnly, random token alongside the session
++// cookie. Client JS reads it and echoes it back as a header on every
++// mutating request. A cross-site attacker can trigger the request but can't
++// read the cookie (browsers don't allow cross-origin reads) to put it in the
++// header, so the two values won't match and the request is rejected. This is
++// the standard "double-submit cookie" pattern — no server-side token storage
++// needed, works fine alongside the existing signed session cookie.
++
++import crypto from "crypto";
++import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin-csrf-constants";
++
++export { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER };
++
++export function generateCsrfToken() {
++  return crypto.randomBytes(32).toString("hex");
++}
++
++// Constant-time comparison so a mismatched token can't be brute-forced via
++// response-timing differences.
++function timingSafeEqualStr(a, b) {
++  if (typeof a !== "string" || typeof b !== "string") return false;
++  const bufA = Buffer.from(a);
++  const bufB = Buffer.from(b);
++  if (bufA.length !== bufB.length) return false;
++  return crypto.timingSafeEqual(bufA, bufB);
++}
++
++// Verifies the double-submit pair for a mutating request. Returns true/false,
++// never throws — callers should treat false as "reject with 403".
++export function verifyCsrf(request) {
++  const cookieHeader = request.headers.get("cookie") || "";
++  const cookieMatch = cookieHeader
++    .split(";")
++    .map((c) => c.trim())
++    .find((c) => c.startsWith(`${ADMIN_CSRF_COOKIE}=`));
++
++  if (!cookieMatch) return false;
++
++  const cookieToken = decodeURIComponent(cookieMatch.split("=").slice(1).join("="));
++  const headerToken = request.headers.get(ADMIN_CSRF_HEADER) || "";
++
++  if (!cookieToken || !headerToken) return false;
++
++  return timingSafeEqualStr(cookieToken, headerToken);
++}
++
++// Shared 403 body/shape so every route rejects CSRF failures identically.
++export const CSRF_REJECTION = { error: "Invalid or missing CSRF token." };

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isIP } from "node:net";
 import { requireAdminSession } from "@/lib/admin-auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
 import { getAdminSupabase } from "@/lib/admin-supabase";
 import { writeAdminAudit } from "@/lib/admin-audit";
 
@@ -315,6 +316,10 @@ export async function POST(
     const admin =
       await requireAdminSession();
 
+    if (!verifyCsrf(request)) {
+      return json(CSRF_REJECTION, 403);
+    }
+
     const supabase =
       getAdminSupabase();
 
@@ -403,6 +408,10 @@ export async function DELETE(
   try {
     const admin =
       await requireAdminSession();
+
+    if (!verifyCsrf(request)) {
+      return json(CSRF_REJECTION, 403);
+    }
 
     const supabase =
       getAdminSupabase();

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
 import { getAdminSupabase } from "@/lib/admin-supabase";
 import { writeAdminAudit } from "@/lib/admin-audit";
 
@@ -207,6 +208,9 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const admin = await requireAdminSession();
+    if (!verifyCsrf(request)) {
+      return json(CSRF_REJECTION, 403);
+    }
     const supabase = getAdminSupabase();
 
     const body = await request.json();
@@ -398,6 +402,9 @@ export async function POST(request) {
 export async function PATCH(request) {
   try {
     const admin = await requireAdminSession();
+    if (!verifyCsrf(request)) {
+      return json(CSRF_REJECTION, 403);
+    }
     const supabase = getAdminSupabase();
 
     const body = await request.json();
@@ -566,6 +573,9 @@ export async function PATCH(request) {
 export async function DELETE(request) {
   try {
     const admin = await requireAdminSession();
+    if (!verifyCsrf(request)) {
+      return json(CSRF_REJECTION, 403);
+    }
     const supabase = getAdminSupabase();
 
     const body = await request.json();

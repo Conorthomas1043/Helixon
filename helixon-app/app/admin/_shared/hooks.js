@@ -1,6 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { confirmAction, promptNewPassword, promptText } from "./modal";
+import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin-csrf-constants";
+
+// ── CSRF header helper ────────────────────────────────────────────────────
+// Reads the non-httpOnly helixon_admin_csrf cookie (set by /api/admin/login,
+// see lib/admin-csrf.js) and echoes it back as a header on every mutating
+// admin fetch. The server compares cookie === header; see lib/admin-csrf.js
+// for why this defeats CSRF without needing server-side token storage.
+function csrfHeaders(extra = {}) {
+  const match = document.cookie
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${ADMIN_CSRF_COOKIE}=`));
+  const token = match ? decodeURIComponent(match.split("=").slice(1).join("=")) : "";
+  return { ...extra, [ADMIN_CSRF_HEADER]: token };
+}
 
 export function useAdminStats(range) {
   const [stats, setStats] = useState(null);
@@ -70,7 +86,9 @@ export function useAdminTraffic(range) {
 
   const block = useCallback(
     async (ip) => {
-      const reason = window.prompt("Reason for blocking this IP:", "Admin block");
+      const reason = await promptText("Reason for blocking this IP:", {
+        defaultValue: "Admin block",
+      });
       if (reason === null) return;
 
       setBusy(true);
@@ -79,7 +97,7 @@ export function useAdminTraffic(range) {
       try {
         const response = await fetch("/api/admin/traffic", {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify({ ip, reason }),
         });
 
@@ -107,7 +125,7 @@ export function useAdminTraffic(range) {
       try {
         const response = await fetch("/api/admin/traffic", {
           method: "DELETE",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify({ ip }),
         });
 
@@ -178,7 +196,7 @@ export function useAdminUsers() {
       try {
         const response = await fetch("/api/admin/users", {
           method: "PATCH",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify({ userId, action: actionName, ...extra }),
         });
 
@@ -200,8 +218,9 @@ export function useAdminUsers() {
 
   const remove = useCallback(
     async (userId, email) => {
-      const confirmed = window.confirm(
+      const confirmed = await confirmAction(
         `Permanently delete ${email || "this user"}? This cannot be undone.`,
+        { title: "Delete user", danger: true },
       );
       if (!confirmed) return;
 
@@ -211,7 +230,7 @@ export function useAdminUsers() {
       try {
         const response = await fetch("/api/admin/users", {
           method: "DELETE",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify({ userId }),
         });
 
@@ -233,8 +252,9 @@ export function useAdminUsers() {
 
   const resetPassword = useCallback(
     async (userId, email) => {
-      const password = window.prompt(
-        `New password for ${email || "this user"} (min 8 characters):`,
+      const password = await promptNewPassword(
+        `New password for ${email || "this user"}:`,
+        { minLength: 8 },
       );
       if (password === null) return;
 
@@ -306,7 +326,7 @@ export function useAdminEmployees() {
       try {
         const response = await fetch("/api/admin/employees", {
           method: "PATCH",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify({ employeeId, action: actionName, ...extra }),
         });
 
@@ -335,7 +355,7 @@ export function useAdminEmployees() {
       try {
         const response = await fetch("/api/admin/employees", {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: csrfHeaders({ "content-type": "application/json" }),
           body: JSON.stringify(form),
         });
 

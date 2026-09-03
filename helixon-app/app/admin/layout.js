@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { css } from "./_shared/styles";
+import { ModalHost } from "./_shared/modal";
 
 const NAV_GROUPS = [
   {
@@ -16,7 +17,13 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/traffic", label: "Traffic" },
       { href: "/admin/security", label: "Security" },
+      { href: "/admin/security/investigate", label: "Investigate" },
+      { href: "/admin/pentester", label: "Pentester" },
     ],
+  },
+  {
+    label: "Growth",
+    items: [{ href: "/admin/seo", label: "SEO" }],
   },
   {
     label: "Accounts",
@@ -41,6 +48,7 @@ export default function AdminLayout({ children }) {
   return (
     <>
       <style>{css}</style>
+      <ModalHost />
 
       <div className="admin-shell">
         <aside className="sidebar">
