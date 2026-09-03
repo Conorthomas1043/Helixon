@@ -12,6 +12,8 @@
     "@anthropic-ai/sdk": "^0.105.0",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@sentry/nextjs": "^10.58.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.108.2",
@@ -27,6 +29,7 @@
     "recharts": "^2.6.0",
     "resend": "^6.20.0",
     "stripe": "^22.5.0",
+    "three": "^0.185.1",
     "unpdf": "^1.8.0"
   },
   "devDependencies": {
@@ -39,3 +42,4 @@
     "typescript": "^6.0.3"
   }
 }
+

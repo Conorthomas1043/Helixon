@@ -286,7 +286,7 @@ function GetQuoteModal({ open, onClose, returnFocusRef }) {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/quote/request", {
+      const res = await fetch("/api/demo/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1444,7 +1444,7 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  {plan.action === "quote" ? (
+                  {plan.action === "demo" ? (
                     <Button
                       variant="primary"
                       size="block"
@@ -1483,7 +1483,7 @@ export default function LandingPage() {
                 Your next great hire is already in that pile of CVs.
               </h2>
               <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Find them in minutes, not hours. Get a quote and we&apos;ll show you how.
+                Find them in minutes, not hours. Get a demo and we&apos;ll show you how.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                 <Button
@@ -1491,7 +1491,7 @@ export default function LandingPage() {
                   onClick={openQuoteModal}
                   className="motion-safe-scale hover:scale-[1.02] min-h-[48px] w-full sm:w-auto"
                 >
-                  Get a quote
+                  Get a demo
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </Button>
                 <Button
