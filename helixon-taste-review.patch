@@ -1,5 +1,1379 @@
+diff --git a/helixon-app/app/admin/_shared/modal.js b/helixon-app/app/admin/_shared/modal.js
+index 496cb9d..fd0d2cb 100644
+--- a/helixon-app/app/admin/_shared/modal.js
++++ b/helixon-app/app/admin/_shared/modal.js
+@@ -2,7 +2,7 @@
+ 
+ // ── Modal-based replacement for window.prompt()/window.confirm() ───────────
+ // window.prompt() for the password-reset flow showed the new password in
+-// plaintext in a native browser dialog with no confirm field — anyone
++// plaintext in a native browser dialog with no confirm field - anyone
+ // glancing at the admin's screen, or a screen-share, saw it; there was no
+ // "type it twice" guard against a fat-fingered reset locking a real user
+ // out. window.confirm()/prompt() are also unstyleable and easy to
+@@ -35,7 +35,7 @@ function close(result) {
+   emit();
+ }
+ 
+-// Replacement for window.confirm(message) — resolves true/false.
++// Replacement for window.confirm(message) - resolves true/false.
+ export function confirmAction(message, { title = "Confirm", danger = false } = {}) {
+   return open({ kind: "confirm", message, title, danger });
+ }
+diff --git a/helixon-app/app/admin/_shared/styles.js b/helixon-app/app/admin/_shared/styles.js
+index 9562d6a..d38f5e4 100644
+--- a/helixon-app/app/admin/_shared/styles.js
++++ b/helixon-app/app/admin/_shared/styles.js
+@@ -1,23 +1,23 @@
+ export const css = `
+ :root{
+-  color-scheme:dark;
+-  --bg:#0b0f14;
+-  --surface:#121821;
+-  --surface-raised:#182029;
+-  --border:#232b36;
+-  --border-soft:#1a212b;
+-  --text:#e4e9ee;
+-  --text-muted:#7c8a98;
+-  --text-faint:#4d5a67;
+-  --accent:#4fa8c9;
+-  --accent-soft:#152730;
+-  --accent-strong:#7cc4e0;
+-  --warn:#d8a657;
+-  --warn-soft:#241d10;
+-  --critical:#d9636b;
+-  --critical-soft:#241417;
+-  --ok:#5fae82;
+-  --ok-soft:#12241a;
++  color-scheme:light;
++  --bg:#f3f6f4;
++  --surface:#ffffff;
++  --surface-raised:#eef2f0;
++  --border:#e3e8e5;
++  --border-soft:#edf0ee;
++  --text:#13201b;
++  --text-muted:#5a7a6a;
++  --text-faint:#8aaa9a;
++  --accent:#0b6e4f;
++  --accent-soft:#e8f3ee;
++  --accent-strong:#08533c;
++  --warn:#c08a2d;
++  --warn-soft:#faf2e2;
++  --critical:#c0392b;
++  --critical-soft:#fdf1f0;
++  --ok:#0b6e4f;
++  --ok-soft:#e8f3ee;
+   --radius-sm:6px;
+   --radius-md:10px;
+   --radius-lg:14px;
+@@ -123,7 +123,7 @@ button,input,select{font:inherit}
+ .side-link.active{
+   background:var(--accent-soft);
+   color:var(--accent-strong);
+-  border-color:rgba(79,168,201,.35)
++  border-color:rgba(11,110,79,.3)
+ }
+ 
+ .side-link-dot{width:5px;height:5px;border-radius:99px;background:currentColor;opacity:.55;flex-shrink:0}
+@@ -158,7 +158,7 @@ button,input,select{font:inherit}
+   gap:10px;
+   padding:12px 24px;
+   border-bottom:1px solid var(--border);
+-  background:rgba(11,15,20,.9);
++  background:rgba(255,255,255,.85);
+   backdrop-filter:blur(10px)
+ }
+ 
+@@ -192,7 +192,7 @@ button,input,select{font:inherit}
+ 
+ .btn:hover{background:var(--surface-raised)}
+ .btn.primary{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+-.btn.danger{border-color:rgba(217,99,107,.5);color:var(--critical);background:var(--critical-soft)}
++.btn.danger{border-color:rgba(192,57,43,.4);color:var(--critical);background:var(--critical-soft)}
+ .btn.small{padding:6px 10px;font-size:12px}
+ .btn:disabled{opacity:.5;cursor:not-allowed}
+ 
+@@ -286,9 +286,9 @@ button,input,select{font:inherit}
+ }
+ 
+ .pill::before{content:"";width:5px;height:5px;border-radius:99px;background:currentColor}
+-.pill.bad{border-color:rgba(217,99,107,.4);color:var(--critical);background:var(--critical-soft)}
+-.pill.good{border-color:rgba(95,174,130,.4);color:var(--ok);background:var(--ok-soft)}
+-.pill.warn{border-color:rgba(216,166,87,.4);color:var(--warn);background:var(--warn-soft)}
++.pill.bad{border-color:rgba(192,57,43,.35);color:var(--critical);background:var(--critical-soft)}
++.pill.good{border-color:rgba(11,110,79,.3);color:var(--ok);background:var(--ok-soft)}
++.pill.warn{border-color:rgba(192,138,45,.35);color:var(--warn);background:var(--warn-soft)}
+ 
+ .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .field{display:grid;gap:6px}
+@@ -332,7 +332,7 @@ button,input,select{font:inherit}
+ }
+ 
+ .notice b{color:var(--text);font-weight:600}
+-.notice.error{border-color:rgba(217,99,107,.4);color:var(--critical);background:var(--critical-soft)}
++.notice.error{border-color:rgba(192,57,43,.35);color:var(--critical);background:var(--critical-soft)}
+ 
+ .footer-note{margin-top:14px;color:var(--text-faint);font-size:11.5px;line-height:1.5}
+ 
+@@ -369,10 +369,10 @@ button,input,select{font:inherit}
+   .page-header{align-items:flex-start}
+ }
+ 
+-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000}
+-.modal-card{background:var(--panel,#111);border:1px solid var(--border,#333);border-radius:10px;padding:20px;width:360px;max-width:90vw}
+-.modal-title{font-weight:600;margin-bottom:10px}
+-.modal-message{margin:0 0 12px;color:var(--muted,#aaa);font-size:14px}
++.modal-overlay{position:fixed;inset:0;background:rgba(19,32,27,.45);display:flex;align-items:center;justify-content:center;z-index:1000}
++.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;width:360px;max-width:90vw;box-shadow:0 12px 32px rgba(19,32,27,.16)}
++.modal-title{font-weight:600;margin-bottom:10px;color:var(--text)}
++.modal-message{margin:0 0 12px;color:var(--text-muted);font-size:14px}
+ .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+ 
+ .findings-list{display:flex;flex-direction:column;gap:14px}
+diff --git a/helixon-app/app/admin/_shared/table.js b/helixon-app/app/admin/_shared/table.js
+index ec27523..57c8a49 100644
+--- a/helixon-app/app/admin/_shared/table.js
++++ b/helixon-app/app/admin/_shared/table.js
+@@ -19,18 +19,18 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
+           {rows.length === 0 ? (
+             <tr>
+               <td colSpan="6" className="empty">
+-                No request logs for this range — try a wider window.
++                No request logs for this range - try a wider window.
+               </td>
+             </tr>
+           ) : (
+             rows.map((row) => (
+               <tr key={row.id}>
+                 <td className="mono">
+-                  {row.ts ? new Date(row.ts).toLocaleString() : "—"}
++                  {row.ts ? new Date(row.ts).toLocaleString() : "-"}
+                 </td>
+ 
+                 <td>
+-                  <span className="mono">{row.ip || "—"}</span>
++                  <span className="mono">{row.ip || "-"}</span>
+                   <div className="muted mono-wrap">{row.user_agent || ""}</div>
+                 </td>
+ 
+@@ -41,7 +41,7 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
+                 </td>
+ 
+                 <td>
+-                  {[row.city, row.country].filter(Boolean).join(", ") || "—"}
++                  {[row.city, row.country].filter(Boolean).join(", ") || "-"}
+                 </td>
+ 
+                 <td>
+@@ -61,7 +61,7 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
+                       Block
+                     </button>
+                   ) : (
+-                    <span className="muted">—</span>
++                    <span className="muted">-</span>
+                   )}
+                 </td>
+               </tr>
+diff --git a/helixon-app/app/admin/billing/page.js b/helixon-app/app/admin/billing/page.js
+index 820deec..7b77a38 100644
+--- a/helixon-app/app/admin/billing/page.js
++++ b/helixon-app/app/admin/billing/page.js
+@@ -65,7 +65,7 @@ export default function BillingPage() {
+       <div className="panel section">
+         <div className="panel-title">Billing telemetry</div>
+         <div className="footer-note">
+-          This view reads from the existing subscription and admin APIs — it
++          This view reads from the existing subscription and admin APIs - it
+           never exposes Stripe secrets or payment credentials directly.
+         </div>
+       </div>
+diff --git a/helixon-app/app/admin/command/page.js b/helixon-app/app/admin/command/page.js
+index 039659b..b8c80c9 100644
+--- a/helixon-app/app/admin/command/page.js
++++ b/helixon-app/app/admin/command/page.js
+@@ -63,19 +63,19 @@ export default function CommandPage() {
+           tone="var(--critical)"
+         />
+ 
+-        <KpiCard label="Users" value={totals.users ?? "—"} />
+-        <KpiCard label="Employees" value={totals.employees ?? "—"} tone="var(--ok)" />
++        <KpiCard label="Users" value={totals.users ?? "-"} />
++        <KpiCard label="Employees" value={totals.employees ?? "-"} tone="var(--ok)" />
+       </div>
+ 
+       <div className="kpi-grid cols-6">
+-        <KpiCard label="Agencies" value={totals.agencies ?? "—"} />
+-        <KpiCard label="Candidates" value={totals.candidates ?? "—"} />
+-        <KpiCard label="Jobs" value={totals.jobs ?? "—"} />
+-        <KpiCard label="Analyses run" value={totals.analyses ?? "—"} />
+-        <KpiCard label="Demo requests" value={totals.demoRequests ?? "—"} />
++        <KpiCard label="Agencies" value={totals.agencies ?? "-"} />
++        <KpiCard label="Candidates" value={totals.candidates ?? "-"} />
++        <KpiCard label="Jobs" value={totals.jobs ?? "-"} />
++        <KpiCard label="Analyses run" value={totals.analyses ?? "-"} />
++        <KpiCard label="Demo requests" value={totals.demoRequests ?? "-"} />
+         <KpiCard
+           label="Failed logins"
+-          value={totals.failedAuthAttempts ?? "—"}
++          value={totals.failedAuthAttempts ?? "-"}
+           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
+         />
+       </div>
+@@ -123,7 +123,7 @@ export default function CommandPage() {
+ 
+             {blocked.length === 0 ? (
+               <div className="empty">
+-                No blocked IPs — anything blocked from Traffic shows up here.
++                No blocked IPs - anything blocked from Traffic shows up here.
+               </div>
+             ) : (
+               <div className="table-wrap" style={{ marginTop: 8 }}>
+diff --git a/helixon-app/app/admin/employees/page.js b/helixon-app/app/admin/employees/page.js
+index 30954cb..126dff8 100644
+--- a/helixon-app/app/admin/employees/page.js
++++ b/helixon-app/app/admin/employees/page.js
+@@ -31,7 +31,7 @@ export default function EmployeesPage() {
+         description={
+           view === "staff"
+             ? "Staff accounts and access levels."
+-            : "SEO, marketing, and sales-facing numbers — kept simple for the sales team."
++            : "SEO, marketing, and sales-facing numbers - kept simple for the sales team."
+         }
+       >
+         <div className="segmented">
+diff --git a/helixon-app/app/admin/employees/sales-marketing-panel.js b/helixon-app/app/admin/employees/sales-marketing-panel.js
+index 017c5a6..ce3f135 100644
+--- a/helixon-app/app/admin/employees/sales-marketing-panel.js
++++ b/helixon-app/app/admin/employees/sales-marketing-panel.js
+@@ -25,12 +25,12 @@ export default function SalesMarketingPanel({ range }) {
+       <div className="kpi-grid cols-6">
+         <KpiCard
+           label="Leads (demo requests)"
+-          value={totals.demoRequests ?? "—"}
++          value={totals.demoRequests ?? "-"}
+           foot="All-time"
+         />
+         <KpiCard
+           label="Customer accounts"
+-          value={totals.agencies ?? "—"}
++          value={totals.agencies ?? "-"}
+           foot="All-time"
+         />
+         <KpiCard
+@@ -50,7 +50,7 @@ export default function SalesMarketingPanel({ range }) {
+         />
+         <KpiCard
+           label="Site visits"
+-          value={totals.requests ?? "—"}
++          value={totals.requests ?? "-"}
+           foot={`Last ${range}`}
+         />
+       </div>
+@@ -58,7 +58,7 @@ export default function SalesMarketingPanel({ range }) {
+       <div className="grid-3 section">
+         <Panel
+           title="Top pages"
+-          sub="Most-visited pages — a quick read on what content is pulling traffic."
++          sub="Most-visited pages - a quick read on what content is pulling traffic."
+         >
+           {loading ? (
+             <div className="empty">Loading…</div>
+@@ -69,7 +69,7 @@ export default function SalesMarketingPanel({ range }) {
+ 
+         <Panel
+           title="Traffic sources"
+-          sub="Where visitors came from — search, social, or a direct link."
++          sub="Where visitors came from - search, social, or a direct link."
+         >
+           {loading ? (
+             <div className="empty">Loading…</div>
+@@ -80,7 +80,7 @@ export default function SalesMarketingPanel({ range }) {
+ 
+         <Panel
+           title="Visitor countries"
+-          sub="Where prospects are located — useful for territory planning."
++          sub="Where prospects are located - useful for territory planning."
+         >
+           {loading ? (
+             <div className="empty">Loading…</div>
+@@ -119,7 +119,7 @@ export default function SalesMarketingPanel({ range }) {
+ 
+       <div className="footer-note section">
+         This is pulled straight from Helixon&apos;s own site traffic logs and
+-        subscription records — not a third-party SEO tool, so treat “top pages”
++        subscription records - not a third-party SEO tool, so treat “top pages”
+         and “traffic sources” as directional, not keyword-level SEO data.
+       </div>
+     </>
+diff --git a/helixon-app/app/admin/layout.js b/helixon-app/app/admin/layout.js
+index 16f848c..8e3a417 100644
+--- a/helixon-app/app/admin/layout.js
++++ b/helixon-app/app/admin/layout.js
+@@ -10,7 +10,10 @@ import { ModalHost } from "./_shared/modal";
+ const NAV_GROUPS = [
+   {
+     label: "Overview",
+-    items: [{ href: "/admin/command", label: "Command" }],
++    items: [
++      { href: "/admin/command", label: "Command" },
++      { href: "/admin/ops", label: "Ops" },
++    ],
+   },
+   {
+     label: "Security",
+diff --git a/helixon-app/app/admin/login/page.js b/helixon-app/app/admin/login/page.js
+index 67988a4..dc5da4f 100644
+--- a/helixon-app/app/admin/login/page.js
++++ b/helixon-app/app/admin/login/page.js
+@@ -3,13 +3,6 @@
+ import { useState } from "react";
+ import { useRouter } from "next/navigation";
+ 
+-const INK = "#13201b";
+-const INK_SOFT = "#5a7a6a";
+-const INK_FAINT = "#8aaa9a";
+-const DANGER = "#dc2626";
+-const DANGER_BG = "#fef2f2";
+-const DANGER_BORDER = "#fecaca";
+-
+ const CARD = {
+   background: "white",
+   border: "1px solid var(--border)",
+@@ -19,7 +12,7 @@ const CARD = {
+ 
+ function FieldLabel({ children }) {
+   return (
+-    <label className="block text-xs font-semibold mb-1.5" style={{ color: INK }}>
++    <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>
+       {children}
+     </label>
+   );
+@@ -30,7 +23,7 @@ function Input(props) {
+     <input
+       {...props}
+       className="w-full rounded-[10px] border px-3.5 py-2.5 text-sm outline-none transition-shadow focus:shadow-[0_0_0_3px_var(--mint)] focus:border-[var(--forest)] mb-3.5"
+-      style={{ borderColor: "var(--border)", color: INK, background: "white" }}
++      style={{ borderColor: "var(--border)", color: "var(--ink)", background: "white" }}
+     />
+   );
+ }
+@@ -63,7 +56,7 @@ export default function AdminLoginPage() {
+ 
+       // Full navigation (not router.push) so the new httpOnly session
+       // cookie is present on the very first request proxy.ts sees for
+-      // /admin — avoids a client-side nav racing the cookie write.
++      // /admin - avoids a client-side nav racing the cookie write.
+       window.location.href = "/admin";
+     } catch (err) {
+       setError(err.message);
+@@ -80,11 +73,11 @@ export default function AdminLoginPage() {
+         <div className="mb-6">
+           <h1
+             className="text-lg font-semibold"
+-            style={{ fontFamily: "var(--font-display)", color: INK }}
++            style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+           >
+             Helixon admin
+           </h1>
+-          <p className="text-sm mt-1" style={{ color: INK_FAINT }}>
++          <p className="text-sm mt-1" style={{ color: "var(--ink-faint)" }}>
+             Sign in to continue.
+           </p>
+         </div>
+@@ -92,7 +85,7 @@ export default function AdminLoginPage() {
+         {error && (
+           <div
+             className="mb-4 px-3.5 py-2.5 rounded-[10px] text-sm"
+-            style={{ background: DANGER_BG, border: `1px solid ${DANGER_BORDER}`, color: DANGER }}
++            style={{ background: "var(--danger-soft)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}
+             role="alert"
+           >
+             {error}
+diff --git a/helixon-app/app/admin/ops/page.js b/helixon-app/app/admin/ops/page.js
+index 2ab1cf6..8c4f209 100644
+--- a/helixon-app/app/admin/ops/page.js
++++ b/helixon-app/app/admin/ops/page.js
+@@ -2,12 +2,36 @@
+ 
+ import { useEffect, useState } from "react";
+ 
+-function Section({ title, children }) {
+-  return <section style={{ marginTop: 24, padding: 18, border: "1px solid rgba(255,255,255,.08)", borderRadius: 14, background: "rgba(20,27,36,.72)" }}><h2 style={{ marginTop: 0 }}>{title}</h2>{children}</section>;
+-}
++import { PageHeader, KpiCard, Panel } from "../_shared/ui";
+ 
+-function Table({ headers, rows }) {
+-  return <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr>{headers.map((h) => <th key={h} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid rgba(255,255,255,.08)" }}>{h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i}>{r.map((v, j) => <td key={j} style={{ padding: 8, borderBottom: "1px solid rgba(255,255,255,.05)" }}>{String(v ?? "—")}</td>)}</tr>)}</tbody></table></div>;
++function DataTable({ headers, rows, emptyLabel = "No data yet." }) {
++  if (rows.length === 0) {
++    return <div className="empty">{emptyLabel}</div>;
++  }
++  return (
++    <div className="table-wrap">
++      <table className="table">
++        <thead>
++          <tr>
++            {headers.map((h) => (
++              <th key={h}>{h}</th>
++            ))}
++          </tr>
++        </thead>
++        <tbody>
++          {rows.map((r, i) => (
++            <tr key={i}>
++              {r.map((v, j) => (
++                <td key={j} className={j === 0 ? "mono" : undefined}>
++                  {v === null || v === undefined || v === "" ? "-" : String(v)}
++                </td>
++              ))}
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
++  );
+ }
+ 
+ export default function OpsPage() {
+@@ -16,25 +40,122 @@ export default function OpsPage() {
+ 
+   useEffect(() => {
+     fetch("/api/admin/ops")
+-      .then(async (r) => { const body = await r.json(); if (!r.ok) throw new Error(body.error || "Request failed"); return body; })
++      .then(async (r) => {
++        const body = await r.json();
++        if (!r.ok) throw new Error(body.error || "Request failed");
++        return body;
++      })
+       .then(setData)
+       .catch((e) => setError(e.message));
+   }, []);
+ 
+-  if (error) return <main style={{ padding: 24 }}><h1>Operations</h1><p>{error}</p></main>;
+-  if (!data) return <main style={{ padding: 24 }}><h1>Operations</h1><p>Loading live operational data…</p></main>;
++  if (error) {
++    return (
++      <>
++        <PageHeader title="Operations" description="Deep security, SOC, SEO and commercial telemetry from real application data." />
++        <div className="notice error">{error}</div>
++      </>
++    );
++  }
++
++  if (!data) {
++    return (
++      <>
++        <PageHeader title="Operations" description="Deep security, SOC, SEO and commercial telemetry from real application data." />
++        <div className="kpi-grid">
++          {Array.from({ length: 4 }).map((_, i) => (
++            <div className="kpi-card" key={i}>
++              <div className="kpi-label">Loading</div>
++              <div className="kpi-value muted">-</div>
++            </div>
++          ))}
++        </div>
++      </>
++    );
++  }
+ 
+   const kpis = Object.entries(data.kpis || {});
+-  return <main style={{ padding: 24, color: "#e4e9ee", background: "#0b0f14", minHeight: "100vh" }}>
+-    <h1>Helixon Operations</h1>
+-    <p style={{ color: "#91a0ad" }}>Deep security, SOC, SEO and commercial telemetry from real application data.</p>
+-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+-      {kpis.map(([key, value]) => <div key={key} style={{ padding: 14, border: "1px solid rgba(255,255,255,.08)", borderRadius: 12 }}><div style={{ color: "#91a0ad", fontSize: 12 }}>{key}</div><strong style={{ fontSize: 24 }}>{value}</strong></div>)}
+-    </div>
+-    <Section title="SOC — IP investigations"><Table headers={["IP","Max risk","Requests","Blocked","Countries","Signals"]} rows={(data.ipInvestigations || []).slice(0,50).map((x) => [x.ip,x.maxScore,x.requests,x.blocked,x.countries.join(", "),x.signals.join(", ")])} /></Section>
+-    <Section title="SEO / acquisition"><Table headers={["Channel","Hits"]} rows={(data.seo.channels || []).map((x) => [x.channel,x.count])} /><h3>Campaigns</h3><Table headers={["Campaign","Count"]} rows={(data.seo.campaigns || []).map((x) => [x.campaign,x.count])} /><h3>Top referrers</h3><Table headers={["Referrer","Count"]} rows={(data.seo.referrers || []).map((x) => [x.referrer,x.count])} /></Section>
+-    <Section title="Sales / commercial"><Table headers={["Metric","Value"]} rows={[["Leads",data.sales.leads],["Trials",data.sales.trials],["Active subscriptions",data.sales.activeSubscriptions],["MRR",data.sales.revenueSourceAvailable ? data.sales.mrr : "Not available from current subscription rows"]]} /><h3>Agencies by plan</h3><Table headers={["Plan","Count"]} rows={(data.sales.agenciesByPlan || []).map((x) => [x.plan,x.count])} /></Section>
+-    <Section title="Threat events"><Table headers={["Time","IP","Method","Path","Risk","Signals","Blocked"]} rows={(data.threats || []).slice(0,100).map((x) => [x.created_at,x.ip,x.method,x.path,x.threat.score,x.threat.signals.join(", "),x.blocked ? "yes" : "no"])} /></Section>
+-    <Section title="Admin audit feed"><Table headers={["Time","Action","Actor","Target"]} rows={(data.audit || []).slice(0,100).map((x) => [x.created_at,x.action || x.event || x.type,x.user_email || x.email || x.user_id,x.target_id || x.resource_id || "—"])} /></Section>
+-  </main>;
++
++  return (
++    <>
++      <PageHeader title="Operations" description="Deep security, SOC, SEO and commercial telemetry from real application data." />
++
++      <div className="kpi-grid">
++        {kpis.map(([key, value]) => (
++          <KpiCard key={key} label={key} value={value} />
++        ))}
++      </div>
++
++      <div className="section">
++        <Panel title="IP investigations" sub="Requests grouped by source IP, ranked by risk.">
++          <DataTable
++            headers={["IP", "Max risk", "Requests", "Blocked", "Countries", "Signals"]}
++            rows={(data.ipInvestigations || [])
++              .slice(0, 50)
++              .map((x) => [x.ip, x.maxScore, x.requests, x.blocked, x.countries.join(", "), x.signals.join(", ")])}
++          />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="SEO and acquisition" sub="Channel mix, campaign performance, and referrer breakdown.">
++          <DataTable headers={["Channel", "Hits"]} rows={(data.seo.channels || []).map((x) => [x.channel, x.count])} />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Campaigns">
++          <DataTable headers={["Campaign", "Count"]} rows={(data.seo.campaigns || []).map((x) => [x.campaign, x.count])} />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Top referrers">
++          <DataTable headers={["Referrer", "Count"]} rows={(data.seo.referrers || []).map((x) => [x.referrer, x.count])} />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Sales and commercial" sub="Leads, trials, and active subscriptions.">
++          <DataTable
++            headers={["Metric", "Value"]}
++            rows={[
++              ["Leads", data.sales.leads],
++              ["Trials", data.sales.trials],
++              ["Active subscriptions", data.sales.activeSubscriptions],
++              ["MRR", data.sales.revenueSourceAvailable ? data.sales.mrr : "Not available from current subscription rows"],
++            ]}
++          />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Agencies by plan">
++          <DataTable headers={["Plan", "Count"]} rows={(data.sales.agenciesByPlan || []).map((x) => [x.plan, x.count])} />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Threat events" sub="Most recent scored requests across the tracked window.">
++          <DataTable
++            headers={["Time", "IP", "Method", "Path", "Risk", "Signals", "Blocked"]}
++            rows={(data.threats || [])
++              .slice(0, 100)
++              .map((x) => [x.created_at, x.ip, x.method, x.path, x.threat.score, x.threat.signals.join(", "), x.blocked ? "Yes" : "No"])}
++          />
++        </Panel>
++      </div>
++
++      <div className="section">
++        <Panel title="Admin audit feed" sub="Recent mutating actions taken from the admin console.">
++          <DataTable
++            headers={["Time", "Action", "Actor", "Target"]}
++            rows={(data.audit || [])
++              .slice(0, 100)
++              .map((x) => [x.created_at, x.action || x.event || x.type, x.user_email || x.email || x.user_id, x.target_id || x.resource_id])}
++          />
++        </Panel>
++      </div>
++    </>
++  );
+ }
+diff --git a/helixon-app/app/admin/pentester/page.js b/helixon-app/app/admin/pentester/page.js
+index 901b410..4b226c4 100644
+--- a/helixon-app/app/admin/pentester/page.js
++++ b/helixon-app/app/admin/pentester/page.js
+@@ -18,7 +18,7 @@ const SIGNAL_LABELS = {
+   "sensitive-write": "Write attempt on auth/admin route",
+ };
+ 
+-// A dated, curated findings log — separate from live telemetry below, since
++// A dated, curated findings log - separate from live telemetry below, since
+ // "what did we find and fix" is a different question from "what's
+ // happening on the wire right now", and a pentester needs both. Update this
+ // list by hand as findings are opened/closed; it is not auto-derived.
+@@ -29,7 +29,7 @@ const FINDINGS_LOG = [
+     status: "fixed",
+     date: "2026-09-03",
+     detail:
+-      "No token of any kind was sent or checked on POST/PATCH/DELETE to /api/admin/traffic, /users, or /employees — any page the admin's browser rendered could forge those requests. Fixed with a double-submit cookie token (lib/admin-csrf.js), verified on every mutating handler.",
++      "No token of any kind was sent or checked on POST/PATCH/DELETE to /api/admin/traffic, /users, or /employees - any page the admin's browser rendered could forge those requests. Fixed with a double-submit cookie token (lib/admin-csrf.js), verified on every mutating handler.",
+   },
+   {
+     title: "SEO/SOC dashboards 403'd for every admin (auth wiring bug)",
+@@ -37,7 +37,7 @@ const FINDINGS_LOG = [
+     status: "fixed",
+     date: "2026-09-03",
+     detail:
+-      "/api/admin/ops checked for a Supabase Bearer token that the real (cookie-based) admin login never produces. Not an access gap — the opposite: the sales, ops, SEO, and investigate pages were unusable. Fixed by switching to requireAdminSession(), the same check every other admin route uses.",
++      "/api/admin/ops checked for a Supabase Bearer token that the real (cookie-based) admin login never produces. Not an access gap - the opposite: the sales, ops, SEO, and investigate pages were unusable. Fixed by switching to requireAdminSession(), the same check every other admin route uses.",
+   },
+   {
+     title: "Password reset and IP-block reason used window.prompt()",
+@@ -45,7 +45,7 @@ const FINDINGS_LOG = [
+     status: "fixed",
+     date: "2026-09-03",
+     detail:
+-      "New passwords were shown in plaintext in a native browser dialog with no confirm field — visible on screen-share, no typo protection. Replaced with an in-app modal requiring the password to be typed twice, masked (app/admin/_shared/modal.js).",
++      "New passwords were shown in plaintext in a native browser dialog with no confirm field - visible on screen-share, no typo protection. Replaced with an in-app modal requiring the password to be typed twice, masked (app/admin/_shared/modal.js).",
+   },
+   {
+     title: "Dead employees/provision route with its own auth implementation",
+@@ -61,7 +61,7 @@ const FINDINGS_LOG = [
+     status: "fixed",
+     date: "2026-09-03",
+     detail:
+-      "Called by proxy.ts on every request with no auth guard, by design, so it can log traffic before a session exists. It inserted caller-supplied ip/ua/path/country/lat/lon directly into request_logs. An external caller could POST directly to this route (bypassing normal request flow) and insert arbitrary rows — a log-forgery path that could pollute the threat-scoring and geo data every other page on this admin panel relies on. Fixed with a shared-secret header (INTERNAL_EDGE_LOG_SECRET) sent by proxy.ts and checked with a timing-safe comparison; requests without the correct secret are rejected rather than trusted.",
++      "Called by proxy.ts on every request with no auth guard, by design, so it can log traffic before a session exists. It inserted caller-supplied ip/ua/path/country/lat/lon directly into request_logs. An external caller could POST directly to this route (bypassing normal request flow) and insert arbitrary rows - a log-forgery path that could pollute the threat-scoring and geo data every other page on this admin panel relies on. Fixed with a shared-secret header (INTERNAL_EDGE_LOG_SECRET) sent by proxy.ts and checked with a timing-safe comparison; requests without the correct secret are rejected rather than trusted.",
+   },
+ ];
+ 
+@@ -169,7 +169,7 @@ export default function PentesterPage() {
+ 
+           <div className="notice section">
+             Scoring is signature-based (path/UA pattern matching in
+-            lib/security/threat-score.js) — treat this as a triage aid, not a
++            lib/security/threat-score.js) - treat this as a triage aid, not a
+             verdict. A high score means "worth a human look," not "confirmed
+             malicious."
+           </div>
+@@ -206,7 +206,7 @@ export default function PentesterPage() {
+                           <td className="mono" style={row.blocked ? { color: "var(--critical)" } : undefined}>
+                             {row.blocked}
+                           </td>
+-                          <td className="muted">{row.signals.slice(0, 2).join(", ") || "—"}</td>
++                          <td className="muted">{row.signals.slice(0, 2).join(", ") || "-"}</td>
+                           <td>
+                             <button
+                               className="btn small danger"
+@@ -259,10 +259,10 @@ export default function PentesterPage() {
+                     {visibleThreats.map((row, i) => (
+                       <tr key={`${row.ip}-${row.created_at}-${i}`}>
+                         <td className="mono">
+-                          {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
++                          {row.created_at ? new Date(row.created_at).toLocaleString() : "-"}
+                         </td>
+                         <td className="mono">{row.ip}</td>
+-                        <td className="muted">{row.country || "—"}</td>
++                        <td className="muted">{row.country || "-"}</td>
+                         <td className="mono">{row.method}</td>
+                         <td className="mono" title={row.path}>
+                           {row.path}
+@@ -270,7 +270,7 @@ export default function PentesterPage() {
+                         <td>
+                           <SeverityPill severity={severityFromScore(row.threat.score)} />
+                         </td>
+-                        <td className="muted">{(row.threat.signals || []).join(", ") || "—"}</td>
++                        <td className="muted">{(row.threat.signals || []).join(", ") || "-"}</td>
+                         <td className="mono" style={row.blocked ? { color: "var(--critical)" } : undefined}>
+                           {row.blocked ? "yes" : "no"}
+                         </td>
+@@ -284,7 +284,7 @@ export default function PentesterPage() {
+ 
+           <Panel
+             title="Findings log"
+-            sub="Curated, dated record of security findings on this app — separate from live telemetry above."
++            sub="Curated, dated record of security findings on this app - separate from live telemetry above."
+             className="section"
+           >
+             <div className="findings-list">
+@@ -307,7 +307,7 @@ export default function PentesterPage() {
+           </Panel>
+ 
+           <div className="footer-note section">
+-            Raw response bodies are not stored — CVs, tokens, credentials, and
++            Raw response bodies are not stored - CVs, tokens, credentials, and
+             generated documents never enter request_logs, so this view is
+             safe to share with an external pentester without a separate
+             redaction pass.
+diff --git a/helixon-app/app/admin/security/investigate/page.js b/helixon-app/app/admin/security/investigate/page.js
+index 713a2bb..6dada1b 100644
+--- a/helixon-app/app/admin/security/investigate/page.js
++++ b/helixon-app/app/admin/security/investigate/page.js
+@@ -41,7 +41,7 @@ export default function SecurityInvestigatePage() {
+     <>
+       <PageHeader
+         title="Investigate"
+-        description="Raw, searchable request log with threat scoring — for tracing a specific IP, path, or user-agent across the tracked window."
++        description="Raw, searchable request log with threat scoring - for tracing a specific IP, path, or user-agent across the tracked window."
+       />
+ 
+       {error && <div className="notice error section">{error}</div>}
+@@ -54,12 +54,12 @@ export default function SecurityInvestigatePage() {
+             <KpiCard label="Requests in window" value={allRequests.length} />
+             <KpiCard
+               label="Flagged (score ≥20)"
+-              value={data?.kpis?.threats ?? "—"}
++              value={data?.kpis?.threats ?? "-"}
+               tone="var(--warn)"
+             />
+             <KpiCard
+               label="Denied at the edge"
+-              value={data?.kpis?.blockedRequests ?? "—"}
++              value={data?.kpis?.blockedRequests ?? "-"}
+               tone="var(--critical)"
+             />
+           </div>
+@@ -99,21 +99,21 @@ export default function SecurityInvestigatePage() {
+                     {rows.map((x, i) => (
+                       <tr key={`${x.ip}-${x.created_at}-${i}`}>
+                         <td className="mono">
+-                          {x.created_at ? new Date(x.created_at).toLocaleString() : "—"}
++                          {x.created_at ? new Date(x.created_at).toLocaleString() : "-"}
+                         </td>
+                         <td className="mono">{x.ip}</td>
+-                        <td className="muted">{x.country || "—"}</td>
++                        <td className="muted">{x.country || "-"}</td>
+                         <td className="mono">{x.method}</td>
+                         <td className="mono" title={x.path}>
+                           {x.path}
+                         </td>
+                         <td className="muted mono" title={x.user_agent}>
+-                          {(x.user_agent || "—").slice(0, 40)}
++                          {(x.user_agent || "-").slice(0, 40)}
+                         </td>
+                         <td>
+                           <SeverityPill score={x.threat.score} />
+                         </td>
+-                        <td className="muted">{(x.threat.signals || []).join(", ") || "—"}</td>
++                        <td className="muted">{(x.threat.signals || []).join(", ") || "-"}</td>
+                         <td className="mono" style={x.blocked ? { color: "var(--critical)" } : undefined}>
+                           {x.blocked ? "yes" : "no"}
+                         </td>
+diff --git a/helixon-app/app/admin/security/page.js b/helixon-app/app/admin/security/page.js
+index c90d0ab..e2beee6 100644
+--- a/helixon-app/app/admin/security/page.js
++++ b/helixon-app/app/admin/security/page.js
+@@ -44,11 +44,11 @@ export default function SecurityPage() {
+ 
+       <div className="kpi-grid">
+         <KpiCard label="Blocked IPs" value={blocked.length} tone="var(--critical)" />
+-        <KpiCard label="Requests denied" value={totals.blockedRequests ?? "—"} />
+-        <KpiCard label="Login attempts" value={totals.loginAttempts ?? "—"} />
++        <KpiCard label="Requests denied" value={totals.blockedRequests ?? "-"} />
++        <KpiCard label="Login attempts" value={totals.loginAttempts ?? "-"} />
+         <KpiCard
+           label="Failed auth attempts"
+-          value={totals.failedAuthAttempts ?? "—"}
++          value={totals.failedAuthAttempts ?? "-"}
+           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
+         />
+       </div>
+@@ -96,9 +96,9 @@ export default function SecurityPage() {
+                     <tr key={item.ip}>
+                       <td className="mono">{item.ip}</td>
+                       <td className="muted">{item.reason || "Admin block"}</td>
+-                      <td className="muted">{item.created_by || "—"}</td>
++                      <td className="muted">{item.created_by || "-"}</td>
+                       <td className="mono">
+-                        {item.created_at ? new Date(item.created_at).toLocaleString() : "—"}
++                        {item.created_at ? new Date(item.created_at).toLocaleString() : "-"}
+                       </td>
+                       <td>
+                         <button className="btn small" onClick={() => unblock(item.ip)} disabled={busy}>
+@@ -130,7 +130,7 @@ export default function SecurityPage() {
+                 <tbody>
+                   {hotspots.map((point, index) => (
+                     <tr key={`${point.city}-${point.country}-${index}`}>
+-                      <td>{[point.city, point.country].filter(Boolean).join(", ") || "—"}</td>
++                      <td>{[point.city, point.country].filter(Boolean).join(", ") || "-"}</td>
+                       <td className="mono">{point.count}</td>
+                       <td className="mono" style={point.blocked ? { color: "var(--critical)" } : undefined}>
+                         {point.blocked}
+@@ -147,7 +147,7 @@ export default function SecurityPage() {
+ 
+       <div className="footer-note section">
+         Geolocation is derived from Vercel edge headers captured at request
+-        time — no third-party lookup, no added latency.
++        time - no third-party lookup, no added latency.
+       </div>
+     </>
+   );
+diff --git a/helixon-app/app/admin/seo/page.js b/helixon-app/app/admin/seo/page.js
+index 49696eb..6893eea 100644
+--- a/helixon-app/app/admin/seo/page.js
++++ b/helixon-app/app/admin/seo/page.js
+@@ -25,7 +25,7 @@ function useOpsData() {
+ }
+ 
+ function asBarItems(rows = [], nameKey) {
+-  return rows.map((row) => ({ name: row[nameKey] || "—", count: row.count }));
++  return rows.map((row) => ({ name: row[nameKey] || "-", count: row.count }));
+ }
+ 
+ export default function SeoPage() {
+@@ -37,7 +37,7 @@ export default function SeoPage() {
+     <>
+       <PageHeader
+         title="SEO / Acquisition"
+-        description="Channel mix, campaign performance, and organic reach — derived from UTM and referrer telemetry, no synthetic traffic."
++        description="Channel mix, campaign performance, and organic reach - derived from UTM and referrer telemetry, no synthetic traffic."
+       />
+ 
+       {error && <div className="notice error section">{error}</div>}
+@@ -47,11 +47,11 @@ export default function SeoPage() {
+       ) : (
+         <>
+           <div className="kpi-grid cols-3">
+-            <KpiCard label="Demo requests" value={kpis?.demos ?? "—"} />
+-            <KpiCard label="Trial verifications" value={kpis?.trials ?? "—"} />
++            <KpiCard label="Demo requests" value={kpis?.demos ?? "-"} />
++            <KpiCard label="Trial verifications" value={kpis?.trials ?? "-"} />
+             <KpiCard
+               label="Tracked requests"
+-              value={kpis?.requests?.toLocaleString?.() ?? kpis?.requests ?? "—"}
++              value={kpis?.requests?.toLocaleString?.() ?? kpis?.requests ?? "-"}
+             />
+           </div>
+ 
+@@ -81,7 +81,7 @@ export default function SeoPage() {
+ 
+           <div className="footer-note section">
+             Figures are derived from server-side request and demo-request
+-            telemetry only — no third-party analytics pixel, no cookie-based
++            telemetry only - no third-party analytics pixel, no cookie-based
+             tracking beyond the admin session itself.
+           </div>
+         </>
+diff --git a/helixon-app/app/admin/traffic/page.js b/helixon-app/app/admin/traffic/page.js
+index 1e301f2..e9de09d 100644
+--- a/helixon-app/app/admin/traffic/page.js
++++ b/helixon-app/app/admin/traffic/page.js
+@@ -45,7 +45,7 @@ export default function TrafficPage() {
+ 
+         <div className="kpi-card">
+           <div className="kpi-label">Geolocated</div>
+-          <div className="kpi-value">{traffic?.geolocation?.resolvedIps ?? "—"}</div>
++          <div className="kpi-value">{traffic?.geolocation?.resolvedIps ?? "-"}</div>
+         </div>
+       </div>
+ 
+diff --git a/helixon-app/app/admin/users/page.js b/helixon-app/app/admin/users/page.js
+index a3dbc28..9c718c9 100644
+--- a/helixon-app/app/admin/users/page.js
++++ b/helixon-app/app/admin/users/page.js
+@@ -73,20 +73,20 @@ export default function UsersPage() {
+                   </td>
+ 
+                   <td>
+-                    {[user.firstName, user.lastName].filter(Boolean).join(" ") || "—"}
++                    {[user.firstName, user.lastName].filter(Boolean).join(" ") || "-"}
+                   </td>
+ 
+-                  <td>{user.agency?.id || "—"}</td>
++                  <td>{user.agency?.id || "-"}</td>
+ 
+                   <td>
+-                    {user.subscription?.plan || "—"}
++                    {user.subscription?.plan || "-"}
+                     {user.subscription?.status && (
+                       <div className="muted">{user.subscription.status}</div>
+                     )}
+                   </td>
+ 
+                   <td className="mono">
+-                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
++                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
+                   </td>
+ 
+                   <td className="mono">
+diff --git a/helixon-app/app/api/admin/login/route.js b/helixon-app/app/api/admin/login/route.js
+index 04b0203..9aad8c5 100644
+--- a/helixon-app/app/api/admin/login/route.js
++++ b/helixon-app/app/api/admin/login/route.js
+@@ -26,7 +26,7 @@ export async function POST(request) {
+     if (!result.ok) {
+       // Same generic-enough messages checkAdminCredentials already returns
+       // ("Unknown username." / "Incorrect password. Try again." /
+-      // "Admin account not configured.") — good enough to be useful to a
++      // "Admin account not configured.") - good enough to be useful to a
+       // real admin without inviting a scripted username-enumeration pass,
+       // since there's no separate "user doesn't exist" vs "wrong password"
+       // timing difference introduced here (checkAdminCredentials always
+diff --git a/helixon-app/app/api/admin/ops/route.js b/helixon-app/app/api/admin/ops/route.js
+index 6ea19f8..7f3a257 100644
+--- a/helixon-app/app/api/admin/ops/route.js
++++ b/helixon-app/app/api/admin/ops/route.js
+@@ -3,11 +3,11 @@ import { requireAdminSession } from "@/lib/admin-auth";
+ import { getAdminOpsData } from "../../../../lib/ops/admin-data";
+ 
+ // Was previously gated by isAllowedAdmin(), a second, separately-implemented
+-// auth check expecting a Supabase Bearer token — but the real admin login
++// auth check expecting a Supabase Bearer token - but the real admin login
+ // (lib/admin-auth.js) is a hardcoded-credential system that only ever
+ // produces the httpOnly helixon_admin_session cookie, never a Supabase
+ // token. That meant every admin, on every load, got 403'd on the four pages
+-// that call this route (sales, ops, seo, security/investigate) — a wiring
++// that call this route (sales, ops, seo, security/investigate) - a wiring
+ // bug, not a missing feature. Swapped to the same requireAdminSession() used
+ // by every other /api/admin/* route, which reads that cookie correctly.
+ export async function GET() {
+diff --git a/helixon-app/app/api/admin/traffic/route.js b/helixon-app/app/api/admin/traffic/route.js
+index 740eff6..61ee851 100644
+--- a/helixon-app/app/api/admin/traffic/route.js
++++ b/helixon-app/app/api/admin/traffic/route.js
+@@ -84,7 +84,7 @@ function isPrivateOrReservedIp(ip) {
+     return true;
+   }
+ 
+-  // IPv4-mapped IPv6 (e.g. "::ffff:192.168.1.1") — re-check the embedded
++  // IPv4-mapped IPv6 (e.g. "::ffff:192.168.1.1") - re-check the embedded
+   // IPv4 address against the private ranges above instead of letting it
+   // slip through as "public" just because it's wrapped in IPv6 syntax.
+   if (lower.startsWith("::ffff:")) {
+diff --git a/helixon-app/app/api/auth/forgot-password/route.js b/helixon-app/app/api/auth/forgot-password/route.js
+index 445ab2e..389bfcd 100644
+--- a/helixon-app/app/api/auth/forgot-password/route.js
++++ b/helixon-app/app/api/auth/forgot-password/route.js
+@@ -45,7 +45,7 @@ export async function POST(request) {
+     // /update-password page, which verifies the token_hash itself via the
+     // same /api/auth/verify-email route used for signup confirmation (type
+     // differs). FIX: this was pointing at /reset-password, which isn't a
+-    // real page in this app (only /update-password exists) — every
++    // real page in this app (only /update-password exists) - every
+     // password-reset email sent people to a 404.
+     const resetUrl = new URL(
+       `/update-password?token_hash=${encodeURIComponent(data.properties.hashed_token)}&type=recovery`,
+diff --git a/helixon-app/app/api/auth/login/route.js b/helixon-app/app/api/auth/login/route.js
+index 3e4979d..f7f625e 100644
+--- a/helixon-app/app/api/auth/login/route.js
++++ b/helixon-app/app/api/auth/login/route.js
+@@ -9,13 +9,13 @@ const RATE_LIMIT_WINDOW_MINUTES = 15;
+ const MAX_FAILURES_PER_EMAIL = 5;
+ const MAX_FAILURES_PER_IP = 20;
+ 
+-// FIX: this was reading/writing "login_attempts" — that table's schema is
++// FIX: this was reading/writing "login_attempts" - that table's schema is
+ // (id, ts, ip, username, login_type, success), built for the employee/admin
+ // login flow. It has no "email" or "created_at" columns, so every query and
+ // insert below was throwing, getting caught, and (because checkRateLimit
+-// fails open) silently disabling rate limiting entirely — nobody was ever
++// fails open) silently disabling rate limiting entirely - nobody was ever
+ // actually blocked. "auth_login_attempts" (id, created_at, email, ip,
+-// success) is the table that was actually built to match this code —
++// success) is the table that was actually built to match this code -
+ // switching to it makes the queries below work as originally intended.
+ const RATE_LIMIT_TABLE = "auth_login_attempts";
+ 
+diff --git a/helixon-app/app/api/auth/signup/route.js b/helixon-app/app/api/auth/signup/route.js
+index a54725e..b1d2b75 100644
+--- a/helixon-app/app/api/auth/signup/route.js
++++ b/helixon-app/app/api/auth/signup/route.js
+@@ -79,7 +79,7 @@ export async function POST(request) {
+       // Likely the unique constraint on intake_email - someone already
+       // started a trial or signed up with this email.
+       if (agencyError.code === "23505") {
+-        // FIX: was "Error try another email" — not actually a sentence, and
++        // FIX: was "Error try another email" - not actually a sentence, and
+         // didn't tell the person what happened or what to do next.
+         return NextResponse.json({ ok: false, error: "An account already exists for this email. Try logging in instead." }, { status: 409 });
+       }
+diff --git a/helixon-app/app/api/auth/verify-email/route.js b/helixon-app/app/api/auth/verify-email/route.js
+index 67e774f..7ea6b57 100644
+--- a/helixon-app/app/api/auth/verify-email/route.js
++++ b/helixon-app/app/api/auth/verify-email/route.js
+@@ -2,19 +2,19 @@ import { createServerClient } from "@supabase/ssr";
+ import { cookies } from "next/headers";
+ import { NextResponse } from "next/server";
+ 
+-// This route didn't exist at all — /verify-email (signup confirmation) and
++// This route didn't exist at all - /verify-email (signup confirmation) and
+ // /update-password (password recovery) both POST here expecting it to
+ // exchange the token_hash from an email link for a session via
+ // supabase.auth.verifyOtp(), but there was nothing listening at this path.
+ // Every signup confirmation and every password-reset link 404'd here,
+ // which meant no one could ever confirm their email (login blocks
+-// unconfirmed accounts — see the email_confirmed_at check in
++// unconfirmed accounts - see the email_confirmed_at check in
+ // /api/auth/login) or complete a password reset.
+ 
+ const VALID_TYPES = ["signup", "recovery", "magiclink", "email_change", "invite"];
+ 
+ // Applies the exact cookies Supabase's setAll gave us (name, value, AND its
+-// own options) onto the outgoing response — same pattern as /api/auth/login
++// own options) onto the outgoing response - same pattern as /api/auth/login
+ // and /api/auth/mfa-verify.
+ function applyCookies(response, cookiesToSet) {
+   cookiesToSet.forEach(({ name, value, options }) => {
+@@ -63,7 +63,7 @@ export async function POST(request) {
+     );
+ 
+     // verifyOtp() both confirms the token AND, on success, sets a real
+-    // session (triggering setAll() above) — that session is what
++    // session (triggering setAll() above) - that session is what
+     // /api/auth/update-password relies on for "recovery" type, and what
+     // lets /verify-email drop the person straight into a logged-in state
+     // for "signup"/"magiclink" type.
+@@ -73,7 +73,7 @@ export async function POST(request) {
+       console.error("[verify-email] verifyOtp:", error.message);
+       // Supabase uses overlapping wording for "expired" and "already used"
+       // tokens. Either way the frontend's "expired" state (offer a resend/
+-      // new link) is the right response — there's no path where telling
++      // new link) is the right response - there's no path where telling
+       // the person to retry the exact same link helps.
+       return NextResponse.json({ ok: false, error: "expired" }, { status: 401 });
+     }
+diff --git a/helixon-app/app/api/employee/login/route.js b/helixon-app/app/api/employee/login/route.js
+index 89bd931..8055ea6 100644
+--- a/helixon-app/app/api/employee/login/route.js
++++ b/helixon-app/app/api/employee/login/route.js
+@@ -20,7 +20,7 @@ export async function POST(request) {
+     return NextResponse.json({ ok: false, error: "Username and password are required." }, { status: 400 });
+   }
+   if (!USERNAME_RE.test(username)) {
+-    // Same generic error a real wrong-credentials response would give —
++    // Same generic error a real wrong-credentials response would give -
+     // doesn't confirm/deny anything about username format validity.
+     return NextResponse.json({ ok: false, error: "Incorrect username or password. Please try again." }, { status: 401 });
+   }
+diff --git a/helixon-app/app/api/employee/shared-todos/route.js b/helixon-app/app/api/employee/shared-todos/route.js
+index bce89a5..caa92ce 100644
+--- a/helixon-app/app/api/employee/shared-todos/route.js
++++ b/helixon-app/app/api/employee/shared-todos/route.js
+@@ -1,8 +1,8 @@
+ // app/api/employee/shared-todos/route.js
+-// Team-visible task list — see lib/employee-shared-todos.js.
++// Team-visible task list - see lib/employee-shared-todos.js.
+ //
+ // Previously this route authenticated via a Supabase Auth Bearer token and
+-// looked the caller up by `employees.email` — but employees don't have
++// looked the caller up by `employees.email` - but employees don't have
+ // Supabase Auth accounts or an email column; they log in through
+ // lib/employee-auth.js's own username/password + cookie-session system
+ // (see lib/session.js). That mismatch meant this route could never
+diff --git a/helixon-app/app/api/employee/team/route.js b/helixon-app/app/api/employee/team/route.js
+index 9e54a87..54183dd 100644
+--- a/helixon-app/app/api/employee/team/route.js
++++ b/helixon-app/app/api/employee/team/route.js
+@@ -1,7 +1,7 @@
+ // app/api/employee/team/route.js
+ // Minimal active-employee roster, for populating the "assign to" dropdown
+ // on shared tasks. Deliberately narrow: id + display name only, active
+-// staff only — no username, role, email, or last-login. Any authenticated
++// staff only - no username, role, email, or last-login. Any authenticated
+ // employee can see this; there's nothing sensitive in it.
+ 
+ import { NextResponse } from "next/server";
+diff --git a/helixon-app/app/api/internal/edge-log/route.js b/helixon-app/app/api/internal/edge-log/route.js
+index 094c496..9390a27 100644
+--- a/helixon-app/app/api/internal/edge-log/route.js
++++ b/helixon-app/app/api/internal/edge-log/route.js
+@@ -9,7 +9,7 @@
+ // straight into request_logs, so anyone who found the URL could POST
+ // forged rows and poison the data every SEO/security/pentester admin page
+ // reads from. Set INTERNAL_EDGE_LOG_SECRET in the environment (any long
+-// random string) — proxy.ts sends the same value on every call. Fails
++// random string) - proxy.ts sends the same value on every call. Fails
+ // closed: if the secret isn't set, or doesn't match, the request is
+ // rejected rather than silently trusted.
+ 
+@@ -32,7 +32,7 @@ export async function POST(request) {
+     const provided = request.headers.get(INTERNAL_HEADER) || "";
+ 
+     if (!expected) {
+-      console.error("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set — rejecting all requests.");
++      console.error("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set - rejecting all requests.");
+       return Response.json({ ok: false, isBlocked: false }, { status: 503 });
+     }
+ 
+diff --git a/helixon-app/app/employee/dashboard/onboarding-panel.js b/helixon-app/app/employee/dashboard/onboarding-panel.js
+index 9ee0a65..f373625 100644
+--- a/helixon-app/app/employee/dashboard/onboarding-panel.js
++++ b/helixon-app/app/employee/dashboard/onboarding-panel.js
+@@ -1,6 +1,6 @@
+ "use client";
+ // app/employee/dashboard/onboarding-panel.js
+-// Onboarding checklist — full detail while incomplete, collapses to a
++// Onboarding checklist - full detail while incomplete, collapses to a
+ // one-line "Onboarding complete" once every step is checked off, so it
+ // doesn't take up space for people who finished it months ago.
+ 
+@@ -65,7 +65,7 @@ export default function OnboardingPanel() {
+         style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+       >
+         <span className="text-xs font-medium" style={{ color: "var(--forest)" }}>
+-          ✓ Onboarding complete — all {totalCount} steps done
++          ✓ Onboarding complete - all {totalCount} steps done
+         </span>
+         <span className="text-xs" style={{ color: "var(--forest)" }}>View</span>
+       </button>
+diff --git a/helixon-app/app/employee/dashboard/page.js b/helixon-app/app/employee/dashboard/page.js
+index db742eb..2de3919 100644
+--- a/helixon-app/app/employee/dashboard/page.js
++++ b/helixon-app/app/employee/dashboard/page.js
+@@ -10,7 +10,7 @@ import OnboardingPanel from "./onboarding-panel";
+ import TeamTasksPanel from "./team-tasks-panel";
+ 
+ const PRIORITY_META = {
+-  high: { label: "High", dot: "#e0554f", badge: "text-rose-700 border-rose-200", badgeBg: "#fdf1f0" },
++  high: { label: "High", dot: "var(--danger)", badge: "text-rose-700 border-rose-200", badgeBg: "var(--danger-soft)" },
+   medium: { label: "Medium", dot: "#d99a3a", badge: "text-amber-700 border-amber-200", badgeBg: "#fdf5e9" },
+   low: { label: "Low", dot: "#94a3b8", badge: "text-slate-600 border-slate-200", badgeBg: "#f4f4f5" },
+ };
+@@ -342,13 +342,13 @@ export default function EmployeeDashboard() {
+           <div
+             className="flex items-center gap-3 rounded-[14px] px-4 py-3 mb-6"
+             style={{
+-              background: overdueTodos.length > 0 ? "#fdf1f0" : "var(--mint)",
+-              border: `1px solid ${overdueTodos.length > 0 ? "#f4d4d2" : "var(--border)"}`,
++              background: overdueTodos.length > 0 ? "var(--danger-soft)" : "var(--mint)",
++              border: `1px solid ${overdueTodos.length > 0 ? "var(--danger-border)" : "var(--border)"}`,
+             }}
+           >
+             <span
+               className="w-2 h-2 rounded-full flex-shrink-0"
+-              style={{ background: overdueTodos.length > 0 ? "#e0554f" : "var(--forest)" }}
++              style={{ background: overdueTodos.length > 0 ? "var(--danger)" : "var(--forest)" }}
+             />
+             <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>
+               {overdueTodos.length > 0
+@@ -369,7 +369,7 @@ export default function EmployeeDashboard() {
+             <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+               <p
+                 className="text-xl font-semibold"
+-                style={{ color: s.warn ? "#e0554f" : "var(--ink)", fontFamily: "var(--font-display)" }}
++                style={{ color: s.warn ? "var(--danger)" : "var(--ink)", fontFamily: "var(--font-display)" }}
+               >
+                 {s.value}
+               </p>
+@@ -377,10 +377,10 @@ export default function EmployeeDashboard() {
+             </div>
+           ))}
+           {stats && [
+-            { label: "Total users", value: stats.totalUsers ?? "—" },
+-            { label: "Site views today", value: stats.siteViewsToday ?? "—" },
+-            { label: "Unique visitors today", value: stats.uniqueVisitorsToday ?? "—" },
+-            { label: "Blocked today", value: stats.blockedToday ?? "—" },
++            { label: "Total users", value: stats.totalUsers ?? "-" },
++            { label: "Site views today", value: stats.siteViewsToday ?? "-" },
++            { label: "Unique visitors today", value: stats.uniqueVisitorsToday ?? "-" },
++            { label: "Blocked today", value: stats.blockedToday ?? "-" },
+           ].map((s) => (
+             <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+               <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.value}</p>
+@@ -557,7 +557,7 @@ export default function EmployeeDashboard() {
+                 </div>
+ 
+                 {formError && (
+-                  <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>
++                  <p className="text-xs rounded-lg px-3 py-2" style={{ color: "var(--danger)", background: "var(--danger-soft)", border: "1px solid var(--danger-border)" }}>
+                     {formError}
+                   </p>
+                 )}
+@@ -599,7 +599,7 @@ export default function EmployeeDashboard() {
+                 <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
+                   {query.trim()
+                     ? "No tasks match your search."
+-                    : filter === "done" ? "No completed tasks yet." : "No tasks yet — add one above."}
++                    : filter === "done" ? "No completed tasks yet." : "No tasks yet - add one above."}
+                 </p>
+               </div>
+             )}
+@@ -657,7 +657,7 @@ export default function EmployeeDashboard() {
+                     {todo.due_date && (
+                       <p
+                         className="text-xs mt-1 font-medium"
+-                        style={{ color: overdue ? "#e0554f" : dueSoon ? "#d99a3a" : "var(--ink-faint)" }}
++                        style={{ color: overdue ? "var(--danger)" : dueSoon ? "#d99a3a" : "var(--ink-faint)" }}
+                       >
+                         {overdue ? "Overdue · " : dueSoon ? "Due soon · " : "Due "}
+                         {formatDate(todo.due_date)}
+@@ -677,7 +677,7 @@ export default function EmployeeDashboard() {
+                     <button
+                       onClick={() => handleDelete(todo.id)}
+                       className="text-xs px-2 py-1 rounded-md transition"
+-                      style={{ color: "#e0554f" }}
++                      style={{ color: "var(--danger)" }}
+                     >
+                       Delete
+                     </button>
+diff --git a/helixon-app/app/employee/dashboard/team-tasks-panel.js b/helixon-app/app/employee/dashboard/team-tasks-panel.js
+index 77aef95..ef6311f 100644
+--- a/helixon-app/app/employee/dashboard/team-tasks-panel.js
++++ b/helixon-app/app/employee/dashboard/team-tasks-panel.js
+@@ -2,12 +2,12 @@
+ // app/employee/dashboard/team-tasks-panel.js
+ // Team-visible task list: every active employee sees every task here.
+ // Only the creator or assignee can edit/complete a task; only the creator
+-// can delete it (enforced server-side in lib/employee-shared-todos.js —
++// can delete it (enforced server-side in lib/employee-shared-todos.js -
+ // this component just doesn't render controls the API would reject).
+ 
+ import { useEffect, useMemo, useState } from "react";
+ 
+-const PRIORITY_DOT = { high: "#e0554f", medium: "#d99a3a", low: "#94a3b8" };
++const PRIORITY_DOT = { high: "var(--danger)", medium: "#d99a3a", low: "#94a3b8" };
+ 
+ function formatDate(iso) {
+   if (!iso) return null;
+@@ -183,7 +183,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
+             </div>
+ 
+             {formError && (
+-              <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>
++              <p className="text-xs rounded-lg px-3 py-2" style={{ color: "var(--danger)", background: "var(--danger-soft)", border: "1px solid var(--danger-border)" }}>
+                 {formError}
+               </p>
+             )}
+@@ -214,7 +214,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
+         {visible.length === 0 && (
+           <div className="px-6 py-14 text-center">
+             <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
+-              {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet — add one above."}
++              {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet - add one above."}
+             </p>
+           </div>
+         )}
+@@ -258,7 +258,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
+ 
+               {canDelete && (
+                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+-                  <button onClick={() => handleDelete(todo.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>
++                  <button onClick={() => handleDelete(todo.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "var(--danger)" }}>
+                     Delete
+                   </button>
+                 </div>
+diff --git a/helixon-app/app/employee/ops/page.js b/helixon-app/app/employee/ops/page.js
+index 9be8967..aab04ce 100644
+--- a/helixon-app/app/employee/ops/page.js
++++ b/helixon-app/app/employee/ops/page.js
+@@ -1,18 +1,113 @@
+ "use client";
+ import { useEffect, useState } from "react";
+ 
++const KPI_LABELS = {
++  agencies: "Agencies",
++  candidates: "Candidates",
++  jobs: "Jobs",
++  analyses: "Analyses run",
++  leads: "Leads",
++};
++
++function KpiCard({ label, value }) {
++  return (
++    <div className="card p-4">
++      <p className="text-[11px] font-medium" style={{ color: "var(--ink-faint)" }}>{label}</p>
++      <p className="text-2xl font-semibold mt-2" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>
++        {value}
++      </p>
++    </div>
++  );
++}
++
++function BreakdownTable({ title, rows, columns }) {
++  return (
++    <div className="card p-5">
++      <p className="text-sm font-semibold mb-3" style={{ color: "var(--ink)" }}>{title}</p>
++      {rows.length === 0 ? (
++        <p className="text-xs" style={{ color: "var(--ink-faint)" }}>No data yet.</p>
++      ) : (
++        <div className="divide-y" style={{ borderColor: "var(--border-soft)" }}>
++          {rows.map((row, i) => (
++            <div key={i} className="flex items-center justify-between py-2.5 text-xs" style={{ color: "var(--ink-soft)" }}>
++              <span>{row[columns[0]]}</span>
++              <span className="font-medium" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>{row[columns[1]]}</span>
++            </div>
++          ))}
++        </div>
++      )}
++    </div>
++  );
++}
++
+ export default function EmployeeOpsPage() {
+   const [data, setData] = useState(null);
+   const [error, setError] = useState("");
+ 
+   useEffect(() => {
+     const token = window.__HELIXON_ACCESS_TOKEN__ || localStorage.getItem("helixon_access_token");
+-    if (!token) { setError("Connect this page to the existing employee Supabase session before using live operations data."); return; }
+-    fetch("/api/employee/ops", { headers: { Authorization: `Bearer ${token}` } }).then(async r => { const b = await r.json(); if (!r.ok) throw new Error(b.error || "Request failed"); return b; }).then(setData).catch(e => setError(e.message));
++    if (!token) {
++      setError("Connect this page to the existing employee Supabase session before using live operations data.");
++      return;
++    }
++    fetch("/api/employee/ops", { headers: { Authorization: `Bearer ${token}` } })
++      .then(async (r) => {
++        const b = await r.json();
++        if (!r.ok) throw new Error(b.error || "Request failed");
++        return b;
++      })
++      .then(setData)
++      .catch((e) => setError(e.message));
+   }, []);
+ 
+-  if (error) return <main style={{ padding: 24 }}><h1>Employee Operations</h1><p>{error}</p></main>;
+-  if (!data) return <main style={{ padding: 24 }}><h1>Employee Operations</h1><p>Loading…</p></main>;
++  return (
++    <main className="max-w-5xl mx-auto px-6 py-10">
++      <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
++        Operations
++      </h1>
++      <p className="text-sm mb-8" style={{ color: "var(--ink-soft)" }}>
++        {data ? `Live company, sales and acquisition data for ${data.employee.email}.` : "Live company, sales and acquisition data."}
++      </p>
++
++      {error && (
++        <div className="card p-4 text-sm" style={{ color: "var(--danger)", background: "var(--danger-soft)", borderColor: "var(--danger-border)" }}>
++          {error}
++        </div>
++      )}
++
++      {!error && !data && (
++        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
++          {Array.from({ length: 5 }).map((_, i) => (
++            <div key={i} className="card p-4">
++              <div className="h-3 w-16 rounded" style={{ background: "var(--mist)" }} />
++              <div className="h-6 w-10 rounded mt-3" style={{ background: "var(--mist)" }} />
++            </div>
++          ))}
++        </div>
++      )}
++
++      {data && (
++        <>
++          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
++            {Object.entries(data.kpis).map(([key, value]) => (
++              <KpiCard key={key} label={KPI_LABELS[key] || key} value={value} />
++            ))}
++          </div>
+ 
+-  return <main style={{ padding: 24 }}><h1>Employee Operations</h1><p>Live company, sales and acquisition data for {data.employee.email}.</p><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>{Object.entries(data.kpis).map(([k,v]) => <div key={k} style={{ padding: 16, border: "1px solid #ddd", borderRadius: 12 }}><div>{k}</div><strong style={{ fontSize: 28 }}>{v}</strong></div>)}</div><h2>Sales</h2><pre>{JSON.stringify(data.sales, null, 2)}</pre><h2>SEO</h2><pre>{JSON.stringify(data.seo, null, 2)}</pre></main>;
++          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
++            <BreakdownTable
++              title="Agencies by plan"
++              rows={data.sales.agenciesByPlan || []}
++              columns={["plan", "count"]}
++            />
++            <BreakdownTable
++              title="Leads by acquisition channel"
++              rows={data.seo.channels || []}
++              columns={["channel", "count"]}
++            />
++          </div>
++        </>
++      )}
++    </main>
++  );
+ }
+diff --git a/helixon-app/app/employee/page.js b/helixon-app/app/employee/page.js
+index 804a668..19ee279 100644
+--- a/helixon-app/app/employee/page.js
++++ b/helixon-app/app/employee/page.js
+@@ -23,7 +23,7 @@ export default function EmployeeLanding() {
+           }
+         }
+       } catch {
+-        // ignore — treat as signed out
++        // ignore - treat as signed out
+       }
+       setChecking(false);
+     })();
+@@ -108,7 +108,7 @@ export default function EmployeeLanding() {
+             Employee Portal
+           </h1>
+           <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+-            Manage your tasks and keep an eye on platform stats — all in one place.
++            Manage your tasks and keep an eye on platform stats - all in one place.
+           </p>
+ 
+           <div className="flex flex-col items-center gap-3">
 diff --git a/helixon-app/app/globals.css b/helixon-app/app/globals.css
-index 296a467..c5ae438 100644
+index 296a467..eb7fc83 100644
 --- a/helixon-app/app/globals.css
 +++ b/helixon-app/app/globals.css
 @@ -1,5 +1,5 @@
@@ -9,7 +1383,46 @@ index 296a467..c5ae438 100644
  
  @import "tailwindcss";
  
-@@ -40,7 +40,7 @@
+@@ -15,24 +15,32 @@
+   --border:       #e3e8e5;
+   --border-soft:  #edf0ee;
+ 
+-  /* NEW — secondary ink tones used for body copy / captions / faint labels.
++  /* NEW - secondary ink tones used for body copy / captions / faint labels.
+      These were previously hardcoded as literal hex in page.jsx (#5a7a6a,
+-     #8aaa9a, #b0c4ba) in dozens of places — pulled out here so there's a
++     #8aaa9a, #b0c4ba) in dozens of places - pulled out here so there's a
+      single source of truth, same pattern as --ink itself. */
+   --ink-soft:  #5a7a6a;  /* secondary body text */
+   --ink-faint: #8aaa9a;  /* captions, meta labels, placeholder-ish text */
+   --ink-mute:  #b0c4ba;  /* disabled states, very low-emphasis text */
+ 
+-  /* NEW — the one accent, reserved for score/verdict/live moments only.
+-     Never used for nav, buttons, or decoration — that's what keeps it a signal. */
++  /* NEW - the one accent, reserved for score/verdict/live moments only.
++     Never used for nav, buttons, or decoration - that's what keeps it a signal. */
+   --signal:       #ff6b4a;
+   --signal-soft:  #fff1ec;
+ 
+-  /* NEW — semantic score bands, so every component (ring, bars, badges)
++  /* Canonical "danger/critical" red, used everywhere something is urgent,
++     overdue, blocked, or failed - admin console, employee dashboard, and
++     the landing page's score-low state all reference this single value
++     instead of each surface picking its own red. */
++  --danger:        #c0392b;
++  --danger-soft:   #fdf1f0;
++  --danger-border: #f4d4d2;
++
++  /* NEW - semantic score bands, so every component (ring, bars, badges)
+      reads the same three colours instead of each file picking its own. */
+   --score-strong: #0b6e4f;   /* was emerald-600 in CandidateResult */
+   --score-mid:    #b45309;   /* was amber-600 */
+-  --score-low:    #c0392b;   /* was red-600 */
++  --score-low:    var(--danger);   /* was red-600; now aliases the canonical danger red */
+ 
+   --shadow-card:  0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+   --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+@@ -40,13 +48,13 @@
    --radius-card:  14px;
    --radius-btn:   10px;
    --radius-input: 10px;
@@ -18,7 +1431,39 @@ index 296a467..c5ae438 100644
    --font-body:    'Inter', system-ui, sans-serif;
    --font-mono:    'Geist Mono', monospace;
  }
-@@ -88,7 +88,7 @@
+ 
+ /* ── Tailwind v4 theme mapping ────────────────────────────────────────────
+-   This block was MISSING before — that's why bg-forest, text-white,
++   This block was MISSING before - that's why bg-forest, text-white,
+    rounded-btn, border-border, text-ink/60, font-display etc. in
+    Button.jsx / page.jsx rendered as nothing. Tailwind only generates a
+    utility class for a name it knows about; "forest", "ink", "btn" etc.
+@@ -54,7 +62,7 @@
+ 
+    This maps the :root tokens above onto Tailwind's theme so those utility
+    classes actually generate CSS. Color tokens reference :root directly
+-   (safe, since the names differ — --color-forest vs --forest). Radius/
++   (safe, since the names differ - --color-forest vs --forest). Radius/
+    shadow/font values are duplicated literally rather than referenced,
+    because Tailwind requires the @theme property name to exactly match
+    the :root name for those specific tokens, and referencing an
+@@ -75,11 +83,14 @@
+   --color-border-soft:   var(--border-soft);
+   --color-signal:        var(--signal);
+   --color-signal-soft:   var(--signal-soft);
++  --color-danger:        var(--danger);
++  --color-danger-soft:   var(--danger-soft);
++  --color-danger-border: var(--danger-border);
+   --color-score-strong:  var(--score-strong);
+   --color-score-mid:     var(--score-mid);
+   --color-score-low:     var(--score-low);
+ 
+-  /* Literal duplicates — see note above. Keep in sync with :root. */
++  /* Literal duplicates - see note above. Keep in sync with :root. */
+   --radius-card:  14px;
+   --radius-btn:   10px;
+   --radius-input: 10px;
+@@ -88,7 +99,7 @@
    --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
    --shadow-raise: 0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);
  
@@ -27,6 +1472,28 @@ index 296a467..c5ae438 100644
    --font-body:    'Inter', system-ui, sans-serif;
    --font-mono:    'Geist Mono', monospace;
  
+@@ -111,7 +122,7 @@ html {
+ /* Anchor targets clear the sticky nav */
+ [id] { scroll-margin-top: 72px; }
+ 
+-/* Skip link — visible only on keyboard focus */
++/* Skip link - visible only on keyboard focus */
+ .skip-link {
+   position: absolute;
+   left: -9999px;
+diff --git a/helixon-app/app/login/page.js b/helixon-app/app/login/page.js
+index 7a04633..9b2f3db 100644
+--- a/helixon-app/app/login/page.js
++++ b/helixon-app/app/login/page.js
+@@ -187,7 +187,7 @@ export default function LoginPage() {
+ 
+       if (!data.isAdmin) {
+         // One-time flag the dashboard reads on next load to show a
+-        // "Welcome back" banner, then clears — so it doesn't reappear on
++        // "Welcome back" banner, then clears - so it doesn't reappear on
+         // every refresh, only right after an actual login.
+         try { sessionStorage.setItem("helixon_just_logged_in", "1"); } catch { /* ignore */ }
+       }
 diff --git a/helixon-app/app/page.js b/helixon-app/app/page.js
 index a54b2ad..03821b4 100644
 --- a/helixon-app/app/page.js
@@ -105,3 +1572,56 @@ index a54b2ad..03821b4 100644
                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                  Fewer hours screening. More time interviewing.
                </h2>
+diff --git a/helixon-app/app/update-password/page.js b/helixon-app/app/update-password/page.js
+index a2bac49..64a4b60 100644
+--- a/helixon-app/app/update-password/page.js
++++ b/helixon-app/app/update-password/page.js
+@@ -187,7 +187,7 @@ function ResetPasswordContent() {
+   );
+ }
+ 
+-// ── Default export — wraps the content in Suspense, required by Next.js
++// ── Default export - wraps the content in Suspense, required by Next.js
+ //    App Router whenever a page reads useSearchParams(). Without this the
+ //    route bails out of static rendering / fails the build, exactly the
+ //    same issue verify-email/page.js already guards against. ─────────────
+diff --git a/helixon-app/app/verify-email/page.js b/helixon-app/app/verify-email/page.js
+index 7c02880..cf796a8 100644
+--- a/helixon-app/app/verify-email/page.js
++++ b/helixon-app/app/verify-email/page.js
+@@ -18,7 +18,7 @@ function AmbientBg() {
+   );
+ }
+ 
+-// ── Ring that fills in smoothly while verifying — a quiet, premium loader ──
++// ── Ring that fills in smoothly while verifying - a quiet, premium loader ──
+ function VerifyRing({ state }) {
+   const circumference = 2 * Math.PI * 34;
+   return (
+@@ -119,7 +119,7 @@ function VerifyEmailContent() {
+       });
+       setResent(true);
+     } catch {
+-      // silent — resend failures aren't critical path, the button stays available
++      // silent - resend failures aren't critical path, the button stays available
+     } finally {
+       setResending(false);
+     }
+@@ -170,7 +170,7 @@ function VerifyEmailContent() {
+                     <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                     Sending…
+                   </>
+-                ) : resent ? "New link sent — check your inbox" : !email ? "Go to sign in to resend" : "Resend verification email"}
++                ) : resent ? "New link sent - check your inbox" : !email ? "Go to sign in to resend" : "Resend verification email"}
+               </button>
+               <a href="/login" className="block text-[13px] font-medium hover:underline" style={{ color: "var(--forest)" }}>Back to sign in</a>
+             </div>
+@@ -197,7 +197,7 @@ function VerifyEmailContent() {
+   );
+ }
+ 
+-// ── Default export — wraps the content in Suspense, required by Next.js
++// ── Default export - wraps the content in Suspense, required by Next.js
+ //    App Router whenever a page reads useSearchParams(). ────────────────
+ export default function VerifyEmailPage() {
+   return (

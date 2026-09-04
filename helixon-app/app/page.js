@@ -715,8 +715,8 @@ function TrustSection() {
 
 const PLANS = [
   {
-    name: "Not sure yet?", price: "Get a demo", period: "",
-    features: ["Tailored to your hiring volume", "Full platform walkthrough", "No obligation"],
+    name: "Not sure yet?", price: "", period: "",
+    features: ["Full platform walkthrough", "No obligation"],
     cta: "Get a demo", highlight: false, action: "demo",
   },
   {
