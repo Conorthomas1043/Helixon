@@ -105,5 +105,6 @@ export async function GET() {
     ...stats,
     jobs,
     recruiters,
+    analyses,
   });
 }

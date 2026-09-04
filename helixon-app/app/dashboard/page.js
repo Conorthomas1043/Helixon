@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getMockData, STAGE_LABELS } from "@/lib/mock-data";
+import { STAGE_LABELS } from "@/lib/mock-data";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
@@ -46,16 +46,13 @@ const CARD = {
 /* ─── Data loading ──────────────────────────────────────────────────────── */
 
 async function fetchDashboardData() {
-  try {
-    const data = await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try { resolve(getMockData()); } catch (err) { reject(err); }
-      }, 200);
-    });
-    return data;
-  } catch {
-    throw new Error("Failed to load dashboard data");
-  }
+  const res = await fetch("/api/dashboard-stats", { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to load dashboard data");
+  const raw = await res.json();
+  return {
+    agency: { name: raw.agencyName, plan: raw.plan },
+    recentAnalyses: raw.analyses ?? [],
+  };
 }
 
 /* ─── Normalisation ─────────────────────────────────────────────────────── */
