@@ -8,39 +8,39 @@ import { STAGE_LABELS } from "@/lib/mock-data";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
-const BG        = "#07090F";
-const SURFACE   = "#0D1117";
-const SURFACE2  = "#111827";
-const BORDER    = "#1A2333";
-const BORDER2   = "#243044";
+const BG        = "var(--mist)";
+const SURFACE   = "var(--bg)";
+const SURFACE2  = "var(--mist)";
+const BORDER    = "var(--border)";
+const BORDER2   = "var(--border-soft)";
 
-const TEXT      = "#F1F5F9";
-const TEXT_SUB  = "#94A3B8";
-const TEXT_FAINT= "#475569";
+const TEXT      = "var(--ink)";
+const TEXT_SUB  = "var(--ink-soft)";
+const TEXT_FAINT= "var(--ink-faint)";
 
-const VIOLET    = "#7C3AED";
-const VIOLET_FG = "#A78BFA";
-const VIOLET_BG = "rgba(124,58,237,0.12)";
+const VIOLET    = "var(--forest)";
+const VIOLET_FG = "var(--forest)";
+const VIOLET_BG = "var(--mint)";
 
-const CYAN      = "#06B6D4";
-const CYAN_BG   = "rgba(6,182,212,0.10)";
+const CYAN      = "var(--gold)";
+const CYAN_BG   = "rgba(192,138,45,0.12)";
 
-const GREEN     = "#10B981";
-const GREEN_FG  = "#34D399";
-const GREEN_BG  = "rgba(16,185,129,0.10)";
+const GREEN     = "var(--score-strong)";
+const GREEN_FG  = "var(--score-strong)";
+const GREEN_BG  = "var(--mint)";
 
-const AMBER     = "#B45309";
-const AMBER_FG  = "#FCD34D";
-const AMBER_BG  = "rgba(251,191,36,0.10)";
+const AMBER     = "var(--score-mid)";
+const AMBER_FG  = "var(--score-mid)";
+const AMBER_BG  = "rgba(180,83,9,0.10)";
 
-const RED       = "#EF4444";
-const RED_STRONG= "#DC2626";
-const RED_BG    = "rgba(239,68,68,0.10)";
+const RED       = "var(--score-low)";
+const RED_STRONG= "var(--score-low)";
+const RED_BG    = "rgba(192,57,43,0.10)";
 
 const CARD = {
   background: SURFACE,
   border: `1px solid ${BORDER}`,
-  borderRadius: 12,
+  borderRadius: 14,
 };
 
 /* ─── Data loading ──────────────────────────────────────────────────────── */
@@ -448,7 +448,7 @@ function AttentionPanel({ items }) {
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
               }}
-                className="hover:bg-[#111827] transition-colors"
+                className="hover:bg-[var(--mist)] transition-colors"
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.candidateName}</p>
@@ -489,7 +489,7 @@ function TopCandidates({ candidates }) {
               <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} - ${c.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
-              }} className="hover:bg-[#111827] transition-colors">
+              }} className="hover:bg-[var(--mist)] transition-colors">
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -702,7 +702,7 @@ function RecentAnalyses({ analyses }) {
               {analyses.map((a) => {
                 const href = a.status === "completed" ? `/dashboard/candidates/${a.id}` : `/analyse/${a.id}`;
                 return (
-                  <tr key={a.id} onClick={() => router.push(href)} style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}` }} className="hover:bg-[#111827] transition-colors">
+                  <tr key={a.id} onClick={() => router.push(href)} style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}` }} className="hover:bg-[var(--mist)] transition-colors">
                     <td style={{ padding: "12px 12px 12px 0", minWidth: 0 }}>
                       <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} - ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.candidateName}</p>
