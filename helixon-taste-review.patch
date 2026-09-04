@@ -1,0 +1,107 @@
+diff --git a/helixon-app/app/globals.css b/helixon-app/app/globals.css
+index 296a467..c5ae438 100644
+--- a/helixon-app/app/globals.css
++++ b/helixon-app/app/globals.css
+@@ -1,5 +1,5 @@
+ /* ── Google Fonts must come first, before @import "tailwindcss" ── */
+-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
++@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+ 
+ @import "tailwindcss";
+ 
+@@ -40,7 +40,7 @@
+   --radius-card:  14px;
+   --radius-btn:   10px;
+   --radius-input: 10px;
+-  --font-display: 'Fraunces', Georgia, serif;
++  --font-display: 'Outfit', system-ui, sans-serif;
+   --font-body:    'Inter', system-ui, sans-serif;
+   --font-mono:    'Geist Mono', monospace;
+ }
+@@ -88,7 +88,7 @@
+   --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+   --shadow-raise: 0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);
+ 
+-  --font-display: 'Fraunces', Georgia, serif;
++  --font-display: 'Outfit', system-ui, sans-serif;
+   --font-body:    'Inter', system-ui, sans-serif;
+   --font-mono:    'Geist Mono', monospace;
+ 
+diff --git a/helixon-app/app/page.js b/helixon-app/app/page.js
+index a54b2ad..03821b4 100644
+--- a/helixon-app/app/page.js
++++ b/helixon-app/app/page.js
+@@ -305,7 +305,6 @@ function BeforeAfterSection() {
+     <section className="max-w-[1100px] mx-auto px-6 py-20">
+       <Reveal>
+         <div className="text-center mb-12">
+-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>The problem</p>
+           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+             Your candidates shouldn&apos;t be waiting on a spreadsheet.
+           </h2>
+@@ -409,7 +408,6 @@ function ProductWorkflowSection() {
+     <section id="how" className="max-w-[1100px] mx-auto px-6 py-20">
+       <Reveal>
+         <div className="text-center mb-12">
+-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>How it works</p>
+           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+             From CV to shortlist, without the spreadsheet
+           </h2>
+@@ -467,7 +465,6 @@ function BenefitsSection() {
+     <section id="benefits" className="max-w-[1100px] mx-auto px-6 py-20">
+       <Reveal>
+         <div className="text-center mb-12">
+-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Built for recruiters</p>
+           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+             Helixon helps you decide. It doesn&apos;t decide for you.
+           </h2>
+@@ -490,7 +487,6 @@ function BenefitsSection() {
+ 
+       <Reveal>
+         <div className="rounded-[16px] p-8 text-center" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
+-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Why it matters</p>
+           <p className="text-sm sm:text-base font-medium leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>
+             Less time screening + more candidates reviewed + faster shortlists
+             <br className="hidden sm:block" /> = more time for calls, sourcing and placements.
+@@ -534,7 +530,6 @@ function BulkScreeningSection() {
+     <section className="max-w-[1100px] mx-auto px-6 py-20">
+       <Reveal>
+         <div className="text-center mb-12">
+-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Bulk screening</p>
+           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+             One role. Dozens of CVs. One ranked shortlist.
+           </h2>
+@@ -800,7 +795,7 @@ function FAQSection() {
+ const TRUST_METRICS = [
+   { val: "< 1 min", label: "To screen a full CV batch" },
+   { val: "50", label: "CVs per bulk upload" },
+-  { val: "EU", label: "EU-hosted infrastructure" },
++  { val: "EU", label: "GDPR-ready, EU-hosted infrastructure" },
+ ];
+ 
+ /* ── Page ──────────────────────────────────────────────────────────────── */
+@@ -935,8 +930,6 @@ export default function LandingPage() {
+               </p>
+ 
+               <CtaButtons secondaryLabel="See how it works" secondaryHref="#how" />
+-
+-              <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>GDPR-ready · Built for agency recruiters · Quotes within one business day</p>
+             </div>
+ 
+             <RecruiterWorkspaceDemo />
+@@ -974,7 +967,6 @@ export default function LandingPage() {
+         <section id="features" className="max-w-[1100px] mx-auto px-6 py-20">
+           <Reveal>
+             <div className="text-center mb-12">
+-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Features</p>
+               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                 Built for the volume agency recruiters actually deal with
+               </h2>
+@@ -990,7 +982,6 @@ export default function LandingPage() {
+         <section className="max-w-[1100px] mx-auto px-6 py-20">
+           <Reveal>
+             <div className="text-center mb-12">
+-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>What recruiters say</p>
+               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                 Fewer hours screening. More time interviewing.
+               </h2>

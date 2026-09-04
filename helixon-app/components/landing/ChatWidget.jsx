@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-const SUGGESTIONS = ["How does scoring work?", "What's included in Free?", "Is my data secure?"];
+const SUGGESTIONS = ["How does scoring work?", "What's included in the individual plan?", "Is my data secure?"];
 
 // How far to lift the widget when the footer is in view, in px.
 // Tuned to clear the footer's bottom-right "Login" link at common widths.
