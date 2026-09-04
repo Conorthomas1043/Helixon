@@ -1,7 +1,7 @@
 // Shared by app/api/site-gate/route.ts and proxy.ts.
 //
 // Uses Web Crypto (crypto.subtle) rather than node:crypto because
-// proxy.ts runs on the Edge runtime, which doesn't have node:crypto —
+// proxy.ts runs on the Edge runtime, which doesn't have node:crypto -
 // but does have the standard SubtleCrypto API, and so does modern Node.
 // Keeping both sides on the same implementation means "signed by the
 // API route" and "verified by the proxy" are actually the same math.
@@ -17,7 +17,7 @@ function getSecret(): string {
   const secret = process.env.SITE_GATE_SECRET;
   if (!secret) {
     throw new Error(
-      "SITE_GATE_SECRET is not set — add it to your environment before the gate can issue or verify cookies."
+      "SITE_GATE_SECRET is not set - add it to your environment before the gate can issue or verify cookies."
     );
   }
   return secret;
@@ -78,7 +78,7 @@ export async function signGateCookie(): Promise<string> {
  * Verifies a cookie value came from signGateCookie() and wasn't just
  * typed into devtools by a visitor. httpOnly stops JS from reading or
  * writing the cookie, but it doesn't stop someone manually adding a
- * cookie named the same thing in their own browser's dev tools — the
+ * cookie named the same thing in their own browser's dev tools - the
  * signature is what actually stops that from working. The embedded
  * issue timestamp additionally caps how long any single issued value
  * stays valid, even if it's copied into a context where the cookie's
@@ -103,7 +103,7 @@ export async function verifyGateCookie(cookieValue: string | undefined): Promise
 }
 
 // Simple in-memory rate limit for the unlock endpoint. Resets on
-// redeploy/restart — a speed bump against script-guessing, not a
+// redeploy/restart - a speed bump against script-guessing, not a
 // security boundary.
 const attempts = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 60_000;

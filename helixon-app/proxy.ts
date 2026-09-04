@@ -6,12 +6,12 @@ import {
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
 
-// Flip to false to go live again — routes all page traffic to
+// Flip to false to go live again - routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
 const DEV_MODE = true;
 
 // Path admins are sent to when they hit /admin* without a valid session.
-// NOTE: adjust this if your real admin login page lives somewhere else —
+// NOTE: adjust this if your real admin login page lives somewhere else -
 // this is the one place that needs to change.
 const ADMIN_LOGIN_PATH = "/admin/login";
 
@@ -24,7 +24,7 @@ export const config = {
 };
 
 // Copies cookies that Supabase's setAll gave us (name, value, AND its own
-// options — maxAge/expires/domain/sameSite) onto whichever response we end
+// options - maxAge/expires/domain/sameSite) onto whichever response we end
 // up returning. Same principle as applyCookies() in the login route: if we
 // return a *different* NextResponse (a redirect, a 403, etc.) without doing
 // this, the refreshed session cookies never reach the browser and the user
@@ -37,7 +37,7 @@ function copyCookies(target, pendingCookies) {
 }
 
 // IMPORTANT: this must be named `proxy` (or a default export) and live in
-// proxy.ts — Next.js 16 renamed the middleware.ts/middleware() convention
+// proxy.ts - Next.js 16 renamed the middleware.ts/middleware() convention
 // to proxy.ts/proxy(). Having both middleware.ts and proxy.ts in the repo
 // at once is a build error ("Both middleware file... and proxy file...
 // detected"), which is why the build was failing. middleware.ts had the
@@ -45,11 +45,11 @@ function copyCookies(target, pendingCookies) {
 // wrong file name/export for this Next.js version; proxy.ts had the
 // correct file name but the older, buggy logic. This file merges them:
 // correct name, correct export, current logic. Delete middleware.ts once
-// this is in place — don't keep both.
+// this is in place - don't keep both.
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── Supabase session refresh — must happen first, before any other logic
+  // ── Supabase session refresh - must happen first, before any other logic
   // or return path, and nothing should run between createServerClient and
   // supabase.auth.getUser() below. This is what keeps a logged-in user's
   // session alive: it silently exchanges an expired access token for a new
@@ -79,11 +79,11 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // ── 0. Maintenance gate — checked first, before anything else ────────────
+  // ── 0. Maintenance gate - checked first, before anything else ────────────
   // Fix: previously this only checked whether the helixon_dev_unlocked
   // cookie was PRESENT. httpOnly stops JS from setting it, but it doesn't
   // stop a visitor from opening devtools → Application → Cookies and
-  // typing the name/value in by hand — that's a plain text match with no
+  // typing the name/value in by hand - that's a plain text match with no
   // secret involved, so anyone could "unlock" the site without ever
   // knowing the password. The cookie now carries an HMAC signature
   // (lib/site-gate.ts) that only the server can produce, so a hand-typed
@@ -125,7 +125,7 @@ export async function proxy(request: NextRequest) {
           "Content-Type": "application/json",
           // Shared secret so /api/internal/edge-log can tell this call came
           // from our own proxy and not an external POST forging traffic
-          // data — see the comment at the top of that route.
+          // data - see the comment at the top of that route.
           "x-internal-secret": process.env.INTERNAL_EDGE_LOG_SECRET || "",
         },
         body: JSON.stringify({
@@ -176,13 +176,13 @@ export async function proxy(request: NextRequest) {
   // Previously nothing checked this at the middleware level. The /api/admin/*
   // routes correctly return 401 for unauthenticated requests (they call
   // requireAdminSession()), but admin/page.js is a client component that
-  // fetches those routes only *after* mounting — so the page shell itself
+  // fetches those routes only *after* mounting - so the page shell itself
   // (nav, tabs, forms, buttons for banning/deleting users, creating
   // employees with role up to super_admin) rendered for anyone who found the
   // URL, logged-in admin or not. This uses the same signed, httpOnly
   // helixon_admin_session cookie the API routes check (verified here via
   // lib/admin-session.js, an Edge-Runtime-safe reimplementation of the same
-  // check lib/admin-auth.js uses server-side — see that file for why it's
+  // check lib/admin-auth.js uses server-side - see that file for why it's
   // not just imported directly). Excludes the login page itself so this
   // doesn't redirect-loop.
   if (pathname.startsWith("/admin") && pathname !== ADMIN_LOGIN_PATH) {
@@ -197,7 +197,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // ── 4. Continue — attach IP header for downstream API routes ─────────────
+  // ── 4. Continue - attach IP header for downstream API routes ─────────────
   const response = copyCookies(NextResponse.next({ request }), pendingCookies);
   response.headers.set("x-client-ip", ip);
   return response;

@@ -31,7 +31,7 @@ export default function EmployeesPage() {
         description={
           view === "staff"
             ? "Staff accounts and access levels."
-            : "SEO, marketing, and sales-facing numbers — kept simple for the sales team."
+            : "SEO, marketing, and sales-facing numbers - kept simple for the sales team."
         }
       >
         <div className="segmented">

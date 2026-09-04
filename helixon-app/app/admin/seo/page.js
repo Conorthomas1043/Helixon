@@ -25,7 +25,7 @@ function useOpsData() {
 }
 
 function asBarItems(rows = [], nameKey) {
-  return rows.map((row) => ({ name: row[nameKey] || "—", count: row.count }));
+  return rows.map((row) => ({ name: row[nameKey] || "-", count: row.count }));
 }
 
 export default function SeoPage() {
@@ -37,7 +37,7 @@ export default function SeoPage() {
     <>
       <PageHeader
         title="SEO / Acquisition"
-        description="Channel mix, campaign performance, and organic reach — derived from UTM and referrer telemetry, no synthetic traffic."
+        description="Channel mix, campaign performance, and organic reach - derived from UTM and referrer telemetry, no synthetic traffic."
       />
 
       {error && <div className="notice error section">{error}</div>}
@@ -47,11 +47,11 @@ export default function SeoPage() {
       ) : (
         <>
           <div className="kpi-grid cols-3">
-            <KpiCard label="Demo requests" value={kpis?.demos ?? "—"} />
-            <KpiCard label="Trial verifications" value={kpis?.trials ?? "—"} />
+            <KpiCard label="Demo requests" value={kpis?.demos ?? "-"} />
+            <KpiCard label="Trial verifications" value={kpis?.trials ?? "-"} />
             <KpiCard
               label="Tracked requests"
-              value={kpis?.requests?.toLocaleString?.() ?? kpis?.requests ?? "—"}
+              value={kpis?.requests?.toLocaleString?.() ?? kpis?.requests ?? "-"}
             />
           </div>
 
@@ -81,7 +81,7 @@ export default function SeoPage() {
 
           <div className="footer-note section">
             Figures are derived from server-side request and demo-request
-            telemetry only — no third-party analytics pixel, no cookie-based
+            telemetry only - no third-party analytics pixel, no cookie-based
             tracking beyond the admin session itself.
           </div>
         </>

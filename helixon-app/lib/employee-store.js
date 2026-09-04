@@ -2,20 +2,20 @@
 // Read-only stats snapshot shown on the employee dashboard.
 //
 // Previously this returned hardcoded numbers (totalUsers: 4213,
-// activeToday: 318, uptimePct: 99.97, openTickets: 12) — none of it real.
+// activeToday: 318, uptimePct: 99.97, openTickets: 12) - none of it real.
 // Now it's computed from request_logs and profiles, the same tables the
 // admin stats route (app/api/admin/stats/route.js) reads from, just a
 // narrower, lower-privilege slice safe for employee eyes: no IPs, no
 // per-request detail, no revenue/subscription numbers.
 //
 // uptimePct and openTickets were dropped rather than kept as different
-// fake numbers — there's no uptime monitor or support-ticket table backing
+// fake numbers - there's no uptime monitor or support-ticket table backing
 // either of them yet. Add them back for real once those exist.
 
 import { supabase } from "@/lib/supabase";
 
-// Paths that aren't a real person looking at the product — admin panel
-// traffic, the internal logging endpoint itself, static assets — excluded
+// Paths that aren't a real person looking at the product - admin panel
+// traffic, the internal logging endpoint itself, static assets - excluded
 // so "site views today" reflects visitors, not staff/infra noise.
 const EXCLUDED_PATH_PREFIXES = ["/admin", "/api", "/_next", "/favicon"];
 

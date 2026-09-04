@@ -65,7 +65,7 @@ export default function BillingPage() {
       <div className="panel section">
         <div className="panel-title">Billing telemetry</div>
         <div className="footer-note">
-          This view reads from the existing subscription and admin APIs — it
+          This view reads from the existing subscription and admin APIs - it
           never exposes Stripe secrets or payment credentials directly.
         </div>
       </div>

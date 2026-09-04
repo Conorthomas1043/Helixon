@@ -3,7 +3,7 @@
 /* ------------------------------------------------------------------------
  * ASSUMPTIONS
  * ------------------------------------------------------------------------
- * - Route: /dashboard/jobs/[id]. `params` read synchronously — see the
+ * - Route: /dashboard/jobs/[id]. `params` read synchronously - see the
  *   candidate profile page's header comment for the Next.js 15 note.
  * - Candidate ranking reuses getJobCandidates(jobId) from lib/mock-data.js
  *   (already sorted by score, descending).
@@ -109,7 +109,7 @@ function RankedCandidateRow({ candidate, rank }) {
         </div>
         <div className="text-right shrink-0 w-10">
           <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score) }}>
-            {candidate.score ?? "—"}
+            {candidate.score ?? "-"}
           </span>
         </div>
       </Link>

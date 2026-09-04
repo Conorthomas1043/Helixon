@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
 
       // Full navigation (not router.push) so the new httpOnly session
       // cookie is present on the very first request proxy.ts sees for
-      // /admin — avoids a client-side nav racing the cookie write.
+      // /admin - avoids a client-side nav racing the cookie write.
       window.location.href = "/admin";
     } catch (err) {
       setError(err.message);

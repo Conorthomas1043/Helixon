@@ -1,6 +1,6 @@
 "use client";
 // app/employee/dashboard/onboarding-panel.js
-// Onboarding checklist — full detail while incomplete, collapses to a
+// Onboarding checklist - full detail while incomplete, collapses to a
 // one-line "Onboarding complete" once every step is checked off, so it
 // doesn't take up space for people who finished it months ago.
 
@@ -65,7 +65,7 @@ export default function OnboardingPanel() {
         style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
       >
         <span className="text-xs font-medium" style={{ color: "var(--forest)" }}>
-          ✓ Onboarding complete — all {totalCount} steps done
+          ✓ Onboarding complete - all {totalCount} steps done
         </span>
         <span className="text-xs" style={{ color: "var(--forest)" }}>View</span>
       </button>

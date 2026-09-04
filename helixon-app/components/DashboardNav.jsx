@@ -29,7 +29,7 @@ export default function DashboardNav({ email }) {
           </div>
           <span className="flex flex-col leading-none">
             <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+            <span className="hidden sm:block text-[10px] font-medium mt-0.5" style={{ color: "var(--ink-soft)" }}>Screen candidates in seconds</span>
           </span>
         </Link>
 
@@ -40,7 +40,7 @@ export default function DashboardNav({ email }) {
               <Link
                 key={t.href}
                 href={t.href}
-                className="px-3 py-1.5 rounded-[8px] transition-colors"
+                className="px-3 py-1.5 rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
                 style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
               >
                 {t.label}
@@ -55,7 +55,7 @@ export default function DashboardNav({ email }) {
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-label="Account menu"
-            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors"
+            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
             style={{ border: "1px solid var(--border)" }}
           >
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
@@ -65,9 +65,9 @@ export default function DashboardNav({ email }) {
           </button>
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+8px)] w-44 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
-              <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
-              <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
-              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#b91c1c" }}>Log out</a>
+              <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
+              <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
+              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#b91c1c" }}>Log out</a>
             </div>
           )}
         </div>
@@ -81,7 +81,7 @@ export default function DashboardNav({ email }) {
             <Link
               key={t.href}
               href={t.href}
-              className="px-3 py-1.5 rounded-[8px] whitespace-nowrap"
+              className="px-3 py-1.5 rounded-[8px] whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
               style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
             >
               {t.label}

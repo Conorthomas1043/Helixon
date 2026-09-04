@@ -2,7 +2,7 @@
 // app/employee/dashboard/team-tasks-panel.js
 // Team-visible task list: every active employee sees every task here.
 // Only the creator or assignee can edit/complete a task; only the creator
-// can delete it (enforced server-side in lib/employee-shared-todos.js —
+// can delete it (enforced server-side in lib/employee-shared-todos.js -
 // this component just doesn't render controls the API would reject).
 
 import { useEffect, useMemo, useState } from "react";
@@ -214,7 +214,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
         {visible.length === 0 && (
           <div className="px-6 py-14 text-center">
             <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
-              {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet — add one above."}
+              {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet - add one above."}
             </p>
           </div>
         )}

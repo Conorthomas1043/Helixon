@@ -93,7 +93,7 @@ export default function SecurityPage() {
         <ComingSoonRow
           label="Two-factor authentication"
           description="Require a verification code in addition to your password when signing in."
-          note="Not available yet — this needs backend support for generating and verifying codes and storing recovery codes securely."
+          note="Not available yet - this needs backend support for generating and verifying codes and storing recovery codes securely."
         />
 
         <Divider />
@@ -101,7 +101,7 @@ export default function SecurityPage() {
         <ComingSoonRow
           label="Active sessions"
           description="See where you're signed in and sign out devices you don't recognize."
-          note="Not available yet — the app doesn't currently track session or device metadata server-side."
+          note="Not available yet - the app doesn't currently track session or device metadata server-side."
         />
       </PageCard>
 

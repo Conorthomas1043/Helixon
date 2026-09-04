@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Blog / Resources — article grid with category filter. Same nav/footer/
+// Blog / Resources - article grid with category filter. Same nav/footer/
 // tokens as the rest of the marketing site.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -78,9 +78,9 @@ const CATEGORIES = ["All", "Recruiting tips", "Product updates", "Industry"];
 
 const POSTS = [
   { title: "Why CV keyword-matching gets senior hires wrong", category: "Recruiting tips", date: "Jul 28, 2026", read: "6 min read", excerpt: "Keyword filters reward CVs written for the algorithm, not the role. Here's what to check instead when you're screening for a senior hire." },
-  { title: "Introducing bulk upload for Solo and Team plans", category: "Product updates", date: "Jul 14, 2026", read: "3 min read", excerpt: "Score an entire shortlist at once instead of one CV at a time — now live for Solo and Team accounts." },
+  { title: "Introducing bulk upload for Solo and Team plans", category: "Product updates", date: "Jul 14, 2026", read: "3 min read", excerpt: "Score an entire shortlist at once instead of one CV at a time - now live for Solo and Team accounts." },
   { title: "The real cost of a slow screening process", category: "Industry", date: "Jun 30, 2026", read: "5 min read", excerpt: "Strong candidates don't wait. A look at how screening speed affects offer-acceptance rates across UK agencies." },
-  { title: "Five red flags worth asking about (not rejecting for)", category: "Recruiting tips", date: "Jun 18, 2026", read: "4 min read", excerpt: "Employment gaps and short tenures aren't automatic no's — they're conversation starters. Here's how to read them." },
+  { title: "Five red flags worth asking about (not rejecting for)", category: "Recruiting tips", date: "Jun 18, 2026", read: "4 min read", excerpt: "Employment gaps and short tenures aren't automatic no's - they're conversation starters. Here's how to read them." },
   { title: "How we score seniority when job titles don't match", category: "Product updates", date: "Jun 2, 2026", read: "4 min read", excerpt: "A candidate titled 'Team Lead' at one company might be doing 'Manager' work at another. Here's how Helixon accounts for that." },
   { title: "What agency recruiters told us about their week", category: "Industry", date: "May 20, 2026", read: "7 min read", excerpt: "We surveyed 40 UK recruitment agencies about where their time actually goes. Screening topped the list." },
 ];
@@ -155,7 +155,7 @@ export default function BlogPage() {
             Get new posts in your inbox.
           </h2>
           <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-            No spam — just the occasional screening tip or product update.
+            No spam - just the occasional screening tip or product update.
           </p>
           <form className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto">
             <input

@@ -1,0 +1,273 @@
+diff --git a/helixon-app/app/login/page.js b/helixon-app/app/login/page.js
+index 7a04633..2ac6bae 100644
+--- a/helixon-app/app/login/page.js
++++ b/helixon-app/app/login/page.js
+@@ -33,7 +33,7 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
+             fontSize: active ? "10px" : "13.5px",
+             fontWeight: active ? 600 : 400,
+             letterSpacing: active ? "0.03em" : "0",
+-            color: active ? (status === "error" ? "#dc2626" : "var(--forest)") : "#8aaa9a",
++            color: active ? (status === "error" ? "#dc2626" : "var(--forest)") : "var(--ink-soft)",
+             textTransform: active ? "uppercase" : "none",
+             transitionTimingFunction: EASE,
+             transitionDuration: "0.2s",
+@@ -70,7 +70,7 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
+         {trailing && <span className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</span>}
+       </div>
+       {hint && (
+-        <p aria-live="polite" className="text-[11px] mt-1.5 pl-0.5" style={{ color: status === "error" ? "#dc2626" : "#8aaa9a" }}>
++        <p aria-live="polite" className="text-[11px] mt-1.5 pl-0.5" style={{ color: status === "error" ? "#dc2626" : "var(--ink-soft)" }}>
+           {hint}
+         </p>
+       )}
+@@ -408,7 +408,7 @@ export default function LoginPage() {
+                   </div>
+                 </form>
+ 
+-                <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: "#8aaa9a" }}>
++                <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                   This site is protected by reCAPTCHA and the Google{" "}
+                   <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="underline hover:opacity-80">Privacy Policy</a>{" "}
+                   and{" "}
+diff --git a/helixon-app/app/tailwind.config.js b/helixon-app/app/tailwind.config.js
+deleted file mode 100644
+index fb65e38..0000000
+--- a/helixon-app/app/tailwind.config.js
++++ /dev/null
+@@ -1,66 +0,0 @@
+-/** @type {import('tailwindcss').Config} */
+-module.exports = {
+-  content: [
+-    "./app/**/*.{js,jsx,ts,tsx}",
+-    "./components/**/*.{js,jsx,ts,tsx}",
+-  ],
+-  theme: {
+-    extend: {
+-      colors: {
+-        forest: {
+-          DEFAULT: "#0b6e4f",
+-          deep: "#0b3a2a",
+-        },
+-        mint: "#e3f2e9",
+-        mist: "#f4f8f6",
+-        ink: "#13201b",
+-        muted: "#5a7a6a",
+-        faint: "#8aaa9a",
+-        line: "#d8e5de",
+-        signal: "#f59e0b",
+-      },
+-      // A small type scale to replace one-off text-[Npx] values.
+-      fontSize: {
+-        "3xs": ["9px", { lineHeight: "1.4" }],
+-        "2xs": ["10px", { lineHeight: "1.4" }],
+-      },
+-      fontFamily: {
+-        // Fraunces gives headlines real character - a wonky, high-contrast
+-        // serif built for display sizes, not just "a serif" as a signal.
+-        display: ["var(--font-display)", "Georgia", "serif"],
+-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+-      },
+-      boxShadow: {
+-        raise: "0 20px 40px -20px rgba(19,32,27,0.18)",
+-        card: "0 12px 28px -12px rgba(11,110,79,0.5)",
+-        cta: "0 8px 20px -8px rgba(11,110,79,0.5)",
+-        button: "0 12px 24px -10px rgba(11,58,42,0.5)",
+-        pop: "0 50px 100px -30px rgba(11,26,20,0.45)",
+-      },
+-      keyframes: {
+-        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+-        popIn: {
+-          from: { opacity: 0, transform: "scale(0.94) translateY(10px)" },
+-          to: { opacity: 1, transform: "scale(1) translateY(0)" },
+-        },
+-        shake: {
+-          "0%, 100%": { transform: "translateX(0)" },
+-          "25%": { transform: "translateX(-4px)" },
+-          "75%": { transform: "translateX(4px)" },
+-        },
+-        heroIn: {
+-          from: { opacity: 0, transform: "translateY(10px)" },
+-          to: { opacity: 1, transform: "translateY(0)" },
+-        },
+-      },
+-      animation: {
+-        fadeIn: "fadeIn 0.25s cubic-bezier(0.16,1,0.3,1)",
+-        popIn: "popIn 0.35s cubic-bezier(0.16,1,0.3,1)",
+-        shake: "shake 0.4s ease",
+-        heroIn: "heroIn 0.6s cubic-bezier(0.16,1,0.3,1) both",
+-      },
+-    },
+-  },
+-  plugins: [],
+-};
+\ No newline at end of file
+diff --git a/helixon-app/components/AppNav.jsx b/helixon-app/components/AppNav.jsx
+index ec48354..b33d0fd 100644
+--- a/helixon-app/components/AppNav.jsx
++++ b/helixon-app/components/AppNav.jsx
+@@ -86,7 +86,7 @@ export default function AppNav({ active }) {
+             <div role="menu" className="absolute right-0 mt-2 w-52 rounded-[14px] py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
+               <div className="px-3.5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
+                 <p className="text-sm font-medium truncate" style={{ color: COLORS.ink }}>Acme Recruiting</p>
+-                <p className="text-xs truncate" style={{ color: COLORS.faint }}>agency@acme.com</p>
++                <p className="text-xs truncate" style={{ color: COLORS.muted }}>agency@acme.com</p>
+               </div>
+               <Link
+                 href="/account/profile"
+@@ -100,7 +100,7 @@ export default function AppNav({ active }) {
+                 Billing
+               </Link>
+               <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
+-                <a href="/logout" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
++                <a href="/api/auth/logout" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
+                   Log out
+                 </a>
+               </div>
+diff --git a/helixon-app/components/CandidateResult.js b/helixon-app/components/CandidateResult.js
+index d8a6d23..49894eb 100644
+--- a/helixon-app/components/CandidateResult.js
++++ b/helixon-app/components/CandidateResult.js
+@@ -51,7 +51,7 @@ function lsSet(key, val) {
+ 
+ function SectionLabel({ children }) {
+   return (
+-    <h3 className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a", fontFamily: "var(--font-mono)" }}>
++    <h3 className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}>
+       {children}
+     </h3>
+   );
+@@ -143,7 +143,7 @@ function Field({ icon, label, children }) {
+     <div className="flex items-start gap-2">
+       <span className="shrink-0 mt-0.5 text-sm" style={{ color: "#c8d8ce" }}>{icon}</span>
+       <div className="min-w-0">
+-        <p className="text-[9px] uppercase" style={{ color: "#8aaa9a" }}>{label}</p>
++        <p className="text-[9px] uppercase" style={{ color: "var(--ink-soft)" }}>{label}</p>
+         {children}
+       </div>
+     </div>
+@@ -167,7 +167,7 @@ function PipelineStage({ candidateId, toast }) {
+           return (
+             <button key={s} type="button" onClick={() => update(s)}
+               className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all"
+-              style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "#8aaa9a", borderColor: "var(--border)" }}>
++              style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "var(--ink-soft)", borderColor: "var(--border)" }}>
+               {s}
+             </button>
+           );
+@@ -311,7 +311,7 @@ export default function CandidateResult({
+           )}
+           <div className="flex items-center justify-between gap-2">
+             <div>
+-              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a", fontFamily: "var(--font-mono)" }}>
++              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}>
+                 {result.name && result.name !== "Candidate" ? result.name : "Recommendation"}
+               </div>
+               <RecommendBadge recommendation={result.recommendation} />
+@@ -330,7 +330,7 @@ export default function CandidateResult({
+             </div>
+             {!defaultExpanded && <span className="text-xs shrink-0" style={{ color: "#c8d8ce" }}>{expanded ? "▲" : "▼"}</span>}
+           </div>
+-          {result.summary && <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: "#8aaa9a" }}>{result.summary}</p>}
++          {result.summary && <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.summary}</p>}
+         </div>
+       </div>
+ 
+@@ -343,7 +343,7 @@ export default function CandidateResult({
+                 <button key={t.key} type="button" role="tab" aria-selected={activeTab === t.key}
+                   onClick={() => setActiveTab(t.key)}
+                   className="flex items-center gap-1.5 px-4 py-3 text-[11px] font-semibold whitespace-nowrap transition-colors shrink-0 relative"
+-                  style={{ color: activeTab === t.key ? "var(--forest)" : "#8aaa9a" }}>
++                  style={{ color: activeTab === t.key ? "var(--forest)" : "var(--ink-soft)" }}>
+                   <span style={{ opacity: activeTab === t.key ? 1 : 0.6 }}>{t.icon}</span>
+                   {t.label}
+                   {t.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={badgeStyle(t.tone)}>{t.badge}</span>}
+@@ -378,7 +378,7 @@ export default function CandidateResult({
+                             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${row.val}%`, background: scoreColour(row.val) }} />
+                           </div>
+                           {result.score_rationale?.[row.key] && (
+-                            <p className="text-[10px] mt-1 leading-relaxed" style={{ color: "#8aaa9a" }}>{result.score_rationale[row.key]}</p>
++                            <p className="text-[10px] mt-1 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.score_rationale[row.key]}</p>
+                           )}
+                         </div>
+                       ))}
+@@ -443,7 +443,7 @@ export default function CandidateResult({
+                   <div>
+                     <SectionLabel>Other skills on CV</SectionLabel>
+                     <div className="flex flex-wrap gap-1.5">
+-                      {result.other_skills.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--mist)", color: "#8aaa9a" }}>{s}</span>)}
++                      {result.other_skills.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>{s}</span>)}
+                     </div>
+                   </div>
+                 )}
+@@ -484,7 +484,7 @@ export default function CandidateResult({
+                           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs" style={{ background: "var(--mist)", border: "1px solid var(--border-soft)" }}>🎓</div>
+                           <div className="min-w-0">
+                             <p className="text-xs font-semibold" style={{ color: "#13201b" }}>{e.degree}{e.field_of_study ? ` ${e.field_of_study}` : ""}</p>
+-                            <p className="text-[11px]" style={{ color: "#5a7a6a" }}>{e.institution}{(e.start_year || e.end_year) && <span style={{ color: "#8aaa9a" }}> · {fmtYearRange(e.start_year, e.end_year)}</span>}</p>
++                            <p className="text-[11px]" style={{ color: "#5a7a6a" }}>{e.institution}{(e.start_year || e.end_year) && <span style={{ color: "var(--ink-soft)" }}> · {fmtYearRange(e.start_year, e.end_year)}</span>}</p>
+                             {e.grade && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--forest)" }}>{e.grade}</p>}
+                           </div>
+                         </div>
+@@ -574,7 +574,7 @@ export default function CandidateResult({
+                       <span className="text-lg font-bold" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>{fmtSalary(result.salary_estimate.low)} – {fmtSalary(result.salary_estimate.high)}</span>
+                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fef3e8", color: "#b45309" }}>{result.salary_estimate.seniority}</span>
+                     </div>
+-                    {result.salary_estimate.rationale && <p className="text-[11px] leading-relaxed" style={{ color: "#8aaa9a" }}>{result.salary_estimate.rationale}</p>}
++                    {result.salary_estimate.rationale && <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.salary_estimate.rationale}</p>}
+                   </div>
+                 )}
+                 {!hasContact && !result.salary_estimate && <EmptyTabState label="contact" />}
+diff --git a/helixon-app/components/DashboardNav.jsx b/helixon-app/components/DashboardNav.jsx
+index 974e21a..b1f666c 100644
+--- a/helixon-app/components/DashboardNav.jsx
++++ b/helixon-app/components/DashboardNav.jsx
+@@ -29,7 +29,7 @@ export default function DashboardNav({ email }) {
+           </div>
+           <span className="flex flex-col leading-none">
+             <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
+-            <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
++            <span className="hidden sm:block text-[10px] font-medium mt-0.5" style={{ color: "var(--ink-soft)" }}>Screen candidates in seconds</span>
+           </span>
+         </Link>
+ 
+@@ -40,7 +40,7 @@ export default function DashboardNav({ email }) {
+               <Link
+                 key={t.href}
+                 href={t.href}
+-                className="px-3 py-1.5 rounded-[8px] transition-colors"
++                className="px-3 py-1.5 rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+                 style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
+               >
+                 {t.label}
+@@ -55,7 +55,7 @@ export default function DashboardNav({ email }) {
+             onClick={() => setMenuOpen((v) => !v)}
+             aria-expanded={menuOpen}
+             aria-label="Account menu"
+-            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors"
++            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+             style={{ border: "1px solid var(--border)" }}
+           >
+             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
+@@ -65,9 +65,9 @@ export default function DashboardNav({ email }) {
+           </button>
+           {menuOpen && (
+             <div className="absolute right-0 top-[calc(100%+8px)] w-44 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+-              <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
+-              <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
+-              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px]" style={{ color: "#b91c1c" }}>Log out</a>
++              <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
++              <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
++              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#b91c1c" }}>Log out</a>
+             </div>
+           )}
+         </div>
+@@ -81,7 +81,7 @@ export default function DashboardNav({ email }) {
+             <Link
+               key={t.href}
+               href={t.href}
+-              className="px-3 py-1.5 rounded-[8px] whitespace-nowrap"
++              className="px-3 py-1.5 rounded-[8px] whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+               style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
+             >
+               {t.label}

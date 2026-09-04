@@ -63,19 +63,19 @@ export default function CommandPage() {
           tone="var(--critical)"
         />
 
-        <KpiCard label="Users" value={totals.users ?? "—"} />
-        <KpiCard label="Employees" value={totals.employees ?? "—"} tone="var(--ok)" />
+        <KpiCard label="Users" value={totals.users ?? "-"} />
+        <KpiCard label="Employees" value={totals.employees ?? "-"} tone="var(--ok)" />
       </div>
 
       <div className="kpi-grid cols-6">
-        <KpiCard label="Agencies" value={totals.agencies ?? "—"} />
-        <KpiCard label="Candidates" value={totals.candidates ?? "—"} />
-        <KpiCard label="Jobs" value={totals.jobs ?? "—"} />
-        <KpiCard label="Analyses run" value={totals.analyses ?? "—"} />
-        <KpiCard label="Demo requests" value={totals.demoRequests ?? "—"} />
+        <KpiCard label="Agencies" value={totals.agencies ?? "-"} />
+        <KpiCard label="Candidates" value={totals.candidates ?? "-"} />
+        <KpiCard label="Jobs" value={totals.jobs ?? "-"} />
+        <KpiCard label="Analyses run" value={totals.analyses ?? "-"} />
+        <KpiCard label="Demo requests" value={totals.demoRequests ?? "-"} />
         <KpiCard
           label="Failed logins"
-          value={totals.failedAuthAttempts ?? "—"}
+          value={totals.failedAuthAttempts ?? "-"}
           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
         />
       </div>
@@ -123,7 +123,7 @@ export default function CommandPage() {
 
             {blocked.length === 0 ? (
               <div className="empty">
-                No blocked IPs — anything blocked from Traffic shows up here.
+                No blocked IPs - anything blocked from Traffic shows up here.
               </div>
             ) : (
               <div className="table-wrap" style={{ marginTop: 8 }}>

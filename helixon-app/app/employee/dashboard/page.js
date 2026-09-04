@@ -377,10 +377,10 @@ export default function EmployeeDashboard() {
             </div>
           ))}
           {stats && [
-            { label: "Total users", value: stats.totalUsers ?? "—" },
-            { label: "Site views today", value: stats.siteViewsToday ?? "—" },
-            { label: "Unique visitors today", value: stats.uniqueVisitorsToday ?? "—" },
-            { label: "Blocked today", value: stats.blockedToday ?? "—" },
+            { label: "Total users", value: stats.totalUsers ?? "-" },
+            { label: "Site views today", value: stats.siteViewsToday ?? "-" },
+            { label: "Unique visitors today", value: stats.uniqueVisitorsToday ?? "-" },
+            { label: "Blocked today", value: stats.blockedToday ?? "-" },
           ].map((s) => (
             <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
               <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.value}</p>
@@ -599,7 +599,7 @@ export default function EmployeeDashboard() {
                 <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
                   {query.trim()
                     ? "No tasks match your search."
-                    : filter === "done" ? "No completed tasks yet." : "No tasks yet — add one above."}
+                    : filter === "done" ? "No completed tasks yet." : "No tasks yet - add one above."}
                 </p>
               </div>
             )}

@@ -2,19 +2,19 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-// This route didn't exist at all — /verify-email (signup confirmation) and
+// This route didn't exist at all - /verify-email (signup confirmation) and
 // /update-password (password recovery) both POST here expecting it to
 // exchange the token_hash from an email link for a session via
 // supabase.auth.verifyOtp(), but there was nothing listening at this path.
 // Every signup confirmation and every password-reset link 404'd here,
 // which meant no one could ever confirm their email (login blocks
-// unconfirmed accounts — see the email_confirmed_at check in
+// unconfirmed accounts - see the email_confirmed_at check in
 // /api/auth/login) or complete a password reset.
 
 const VALID_TYPES = ["signup", "recovery", "magiclink", "email_change", "invite"];
 
 // Applies the exact cookies Supabase's setAll gave us (name, value, AND its
-// own options) onto the outgoing response — same pattern as /api/auth/login
+// own options) onto the outgoing response - same pattern as /api/auth/login
 // and /api/auth/mfa-verify.
 function applyCookies(response, cookiesToSet) {
   cookiesToSet.forEach(({ name, value, options }) => {
@@ -63,7 +63,7 @@ export async function POST(request) {
     );
 
     // verifyOtp() both confirms the token AND, on success, sets a real
-    // session (triggering setAll() above) — that session is what
+    // session (triggering setAll() above) - that session is what
     // /api/auth/update-password relies on for "recovery" type, and what
     // lets /verify-email drop the person straight into a logged-in state
     // for "signup"/"magiclink" type.
@@ -73,7 +73,7 @@ export async function POST(request) {
       console.error("[verify-email] verifyOtp:", error.message);
       // Supabase uses overlapping wording for "expired" and "already used"
       // tokens. Either way the frontend's "expired" state (offer a resend/
-      // new link) is the right response — there's no path where telling
+      // new link) is the right response - there's no path where telling
       // the person to retry the exact same link helps.
       return NextResponse.json({ ok: false, error: "expired" }, { status: 401 });
     }

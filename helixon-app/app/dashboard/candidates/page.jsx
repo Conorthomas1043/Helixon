@@ -7,7 +7,7 @@
  *   adjust if this project's app-router root lives elsewhere (e.g. under
  *   src/app).
  * - DashboardNav is reused as-is from the existing dashboard. If it
- *   doesn't yet have a "Candidates" link, add one pointing here — it
+ *   doesn't yet have a "Candidates" link, add one pointing here - it
  *   wasn't safe to guess-edit a component whose source wasn't available.
  * - getCandidates()/getStageCounts() in lib/mock-data.js are written to
  *   look like a server-side filter/sort/paginate query so they're a
@@ -18,7 +18,7 @@
  *   candidate, then refetch. There's no bulk endpoint assumed to exist.
  * - CandidateDatabasePage reads `useSearchParams()` for deep-linking
  *   (?jobId=, ?recruiterId=, ?stage=), so the part of the tree that uses
- *   it is wrapped in <Suspense> — required by Next.js for any component
+ *   it is wrapped in <Suspense> - required by Next.js for any component
  *   that reads search params, or static prerendering fails the build.
  * ---------------------------------------------------------------------- */
 
@@ -54,7 +54,7 @@ import {
 } from "@/lib/candidate-format";
 
 /* ------------------------------------------------------------------------
- * Mock "network" wrapper — see dashboard/page.js's fetchDashboardData for
+ * Mock "network" wrapper - see dashboard/page.js's fetchDashboardData for
  * the precedent. Swap the body for `fetch("/api/candidates?...")` later;
  * callers already treat this as async and handle the error path.
  * ---------------------------------------------------------------------- */
@@ -190,7 +190,7 @@ function ScorePill({ score }) {
   return (
     <div className="flex flex-col items-end shrink-0 w-12">
       <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color }}>
-        {score === null || score === undefined ? "—" : score}
+        {score === null || score === undefined ? "-" : score}
       </span>
       <span className="text-[10px] whitespace-nowrap" style={{ color: INK_FAINT }}>
         {score === null || score === undefined ? "" : scoreLabel(score).split(" ")[0]}
@@ -376,7 +376,7 @@ function ErrorState({ onRetry }) {
 }
 
 /* ------------------------------------------------------------------------
- * Page content — reads useSearchParams(), so it must live inside the
+ * Page content - reads useSearchParams(), so it must live inside the
  * <Suspense> boundary set up by the default export below.
  * ---------------------------------------------------------------------- */
 
@@ -699,7 +699,7 @@ function CandidateDatabaseContent() {
 
 /* ------------------------------------------------------------------------
  * Fallback shown during the (very brief) moment Suspense needs before
- * useSearchParams() resolves — reuses the same skeleton as the loading
+ * useSearchParams() resolves - reuses the same skeleton as the loading
  * state so there's no visible flash between the two.
  * ---------------------------------------------------------------------- */
 

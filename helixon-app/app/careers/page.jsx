@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Careers — culture blurb, benefits, and open roles. Same nav/footer/tokens
+// Careers - culture blurb, benefits, and open roles. Same nav/footer/tokens
 // as the rest of the marketing site.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -104,7 +104,7 @@ export default function CareersPage() {
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-16 text-center">
         <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-          We're hiring — {ROLES.length} open roles
+          We're hiring - {ROLES.length} open roles
         </span>
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
           Help agencies hire better.
@@ -183,7 +183,7 @@ export default function CareersPage() {
         </div>
 
         <p className="text-xs text-center mt-6" style={{ color: "#8aaa9a" }}>
-          Don't see the right role? <a href="/contact" style={{ color: "var(--forest)", fontWeight: 600 }}>Get in touch anyway</a> — we're always open to meeting good people.
+          Don't see the right role? <a href="/contact" style={{ color: "var(--forest)", fontWeight: 600 }}>Get in touch anyway</a> - we're always open to meeting good people.
         </p>
       </section>
 

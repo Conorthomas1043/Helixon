@@ -3,11 +3,11 @@
 /* ------------------------------------------------------------------------
  * ASSUMPTIONS
  * ------------------------------------------------------------------------
- * - Route: /dashboard/team. Not previously linked from DashboardNav — a
+ * - Route: /dashboard/team. Not previously linked from DashboardNav - a
  *   "Team" tab was added there so this page is reachable; drop that tab if
  *   this project already has a different team/settings surface.
  * - "Recruiter" here means anyone in RECRUITERS in lib/mock-data.js,
- *   without a distinct permissions/role system — see that file's
+ *   without a distinct permissions/role system - see that file's
  *   `role: "manager" | "recruiter"` field, which isn't used for access
  *   control anywhere yet (per the brief: don't build permissions gating
  *   that doesn't have a real auth model to hang off).

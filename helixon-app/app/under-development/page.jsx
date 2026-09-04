@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 // The password itself lives ONLY server-side now (SITE_GATE_PASSWORD env
 // var, checked in app/api/site-gate/route.ts). This component just POSTs
-// what the visitor typed and reacts to the server's answer — there's
+// what the visitor typed and reacts to the server's answer - there's
 // nothing to read out of the shipped JS anymore.
 
 function DiggingScene() {
@@ -44,7 +44,7 @@ function DiggingScene() {
         <path d="M106 61 L84 84" />
       </g>
 
-      {/* hard hat — thin outline, matches icon language elsewhere on the site */}
+      {/* hard hat - thin outline, matches icon language elsewhere on the site */}
       <path d="M113 46 Q122 34 131 46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
       <line x1="111" y1="46" x2="133" y2="46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" strokeLinecap="round" />
 
@@ -134,7 +134,7 @@ function GateForm() {
         }}
       />
 
-      {/* A few drifting specks of dust — quiet ambient motion, not a joke. */}
+      {/* A few drifting specks of dust - quiet ambient motion, not a joke. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden sm:block">
         {[0, 1, 2, 3, 4].map((i) => (
           <span

@@ -9,7 +9,7 @@
 // straight into request_logs, so anyone who found the URL could POST
 // forged rows and poison the data every SEO/security/pentester admin page
 // reads from. Set INTERNAL_EDGE_LOG_SECRET in the environment (any long
-// random string) — proxy.ts sends the same value on every call. Fails
+// random string) - proxy.ts sends the same value on every call. Fails
 // closed: if the secret isn't set, or doesn't match, the request is
 // rejected rather than silently trusted.
 
@@ -32,7 +32,7 @@ export async function POST(request) {
     const provided = request.headers.get(INTERNAL_HEADER) || "";
 
     if (!expected) {
-      console.error("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set — rejecting all requests.");
+      console.error("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set - rejecting all requests.");
       return Response.json({ ok: false, isBlocked: false }, { status: 503 });
     }
 

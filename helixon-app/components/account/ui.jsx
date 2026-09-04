@@ -204,7 +204,7 @@ export function Divider() {
 
 // ── "Not available yet" row ─────────────────────────────────────────────
 // For settings the backend genuinely doesn't support yet. Deliberately not
-// an interactive control (no disabled toggle, no dead button) — a static
+// an interactive control (no disabled toggle, no dead button) - a static
 // row with a badge, so it reads as a roadmap item rather than a feature
 // that looks live but silently does nothing.
 export function ComingSoonRow({ label, description, note }) {

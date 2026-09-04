@@ -44,11 +44,11 @@ export default function SecurityPage() {
 
       <div className="kpi-grid">
         <KpiCard label="Blocked IPs" value={blocked.length} tone="var(--critical)" />
-        <KpiCard label="Requests denied" value={totals.blockedRequests ?? "—"} />
-        <KpiCard label="Login attempts" value={totals.loginAttempts ?? "—"} />
+        <KpiCard label="Requests denied" value={totals.blockedRequests ?? "-"} />
+        <KpiCard label="Login attempts" value={totals.loginAttempts ?? "-"} />
         <KpiCard
           label="Failed auth attempts"
-          value={totals.failedAuthAttempts ?? "—"}
+          value={totals.failedAuthAttempts ?? "-"}
           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
         />
       </div>
@@ -96,9 +96,9 @@ export default function SecurityPage() {
                     <tr key={item.ip}>
                       <td className="mono">{item.ip}</td>
                       <td className="muted">{item.reason || "Admin block"}</td>
-                      <td className="muted">{item.created_by || "—"}</td>
+                      <td className="muted">{item.created_by || "-"}</td>
                       <td className="mono">
-                        {item.created_at ? new Date(item.created_at).toLocaleString() : "—"}
+                        {item.created_at ? new Date(item.created_at).toLocaleString() : "-"}
                       </td>
                       <td>
                         <button className="btn small" onClick={() => unblock(item.ip)} disabled={busy}>
@@ -130,7 +130,7 @@ export default function SecurityPage() {
                 <tbody>
                   {hotspots.map((point, index) => (
                     <tr key={`${point.city}-${point.country}-${index}`}>
-                      <td>{[point.city, point.country].filter(Boolean).join(", ") || "—"}</td>
+                      <td>{[point.city, point.country].filter(Boolean).join(", ") || "-"}</td>
                       <td className="mono">{point.count}</td>
                       <td className="mono" style={point.blocked ? { color: "var(--critical)" } : undefined}>
                         {point.blocked}
@@ -147,7 +147,7 @@ export default function SecurityPage() {
 
       <div className="footer-note section">
         Geolocation is derived from Vercel edge headers captured at request
-        time — no third-party lookup, no added latency.
+        time - no third-party lookup, no added latency.
       </div>
     </>
   );

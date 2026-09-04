@@ -41,7 +41,7 @@ export default function ChatWidget() {
     if (open) setTimeout(() => inputRef.current?.focus(), 200);
   }, [open]);
 
-  // Fix #3 — the launcher/panel are position:fixed to the bottom-right
+  // Fix #3 - the launcher/panel are position:fixed to the bottom-right
   // corner, so they collide with whatever else lands there, e.g. the
   // footer's "Login" link. Watch the footer and lift the widget clear of
   // it while it's in view, instead of a magic-number bottom offset that
@@ -151,7 +151,7 @@ export default function ChatWidget() {
             {messages.length === 0 && (
               <div>
                 <p className="text-xs leading-relaxed text-ink/60 mb-3">
-                  Hi — I can answer questions about Helixon while you look around. What would you like to know?
+                  Hi - I can answer questions about Helixon while you look around. What would you like to know?
                 </p>
                 <div className="flex flex-col gap-1.5">
                   {SUGGESTIONS.map((s) => (

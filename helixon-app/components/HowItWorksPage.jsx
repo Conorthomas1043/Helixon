@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// How It Works — expands the landing page's 3-step teaser into a full
+// How It Works - expands the landing page's 3-step teaser into a full
 // walkthrough. Same nav/footer/tokens as the landing page so the click
 // from "How it works" in the marketing nav feels seamless.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,19 +78,19 @@ const STEPS = [
   {
     n: "1",
     title: "Name your analysis & pick the job",
-    body: "Give the analysis a name you'll recognise later — the client, the req number, whatever fits your workflow. Then pick a preset role or paste in your own job description. Helixon reads it the same way a hiring manager would: required skills, nice-to-haves, seniority, and tone.",
+    body: "Give the analysis a name you'll recognise later - the client, the req number, whatever fits your workflow. Then pick a preset role or paste in your own job description. Helixon reads it the same way a hiring manager would: required skills, nice-to-haves, seniority, and tone.",
     icon: <><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></>,
   },
   {
     n: "2",
     title: "Upload the CV",
-    body: "Drag in a PDF or Word file. No reformatting, no copy-pasting into a template — Helixon parses the document as-is, including tables, multi-column layouts, and scanned exports, in a matter of seconds.",
+    body: "Drag in a PDF or Word file. No reformatting, no copy-pasting into a template - Helixon parses the document as-is, including tables, multi-column layouts, and scanned exports, in a matter of seconds.",
     icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
   },
   {
     n: "3",
     title: "Get your score",
-    body: "You get a match score out of 100, a plain-English summary of why, standout factors, red flags worth asking about, and a ready-to-send follow-up email — all on one screen, ready to drop into your pipeline.",
+    body: "You get a match score out of 100, a plain-English summary of why, standout factors, red flags worth asking about, and a ready-to-send follow-up email - all on one screen, ready to drop into your pipeline.",
     icon: <><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9" /></>,
   },
 ];
@@ -98,11 +98,11 @@ const STEPS = [
 const DETAILS = [
   {
     title: "What Helixon actually reads",
-    body: "Work history, dates, titles, skills listed and skills implied by the roles held, education, and any certifications on the page. It also reads the job description the same way — pulling out what's required versus preferred, and the seniority level the role is written for.",
+    body: "Work history, dates, titles, skills listed and skills implied by the roles held, education, and any certifications on the page. It also reads the job description the same way - pulling out what's required versus preferred, and the seniority level the role is written for.",
   },
   {
     title: "How the score is calculated",
-    body: "The score weighs how closely a candidate's experience, skills, and seniority match what the job description asks for. It's not a keyword count — a candidate missing an exact job title but with equivalent responsibilities elsewhere still scores fairly.",
+    body: "The score weighs how closely a candidate's experience, skills, and seniority match what the job description asks for. It's not a keyword count - a candidate missing an exact job title but with equivalent responsibilities elsewhere still scores fairly.",
   },
   {
     title: "What counts as a red flag",
@@ -185,11 +185,11 @@ export default function HowItWorksPage() {
             See it work on a real CV.
           </h2>
           <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Try it free — no card needed, 3 analyses included.
+            Try it free - no card needed, 3 analyses included.
           </p>
           <div className="flex justify-center">
             <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
-              Try it now — it&apos;s free
+              Try it now - it&apos;s free
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
           </div>

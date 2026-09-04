@@ -79,7 +79,7 @@ export async function POST(request) {
       // Likely the unique constraint on intake_email - someone already
       // started a trial or signed up with this email.
       if (agencyError.code === "23505") {
-        // FIX: was "Error try another email" — not actually a sentence, and
+        // FIX: was "Error try another email" - not actually a sentence, and
         // didn't tell the person what happened or what to do next.
         return NextResponse.json({ ok: false, error: "An account already exists for this email. Try logging in instead." }, { status: 409 });
       }

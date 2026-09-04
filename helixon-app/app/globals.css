@@ -15,20 +15,20 @@
   --border:       #e3e8e5;
   --border-soft:  #edf0ee;
 
-  /* NEW — secondary ink tones used for body copy / captions / faint labels.
+  /* NEW - secondary ink tones used for body copy / captions / faint labels.
      These were previously hardcoded as literal hex in page.jsx (#5a7a6a,
-     #8aaa9a, #b0c4ba) in dozens of places — pulled out here so there's a
+     #8aaa9a, #b0c4ba) in dozens of places - pulled out here so there's a
      single source of truth, same pattern as --ink itself. */
   --ink-soft:  #5a7a6a;  /* secondary body text */
   --ink-faint: #8aaa9a;  /* captions, meta labels, placeholder-ish text */
   --ink-mute:  #b0c4ba;  /* disabled states, very low-emphasis text */
 
-  /* NEW — the one accent, reserved for score/verdict/live moments only.
-     Never used for nav, buttons, or decoration — that's what keeps it a signal. */
+  /* NEW - the one accent, reserved for score/verdict/live moments only.
+     Never used for nav, buttons, or decoration - that's what keeps it a signal. */
   --signal:       #ff6b4a;
   --signal-soft:  #fff1ec;
 
-  /* NEW — semantic score bands, so every component (ring, bars, badges)
+  /* NEW - semantic score bands, so every component (ring, bars, badges)
      reads the same three colours instead of each file picking its own. */
   --score-strong: #0b6e4f;   /* was emerald-600 in CandidateResult */
   --score-mid:    #b45309;   /* was amber-600 */
@@ -46,7 +46,7 @@
 }
 
 /* ── Tailwind v4 theme mapping ────────────────────────────────────────────
-   This block was MISSING before — that's why bg-forest, text-white,
+   This block was MISSING before - that's why bg-forest, text-white,
    rounded-btn, border-border, text-ink/60, font-display etc. in
    Button.jsx / page.jsx rendered as nothing. Tailwind only generates a
    utility class for a name it knows about; "forest", "ink", "btn" etc.
@@ -54,7 +54,7 @@
 
    This maps the :root tokens above onto Tailwind's theme so those utility
    classes actually generate CSS. Color tokens reference :root directly
-   (safe, since the names differ — --color-forest vs --forest). Radius/
+   (safe, since the names differ - --color-forest vs --forest). Radius/
    shadow/font values are duplicated literally rather than referenced,
    because Tailwind requires the @theme property name to exactly match
    the :root name for those specific tokens, and referencing an
@@ -79,7 +79,7 @@
   --color-score-mid:     var(--score-mid);
   --color-score-low:     var(--score-low);
 
-  /* Literal duplicates — see note above. Keep in sync with :root. */
+  /* Literal duplicates - see note above. Keep in sync with :root. */
   --radius-card:  14px;
   --radius-btn:   10px;
   --radius-input: 10px;
@@ -111,7 +111,7 @@ html {
 /* Anchor targets clear the sticky nav */
 [id] { scroll-margin-top: 72px; }
 
-/* Skip link — visible only on keyboard focus */
+/* Skip link - visible only on keyboard focus */
 .skip-link {
   position: absolute;
   left: -9999px;

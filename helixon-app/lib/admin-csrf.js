@@ -1,6 +1,6 @@
 // ── Admin CSRF protection (double-submit cookie) ────────────────────────────
 // The admin session itself is a signed, httpOnly cookie, which stops it being
-// read or stolen by JS — but httpOnly cookies are still sent automatically by
+// read or stolen by JS - but httpOnly cookies are still sent automatically by
 // the browser on cross-site requests, which is exactly what makes CSRF
 // possible: a malicious page can make the admin's browser fire a POST/PATCH/
 // DELETE to /api/admin/* and the session cookie rides along for free, no
@@ -11,7 +11,7 @@
 // mutating request. A cross-site attacker can trigger the request but can't
 // read the cookie (browsers don't allow cross-origin reads) to put it in the
 // header, so the two values won't match and the request is rejected. This is
-// the standard "double-submit cookie" pattern — no server-side token storage
+// the standard "double-submit cookie" pattern - no server-side token storage
 // needed, works fine alongside the existing signed session cookie.
 
 import crypto from "crypto";
@@ -34,7 +34,7 @@ function timingSafeEqualStr(a, b) {
 }
 
 // Verifies the double-submit pair for a mutating request. Returns true/false,
-// never throws — callers should treat false as "reject with 403".
+// never throws - callers should treat false as "reject with 403".
 export function verifyCsrf(request) {
   const cookieHeader = request.headers.get("cookie") || "";
   const cookieMatch = cookieHeader

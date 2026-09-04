@@ -19,18 +19,18 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
           {rows.length === 0 ? (
             <tr>
               <td colSpan="6" className="empty">
-                No request logs for this range — try a wider window.
+                No request logs for this range - try a wider window.
               </td>
             </tr>
           ) : (
             rows.map((row) => (
               <tr key={row.id}>
                 <td className="mono">
-                  {row.ts ? new Date(row.ts).toLocaleString() : "—"}
+                  {row.ts ? new Date(row.ts).toLocaleString() : "-"}
                 </td>
 
                 <td>
-                  <span className="mono">{row.ip || "—"}</span>
+                  <span className="mono">{row.ip || "-"}</span>
                   <div className="muted mono-wrap">{row.user_agent || ""}</div>
                 </td>
 
@@ -41,7 +41,7 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
                 </td>
 
                 <td>
-                  {[row.city, row.country].filter(Boolean).join(", ") || "—"}
+                  {[row.city, row.country].filter(Boolean).join(", ") || "-"}
                 </td>
 
                 <td>
@@ -61,7 +61,7 @@ export function RequestTable({ rows, blockedSet, onBlock }) {
                       Block
                     </button>
                   ) : (
-                    <span className="muted">—</span>
+                    <span className="muted">-</span>
                   )}
                 </td>
               </tr>

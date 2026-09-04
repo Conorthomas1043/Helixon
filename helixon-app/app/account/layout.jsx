@@ -3,7 +3,7 @@ import SettingsNav from "@/components/account/SettingsNav";
 import PageTransition from "@/components/account/PageTransition";
 
 export const metadata = {
-  title: "Account settings — Helixon",
+  title: "Account settings - Helixon",
 };
 
 // Server component: it renders client components (AppNav, SettingsNav,

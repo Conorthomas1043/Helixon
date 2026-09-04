@@ -2,16 +2,16 @@
 // Deliberately has NO Node-only imports (no `crypto` module, no `Buffer`) so
 // it can be safely imported from two very different places:
 //
-//   1. lib/admin-auth.js — used by Node.js route handlers / server
+//   1. lib/admin-auth.js - used by Node.js route handlers / server
 //      components (getAdminSession, requireAdminSession, isAdminUser).
-//   2. proxy.ts — runs on the Edge Runtime. Edge Runtime does not support
+//   2. proxy.ts - runs on the Edge Runtime. Edge Runtime does not support
 //      Node's built-in `crypto` module; importing it there causes a
 //      build-time error ("A Node.js API is used ... not supported in the
 //      Edge Runtime"). This is why proxy.ts previously had no way to check
 //      the admin session at all and /admin rendered for anyone.
 //
 // Signing (issuing new session tokens) still happens in lib/admin-auth.js
-// using Node's `crypto` — that only ever runs in the login route, a
+// using Node's `crypto` - that only ever runs in the login route, a
 // Node.js context, so there's no restriction there. This file only
 // *re-derives* the same HMAC-SHA256 to check a token that's already been
 // issued. Web Crypto (crypto.subtle) computes byte-identical HMAC-SHA256
@@ -38,7 +38,7 @@ function bytesToHex(bytes) {
 }
 
 // Constant-time comparison over two equal-length hex strings, to avoid
-// timing attacks — same property Node's crypto.timingSafeEqual gave the
+// timing attacks - same property Node's crypto.timingSafeEqual gave the
 // original implementation.
 function timingSafeEqualHex(a, b) {
   if (a.length !== b.length) return false;
@@ -51,7 +51,7 @@ function timingSafeEqualHex(a, b) {
 
 // Verifies a "<base64url-payload>.<hex-hmac-signature>" session token.
 // Returns the decoded payload ({ username, exp }) if valid, else null.
-// Never throws — callers can treat null as "not authenticated".
+// Never throws - callers can treat null as "not authenticated".
 export async function verifyAdminSessionToken(token) {
   try {
     const secret = process.env.ADMIN_SESSION_SECRET;

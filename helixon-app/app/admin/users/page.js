@@ -73,20 +73,20 @@ export default function UsersPage() {
                   </td>
 
                   <td>
-                    {[user.firstName, user.lastName].filter(Boolean).join(" ") || "—"}
+                    {[user.firstName, user.lastName].filter(Boolean).join(" ") || "-"}
                   </td>
 
-                  <td>{user.agency?.id || "—"}</td>
+                  <td>{user.agency?.id || "-"}</td>
 
                   <td>
-                    {user.subscription?.plan || "—"}
+                    {user.subscription?.plan || "-"}
                     {user.subscription?.status && (
                       <div className="muted">{user.subscription.status}</div>
                     )}
                   </td>
 
                   <td className="mono">
-                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
                   </td>
 
                   <td className="mono">

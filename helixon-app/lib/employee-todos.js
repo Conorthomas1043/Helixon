@@ -3,7 +3,7 @@
 //
 // IMPORTANT: this uses the service-role client (@/lib/supabase), which
 // bypasses RLS entirely. Every read/update/delete below therefore filters
-// on employee_id explicitly and unconditionally — that's the only thing
+// on employee_id explicitly and unconditionally - that's the only thing
 // standing between one employee and another employee's tasks. Never build
 // a query here that trusts a bare todo `id` without also constraining
 // employee_id, or it becomes an IDOR (one employee could read/edit/delete

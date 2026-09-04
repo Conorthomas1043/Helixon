@@ -4,7 +4,7 @@
  * ASSUMPTIONS
  * ------------------------------------------------------------------------
  * - Route: /dashboard/jobs. The existing dashboard's "All jobs →" link and
- *   DashboardNav's "Jobs" tab both already point here — if a real
+ *   DashboardNav's "Jobs" tab both already point here - if a real
  *   /dashboard/jobs page already exists in this project, treat this file
  *   as a reference implementation to reconcile against rather than a
  *   blind overwrite; it wasn't possible to check from this conversation.

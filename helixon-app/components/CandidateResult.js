@@ -51,7 +51,7 @@ function lsSet(key, val) {
 
 function SectionLabel({ children }) {
   return (
-    <h3 className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a", fontFamily: "var(--font-mono)" }}>
+    <h3 className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}>
       {children}
     </h3>
   );
@@ -143,7 +143,7 @@ function Field({ icon, label, children }) {
     <div className="flex items-start gap-2">
       <span className="shrink-0 mt-0.5 text-sm" style={{ color: "#c8d8ce" }}>{icon}</span>
       <div className="min-w-0">
-        <p className="text-[9px] uppercase" style={{ color: "#8aaa9a" }}>{label}</p>
+        <p className="text-[9px] uppercase" style={{ color: "var(--ink-soft)" }}>{label}</p>
         {children}
       </div>
     </div>
@@ -167,7 +167,7 @@ function PipelineStage({ candidateId, toast }) {
           return (
             <button key={s} type="button" onClick={() => update(s)}
               className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all"
-              style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "#8aaa9a", borderColor: "var(--border)" }}>
+              style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "var(--ink-soft)", borderColor: "var(--border)" }}>
               {s}
             </button>
           );
@@ -311,7 +311,7 @@ export default function CandidateResult({
           )}
           <div className="flex items-center justify-between gap-2">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a", fontFamily: "var(--font-mono)" }}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}>
                 {result.name && result.name !== "Candidate" ? result.name : "Recommendation"}
               </div>
               <RecommendBadge recommendation={result.recommendation} />
@@ -330,7 +330,7 @@ export default function CandidateResult({
             </div>
             {!defaultExpanded && <span className="text-xs shrink-0" style={{ color: "#c8d8ce" }}>{expanded ? "▲" : "▼"}</span>}
           </div>
-          {result.summary && <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: "#8aaa9a" }}>{result.summary}</p>}
+          {result.summary && <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.summary}</p>}
         </div>
       </div>
 
@@ -343,7 +343,7 @@ export default function CandidateResult({
                 <button key={t.key} type="button" role="tab" aria-selected={activeTab === t.key}
                   onClick={() => setActiveTab(t.key)}
                   className="flex items-center gap-1.5 px-4 py-3 text-[11px] font-semibold whitespace-nowrap transition-colors shrink-0 relative"
-                  style={{ color: activeTab === t.key ? "var(--forest)" : "#8aaa9a" }}>
+                  style={{ color: activeTab === t.key ? "var(--forest)" : "var(--ink-soft)" }}>
                   <span style={{ opacity: activeTab === t.key ? 1 : 0.6 }}>{t.icon}</span>
                   {t.label}
                   {t.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={badgeStyle(t.tone)}>{t.badge}</span>}
@@ -378,7 +378,7 @@ export default function CandidateResult({
                             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${row.val}%`, background: scoreColour(row.val) }} />
                           </div>
                           {result.score_rationale?.[row.key] && (
-                            <p className="text-[10px] mt-1 leading-relaxed" style={{ color: "#8aaa9a" }}>{result.score_rationale[row.key]}</p>
+                            <p className="text-[10px] mt-1 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.score_rationale[row.key]}</p>
                           )}
                         </div>
                       ))}
@@ -427,7 +427,7 @@ export default function CandidateResult({
                   <div>
                     <SectionLabel>Missing - required</SectionLabel>
                     <div className="flex flex-wrap gap-1.5">
-                      {missingRequired.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fbd0d0" }}>✗ {s}</span>)}
+                      {missingRequired.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fbd0d0" }}>�- {s}</span>)}
                     </div>
                   </div>
                 )}
@@ -443,7 +443,7 @@ export default function CandidateResult({
                   <div>
                     <SectionLabel>Other skills on CV</SectionLabel>
                     <div className="flex flex-wrap gap-1.5">
-                      {result.other_skills.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--mist)", color: "#8aaa9a" }}>{s}</span>)}
+                      {result.other_skills.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>{s}</span>)}
                     </div>
                   </div>
                 )}
@@ -484,7 +484,7 @@ export default function CandidateResult({
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs" style={{ background: "var(--mist)", border: "1px solid var(--border-soft)" }}>🎓</div>
                           <div className="min-w-0">
                             <p className="text-xs font-semibold" style={{ color: "#13201b" }}>{e.degree}{e.field_of_study ? ` ${e.field_of_study}` : ""}</p>
-                            <p className="text-[11px]" style={{ color: "#5a7a6a" }}>{e.institution}{(e.start_year || e.end_year) && <span style={{ color: "#8aaa9a" }}> · {fmtYearRange(e.start_year, e.end_year)}</span>}</p>
+                            <p className="text-[11px]" style={{ color: "#5a7a6a" }}>{e.institution}{(e.start_year || e.end_year) && <span style={{ color: "var(--ink-soft)" }}> · {fmtYearRange(e.start_year, e.end_year)}</span>}</p>
                             {e.grade && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--forest)" }}>{e.grade}</p>}
                           </div>
                         </div>
@@ -527,7 +527,7 @@ export default function CandidateResult({
                 {result.weaknesses?.length > 0 && (
                   <div>
                     <SectionLabel>Gaps</SectionLabel>
-                    <ul className="space-y-2">{result.weaknesses.map((w, i) => <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "#5a7a6a" }}><span className="mt-0.5 shrink-0 font-bold" style={{ color: "#e08080" }}>✗</span>{w}</li>)}</ul>
+                    <ul className="space-y-2">{result.weaknesses.map((w, i) => <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "#5a7a6a" }}><span className="mt-0.5 shrink-0 font-bold" style={{ color: "#e08080" }}>�-</span>{w}</li>)}</ul>
                   </div>
                 )}
                 {!result.red_flags?.length && !result.strengths?.length && !result.weaknesses?.length && <EmptyTabState label="evidence" />}
@@ -559,7 +559,7 @@ export default function CandidateResult({
                     {result.phone && <Field icon="☎" label="Phone"><p className="text-xs" style={{ color: "#13201b" }}>{result.phone}</p></Field>}
                     {result.linkedin && <Field icon="in" label="LinkedIn"><a href={result.linkedin.startsWith("http") ? result.linkedin : `https://${result.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View profile</a></Field>}
                     {result.github && <Field icon="⌥" label="GitHub"><a href={result.github.startsWith("http") ? result.github : `https://github.com/${result.github.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View GitHub</a></Field>}
-                    {result.portfolio_url && <Field icon="🔗" label="Portfolio"><a href={result.portfolio_url.startsWith("http") ? result.portfolio_url : `https://${result.portfolio_url}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View site</a></Field>}
+                    {result.portfolio_url && <Field icon="�-" label="Portfolio"><a href={result.portfolio_url.startsWith("http") ? result.portfolio_url : `https://${result.portfolio_url}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View site</a></Field>}
                     {result.location && <Field icon="📍" label="Location"><p className="text-xs" style={{ color: "#13201b" }}>{result.location}</p></Field>}
                     {result.current_title && <Field icon="💼" label="Current role"><p className="text-xs" style={{ color: "#13201b" }}>{result.current_title}{result.current_employer ? ` @ ${result.current_employer}` : ""}</p></Field>}
                     {result.notice_period && <Field icon="⏱" label="Notice period"><p className="text-xs" style={{ color: "#13201b" }}>{result.notice_period}</p></Field>}
@@ -574,7 +574,7 @@ export default function CandidateResult({
                       <span className="text-lg font-bold" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>{fmtSalary(result.salary_estimate.low)} – {fmtSalary(result.salary_estimate.high)}</span>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fef3e8", color: "#b45309" }}>{result.salary_estimate.seniority}</span>
                     </div>
-                    {result.salary_estimate.rationale && <p className="text-[11px] leading-relaxed" style={{ color: "#8aaa9a" }}>{result.salary_estimate.rationale}</p>}
+                    {result.salary_estimate.rationale && <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.salary_estimate.rationale}</p>}
                   </div>
                 )}
                 {!hasContact && !result.salary_estimate && <EmptyTabState label="contact" />}

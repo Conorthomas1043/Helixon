@@ -84,7 +84,7 @@ function isPrivateOrReservedIp(ip) {
     return true;
   }
 
-  // IPv4-mapped IPv6 (e.g. "::ffff:192.168.1.1") — re-check the embedded
+  // IPv4-mapped IPv6 (e.g. "::ffff:192.168.1.1") - re-check the embedded
   // IPv4 address against the private ranges above instead of letting it
   // slip through as "public" just because it's wrapped in IPv6 syntax.
   if (lower.startsWith("::ffff:")) {

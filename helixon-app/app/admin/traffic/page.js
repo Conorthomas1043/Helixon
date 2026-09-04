@@ -45,7 +45,7 @@ export default function TrafficPage() {
 
         <div className="kpi-card">
           <div className="kpi-label">Geolocated</div>
-          <div className="kpi-value">{traffic?.geolocation?.resolvedIps ?? "—"}</div>
+          <div className="kpi-value">{traffic?.geolocation?.resolvedIps ?? "-"}</div>
         </div>
       </div>
 

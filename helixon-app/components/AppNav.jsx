@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { COLORS } from "@/lib/account";
 
-// Shared across Dashboard, Billing, and Account settings — import this
+// Shared across Dashboard, Billing, and Account settings - import this
 // component from all three instead of redefining it per page.
 export default function AppNav({ active }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function AppNav({ active }) {
             <div role="menu" className="absolute right-0 mt-2 w-52 rounded-[14px] py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
               <div className="px-3.5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
                 <p className="text-sm font-medium truncate" style={{ color: COLORS.ink }}>Acme Recruiting</p>
-                <p className="text-xs truncate" style={{ color: COLORS.faint }}>agency@acme.com</p>
+                <p className="text-xs truncate" style={{ color: COLORS.muted }}>agency@acme.com</p>
               </div>
               <Link
                 href="/account/profile"
@@ -100,7 +100,7 @@ export default function AppNav({ active }) {
                 Billing
               </Link>
               <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
-                <a href="/logout" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
+                <a href="/api/auth/logout" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
                   Log out
                 </a>
               </div>

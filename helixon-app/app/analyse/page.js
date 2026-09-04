@@ -5018,7 +5018,7 @@ export default function AnalyzePage() {
                               {
                                 template.uses
                               }
-                              Ã—
+                              Ã-
                             </span>
 
                             <button
@@ -5862,7 +5862,7 @@ export default function AnalyzePage() {
                                 >
                                   {requirement.met
                                     ? "âœ“"
-                                    : "âœ—"}
+                                    : "âœ-"}
                                 </span>
 
                                 <div>

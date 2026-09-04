@@ -14,7 +14,7 @@ const COLORS = {
   border: "#e3e8e5",
 };
 // Fraunces isn't reliably available in email clients, so this falls back
-// to Georgia — same fallback chain used for --font-display on the landing
+// to Georgia - same fallback chain used for --font-display on the landing
 // page when the webfont fails to load.
 const FONT_DISPLAY = "Georgia, 'Times New Roman', serif";
 const FONT_BODY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
@@ -35,7 +35,7 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
             overflow: "hidden",
           }}
         >
-          {/* ── Logo — matches the nav mark on the landing page: two
+          {/* ── Logo - matches the nav mark on the landing page: two
               overlapping bars in white, plus a signal-colored dot,
               on a forest-green rounded square. ── */}
           <Section style={{ padding: "32px 32px 0" }}>
@@ -71,7 +71,7 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
           </Section>
 
           <Section style={{ padding: "24px 32px 0" }}>
-            {/* ── Eyebrow badge — same mint pill / forest text pattern as
+            {/* ── Eyebrow badge - same mint pill / forest text pattern as
                 the "GDPR-ready · Data held in the EU" badge in the hero. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "18px" }}>
               <tr>
@@ -87,11 +87,11 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
               Confirm your email
             </Heading>
             <Text style={{ fontSize: "14px", lineHeight: 1.6, color: COLORS.inkSoft, margin: "0 0 24px" }}>
-              One more step — click below to confirm <strong style={{ color: COLORS.ink }}>{email}</strong> and unlock your 3 free
+              One more step - click below to confirm <strong style={{ color: COLORS.ink }}>{email}</strong> and unlock your 3 free
               CV analyses. This link expires in 24 hours.
             </Text>
 
-            {/* ── Primary CTA — same forest bg + raised shadow as
+            {/* ── Primary CTA - same forest bg + raised shadow as
                 .btn-forest on the landing page. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "20px" }}>
               <tr>
@@ -117,7 +117,7 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
             <Text style={{ fontSize: "11px", color: COLORS.inkFaint, lineHeight: 1.6, margin: 0 }}>
               Helixon · Screen candidates in seconds · GDPR-ready, EU-hosted
               <br />
-              Didn&apos;t request this? You can safely ignore this email — your address won&apos;t be added to anything.
+              Didn&apos;t request this? You can safely ignore this email - your address won&apos;t be added to anything.
             </Text>
           </Section>
         </Container>

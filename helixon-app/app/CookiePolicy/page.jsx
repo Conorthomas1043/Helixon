@@ -2,8 +2,8 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Helixon — Cookie policy.
-// Same legal-page shell as the DPA (nav/footer/type), but lighter weight —
+// Helixon - Cookie policy.
+// Same legal-page shell as the DPA (nav/footer/type), but lighter weight -
 // no sticky TOC needed at this length. Signature element: a cookie-category
 // table that mirrors the actual categories set, not a generic prose wall.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -175,7 +175,7 @@ export default function CookiePolicyPage() {
             ))}
           </div>
           <p className="text-[11px] mt-3" style={{ color: "#8aaa9a" }}>
-            Toggles above are illustrative — manage your live preferences any time from the cookie settings link in
+            Toggles above are illustrative - manage your live preferences any time from the cookie settings link in
             the site footer.
           </p>
         </section>

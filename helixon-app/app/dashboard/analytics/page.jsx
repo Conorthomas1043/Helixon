@@ -4,11 +4,11 @@
  * ASSUMPTIONS
  * ------------------------------------------------------------------------
  * - Route: /dashboard/analytics. DashboardNav already linked here before
- *   any of this work started — if a real analytics page already exists,
+ *   any of this work started - if a real analytics page already exists,
  *   treat this as a reference implementation to reconcile, not a
  *   replacement.
  * - Every number here comes from getAnalyticsSnapshot() in
- *   lib/mock-data.js, computed over the current in-memory candidate set —
+ *   lib/mock-data.js, computed over the current in-memory candidate set -
  *   nothing on this page is a fabricated/static figure. See that
  *   function's comment for the production caveat (server-side
  *   aggregation, not client-side reduction over the full table).

@@ -21,9 +21,9 @@ function InfoRow({ label, value, href }) {
     <div>
       <p className="text-[9px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: "#8aaa9a" }}>{label}</p>
       {href ? (
-        <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "var(--forest)" }}>{value || "—"}</a>
+        <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: "var(--forest)" }}>{value || "-"}</a>
       ) : (
-        <p className="text-xs font-medium" style={{ color: "#13201b" }}>{value || "—"}</p>
+        <p className="text-xs font-medium" style={{ color: "#13201b" }}>{value || "-"}</p>
       )}
     </div>
   );
@@ -68,7 +68,7 @@ export default function AnalysisDetailPage() {
   // getCandidateById (no nested `.candidate` object in the mock data).
   const c = analysis;
 
-  // getCandidateById doesn't compute a per-category score breakdown —
+  // getCandidateById doesn't compute a per-category score breakdown -
   // only a single overall `score`. Guarded below so the section simply
   // shows the headline score with no bars, rather than crashing.
   const scoreBreakdown = null;
@@ -107,7 +107,7 @@ export default function AnalysisDetailPage() {
             <div className="rounded-[14px] p-5 mb-5" style={{ background: "white", border: "1px solid var(--border)" }}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#8aaa9a" }}>Overall match</span>
-                <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(analysis.score) }}>{analysis.score ?? "—"}</span>
+                <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(analysis.score) }}>{analysis.score ?? "-"}</span>
               </div>
               {scoreBreakdown && (
                 <div className="grid grid-cols-2 gap-4">
@@ -132,10 +132,10 @@ export default function AnalysisDetailPage() {
                 <InfoRow label="Email" value={c.email} href={c.email ? `mailto:${c.email}` : undefined} />
                 <InfoRow label="Phone" value={c.phone} href={c.phone ? `tel:${c.phone}` : undefined} />
                 <InfoRow label="Location" value={c.location} />
-                <InfoRow label="Experience" value={c.yearsExperience != null ? `${c.yearsExperience} yrs` : "—"} />
+                <InfoRow label="Experience" value={c.yearsExperience != null ? `${c.yearsExperience} yrs` : "-"} />
                 <InfoRow label="Job applied for" value={c.jobTitle} />
                 <InfoRow label="Recruiter" value={analysis.recruiterName} />
-                <InfoRow label="LinkedIn" value={c.linkedin ? "View profile" : "—"} href={c.linkedin ? `https://${c.linkedin}` : undefined} />
+                <InfoRow label="LinkedIn" value={c.linkedin ? "View profile" : "-"} href={c.linkedin ? `https://${c.linkedin}` : undefined} />
               </div>
             </div>
 

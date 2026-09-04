@@ -41,7 +41,7 @@ export default function SecurityInvestigatePage() {
     <>
       <PageHeader
         title="Investigate"
-        description="Raw, searchable request log with threat scoring — for tracing a specific IP, path, or user-agent across the tracked window."
+        description="Raw, searchable request log with threat scoring - for tracing a specific IP, path, or user-agent across the tracked window."
       />
 
       {error && <div className="notice error section">{error}</div>}
@@ -54,12 +54,12 @@ export default function SecurityInvestigatePage() {
             <KpiCard label="Requests in window" value={allRequests.length} />
             <KpiCard
               label="Flagged (score ≥20)"
-              value={data?.kpis?.threats ?? "—"}
+              value={data?.kpis?.threats ?? "-"}
               tone="var(--warn)"
             />
             <KpiCard
               label="Denied at the edge"
-              value={data?.kpis?.blockedRequests ?? "—"}
+              value={data?.kpis?.blockedRequests ?? "-"}
               tone="var(--critical)"
             />
           </div>
@@ -99,21 +99,21 @@ export default function SecurityInvestigatePage() {
                     {rows.map((x, i) => (
                       <tr key={`${x.ip}-${x.created_at}-${i}`}>
                         <td className="mono">
-                          {x.created_at ? new Date(x.created_at).toLocaleString() : "—"}
+                          {x.created_at ? new Date(x.created_at).toLocaleString() : "-"}
                         </td>
                         <td className="mono">{x.ip}</td>
-                        <td className="muted">{x.country || "—"}</td>
+                        <td className="muted">{x.country || "-"}</td>
                         <td className="mono">{x.method}</td>
                         <td className="mono" title={x.path}>
                           {x.path}
                         </td>
                         <td className="muted mono" title={x.user_agent}>
-                          {(x.user_agent || "—").slice(0, 40)}
+                          {(x.user_agent || "-").slice(0, 40)}
                         </td>
                         <td>
                           <SeverityPill score={x.threat.score} />
                         </td>
-                        <td className="muted">{(x.threat.signals || []).join(", ") || "—"}</td>
+                        <td className="muted">{(x.threat.signals || []).join(", ") || "-"}</td>
                         <td className="mono" style={x.blocked ? { color: "var(--critical)" } : undefined}>
                           {x.blocked ? "yes" : "no"}
                         </td>

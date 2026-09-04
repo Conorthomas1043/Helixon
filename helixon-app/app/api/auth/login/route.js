@@ -9,13 +9,13 @@ const RATE_LIMIT_WINDOW_MINUTES = 15;
 const MAX_FAILURES_PER_EMAIL = 5;
 const MAX_FAILURES_PER_IP = 20;
 
-// FIX: this was reading/writing "login_attempts" — that table's schema is
+// FIX: this was reading/writing "login_attempts" - that table's schema is
 // (id, ts, ip, username, login_type, success), built for the employee/admin
 // login flow. It has no "email" or "created_at" columns, so every query and
 // insert below was throwing, getting caught, and (because checkRateLimit
-// fails open) silently disabling rate limiting entirely — nobody was ever
+// fails open) silently disabling rate limiting entirely - nobody was ever
 // actually blocked. "auth_login_attempts" (id, created_at, email, ip,
-// success) is the table that was actually built to match this code —
+// success) is the table that was actually built to match this code -
 // switching to it makes the queries below work as originally intended.
 const RATE_LIMIT_TABLE = "auth_login_attempts";
 

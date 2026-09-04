@@ -1,5 +1,5 @@
 // lib/employee-onboarding.js
-// Supabase-backed CRUD for `employee_onboarding_progress` — tracks which
+// Supabase-backed CRUD for `employee_onboarding_progress` - tracks which
 // onboarding checklist items (see lib/onboarding-tasks.js) a given
 // employee has completed, and when.
 
@@ -27,7 +27,7 @@ export async function getOnboardingProgress(employeeId) {
   }));
 
   // Only count completions against tasks that still exist in the current
-  // checklist — if a task_key was removed from ONBOARDING_TASKS, a stale
+  // checklist - if a task_key was removed from ONBOARDING_TASKS, a stale
   // completion row shouldn't inflate the percentage.
   const completedCount = tasks.filter((t) => t.completed).length;
 

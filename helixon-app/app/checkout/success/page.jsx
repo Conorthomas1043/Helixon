@@ -14,7 +14,7 @@ const PLAN_LABELS = {
   team: "Team",
 };
 
-// Server Component — runs on the server, so the Stripe secret key never
+// Server Component - runs on the server, so the Stripe secret key never
 // reaches the browser. We re-fetch the session from Stripe using the
 // session_id in the URL rather than trusting query params directly; the
 // URL alone proves nothing (anyone could type a fake session_id), but a
@@ -23,7 +23,7 @@ const PLAN_LABELS = {
 //
 // Note: this page confirms payment happened. Actual entitlement
 // (unlocking "Unlimited analyses" etc.) is granted by the
-// /api/webhooks/stripe handler, which is the source of truth — webhooks
+// /api/webhooks/stripe handler, which is the source of truth - webhooks
 // can arrive slightly after this redirect, so don't gate access purely
 // on this page ever having been visited.
 export default async function CheckoutSuccessPage({ searchParams }) {

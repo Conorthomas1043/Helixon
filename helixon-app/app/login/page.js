@@ -33,7 +33,7 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
             fontSize: active ? "10px" : "13.5px",
             fontWeight: active ? 600 : 400,
             letterSpacing: active ? "0.03em" : "0",
-            color: active ? (status === "error" ? "#dc2626" : "var(--forest)") : "#8aaa9a",
+            color: active ? (status === "error" ? "#dc2626" : "var(--forest)") : "var(--ink-soft)",
             textTransform: active ? "uppercase" : "none",
             transitionTimingFunction: EASE,
             transitionDuration: "0.2s",
@@ -70,7 +70,7 @@ function FloatField({ id, label, value, onChange, type = "text", autoFocus, auto
         {trailing && <span className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</span>}
       </div>
       {hint && (
-        <p aria-live="polite" className="text-[11px] mt-1.5 pl-0.5" style={{ color: status === "error" ? "#dc2626" : "#8aaa9a" }}>
+        <p aria-live="polite" className="text-[11px] mt-1.5 pl-0.5" style={{ color: status === "error" ? "#dc2626" : "var(--ink-soft)" }}>
           {hint}
         </p>
       )}
@@ -187,7 +187,7 @@ export default function LoginPage() {
 
       if (!data.isAdmin) {
         // One-time flag the dashboard reads on next load to show a
-        // "Welcome back" banner, then clears — so it doesn't reappear on
+        // "Welcome back" banner, then clears - so it doesn't reappear on
         // every refresh, only right after an actual login.
         try { sessionStorage.setItem("helixon_just_logged_in", "1"); } catch { /* ignore */ }
       }
@@ -283,7 +283,7 @@ export default function LoginPage() {
           <div className="flex gap-9">
             {[
               { value: "94%", label: "Match accuracy" },
-              { value: "10×", label: "Faster screening" },
+              { value: "10�-", label: "Faster screening" },
               { value: "∞", label: "Analyses / month" },
             ].map((s) => (
               <div key={s.label}>
@@ -408,7 +408,7 @@ export default function LoginPage() {
                   </div>
                 </form>
 
-                <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: "#8aaa9a" }}>
+                <p className="text-[11px] text-center mt-4 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                   This site is protected by reCAPTCHA and the Google{" "}
                   <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="underline hover:opacity-80">Privacy Policy</a>{" "}
                   and{" "}

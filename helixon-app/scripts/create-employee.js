@@ -11,16 +11,16 @@
 // Requires the same env vars the app uses for the service-role Supabase
 // client: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Load them however you
 // normally do (e.g. `node -r dotenv/config scripts/create-employee.js ...`
-// or export them in your shell first) — this script does not read .env
+// or export them in your shell first) - this script does not read .env
 // files on its own.
 //
 // Security notes:
 //   - The password is hashed with bcrypt (cost 12) before it ever touches
-//     the database — nothing plaintext is stored or logged.
+//     the database - nothing plaintext is stored or logged.
 //   - Pass the password as an argument only in a trusted local/deploy shell;
 //     avoid running this in contexts where shell history or process lists
 //     are visible to others (e.g. prefer an interactive prompt on a shared
-//     machine — this script accepts --password for scriptability, but you
+//     machine - this script accepts --password for scriptability, but you
 //     can omit it to be prompted instead).
 //   - --reset overwrites an existing account's password_hash; without it,
 //     the script refuses to touch an existing username.
@@ -50,7 +50,7 @@ function parseArgs(argv) {
 function promptHidden(question) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    // Basic input masking — good enough for a local CLI, not a security boundary.
+    // Basic input masking - good enough for a local CLI, not a security boundary.
     rl.question(question, (answer) => {
       rl.close();
       resolve(answer);
@@ -82,7 +82,7 @@ async function main() {
     process.exit(1);
   }
   if (!fullName) {
-    console.error("Missing --name \"Full Name\" (required — the employees table has full_name NOT NULL).");
+    console.error("Missing --name \"Full Name\" (required - the employees table has full_name NOT NULL).");
     process.exit(1);
   }
 

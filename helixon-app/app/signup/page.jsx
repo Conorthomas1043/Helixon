@@ -22,13 +22,13 @@ const STEPS = [
 ];
 
 const STEP_COPY = [
-  { eyebrow: "01 — Identity", title: <>Let&apos;s get<br />your name.</>, body: "We'll use this to personalise your workspace and greet you by name." },
-  { eyebrow: "02 — Handle", title: <>Claim your<br />handle.</>, body: "Your username is how teammates will find and mention you once you invite them in." },
-  { eyebrow: "03 — Security", title: <>Secure your<br />account.</>, body: "Pick a password you don't use anywhere else. We'll never store it in plain text." },
-  { eyebrow: "04 — Review", title: <>Almost<br />there.</>, body: "Double-check everything looks right, then create your workspace." },
+  { eyebrow: "01 - Identity", title: <>Let&apos;s get<br />your name.</>, body: "We'll use this to personalise your workspace and greet you by name." },
+  { eyebrow: "02 - Handle", title: <>Claim your<br />handle.</>, body: "Your username is how teammates will find and mention you once you invite them in." },
+  { eyebrow: "03 - Security", title: <>Secure your<br />account.</>, body: "Pick a password you don't use anywhere else. We'll never store it in plain text." },
+  { eyebrow: "04 - Review", title: <>Almost<br />there.</>, body: "Double-check everything looks right, then create your workspace." },
 ];
 
-// ── Per-step mark — a small, quiet motif rather than a big illustration ──
+// ── Per-step mark - a small, quiet motif rather than a big illustration ──
 function StepMark({ step }) {
   const stroke = "rgba(255,255,255,0.9)";
   const common = { width: 44, height: 44, viewBox: "0 0 44 44", fill: "none" };
@@ -60,7 +60,7 @@ function StepMark({ step }) {
   );
 }
 
-// ── Floating-label field — the signature input treatment for this flow ────
+// ── Floating-label field - the signature input treatment for this flow ────
 function FloatField({ label, value, onChange, type = "text", autoFocus, autoComplete, status, hint, maxLength, prefix, trailing, onKeyDownCapture }) {
   const [focused, setFocused] = useState(false);
   const active = focused || value.length > 0;
@@ -135,7 +135,7 @@ function FloatField({ label, value, onChange, type = "text", autoFocus, autoComp
   );
 }
 
-// ── Magnetic primary button — cursor-aware micro-displacement on hover ────
+// ── Magnetic primary button - cursor-aware micro-displacement on hover ────
 function MagneticButton({ children, onClick, disabled, loading }) {
   const ref = useRef(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -202,7 +202,7 @@ export default function SignupPage() {
   const debounceRef = useRef(null);
   const abortRef = useRef(null);
 
-  // Card spotlight — follows cursor for a subtle premium sheen
+  // Card spotlight - follows cursor for a subtle premium sheen
   const cardRef = useRef(null);
   const [spot, setSpot] = useState({ x: 50, y: 0 });
   function handleCardMouseMove(e) {
@@ -351,7 +351,7 @@ export default function SignupPage() {
     <main className="min-h-screen flex relative overflow-hidden">
       {bg}
 
-      {/* ── Left panel — brand narrative, one motif per step ─────────────── */}
+      {/* ── Left panel - brand narrative, one motif per step ─────────────── */}
       <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #0b3a2a 0%, var(--forest) 55%, #0e4531 100%)" }}>
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: "30px 30px" }} />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `repeating-linear-gradient(115deg, white 0px, white 1px, transparent 1px, transparent 64px)` }} />
@@ -394,7 +394,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* ── Right panel — form ───────────────────────────────────────────── */}
+      {/* ── Right panel - form ───────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
         <a href="/" className="flex lg:hidden items-center gap-2.5 mb-8" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
@@ -518,7 +518,7 @@ export default function SignupPage() {
                 <div className="space-y-3.5">
                   <div className="mb-1">
                     <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Secure your account</h2>
-                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>Make it strong — this protects your candidates&apos; data too.</p>
+                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>Make it strong - this protects your candidates&apos; data too.</p>
                   </div>
                   <FloatField
                     label="Password"
@@ -646,7 +646,7 @@ function SummaryRow({ label, value, onEdit, last }) {
     >
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#8aaa9a" }}>{label}</p>
-        <p className="text-sm font-medium mt-0.5" style={{ color: "#13201b" }}>{value || "—"}</p>
+        <p className="text-sm font-medium mt-0.5" style={{ color: "#13201b" }}>{value || "-"}</p>
       </div>
       <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--forest)" }}>Edit</span>
     </button>

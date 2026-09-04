@@ -1,7 +1,7 @@
 // app/api/employee/team/route.js
 // Minimal active-employee roster, for populating the "assign to" dropdown
 // on shared tasks. Deliberately narrow: id + display name only, active
-// staff only — no username, role, email, or last-login. Any authenticated
+// staff only - no username, role, email, or last-login. Any authenticated
 // employee can see this; there's nothing sensitive in it.
 
 import { NextResponse } from "next/server";

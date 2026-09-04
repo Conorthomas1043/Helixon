@@ -20,7 +20,7 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Username and password are required." }, { status: 400 });
   }
   if (!USERNAME_RE.test(username)) {
-    // Same generic error a real wrong-credentials response would give —
+    // Same generic error a real wrong-credentials response would give -
     // doesn't confirm/deny anything about username format validity.
     return NextResponse.json({ ok: false, error: "Incorrect username or password. Please try again." }, { status: 401 });
   }

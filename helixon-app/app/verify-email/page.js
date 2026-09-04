@@ -18,7 +18,7 @@ function AmbientBg() {
   );
 }
 
-// ── Ring that fills in smoothly while verifying — a quiet, premium loader ──
+// ── Ring that fills in smoothly while verifying - a quiet, premium loader ──
 function VerifyRing({ state }) {
   const circumference = 2 * Math.PI * 34;
   return (
@@ -119,7 +119,7 @@ function VerifyEmailContent() {
       });
       setResent(true);
     } catch {
-      // silent — resend failures aren't critical path, the button stays available
+      // silent - resend failures aren't critical path, the button stays available
     } finally {
       setResending(false);
     }
@@ -170,7 +170,7 @@ function VerifyEmailContent() {
                     <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                     Sending…
                   </>
-                ) : resent ? "New link sent — check your inbox" : !email ? "Go to sign in to resend" : "Resend verification email"}
+                ) : resent ? "New link sent - check your inbox" : !email ? "Go to sign in to resend" : "Resend verification email"}
               </button>
               <a href="/login" className="block text-[13px] font-medium hover:underline" style={{ color: "var(--forest)" }}>Back to sign in</a>
             </div>
@@ -197,7 +197,7 @@ function VerifyEmailContent() {
   );
 }
 
-// ── Default export — wraps the content in Suspense, required by Next.js
+// ── Default export - wraps the content in Suspense, required by Next.js
 //    App Router whenever a page reads useSearchParams(). ────────────────
 export default function VerifyEmailPage() {
   return (

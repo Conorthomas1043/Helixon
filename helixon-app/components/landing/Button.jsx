@@ -20,14 +20,14 @@ const SIZES = {
 
 /**
  * Shared CTA button. Replaces the pattern of inline style={{background}}
- * plus onMouseEnter/onMouseLeave handlers repeated across the landing page —
+ * plus onMouseEnter/onMouseLeave handlers repeated across the landing page -
  * hover state is now a single Tailwind class, colors come from the
  * :root tokens in globals.css via the @theme mapping instead of hardcoded
  * hex/CSS-var strings.
  *
  * Wrapped in forwardRef so callers can attach a ref (e.g. the nav "Try now"
  * button, which needs a ref for the trial modal's focus-return-on-close
- * behavior) — without this, ref={...} on <Button> would silently no-op.
+ * behavior) - without this, ref={...} on <Button> would silently no-op.
  */
 const Button = forwardRef(function Button(
   {

@@ -187,7 +187,7 @@ function ResetPasswordContent() {
   );
 }
 
-// ── Default export — wraps the content in Suspense, required by Next.js
+// ── Default export - wraps the content in Suspense, required by Next.js
 //    App Router whenever a page reads useSearchParams(). Without this the
 //    route bails out of static rendering / fails the build, exactly the
 //    same issue verify-email/page.js already guards against. ─────────────

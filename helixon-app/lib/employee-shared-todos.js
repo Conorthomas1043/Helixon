@@ -1,5 +1,5 @@
 // lib/employee-shared-todos.js
-// Supabase-backed CRUD for the `employee_shared_todos` table — a
+// Supabase-backed CRUD for the `employee_shared_todos` table - a
 // team-visible task list, distinct from each employee's private list in
 // lib/employee-todos.js.
 //
@@ -51,7 +51,7 @@ export async function addSharedTodo(employeeId, { title, notes, priority, due_da
   return data;
 }
 
-// Only the creator or assignee may edit/complete a shared task — enforced
+// Only the creator or assignee may edit/complete a shared task - enforced
 // here with an .or() filter, same load-bearing role the .eq(employee_id)
 // filter plays in employee-todos.js.
 export async function updateSharedTodo(employeeId, id, updates) {
@@ -75,7 +75,7 @@ export async function updateSharedTodo(employeeId, id, updates) {
   return data;
 }
 
-// Only the creator may delete — an assignee can complete a task but
+// Only the creator may delete - an assignee can complete a task but
 // shouldn't be able to make it disappear from the team list.
 export async function deleteSharedTodo(employeeId, id) {
   const { data, error } = await supabase

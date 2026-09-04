@@ -2,7 +2,7 @@
 
 // ── Modal-based replacement for window.prompt()/window.confirm() ───────────
 // window.prompt() for the password-reset flow showed the new password in
-// plaintext in a native browser dialog with no confirm field — anyone
+// plaintext in a native browser dialog with no confirm field - anyone
 // glancing at the admin's screen, or a screen-share, saw it; there was no
 // "type it twice" guard against a fat-fingered reset locking a real user
 // out. window.confirm()/prompt() are also unstyleable and easy to
@@ -35,7 +35,7 @@ function close(result) {
   emit();
 }
 
-// Replacement for window.confirm(message) — resolves true/false.
+// Replacement for window.confirm(message) - resolves true/false.
 export function confirmAction(message, { title = "Confirm", danger = false } = {}) {
   return open({ kind: "confirm", message, title, danger });
 }

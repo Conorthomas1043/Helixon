@@ -5,18 +5,18 @@
  * ------------------------------------------------------------------------
  * - Route: /dashboard/pipeline. Already linked from the existing dashboard
  *   ("View pipeline", "Open pipeline →", per-stage links) and from
- *   DashboardNav — same reconciliation note as the Jobs/Analytics pages if
+ *   DashboardNav - same reconciliation note as the Jobs/Analytics pages if
  *   a real implementation already exists here.
  * - Only candidates with status "completed" have a stage, so this board
- *   only shows those — processing/failed candidates live in the
+ *   only shows those - processing/failed candidates live in the
  *   candidate database's status filter instead.
  * - Move-forward/back buttons call the same updateCandidateStage mock
- *   mutation the candidate profile page uses. No drag-and-drop — button-
+ *   mutation the candidate profile page uses. No drag-and-drop - button-
  *   based movement is more robust for a first pass and fully keyboard-
  *   accessible without extra work.
  * - PipelinePage reads `useSearchParams()` for the "?stage=" deep link
  *   from the dashboard, so the part of the tree that uses it is wrapped
- *   in <Suspense> — required by Next.js for any component that reads
+ *   in <Suspense> - required by Next.js for any component that reads
  *   search params, or static prerendering fails the build.
  * ---------------------------------------------------------------------- */
 
@@ -94,7 +94,7 @@ function PipelineCard({ candidate, onMove }) {
           </p>
         </div>
         <span className="text-[12px] font-semibold tabular-nums shrink-0" style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score) }}>
-          {candidate.score ?? "—"}
+          {candidate.score ?? "-"}
         </span>
       </Link>
       <div className="flex items-center justify-between">
@@ -168,13 +168,13 @@ function ErrorState({ onRetry }) {
 }
 
 /* ------------------------------------------------------------------------
- * Page content — reads useSearchParams(), so it must live inside the
+ * Page content - reads useSearchParams(), so it must live inside the
  * <Suspense> boundary set up by the default export below.
  * ---------------------------------------------------------------------- */
 
 function PipelineContent() {
   // The dashboard's per-stage pipeline bars link here as
-  // "/dashboard/pipeline?stage=shortlisted" etc. — that stage's column
+  // "/dashboard/pipeline?stage=shortlisted" etc. - that stage's column
   // gets a highlighted border on arrival so the link actually lands
   // somewhere meaningful rather than just opening the general board.
   const searchParams = useSearchParams();
@@ -294,7 +294,7 @@ function PipelineContent() {
 
 /* ------------------------------------------------------------------------
  * Fallback shown during the (very brief) moment Suspense needs before
- * useSearchParams() resolves — reuses the same skeleton as the loading
+ * useSearchParams() resolves - reuses the same skeleton as the loading
  * state so there's no visible flash between the two.
  * ---------------------------------------------------------------------- */
 

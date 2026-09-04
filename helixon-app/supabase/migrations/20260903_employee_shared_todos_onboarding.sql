@@ -1,15 +1,15 @@
 -- Shared (team-visible) to-dos and onboarding progress for the employee
 -- portal (app/employee/*). Deliberately scoped to public.employees(id),
--- NOT auth.users(id) — employees authenticate through the app's own
+-- NOT auth.users(id) - employees authenticate through the app's own
 -- session system (lib/employee-auth.js, employee_sessions table), they are
 -- not Supabase Auth users. The earlier todo_lists/shared_todos tables
 -- (see 20260903_shared_ops_security.sql) reference auth.users and were
--- never reachable from the employee dashboard as a result — this
+-- never reachable from the employee dashboard as a result - this
 -- replaces that dead path with one that matches how employees actually
 -- authenticate.
 --
 -- This app talks to Supabase with the service-role key (see lib/supabase.js),
--- which bypasses RLS entirely, so — same as employee_todos — every query
+-- which bypasses RLS entirely, so - same as employee_todos - every query
 -- against these tables must filter by employee_id/created_by/assigned_to
 -- explicitly in application code (see lib/employee-shared-todos.js and
 -- lib/employee-onboarding.js). RLS is still enabled below as defence in
@@ -34,7 +34,7 @@ create index if not exists idx_employee_shared_todos_done on public.employee_sha
 
 alter table public.employee_shared_todos enable row level security;
 
--- No policies defined for the anon/authenticated roles — this table is only
+-- No policies defined for the anon/authenticated roles - this table is only
 -- ever reached through the service-role key from server routes, which
 -- bypasses RLS by design. Enabling RLS with no policies just means a
 -- misconfigured client-side Supabase call gets nothing back, rather than

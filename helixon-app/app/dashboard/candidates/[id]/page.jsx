@@ -15,18 +15,18 @@
  * - All mutations (stage, assignment, tags, notes, next action) call the
  *   mock functions in lib/mock-data.js, which mutate an in-memory array
  *   and return the updated candidate. There is no optimistic-update/
- *   rollback path here because there's no real network call to fail yet —
+ *   rollback path here because there's no real network call to fail yet -
  *   add one when these become real PATCH/POST requests.
  * - Recently-viewed tracking uses localStorage and stores candidate IDs
  *   only (never resume contents or contact details), per the brief's
  *   privacy guidance.
- * - No document viewer is wired up — there's no real file storage to
+ * - No document viewer is wired up - there's no real file storage to
  *   preview from, so the Documents section shows file metadata only and
  *   says so, rather than faking a PDF preview.
  * - No "email candidate" *sending* is implemented (no email backend to
  *   integrate); the Email action opens a mailto: link to the candidate's
  *   address, which needs no backend and isn't fake functionality.
- * - Archive / export / "more" actions are intentionally omitted — the
+ * - Archive / export / "more" actions are intentionally omitted - the
  *   brief asks not to build backend actions that don't exist yet.
  * ---------------------------------------------------------------------- */
 
@@ -79,7 +79,7 @@ function pushRecentlyViewed(id) {
     const next = [id, ...list.filter((x) => x !== id)].slice(0, 8);
     window.localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next));
   } catch {
-    // localStorage unavailable (private browsing etc.) — non-critical.
+    // localStorage unavailable (private browsing etc.) - non-critical.
   }
 }
 
@@ -812,7 +812,7 @@ function NotesPanel({ notes, onAddNote }) {
             <li key={n.id} className="text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
               <p style={{ color: INK }}>{n.body}</p>
               <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
-                — {n.author} · {formatRelativeTime(n.createdAt)}
+                - {n.author} · {formatRelativeTime(n.createdAt)}
               </p>
             </li>
           ))}
@@ -990,7 +990,7 @@ export default function CandidateProfilePage({ params }) {
     document.getElementById("candidate-note-input")?.focus();
   }, []);
 
-  // Keyboard shortcuts — ignored while typing in a field, per the brief's
+  // Keyboard shortcuts - ignored while typing in a field, per the brief's
   // note not to fight normal browser/input behaviour.
   useEffect(() => {
     function onKeydown(e) {

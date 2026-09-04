@@ -1,5 +1,5 @@
 // lib/employee-auth.js
-// Real, persistent employee auth backed by Supabase — mirrors lib/admin-auth.js
+// Real, persistent employee auth backed by Supabase - mirrors lib/admin-auth.js
 // in spirit (hashed credentials, signed/short-lived session, timing-safe
 // checks) but sessions live in the `employee_sessions` table since that's
 // the schema already provisioned for this feature.
@@ -9,7 +9,7 @@
 //             is_active, created_at, last_login)
 //   employee_sessions(id, employee_id, token, created_at, expires_at)
 //   login_attempts(id, ts, ip, username, login_type, success)
-//     — shared with admin login via the `login_type` column; employee
+//     - shared with admin login via the `login_type` column; employee
 //       attempts are recorded here with login_type = 'employee'.
 //
 // Passwords are bcrypt-hashed (bcryptjs is already a project dependency).
@@ -93,8 +93,8 @@ async function recordAttempt(username, ip, success) {
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────
-// Always returns a generic error message on any failure path — unknown
-// username, wrong password, or a deactivated account — so this endpoint
+// Always returns a generic error message on any failure path - unknown
+// username, wrong password, or a deactivated account - so this endpoint
 // can't be used to enumerate valid employee usernames or account status.
 export async function loginEmployee({ username, password, ip }) {
   const rateLimit = await checkEmployeeRateLimit(username, ip);
@@ -137,7 +137,7 @@ export async function loginEmployee({ username, password, ip }) {
     return { ok: false, error: "Something went wrong. Please try again.", status: 500 };
   }
 
-  // Best-effort — a failed timestamp update shouldn't block a successful login.
+  // Best-effort - a failed timestamp update shouldn't block a successful login.
   supabase.from("employees").update({ last_login: new Date().toISOString() }).eq("id", employee.id)
     .then(({ error: e }) => { if (e) console.error("[employee-auth] last_login update failed:", e.message); });
 

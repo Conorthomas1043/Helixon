@@ -26,7 +26,7 @@ export async function POST(request) {
     if (!result.ok) {
       // Same generic-enough messages checkAdminCredentials already returns
       // ("Unknown username." / "Incorrect password. Try again." /
-      // "Admin account not configured.") — good enough to be useful to a
+      // "Admin account not configured.") - good enough to be useful to a
       // real admin without inviting a scripted username-enumeration pass,
       // since there's no separate "user doesn't exist" vs "wrong password"
       // timing difference introduced here (checkAdminCredentials always

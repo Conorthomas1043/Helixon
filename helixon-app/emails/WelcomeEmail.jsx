@@ -16,7 +16,7 @@ const COLORS = {
 const FONT_DISPLAY = "Georgia, 'Times New Roman', serif";
 const FONT_BODY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 
-// Small reusable "step" row for the "how it works" mini-recap —
+// Small reusable "step" row for the "how it works" mini-recap -
 // mirrors the numbered 1/2/3 cards in the "How it works" section
 // on the landing page, so returning-from-email users recognise it.
 function StepRow({ number, title, body }) {
@@ -54,7 +54,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
   return (
     <Html>
       <Head />
-      <Preview>You're verified — your 3 free CV analyses are ready to use.</Preview>
+      <Preview>You're verified - your 3 free CV analyses are ready to use.</Preview>
       <Body style={{ backgroundColor: COLORS.mist, margin: 0, padding: "32px 0", fontFamily: FONT_BODY }}>
         <Container
           style={{
@@ -66,10 +66,10 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             overflow: "hidden",
           }}
         >
-          {/* ── Logo — same nested-table mark as VerifyEmail (two bars +
+          {/* ── Logo - same nested-table mark as VerifyEmail (two bars +
               signal dot on a forest square). Drawn with tables rather
               than an <Img>, so it never depends on an externally-hosted
-              asset existing or NEXT_PUBLIC_SITE_URL being set correctly —
+              asset existing or NEXT_PUBLIC_SITE_URL being set correctly -
               renders identically to VerifyEmail in every client. ── */}
           <Section style={{ padding: "32px 32px 0" }}>
             <Row>
@@ -104,7 +104,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
           </Section>
 
           <Section style={{ padding: "24px 32px 0" }}>
-            {/* ── Eyebrow — green "success" tone since this fires right
+            {/* ── Eyebrow - green "success" tone since this fires right
                 after verification succeeds, not before it like VerifyEmail. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "18px" }}>
               <tr>
@@ -121,10 +121,10 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             </Heading>
             <Text style={{ fontSize: "14px", lineHeight: 1.6, color: COLORS.inkSoft, margin: "0 0 24px" }}>
               You've got <strong style={{ color: COLORS.ink }}>3 free analyses</strong> to try. No card, no
-              catch — just drop in a CV and a job spec and see your first score.
+              catch - just drop in a CV and a job spec and see your first score.
             </Text>
 
-            {/* ── Primary CTA — same forest button as VerifyEmail, keeps
+            {/* ── Primary CTA - same forest button as VerifyEmail, keeps
                 the two emails visually part of one sequence. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "28px" }}>
               <tr>
@@ -139,18 +139,18 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
               </tr>
             </table>
 
-            {/* ── Mini "how it works" recap — mirrors the landing page's
+            {/* ── Mini "how it works" recap - mirrors the landing page's
                 3-step section, so the email reinforces something they've
                 already half-seen rather than introducing new UI cold. ── */}
             <Text style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: COLORS.inkFaint, margin: "0 0 14px" }}>
               How it works
             </Text>
             <StepRow number="1" title="Name & pick the job" body="Name the analysis, then pick a preset role or paste your own job description." />
-            <StepRow number="2" title="Upload the CV" body="Drag in a PDF or Word file — no formatting required." />
+            <StepRow number="2" title="Upload the CV" body="Drag in a PDF or Word file - no formatting required." />
             <StepRow number="3" title="Get your score" body="Match score, red flags, and a ready-to-send email, all in one screen." />
           </Section>
 
-          {/* ── Retention nudge — sets expectation for what happens after
+          {/* ── Retention nudge - sets expectation for what happens after
               the 3 free analyses run out, framed as value not a paywall,
               and gives a reason to come back even if they don't convert
               on this first visit. ── */}
@@ -166,7 +166,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
                   <Text style={{ fontSize: "12.5px", lineHeight: 1.6, color: COLORS.inkSoft, margin: 0 }}>
                     <strong style={{ color: COLORS.ink }}>Screening a stack of CVs this week?</strong>{" "}
                     Individual and Agency plans unlock unlimited analyses, bulk upload, and shortlist
-                    history — most agencies break even after one placement.
+                    history - most agencies break even after one placement.
                   </Text>
                 </td>
               </tr>
@@ -177,7 +177,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             <Text style={{ fontSize: "11px", color: COLORS.inkFaint, lineHeight: 1.6, margin: 0 }}>
               Helixon · Screen candidates in seconds · GDPR-ready, EU-hosted
               <br />
-              Questions? Just reply to this email — a real person reads these.
+              Questions? Just reply to this email - a real person reads these.
             </Text>
           </Section>
         </Container>

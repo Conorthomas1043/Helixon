@@ -25,12 +25,12 @@ export default function SalesMarketingPanel({ range }) {
       <div className="kpi-grid cols-6">
         <KpiCard
           label="Leads (demo requests)"
-          value={totals.demoRequests ?? "—"}
+          value={totals.demoRequests ?? "-"}
           foot="All-time"
         />
         <KpiCard
           label="Customer accounts"
-          value={totals.agencies ?? "—"}
+          value={totals.agencies ?? "-"}
           foot="All-time"
         />
         <KpiCard
@@ -50,7 +50,7 @@ export default function SalesMarketingPanel({ range }) {
         />
         <KpiCard
           label="Site visits"
-          value={totals.requests ?? "—"}
+          value={totals.requests ?? "-"}
           foot={`Last ${range}`}
         />
       </div>
@@ -58,7 +58,7 @@ export default function SalesMarketingPanel({ range }) {
       <div className="grid-3 section">
         <Panel
           title="Top pages"
-          sub="Most-visited pages — a quick read on what content is pulling traffic."
+          sub="Most-visited pages - a quick read on what content is pulling traffic."
         >
           {loading ? (
             <div className="empty">Loading…</div>
@@ -69,7 +69,7 @@ export default function SalesMarketingPanel({ range }) {
 
         <Panel
           title="Traffic sources"
-          sub="Where visitors came from — search, social, or a direct link."
+          sub="Where visitors came from - search, social, or a direct link."
         >
           {loading ? (
             <div className="empty">Loading…</div>
@@ -80,7 +80,7 @@ export default function SalesMarketingPanel({ range }) {
 
         <Panel
           title="Visitor countries"
-          sub="Where prospects are located — useful for territory planning."
+          sub="Where prospects are located - useful for territory planning."
         >
           {loading ? (
             <div className="empty">Loading…</div>
@@ -119,7 +119,7 @@ export default function SalesMarketingPanel({ range }) {
 
       <div className="footer-note section">
         This is pulled straight from Helixon&apos;s own site traffic logs and
-        subscription records — not a third-party SEO tool, so treat “top pages”
+        subscription records - not a third-party SEO tool, so treat “top pages”
         and “traffic sources” as directional, not keyword-level SEO data.
       </div>
     </>

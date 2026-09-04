@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Contact — simple form + direct channels, same nav/footer/tokens as landing.
+// Contact - simple form + direct channels, same nav/footer/tokens as landing.
 // ═══════════════════════════════════════════════════════════════════════════
 
 function MarketingNav() {
@@ -112,7 +112,7 @@ const CHANNELS = [
   },
 ];
 
-// Topic select — value IS the destination inbox, so the form and the API
+// Topic select - value IS the destination inbox, so the form and the API
 // route (TOPIC_ROUTING) always agree with no separate label-to-email mapping.
 const TOPICS = [
   "support@helixon.co.uk",
@@ -145,7 +145,7 @@ export default function ContactPage() {
       }
       setSent(true);
     } catch (err) {
-      setError(err.message || "Couldn't send your message — please try again, or email us directly below.");
+      setError(err.message || "Couldn't send your message - please try again, or email us directly below.");
     } finally {
       setSending(false);
     }
@@ -198,7 +198,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="font-semibold mb-1.5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Message sent</h2>
                 <p className="text-sm max-w-xs mx-auto" style={{ color: "#5a7a6a" }}>
-                  Thanks — we'll get back to you at {email || "your email"} shortly.
+                  Thanks - we'll get back to you at {email || "your email"} shortly.
                 </p>
               </div>
             ) : (

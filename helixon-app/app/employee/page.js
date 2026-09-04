@@ -23,7 +23,7 @@ export default function EmployeeLanding() {
           }
         }
       } catch {
-        // ignore — treat as signed out
+        // ignore - treat as signed out
       }
       setChecking(false);
     })();
@@ -108,7 +108,7 @@ export default function EmployeeLanding() {
             Employee Portal
           </h1>
           <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
-            Manage your tasks and keep an eye on platform stats — all in one place.
+            Manage your tasks and keep an eye on platform stats - all in one place.
           </p>
 
           <div className="flex flex-col items-center gap-3">

@@ -21,8 +21,8 @@ import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
 //    permanent static key the client can read or copy out of localStorage
 //
 // Token *verification* lives in lib/admin-session.js (Web Crypto, no
-// Node-only APIs) rather than here, so proxy.ts — which runs on the Edge
-// Runtime and can't import Node's `crypto` module — can check the same
+// Node-only APIs) rather than here, so proxy.ts - which runs on the Edge
+// Runtime and can't import Node's `crypto` module - can check the same
 // session cookie before /admin ever renders. Signing (below) stays on
 // Node's `crypto` since it only ever runs from the login route.
 //
@@ -95,7 +95,7 @@ export async function createAdminSession(username) {
     maxAge: SESSION_TTL_MS / 1000,
   });
 
-  // CSRF token cookie — deliberately NOT httpOnly, since client JS needs to
+  // CSRF token cookie - deliberately NOT httpOnly, since client JS needs to
   // read it and echo it back as a header on every mutating fetch (see
   // lib/admin-csrf.js for why this defeats CSRF despite being readable).
   // Same lifetime/scope as the session it protects.

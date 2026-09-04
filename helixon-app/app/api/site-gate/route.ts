@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/site-gate";
 
 // Server-side password check for the "under construction" gate. The
-// password itself now lives only here (env var), never in shipped JS —
+// password itself now lives only here (env var), never in shipped JS -
 // so it can't be read out of the client bundle like the old version.
 //
 // Set in your environment (.env.local locally, your host's dashboard in
