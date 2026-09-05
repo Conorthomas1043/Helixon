@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { SignOutButton } from "@clerk/nextjs";
 import { COLORS } from "@/lib/account";
 
 // Shared across Dashboard, Billing, and Account settings - import this
@@ -100,9 +101,11 @@ export default function AppNav({ active }) {
                 Billing
               </Link>
               <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
-                <a href="/api/auth/logout" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
-                  Log out
-                </a>
+                <SignOutButton redirectUrl="/login">
+                  <button type="button" role="menuitem" className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
+                    Log out
+                  </button>
+                </SignOutButton>
               </div>
             </div>
           )}

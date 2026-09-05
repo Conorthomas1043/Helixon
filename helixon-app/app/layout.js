@@ -1,6 +1,7 @@
 import { Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -17,25 +18,38 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistMono.variable} h-full`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#0b6e4f",
+          colorText: "#13201b",
+          colorTextSecondary: "#5a7a6a",
+          colorBackground: "#ffffff",
+          borderRadius: "12px",
+          fontFamily: "var(--font-geist-mono), monospace",
+        },
+      }}
+    >
+      <html lang="en" className={`${geistMono.variable} h-full`}>
+        <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="anonymous"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet"
+          />
+        </head>
 
-      <body className="min-h-full flex flex-col antialiased">
-        {children}
-        <SpeedInsights />
-        <Analytics />
-      </body>
-    </html>
+        <body className="min-h-full flex flex-col antialiased">
+          {children}
+          <SpeedInsights />
+          <Analytics />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

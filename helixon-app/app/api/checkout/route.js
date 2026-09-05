@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { supabase as supabaseAdmin } from "@/lib/supabase";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-06-20",
@@ -39,23 +39,37 @@ export async function POST(request) {
     // Require a logged-in user so we know who to attach the subscription
     // to. Adjust this block if you want to allow checkout before signup -
     // in that case, collect email in the Checkout Session itself instead.
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll() { /* no-op: this route doesn't need to write auth cookies */ },
-        },
-      }
-    );
-    const { data: { user } } = await supabase.auth.getUser();
+    const { userId: clerkUserId } = await auth();
 
-    if (!user) {
+    if (!clerkUserId) {
       return NextResponse.json(
         { ok: false, error: "Please sign in before upgrading your plan." },
         { status: 401 }
+      );
+    }
+
+    const user = await currentUser();
+    const email = user?.primaryEmailAddress?.emailAddress || undefined;
+
+    // subscriptions.user_id is a foreign key onto profiles.id (the
+    // pre-existing uuid PK, unrelated to the Clerk id) - resolve that
+    // first so the webhook below writes to the same row
+    // lib/customer-auth.js reads from.
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("clerk_user_id", clerkUserId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("[checkout] Profile lookup failed:", profileError.message);
+      return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
+    }
+
+    if (!profile) {
+      return NextResponse.json(
+        { ok: false, error: "Your account isn't fully set up yet. Please contact Helixon support." },
+        { status: 403 }
       );
     }
 
@@ -66,12 +80,12 @@ export async function POST(request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: user.email,
-      client_reference_id: user.id, // lets the webhook match back to this user
+      customer_email: email,
+      client_reference_id: profile.id, // lets the webhook match back to this profile row
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
       allow_promotion_codes: true,
-      metadata: { plan, userId: user.id },
+      metadata: { plan, userId: profile.id },
     });
 
     if (!session.url) {

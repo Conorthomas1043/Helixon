@@ -427,7 +427,7 @@ export default function CandidateResult({
                   <div>
                     <SectionLabel>Missing - required</SectionLabel>
                     <div className="flex flex-wrap gap-1.5">
-                      {missingRequired.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fbd0d0" }}>�- {s}</span>)}
+                      {missingRequired.map((s, i) => <span key={i} className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fbd0d0" }}>✗ {s}</span>)}
                     </div>
                   </div>
                 )}
@@ -527,7 +527,7 @@ export default function CandidateResult({
                 {result.weaknesses?.length > 0 && (
                   <div>
                     <SectionLabel>Gaps</SectionLabel>
-                    <ul className="space-y-2">{result.weaknesses.map((w, i) => <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "#5a7a6a" }}><span className="mt-0.5 shrink-0 font-bold" style={{ color: "#e08080" }}>�-</span>{w}</li>)}</ul>
+                    <ul className="space-y-2">{result.weaknesses.map((w, i) => <li key={i} className="flex items-start gap-2 text-xs" style={{ color: "#5a7a6a" }}><span className="mt-0.5 shrink-0 font-bold" style={{ color: "#e08080" }}>✗</span>{w}</li>)}</ul>
                   </div>
                 )}
                 {!result.red_flags?.length && !result.strengths?.length && !result.weaknesses?.length && <EmptyTabState label="evidence" />}
@@ -559,7 +559,7 @@ export default function CandidateResult({
                     {result.phone && <Field icon="☎" label="Phone"><p className="text-xs" style={{ color: "#13201b" }}>{result.phone}</p></Field>}
                     {result.linkedin && <Field icon="in" label="LinkedIn"><a href={result.linkedin.startsWith("http") ? result.linkedin : `https://${result.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View profile</a></Field>}
                     {result.github && <Field icon="⌥" label="GitHub"><a href={result.github.startsWith("http") ? result.github : `https://github.com/${result.github.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View GitHub</a></Field>}
-                    {result.portfolio_url && <Field icon="�-" label="Portfolio"><a href={result.portfolio_url.startsWith("http") ? result.portfolio_url : `https://${result.portfolio_url}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View site</a></Field>}
+                    {result.portfolio_url && <Field icon="🔗" label="Portfolio"><a href={result.portfolio_url.startsWith("http") ? result.portfolio_url : `https://${result.portfolio_url}`} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: "var(--forest)" }}>View site</a></Field>}
                     {result.location && <Field icon="📍" label="Location"><p className="text-xs" style={{ color: "#13201b" }}>{result.location}</p></Field>}
                     {result.current_title && <Field icon="💼" label="Current role"><p className="text-xs" style={{ color: "#13201b" }}>{result.current_title}{result.current_employer ? ` @ ${result.current_employer}` : ""}</p></Field>}
                     {result.notice_period && <Field icon="⏱" label="Notice period"><p className="text-xs" style={{ color: "#13201b" }}>{result.notice_period}</p></Field>}

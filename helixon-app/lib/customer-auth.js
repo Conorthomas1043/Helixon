@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
 
 import { supabase } from "@/lib/supabase";
 
@@ -7,34 +6,20 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = new Set([
   "active",
 ]);
 
+// Identity comes from Clerk (auth() reads the session Clerk's middleware
+// already validated for this request). Everything else - profile, agency,
+// subscription/billing status - still lives in Postgres via Supabase, which
+// is why `supabase` (the service-role client) is still used here even
+// though Supabase Auth itself is no longer the identity provider.
+//
+// Rows are looked up by `clerk_user_id` rather than the old `id` (which
+// used to be the Supabase auth.users uuid). See
+// supabase/migrations/*_add_clerk_user_id.sql - existing rows need that
+// column backfilled as part of the user migration to Clerk.
 export async function getCustomerContext() {
-  const cookieStore = await cookies();
+  const { userId } = await auth();
 
-  const authClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(
-            ({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            }
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-    error: authError,
-  } = await authClient.auth.getUser();
-
-  if (authError || !user) {
+  if (!userId) {
     return {
       user: null,
       userId: null,
@@ -49,9 +34,9 @@ export async function getCustomerContext() {
     await supabase
       .from("profiles")
       .select(
-        "id,username,first_name,last_name,agency_id,created_at"
+        "id,clerk_user_id,username,first_name,last_name,agency_id,created_at"
       )
-      .eq("id", user.id)
+      .eq("clerk_user_id", userId)
       .maybeSingle();
 
   if (profileError) {
@@ -66,7 +51,7 @@ export async function getCustomerContext() {
       .select(
         "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at"
       )
-      .eq("user_id", user.id)
+      .eq("user_id", profile?.id || userId)
       .maybeSingle();
 
   if (subscriptionError) {
@@ -76,8 +61,8 @@ export async function getCustomerContext() {
   }
 
   return {
-    user,
-    userId: user.id,
+    user: { id: userId },
+    userId,
     agencyId: profile?.agency_id || null,
     profile: profile || null,
     subscription: subscription || null,

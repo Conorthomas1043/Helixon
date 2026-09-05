@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "@clerk/nextjs";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
@@ -67,7 +68,9 @@ export default function DashboardNav({ email }) {
             <div className="absolute right-0 top-[calc(100%+8px)] w-44 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
               <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
               <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
-              <a href="/api/auth/logout" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#b91c1c" }}>Log out</a>
+              <SignOutButton redirectUrl="/login">
+                <button type="button" className="w-full text-left block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#b91c1c" }}>Log out</button>
+              </SignOutButton>
             </div>
           )}
         </div>
