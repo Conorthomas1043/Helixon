@@ -7,6 +7,7 @@ import posthog from "posthog-js";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
+  { href: "/analyse", label: "Analyse" },
   { href: "/dashboard/candidates", label: "Candidates" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
   { href: "/dashboard/jobs", label: "Jobs" },
@@ -35,7 +36,7 @@ export default function DashboardNav({ email }) {
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
       <div className="max-w-[1200px] mx-auto px-6 h-[56px] flex items-center justify-between">
-        <Link href="/analyse" className="flex items-center gap-3 group" aria-label="Helixon home">
+        <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
