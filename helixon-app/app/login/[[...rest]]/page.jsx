@@ -11,6 +11,14 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 // into Clerk and configured from the Clerk dashboard (User & Authentication)
 // rather than in this app's code.
 //
+// Forgot password: <SignIn/> already shows a "Forgot password?" link under
+// the password field and walks the user through the reset (code + new
+// password) as extra internal steps - no separate component or prop needed.
+// It only requires two things to actually work: "Reset password" turned on
+// in the Clerk dashboard (User & Authentication -> Email, Phone, Username ->
+// Password), and the [[...rest]] catch-all route below, since the reset
+// flow needs sub-paths just like the MFA challenge and SSO callback do.
+//
 // The [[...rest]] catch-all route is required by Clerk - the component needs
 // sub-paths for its own internal steps (password reset, MFA challenge, SSO
 // callback, etc). This file keeps the app's existing visual shell (ambient
@@ -130,23 +138,25 @@ export default function LoginPage() {
                   colorPrimary: "#0b3a2a",
                   colorText: "#13201b",
                   colorTextSecondary: "#5a7a6a",
-                  colorBackground: "transparent",
                   colorInputBackground: "rgba(255,255,255,0.6)",
                   colorInputText: "#13201b",
                   borderRadius: "12px",
                   fontFamily: "inherit",
                 },
                 elements: {
-                  rootBox: "w-full",
-                  cardBox: "shadow-none bg-transparent w-full",
-                  card: "shadow-none bg-transparent p-0 w-full gap-4",
+                  rootBox: "!w-full !min-w-0",
+                  cardBox: "!w-full !min-w-0 shadow-none bg-transparent",
+                  card: "!w-full !min-w-0 !max-w-full box-border shadow-none bg-transparent p-0 gap-4",
                   headerTitle: "tracking-tight",
                   headerSubtitle: "text-[13px]",
+                  form: "!w-full gap-3.5",
+                  formField: "!w-full !min-w-0",
+                  formFieldInput: "!w-full box-border rounded-[12px]",
+                  socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
                   formButtonPrimary:
                     "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
-                  formFieldInput: "rounded-[12px]",
                   footerAction: "text-[13px]",
-                  footer: "bg-transparent",
+                  footer: "bg-transparent px-0",
                   dividerRow: "my-4",
                 },
               }}

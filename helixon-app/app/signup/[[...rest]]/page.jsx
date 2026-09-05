@@ -300,16 +300,21 @@ export default function SignupPage() {
                 </form>
               ) : (
                 <>
-                  <div className="mb-5">
-                    <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Create your account</h2>
-                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>Set a username and password to finish setting up {trimmedAgency}.</p>
-                  </div>
-
                   <SignUp
                     path="/signup"
                     signInUrl="/login"
                     fallbackRedirectUrl="/dashboard"
                     unsafeMetadata={{ agencyName: trimmedAgency }}
+                    localization={{
+                      signUp: {
+                        start: {
+                          title: "Create your account",
+                          subtitle: trimmedAgency
+                            ? `Set a username and password to finish setting up ${trimmedAgency}.`
+                            : "Set a username and password to get started.",
+                        },
+                      },
+                    }}
                     appearance={{
                       layout: {
                         socialButtonsPlacement: "top",
@@ -318,22 +323,27 @@ export default function SignupPage() {
                         colorPrimary: "#0b3a2a",
                         colorText: "#13201b",
                         colorTextSecondary: "#5a7a6a",
-                        colorBackground: "transparent",
                         colorInputBackground: "rgba(255,255,255,0.6)",
                         colorInputText: "#13201b",
                         borderRadius: "12px",
                         fontFamily: "inherit",
                       },
                       elements: {
-                        rootBox: "w-full",
-                        cardBox: "shadow-none bg-transparent w-full",
-                        card: "shadow-none bg-transparent p-0 w-full gap-4",
-                        header: "hidden",
+                        rootBox: "!w-full !min-w-0",
+                        cardBox: "!w-full !min-w-0 shadow-none bg-transparent",
+                        card: "!w-full !min-w-0 !max-w-full box-border shadow-none bg-transparent p-0 gap-4",
+                        header: "px-0",
+                        headerTitle: "text-[1.5rem] font-semibold tracking-tight",
+                        headerSubtitle: "text-[13px]",
+                        form: "!w-full gap-3.5",
+                        formFieldRow: "flex-col gap-3.5",
+                        formField: "!w-full !min-w-0",
+                        formFieldInput: "!w-full box-border rounded-[12px]",
+                        socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
                         formButtonPrimary:
                           "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
-                        formFieldInput: "rounded-[12px]",
+                        footer: "bg-transparent px-0",
                         footerAction: "text-[13px]",
-                        footer: "bg-transparent",
                         dividerRow: "my-4",
                       },
                     }}
