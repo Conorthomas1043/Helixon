@@ -1,9 +1,17 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
-// Keep this on the server only - never expose ANTHROPIC_API_KEY to the client.
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Keep this on the server only - never expose GEMINI_API_KEY to the client.
+let genAI = null;
+function client() {
+  if (!genAI) {
+    genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return genAI;
+}
+
+const MODEL = "gemini-3.8-flash";
+const MAX_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 4000;
 
 const SYSTEM_PROMPT = `You are Helixon's website assistant, embedded in the chat widget on the Helixon landing page.
 
@@ -36,85 +44,107 @@ Navigation:
 
 Do not describe a free trial, free analyses, Solo, Team, or £149 pricing because those are no longer current.`;
 
+function sanitizeMessages(rawMessages) {
+  if (!Array.isArray(rawMessages)) return [];
+
+  return rawMessages
+    .filter(
+      (message) =>
+        message &&
+        typeof message.content === "string" &&
+        message.content.trim().length > 0 &&
+        (message.role === "user" || message.role === "assistant"),
+    )
+    .slice(-MAX_MESSAGES)
+    .map((message) => ({
+      // Gemini uses "model" rather than "assistant" for the prior-turn role.
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content.slice(0, MAX_MESSAGE_CHARS) }],
+    }));
+}
+
 export async function POST(req) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.error(
-        "Assistant route error: ANTHROPIC_API_KEY is not configured."
-      );
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("Assistant route error: GEMINI_API_KEY is not configured.");
 
       return Response.json(
         {
           ok: false,
-          error:
-            "The assistant is unavailable right now. Please try again.",
+          error: "The assistant is unavailable right now. Please try again.",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     const body = await req.json().catch(() => null);
-    const messages = body?.messages;
 
-    if (!Array.isArray(messages) || messages.length === 0) {
+    if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
       return Response.json(
         {
           ok: false,
           error: "No messages provided.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Only accept the two roles supported by the conversation.
-    // Limit the number and size of messages before sending them to Anthropic.
-    const cleaned = messages
-      .filter(
-        (message) =>
-          message &&
-          typeof message.content === "string" &&
-          (message.role === "user" ||
-            message.role === "assistant")
-      )
-      .slice(-20)
-      .map((message) => ({
-        role: message.role,
-        content: message.content.slice(0, 4000),
-      }));
+    const contents = sanitizeMessages(body.messages);
 
-    if (cleaned.length === 0) {
+    if (contents.length === 0) {
       return Response.json(
         {
           ok: false,
           error: "No valid messages provided.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 400,
-      system: SYSTEM_PROMPT,
-      messages: cleaned,
-    });
+    // Gemini requires the conversation to open on a "user" turn.
+    while (contents.length > 0 && contents[0].role !== "user") {
+      contents.shift();
+    }
 
-    const text = response.content
-      .map((block) =>
-        block.type === "text" ? block.text : ""
-      )
-      .filter(Boolean)
-      .join("\n")
-      .trim();
+    if (contents.length === 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: "No valid messages provided.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+
+    let response;
+    try {
+      response = await client().models.generateContent({
+        model: MODEL,
+        contents,
+        config: {
+          systemInstruction: SYSTEM_PROMPT,
+          maxOutputTokens: 400,
+        },
+        // Not all SDK versions accept fetch options on this call; harmless
+        // if ignored, but bounds the request when it is supported.
+        abortSignal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const text = (response?.text || "").trim();
 
     if (!text) {
       return Response.json(
         {
           ok: false,
-          error:
-            "The assistant did not return a response.",
+          error: "The assistant did not return a response.",
         },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -123,18 +153,14 @@ export async function POST(req) {
       reply: text,
     });
   } catch (err) {
-    console.error(
-      "Assistant route error:",
-      err
-    );
+    console.error("Assistant route error:", err);
 
-    return Response.json(
-      {
-        ok: false,
-        error:
-          "The assistant is unavailable right now. Please try again.",
-      },
-      { status: 500 }
-    );
+    const status = err?.status === 429 ? 429 : 500;
+    const message =
+      status === 429
+        ? "The assistant is a little busy right now. Please try again shortly."
+        : "The assistant is unavailable right now. Please try again.";
+
+    return Response.json({ ok: false, error: message }, { status });
   }
 }

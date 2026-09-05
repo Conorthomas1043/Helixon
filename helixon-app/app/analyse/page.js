@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import posthog from "posthog-js";
 import CandidateResult from "@/components/CandidateResult";
 import DashboardNav from "@/components/DashboardNav";
 
@@ -3718,6 +3719,18 @@ export default function AnalyzePage() {
           );
         }
 
+        if (posthog.__loaded) {
+          posthog.capture("analysis_completed", {
+            rerun,
+            comparison: compareMode && !!result,
+            blind_mode: blindMode,
+            job_source: jobFile ? "file" : "text",
+            cv_file_type: file.type || "unknown",
+            requirements_count: requirements.length,
+            scoring_version: SCORING_VERSION,
+          });
+        }
+
         const entry = {
           id: Date.now(),
           timestamp:
@@ -3866,6 +3879,13 @@ export default function AnalyzePage() {
         ? "Thanks for the feedback 👍"
         : "Thanks - we'll use this to improve"
     );
+
+    if (posthog.__loaded) {
+      posthog.capture("analysis_feedback_submitted", {
+        rating,
+        reason,
+      });
+    }
 
     try {
       await fetch(
@@ -4145,6 +4165,11 @@ export default function AnalyzePage() {
       if (
         data?.ok
       ) {
+        if (posthog.__loaded) {
+          posthog.capture("candidate_email_sent", {
+            purpose: emailPurpose,
+          });
+        }
         setSent(true);
 
         toast(

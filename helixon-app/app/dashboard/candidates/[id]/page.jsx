@@ -32,6 +32,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import {
@@ -935,10 +936,19 @@ export default function CandidateProfilePage({ params }) {
 
   const handleStageChange = useCallback(
     (stage) => {
+      const previousStage = candidate?.stage ?? null;
       const updated = updateCandidateStage(id, stage, "You");
-      if (updated) setCandidate(updated);
+      if (updated) {
+        if (previousStage !== stage && posthog.__loaded) {
+          posthog.capture("candidate_stage_changed", {
+            from_stage: previousStage,
+            to_stage: stage,
+          });
+        }
+        setCandidate(updated);
+      }
     },
-    [id]
+    [id, candidate]
   );
 
   const handleAssign = useCallback(

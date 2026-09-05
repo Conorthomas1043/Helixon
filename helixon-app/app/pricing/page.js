@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 
 const PLANS = [
   {
@@ -93,6 +94,10 @@ export default function PricingPage() {
         throw new Error(
           "Checkout URL was not returned."
         );
+      }
+
+      if (posthog.__loaded) {
+        posthog.capture("checkout_started", { plan });
       }
 
       window.location.href =

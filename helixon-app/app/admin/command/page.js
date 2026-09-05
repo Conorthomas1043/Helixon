@@ -3,10 +3,16 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
-import { PageHeader, RangeControl, KpiCard, Panel, BarList } from "../_shared/ui";
+import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList } from "../_shared/ui";
 import { Globe, useGlobePoints } from "../_shared/globe";
 import { RequestTable } from "../_shared/table";
-import { useAdminStats, useAdminTraffic } from "../_shared/hooks";
+import { useAdminStats, useAdminTraffic, useAdminOps } from "../_shared/hooks";
+
+function formatCurrency(amount) {
+  const n = Number(amount || 0);
+  if (!Number.isFinite(n) || n <= 0) return "-";
+  return n.toLocaleString(undefined, { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
+}
 
 export default function CommandPage() {
   const [range, setRange] = useState("24h");
@@ -20,10 +26,14 @@ export default function CommandPage() {
     unblock,
     reload: reloadTraffic,
   } = useAdminTraffic(range);
+  const { ops, error: opsError, reload: reloadOps } = useAdminOps();
 
   const trafficRows = traffic?.rows || [];
   const blocked = traffic?.blockedIps || [];
   const totals = stats?.totals || {};
+  const kpis = ops?.kpis || {};
+  const sales = ops?.sales || {};
+  const seo = ops?.seo || {};
 
   const blockedSet = useMemo(() => new Set(blocked.map((entry) => entry.ip)), [blocked]);
   const globePoints = useGlobePoints(traffic?.globe);
@@ -38,13 +48,14 @@ export default function CommandPage() {
   function refresh() {
     reloadStats();
     reloadTraffic();
+    reloadOps();
   }
 
   return (
     <>
       <PageHeader
         title="Command"
-        description="Live snapshot of traffic, product usage, and revenue health."
+        description="Live snapshot of traffic, product usage, revenue, and security - across every admin section, in one place."
       >
         <RangeControl range={range} setRange={setRange} />
         <button className="btn small" onClick={refresh} disabled={busy}>
@@ -53,6 +64,7 @@ export default function CommandPage() {
       </PageHeader>
 
       {error && <div className="notice error section">{error}</div>}
+      {opsError && <div className="notice error section">{opsError}</div>}
 
       <div className="kpi-grid">
         <KpiCard label="Requests" value={totals.requests ?? trafficRows.length} />
@@ -80,6 +92,58 @@ export default function CommandPage() {
         />
       </div>
 
+      {/* Revenue / sales, SEO, and security summaries - pulled from the same
+          ops payload the standalone Sales/SEO/Security pages read from, so
+          Command is the one screen that houses all of it. */}
+      <div className="grid-3 section">
+        <Panel
+          title="Revenue & sales"
+          sub={sales.revenueSourceAvailable ? "From active subscription rows" : "No usable revenue rows yet"}
+          action={
+            <Link className="panel-link" href="/admin/billing">
+              Billing
+            </Link>
+          }
+        >
+          <div className="kpi-grid cols-2" style={{ marginBottom: 10 }}>
+            <KpiCard label="MRR" value={formatCurrency(sales.mrr)} tone="var(--ok)" />
+            <KpiCard label="Active subs" value={sales.activeSubscriptions ?? "-"} />
+          </div>
+          <StatList
+            rows={(sales.agenciesByPlan || []).map((row) => ({ label: row.plan, value: row.count }))}
+          />
+        </Panel>
+
+        <Panel
+          title="Acquisition"
+          sub="Channel mix across demos and tracked traffic"
+          action={
+            <Link className="panel-link" href="/admin/seo">
+              SEO
+            </Link>
+          }
+        >
+          <BarList items={(seo.channels || []).map((c) => ({ name: c.channel, count: c.count }))} limit={6} />
+        </Panel>
+
+        <Panel
+          title="Security posture"
+          sub={`${kpis.threats ?? 0} scored threats, ${kpis.auditEvents ?? 0} audit events`}
+          action={
+            <Link className="panel-link" href="/admin/security">
+              Security
+            </Link>
+          }
+        >
+          <div className="notice">
+            Raw response bodies are <b>not</b> stored. Request metadata,
+            blocking state, and safe analytics stay available for triage
+            without retaining CVs, tokens, credentials, or generated
+            documents.
+          </div>
+        </Panel>
+      </div>
+
       <div className="split section">
         <div className="panel globe-panel">
           <div className="globe-overlay">
@@ -102,17 +166,6 @@ export default function CommandPage() {
         </div>
 
         <div className="panel">
-          <div className="panel-title">Security posture</div>
-
-          <div className="section">
-            <div className="notice">
-              Raw response bodies are <b>not</b> stored. Request metadata,
-              blocking state, and safe analytics stay available for triage
-              without retaining CVs, tokens, credentials, or generated
-              documents.
-            </div>
-          </div>
-
           <div className="section">
             <div className="section-head">
               <div className="panel-title">Blocked IPs</div>
@@ -144,6 +197,26 @@ export default function CommandPage() {
                 </table>
               </div>
             )}
+          </div>
+
+          <div className="section">
+            <div className="section-head">
+              <div className="panel-title">Jump to a section</div>
+            </div>
+            <div className="bar-list">
+              {[
+                ["/admin/traffic", "Traffic log"],
+                ["/admin/pentester", "Pentester"],
+                ["/admin/security/investigate", "Investigate"],
+                ["/admin/users", "Users"],
+                ["/admin/employees", "Employees"],
+                ["/admin/billing", "Billing"],
+              ].map(([href, label]) => (
+                <Link key={href} className="panel-link" href={href} style={{ display: "block", padding: "6px 0" }}>
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

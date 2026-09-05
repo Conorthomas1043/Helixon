@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import posthog from "posthog-js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Contact - simple form + direct channels, same nav/footer/tokens as landing.
@@ -142,6 +143,9 @@ export default function ContactPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error(data?.error || "Couldn't send your message.");
+      }
+      if (posthog.__loaded) {
+        posthog.capture("contact_message_sent");
       }
       setSent(true);
     } catch (err) {

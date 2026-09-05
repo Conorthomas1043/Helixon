@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import Link from "next/link";
 import CookieConsentBanner from "../components/CookieConsentBanner";
 import Button from "@/components/landing/Button";
@@ -228,6 +229,9 @@ function BuyPlanButton({ plan, label, highlight }) {
         return;
       }
 
+      if (posthog.__loaded) {
+        posthog.capture("checkout_started", { plan });
+      }
       window.location.href = data.redirectTo;
     } catch {
       setError("Network error. Please try again.");

@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
+import posthog from "posthog-js";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
@@ -15,7 +16,21 @@ const TABS = [
 
 export default function DashboardNav({ email }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isLoaded, isSignedIn, user } = useUser();
+  const userId = user?.id;
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const userName = user?.fullName;
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !userId || !posthog.__loaded) return;
+
+    const properties = {};
+    if (userEmail) properties.email = userEmail;
+    if (userName) properties.name = userName;
+
+    posthog.identify(userId, properties);
+  }, [isLoaded, isSignedIn, userId, userEmail, userName]);
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
@@ -69,7 +84,16 @@ export default function DashboardNav({ email }) {
               <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
               <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#13201b" }} onClick={() => setMenuOpen(false)}>Billing</Link>
               <SignOutButton redirectUrl="/login">
-                <button type="button" className="w-full text-left block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "#b91c1c" }}>Log out</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (posthog.__loaded) posthog.reset();
+                  }}
+                  className="w-full text-left block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+                  style={{ color: "#b91c1c" }}
+                >
+                  Log out
+                </button>
               </SignOutButton>
             </div>
           )}

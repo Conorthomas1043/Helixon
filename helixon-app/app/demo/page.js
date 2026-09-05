@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -184,6 +185,9 @@ export default function DemoRequestPage() {
         return;
       }
 
+      if (posthog.__loaded) {
+        posthog.capture("demo_request_submitted");
+      }
       setSuccess(true);
     } catch {
       setError(

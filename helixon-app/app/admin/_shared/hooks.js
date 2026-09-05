@@ -378,3 +378,38 @@ export function useAdminEmployees() {
 
   return { employees, form, setForm, error, busy, loading, reload: load, action, create };
 }
+
+// Aggregated cross-package data (sales, SEO, security, revenue) - the same
+// payload the standalone Sales/SEO pages already read from, surfaced here so
+// Command can house all of it in one place instead of sending people
+// section-by-section.
+export function useAdminOps() {
+  const [ops, setOps] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/ops", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Failed to load operational data.");
+      }
+
+      setOps(data);
+    } catch (err) {
+      setError(err?.message || "Failed to load operational data.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { ops, error, loading, reload: load };
+}

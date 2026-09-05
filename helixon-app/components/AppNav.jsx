@@ -2,13 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
+import posthog from "posthog-js";
 import { COLORS } from "@/lib/account";
 
 // Shared across Dashboard, Billing, and Account settings - import this
 // component from all three instead of redefining it per page.
 export default function AppNav({ active }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isLoaded, isSignedIn, user } = useUser();
+  const userId = user?.id;
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const userName = user?.fullName;
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
 
@@ -29,6 +34,16 @@ export default function AppNav({ active }) {
       document.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !userId || !posthog.__loaded) return;
+
+    const properties = {};
+    if (userEmail) properties.email = userEmail;
+    if (userName) properties.name = userName;
+
+    posthog.identify(userId, properties);
+  }, [isLoaded, isSignedIn, userId, userEmail, userName]);
 
   const topLink = (key, label, href) => (
     <Link
@@ -102,7 +117,15 @@ export default function AppNav({ active }) {
               </Link>
               <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
                 <SignOutButton redirectUrl="/login">
-                  <button type="button" role="menuitem" className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: COLORS.dangerText }}>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      if (posthog.__loaded) posthog.reset();
+                    }}
+                    className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50"
+                    style={{ color: COLORS.dangerText }}
+                  >
                     Log out
                   </button>
                 </SignOutButton>
