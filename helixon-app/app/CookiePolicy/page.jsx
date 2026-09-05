@@ -111,9 +111,9 @@ export default function CookiePolicyPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <a href="/" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
+            <a href="/demo" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")} onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}>
-              Try now
+              Get a demo
             </a>
             <button type="button" onClick={() => setMobileNavOpen((v) => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
               className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
@@ -217,7 +217,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <div className="pt-6 mt-6 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "#8aaa9a" }}>
-          Questions about cookies? Contact <a href="mailto:privacy@helixon.io" className="font-semibold" style={{ color: "var(--forest)" }}>privacy@helixon.io</a>.
+          Questions about cookies? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
         </div>
       </div>
 

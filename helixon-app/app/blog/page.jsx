@@ -61,10 +61,10 @@ function Footer() {
       <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
         <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
         <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
-          <a href="/how-it-works">How it works</a>
+          <a href="/#how">How it works</a>
           <a href="/faq">FAQ</a>
           <a href="/careers">Careers</a>
-          <a href="/complaints-policy">Complaints</a>
+          <a href="/complaints">Complaints</a>
           <a href="/contact">Contact</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>

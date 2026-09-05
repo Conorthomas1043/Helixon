@@ -33,19 +33,19 @@ function CtaButtons({ align = "left" }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 ${align === "center" ? "justify-center items-center" : ""}`}>
       <a
-        href="/"
+        href="/demo"
         className="inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3.5 rounded-[10px] text-white transition-all"
         style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}
       >
-        Try it free
+        Get a demo
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </a>
       <a
-        href="/pricing"
+        href="/#pricing"
         className="inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3.5 rounded-[10px] transition-all"
         style={{ border: "1.5px solid var(--border)", color: "#13201b" }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")}
@@ -254,8 +254,8 @@ export default function AboutPage() {
             Try Helixon on a real CV and a real job spec - takes less time than reading this page did.
           </p>
           <div className="flex justify-center">
-            <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
-              Try it now - it&apos;s free
+            <a href="/demo" className="inline-flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-[10px] transition-transform hover:scale-[1.02]" style={{ background: "white", color: "var(--forest)" }}>
+              Get a demo now - it&apos;s free
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
           </div>
