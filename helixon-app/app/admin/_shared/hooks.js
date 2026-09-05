@@ -413,3 +413,38 @@ export function useAdminOps() {
 
   return { ops, error, loading, reload: load };
 }
+
+// Live per-service data (Stripe, Clerk, Redis, Resend, Sentry) - queried
+// directly from each service rather than through the Supabase mirror, which
+// is missing fields (e.g. subscription amounts) and, for users, is no
+// longer even the right identity source post-Clerk-migration.
+export function useAdminServices() {
+  const [services, setServices] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/services", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Failed to load service data.");
+      }
+
+      setServices(data);
+    } catch (err) {
+      setError(err?.message || "Failed to load service data.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { services, error, loading, reload: load };
+}

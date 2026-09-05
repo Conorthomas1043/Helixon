@@ -6,12 +6,44 @@ import Link from "next/link";
 import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList } from "../_shared/ui";
 import { Globe, useGlobePoints } from "../_shared/globe";
 import { RequestTable } from "../_shared/table";
-import { useAdminStats, useAdminTraffic, useAdminOps } from "../_shared/hooks";
+import { useAdminStats, useAdminTraffic, useAdminOps, useAdminServices } from "../_shared/hooks";
 
-function formatCurrency(amount) {
+function formatCurrency(amount, currency = "GBP") {
   const n = Number(amount || 0);
   if (!Number.isFinite(n) || n <= 0) return "-";
-  return n.toLocaleString(undefined, { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
+  return n.toLocaleString(undefined, {
+    style: "currency",
+    currency: (currency || "GBP").toUpperCase(),
+    maximumFractionDigits: 0,
+  });
+}
+
+function ServiceStatus({ label, snapshot, ok, note }) {
+  const tone = !snapshot?.configured
+    ? "var(--muted)"
+    : snapshot?.error
+      ? "var(--critical)"
+      : ok
+        ? "var(--ok)"
+        : "var(--warn)";
+
+  const text = !snapshot?.configured
+    ? "Not configured"
+    : snapshot?.error
+      ? snapshot.error
+      : note || "Connected";
+
+  return (
+    <div className="bar-row" style={{ alignItems: "center" }}>
+      <span className="bar-row-label" style={{ minWidth: 90 }}>
+        {label}
+      </span>
+      <span className="mono" style={{ color: tone, fontSize: 13 }}>
+        <span className="legend-dot" style={{ background: tone, marginRight: 6 }} />
+        {text}
+      </span>
+    </div>
+  );
 }
 
 export default function CommandPage() {
@@ -27,6 +59,7 @@ export default function CommandPage() {
     reload: reloadTraffic,
   } = useAdminTraffic(range);
   const { ops, error: opsError, reload: reloadOps } = useAdminOps();
+  const { services, error: servicesError, reload: reloadServices } = useAdminServices();
 
   const trafficRows = traffic?.rows || [];
   const blocked = traffic?.blockedIps || [];
@@ -34,6 +67,23 @@ export default function CommandPage() {
   const kpis = ops?.kpis || {};
   const sales = ops?.sales || {};
   const seo = ops?.seo || {};
+
+  const stripe = services?.stripe;
+  const clerk = services?.clerk;
+  const redis = services?.redis;
+  const resend = services?.resend;
+  const sentry = services?.sentry;
+
+  // Prefer the live Stripe/Clerk numbers over the mirrored Supabase ones -
+  // the subscriptions table never gets an amount field written to it, and
+  // Supabase Auth stopped being the identity source once the app moved to
+  // Clerk (see lib/customer-auth.js), so its user list is stale.
+  const mrr = stripe?.configured && !stripe.error ? stripe.mrr : sales.mrr;
+  const mrrCurrency = stripe?.currency || "gbp";
+  const mrrIsLive = stripe?.configured && !stripe.error;
+
+  const userCount = clerk?.configured && !clerk.error ? clerk.totalUsers : totals.users;
+  const userCountIsLive = clerk?.configured && !clerk.error;
 
   const blockedSet = useMemo(() => new Set(blocked.map((entry) => entry.ip)), [blocked]);
   const globePoints = useGlobePoints(traffic?.globe);
@@ -49,13 +99,14 @@ export default function CommandPage() {
     reloadStats();
     reloadTraffic();
     reloadOps();
+    reloadServices();
   }
 
   return (
     <>
       <PageHeader
         title="Command"
-        description="Live snapshot of traffic, product usage, revenue, and security - across every admin section, in one place."
+        description="Live snapshot of traffic, product usage, revenue, and security - sourced directly from Stripe, Clerk, Redis, Resend, and Sentry wherever a live source beats the database mirror."
       >
         <RangeControl range={range} setRange={setRange} />
         <button className="btn small" onClick={refresh} disabled={busy}>
@@ -65,6 +116,22 @@ export default function CommandPage() {
 
       {error && <div className="notice error section">{error}</div>}
       {opsError && <div className="notice error section">{opsError}</div>}
+      {servicesError && <div className="notice error section">{servicesError}</div>}
+
+      {/* Live service connectivity - the actual APIs, not their Supabase
+          mirrors. Anything showing "Not configured" is missing an env var
+          (STRIPE_SECRET_KEY, CLERK_SECRET_KEY, REDIS_URL / UPSTASH_REDIS_REDIS_URL,
+          RESEND_API_KEY, SENTRY_AUTH_TOKEN). */}
+      <Panel title="Live services" sub="Direct API connections, not Supabase mirrors" className="section">
+        <div className="grid-3">
+          <ServiceStatus label="Stripe" snapshot={stripe} ok note={stripe?.configured ? `${stripe.totalSubscriptions ?? 0} subscriptions seen` : undefined} />
+          <ServiceStatus label="Clerk" snapshot={clerk} ok note={clerk?.configured ? `${clerk.totalUsers ?? 0} users` : undefined} />
+          <ServiceStatus label="Redis" snapshot={redis} ok={redis?.connected} note={redis?.connected ? `${redis.latencyMs}ms ping` : redis?.configured ? "Configured, unreachable" : undefined} />
+          <ServiceStatus label="Resend" snapshot={resend} ok={resend?.allVerified} note={resend?.configured ? `${resend.domains?.length ?? 0} domain(s)` : undefined} />
+          <ServiceStatus label="Sentry" snapshot={sentry} ok={sentry?.configured && !sentry?.unresolvedLast24h} note={sentry?.configured ? `${sentry.unresolvedLast24h ?? 0} unresolved (24h)` : "Add SENTRY_AUTH_TOKEN to enable"} />
+          <ServiceStatus label="Supabase" snapshot={{ configured: true }} ok note="Product data (candidates, jobs, agencies)" />
+        </div>
+      </Panel>
 
       <div className="kpi-grid">
         <KpiCard label="Requests" value={totals.requests ?? trafficRows.length} />
@@ -75,7 +142,7 @@ export default function CommandPage() {
           tone="var(--critical)"
         />
 
-        <KpiCard label="Users" value={totals.users ?? "-"} />
+        <KpiCard label="Users" value={userCount ?? "-"} foot={userCountIsLive ? "Live via Clerk" : "Supabase (stale - see note)"} />
         <KpiCard label="Employees" value={totals.employees ?? "-"} tone="var(--ok)" />
       </div>
 
@@ -92,13 +159,10 @@ export default function CommandPage() {
         />
       </div>
 
-      {/* Revenue / sales, SEO, and security summaries - pulled from the same
-          ops payload the standalone Sales/SEO/Security pages read from, so
-          Command is the one screen that houses all of it. */}
       <div className="grid-3 section">
         <Panel
           title="Revenue & sales"
-          sub={sales.revenueSourceAvailable ? "From active subscription rows" : "No usable revenue rows yet"}
+          sub={mrrIsLive ? "Live from Stripe" : sales.revenueSourceAvailable ? "From active subscription rows" : "No usable revenue source yet"}
           action={
             <Link className="panel-link" href="/admin/billing">
               Billing
@@ -106,11 +170,14 @@ export default function CommandPage() {
           }
         >
           <div className="kpi-grid cols-2" style={{ marginBottom: 10 }}>
-            <KpiCard label="MRR" value={formatCurrency(sales.mrr)} tone="var(--ok)" />
-            <KpiCard label="Active subs" value={sales.activeSubscriptions ?? "-"} />
+            <KpiCard label="MRR" value={formatCurrency(mrr, mrrCurrency)} tone="var(--ok)" />
+            <KpiCard label="Active subs" value={stripe?.byStatus?.active ?? sales.activeSubscriptions ?? "-"} />
           </div>
           <StatList
-            rows={(sales.agenciesByPlan || []).map((row) => ({ label: row.plan, value: row.count }))}
+            rows={(stripe?.byPlan || sales.agenciesByPlan || []).map((row) => ({
+              label: row.plan,
+              value: row.count,
+            }))}
           />
         </Panel>
 
@@ -128,7 +195,7 @@ export default function CommandPage() {
 
         <Panel
           title="Security posture"
-          sub={`${kpis.threats ?? 0} scored threats, ${kpis.auditEvents ?? 0} audit events`}
+          sub={`${kpis.threats ?? 0} scored threats, ${kpis.auditEvents ?? 0} audit events, ${sentry?.unresolvedLast24h ?? "-"} Sentry issues (24h)`}
           action={
             <Link className="panel-link" href="/admin/security">
               Security
