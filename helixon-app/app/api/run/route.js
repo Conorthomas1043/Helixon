@@ -78,7 +78,7 @@ export async function POST(request) {
       request.headers.get("x-real-ip") ||
       "unknown";
 
-    if (!rateLimit(ip)) {
+    if (!(await rateLimit(ip))) {
       return NextResponse.json(
         {
           ok: false,
