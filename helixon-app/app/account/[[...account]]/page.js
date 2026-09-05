@@ -17,7 +17,6 @@ export default function AccountPage() {
               "radial-gradient(circle, rgba(42,164,125,0.18) 0%, rgba(42,164,125,0) 70%)",
           }}
         />
-
         <div
           className="absolute right-[-10%] top-[25%] h-[600px] w-[600px] rounded-full opacity-40 blur-[120px]"
           style={{
@@ -25,7 +24,6 @@ export default function AccountPage() {
               "radial-gradient(circle, rgba(215,195,120,0.18) 0%, rgba(215,195,120,0) 70%)",
           }}
         />
-
         <div
           className="absolute bottom-[-20%] left-[30%] h-[650px] w-[650px] rounded-full opacity-40 blur-[120px]"
           style={{
@@ -49,7 +47,6 @@ export default function AccountPage() {
                 <span className="absolute right-0 top-[2px] h-[3px] w-[3px] rounded-full bg-[#e86b63]" />
               </div>
             </div>
-
             <span className="text-[18px] font-semibold tracking-[-0.03em]">
               Helixon
             </span>
@@ -62,7 +59,6 @@ export default function AccountPage() {
             >
               Scoring
             </Link>
-
             <Link
               href="/dashboard"
               className="text-[15px] font-medium text-[#55766c] transition-colors hover:text-[#10221d]"
@@ -85,17 +81,14 @@ export default function AccountPage() {
               <UserIcon />
               Profile
             </Link>
-
             <div className="flex items-center gap-4 rounded-[13px] px-4 py-3 text-[15px] font-medium text-[#5c7b72]">
               <ShieldIcon />
               Security
             </div>
-
             <div className="flex items-center gap-4 rounded-[13px] px-4 py-3 text-[15px] font-medium text-[#5c7b72]">
               <BellIcon />
               Notifications
             </div>
-
             <div className="mt-3 flex items-center gap-4 rounded-[13px] px-4 py-3 text-[15px] font-medium text-[#e53935]">
               <WarningIcon />
               Danger zone
@@ -122,12 +115,10 @@ export default function AccountPage() {
                       <span className="absolute right-0 top-[2px] h-[3px] w-[3px] rounded-full bg-[#e86b63]" />
                     </div>
                   </div>
-
                   <span className="text-[19px] font-semibold tracking-[-0.035em]">
                     Helixon
                   </span>
                 </div>
-
                 <Link
                   href="/dashboard"
                   className="text-[15px] font-medium text-[#54776c] transition-colors hover:text-[#10221d]"
@@ -139,11 +130,9 @@ export default function AccountPage() {
               <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.24em] text-[#087a5b]">
                 Account
               </p>
-
               <h1 className="text-[48px] font-semibold leading-[1.02] tracking-[-0.055em] sm:text-[56px]">
                 Your profile.
               </h1>
-
               <p className="mt-4 max-w-[650px] text-[18px] leading-7 text-[#638279]">
                 Manage your personal information, email addresses and account
                 security.
@@ -171,12 +160,8 @@ export default function AccountPage() {
                     borderRadius: "14px",
                     fontFamily: "inherit",
                   },
-
                   elements: {
-                    rootBox: {
-                      width: "100%",
-                    },
-
+                    rootBox: { width: "100%" },
                     cardBox: {
                       width: "100%",
                       maxWidth: "none",
@@ -184,7 +169,6 @@ export default function AccountPage() {
                       border: "none",
                       background: "transparent",
                     },
-
                     card: {
                       width: "100%",
                       maxWidth: "none",
@@ -192,39 +176,24 @@ export default function AccountPage() {
                       border: "none",
                       background: "transparent",
                     },
-
                     navbar: {
                       background: "rgba(255,255,255,0.35)",
                       borderRight: "1px solid rgba(180,205,195,0.35)",
                     },
-
-                    navbarButton: {
-                      borderRadius: "12px",
-                    },
-
-                    pageScrollBox: {
-                      background: "transparent",
-                    },
-
-                    profileSectionPrimaryButton: {
-                      borderRadius: "12px",
-                    },
-
+                    navbarButton: { borderRadius: "12px" },
+                    pageScrollBox: { background: "transparent" },
+                    profileSectionPrimaryButton: { borderRadius: "12px" },
                     formButtonPrimary: {
                       background: "#087a5b",
                       borderRadius: "12px",
                       boxShadow: "0 7px 18px rgba(8,122,91,0.16)",
                     },
-
                     formFieldInput: {
                       borderRadius: "12px",
                       border: "1px solid #d7e4df",
                       background: "rgba(255,255,255,0.72)",
                     },
-
-                    footer: {
-                      background: "transparent",
-                    },
+                    footer: { background: "transparent" },
                   },
                 }}
               />
@@ -243,7 +212,6 @@ export default function AccountPage() {
                 title="Protected by Clerk"
                 text="Passwords, sessions, email verification and authentication security are managed by Clerk."
               />
-
               <InfoCard
                 icon={<WorkspaceIcon />}
                 eyebrow="Account"
@@ -255,7 +223,8 @@ export default function AccountPage() {
         </section>
       </div>
 
-      <style jsx>{`
+      {/* FIX: global so keyframes aren't scoped away from inline styles */}
+      <style jsx global>{`
         @keyframes profileIn {
           from {
             opacity: 0;
@@ -284,15 +253,10 @@ function InfoCard({ icon, eyebrow, title, text }) {
       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6f3ef] text-[#087a5b]">
         {icon}
       </div>
-
       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#709188]">
         {eyebrow}
       </p>
-
-      <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
-        {title}
-      </h2>
-
+      <h2 className="text-[17px] font-semibold tracking-[-0.02em]">{title}</h2>
       <p className="mt-2 text-[14px] leading-6 text-[#6b8980]">{text}</p>
     </div>
   );
