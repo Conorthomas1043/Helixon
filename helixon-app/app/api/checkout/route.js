@@ -36,9 +36,8 @@ export async function POST(request) {
       );
     }
 
-    // Require a logged-in user so we know who to attach the subscription
-    // to. Adjust this block if you want to allow checkout before signup -
-    // in that case, collect email in the Checkout Session itself instead.
+    // Still require a logged-in user - no guest checkout - so we always
+    // know which Clerk account to come back to.
     const { userId: clerkUserId } = await auth();
 
     if (!clerkUserId) {
@@ -66,12 +65,12 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
     }
 
-    if (!profile) {
-      return NextResponse.json(
-        { ok: false, error: "Your account isn't fully set up yet. Please contact Helixon support." },
-        { status: 403 }
-      );
-    }
+    // A logged-in Clerk user with no profile yet (webhook hasn't run,
+    // or they never finished the agency-name step). Rather than dead-end
+    // here, let checkout proceed with no client_reference_id and flag it
+    // in metadata - checkout/success reads that flag and sends them to
+    // /signup to finish setup instead of straight to the product.
+    const needsSignup = !profile;
 
     const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -81,11 +80,19 @@ export async function POST(request) {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
-      client_reference_id: profile.id, // lets the webhook match back to this profile row
+      // Only set once we actually have a profile row to match back to -
+      // the stripe webhook treats a missing client_reference_id as "can't
+      // fulfil yet", which is correct here since there's no profile.
+      ...(profile?.id ? { client_reference_id: profile.id } : {}),
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
       allow_promotion_codes: true,
-      metadata: { plan, userId: profile.id },
+      metadata: {
+        plan,
+        userId: profile?.id || "",
+        clerkUserId,
+        needsSignup: needsSignup ? "true" : "false",
+      },
     });
 
     if (!session.url) {

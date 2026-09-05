@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
+import { createProfileAndAgency, linkSubscriptionFromStripeSession } from "@/lib/create-profile";
 
 // Replaces app/api/auth/signup/route.js's job of creating the `agencies`
 // row and the `profiles` row. Under Supabase Auth that happened inline in
@@ -124,36 +125,28 @@ async function handleUserCreated(clerkUser) {
     return;
   }
 
-  const { data: agency, error: agencyError } = await supabase
-    .from("agencies")
-    .insert({
-      name: agencyName || `${firstName}'s agency`,
-      intake_email: email,
-      settings: { plan: meta.plan || "solo", analyses_used: 0 },
-    })
-    .select("id")
-    .single();
-
-  if (agencyError) {
-    throw new Error(agencyError.message);
-  }
-
-  // If `profiles` has an `email` column in your actual schema, add
-  // `email,` back into this insert - left out here since it isn't
-  // confirmed to exist (see the comment above).
-  const { error: profileError } = await supabase.from("profiles").insert({
-    clerk_user_id: clerkUserId,
-    first_name: firstName || null,
-    last_name: lastName || null,
+  const { profileId } = await createProfileAndAgency({
+    clerkUserId,
+    email,
+    firstName,
+    lastName,
     username,
-    agency_id: agency.id,
+    agencyName,
+    plan: meta.plan,
   });
 
-  if (profileError) {
-    // Roll back the agency row so a failed profile insert doesn't leave
-    // an orphan agency behind, same failure-cleanup pattern the old
-    // signup route used.
-    await supabase.from("agencies").delete().eq("id", agency.id);
-    throw new Error(profileError.message);
+  // Set on unsafeMetadata by app/signup when it arrived here via the
+  // post-checkout redirect (a plan was already paid for before this
+  // account existed). Link it now so entitlement doesn't depend on a
+  // second, separately-timed Stripe webhook race.
+  if (meta.stripeSessionId) {
+    try {
+      await linkSubscriptionFromStripeSession({ profileId, stripeSessionId: meta.stripeSessionId });
+    } catch (err) {
+      // The account was created successfully either way - don't throw
+      // here, or Clerk will retry this whole webhook and re-run into the
+      // "username already exists" case for an account that's already set up.
+      console.error("[clerk webhook] Failed to link subscription:", err.message);
+    }
   }
 }

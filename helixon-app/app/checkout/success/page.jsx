@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-06-20",
@@ -11,7 +12,7 @@ export const metadata = {
 
 const PLAN_LABELS = {
   individual: "Individual",
-  team: "Team",
+  agency: "Agency", // was "team" - PRICE_IDS in api/checkout/route.js renamed team -> agency
 };
 
 // Server Component - runs on the server, so the Stripe secret key never
@@ -44,6 +45,16 @@ export default async function CheckoutSuccessPage({ searchParams }) {
   }
 
   const paid = session?.payment_status === "paid" || session?.status === "complete";
+
+  // api/checkout/route.js flags this when the logged-in Clerk user paid
+  // but doesn't have a profile/agency row yet (webhook hasn't fired, or
+  // they never finished setup). Send them to finish that instead of
+  // showing "you're all set" for a plan nothing is actually attached to.
+  if (paid && session?.metadata?.needsSignup === "true") {
+    const plan = session.metadata?.plan || "";
+    redirect(`/signup?plan=${encodeURIComponent(plan)}&session_id=${encodeURIComponent(sessionId)}`);
+  }
+
   const planLabel = PLAN_LABELS[session?.metadata?.plan] || "Helixon";
   const email = session?.customer_details?.email || session?.customer_email;
 

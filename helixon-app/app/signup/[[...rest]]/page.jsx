@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { SignUp } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
+import { SignUp, useUser } from "@clerk/nextjs";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing used across the flow
 
@@ -145,6 +146,21 @@ export default function SignupPage() {
   const [direction, setDirection] = useState(1);
   const [animating, setAnimating] = useState(false);
   const [agencyName, setAgencyName] = useState("");
+  const [completing, setCompleting] = useState(false);
+  const [completeError, setCompleteError] = useState("");
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isSignedIn } = useUser();
+
+  // Set by app/checkout/success's redirect for a logged-in user who paid
+  // but doesn't have a profile/agency row yet. When both are present and
+  // they're already signed in to Clerk, this page's job is just to
+  // collect the agency name and finish setup via /api/complete-signup -
+  // not to show Clerk's <SignUp/> again for an account that already exists.
+  const plan = searchParams.get("plan") || "";
+  const sessionId = searchParams.get("session_id") || "";
+  const isPostCheckoutCompletion = isSignedIn && Boolean(sessionId);
 
   const cardRef = useRef(null);
   const [spot, setSpot] = useState({ x: 50, y: 0 });
@@ -161,6 +177,30 @@ export default function SignupPage() {
     setDirection(next > step ? 1 : -1);
     setAnimating(true);
     setTimeout(() => { setStep(next); setAnimating(false); }, 260);
+  }
+
+  async function finishPostCheckoutSignup(e) {
+    e.preventDefault();
+    if (!trimmedAgency || completing) return;
+    setCompleting(true);
+    setCompleteError("");
+    try {
+      const res = await fetch("/api/complete-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agencyName: trimmedAgency, sessionId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        setCompleteError(data?.error || "Something went wrong. Please try again.");
+        setCompleting(false);
+        return;
+      }
+      router.push("/analyse");
+    } catch {
+      setCompleteError("Network error. Please try again.");
+      setCompleting(false);
+    }
   }
 
   const bg = (
@@ -273,7 +313,7 @@ export default function SignupPage() {
             >
               {step === 0 ? (
                 <form
-                  onSubmit={(e) => {
+                  onSubmit={isPostCheckoutCompletion ? finishPostCheckoutSignup : (e) => {
                     e.preventDefault();
                     if (trimmedAgency) goTo(1);
                   }}
@@ -281,22 +321,32 @@ export default function SignupPage() {
                 >
                   <div className="mb-5">
                     <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
-                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>We&apos;ll use this to set up your workspace.</p>
+                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>
+                      {isPostCheckoutCompletion
+                        ? "Payment's done - just need this to finish setting up your workspace."
+                        : "We&apos;ll use this to set up your workspace."}
+                    </p>
                   </div>
 
                   <FloatField label="Agency name" value={agencyName} onChange={setAgencyName} autoFocus autoComplete="organization" />
 
+                  {completeError && (
+                    <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low, #c0392b)" }}>{completeError}</p>
+                  )}
+
                   <div className="flex items-center gap-3 mt-6">
-                    <MagneticButton disabled={!trimmedAgency}>
-                      Continue
+                    <MagneticButton disabled={!trimmedAgency || completing}>
+                      {isPostCheckoutCompletion ? (completing ? "Finishing up…" : "Finish setup") : "Continue"}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                     </MagneticButton>
                   </div>
 
-                  <p className="text-[13px] text-center mt-6" style={{ color: "#5a7a6a" }}>
-                    Already have an account?{" "}
-                    <a href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</a>
-                  </p>
+                  {!isPostCheckoutCompletion && (
+                    <p className="text-[13px] text-center mt-6" style={{ color: "#5a7a6a" }}>
+                      Already have an account?{" "}
+                      <a href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</a>
+                    </p>
+                  )}
                 </form>
               ) : (
                 <>
@@ -304,7 +354,7 @@ export default function SignupPage() {
                     path="/signup"
                     signInUrl="/login"
                     fallbackRedirectUrl="/dashboard"
-                    unsafeMetadata={{ agencyName: trimmedAgency }}
+                    unsafeMetadata={{ agencyName: trimmedAgency, plan, stripeSessionId: sessionId }}
                     localization={{
                       signUp: {
                         start: {
