@@ -1,4 +1,3 @@
-```jsx
 "use client";
 
 import { useState } from "react";
@@ -464,9 +463,7 @@ export default function BlogPage() {
 
         <Footer />
       </main>
-
       <ChatWidget />
     </>
   );
 }
-```
