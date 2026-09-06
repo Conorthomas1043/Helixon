@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignUp, useUser } from "@clerk/nextjs";
 
@@ -171,6 +171,21 @@ export default function SignupPage() {
   }
 
   const trimmedAgency = agencyName.trim();
+
+  // There's no standalone entry point to this page any more - the only
+  // legitimate way here is app/checkout/success's redirect after a paid
+  // Stripe session, which always includes session_id. Anyone landing here
+  // without one (typed URL, stale bookmark, etc.) hasn't paid, so send
+  // them to pricing instead of letting them create an account for free.
+  useEffect(() => {
+    if (!sessionId) {
+      router.replace("/pricing");
+    }
+  }, [sessionId, router]);
+
+  if (!sessionId) {
+    return null;
+  }
 
   function goTo(next) {
     if (next === step) return;

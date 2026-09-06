@@ -45,19 +45,30 @@ export async function getCustomerContext() {
     );
   }
 
-  const { data: subscription, error: subscriptionError } =
-    await supabase
-      .from("subscriptions")
-      .select(
-        "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at"
-      )
-      .eq("user_id", profile?.id || userId)
-      .maybeSingle();
+  // subscriptions.user_id is a uuid FK to profiles.id - it is never the
+  // Clerk user id (e.g. "user_..."), so there is nothing to look up
+  // without a profile row. Querying with the Clerk id here previously
+  // caused `invalid input syntax for type uuid` whenever a profile
+  // hadn't been created/linked yet (e.g. before the Clerk webhook fires).
+  let subscription = null;
 
-  if (subscriptionError) {
-    throw new Error(
-      `Could not load subscription: ${subscriptionError.message}`
-    );
+  if (profile?.id) {
+    const { data, error: subscriptionError } =
+      await supabase
+        .from("subscriptions")
+        .select(
+          "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at"
+        )
+        .eq("user_id", profile.id)
+        .maybeSingle();
+
+    if (subscriptionError) {
+      throw new Error(
+        `Could not load subscription: ${subscriptionError.message}`
+      );
+    }
+
+    subscription = data;
   }
 
   return {
@@ -65,7 +76,7 @@ export async function getCustomerContext() {
     userId,
     agencyId: profile?.agency_id || null,
     profile: profile || null,
-    subscription: subscription || null,
+    subscription,
     hasActiveSubscription: ACTIVE_SUBSCRIPTION_STATUSES.has(
       subscription?.status
     ),

@@ -36,40 +36,47 @@ export async function POST(request) {
       );
     }
 
-    // Still require a logged-in user - no guest checkout - so we always
-    // know which Clerk account to come back to.
+    // Guest checkout is now the front door: there's no standalone /signup
+    // entry point in the nav any more, so a first-time buyer will never
+    // have a Clerk session at this point. If someone *is* already logged
+    // in (an existing customer upgrading, or someone whose account
+    // exists but has no plan yet), resolve their profile so the webhook
+    // can attach the subscription straight to their existing row instead
+    // of routing them through /signup again.
     const { userId: clerkUserId } = await auth();
 
-    if (!clerkUserId) {
-      return NextResponse.json(
-        { ok: false, error: "Please sign in before upgrading your plan." },
-        { status: 401 }
-      );
+    let profile = null;
+    let email;
+
+    if (clerkUserId) {
+      const user = await currentUser();
+      email = user?.primaryEmailAddress?.emailAddress || undefined;
+
+      // subscriptions.user_id is a foreign key onto profiles.id (the
+      // pre-existing uuid PK, unrelated to the Clerk id) - resolve that
+      // first so the webhook below writes to the same row
+      // lib/customer-auth.js reads from.
+      const { data, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("clerk_user_id", clerkUserId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("[checkout] Profile lookup failed:", profileError.message);
+        return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
+      }
+
+      profile = data;
     }
 
-    const user = await currentUser();
-    const email = user?.primaryEmailAddress?.emailAddress || undefined;
-
-    // subscriptions.user_id is a foreign key onto profiles.id (the
-    // pre-existing uuid PK, unrelated to the Clerk id) - resolve that
-    // first so the webhook below writes to the same row
-    // lib/customer-auth.js reads from.
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("clerk_user_id", clerkUserId)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error("[checkout] Profile lookup failed:", profileError.message);
-      return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
-    }
-
-    // A logged-in Clerk user with no profile yet (webhook hasn't run,
-    // or they never finished the agency-name step). Rather than dead-end
-    // here, let checkout proceed with no client_reference_id and flag it
-    // in metadata - checkout/success reads that flag and sends them to
-    // /signup to finish setup instead of straight to the product.
+    // No profile to attach to yet - either a signed-out visitor buying
+    // for the first time (the common case now) or a logged-in Clerk user
+    // whose profile row hasn't been created yet. Either way, checkout
+    // proceeds with no client_reference_id and this flag -
+    // checkout/success reads it and sends them to /signup (with the paid
+    // session_id) to create/finish their account instead of straight to
+    // the product.
     const needsSignup = !profile;
 
     const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
@@ -90,7 +97,7 @@ export async function POST(request) {
       metadata: {
         plan,
         userId: profile?.id || "",
-        clerkUserId,
+        clerkUserId: clerkUserId || "",
         needsSignup: needsSignup ? "true" : "false",
       },
     });

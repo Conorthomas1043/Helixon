@@ -865,7 +865,6 @@ export default function LandingPage() {
                 <a key={label} href={href} className="nav-link">{label}</a>
               ))}
               <Link href="/login" className="nav-link">Login</Link>
-              <Link href="/signup" className="nav-link">Sign up</Link>
             </div>
 
             <div className="flex items-center gap-2">
@@ -895,7 +894,7 @@ export default function LandingPage() {
           </div>
           {mobileNavOpen && (
             <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-              {[...navLinks, ["Login", "/login"], ["Sign up", "/signup"]].map(([label, href]) => (
+              {[...navLinks, ["Login", "/login"]].map(([label, href]) => (
                 href.startsWith("/") ? (
                   <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
                 ) : (

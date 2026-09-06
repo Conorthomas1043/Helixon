@@ -128,7 +128,7 @@ export default function LoginPage() {
           <div className="relative flex justify-center">
             <SignIn
               path="/login"
-              signUpUrl="/signup"
+              signUpUrl="/pricing"
               fallbackRedirectUrl="/dashboard"
               appearance={{
                 layout: {

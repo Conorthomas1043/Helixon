@@ -613,13 +613,13 @@ export default function DemoRequestPage() {
           >
             Ready to use Helixon?{" "}
             <Link
-              href="/signup"
+              href="/pricing"
               className="font-medium hover:underline"
               style={{
                 color: "var(--ink-faint)",
               }}
             >
-              Create your account
+              View plans
             </Link>
           </p>
         </div>
