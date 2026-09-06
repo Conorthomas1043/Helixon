@@ -8,6 +8,9 @@ from "../prompts/candidateExtractionPrompt.js";
 import validateCandidate
 from "../validators/validateCandidate.js";
 
+import { debug } from "../utils/logger.js";
+import { summarise } from "../utils/logger.js";
+
 
 
 
@@ -15,18 +18,10 @@ export default async function candidateExtractor(cvText){
 
 
 
-    console.log(
-        "candidateExtractor TYPE:",
-        typeof cvText
+    debug(
+        "candidateExtractor input:",
+        summarise(cvText)
     );
-
-
-    console.log(
-        "candidateExtractor LENGTH:",
-        cvText?.length
-    );
-
-
 
 
 
@@ -41,7 +36,6 @@ export default async function candidateExtractor(cvText){
         );
 
     }
-
 
 
 
@@ -64,13 +58,12 @@ export default async function candidateExtractor(cvText){
 
 
 
-
-    console.log(
-        "CLAUDE CANDIDATE RESULT:",
-        result
+    // Full result contains name/email/phone/education etc - never log it
+    // verbatim (see utils/logger.js). Shape only.
+    debug(
+        "candidateExtractor result:",
+        summarise(result)
     );
-
-
 
 
 

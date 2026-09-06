@@ -12,6 +12,7 @@ Rules:
 - No markdown.
 - No explanations outside JSON.
 - Confidence should reflect evidence quality.
+- Never base any judgement, score, requirement, or flag on a protected characteristic (age, sex/gender, race, ethnicity, national origin, religion, disability, pregnancy, marital/family status, sexual orientation, gender identity, genetic information, or veteran status). Evaluate only job-relevant skills, experience, and evidence from the CV.
 
 OUTPUT REQUIREMENTS:
 

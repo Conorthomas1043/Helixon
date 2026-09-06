@@ -12,6 +12,8 @@ from "../config.js";
 import systemPrompt
 from "../prompts/systemPrompt.js";
 
+import { debug, error, summarise } from "../utils/logger.js";
+
 
 
 
@@ -26,6 +28,14 @@ export default async function askClaude(userPrompt){
             model:MODEL,
 
             max_tokens:8000,
+
+            // Extraction/scoring must be repeatable: the same CV and job
+            // text should produce the same structured output every time
+            // (same candidate re-analysed, re-runs after a bug fix, A/B
+            // comparisons, etc). Temperature 0 removes sampling
+            // randomness as the source of any run-to-run drift, so any
+            // difference that remains is a real input or prompt change.
+            temperature:0,
 
             system:systemPrompt,
 
@@ -65,9 +75,9 @@ export default async function askClaude(userPrompt){
     if(!text){
 
 
-        console.error(
-            "Claude empty response:",
-            response
+        error(
+            "Claude empty response, stop_reason:",
+            response?.stop_reason
         );
 
 
@@ -82,12 +92,14 @@ export default async function askClaude(userPrompt){
 
 
 
-    console.log(
-        "CLAUDE RAW:",
-        text
+    // The raw/cleaned text is the extracted candidate or job JSON as a
+    // string - i.e. full PII (name, email, phone, CV content). Log its
+    // shape, not its content (see utils/logger.js). Set
+    // CV_PIPELINE_DEBUG=true locally to see full payloads while debugging.
+    debug(
+        "Claude raw response:",
+        summarise(text)
     );
-
-
 
 
 
@@ -99,9 +111,9 @@ export default async function askClaude(userPrompt){
 
 
 
-    console.log(
-        "CLAUDE CLEANED:",
-        cleaned
+    debug(
+        "Claude cleaned JSON:",
+        summarise(cleaned)
     );
 
 
@@ -133,11 +145,20 @@ export default async function askClaude(userPrompt){
 
 
     }
-    catch(error){
+    catch(err){
 
 
-        console.error(
-            "BAD CLAUDE JSON:",
+        error(
+            "Claude returned invalid JSON, length:",
+            cleaned?.length
+        );
+
+
+        // Full content only when explicitly debugging - it may contain
+        // candidate/job PII and this is the one place a malformed
+        // response needs the actual text to diagnose.
+        debug(
+            "Invalid JSON content:",
             cleaned
         );
 

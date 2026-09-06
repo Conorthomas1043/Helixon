@@ -8,6 +8,7 @@ from "../prompts/jobExtractionPrompt.js";
 import validateJob
 from "../validators/validateJob.js";
 
+import { debug, summarise } from "../utils/logger.js";
 
 
 
@@ -50,13 +51,12 @@ export default async function jobExtractor(jobText){
 
 
 
-
-    console.log(
-        "CLAUDE JOB RESULT:",
-        result
+    // May contain a client name/email pulled from the job text - shape
+    // only, never the full parsed object (see utils/logger.js).
+    debug(
+        "jobExtractor result:",
+        summarise(result)
     );
-
-
 
 
 

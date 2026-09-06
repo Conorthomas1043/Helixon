@@ -2,6 +2,20 @@ import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase } from "@/lib/supabase";
 
+// "your agency" was previously shown verbatim for two very different
+// situations (no agency row yet at all, and an agency row with a blank
+// name) even though real data - the agency's own name, or at least the
+// owner's first name (createProfileAndAgency already defaults a new
+// agency's name to "{firstName}'s agency", see lib/create-profile.js) -
+// is usually available. Centralising the fallback order here means both
+// call sites below stay in sync and prefer the most real value on hand
+// instead of jumping straight to the generic placeholder.
+function agencyDisplayName(agency, profile) {
+  if (agency?.name) return agency.name;
+  if (profile?.first_name) return `${profile.first_name}'s agency`;
+  return "your agency";
+}
+
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, and `analyses` from this response (the
 // jobs/recruiters/stats cards on that page are computed client-side from
@@ -13,15 +27,16 @@ import { supabase } from "@/lib/supabase";
 // previous version queried a `recruiters` table and a Supabase-Auth
 // bearer-token session that nothing else in the app uses anymore.
 export async function GET() {
-  const { user, agencyId } = await getCustomerContext();
+  const { user, agencyId, profile } = await getCustomerContext();
 
   if (!user) {
     return NextResponse.json({ error: "Please sign in to continue." }, { status: 401 });
   }
   if (!agencyId) {
     // Same "logged in, no agency yet" case api/checkout and api/billing
-    // handle - nothing to show yet, not an error.
-    return NextResponse.json({ agencyName: "your agency", plan: null, analyses: [] });
+    // handle - nothing to show yet, not an error. Still try the person's
+    // own name before the generic placeholder.
+    return NextResponse.json({ agencyName: agencyDisplayName(null, profile), plan: null, analyses: [] });
   }
 
   const [{ data: agency, error: agencyError }, { data: scoreRows, error: scoreError }] = await Promise.all([
@@ -77,7 +92,7 @@ export async function GET() {
   const analysesLimit = agency?.analyses_limit ?? agency?.settings?.analyses_limit ?? null;
 
   return NextResponse.json({
-    agencyName: agency?.name || "your agency",
+    agencyName: agencyDisplayName(agency, profile),
     plan: planName ? { name: planName, analysesUsed, analysesLimit } : null,
     analyses,
   });

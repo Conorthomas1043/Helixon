@@ -1,18 +1,46 @@
 {
-  "javascript":[
+  "javascript": [
     "ecmascript",
-    "node",
+    "es6",
+    "es2015",
+    "vanilla js"
+  ],
+  "node": [
     "nodejs",
     "node.js"
   ],
-  "react":[
+  "typescript": [
+    "ts"
+  ],
+  "react": [
     "reactjs",
     "react.js",
+    "redux",
     "next",
     "nextjs",
-    "redux"
+    "next.js"
   ],
-  "aws":[
+  "angular": [
+    "angularjs",
+    "angular2"
+  ],
+  "vue": [
+    "vuejs",
+    "vue.js"
+  ],
+  "python": [
+    "django",
+    "flask",
+    "fastapi"
+  ],
+  "csharp": [
+    "c#",
+    ".net",
+    "dotnet",
+    "asp.net"
+  ],
+  "aws": [
+    "amazon web services",
     "lambda",
     "ec2",
     "ecs",
@@ -21,16 +49,52 @@
     "cloudformation",
     "cdk"
   ],
-  "azure":[
+  "azure": [
     "azure functions",
     "aks",
     "cosmos db"
   ],
-  "docker":[
-    "containers",
-    "containerisation"
+  "gcp": [
+    "google cloud",
+    "google cloud platform",
+    "bigquery",
+    "gke"
   ],
-  "kubernetes":[
+  "docker": [
+    "containers",
+    "containerisation",
+    "containerization"
+  ],
+  "kubernetes": [
     "k8s"
+  ],
+  "sql": [
+    "mysql",
+    "postgres",
+    "postgresql",
+    "tsql"
+  ],
+  "nosql": [
+    "mongodb",
+    "dynamodb"
+  ],
+  "ci_cd": [
+    "ci/cd",
+    "continuous integration",
+    "continuous deployment",
+    "jenkins",
+    "github actions",
+    "gitlab ci"
+  ],
+  "git": [
+    "github",
+    "gitlab",
+    "version control"
+  ],
+  "machine learning": [
+    "ml",
+    "deep learning",
+    "pytorch",
+    "tensorflow"
   ]
 }

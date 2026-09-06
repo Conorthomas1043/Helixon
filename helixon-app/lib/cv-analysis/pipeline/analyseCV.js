@@ -9,6 +9,8 @@ from "../extraction/index.js";
 import scoreCandidate
 from "../scoring/scoreCandidate.js";
 
+import { debug, summarise } from "../utils/logger.js";
+
 
 
 
@@ -67,18 +69,10 @@ export default async function analyseCV(
 
 
 
-    console.log(
-        "analyseCV FINAL CV TYPE:",
-        typeof cvText
+    debug(
+        "analyseCV cvText:",
+        summarise(cvText)
     );
-
-
-    console.log(
-        "analyseCV FINAL CV LENGTH:",
-        cvText?.length
-    );
-
-
 
 
 
@@ -118,11 +112,12 @@ export default async function analyseCV(
 
 
 
-    console.log(
-        "EXTRACTED CANDIDATE:",
-        extracted
+    // Contains name/email/phone/education - shape only, never the full
+    // extracted candidate (see utils/logger.js).
+    debug(
+        "analyseCV extracted:",
+        summarise(extracted)
     );
-
 
 
 
@@ -152,11 +147,10 @@ export default async function analyseCV(
 
 
 
-    console.log(
-        "PARSED JOB:",
-        jobParsed
+    debug(
+        "analyseCV jobParsed:",
+        summarise(jobParsed)
     );
-
 
 
 

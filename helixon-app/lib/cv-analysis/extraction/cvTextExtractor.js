@@ -4,6 +4,8 @@ import parsePdf from "@/lib/document/pdfParser";
 
 import parseDocx from "@/lib/document/docxParser";
 
+import { debug, error } from "../utils/logger.js";
+
 
 
 export default async function extractCvText(file){
@@ -34,17 +36,13 @@ export default async function extractCvText(file){
 
 
 
-    console.log(
-        "[CV extractor] file:",
-        name
-    );
-
-
-    console.log(
+    // The filename itself is often the candidate's name (e.g.
+    // "Jane_Doe_CV.pdf") - log the extension/type only, never the name,
+    // to keep candidate PII out of application logs.
+    debug(
         "[CV extractor] type:",
-        type
+        type || name.split(".").pop() || "unknown"
     );
-
 
 
 
@@ -81,12 +79,12 @@ export default async function extractCvText(file){
 
 
         }
-        catch(error){
+        catch(err){
 
 
-            console.error(
+            error(
                 "[CV extractor] PDF error:",
-                error.message
+                err.message
             );
 
 

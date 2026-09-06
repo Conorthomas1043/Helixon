@@ -14,6 +14,17 @@ export default function AppNav({ active }) {
   const userId = user?.id;
   const userEmail = user?.primaryEmailAddress?.emailAddress;
   const userName = user?.fullName;
+
+  const displayName = userName || userEmail || "Your account";
+  const displayEmail = userEmail || "";
+  const initials =
+    (userName || userEmail || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?";
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
 
@@ -91,7 +102,7 @@ export default function AppNav({ active }) {
             style={{ border: "1px solid var(--border)" }}
           >
             <span className="w-7 h-7 rounded-full text-white text-xs font-semibold flex items-center justify-center" style={{ background: "var(--forest)" }} aria-hidden="true">
-              AV
+              {initials}
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8aaa9a" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -101,8 +112,10 @@ export default function AppNav({ active }) {
           {menuOpen && (
             <div role="menu" className="absolute right-0 mt-2 w-52 rounded-[14px] py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
               <div className="px-3.5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
-                <p className="text-sm font-medium truncate" style={{ color: COLORS.ink }}>Acme Recruiting</p>
-                <p className="text-xs truncate" style={{ color: COLORS.muted }}>agency@acme.com</p>
+                <p className="text-sm font-medium truncate" style={{ color: COLORS.ink }}>{displayName}</p>
+                {displayEmail && (
+                  <p className="text-xs truncate" style={{ color: COLORS.muted }}>{displayEmail}</p>
+                )}
               </div>
               <Link
                 href="/account/profile"

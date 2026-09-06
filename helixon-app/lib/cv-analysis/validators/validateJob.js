@@ -1,4 +1,24 @@
+import {
+    PROTECTED_ATTRIBUTE_PATTERNS,
+    ALLOWED_KNOCKOUT_FIELDS,
+} from "../config.js";
+
 const VALID_ROLE_TIERS = ["entry", "skilled", "senior", "executive"];
+
+// Defense-in-depth: even though the extraction prompt is told not to turn
+// protected characteristics into knockout requirements, model output can't
+// be trusted as the only safeguard (prompt injection in the job text,
+// model drift, a future prompt edit that drops the instruction). Every
+// knockout rule is re-checked here, in code, before it can reach scoring.
+function isDiscriminatoryKnockout(rule) {
+    if (ALLOWED_KNOCKOUT_FIELDS.includes(rule.field.toLowerCase())) {
+        return false;
+    }
+
+    const haystack = `${rule.field} ${rule.value}`;
+
+    return PROTECTED_ATTRIBUTE_PATTERNS.some((pattern) => pattern.test(haystack));
+}
 
 function toStringOrDefault(value, fallback) {
     if (typeof value === "string" && value.trim()) {
@@ -64,7 +84,8 @@ function toKnockoutRequirements(value) {
                 required: rule.required !== false,
             };
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter((rule) => !isDiscriminatoryKnockout(rule));
 }
 
 export default function validateJob(job = {}) {
