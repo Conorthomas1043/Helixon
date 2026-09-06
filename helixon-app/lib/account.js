@@ -11,14 +11,17 @@ export function useAgencyId() {
 
 // Colours that aren't already CSS custom properties (--forest, --mint, etc.)
 // collected once instead of repeated as magic hex strings across pages.
+// Danger tones now derive from the real --score-low token (#c0392b) instead
+// of raw Tailwind red-600/700/50/200 hex, matching the fix already applied
+// to dashboard/page.js and analyse/page.js's error/delete states.
 export const COLORS = {
   ink: "#13201b",
   muted: "#5a7a6a",
   faint: "#8aaa9a",
-  dangerText: "#dc2626",
-  dangerTextDark: "#b91c1c",
-  dangerBg: "#fef2f2",
-  dangerBorder: "#fecaca",
+  dangerText: "var(--score-low, #c0392b)",
+  dangerTextDark: "#9a2e23",
+  dangerBg: "rgba(192,57,43,0.08)",
+  dangerBorder: "rgba(192,57,43,0.3)",
 };
 
 export const GENERIC_ERROR = "Something went wrong. Please try again.";

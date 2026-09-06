@@ -256,7 +256,7 @@ function BuyPlanButton({ plan, label, highlight }) {
         {loading ? "Redirecting…" : label}
       </button>
       {error && (
-        <p role="alert" aria-live="polite" className="text-[11px] text-center" style={{ color: highlight ? "#fecaca" : "var(--score-low)" }}>
+        <p role="alert" aria-live="polite" className="text-[11px] text-center" style={{ color: highlight ? "#f2d7d5" /* light tint of --score-low, for contrast on the dark forest card */ : "var(--score-low)" }}>
           {error}
         </p>
       )}

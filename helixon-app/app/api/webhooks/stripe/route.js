@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { planForPriceId } from "@/lib/plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-06-20",
@@ -53,13 +54,26 @@ export async function POST(request) {
 
       // Keep entitlement in sync if the subscription is later cancelled
       // or a renewal payment fails - otherwise a churned customer keeps
-      // "Unlimited analyses" forever.
+      // "Unlimited analyses" forever. Also keep `plan` in sync: this is
+      // also how a self-service upgrade/downgrade via the Stripe Billing
+      // Portal arrives (Stripe doesn't send a separate "plan changed"
+      // event - it's the same customer.subscription.updated with a new
+      // price on the subscription item). Previously this only wrote
+      // `status`, so an upgrade would charge the new price correctly but
+      // the app kept showing the plan the customer originally signed up
+      // for, everywhere that reads subscriptions.plan.
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const sub = event.data.object;
+        const priceId = sub.items?.data?.[0]?.price?.id || null;
+        const plan = planForPriceId(priceId);
+
+        const update = { status: sub.status, updated_at: new Date().toISOString() };
+        if (plan) update.plan = plan;
+
         const { error } = await supabaseAdmin
           .from("subscriptions")
-          .update({ status: sub.status, updated_at: new Date().toISOString() })
+          .update(update)
           .eq("stripe_subscription_id", sub.id);
 
         if (error) console.error("[stripe-webhook] Failed to update subscription status:", error.message);

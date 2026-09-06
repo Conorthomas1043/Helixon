@@ -2,20 +2,16 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { PRICE_IDS } from "@/lib/plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-03-31.basil",
 });
 
-// Map your internal plan ids (sent from BuyPlanButton in page.jsx) to
-// Stripe Price ids. Create these in the Stripe Dashboard → Products first
-// (screenshot step 1 - "Create a product"), then paste the resulting
-// price_... ids here. Never hardcode raw amounts here; let Stripe's
-// Price object be the single source of truth for what people pay.
-const PRICE_IDS = {
-  individual: process.env.STRIPE_PRICE_INDIVIDUAL, // £249/mo - matches the "Individual" product in Stripe
-  agency:     process.env.STRIPE_PRICE_AGENCY,      // £349/mo - matches the "Agency" product in Stripe (was "team")
-};
+// Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
+// shared with the webhook's reverse lookup (planForPriceId) so an upgrade/
+// downgrade via the Stripe Billing Portal can be mapped back to a plan
+// name without a second, possibly-drifted copy of this table.
 
 export async function POST(request) {
   try {
