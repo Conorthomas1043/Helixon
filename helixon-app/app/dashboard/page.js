@@ -950,7 +950,7 @@ export default function AgencyDashboardPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: BG }}>
-      <DashboardNav email={me?.email} />
+      <DashboardNav />
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
         {showWelcome && (
           <WelcomeBackBanner name={me?.firstName} onDismiss={() => setShowWelcome(false)} />

@@ -15,7 +15,7 @@ const TABS = [
   { href: "/dashboard/analytics", label: "Analytics" },
 ];
 
-export default function DashboardNav({ email }) {
+export default function DashboardNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const userId = user?.id;
@@ -76,9 +76,9 @@ export default function DashboardNav({ email }) {
             style={{ border: "1px solid var(--border)" }}
           >
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
-              {(email || "?").charAt(0).toUpperCase()}
+              {(userName || userEmail || "?").charAt(0).toUpperCase()}
             </div>
-            <span className="text-[11px] font-medium hidden sm:block" style={{ color: "#13201b" }}>{email}</span>
+            <span className="text-[11px] font-medium hidden sm:block" style={{ color: "#13201b" }}>{userName || userEmail}</span>
           </button>
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+8px)] w-44 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
