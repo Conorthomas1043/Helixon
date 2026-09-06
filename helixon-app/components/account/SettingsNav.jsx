@@ -12,7 +12,7 @@ const NAV_ICONS = {
 };
 
 const ITEMS = [
-  { key: "profile", label: "Profile", href: "/account/profile" },
+  { key: "profile", label: "Profile", href: "/account" },
   { key: "security", label: "Security", href: "/account/security" },
   { key: "notifications", label: "Notifications", href: "/account/notifications" },
   { key: "danger", label: "Danger zone", href: "/account/danger" },
