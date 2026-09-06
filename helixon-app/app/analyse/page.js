@@ -1221,23 +1221,31 @@ function AnalysisFlow({
         );
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-6 transition-all duration-200"
-      style={{
-        background:
-          "var(--mist)",
-        opacity:
-          transitioning
-            ? 0
-            : 1,
-        transform:
-          transitioning
-            ? "translateY(8px)"
-            : "translateY(0)",
-      }}
-    >
+    <>
+      {/* Same persistent nav every other dashboard page uses (Overview,
+          Analyse, Candidates, etc.) - previously missing here, so
+          actually running an analysis dropped you into an isolated
+          full-screen wizard with no way back to the dashboard short of
+          the browser back button. */}
+      <DashboardNav />
+
+      <main
+        className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6 transition-all duration-200"
+        style={{
+          background:
+            "var(--mist)",
+          opacity:
+            transitioning
+              ? 0
+              : 1,
+          transform:
+            transitioning
+              ? "translateY(8px)"
+              : "translateY(0)",
+        }}
+      >
       {step < 3 && (
-        <div className="fixed top-8 left-0 right-0">
+        <div className="fixed top-[72px] left-0 right-0">
           <WizardProgress
             step={step}
           />
@@ -2449,7 +2457,8 @@ function AnalysisFlow({
           }
         />
       )}
-    </main>
+      </main>
+    </>
   );
 }
 
