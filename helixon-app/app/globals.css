@@ -7,8 +7,10 @@
 :root {
   --forest:       #0b6e4f;
   --forest-deep:  #08533c;
+  --forest-rgb:   11, 110, 79; /* same color as --forest, comma-separated for rgba() mixing */
   --mint:         #e8f3ee;
   --gold:         #c08a2d;
+  --gold-deep:    #8f6a1f; /* hover/active state for gold, mirrors the forest/forest-deep pattern */
   --ink:          #13201b;
   --mist:         #f3f6f4;
   --bg:           #ffffff;
@@ -66,6 +68,7 @@
   --color-forest-deep:   var(--forest-deep);
   --color-mint:          var(--mint);
   --color-gold:          var(--gold);
+  --color-gold-deep:     var(--gold-deep);
   --color-ink:           var(--ink);
   --color-ink-soft:      var(--ink-soft);
   --color-ink-faint:     var(--ink-faint);

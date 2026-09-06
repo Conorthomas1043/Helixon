@@ -84,7 +84,14 @@ async function handleUserCreated(clerkUser) {
   const meta = clerkUser.unsafe_metadata || {};
   const firstName = (meta.firstName || clerkUser.first_name || "").trim();
   const lastName = (meta.lastName || clerkUser.last_name || "").trim();
-  const username = (meta.username || "").trim().toLowerCase();
+  // meta.username (unsafe_metadata) is only ever set for the pre-Clerk
+  // custom signup wizard this replaced. The current app/signup collects
+  // username via Clerk's own hosted <SignUp/> field, which arrives here as
+  // clerkUser.username directly - not under unsafe_metadata. Without this
+  // fallback, `username` was always empty for every real signup, which
+  // fails USERNAME_RE below and silently skips profile/agency/subscription
+  // creation for a customer who already paid.
+  const username = (meta.username || clerkUser.username || "").trim().toLowerCase();
   const agencyName = (meta.agencyName || "").trim();
 
   // ── Case 1: this username already has a profile (pre-Clerk account

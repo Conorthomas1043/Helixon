@@ -150,7 +150,7 @@ function StageBadge({ stage }) {
       borderRadius: 9999,
       background: isPlaced ? GREEN_BG : VIOLET_BG,
       color: isPlaced ? GREEN_FG : VIOLET_FG,
-      border: `1px solid ${isPlaced ? "rgba(52,211,153,0.2)" : "rgba(167,139,250,0.2)"}`,
+      border: `1px solid rgba(var(--forest-rgb),0.2)`,
     }}>
       {STAGE_LABELS[stage]}
     </span>
@@ -159,9 +159,9 @@ function StageBadge({ stage }) {
 
 function StatusBadge({ status }) {
   const map = {
-    completed: { bg: GREEN_BG, fg: GREEN_FG, border: "rgba(52,211,153,0.2)", label: "Completed" },
-    processing: { bg: AMBER_BG, fg: AMBER_FG, border: "rgba(252,211,77,0.2)", label: "Processing" },
-    failed: { bg: RED_BG, fg: RED, border: "rgba(239,68,68,0.2)", label: "Failed" },
+    completed: { bg: GREEN_BG, fg: GREEN_FG, border: "rgba(var(--forest-rgb),0.2)", label: "Completed" },
+    processing: { bg: AMBER_BG, fg: AMBER_FG, border: "rgba(180,83,9,0.2)", label: "Processing" },
+    failed: { bg: RED_BG, fg: RED, border: "rgba(192,57,43,0.2)", label: "Failed" },
   };
   const s = map[status] || map.completed;
   return (
@@ -240,7 +240,7 @@ function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshErro
       gap: 20,
       alignItems: "center",
       justifyContent: "space-between",
-      background: `linear-gradient(135deg, ${SURFACE} 0%, rgba(124,58,237,0.06) 100%)`,
+      background: `linear-gradient(135deg, ${SURFACE} 0%, rgba(var(--forest-rgb),0.06) 100%)`,
     }}>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -256,7 +256,7 @@ function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshErro
               borderRadius: 9999,
               background: VIOLET_BG,
               color: VIOLET_FG,
-              border: `1px solid rgba(167,139,250,0.2)`,
+              border: `1px solid rgba(var(--forest-rgb),0.2)`,
             }}>
               {plan.name} plan
             </span>
@@ -417,7 +417,7 @@ function UsageSummary({ plan }) {
             {isOverLimit ? "Plan limit reached" : `${formatNumber(remaining)} analyses remaining`}
           </p>
           {isOverLimit && (
-            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 8, background: RED_BG, border: `1px solid rgba(239,68,68,0.2)`, fontSize: 12, color: RED, lineHeight: 1.5 }}>
+            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 8, background: RED_BG, border: `1px solid rgba(192,57,43,0.2)`, fontSize: 12, color: RED, lineHeight: 1.5 }}>
               Upgrade your plan to continue screening.
             </div>
           )}
@@ -804,7 +804,7 @@ function WelcomeBackBanner({ name, onDismiss }) {
         padding: "12px 16px",
         borderRadius: 12,
         background: GREEN_BG,
-        border: `1px solid rgba(16,185,129,0.25)`,
+        border: `1px solid rgba(var(--forest-rgb),0.25)`,
       }}
     >
       <span style={{ fontSize: 13, fontWeight: 500, color: GREEN_FG }}>

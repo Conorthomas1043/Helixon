@@ -732,7 +732,7 @@ function DashboardPanel({
                 }}
                 className="font-semibold"
                 style={{
-                  color: "#dc2626",
+                  color: "var(--score-low)",
                 }}
               >
                 Yes
@@ -1852,7 +1852,7 @@ function AnalysisFlow({
                       className="text-[10px] font-semibold px-2.5 py-1.5 rounded-[8px] transition-colors shrink-0"
                       style={{
                         color:
-                          "#dc2626",
+                          "var(--score-low)",
                       }}
                     >
                       Remove
@@ -2282,7 +2282,7 @@ function AnalysisFlow({
                     className="text-[10px] font-semibold px-2.5 py-1.5 rounded-[8px] transition-colors"
                     style={{
                       color:
-                        "#dc2626",
+                        "var(--score-low)",
                     }}
                   >
                     Remove
@@ -2358,9 +2358,9 @@ function AnalysisFlow({
                 background:
                   "#fef2f2",
                 border:
-                  "1px solid #fecaca",
+                  "1px solid rgba(192,57,43,0.3)",
                 color:
-                  "#dc2626",
+                  "var(--score-low)",
               }}
             >
               <span className="shrink-0 mt-0.5">
@@ -2650,7 +2650,7 @@ function ScanningStep({
             "white",
           border: `1.5px solid ${
             error
-              ? "#dc2626"
+              ? "var(--score-low)"
               : done
                 ? "var(--forest)"
                 : "var(--border)"
@@ -2766,7 +2766,7 @@ function ScanningStep({
               className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
               style={{
                 background:
-                  "#dc2626",
+                  "var(--score-low)",
               }}
             >
               ⚠
@@ -5410,7 +5410,7 @@ export default function AnalyzePage() {
                               event
                             ) =>
                               (event.currentTarget.style.color =
-                                "#dc2626")
+                                "var(--score-low)")
                             }
                             onMouseLeave={(
                               event
@@ -5552,7 +5552,7 @@ export default function AnalyzePage() {
                 background: loading
                   ? "var(--border)"
                   : compareMode
-                    ? "#2563eb"
+                    ? "var(--gold)"
                     : "var(--forest)",
                 color: loading
                   ? "#8aaa9a"
@@ -5574,7 +5574,7 @@ export default function AnalyzePage() {
                 ) {
                   event.currentTarget.style.background =
                     compareMode
-                      ? "#1d4ed8"
+                      ? "var(--gold-deep)"
                       : "var(--forest-deep)";
                 }
               }}
@@ -5586,7 +5586,7 @@ export default function AnalyzePage() {
                 ) {
                   event.currentTarget.style.background =
                     compareMode
-                      ? "#2563eb"
+                      ? "var(--gold)"
                       : "var(--forest)";
                 }
               }}
@@ -5608,9 +5608,9 @@ export default function AnalyzePage() {
                   background:
                     "#fef2f2",
                   border:
-                    "1px solid #fecaca",
+                    "1px solid rgba(192,57,43,0.3)",
                   color:
-                    "#dc2626",
+                    "var(--score-low)",
                 }}
               >
                 <span className="shrink-0 mt-0.5">
@@ -5861,7 +5861,7 @@ export default function AnalyzePage() {
                                 ? "var(--forest)"
                                 : metCount ===
                                     0
-                                  ? "#dc2626"
+                                  ? "var(--score-low)"
                                   : "#b45309",
                           }}
                         >
@@ -6234,7 +6234,7 @@ export default function AnalyzePage() {
                                   ? "var(--border)"
                                   : sent
                                     ? "#0b6e4f"
-                                    : "#2563eb",
+                                    : "var(--gold)",
                               cursor:
                                 sending ||
                                 !recipientEmail.trim()
@@ -6317,7 +6317,7 @@ export default function AnalyzePage() {
                             style={{
                               background:
                                 showReasonPicker
-                                  ? "#dc2626"
+                                  ? "var(--score-low)"
                                   : "var(--mist)",
                               color:
                                 showReasonPicker
@@ -6325,7 +6325,7 @@ export default function AnalyzePage() {
                                   : "#13201b",
                               border: `1px solid ${
                                 showReasonPicker
-                                  ? "#dc2626"
+                                  ? "var(--score-low)"
                                   : "var(--border)"
                               }`,
                             }}
@@ -6440,7 +6440,7 @@ export default function AnalyzePage() {
                             className="font-semibold"
                             style={{
                               color:
-                                "#2563eb",
+                                "var(--gold)",
                             }}
                           >
                             Analyse second candidate

@@ -1,20 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase } from "@/lib/supabase";
-
-// "your agency" was previously shown verbatim for two very different
-// situations (no agency row yet at all, and an agency row with a blank
-// name) even though real data - the agency's own name, or at least the
-// owner's first name (createProfileAndAgency already defaults a new
-// agency's name to "{firstName}'s agency", see lib/create-profile.js) -
-// is usually available. Centralising the fallback order here means both
-// call sites below stay in sync and prefer the most real value on hand
-// instead of jumping straight to the generic placeholder.
-function agencyDisplayName(agency, profile) {
-  if (agency?.name) return agency.name;
-  if (profile?.first_name) return `${profile.first_name}'s agency`;
-  return "your agency";
-}
+import { agencyDisplayName } from "@/lib/agency-display";
 
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, and `analyses` from this response (the
