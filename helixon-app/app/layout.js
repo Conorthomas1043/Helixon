@@ -29,6 +29,21 @@ export default function RootLayout({ children }) {
           fontFamily: "var(--font-geist-mono), monospace",
         },
       }}
+      localization={{
+        signIn: {
+          start: {
+            // Default Clerk copy is "Don't have an account? Sign up",
+            // which reads as "create a free account" - this app's signup
+            // is checkout-gated (app/login's signUpUrl goes to /pricing,
+            // not a signup form), so the link text says that plainly
+            // instead of surprising people. `localization` is a
+            // ClerkProvider-level option, not a per-component prop - it
+            // does nothing if passed to <SignIn/> directly.
+            actionText: "New to Helixon?",
+            actionLink: "See plans & sign up",
+          },
+        },
+      }}
     >
       <html lang="en" className={`${geistMono.variable} h-full`}>
         <head>

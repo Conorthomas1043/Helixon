@@ -158,19 +158,6 @@ function LoginContent() {
               path="/login"
               signUpUrl="/pricing"
               fallbackRedirectUrl="/dashboard?welcome=1"
-              localization={{
-                signIn: {
-                  start: {
-                    // Default Clerk copy is "Don't have an account? Sign
-                    // up", which reads as "create a free account" - this
-                    // app's signup is checkout-gated (signUpUrl goes to
-                    // /pricing, not a signup form), so the link text says
-                    // that plainly instead of surprising people.
-                    actionText: "New to Helixon?",
-                    actionLink: "See plans & sign up",
-                  },
-                },
-              }}
               appearance={{
                 layout: {
                   socialButtonsPlacement: "top",
