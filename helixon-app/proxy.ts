@@ -8,7 +8,7 @@ import {
 
 // Flip to false to go live again - routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 // Path admins are sent to when they hit /admin* without a valid session.
 // NOTE: adjust this if your real admin login page lives somewhere else -
