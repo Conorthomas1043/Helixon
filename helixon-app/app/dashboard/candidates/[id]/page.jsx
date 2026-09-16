@@ -30,18 +30,14 @@
  *   brief asks not to build backend actions that don't exist yet.
  * ---------------------------------------------------------------------- */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import {
   getCandidateById,
-  getAdjacentCandidateIds,
   getRecruiters,
-  getTagCatalog,
-  STAGE_LABELS,
-  STAGE_ORDER,
   updateCandidateStage,
   assignCandidate,
   addCandidateNote,
@@ -49,7 +45,9 @@ import {
   removeCandidateTag,
   setCandidateNextAction,
   completeNextAction,
-} from "@/lib/mock-data";
+} from "@/lib/dashboard-api";
+import { STAGE_LABELS } from "@/lib/stage-labels";
+import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
   INK,
   INK_MUTED,
@@ -70,6 +68,8 @@ import {
   initials,
 } from "@/lib/candidate-format";
 
+const STAGE_ORDER = Object.keys(STAGE_LABELS);
+
 const RECENTLY_VIEWED_KEY = "helixon:recently-viewed-candidates";
 
 function pushRecentlyViewed(id) {
@@ -81,22 +81,6 @@ function pushRecentlyViewed(id) {
     window.localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next));
   } catch {
     // localStorage unavailable (private browsing etc.) - non-critical.
-  }
-}
-
-async function fetchCandidate(id) {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve(getCandidateById(id));
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load candidate");
   }
 }
 
@@ -327,8 +311,8 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
             <span
               className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
               style={{
-                background: candidate.stage === "placed" ? GREEN_BG : "var(--mist)",
-                color: candidate.stage === "placed" ? "var(--forest)" : INK_MUTED,
+                background: candidate.stage === "Placed" ? GREEN_BG : "var(--mist)",
+                color: candidate.stage === "Placed" ? "var(--forest)" : INK_MUTED,
               }}
             >
               {STAGE_LABELS[candidate.stage]}
@@ -338,7 +322,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mt-6 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
-        {candidate.status === "completed" && candidate.stage !== "shortlisted" && (
+        {candidate.status === "completed" && candidate.stage !== "Shortlisted" && (
           <button
             type="button"
             onClick={onQuickShortlist}
@@ -477,7 +461,7 @@ function ExperienceSection({ candidate }) {
                   {w.title} <span style={{ color: INK_MUTED, fontWeight: 500 }}>· {w.company}</span>
                 </p>
                 <p className="text-[11px]" style={{ color: INK_FAINT }}>
-                  {w.start} – {w.end}
+                  {w.start}{w.end ? ` – ${w.end}` : ""}
                 </p>
                 {w.description && (
                   <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>
@@ -496,8 +480,9 @@ function ExperienceSection({ candidate }) {
           <ul className="space-y-1.5">
             {candidate.education.map((e, i) => (
               <li key={i} className="text-[13px]" style={{ color: INK }}>
-                {e.degree} <span style={{ color: INK_MUTED }}>· {e.school}</span>{" "}
-                <span style={{ color: INK_FAINT }}>({e.years})</span>
+                {e.degree}
+                {e.school && <span style={{ color: INK_MUTED }}> · {e.school}</span>}
+                {e.years && <span style={{ color: INK_FAINT }}> ({e.years})</span>}
               </li>
             ))}
           </ul>
@@ -899,21 +884,27 @@ function StateMessage({ title, body, retryLabel, onRetry }) {
  * ---------------------------------------------------------------------- */
 
 export default function CandidateProfilePage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
   const router = useRouter();
 
   const [candidate, setCandidate] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error | not-found
   const [reloadKey, setReloadKey] = useState(0);
+  const [recruiters, setRecruiters] = useState([]);
+  const tags = TAG_CATALOG;
+  // No prev/next-candidate endpoint exists yet - the UI already disables
+  // these buttons cleanly when both are null.
+  const prevId = null;
+  const nextId = null;
 
-  const recruiters = useMemo(() => getRecruiters(), []);
-  const tags = useMemo(() => getTagCatalog(), []);
-  const { prevId, nextId } = useMemo(() => getAdjacentCandidateIds(id), [id]);
+  useEffect(() => {
+    getRecruiters().then(setRecruiters).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    fetchCandidate(id)
+    getCandidateById(id)
       .then((c) => {
         if (cancelled) return;
         if (!c) {
@@ -924,8 +915,9 @@ export default function CandidateProfilePage({ params }) {
         setStatus("ready");
         pushRecentlyViewed(id);
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
+      .catch((err) => {
+        if (cancelled) return;
+        setStatus(err?.message === "Not found" ? "not-found" : "error");
       });
     return () => {
       cancelled = true;
@@ -935,9 +927,9 @@ export default function CandidateProfilePage({ params }) {
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const handleStageChange = useCallback(
-    (stage) => {
+    async (stage) => {
       const previousStage = candidate?.stage ?? null;
-      const updated = updateCandidateStage(id, stage, "You");
+      const updated = await updateCandidateStage(id, stage).catch(() => null);
       if (updated) {
         if (previousStage !== stage && posthog.__loaded) {
           posthog.capture("candidate_stage_changed", {
@@ -945,55 +937,59 @@ export default function CandidateProfilePage({ params }) {
             to_stage: stage,
           });
         }
-        setCandidate(updated);
+        setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage } : c));
       }
     },
     [id, candidate]
   );
 
   const handleAssign = useCallback(
-    (recruiterId) => {
-      const updated = assignCandidate(id, recruiterId, "You");
-      if (updated) setCandidate(updated);
+    async (recruiterId) => {
+      const updated = await assignCandidate(id, recruiterId || null).catch(() => null);
+      if (updated) setCandidate((c) => (c ? { ...c, recruiterId: updated.recruiter_id ?? recruiterId } : c));
     },
     [id]
   );
 
   const handleAddNote = useCallback(
-    (body) => {
-      const updated = addCandidateNote(id, body, "You");
-      if (updated) setCandidate(updated);
+    async (body) => {
+      const note = await addCandidateNote(id, body).catch(() => null);
+      if (note) {
+        setCandidate((c) =>
+          c ? { ...c, notes: [{ id: note.id, author: note.author_name, createdAt: note.created_at, body: note.body }, ...c.notes] } : c
+        );
+      }
     },
     [id]
   );
 
   const handleAddTag = useCallback(
-    (tagId) => {
-      const updated = addCandidateTag(id, tagId, "You");
-      if (updated) setCandidate(updated);
+    async (tagId) => {
+      const res = await addCandidateTag(id, tagId).catch(() => null);
+      if (res) setCandidate((c) => (c ? { ...c, tags: res.tags } : c));
     },
     [id]
   );
 
   const handleRemoveTag = useCallback(
-    (tagId) => {
-      const updated = removeCandidateTag(id, tagId, "You");
-      if (updated) setCandidate(updated);
+    async (tagId) => {
+      const res = await removeCandidateTag(id, tagId).catch(() => null);
+      if (res) setCandidate((c) => (c ? { ...c, tags: res.tags } : c));
     },
     [id]
   );
 
   const handleSetNextAction = useCallback(
-    (payload) => {
-      const updated = setCandidateNextAction(id, payload, "You");
-      if (updated) setCandidate(updated);
+    async (payload) => {
+      const res = await setCandidateNextAction(id, payload).catch(() => null);
+      if (res) setCandidate((c) => (c ? { ...c, nextAction: res.nextAction } : c));
     },
     [id]
   );
 
-  const handleCompleteNextAction = useCallback(() => {
-    const updated = completeNextAction(id, "You");
-    if (updated) setCandidate(updated);
+  const handleCompleteNextAction = useCallback(async () => {
+    const res = await completeNextAction(id).catch(() => null);
+    if (res) setCandidate((c) => (c ? { ...c, nextAction: res.nextAction } : c));
   }, [id]);
 
   const focusNoteField = useCallback(() => {
@@ -1013,8 +1009,8 @@ export default function CandidateProfilePage({ params }) {
       if (isTyping || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.key === "j" || e.key === "J") && nextId) router.push(`/dashboard/candidates/${nextId}`);
       if ((e.key === "k" || e.key === "K") && prevId) router.push(`/dashboard/candidates/${prevId}`);
-      if ((e.key === "s" || e.key === "S") && candidate?.status === "completed" && candidate.stage !== "shortlisted") {
-        handleStageChange("shortlisted");
+      if ((e.key === "s" || e.key === "S") && candidate?.status === "completed" && candidate.stage !== "Shortlisted") {
+        handleStageChange("Shortlisted");
       }
       if (e.key === "n" || e.key === "N") focusNoteField();
     }
@@ -1042,7 +1038,7 @@ export default function CandidateProfilePage({ params }) {
               candidate={candidate}
               prevId={prevId}
               nextId={nextId}
-              onQuickShortlist={() => handleStageChange("shortlisted")}
+              onQuickShortlist={() => handleStageChange("Shortlisted")}
               onMoveNext={handleStageChange}
               onFocusNote={focusNoteField}
             />

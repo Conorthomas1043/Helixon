@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency-display";
+import { planLabel } from "@/lib/plans";
 
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, and `analyses` from this response (the
@@ -80,7 +81,7 @@ export async function GET() {
 
   return NextResponse.json({
     agencyName: agencyDisplayName(agency, profile),
-    plan: planName ? { name: planName, analysesUsed, analysesLimit } : null,
+    plan: planName ? { name: planLabel(planName), analysesUsed, analysesLimit } : null,
     analyses,
   });
 }

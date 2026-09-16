@@ -1,24 +1,45 @@
-import { createClient, getCurrentRecruiter, unauthorized } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
+import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 export async function POST(request, { params }) {
-  const supabase = createClient();
-  const recruiter = await getCurrentRecruiter(supabase);
-  if (!recruiter) return unauthorized();
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  const { agencyId, userId, profile } = auth;
+  const { id } = await params;
 
   const { tagId } = await request.json();
   const tag = TAG_CATALOG.find((t) => t.id === tagId);
-  if (!tag) return Response.json({ error: "Unknown tag" }, { status: 400 });
+  if (!tag) {
+    return NextResponse.json({ error: "Unknown tag" }, { status: 400 });
+  }
 
-  const { data: candidate } = await supabase.from("candidates").select("tags").eq("id", params.id).single();
-  if (!candidate) return Response.json({ error: "Not found" }, { status: 404 });
-  if (candidate.tags.includes(tagId)) return Response.json({ tags: candidate.tags });
+  const { data: candidate } = await supabase
+    .from("candidates")
+    .select("tags")
+    .eq("id", id)
+    .eq("agency_id", agencyId)
+    .maybeSingle();
+  if (!candidate) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
-  const tags = [...candidate.tags, tagId];
-  const { error } = await supabase.from("candidates").update({ tags }).eq("id", params.id);
-  if (error) return Response.json({ error: "Failed to add tag" }, { status: 500 });
+  const existingTags = candidate.tags ?? [];
+  if (existingTags.includes(tagId)) {
+    return NextResponse.json({ tags: existingTags });
+  }
 
-  await logActivity(supabase, params.id, "tag_added", recruiter.name, { tag: tag.label });
-  return Response.json({ tags });
+  const tags = [...existingTags, tagId];
+  const { error } = await supabase.from("candidates").update({ tags }).eq("id", id);
+  if (error) {
+    return NextResponse.json({ error: "Failed to add tag" }, { status: 500 });
+  }
+
+  await logActivity(supabase, id, "tag_added", recruiterDisplayName(profile) || userId, { tag: tag.label });
+  return NextResponse.json({ tags });
 }

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { STAGE_LABELS } from "@/lib/mock-data";
+import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
+import { computeCandidateStats } from "@/lib/dashboard-model";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
@@ -139,7 +140,7 @@ function StageBadge({ stage }) {
   if (!stage || !STAGE_LABELS[stage]) {
     return <span style={{ color: TEXT_FAINT, fontSize: 11 }}>No stage</span>;
   }
-  const isPlaced = stage === Object.keys(STAGE_LABELS)[Object.keys(STAGE_LABELS).length - 1];
+  const isPlaced = stage === FUNNEL_ORDER[FUNNEL_ORDER.length - 1];
   return (
     <span style={{
       display: "inline-flex",
@@ -425,7 +426,7 @@ function UsageSummary({ plan }) {
       ) : (
         <p style={{ fontSize: 13, color: TEXT_SUB, marginTop: 8 }}>No plan limit on file.</p>
       )}
-      <Link href="/dashboard/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: VIOLET_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <Link href="/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: VIOLET_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
         Upgrade plan →
       </Link>
     </div>
@@ -869,43 +870,18 @@ export default function AgencyDashboardPage() {
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
-  const stageOrder = useMemo(() => Object.keys(STAGE_LABELS ?? {}), []);
+  const stageOrder = FUNNEL_ORDER;
   const lastStageKey = stageOrder[stageOrder.length - 1];
-  const firstStageKey = stageOrder[0];
 
+  // Core KPI/stage/attention-item math is shared with the server side via
+  // lib/dashboard-model.js so this page and any future server rendering
+  // can't drift into two different answers for the same numbers. Only the
+  // jobs/recruiter roll-ups below are dashboard-page-specific.
   const model = useMemo(() => {
     const rawAnalyses = data?.recentAnalyses ?? [];
-    const analyses = rawAnalyses.map((raw, i) => normalizeAnalysis(raw, i)).filter(Boolean).sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
-
-    const completed = analyses.filter((a) => a.status === "completed");
-    const processing = analyses.filter((a) => a.status === "processing");
-    const failed = analyses.filter((a) => a.status === "failed");
-
-    const strongMatches = completed.filter((a) => a.score !== null && a.score >= 80);
-    const avgScore = completed.length ? Math.round(completed.reduce((sum, a) => sum + (a.score ?? 0), 0) / completed.length) : 0;
-
-    const now = Date.now();
-    const DAY = 86400000;
-    const last7 = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < 7 * DAY);
-
-    const inPipeline = completed.filter((a) => a.stage && a.stage !== lastStageKey).length;
-
-    const stageCounts = {};
-    stageOrder.forEach((key) => { stageCounts[key] = completed.filter((a) => a.stage === key).length; });
-    const maxStageCount = Math.max(0, ...Object.values(stageCounts));
-
-    const attentionItems = [];
-    const midStages = stageOrder.slice(1, -1);
-
-    failed.forEach((a) => attentionItems.push({ id: `${a.id}-failed`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: null, createdAt: a.createdAt, reasonLabel: "Analysis failed", tone: { bg: RED_BG, fg: RED }, actionLabel: "Retry", actionHref: `/analyse/${a.id}`, priority: 0 }));
-    processing.filter((a) => a.createdAt && now - a.createdAt.getTime() > 12 * 3600000).forEach((a) => attentionItems.push({ id: `${a.id}-processing`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: null, createdAt: a.createdAt, reasonLabel: "Still processing", tone: { bg: AMBER_BG, fg: AMBER_FG }, actionLabel: "Open", actionHref: `/analyse/${a.id}`, priority: 1 }));
-    completed.filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null)).forEach((a) => attentionItems.push({ id: `${a.id}-unreviewed`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: a.stage ? `Strong match · ${STAGE_LABELS[a.stage]}` : "Strong match · Unstaged", tone: { bg: GREEN_BG, fg: GREEN_FG }, actionLabel: "Review", actionHref: `/dashboard/candidates/${a.id}`, priority: 2 }));
-    completed.filter((a) => midStages.includes(a.stage) && a.createdAt && now - a.createdAt.getTime() > 5 * DAY).forEach((a) => attentionItems.push({ id: `${a.id}-stalled`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`, tone: { bg: AMBER_BG, fg: AMBER_FG }, actionLabel: "Review", actionHref: `/dashboard/candidates/${a.id}`, priority: 3 }));
-    completed.filter((a) => a.stage === null && !(a.score !== null && a.score >= 80)).forEach((a) => attentionItems.push({ id: `${a.id}-unstaged`, candidateName: a.candidateName, jobTitle: a.jobTitle, score: a.score, createdAt: a.createdAt, reasonLabel: "Awaiting stage", tone: { bg: `rgba(71,85,105,0.15)`, fg: TEXT_SUB }, actionLabel: "Stage", actionHref: `/dashboard/candidates/${a.id}`, priority: 4 }));
-
-    attentionItems.sort((a, b) => a.priority !== b.priority ? a.priority - b.priority : (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
-
-    const topCandidates = [...completed].filter((a) => a.score !== null).sort((a, b) => b.score - a.score).slice(0, 5);
+    const normalized = rawAnalyses.map((raw, i) => normalizeAnalysis(raw, i)).filter(Boolean);
+    const stats = computeCandidateStats(normalized);
+    const completed = stats.analyses.filter((a) => a.status === "completed");
 
     const jobMap = new Map();
     completed.forEach((a) => {
@@ -932,8 +908,8 @@ export default function AgencyDashboardPage() {
     });
     const recruiters = Array.from(recruiterMap.values()).map((r) => ({ ...r, avgScore: r.scoreCount > 0 ? Math.round(r.scoreSum / r.scoreCount) : null })).sort((a, b) => b.placements - a.placements || (b.avgScore ?? 0) - (a.avgScore ?? 0)).slice(0, 4);
 
-    return { analyses, totals: { total: analyses.length, completed: completed.length, processing: processing.length, failed: failed.length, strongMatches: strongMatches.length, strongMatchPct: completed.length ? Math.round((strongMatches.length / completed.length) * 100) : 0, avgScore, last7: last7.length, inPipeline }, stageCounts, maxStageCount, attentionItems: attentionItems.slice(0, 6), topCandidates, jobs, recruiters };
-  }, [data, stageOrder, lastStageKey, firstStageKey]);
+    return { ...stats, jobs, recruiters };
+  }, [data, stageOrder, lastStageKey]);
 
   const agencyName = data?.agency?.name ?? "your agency";
   const plan = data?.agency?.plan ?? null;

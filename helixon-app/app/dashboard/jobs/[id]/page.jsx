@@ -9,27 +9,18 @@
  *   (already sorted by score, descending).
  * ---------------------------------------------------------------------- */
 
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates, STAGE_LABELS } from "@/lib/mock-data";
+import { getJobById, getJobCandidates } from "@/lib/dashboard-api";
+import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          const job = getJobById(id);
-          resolve(job ? { job, candidates: getJobCandidates(id) } : null);
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load job");
-  }
+  const job = await getJobById(id).catch(() => null);
+  if (!job) return null;
+  const candidates = await getJobCandidates(id);
+  return { job, candidates };
 }
 
 function FieldLabel({ children }) {
@@ -74,7 +65,7 @@ function StageBadge({ stage, status }) {
     );
   }
   if (!stage || !STAGE_LABELS[stage]) return null;
-  const isPlaced = stage === "placed";
+  const isPlaced = stage === "Placed";
   return (
     <span
       className="text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
@@ -170,7 +161,7 @@ function StateMessage({ title, body, onRetry }) {
 }
 
 export default function JobDetailPage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);

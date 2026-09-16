@@ -1,28 +1,50 @@
-import { createClient, getCurrentRecruiter, unauthorized } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
+import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 export async function POST(request, { params }) {
-  const supabase = createClient();
-  const recruiter = await getCurrentRecruiter(supabase);
-  if (!recruiter) return unauthorized();
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  const { agencyId, userId, profile } = auth;
+  const { id } = await params;
 
   const { body } = await request.json();
-  if (!body?.trim()) return Response.json({ error: "Note body required" }, { status: 400 });
+  if (!body?.trim()) {
+    return NextResponse.json({ error: "Note body required" }, { status: 400 });
+  }
+
+  const { data: candidate } = await supabase
+    .from("candidates")
+    .select("id")
+    .eq("id", id)
+    .eq("agency_id", agencyId)
+    .maybeSingle();
+  if (!candidate) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const authorName = recruiterDisplayName(profile) || userId;
 
   const { data, error } = await supabase
     .from("candidate_notes")
     .insert({
-      candidate_id: params.id,
-      author_id: recruiter.id,
-      author_name: recruiter.name,
+      candidate_id: id,
+      author_id: userId,
+      author_name: authorName,
       body: body.trim(),
     })
     .select()
     .single();
 
-  if (error) return Response.json({ error: "Failed to save note" }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: "Failed to save note" }, { status: 500 });
+  }
 
-  await logActivity(supabase, params.id, "note_added", recruiter.name);
+  await logActivity(supabase, id, "note_added", authorName);
 
-  return Response.json(data);
+  return NextResponse.json(data);
 }

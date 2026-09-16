@@ -4,11 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardNav from "@/components/DashboardNav";
 import { PageCard, Button, InlineAlert } from "@/components/account/ui";
 import { apiRequest, COLORS, GENERIC_ERROR } from "@/lib/account";
-
-const PLAN_LABELS = {
-  individual: "Individual",
-  agency: "Agency",
-};
+import { PLAN_LABELS } from "@/lib/plans";
 
 const STATUS_LABELS = {
   active: "Active",

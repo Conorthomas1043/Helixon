@@ -18,24 +18,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getRecruiters } from "@/lib/mock-data";
+import { getRecruiters as fetchRecruiters } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
-
-async function fetchRecruiters() {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve(getRecruiters());
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load team");
-  }
-}
 
 function Avatar({ name }) {
   return (

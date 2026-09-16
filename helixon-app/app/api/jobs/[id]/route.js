@@ -1,12 +1,35 @@
-import { createClient, getCurrentRecruiter, unauthorized } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
+import { requireCustomerContext } from "@/lib/customer-auth";
 
 export async function GET(request, { params }) {
-  const supabase = createClient();
-  const recruiter = await getCurrentRecruiter(supabase);
-  if (!recruiter) return unauthorized();
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  const { agencyId } = auth;
+  const { id } = await params;
 
-  const { data: job, error } = await supabase.from("jobs").select("*").eq("id", params.id).single();
-  if (error || !job) return Response.json({ error: "Not found" }, { status: 404 });
+  const { data: job, error } = await supabase
+    .from("jobs")
+    .select("*, candidates(id, status, stage, match_score)")
+    .eq("id", id)
+    .eq("agency_id", agencyId)
+    .maybeSingle();
 
-  return Response.json(job);
+  if (error || !job) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const completed = job.candidates.filter((c) => c.status === "completed");
+  return NextResponse.json({
+    ...job,
+    candidates: undefined,
+    candidateCount: job.candidates.length,
+    strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,
+    shortlisted: completed.filter((c) => c.stage === "Shortlisted").length,
+    interviewing: completed.filter((c) => c.stage === "Interview").length,
+    offers: completed.filter((c) => c.stage === "Offer").length,
+    placed: completed.filter((c) => c.stage === "Placed").length,
+  });
 }

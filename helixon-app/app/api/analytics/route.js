@@ -1,14 +1,19 @@
 import { supabase } from "@/lib/supabase";
+import { requireCustomerContext } from "@/lib/customer-auth";
 
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const agencyId = searchParams.get("agencyId");
-    const days = parseInt(searchParams.get("days") || "30");
-
-    if (!agencyId) {
-      return Response.json({ ok: false, error: "agencyId required" }, { status: 400 });
+    // agencyId used to come from the query string, unauthenticated - any
+    // caller could read any agency's analytics just by guessing/passing
+    // its id. It now always comes from the caller's own Clerk session.
+    const auth = await requireCustomerContext();
+    if (!auth.ok) {
+      return Response.json({ ok: false, error: auth.error }, { status: auth.status });
     }
+    const { agencyId } = auth;
+
+    const { searchParams } = new URL(request.url);
+    const days = parseInt(searchParams.get("days") || "30");
 
     // Calculate the start of the period
     const since = new Date();
@@ -60,8 +65,9 @@ export async function GET(request) {
         .select("*", { count: "exact", head: true })
         .eq("agency_id", agencyId)
         .eq("kind", "email_draft"),
-      // Feedback ratings (for accuracy calculation)
-      supabase.from("feedback").select("rating"),
+      // Feedback ratings (for accuracy calculation) - scoped to this
+      // agency; this previously queried every agency's feedback globally.
+      supabase.from("feedback").select("rating").eq("agency_id", agencyId),
     ]);
 
     // Build time series - group scores by day

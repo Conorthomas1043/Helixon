@@ -23,6 +23,7 @@ export async function POST(request) {
     const body = await request.json().catch(() => null);
     const agencyName = (body?.agencyName || "").trim();
     const sessionId = body?.sessionId || null;
+    const plan = body?.plan || null;
 
     // Idempotency: if a profile already exists (e.g. the webhook won the
     // race, or the user double-submits), don't create a second one -
@@ -58,6 +59,7 @@ export async function POST(request) {
         lastName,
         username,
         agencyName,
+        plan,
       });
       profileId = created.profileId;
     }

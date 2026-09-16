@@ -20,24 +20,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getAnalyticsSnapshot, STAGE_LABELS } from "@/lib/mock-data";
+import { getAnalyticsSnapshot as fetchAnalytics } from "@/lib/dashboard-api";
+import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
-
-async function fetchAnalytics() {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve(getAnalyticsSnapshot());
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load analytics");
-  }
-}
 
 function SectionHeading({ eyebrow, title, action }) {
   return (
@@ -89,7 +74,7 @@ function FunnelChart({ funnel }) {
             <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
               <div
                 className="h-full rounded-[6px] flex items-center justify-end px-2"
-                style={{ width: `${pct}%`, background: stage.key === "placed" ? "var(--forest)" : "#a9c4b5" }}
+                style={{ width: `${pct}%`, background: stage.key === "Placed" ? "var(--forest)" : "#a9c4b5" }}
               >
                 <span className="text-[11px] font-semibold tabular-nums text-white">{stage.count}</span>
               </div>
@@ -138,7 +123,7 @@ function PipelineBar({ pipeline }) {
       {stages.map((key) => {
         const count = pipeline.stageCounts[key] ?? 0;
         const heightPct = Math.max(6, Math.round((count / max) * 100));
-        const isPlaced = key === "placed";
+        const isPlaced = key === "Placed";
         return (
           <div key={key} className="flex flex-col items-center">
             <span className="text-base font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>

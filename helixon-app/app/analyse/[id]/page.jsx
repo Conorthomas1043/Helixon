@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getCandidateById, STAGE_LABELS } from "@/lib/mock-data";
+import { getCandidateById } from "@/lib/dashboard-api";
+import { STAGE_LABELS } from "@/lib/stage-labels";
 
 async function fetchAnalysis(id) {
-  return new Promise((resolve) => setTimeout(() => resolve(getCandidateById(id)), 150));
+  return getCandidateById(id).catch(() => null);
 }
 
 function scoreColor(score) {
@@ -178,7 +179,7 @@ export default function AnalysisDetailPage() {
             {c.resume && (
               <div className="mb-5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#8aaa9a" }}>Resume on file</p>
-                <p className="text-xs font-medium" style={{ color: "#13201b" }}>{c.resume.name} · {c.resume.sizeKb} KB · uploaded {formatDate(c.resume.uploadedAt)}</p>
+                <p className="text-xs font-medium" style={{ color: "#13201b" }}>{c.resume.name}{c.resume.sizeKb ? ` · ${c.resume.sizeKb} KB` : ""} · uploaded {formatDate(c.resume.uploadedAt)}</p>
               </div>
             )}
           </>

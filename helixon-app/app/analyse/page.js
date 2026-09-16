@@ -65,18 +65,16 @@ function isLikelyThinCv(file) {
 
 const ACCEPTED_CV_TYPES = [
   "application/pdf",
-  "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
 const ACCEPTED_CV_EXTENSIONS = [
   ".pdf",
-  ".doc",
   ".docx",
 ];
 
 const ACCEPTED_CV_INPUT_ACCEPT =
-  ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 const ACCEPTED_JOB_TYPES = [
   ...ACCEPTED_CV_TYPES,
@@ -2082,13 +2080,12 @@ function AnalysisFlow({
             }}
           >
             Drop it in or click to browse - PDF or
-            Word, max 10 MB.
+            Word (.docx), max 10 MB.
           </p>
 
           <div className="flex items-center justify-center gap-1.5 mb-6 flex-wrap">
             {[
               ".pdf",
-              ".doc",
               ".docx",
             ].map((extension) => (
               <span
@@ -3501,7 +3498,7 @@ export default function AnalyzePage() {
       )
     ) {
       setError(
-        "Please upload a PDF, Word (.doc/.docx) or .txt file."
+        "Please upload a PDF, Word (.docx) or .txt file."
       );
       return;
     }
@@ -3931,7 +3928,7 @@ export default function AnalyzePage() {
       )
     ) {
       setError(
-        "Please drop a PDF or Word (.doc/.docx) file."
+        "Please drop a PDF or Word (.docx) file."
       );
       return;
     }
@@ -4333,7 +4330,7 @@ export default function AnalyzePage() {
       )
     ) {
       setError(
-        "Please upload a PDF or Word (.doc/.docx) file."
+        "Please upload a PDF or Word (.docx) file."
       );
       setFile(null);
       return;
@@ -4850,7 +4847,7 @@ export default function AnalyzePage() {
                         "#5a7a6a",
                     }}
                   >
-                    PDF or Word (.doc, .docx) · max 10 MB
+                    PDF or Word (.docx) · max 10 MB
                   </p>
                 </div>
               )}

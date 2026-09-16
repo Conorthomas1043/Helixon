@@ -16,24 +16,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobs } from "@/lib/mock-data";
+import { getJobs as fetchJobs } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
-
-async function fetchJobs() {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve(getJobs());
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load jobs");
-  }
-}
 
 function Stat({ label, value, accent }) {
   return (

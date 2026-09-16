@@ -203,7 +203,7 @@ export default function SignupPage() {
       const res = await fetch("/api/complete-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agencyName: trimmedAgency, sessionId }),
+        body: JSON.stringify({ agencyName: trimmedAgency, sessionId, plan }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {

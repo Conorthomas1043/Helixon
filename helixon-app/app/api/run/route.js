@@ -2,22 +2,38 @@ import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
+import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { getScoreBand } from "@/lib/scoreBands";
 import { requireCustomerContext } from "@/lib/customer-auth";
 
 import { NextResponse } from "next/server";
 
+// .doc is deliberately not accepted - extractCvText() has no parser for
+// the legacy binary format and always throws for it (see that file), so
+// advertising support for it just produces a 400 after the user waits on
+// the upload. PDF/DOCX cover what's actually implemented.
 const ACCEPTED_CV_MIME_TYPES = new Set([
   "application/pdf",
-  "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
 const ACCEPTED_CV_EXTENSIONS = [
   ".pdf",
-  ".doc",
   ".docx",
 ];
+
+// Job-spec upload additionally accepts .txt, which extractCvText() has no
+// branch for (it's CV-focused) - read those directly instead.
+async function extractJobSpecText(file) {
+  const type = file.type || "";
+  const name = (file.name || "").toLowerCase();
+  if (type === "text/plain" || name.endsWith(".txt")) {
+    const text = await file.text();
+    if (!text || !text.trim()) throw new Error("The job spec file appears to be empty.");
+    return text.trim();
+  }
+  return extractCvText(file);
+}
 
 function isAcceptedCvFile(file) {
   if (!file) return false;
@@ -124,9 +140,27 @@ export async function POST(request) {
     const form = await request.formData();
 
     const file = form.get("cv");
-    const jobText = String(
+    let jobText = String(
       form.get("jobText") || ""
     ).trim();
+
+    const jobFile = form.get("jobFile");
+    const clientEmail = String(
+      form.get("clientEmail") || ""
+    ).trim();
+
+    let requirements = [];
+    try {
+      const parsedRequirements = JSON.parse(form.get("requirements") || "[]");
+      if (Array.isArray(parsedRequirements)) {
+        requirements = parsedRequirements
+          .map((r) => (typeof r === "string" ? r.trim() : ""))
+          .filter(Boolean);
+      }
+    } catch {
+      // Malformed requirements payload - treat as none rather than failing
+      // the whole analysis over an optional field.
+    }
 
     const blind = form.get("blind") === "true";
 
@@ -135,6 +169,35 @@ export async function POST(request) {
 
     const saveJob =
       form.get("saveJob") === "true";
+
+    // "Upload spec" mode never populates jobText client-side (the file is
+    // extracted here, same as the CV) - only fall through to the "missing"
+    // error below if there's genuinely neither a pasted description nor a
+    // file to extract one from.
+    if (!jobText && jobFile && typeof jobFile === "object" && jobFile.size > 0) {
+      try {
+        jobText = (await extractJobSpecText(jobFile)).trim();
+      } catch (err) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: err?.message || "Could not read the job spec file.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Recruiter-specified must-haves are folded into the job description
+    // text itself, so the existing job/requirements extractor (and the
+    // requirements_met reconciliation already built on top of it) picks
+    // them up as first-class requirements rather than needing a second,
+    // parallel matching path.
+    if (requirements.length > 0) {
+      jobText = `${jobText}\n\nAdditional must-have requirements specified by the recruiter:\n${requirements
+        .map((r) => `- ${r}`)
+        .join("\n")}`;
+    }
 
     if (!file || !jobText) {
       return NextResponse.json(
@@ -152,7 +215,7 @@ export async function POST(request) {
         {
           ok: false,
           error:
-            "Unsupported CV file. Upload a PDF, DOC or DOCX file.",
+            "Unsupported CV file. Upload a PDF or DOCX file.",
         },
         { status: 400 }
       );
@@ -286,6 +349,7 @@ export async function POST(request) {
             jobParsed?.client ||
             null,
           client_email:
+            clientEmail ||
             jobParsed?.client_email ||
             null,
           job_text: jobText,
@@ -347,7 +411,11 @@ export async function POST(request) {
           salary_estimate: salary,
         },
         source: "single",
-        stage: "new",
+        // Matches lib/stage-labels.js's STAGE_LABELS/FUNNEL_ORDER (the
+        // ground truth the dashboard and PipelineStage component both key
+        // off) - the previous lowercase "new" matched nothing there, so
+        // every fresh analysis silently showed as "no stage".
+        stage: "Screened",
       })
       .select()
       .single();
@@ -355,6 +423,26 @@ export async function POST(request) {
     if (scoreError) {
       throw new Error(scoreError.message);
     }
+
+    /*
+     * Denormalise the score's stage/match/recommendation and the job
+     * link onto the candidate row itself. `scores` is the append-only
+     * record of each analysis; `candidates.stage`/`match_score`/`job_id`
+     * are what the candidates/pipeline/jobs/team API routes (and the
+     * dashboard pages built on them) read and update as a recruiter
+     * works the pipeline - they need a starting value from the analysis
+     * that created this candidate.
+     */
+    await supabase
+      .from("candidates")
+      .update({
+        stage: "Screened",
+        match_score: result?.match_score ?? 0,
+        recommendation: result?.recommendation || "Review",
+        job_id: job.id,
+        status: "completed",
+      })
+      .eq("id", candidate.id);
 
     /*
      * Keep candidate activity useful for the CRM/admin

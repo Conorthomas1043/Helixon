@@ -16,3 +16,18 @@ export function planForPriceId(priceId) {
   const match = Object.entries(PRICE_IDS).find(([, id]) => id === priceId);
   return match ? match[0] : null;
 }
+
+// Display names for plan ids. "solo" is a legacy default written by
+// createProfileAndAgency when no plan was passed through (pre-fix
+// complete-signup calls, or an agency created without checkout) - kept
+// here rather than dropped so old rows still render a real label instead
+// of the raw id.
+export const PLAN_LABELS = {
+  individual: "Individual",
+  agency: "Agency",
+  solo: "Individual",
+};
+
+export function planLabel(planId) {
+  return PLAN_LABELS[planId] || planId || null;
+}

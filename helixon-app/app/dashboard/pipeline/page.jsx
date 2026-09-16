@@ -24,23 +24,15 @@ import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getCandidates, getJobs, getRecruiters, STAGE_LABELS, STAGE_ORDER, updateCandidateStage } from "@/lib/mock-data";
+import { getCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
+import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
 
+const STAGE_ORDER = FUNNEL_ORDER;
+
 async function fetchPipeline(query) {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve(getCandidates(query).items);
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load pipeline");
-  }
+  const { items } = await getCandidates(query);
+  return items;
 }
 
 function Select({ value, onChange, options, ariaLabel }) {
@@ -186,8 +178,17 @@ function PipelineContent() {
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
 
-  const jobs = useMemo(() => getJobs(), []);
-  const recruiters = useMemo(() => getRecruiters(), []);
+  const [jobs, setJobs] = useState([]);
+  const [recruiters, setRecruiters] = useState([]);
+
+  useEffect(() => {
+    Promise.all([getJobs(), getRecruiters()])
+      .then(([j, r]) => {
+        setJobs(j);
+        setRecruiters(r);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,8 +211,7 @@ function PipelineContent() {
 
   const handleMove = useCallback(
     (id, newStage) => {
-      updateCandidateStage(id, newStage, "You");
-      retry();
+      updateCandidateStage(id, newStage).then(retry).catch(() => {});
     },
     [retry]
   );

@@ -31,12 +31,11 @@ import {
   getStageCounts,
   getJobs,
   getRecruiters,
-  getTagCatalog,
-  STAGE_LABELS,
-  STAGE_ORDER,
   updateCandidateStage,
   addCandidateTag,
-} from "@/lib/mock-data";
+} from "@/lib/dashboard-api";
+import { STAGE_LABELS } from "@/lib/stage-labels";
+import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
   INK,
   INK_MUTED,
@@ -53,26 +52,11 @@ import {
   initials,
 } from "@/lib/candidate-format";
 
-/* ------------------------------------------------------------------------
- * Mock "network" wrapper - see dashboard/page.js's fetchDashboardData for
- * the precedent. Swap the body for `fetch("/api/candidates?...")` later;
- * callers already treat this as async and handle the error path.
- * ---------------------------------------------------------------------- */
+const STAGE_ORDER = Object.keys(STAGE_LABELS);
 
 async function fetchCandidates(query) {
-  try {
-    return await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          resolve({ result: getCandidates(query), stageCounts: getStageCounts(query) });
-        } catch (err) {
-          reject(err);
-        }
-      }, 200);
-    });
-  } catch (err) {
-    throw new Error("Failed to load candidates");
-  }
+  const [result, stageCounts] = await Promise.all([getCandidates(query), getStageCounts(query)]);
+  return { result, stageCounts };
 }
 
 const DEFAULT_FILTERS = {
@@ -402,9 +386,23 @@ function CandidateDatabaseContent() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [reloadKey, setReloadKey] = useState(0);
 
-  const jobs = useMemo(() => getJobs(), []);
-  const recruiters = useMemo(() => getRecruiters(), []);
-  const tags = useMemo(() => getTagCatalog(), []);
+  const [jobs, setJobs] = useState([]);
+  const [recruiters, setRecruiters] = useState([]);
+  const tags = TAG_CATALOG;
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getJobs(), getRecruiters()])
+      .then(([j, r]) => {
+        if (cancelled) return;
+        setJobs(j);
+        setRecruiters(r);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Debounce the free-text search before it hits the "query".
   useEffect(() => {
@@ -493,8 +491,7 @@ function CandidateDatabaseContent() {
   const bulkChangeStage = useCallback(
     (newStage) => {
       if (!newStage) return;
-      selectedIds.forEach((id) => updateCandidateStage(id, newStage, "You"));
-      retry();
+      Promise.all([...selectedIds].map((id) => updateCandidateStage(id, newStage))).then(retry);
     },
     [selectedIds, retry]
   );
@@ -502,8 +499,7 @@ function CandidateDatabaseContent() {
   const bulkAddTag = useCallback(
     (tagId) => {
       if (!tagId) return;
-      selectedIds.forEach((id) => addCandidateTag(id, tagId, "You"));
-      retry();
+      Promise.all([...selectedIds].map((id) => addCandidateTag(id, tagId))).then(retry);
     },
     [selectedIds, retry]
   );
