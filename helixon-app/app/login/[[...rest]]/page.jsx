@@ -1,7 +1,8 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -24,9 +25,11 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 // callback, etc). This file keeps the app's existing visual shell (ambient
 // background, branding panel, glass card) and drops Clerk's component into
 // the card instead of the old hand-rolled form.
-export default function LoginPage() {
+function LoginContent() {
   const cardRef = useRef(null);
   const [spot, setSpot] = useState({ x: 50, y: 0 });
+  const searchParams = useSearchParams();
+  const intent = searchParams.get("intent");
 
   function handleCardMouseMove(e) {
     const r = cardRef.current?.getBoundingClientRect();
@@ -87,25 +90,50 @@ export default function LoginPage() {
             ].map((s) => (
               <div key={s.label}>
                 <p className="text-white text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>{s.value}</p>
-                <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>{s.label}</p>
+                <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.62)" }}>{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="relative z-10 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="relative z-10 text-xs" style={{ color: "rgba(255,255,255,0.58)" }}>
           © {new Date().getFullYear()} Helixon. All rights reserved.
         </p>
       </div>
 
       {/* ── Right panel - glass card holding Clerk's <SignIn/> ─────────── */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
-        <a href="/" className="flex lg:hidden items-center gap-2.5 mb-8" aria-label="Helixon home">
+        <a href="/" className="flex lg:hidden items-center gap-2.5 mb-2" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
             <span className="text-white text-sm font-bold">H</span>
           </div>
           <span className="text-base font-semibold" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
         </a>
+        {/* The full stats panel is lg:hidden (branding column) - this
+            keeps a trace of that trust-building copy on mobile instead of
+            dropping it entirely below the breakpoint. */}
+        <p className="flex lg:hidden text-[12px] mb-6 text-center max-w-xs" style={{ color: "#5a7a6a" }}>
+          94% match accuracy · 10x faster screening
+        </p>
+
+        {intent === "reset" && (
+          <div
+            role="status"
+            className="w-full max-w-sm mb-4 rounded-[12px] px-4 py-3 text-[13px]"
+            style={{ background: "rgba(11,58,42,0.08)", color: "#0b3a2a", border: "1px solid rgba(11,58,42,0.15)" }}
+          >
+            To reset your password, enter your email below and click <strong>&ldquo;Forgot password?&rdquo;</strong>.
+          </div>
+        )}
+        {intent === "verify" && (
+          <div
+            role="status"
+            className="w-full max-w-sm mb-4 rounded-[12px] px-4 py-3 text-[13px]"
+            style={{ background: "rgba(11,58,42,0.08)", color: "#0b3a2a", border: "1px solid rgba(11,58,42,0.15)" }}
+          >
+            If you already finished creating your account, sign in below. Still partway through signing up? The verification code is on the signup screen itself - check your email for it.
+          </div>
+        )}
 
         <div
           ref={cardRef}
@@ -129,7 +157,20 @@ export default function LoginPage() {
             <SignIn
               path="/login"
               signUpUrl="/pricing"
-              fallbackRedirectUrl="/dashboard"
+              fallbackRedirectUrl="/dashboard?welcome=1"
+              localization={{
+                signIn: {
+                  start: {
+                    // Default Clerk copy is "Don't have an account? Sign
+                    // up", which reads as "create a free account" - this
+                    // app's signup is checkout-gated (signUpUrl goes to
+                    // /pricing, not a signup form), so the link text says
+                    // that plainly instead of surprising people.
+                    actionText: "New to Helixon?",
+                    actionLink: "See plans & sign up",
+                  },
+                },
+              }}
               appearance={{
                 layout: {
                   socialButtonsPlacement: "top",
@@ -174,5 +215,15 @@ export default function LoginPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+// useSearchParams() (for ?intent=reset) requires a Suspense boundary in
+// the app router, or static prerendering fails the build.
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

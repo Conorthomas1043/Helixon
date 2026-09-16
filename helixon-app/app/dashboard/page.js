@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
@@ -823,13 +823,15 @@ function WelcomeBackBanner({ name, onDismiss }) {
   );
 }
 
-export default function AgencyDashboardPage() {
+function AgencyDashboardPage() {
   const [data, setData] = useState(null);
   const [hasError, setHasError] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
   const [me, setMe] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     let cancelled = false;
@@ -849,18 +851,18 @@ export default function AgencyDashboardPage() {
       .catch(() => {});
   }, []);
 
-  // Shows the "Welcome back" banner exactly once per login, using a flag
-  // the login page sets right before redirecting here. Cleared immediately
-  // so a manual refresh (or navigating back to /dashboard later) doesn't
-  // show it again until the next actual login.
+  // Shows the "Welcome back" banner exactly once per login. Clerk's
+  // <SignIn/> redirects here with ?welcome=1 (see app/login) rather than
+  // this reading a flag some other page set in sessionStorage - Clerk
+  // owns the post-auth redirect itself, so a query param is the only
+  // reliable signal available on arrival. Stripped from the URL
+  // immediately via replace() so a manual refresh doesn't re-show it.
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem("helixon_just_logged_in")) {
-        setShowWelcome(true);
-        sessionStorage.removeItem("helixon_just_logged_in");
-      }
-    } catch { /* ignore */ }
-  }, []);
+    if (searchParams.get("welcome") === "1") {
+      setShowWelcome(true);
+      router.replace("/dashboard");
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     if (!showWelcome) return;
@@ -971,5 +973,17 @@ export default function AgencyDashboardPage() {
         )}
       </div>
     </main>
+  );
+}
+
+// useSearchParams() (for the post-login ?welcome=1 flag) requires a
+// Suspense boundary in the app router, or static prerendering fails the
+// build - same pattern already used by dashboard/candidates and
+// dashboard/pipeline.
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<main style={{ minHeight: "100vh", background: BG }}><DashboardNav /></main>}>
+      <AgencyDashboardPage />
+    </Suspense>
   );
 }

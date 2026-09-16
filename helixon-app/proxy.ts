@@ -112,10 +112,19 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   }
 
   if (blocked) {
-    return new NextResponse(
-      JSON.stringify({ ok: false, error: "Your IP has been blocked." }),
-      { status: 403, headers: { "Content-Type": "application/json" } }
-    );
+    // API callers need a JSON error they can parse; browser page
+    // navigations need an actual page - previously this returned raw JSON
+    // for both, so a blocked visitor hitting any page saw unstyled JSON
+    // text instead of a page. /rate-limited already exists for exactly
+    // this (components/landing/TooManyRequestsPage) and just wasn't used
+    // here.
+    if (pathname.startsWith("/api")) {
+      return new NextResponse(
+        JSON.stringify({ ok: false, error: "Your IP has been blocked." }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    return NextResponse.redirect(new URL("/rate-limited", request.url));
   }
 
   // ── 3. Gate /analyse behind authentication ────────────────────────────────
@@ -129,7 +138,13 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   if (pathname.startsWith("/analyse")) {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      // Carry the original destination through so <SignIn/>'s
+      // fallbackRedirectUrl (app/login) is overridden by Clerk's own
+      // redirect_url handling - previously this always sent a logged-in
+      // user to /dashboard regardless of what they were trying to reach.
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect_url", pathname + request.nextUrl.search);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
