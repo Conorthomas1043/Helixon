@@ -2,224 +2,13 @@
 
 import { useState } from "react";
 import ChatWidget from "@/components/landing/ChatWidget";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Blog / Resources - article grid with category filter. Same nav/footer/
 // tokens as the rest of the marketing site.
 // ═══════════════════════════════════════════════════════════════════════════
-
-function MarketingNav() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  const links = [
-    ["How it works", "/how-it-works"],
-    ["FAQ", "/faq"],
-    ["Blog", "/blog"],
-    ["Pricing", "/#pricing"],
-    ["Contact", "/contact"],
-    ["Login", "/login"],
-  ];
-
-  return (
-    <nav
-      className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b"
-      style={{ borderColor: "var(--border)" }}
-    >
-      <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-        <a
-          href="/"
-          className="flex items-center gap-3 group"
-          aria-label="Helixon home"
-        >
-          <div
-            className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105"
-            style={{ background: "var(--forest)" }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 28 28"
-              fill="none"
-              aria-hidden="true"
-            >
-              <rect
-                x="4"
-                y="9"
-                width="12"
-                height="4.5"
-                rx="2.25"
-                fill="white"
-                opacity="0.55"
-              />
-              <rect
-                x="12"
-                y="15.5"
-                width="12"
-                height="4.5"
-                rx="2.25"
-                fill="white"
-              />
-              <circle
-                cx="22.5"
-                cy="10.5"
-                r="1.8"
-                fill="var(--signal)"
-              />
-            </svg>
-          </div>
-
-          <span className="flex flex-col leading-none">
-            <span
-              className="text-sm font-semibold tracking-tight"
-              style={{
-                color: "#13201b",
-                fontFamily: "var(--font-display)",
-              }}
-            >
-              Helixon
-            </span>
-
-            <span
-              className="hidden sm:block text-[9px] font-medium mt-0.5"
-              style={{ color: "#8aaa9a" }}
-            >
-              Screen candidates in seconds
-            </span>
-          </span>
-        </a>
-
-        <div
-          className="hidden md:flex items-center gap-1 text-xs font-medium"
-          style={{ color: "#5a7a6a" }}
-        >
-          {links.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              className="px-3 py-1.5 rounded-[8px] transition-colors"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--mint)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-              }}
-            >
-              {label}
-            </a>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <a
-            href="/"
-            className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block"
-            style={{ background: "var(--forest)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--forest-deep)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--forest)";
-            }}
-          >
-            Try now
-          </a>
-
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen((v) => !v)}
-            aria-expanded={mobileNavOpen}
-            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-            className="md:hidden w-8 h-8 rounded-[8px] flex items-center justify-center"
-            style={{ color: "#13201b" }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              {mobileNavOpen ? (
-                <>
-                  <path d="M18 6 6 18" />
-                  <path d="M6 6l12 12" />
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {mobileNavOpen && (
-        <div
-          className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white"
-          style={{ borderColor: "var(--border)" }}
-        >
-          {links.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              onClick={() => setMobileNavOpen(false)}
-              className="text-xs px-2.5 py-2.5 rounded-[8px]"
-              style={{ color: "#5a7a6a" }}
-            >
-              {label}
-            </a>
-          ))}
-
-          <a
-            href="/"
-            onClick={() => setMobileNavOpen(false)}
-            className="text-xs font-semibold px-2.5 py-2.5 rounded-[10px] mt-1 text-white text-center"
-            style={{ background: "var(--forest)" }}
-          >
-            Try now
-          </a>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function Footer() {
-  return (
-    <footer
-      className="border-t"
-      style={{ borderColor: "var(--border)" }}
-    >
-      <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <span
-          className="text-[11px]"
-          style={{ color: "#8aaa9a" }}
-        >
-          © {new Date().getFullYear()} Helixon. Screen candidates in seconds.
-        </span>
-
-        <div
-          className="flex gap-4 text-[11px]"
-          style={{ color: "#8aaa9a" }}
-        >
-          <a href="/#how">How it works</a>
-          <a href="/faq">FAQ</a>
-          <a href="/careers">Careers</a>
-          <a href="/complaints">Complaints</a>
-          <a href="/contact">Contact</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 const CATEGORIES = [
   "All",
@@ -293,7 +82,7 @@ export default function BlogPage() {
         className="min-h-screen"
         style={{ background: "var(--mist)" }}
       >
-        <MarketingNav />
+        <MarketingNav active="blog" />
 
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-10 text-center">
           <span
@@ -323,7 +112,7 @@ export default function BlogPage() {
           <h1
             className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto"
             style={{
-              color: "#13201b",
+              color: "var(--ink)",
               fontFamily: "var(--font-display)",
             }}
           >
@@ -332,9 +121,9 @@ export default function BlogPage() {
 
           <p
             className="text-sm leading-relaxed max-w-md mx-auto"
-            style={{ color: "#5a7a6a" }}
+            style={{ color: "var(--ink-soft)" }}
           >
-            Screening tips, product updates, and what we're learning from
+            Screening tips, product updates, and what we&apos;re learning from
             agencies using Helixon every day.
           </p>
         </section>
@@ -351,7 +140,7 @@ export default function BlogPage() {
                   background:
                     active === category ? "var(--forest)" : "white",
                   color:
-                    active === category ? "white" : "#5a7a6a",
+                    active === category ? "white" : "var(--ink-soft)",
                   border:
                     active === category
                       ? "1px solid var(--forest)"
@@ -391,7 +180,7 @@ export default function BlogPage() {
                 <h2
                   className="text-sm font-semibold mb-2 leading-snug"
                   style={{
-                    color: "#13201b",
+                    color: "var(--ink)",
                     fontFamily: "var(--font-display)",
                   }}
                 >
@@ -400,14 +189,14 @@ export default function BlogPage() {
 
                 <p
                   className="text-xs leading-relaxed mb-4 flex-1"
-                  style={{ color: "#5a7a6a" }}
+                  style={{ color: "var(--ink-soft)" }}
                 >
                   {post.excerpt}
                 </p>
 
                 <div
                   className="flex items-center gap-2 text-[10px]"
-                  style={{ color: "#8aaa9a" }}
+                  style={{ color: "var(--ink-faint)" }}
                 >
                   <span>{post.date}</span>
                   <span>·</span>
@@ -461,7 +250,7 @@ export default function BlogPage() {
           </div>
         </section>
 
-        <Footer />
+        <MarketingFooter />
       </main>
       <ChatWidget />
     </>

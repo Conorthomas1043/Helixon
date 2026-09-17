@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
 
 const SECTIONS = [
   {
@@ -43,77 +44,19 @@ const SECTIONS = [
   },
 ];
 
-function SiteNav() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
-      <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-        <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-            <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-              <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-            </svg>
-          </div>
-          <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-        </a>
-        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
-          <a href="/#how" className="px-3 py-1.5 rounded-[8px]">How it works</a>
-          <a href="/#pricing" className="px-3 py-1.5 rounded-[8px]">Pricing</a>
-          <a href="/about" className="px-3 py-1.5 rounded-[8px]">About</a>
-          <a href="/login" className="px-3 py-1.5 rounded-[8px]">Login</a>
-        </div>
-        <div className="flex items-center gap-2">
-          <a href="/demo" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] text-white hidden sm:block" style={{ background: "var(--forest)" }}>Get a demo</a>
-          <button type="button" onClick={() => setMobileNavOpen(v => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
-            className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-            </svg>
-          </button>
-        </div>
-      </div>
-      {mobileNavOpen && (
-        <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-          {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["About", "/about"], ["Login", "/login"]].map(([label, href]) => (
-            <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
-          ))}
-          <a href="/demo" onClick={() => setMobileNavOpen(false)} className="text-xs font-semibold px-2.5 py-2.5 rounded-[10px] mt-1 text-white text-center" style={{ background: "var(--forest)" }}>Get a demo</a>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="border-t" style={{ borderColor: "var(--border)" }}>
-      <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-        <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/login">Login</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 export default function TermsPage() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-      <SiteNav />
+      <MarketingNav active="terms" />
 
       <section className="max-w-[900px] mx-auto px-6 pt-16 pb-14">
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           Terms of Service
         </h1>
-        <p className="text-sm leading-relaxed max-w-xl" style={{ color: "#5a7a6a" }}>
+        <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
           The rules for using Helixon, written to be read in one sitting.
         </p>
-        <p className="text-[11px] mt-4" style={{ color: "#8aaa9a" }}>Last updated: August 2026</p>
+        <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>Last updated: August 2026</p>
       </section>
 
       <section className="max-w-[900px] mx-auto px-6 pb-24">
@@ -121,11 +64,11 @@ export default function TermsPage() {
           <div className="space-y-10">
             {SECTIONS.map((s) => (
               <div key={s.id} id={s.id}>
-                <h2 className="text-base font-semibold tracking-tight mb-2.5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+                <h2 className="text-base font-semibold tracking-tight mb-2.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                   {s.title}
                 </h2>
                 {s.body.map((p, i) => (
-                  <p key={i} className="text-xs leading-relaxed mb-2.5" style={{ color: "#5a7a6a" }}>{p}</p>
+                  <p key={i} className="text-xs leading-relaxed mb-2.5" style={{ color: "var(--ink-soft)" }}>{p}</p>
                 ))}
               </div>
             ))}
@@ -133,7 +76,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      <SiteFooter />
+      <MarketingFooter />
     </main>
   );
 }

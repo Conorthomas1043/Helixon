@@ -1,77 +1,12 @@
 "use client";
 import { useState } from "react";
 import posthog from "posthog-js";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Contact - simple form + direct channels, same nav/footer/tokens as landing.
 // ═══════════════════════════════════════════════════════════════════════════
-
-function MarketingNav() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
-      <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-        <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-            <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-              <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-            </svg>
-          </div>
-          <span className="flex flex-col leading-none">
-            <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
-          </span>
-        </a>
-
-        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
-          {[["How it works", "/how-it-works"], ["FAQ", "/faq"], ["Pricing", "/#pricing"], ["Contact", "/contact"], ["Login", "/login"]].map(([label, href]) => (
-            <a key={label} href={href} className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={e => e.currentTarget.style.background = "var(--mint)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>{label}</a>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <a href="/" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
-            onMouseEnter={e => e.currentTarget.style.background = "var(--forest-deep)"} onMouseLeave={e => e.currentTarget.style.background = "var(--forest)"}>
-            Try now
-          </a>
-          <button type="button" onClick={() => setMobileNavOpen(v => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
-            className="md:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-            </svg>
-          </button>
-        </div>
-      </div>
-      {mobileNavOpen && (
-        <div className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-          {[["How it works", "/how-it-works"], ["FAQ", "/faq"], ["Pricing", "/#pricing"], ["Contact", "/contact"], ["Login", "/login"]].map(([label, href]) => (
-            <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
-          ))}
-          <a href="/" onClick={() => setMobileNavOpen(false)} className="text-xs font-semibold px-2.5 py-2.5 rounded-[10px] mt-1 text-white text-center" style={{ background: "var(--forest)" }}>Try now</a>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t" style={{ borderColor: "var(--border)" }}>
-      <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-        <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
-          <a href="/how-it-works">How it works</a>
-          <a href="/faq">FAQ</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/login">Login</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 const inputStyle = {
   width: "100%",
@@ -79,7 +14,7 @@ const inputStyle = {
   borderRadius: "10px",
   padding: "10px 14px",
   fontSize: "0.875rem",
-  color: "#13201b",
+  color: "var(--ink)",
   background: "white",
 };
 
@@ -157,18 +92,18 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-      <MarketingNav />
+      <MarketingNav active="contact" />
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
         <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
           We usually reply within a day
         </span>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           Get in touch.
         </h1>
-        <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "#5a7a6a" }}>
-          Whether it's a question before you sign up or something on an existing account, we're happy to help.
+        <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+          Whether it&apos;s a question before you sign up or something on an existing account, we&apos;re happy to help.
         </p>
       </section>
 
@@ -184,8 +119,8 @@ export default function ContactPage() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{c.icon}</svg>
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold mb-1" style={{ color: "#13201b" }}>{c.title}</h3>
-                    <p className="text-xs leading-relaxed mb-2" style={{ color: "#5a7a6a" }}>{c.body}</p>
+                    <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{c.title}</h3>
+                    <p className="text-xs leading-relaxed mb-2" style={{ color: "var(--ink-soft)" }}>{c.body}</p>
                     <a href={`mailto:${c.email}`} className="text-xs font-semibold" style={{ color: "var(--forest)" }}>{c.email}</a>
                   </div>
                 </div>
@@ -200,14 +135,14 @@ export default function ContactPage() {
                 <div className="w-12 h-12 rounded-[12px] flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round"><path d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
-                <h2 className="font-semibold mb-1.5" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Message sent</h2>
-                <p className="text-sm max-w-xs mx-auto" style={{ color: "#5a7a6a" }}>
-                  Thanks - we'll get back to you at {email || "your email"} shortly.
+                <h2 className="font-semibold mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Message sent</h2>
+                <p className="text-sm max-w-xs mx-auto" style={{ color: "var(--ink-soft)" }}>
+                  Thanks - we&apos;ll get back to you at {email || "your email"} shortly.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <h2 className="text-sm font-semibold mb-1" style={{ color: "#13201b" }}>Send us a message</h2>
+                <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>Send us a message</h2>
 
                 {error && (
                   <div role="alert" className="flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
@@ -220,17 +155,17 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-xs font-semibold mb-1.5" style={{ color: "#13201b" }}>Name</label>
+                    <label htmlFor="name" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Name</label>
                     <input id="name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} className="focus:outline-none transition-shadow" onFocus={inputFocus} onBlur={inputBlur} />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-xs font-semibold mb-1.5" style={{ color: "#13201b" }}>Email</label>
+                    <label htmlFor="email" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Email</label>
                     <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} className="focus:outline-none transition-shadow" onFocus={inputFocus} onBlur={inputBlur} />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="topic" className="block text-xs font-semibold mb-1.5" style={{ color: "#13201b" }}>Topic</label>
+                  <label htmlFor="topic" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Topic</label>
                   <div className="relative">
                     <select
                       id="topic"
@@ -246,7 +181,7 @@ export default function ContactPage() {
                       ))}
                     </select>
                     <svg
-                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a7a6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                       className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
                       style={{ right: "14px" }}
                     >
@@ -256,7 +191,7 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-xs font-semibold mb-1.5" style={{ color: "#13201b" }}>Message</label>
+                  <label htmlFor="message" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Message</label>
                   <textarea
                     id="message" rows={5} value={message} onChange={(e) => setMessage(e.target.value)} required
                     style={{ ...inputStyle, resize: "vertical" }} className="focus:outline-none transition-shadow"
@@ -281,7 +216,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <Footer />
+      <MarketingFooter />
     </main>
   );
 }

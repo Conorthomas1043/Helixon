@@ -2,10 +2,13 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import CookieConsentBanner from "../components/CookieConsentBanner";
 import Button from "@/components/landing/Button";
 import ChatWidget from "@/components/landing/ChatWidget";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
+import CtaBand from "@/components/marketing/CtaBand";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -264,19 +267,23 @@ function BuyPlanButton({ plan, label, highlight }) {
   );
 }
 
-/* ── Reusable CTA pair - label/target vary by context, never more than two ── */
-function CtaButtons({ secondaryLabel = "See how it works", secondaryHref = "#how", align = "left" }) {
+/* ── Reusable CTA pair - label/target vary by context, never more than two ──
+   When signed in, the primary CTA takes the visitor straight to their
+   dashboard instead of pitching a demo they've already bought. */
+function CtaButtons({ secondaryLabel = "See how it works", secondaryHref = "#how", align = "left", signedIn = false }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
-      <Button as="a" href="/demo" variant="primary" className="w-full sm:w-auto min-h-[48px]">
-        Get a demo
+      <Button as="a" href={signedIn ? "/dashboard" : "/demo"} variant="primary" className="w-full sm:w-auto min-h-[48px]">
+        {signedIn ? "Go to dashboard" : "Get a demo"}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </Button>
-      <Button as="a" href={secondaryHref} variant="outline" className="w-full sm:w-auto min-h-[48px]">
-        {secondaryLabel}
-      </Button>
+      {!signedIn && (
+        <Button as="a" href={secondaryHref} variant="outline" className="w-full sm:w-auto min-h-[48px]">
+          {secondaryLabel}
+        </Button>
+      )}
     </div>
   );
 }
@@ -805,115 +812,16 @@ const TRUST_METRICS = [
 /* ── Page ──────────────────────────────────────────────────────────────── */
 
 export default function LandingPage() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (!mobileNavOpen) return;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileNavOpen]);
-
-  useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 768) setMobileNavOpen(false);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  useEffect(() => {
-    if (!mobileNavOpen) return;
-    function onKey(e) {
-      if (e.key === "Escape") setMobileNavOpen(false);
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [mobileNavOpen]);
-
-  const navLinks = [
-    ["How it works", "#how"],
-    ["For agencies", "#agency"],
-    ["Features", "#features"],
-    ["Pricing", "#pricing"],
-    ["FAQ", "#faq"],
-  ];
+  const { isLoaded, isSignedIn, user } = useUser();
+  const signedIn = isLoaded && isSignedIn;
+  const firstName = user?.firstName;
 
   return (
     <>
       <CookieConsentBanner />
       <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
-        {/* ── Nav ─────────────────────────────────────────────────────────── */}
-        <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
-          <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-              <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-                <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                  <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                  <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                  <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-                </svg>
-              </div>
-              <span className="flex flex-col leading-none">
-                <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-                <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
-              </span>
-            </Link>
-
-            <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-              {navLinks.map(([label, href]) => (
-                <a key={label} href={href} className="nav-link">{label}</a>
-              ))}
-              <Link href="/login" className="nav-link">Login</Link>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                as="a"
-                href="/demo"
-                variant="primary"
-                size="sm"
-                className="hidden md:inline-flex min-h-[36px]"
-              >
-                Get a demo
-              </Button>
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(v => !v)}
-                aria-expanded={mobileNavOpen}
-                aria-controls="mobile-nav"
-                aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-                className="md:hidden w-10 h-10 rounded-[8px] flex items-center justify-center"
-                style={{ color: "var(--ink)" }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-                </svg>
-              </button>
-            </div>
-          </div>
-          {mobileNavOpen && (
-            <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-              {[...navLinks, ["Login", "/login"]].map(([label, href]) => (
-                href.startsWith("/") ? (
-                  <Link key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</Link>
-                ) : (
-                  <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>{label}</a>
-                )
-              ))}
-              <Button
-                as="a"
-                href="/demo"
-                variant="primary"
-                size="sm"
-                onClick={() => setMobileNavOpen(false)}
-                className="mt-1 min-h-[44px]"
-              >
-                Get a demo
-              </Button>
-            </div>
-          )}
-        </nav>
+        <MarketingNav active="home" />
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
@@ -921,7 +829,7 @@ export default function LandingPage() {
             <div>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-                AI screening built for recruiters
+                {signedIn ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "AI screening built for recruiters"}
               </span>
 
               <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -929,10 +837,12 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-sm leading-relaxed mb-8 max-w-md" style={{ color: "var(--ink-soft)" }}>
-                Helixon reads each CV against your job spec, scores the fit, flags what&apos;s worth a second look, and hands you a ranked shortlist - not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day.
+                {signedIn
+                  ? "Your dashboard is ready whenever you are - jump back in to keep screening candidates against your open roles."
+                  : "Helixon reads each CV against your job spec, scores the fit, flags what's worth a second look, and hands you a ranked shortlist - not another folder of PDFs. Built for agency recruiters screening dozens of CVs a day."}
               </p>
 
-              <CtaButtons secondaryLabel="See how it works" secondaryHref="#how" />
+              <CtaButtons secondaryLabel="See how it works" secondaryHref="#how" signedIn={signedIn} />
             </div>
 
             <RecruiterWorkspaceDemo />
@@ -1074,89 +984,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Final CTA ────────────────────────────────────────────────────── */}
-        <section className="max-w-[1100px] mx-auto px-6 pb-24">
-          <Reveal>
-            <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
-                Your next great hire is already in that pile of CVs.
-              </h2>
-              <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Find them in minutes, not hours. Get a demo and we&apos;ll show you how.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                <Button
-                  as="a"
-                  href="/demo"
-                  variant="onForest"
-                  className="motion-safe-scale hover:scale-[1.02] min-h-[48px] w-full sm:w-auto"
-                >
-                  Get a demo
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                </Button>
-              </div>
-            </div>
-          </Reveal>
-        </section>
+        <Reveal>
+          <CtaBand
+            heading="Your next great hire is already in that pile of CVs."
+            body="Find them in minutes, not hours. Get a demo and we'll show you how."
+          />
+        </Reveal>
 
-        {/* ── Footer ───────────────────────────────────────────────────────── */}
-        <footer className="border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="max-w-[1100px] mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
-            <div className="col-span-2 sm:col-span-1">
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-                  <svg width="15" height="15" viewBox="0 0 28 28" fill="none">
-                    <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                    <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                    <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-                  </svg>
-                </div>
-                <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              </div>
-              <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
-                Candidate screening built for recruitment agencies. GDPR-ready, EU-hosted.
-              </p>
-            </div>
-
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Product</p>
-              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                <li><a href="#how" className="hover:underline">How it works</a></li>
-                <li><a href="#agency" className="hover:underline">For agencies</a></li>
-                <li><a href="#features" className="hover:underline">Features</a></li>
-                <li><a href="#pricing" className="hover:underline">Pricing</a></li>
-                <li><a href="#faq" className="hover:underline">FAQ</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Company</p>
-              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                <li><a href="/about" className="hover:underline">About</a></li>
-                <li><a href="/careers" className="hover:underline">Careers</a></li>
-                <li><a href="/blog" className="hover:underline">Blog</a></li>
-                <li><a href="/contact" className="hover:underline">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Legal</p>
-              <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
-                <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
-                <li><a href="/CookiePolicy" className="hover:underline">Cookie Policy</a></li>
-                <li><a href="/dpa" className="hover:underline">Data Processing Agreement</a></li>
-                <li><a href="/complaints" className="hover:underline">Complaints</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t" style={{ borderColor: "var(--border)" }}>
-            <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-              <a href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</a>
-            </div>
-          </div>
-        </footer>
+        <MarketingFooter />
       </main>
       <ChatWidget />
     </>
