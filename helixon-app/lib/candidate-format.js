@@ -2,22 +2,25 @@
  * candidate-format.js
  * ------------------------------------------------------------------------
  * Small, dependency-free formatting/scoring helpers shared by the
- * candidate database, candidate workspace, and (eventually) the jobs and
- * analytics pages. Pulled out of dashboard/page.js's local copies so the
- * new candidate pages don't fork the logic - dashboard/page.js can adopt
- * these too when it's next touched, but it hasn't been changed here to
- * keep this change-set focused.
+ * candidate database, candidate workspace, and the jobs, pipeline, team,
+ * and analytics pages.
+ *
+ * The color constants below point at the same CSS tokens defined in
+ * app/globals.css (--ink, --ink-soft, --ink-faint, --score-mid,
+ * --score-low, --mint) rather than their own hardcoded hex, so every page
+ * importing this file automatically stays in sync with the design system
+ * instead of forking a second, slightly-different palette.
  * ---------------------------------------------------------------------- */
 
-export const INK = "#13201b";
-export const INK_MUTED = "#5a7a6a";
-export const INK_FAINT = "#8aaa9a";
-export const AMBER = "#c9922e";
+export const INK = "var(--ink)";
+export const INK_MUTED = "var(--ink-soft)";
+export const INK_FAINT = "var(--ink-faint)";
+export const AMBER = "var(--score-mid)";
 export const AMBER_BG = "#fff8e6";
-export const RED = "#c0392b";
+export const RED = "var(--score-low)";
 export const RED_STRONG = "#b91c1c";
 export const RED_BG = "#fef2f2";
-export const GREEN_BG = "#eef7f1";
+export const GREEN_BG = "var(--mint)";
 
 export const CARD = {
   background: "white",

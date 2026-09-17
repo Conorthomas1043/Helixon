@@ -381,6 +381,13 @@ function CandidateDatabaseContent() {
 
   const [filters, setFilters] = useState(initialFilters);
   const [searchInput, setSearchInput] = useState("");
+  // Starts open when a deep link (jobId=/recruiterId=/etc.) already narrowed
+  // the results, so the reason for the filtered view is visible immediately.
+  const [filtersOpen, setFiltersOpen] = useState(
+    () =>
+      initialFilters.recruiterId !== "all" ||
+      initialFilters.jobId !== "all"
+  );
   const [data, setData] = useState(null); // { result, stageCounts }
   const [status, setStatus] = useState("loading");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -562,42 +569,71 @@ function CandidateDatabaseContent() {
                 {STAGE_LABELS[key]}
               </Pill>
             ))}
+
+            <span className="w-px h-5 mx-1 shrink-0" style={{ background: "var(--border)" }} />
+
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
+              style={{
+                background: activeFilterCount > 0 ? "var(--mint)" : "white",
+                color: activeFilterCount > 0 ? "var(--forest)" : INK_MUTED,
+                border: `1px solid ${activeFilterCount > 0 ? "var(--forest)" : "var(--border)"}`,
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="text-[10px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
+                  {activeFilterCount}
+                </span>
+              )}
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: filtersOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Select ariaLabel="Filter by score" value={filters.scoreBand} onChange={(v) => updateFilter({ scoreBand: v })} options={SCORE_BANDS} />
-            <Select
-              ariaLabel="Filter by recruiter"
-              value={filters.recruiterId}
-              onChange={(v) => updateFilter({ recruiterId: v })}
-              options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
-            />
-            <Select
-              ariaLabel="Filter by job"
-              value={filters.jobId}
-              onChange={(v) => updateFilter({ jobId: v })}
-              options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
-            />
-            <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
-            <Select ariaLabel="Filter by analysis status" value={filters.status} onChange={(v) => updateFilter({ status: v })} options={STATUS_OPTIONS} />
+          {filtersOpen && (
+            <div className="flex flex-wrap items-center gap-2 pt-3" style={{ borderTop: "1px solid var(--border-soft, var(--border))" }}>
+              <Select ariaLabel="Filter by score" value={filters.scoreBand} onChange={(v) => updateFilter({ scoreBand: v })} options={SCORE_BANDS} />
+              <Select
+                ariaLabel="Filter by recruiter"
+                value={filters.recruiterId}
+                onChange={(v) => updateFilter({ recruiterId: v })}
+                options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
+              />
+              <Select
+                ariaLabel="Filter by job"
+                value={filters.jobId}
+                onChange={(v) => updateFilter({ jobId: v })}
+                options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
+              />
+              <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
+              <Select ariaLabel="Filter by analysis status" value={filters.status} onChange={(v) => updateFilter({ status: v })} options={STATUS_OPTIONS} />
 
-            <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
+              <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
 
-            {tags.map((t) => (
-              <TagChip key={t.id} label={t.label} active={filters.tagIds.includes(t.id)} onClick={() => toggleTag(t.id)} />
-            ))}
+              {tags.map((t) => (
+                <TagChip key={t.id} label={t.label} active={filters.tagIds.includes(t.id)} onClick={() => toggleTag(t.id)} />
+              ))}
 
-            {hasAnyFilter && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="text-[12px] font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-                style={{ color: "var(--forest)" }}
-              >
-                Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-              </button>
-            )}
-          </div>
+              {hasAnyFilter && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-[12px] font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  style={{ color: "var(--forest)" }}
+                >
+                  Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Bulk action bar */}
