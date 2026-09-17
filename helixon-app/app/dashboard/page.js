@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
@@ -791,47 +791,11 @@ function DashboardError({ onRetry }) {
 
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 
-/* ─── Welcome back banner ───────────────────────────────────────────────── */
-
-function WelcomeBackBanner({ name, onDismiss }) {
-  return (
-    <div
-      role="status"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        padding: "12px 16px",
-        borderRadius: 12,
-        background: GREEN_BG,
-        border: `1px solid rgba(var(--forest-rgb),0.25)`,
-      }}
-    >
-      <span style={{ fontSize: 13, fontWeight: 500, color: GREEN_FG }}>
-        Welcome back{name ? `, ${name}` : ""}! 👋
-      </span>
-      <button
-        type="button"
-        onClick={onDismiss}
-        aria-label="Dismiss"
-        style={{ background: "none", border: "none", color: GREEN_FG, cursor: "pointer", fontSize: 13, padding: 4, opacity: 0.7 }}
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
-
 function AgencyDashboardPage() {
   const [data, setData] = useState(null);
   const [hasError, setHasError] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
-  const [me, setMe] = useState(null);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     let cancelled = false;
@@ -842,33 +806,6 @@ function AgencyDashboardPage() {
       .finally(() => { if (!cancelled) setIsFetching(false); });
     return () => { cancelled = true; };
   }, [reloadKey]);
-
-  // Current user, for the account menu and the welcome banner's name.
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => { if (d.ok) setMe(d.user); })
-      .catch(() => {});
-  }, []);
-
-  // Shows the "Welcome back" banner exactly once per login. Clerk's
-  // <SignIn/> redirects here with ?welcome=1 (see app/login) rather than
-  // this reading a flag some other page set in sessionStorage - Clerk
-  // owns the post-auth redirect itself, so a query param is the only
-  // reliable signal available on arrival. Stripped from the URL
-  // immediately via replace() so a manual refresh doesn't re-show it.
-  useEffect(() => {
-    if (searchParams.get("welcome") === "1") {
-      setShowWelcome(true);
-      router.replace("/dashboard");
-    }
-  }, [searchParams, router]);
-
-  useEffect(() => {
-    if (!showWelcome) return;
-    const t = setTimeout(() => setShowWelcome(false), 6000);
-    return () => clearTimeout(t);
-  }, [showWelcome]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -930,9 +867,6 @@ function AgencyDashboardPage() {
     <main style={{ minHeight: "100vh", background: BG }}>
       <DashboardNav />
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
-        {showWelcome && (
-          <WelcomeBackBanner name={me?.firstName} onDismiss={() => setShowWelcome(false)} />
-        )}
         {!data && isFetching && <DashboardSkeleton />}
         {!data && !isFetching && hasError && <DashboardError onRetry={retry} />}
         {data && (
@@ -976,14 +910,6 @@ function AgencyDashboardPage() {
   );
 }
 
-// useSearchParams() (for the post-login ?welcome=1 flag) requires a
-// Suspense boundary in the app router, or static prerendering fails the
-// build - same pattern already used by dashboard/candidates and
-// dashboard/pipeline.
 export default function DashboardPage() {
-  return (
-    <Suspense fallback={<main style={{ minHeight: "100vh", background: BG }}><DashboardNav /></main>}>
-      <AgencyDashboardPage />
-    </Suspense>
-  );
+  return <AgencyDashboardPage />;
 }

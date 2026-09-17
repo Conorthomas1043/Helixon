@@ -17,14 +17,46 @@ export async function GET() {
   const email = user?.primaryEmailAddress?.emailAddress || null;
 
   let firstName = null;
+  let agencyName = null;
+  let plan = null;
   try {
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
-      .select("first_name, last_name")
+      .select("first_name, last_name, agency_id")
       .eq("clerk_user_id", userId)
       .maybeSingle();
     if (error) throw error;
     firstName = profile?.first_name || user?.firstName || null;
+
+    if (profile?.agency_id) {
+      const { data: agency } = await supabaseAdmin
+        .from("agencies")
+        .select("name")
+        .eq("id", profile.agency_id)
+        .maybeSingle();
+      agencyName = agency?.name || null;
+
+      // subscriptions.user_id is a uuid FK to profiles.id, and only the
+      // agency owner (who actually paid) has a subscriptions row - an
+      // invited teammate's own profile has none. To show the *agency's*
+      // plan regardless of which team member is asking, look up the
+      // subscription against every profile sharing this agency_id, not
+      // just the current user's own profile.
+      const { data: agencyProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("agency_id", profile.agency_id);
+      const profileIds = (agencyProfiles || []).map((p) => p.id);
+      if (profileIds.length > 0) {
+        const { data: subscription } = await supabaseAdmin
+          .from("subscriptions")
+          .select("plan")
+          .in("user_id", profileIds)
+          .eq("status", "active")
+          .maybeSingle();
+        plan = subscription?.plan || null;
+      }
+    }
   } catch (e) {
     console.error("[auth/me] Profile lookup failed (non-fatal):", e.message);
   }

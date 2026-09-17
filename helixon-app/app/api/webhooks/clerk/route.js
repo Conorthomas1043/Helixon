@@ -2,7 +2,8 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
-import { createProfileAndAgency, linkSubscriptionFromStripeSession } from "@/lib/create-profile";
+import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/create-profile";
+import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/clerk-org";
 
 // Replaces app/api/auth/signup/route.js's job of creating the `agencies`
 // row and the `profiles` row. Under Supabase Auth that happened inline in
@@ -14,7 +15,9 @@ import { createProfileAndAgency, linkSubscriptionFromStripeSession } from "@/lib
 //
 // Setup required in the Clerk dashboard: Webhooks -> Add endpoint ->
 //   https://<your-domain>/api/webhooks/clerk
-// Subscribe to: user.created (required), user.deleted (optional, see below)
+// Subscribe to: user.created (required), user.deleted (optional, see below),
+// organizationMembership.created and organizationInvitation.created
+// (required for Agency-plan team invites - see lib/clerk-org.js).
 // Copy the "Signing secret" into CLERK_WEBHOOK_SECRET.
 //
 // agencyName/username/firstName/lastName arrive via `unsafeMetadata`,
@@ -65,6 +68,10 @@ export async function POST(request) {
         .from("profiles")
         .update({ clerk_user_id: null })
         .eq("clerk_user_id", event.data.id);
+    } else if (event.type === "organizationMembership.created") {
+      await handleOrganizationMembershipCreated(event.data);
+    } else if (event.type === "organizationInvitation.created") {
+      await handleOrganizationInvitationCreated(event.data);
     }
   } catch (err) {
     console.error(`[clerk webhook] Failed handling ${event.type}:`, err.message);
@@ -93,6 +100,19 @@ async function handleUserCreated(clerkUser) {
   // creation for a customer who already paid.
   const username = (meta.username || clerkUser.username || "").trim().toLowerCase();
   const agencyName = (meta.agencyName || "").trim();
+
+  // ── Case 0: signed up by accepting an Agency-plan team invite (see
+  // app/signup's ticket branch, which sets this on unsafeMetadata instead
+  // of the normal agencyName/plan/stripeSessionId trio). This user is
+  // joining an existing agency, not paying for a new one - creating a
+  // profile/agency here would both duplicate-create an agency for them
+  // AND race the organizationMembership.created handler below, which is
+  // what actually knows which agency they're joining (via clerk_org_id).
+  // That handler creates their profile instead once the membership event
+  // arrives, which Clerk fires immediately after this one.
+  if (meta.viaOrgInvite) {
+    return;
+  }
 
   // ── Case 1: this username already has a profile (pre-Clerk account
   // being migrated - see the migration SQL's backfill note). Link it
@@ -155,5 +175,74 @@ async function handleUserCreated(clerkUser) {
       // "username already exists" case for an account that's already set up.
       console.error("[clerk webhook] Failed to link subscription:", err.message);
     }
+  }
+}
+
+// Fires whenever someone joins a Clerk Organization - both for the agency
+// owner (Clerk auto-creates their membership the moment
+// lib/clerk-org.js's ensureAgencyOrg calls createOrganization with
+// createdBy: ownerClerkUserId) and for an invited teammate accepting their
+// invite. The owner already has a profile from their original signup, so
+// this is a no-op for them; for an invited teammate, this is the only
+// place that creates their profiles row, against the *existing* agency
+// linked to this org - see the viaOrgInvite branch in handleUserCreated
+// above for why it isn't created there instead.
+async function handleOrganizationMembershipCreated(membership) {
+  const clerkUserId = membership.public_user_data?.user_id;
+  const orgId = membership.organization?.id;
+  if (!clerkUserId || !orgId) {
+    console.error("[clerk webhook] organizationMembership.created missing user_id or organization.id");
+    return;
+  }
+
+  const { data: existingProfile, error: existingError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("clerk_user_id", clerkUserId)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+  if (existingProfile) return;
+
+  const { data: agency, error: agencyError } = await supabase
+    .from("agencies")
+    .select("id")
+    .eq("clerk_org_id", orgId)
+    .maybeSingle();
+  if (agencyError) throw new Error(agencyError.message);
+  if (!agency) {
+    console.error(`[clerk webhook] organizationMembership.created for org ${orgId}, but no agency has that clerk_org_id`);
+    return;
+  }
+
+  const firstName = (membership.public_user_data?.first_name || "").trim();
+  const lastName = (membership.public_user_data?.last_name || "").trim();
+  const identifier = membership.public_user_data?.identifier || "";
+  const usernameSeed = identifier.split("@")[0] || firstName || "teammate";
+  const username = await generateUsername(usernameSeed);
+
+  const { error: insertError } = await supabase.from("profiles").insert({
+    clerk_user_id: clerkUserId,
+    first_name: firstName || null,
+    last_name: lastName || null,
+    username,
+    agency_id: agency.id,
+  });
+  if (insertError) throw new Error(insertError.message);
+}
+
+// Backstop against the 5-seat cap already enforced when an invite is sent
+// via app/api/team/invite's POST handler. Only matters if an invitation
+// was created some other way - directly through Clerk's own dashboard or
+// API, bypassing this app's route entirely. If accepting this invitation
+// would already put the org over AGENCY_SEAT_LIMIT by the time this
+// fires, revoke it rather than leave an over-limit invite pending.
+async function handleOrganizationInvitationCreated(invitation) {
+  const orgId = invitation.organization_id || invitation.organization?.id;
+  const invitationId = invitation.id;
+  if (!orgId || !invitationId) return;
+
+  const usage = await getOrgSeatUsage(orgId);
+  if (usage.used > AGENCY_SEAT_LIMIT) {
+    await revokeAgencyOrgInvitation({ orgId, invitationId, requestingUserId: invitation.inviter_user_id });
   }
 }

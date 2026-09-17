@@ -18,8 +18,135 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getRecruiters as fetchRecruiters } from "@/lib/dashboard-api";
+import { getRecruiters as fetchRecruiters, getTeamSeatUsage, inviteTeammate, cancelTeamInvite } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Agency-plan-only: invite teammates into the agency's Clerk Organization
+// (see lib/clerk-org.js) and manage pending invites against the seat cap.
+// Individual-plan accounts get a 403 from the API and simply don't see
+// this section at all - see the isAgencyPlan state below.
+function TeamInvitePanel() {
+  const [usage, setUsage] = useState(null);
+  const [visible, setVisible] = useState(null); // null = still checking, true/false once known
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const [cancellingId, setCancellingId] = useState(null);
+
+  const load = useCallback(() => {
+    getTeamSeatUsage().then(({ status, data }) => {
+      if (status === 403) {
+        setVisible(false);
+        return;
+      }
+      if (status !== 200 || !data) {
+        setVisible(false);
+        return;
+      }
+      setUsage(data);
+      setVisible(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleInvite(e) {
+    e.preventDefault();
+    const trimmed = email.trim().toLowerCase();
+    if (!EMAIL_RE.test(trimmed)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      await inviteTeammate(trimmed);
+      setEmail("");
+      load();
+    } catch (err) {
+      setError(err.message || "Couldn't send the invite.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function handleCancel(invitationId) {
+    setCancellingId(invitationId);
+    try {
+      await cancelTeamInvite(invitationId);
+      load();
+    } catch (err) {
+      setError(err.message || "Couldn't cancel the invite.");
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
+  if (visible !== true || !usage) return null;
+
+  const full = usage.remaining <= 0;
+
+  return (
+    <div className="rounded-[14px] p-5" style={CARD}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-semibold" style={{ color: INK }}>Team seats</p>
+          <p className="text-[12px]" style={{ color: INK_MUTED }}>
+            {usage.used} of {usage.limit} used{usage.pendingCount > 0 ? ` · ${usage.pendingCount} pending` : ""}
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2 mb-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="teammate@youragency.com"
+          disabled={full || sending}
+          aria-label="Teammate email address"
+          className="flex-1 text-sm px-3.5 py-2.5 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        />
+        <button
+          type="submit"
+          disabled={full || sending}
+          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          style={{ background: "var(--forest)", color: "white" }}
+        >
+          {sending ? "Sending…" : full ? "Seats full" : "Send invite"}
+        </button>
+      </form>
+
+      {error && (
+        <p role="alert" className="text-[12px] mb-2" style={{ color: "var(--score-low)" }}>{error}</p>
+      )}
+
+      {usage.pendingInvites.length > 0 && (
+        <ul className="mt-3 space-y-1.5">
+          {usage.pendingInvites.map((inv) => (
+            <li key={inv.id} className="flex items-center justify-between gap-3 text-[13px] py-1.5" style={{ color: INK_MUTED }}>
+              <span className="truncate">{inv.email}</span>
+              <button
+                type="button"
+                onClick={() => handleCancel(inv.id)}
+                disabled={cancellingId === inv.id}
+                className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                style={{ color: INK_FAINT }}
+              >
+                {cancellingId === inv.id ? "Cancelling…" : "Cancel"}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function Avatar({ name }) {
   return (
@@ -81,7 +208,7 @@ function RecruiterCard({ recruiter }) {
         className="inline-flex items-center text-[12px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
         style={{ color: "var(--forest)" }}
       >
-        View {recruiter.name.split(" ")[0]}'s candidates →
+        View {recruiter.name.split(" ")[0]}&apos;s candidates →
       </Link>
     </div>
   );
@@ -179,6 +306,8 @@ export default function TeamPage() {
             ← Dashboard
           </Link>
         </header>
+
+        <TeamInvitePanel />
 
         {status === "loading" && <TeamSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}

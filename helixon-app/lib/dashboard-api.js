@@ -99,6 +99,32 @@ export async function getRecruiters() {
   return apiFetch("/api/team");
 }
 
+// Unlike apiFetch, this doesn't throw on a non-2xx - the caller needs to
+// tell "403, you're not on the Agency plan" (hide the invite UI entirely)
+// apart from a real failure (show an error state), which a thrown Error
+// with just a message string can't distinguish reliably.
+export async function getTeamSeatUsage() {
+  const res = await fetch("/api/team/invite", { credentials: "include" });
+  const data = await res.json().catch(() => null);
+  return { status: res.status, data };
+}
+
+export async function inviteTeammate(email) {
+  return apiFetch("/api/team/invite", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function cancelTeamInvite(invitationId) {
+  return apiFetch("/api/team/invite", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ invitationId }),
+  });
+}
+
 export async function updateCandidateStage(id, newStage) {
   return apiFetch(`/api/candidates/${id}/stage`, {
     method: "PATCH",
