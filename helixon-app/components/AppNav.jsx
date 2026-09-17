@@ -28,6 +28,20 @@ export default function AppNav({ active }) {
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
 
+  // Workspace name + plan, same /api/auth/me this app already used to
+  // personalize the dashboard header - shown here too so account/billing
+  // carry the same "which shared workspace am I in" cue as the dashboard,
+  // and so the "Invite teammate" shortcut only shows for Agency plans.
+  const [me, setMe] = useState(null);
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok) setMe(d.user);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     function onClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
@@ -80,8 +94,15 @@ export default function AppNav({ active }) {
                 <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
               </svg>
             </div>
-            <span className="text-sm font-semibold tracking-tight hidden sm:block" style={{ color: COLORS.ink, fontFamily: "var(--font-display)" }}>
-              Helixon
+            <span className="flex flex-col leading-none">
+              <span className="text-sm font-semibold tracking-tight hidden sm:block" style={{ color: COLORS.ink, fontFamily: "var(--font-display)" }}>
+                Helixon
+              </span>
+              {me?.agencyName && (
+                <span className="hidden sm:block text-[10px] font-medium mt-0.5 truncate max-w-[180px]" style={{ color: COLORS.muted }}>
+                  {me.agencyName}
+                </span>
+              )}
             </span>
           </Link>
           <div className="hidden sm:flex items-center gap-1 text-xs">
@@ -128,6 +149,11 @@ export default function AppNav({ active }) {
               <Link href="/billing" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: COLORS.muted }}>
                 Billing
               </Link>
+              {me?.plan === "agency" && (
+                <Link href="/dashboard/team" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: COLORS.muted }}>
+                  Invite teammate
+                </Link>
+              )}
               <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
                 <SignOutButton redirectUrl="/login">
                   <button

@@ -115,9 +115,9 @@ export default function HowItWorksPage() {
 
       <CtaBand
         heading="See it work on a real CV."
-        body="Try it free - no card needed, 3 analyses included."
-        ctaLabel="Try it now - it's free"
-        ctaHref="/"
+        body="Get a demo and we'll walk you through it on your own CVs."
+        ctaLabel="Get a demo"
+        ctaHref="/demo"
       />
 
       <MarketingFooter />

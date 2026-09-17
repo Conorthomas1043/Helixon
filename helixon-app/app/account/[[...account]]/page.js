@@ -116,7 +116,17 @@ export default function AccountPage() {
                   borderRight: "1px solid rgba(180,205,195,0.35)",
                 },
                 navbarButton: { borderRadius: "12px" },
-                pageScrollBox: { background: "transparent" },
+                // Clerk gives this pane its own fixed-height internal
+                // scroll area by default, sized for a modal popup. Embedded
+                // inline like this, that meant content taller than Clerk's
+                // assumed modal height got clipped by our own rounded
+                // card's overflow-hidden (there to clip square corners,
+                // not to hide content) - the page looked "cut off early"
+                // with no visible way to scroll the rest into view.
+                // Letting this pane size to its actual content instead
+                // means the page's own scroll shows all of it.
+                scrollBox: { background: "transparent" },
+                pageScrollBox: { background: "transparent", height: "auto", maxHeight: "none", overflow: "visible" },
                 profileSectionPrimaryButton: { borderRadius: "12px" },
                 formButtonPrimary: {
                   background: "#087a5b",

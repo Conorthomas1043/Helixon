@@ -13,7 +13,7 @@ const FAQ_GROUPS = [
   {
     group: "Getting started",
     items: [
-      { q: "Do I need a card to try it?", a: "No. You get 3 free analyses with no card required. You'll only be asked for payment details if you decide to upgrade to Solo or Team." },
+      { q: "Do I need a card to try it?", a: "Yes - Helixon doesn't offer a free trial. Choose an Individual or Agency plan to get started, with unlimited analyses from day one." },
       { q: "What file types can I upload?", a: "PDF and Word (.docx) CVs. If you're working from something else, exporting to PDF first works fine." },
       { q: "How long does a scan actually take?", a: "Around 30 seconds on average - reading the CV, parsing the job description, analysing fit, and generating the score all happen in one pass." },
     ],
@@ -37,9 +37,9 @@ const FAQ_GROUPS = [
   {
     group: "Billing",
     items: [
-      { q: "Can I cancel anytime?", a: "Yes, there's no lock-in on Solo or Team. Cancel from Billing and you'll keep access until the end of your current billing period." },
-      { q: "Do unused analyses roll over?", a: "Solo and Team plans include unlimited analyses, so this only applies to the free plan - free analyses don't roll over month to month." },
-      { q: "Do you offer invoicing for agencies?", a: "Team plans can be invoiced directly - reach out via the Contact page and we'll set that up." },
+      { q: "Can I cancel anytime?", a: "Yes, there's no lock-in on Individual or Agency. Cancel from Billing and you'll keep access until the end of your current billing period." },
+      { q: "Is there a cap on how many analyses I can run?", a: "No - Individual and Agency plans both include unlimited analyses, with no monthly cap to track or roll over." },
+      { q: "Do you offer invoicing for agencies?", a: "Agency plans can be invoiced directly - reach out via the Contact page and we'll set that up." },
     ],
   },
 ];
