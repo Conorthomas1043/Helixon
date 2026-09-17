@@ -14,12 +14,17 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 //
 // Clerk's <UserProfile path="/account" routing="path"> only recognises
 // two of the four SettingsNav tabs as real internal sections: the base
-// path (/account) for Profile, and /account/security for Security. It
-// renders correctly for both of those. Notifications and Danger zone
-// aren't Clerk concepts - there's no Helixon-specific UI built for those
-// tabs yet, so they currently fall back to Clerk's default (profile) view
-// too. That's a separate, pre-existing gap, not something introduced by
-// this fix - flagging it here rather than silently leaving it unlabeled.
+// path (/account) for Profile, and /account/security for Security.
+// Notifications and Danger zone aren't Clerk concepts, and there's no
+// Helixon-specific UI built for those yet - visiting either previously
+// still rendered the Clerk widget, which silently fell back to its
+// default Profile view while the heading above it kept whatever copy
+// happened to be selected. That combination (nav tab highlighted as
+// "active", heading and widget both showing Profile content) is a real,
+// user-visible bug: it looks like the Notifications/Danger zone page
+// loaded, but the content is just Profile again. Rendering an honest
+// "not built yet" placeholder for those two routes instead - still a
+// visible gap, but no longer a misleading one.
 const TAB_COPY = {
   "/account": {
     eyebrow: "Account",
@@ -31,11 +36,26 @@ const TAB_COPY = {
     title: "Your security.",
     body: "Manage your password, two-factor authentication and active sessions.",
   },
+  "/account/notifications": {
+    eyebrow: "Notifications",
+    title: "Notification preferences.",
+    body: "Control what Helixon emails you about.",
+  },
+  "/account/danger": {
+    eyebrow: "Danger zone",
+    title: "Delete your account.",
+    body: "Permanently remove your account and its data.",
+  },
 };
+
+// The only two sections Clerk's <UserProfile> actually renders content
+// for - see the comment above TAB_COPY.
+const CLERK_ROUTES = new Set(["/account", "/account/security"]);
 
 export default function AccountPage() {
   const pathname = usePathname();
   const copy = TAB_COPY[pathname] || TAB_COPY["/account"];
+  const isClerkRoute = CLERK_ROUTES.has(pathname);
 
   return (
     <>
@@ -55,62 +75,75 @@ export default function AccountPage() {
         </p>
       </div>
 
-      {/* Clerk */}
+      {/* Clerk (Profile / Security) or an honest placeholder (Notifications / Danger zone) */}
       <div
         className="overflow-hidden rounded-[28px] border border-white/80 bg-white/65 shadow-[0_25px_80px_rgba(35,87,70,0.10)] backdrop-blur-[28px]"
         style={{ animation: `profileIn 800ms ${EASE} 80ms both` }}
       >
-        <UserProfile
-          path="/account"
-          routing="path"
-          appearance={{
-            variables: {
-              colorPrimary: "#087a5b",
-              colorText: "#10221d",
-              colorTextSecondary: "#648178",
-              colorBackground: "transparent",
-              colorInputBackground: "rgba(255,255,255,0.72)",
-              colorInputText: "#10221d",
-              borderRadius: "14px",
-              fontFamily: "inherit",
-            },
-            elements: {
-              rootBox: { width: "100%" },
-              cardBox: {
-                width: "100%",
-                maxWidth: "none",
-                boxShadow: "none",
-                border: "none",
-                background: "transparent",
+        {isClerkRoute ? (
+          <UserProfile
+            path="/account"
+            routing="path"
+            appearance={{
+              variables: {
+                colorPrimary: "#087a5b",
+                colorText: "#10221d",
+                colorTextSecondary: "#648178",
+                colorBackground: "transparent",
+                colorInputBackground: "rgba(255,255,255,0.72)",
+                colorInputText: "#10221d",
+                borderRadius: "14px",
+                fontFamily: "inherit",
               },
-              card: {
-                width: "100%",
-                maxWidth: "none",
-                boxShadow: "none",
-                border: "none",
-                background: "transparent",
+              elements: {
+                rootBox: { width: "100%" },
+                cardBox: {
+                  width: "100%",
+                  maxWidth: "none",
+                  boxShadow: "none",
+                  border: "none",
+                  background: "transparent",
+                },
+                card: {
+                  width: "100%",
+                  maxWidth: "none",
+                  boxShadow: "none",
+                  border: "none",
+                  background: "transparent",
+                },
+                navbar: {
+                  background: "rgba(255,255,255,0.35)",
+                  borderRight: "1px solid rgba(180,205,195,0.35)",
+                },
+                navbarButton: { borderRadius: "12px" },
+                pageScrollBox: { background: "transparent" },
+                profileSectionPrimaryButton: { borderRadius: "12px" },
+                formButtonPrimary: {
+                  background: "#087a5b",
+                  borderRadius: "12px",
+                  boxShadow: "0 7px 18px rgba(8,122,91,0.16)",
+                },
+                formFieldInput: {
+                  borderRadius: "12px",
+                  border: "1px solid #d7e4df",
+                  background: "rgba(255,255,255,0.72)",
+                },
+                footer: { background: "transparent" },
               },
-              navbar: {
-                background: "rgba(255,255,255,0.35)",
-                borderRight: "1px solid rgba(180,205,195,0.35)",
-              },
-              navbarButton: { borderRadius: "12px" },
-              pageScrollBox: { background: "transparent" },
-              profileSectionPrimaryButton: { borderRadius: "12px" },
-              formButtonPrimary: {
-                background: "#087a5b",
-                borderRadius: "12px",
-                boxShadow: "0 7px 18px rgba(8,122,91,0.16)",
-              },
-              formFieldInput: {
-                borderRadius: "12px",
-                border: "1px solid #d7e4df",
-                background: "rgba(255,255,255,0.72)",
-              },
-              footer: { background: "transparent" },
-            },
-          }}
-        />
+            }}
+          />
+        ) : (
+          <div className="px-8 py-14 text-center sm:px-14">
+            <p className="mx-auto mb-2 text-[15px] font-semibold text-[#10221d]">Not built yet</p>
+            <p className="mx-auto max-w-[420px] text-[14px] leading-6 text-[#638279]">
+              This section doesn&apos;t exist yet. Need something here sooner? Email{" "}
+              <a href="mailto:support@helixon.co.uk" className="font-semibold text-[#087a5b] hover:underline">
+                support@helixon.co.uk
+              </a>
+              .
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Helixon information */}

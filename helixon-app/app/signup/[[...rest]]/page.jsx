@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignUp, useUser } from "@clerk/nextjs";
+import AuthShell from "@/components/auth/AuthShell";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing used across the flow
 
@@ -25,6 +27,10 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing use
 // One-time setup needed in the Clerk dashboard (User & Authentication):
 // enable "Username" and "Name" (first/last) as required fields, so Clerk
 // collects those itself instead of this app needing to.
+//
+// The shared visual shell (ambient background, branding panel, glass card)
+// lives in components/auth/AuthShell.jsx - this file supplies the
+// step-aware branding panel content and the two-step form/Clerk widget.
 
 const STEPS = [
   { key: "agency", label: "Agency" },
@@ -79,7 +85,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
           fontSize: active ? "10px" : "13.5px",
           fontWeight: active ? 600 : 400,
           letterSpacing: active ? "0.03em" : "0",
-          color: active ? "var(--forest)" : "#8aaa9a",
+          color: active ? "var(--forest)" : "var(--ink-faint)",
           textTransform: active ? "uppercase" : "none",
           transitionTimingFunction: EASE,
           transitionDuration: "0.2s",
@@ -97,7 +103,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
         autoComplete={autoComplete}
         className="w-full bg-transparent text-sm outline-none"
         style={{
-          color: "#13201b",
+          color: "var(--ink)",
           padding: active ? "22px 14px 8px 14px" : "14px",
           transition: `padding 0.2s ${EASE}`,
         }}
@@ -127,7 +133,7 @@ function MagneticButton({ children, disabled }) {
       onMouseLeave={reset}
       className="flex-1 relative text-white font-semibold py-3 rounded-[12px] text-sm flex items-center justify-center gap-2 overflow-hidden"
       style={{
-        background: disabled ? "#b0c4ba" : "var(--forest)",
+        background: disabled ? "var(--ink-mute)" : "var(--forest)",
         cursor: disabled ? "not-allowed" : "pointer",
         transform: `translate(${pos.x}px, ${pos.y}px)`,
         transition: `transform 0.25s ${EASE}, background 0.2s ease`,
@@ -162,6 +168,16 @@ export default function SignupPage() {
   const sessionId = searchParams.get("session_id") || "";
   const isPostCheckoutCompletion = isSignedIn && Boolean(sessionId);
 
+  // Present when this page was reached via a Clerk Organization invite
+  // email (Agency-plan team invite, see lib/clerk-org.js) rather than a
+  // paid Stripe checkout. Clerk's <SignUp/> detects this ticket itself and
+  // handles the accept-invitation flow internally - this page's only job
+  // for that path is to get out of the way: no payment to check for, and
+  // no "what's your agency called" step, since they're joining an agency
+  // that already exists.
+  const clerkTicket = searchParams.get("__clerk_ticket") || "";
+  const isOrgInvite = Boolean(clerkTicket);
+
   const cardRef = useRef(null);
   const [spot, setSpot] = useState({ x: 50, y: 0 });
   function handleCardMouseMove(e) {
@@ -173,18 +189,97 @@ export default function SignupPage() {
   const trimmedAgency = agencyName.trim();
 
   // There's no standalone entry point to this page any more - the only
-  // legitimate way here is app/checkout/success's redirect after a paid
-  // Stripe session, which always includes session_id. Anyone landing here
-  // without one (typed URL, stale bookmark, etc.) hasn't paid, so send
-  // them to pricing instead of letting them create an account for free.
+  // legitimate ways here are app/checkout/success's redirect after a paid
+  // Stripe session (always includes session_id) and a team-invite email
+  // (always includes __clerk_ticket). Anyone landing here with neither
+  // (typed URL, stale bookmark, etc.) hasn't paid and wasn't invited, so
+  // send them to pricing instead of letting them create an account for free.
   useEffect(() => {
-    if (!sessionId) {
+    if (!sessionId && !isOrgInvite) {
       router.replace("/pricing");
     }
-  }, [sessionId, router]);
+  }, [sessionId, isOrgInvite, router]);
 
-  if (!sessionId) {
+  if (!sessionId && !isOrgInvite) {
     return null;
+  }
+
+  if (isOrgInvite) {
+    return (
+      <AuthShell
+        brandPanelWidthClass="lg:w-[42%]"
+        mobileLogoClassName="mb-8"
+        brandMiddle={
+          <div className="relative z-10 min-h-[260px]">
+            <div className="auth-panel-in" style={{ animationDuration: "0.6s" }}>
+              <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                  <circle cx="16" cy="17" r="5.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" />
+                  <path d="M4 34c1.4-6.8 5.8-10.5 12-10.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
+                  <circle cx="30" cy="14" r="4.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" />
+                  <path d="M22 34c1.1-5.6 4.6-8.5 9.5-8.5S39 28.4 40 34" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </div>
+              <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>Team invite</p>
+              <h1 className="text-white text-[2.6rem] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
+                Join your<br />team on Helixon.
+              </h1>
+              <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+                Set a username and password to finish joining - you&apos;ll land straight in the shared dashboard.
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <div
+          className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden"
+          style={{
+            background: "rgba(255,255,255,0.68)",
+            backdropFilter: "blur(26px)",
+            WebkitBackdropFilter: "blur(26px)",
+            border: "1px solid rgba(255,255,255,0.65)",
+            boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
+          }}
+        >
+          <SignUp
+            path="/signup"
+            signInUrl="/login"
+            fallbackRedirectUrl="/dashboard"
+            unsafeMetadata={{ viaOrgInvite: true }}
+            appearance={{
+              layout: { socialButtonsPlacement: "top" },
+              variables: {
+                colorPrimary: "#0b3a2a",
+                colorText: "#13201b",
+                colorTextSecondary: "#5a7a6a",
+                colorInputBackground: "rgba(255,255,255,0.6)",
+                colorInputText: "#13201b",
+                borderRadius: "12px",
+                fontFamily: "inherit",
+              },
+              elements: {
+                rootBox: "!w-full !min-w-0",
+                cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
+                card: "!w-full !min-w-0 !max-w-full !box-border !shadow-none !bg-transparent !p-0 !gap-4",
+                header: "!px-0",
+                headerTitle: "text-[1.5rem] font-semibold tracking-tight",
+                headerSubtitle: "text-[13px]",
+                form: "!w-full gap-3.5",
+                formFieldRow: "flex-col gap-3.5",
+                formField: "!w-full !min-w-0",
+                formFieldInput: "!w-full box-border rounded-[12px]",
+                socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
+                formButtonPrimary:
+                  "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
+                footer: "!bg-transparent !px-0",
+                footerAction: "!flex !flex-col !items-center !gap-1 text-[13px] text-center",
+                dividerRow: "my-4",
+              },
+            }}
+          />
+        </div>
+      </AuthShell>
+    );
   }
 
   function goTo(next) {
@@ -218,45 +313,15 @@ export default function SignupPage() {
     }
   }
 
-  const bg = (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #eef4f0 0%, #e7f0ea 45%, #dcebe0 100%)" }} />
-      <div className="absolute w-[620px] h-[620px] rounded-full blur-3xl animate-[driftA_20s_ease-in-out_infinite]" style={{ background: "var(--mint)", opacity: 0.5, top: "-14%", left: "32%" }} />
-      <div className="absolute w-[440px] h-[440px] rounded-full blur-3xl animate-[driftB_24s_ease-in-out_infinite]" style={{ background: "var(--forest)", opacity: 0.1, bottom: "-10%", left: "58%" }} />
-      <div className="absolute w-[340px] h-[340px] rounded-full blur-3xl animate-[driftA_28s_ease-in-out_infinite_reverse]" style={{ background: "var(--signal, #f59e0b)", opacity: 0.12, bottom: "12%", left: "72%" }} />
-      <svg className="absolute inset-0 w-full h-full opacity-[0.05] mix-blend-overlay">
-        <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" /></filter>
-        <rect width="100%" height="100%" filter="url(#grain)" />
-      </svg>
-    </div>
-  );
-
   const copy = STEP_COPY[step];
 
   return (
-    <main className="min-h-screen flex relative overflow-hidden">
-      {bg}
-
-      {/* ── Left panel - brand narrative, one motif per step ─────────────── */}
-      <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12 relative overflow-hidden" style={{ background: "linear-gradient(160deg, #0b3a2a 0%, var(--forest) 55%, #0e4531 100%)" }}>
-        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: "30px 30px" }} />
-        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `repeating-linear-gradient(115deg, white 0px, white 1px, transparent 1px, transparent 64px)` }} />
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl animate-[driftA_16s_ease-in-out_infinite]" style={{ background: "var(--mint)" }} />
-        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-10 blur-3xl animate-[driftB_20s_ease-in-out_infinite]" style={{ background: "var(--signal, #f59e0b)" }} />
-
-        <a href="/" className="relative flex items-center gap-3 z-10" aria-label="Helixon home">
-          <div className="w-9 h-9 bg-white rounded-[10px] flex items-center justify-center shadow-sm">
-            <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--forest)" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--forest)" />
-              <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal, #f59e0b)" />
-            </svg>
-          </div>
-          <span className="text-white text-lg font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Helixon</span>
-        </a>
-
+    <AuthShell
+      brandPanelWidthClass="lg:w-[42%]"
+      mobileLogoClassName="mb-8"
+      brandMiddle={
         <div className="relative z-10 min-h-[260px]">
-          <div key={step} style={{ animation: `panelIn 0.6s ${EASE}` }}>
+          <div key={step} className="auth-panel-in" style={{ animationDuration: "0.6s" }}>
             <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
               <StepMark step={step} />
             </div>
@@ -265,8 +330,8 @@ export default function SignupPage() {
             <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
           </div>
         </div>
-
-        {/* Step rail */}
+      }
+      brandBottom={
         <div className="relative z-10 flex items-center gap-2.5">
           {STEPS.map((s, i) => (
             <div
@@ -277,168 +342,149 @@ export default function SignupPage() {
           ))}
           <span className="text-[11px] ml-1 tabular-nums" style={{ color: "rgba(255,255,255,0.4)" }}>{step + 1}/{STEPS.length}</span>
         </div>
-      </div>
-
-      {/* ── Right panel - agency step, then Clerk <SignUp/> ─────────────── */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
-        <a href="/" className="flex lg:hidden items-center gap-2.5 mb-8" aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-            <span className="text-white text-sm font-bold">H</span>
-          </div>
-          <span className="text-base font-semibold" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-        </a>
-
+      }
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={handleCardMouseMove}
+        className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden"
+        style={{
+          background: "rgba(255,255,255,0.68)",
+          backdropFilter: "blur(26px)",
+          WebkitBackdropFilter: "blur(26px)",
+          border: "1px solid rgba(255,255,255,0.65)",
+          boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
+        }}
+      >
         <div
-          ref={cardRef}
-          onMouseMove={handleCardMouseMove}
-          className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.68)",
-            backdropFilter: "blur(26px)",
-            WebkitBackdropFilter: "blur(26px)",
-            border: "1px solid rgba(255,255,255,0.65)",
-            boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
-          }}
-        >
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+          style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.5), transparent 60%)` }}
+        />
+
+        <div className="relative">
+          {/* Progress */}
+          <div className="flex items-center gap-1.5 mb-8">
+            {STEPS.map((s, i) => (
+              <div key={s.key} className="h-[3px] flex-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: i <= step ? "100%" : "0%", background: i <= step ? "var(--forest)" : "transparent", transition: `width 0.5s ${EASE}` }}
+                />
+              </div>
+            ))}
+          </div>
+
           <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-            style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.5), transparent 60%)` }}
-          />
-
-          <div className="relative">
-            {/* Progress */}
-            <div className="flex items-center gap-1.5 mb-8">
-              {STEPS.map((s, i) => (
-                <div key={s.key} className="h-[3px] flex-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: i <= step ? "100%" : "0%", background: i <= step ? "var(--forest)" : "transparent", transition: `width 0.5s ${EASE}` }}
-                  />
+            key={step}
+            style={{
+              opacity: animating ? 0 : 1,
+              transform: animating ? `translateX(${direction * 14}px)` : "translateX(0)",
+              transition: `opacity 0.26s ${EASE}, transform 0.26s ${EASE}`,
+            }}
+          >
+            {step === 0 ? (
+              <form
+                onSubmit={isPostCheckoutCompletion ? finishPostCheckoutSignup : (e) => {
+                  e.preventDefault();
+                  if (trimmedAgency) goTo(1);
+                }}
+                noValidate
+              >
+                <div className="mb-5">
+                  <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
+                  <p className="text-[13px] mt-0.5" style={{ color: "var(--ink-soft)" }}>
+                    {isPostCheckoutCompletion
+                      ? "Payment's done - just need this to finish setting up your workspace."
+                      : "We'll use this to set up your workspace."}
+                  </p>
                 </div>
-              ))}
-            </div>
 
-            <div
-              key={step}
-              style={{
-                opacity: animating ? 0 : 1,
-                transform: animating ? `translateX(${direction * 14}px)` : "translateX(0)",
-                transition: `opacity 0.26s ${EASE}, transform 0.26s ${EASE}`,
-              }}
-            >
-              {step === 0 ? (
-                <form
-                  onSubmit={isPostCheckoutCompletion ? finishPostCheckoutSignup : (e) => {
-                    e.preventDefault();
-                    if (trimmedAgency) goTo(1);
+                <FloatField label="Agency name" value={agencyName} onChange={setAgencyName} autoFocus autoComplete="organization" />
+
+                {completeError && (
+                  <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low)" }}>{completeError}</p>
+                )}
+
+                <div className="flex items-center gap-3 mt-6">
+                  <MagneticButton disabled={!trimmedAgency || completing}>
+                    {isPostCheckoutCompletion ? (completing ? "Finishing up…" : "Finish setup") : "Continue"}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </MagneticButton>
+                </div>
+
+                {!isPostCheckoutCompletion && (
+                  <p className="text-[13px] text-center mt-6" style={{ color: "var(--ink-soft)" }}>
+                    Already have an account?{" "}
+                    <Link href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</Link>
+                  </p>
+                )}
+              </form>
+            ) : (
+              <>
+                <SignUp
+                  path="/signup"
+                  signInUrl="/login"
+                  fallbackRedirectUrl="/dashboard"
+                  unsafeMetadata={{ agencyName: trimmedAgency, plan, stripeSessionId: sessionId }}
+                  localization={{
+                    signUp: {
+                      start: {
+                        title: "Create your account",
+                        subtitle: trimmedAgency
+                          ? `Set a username and password to finish setting up ${trimmedAgency}.`
+                          : "Set a username and password to get started.",
+                      },
+                    },
                   }}
-                  noValidate
+                  appearance={{
+                    layout: {
+                      socialButtonsPlacement: "top",
+                    },
+                    variables: {
+                      colorPrimary: "#0b3a2a",
+                      colorText: "#13201b",
+                      colorTextSecondary: "#5a7a6a",
+                      colorInputBackground: "rgba(255,255,255,0.6)",
+                      colorInputText: "#13201b",
+                      borderRadius: "12px",
+                      fontFamily: "inherit",
+                    },
+                    elements: {
+                      rootBox: "!w-full !min-w-0",
+                      cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
+                      card: "!w-full !min-w-0 !max-w-full !box-border !shadow-none !bg-transparent !p-0 !gap-4",
+                      header: "!px-0",
+                      headerTitle: "text-[1.5rem] font-semibold tracking-tight",
+                      headerSubtitle: "text-[13px]",
+                      form: "!w-full gap-3.5",
+                      formFieldRow: "flex-col gap-3.5",
+                      formField: "!w-full !min-w-0",
+                      formFieldInput: "!w-full box-border rounded-[12px]",
+                      socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
+                      formButtonPrimary:
+                        "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
+                      footer: "!bg-transparent !px-0",
+                      footerAction: "!flex !flex-col !items-center !gap-1 text-[13px] text-center",
+                      dividerRow: "my-4",
+                    },
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => goTo(0)}
+                  className="w-full text-sm py-1.5 mt-3 transition rounded"
+                  style={{ color: "var(--ink-soft)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-soft)")}
                 >
-                  <div className="mb-5">
-                    <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
-                    <p className="text-[13px] mt-0.5" style={{ color: "#5a7a6a" }}>
-                      {isPostCheckoutCompletion
-                        ? "Payment's done - just need this to finish setting up your workspace."
-                        : "We&apos;ll use this to set up your workspace."}
-                    </p>
-                  </div>
-
-                  <FloatField label="Agency name" value={agencyName} onChange={setAgencyName} autoFocus autoComplete="organization" />
-
-                  {completeError && (
-                    <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low, #c0392b)" }}>{completeError}</p>
-                  )}
-
-                  <div className="flex items-center gap-3 mt-6">
-                    <MagneticButton disabled={!trimmedAgency || completing}>
-                      {isPostCheckoutCompletion ? (completing ? "Finishing up…" : "Finish setup") : "Continue"}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                    </MagneticButton>
-                  </div>
-
-                  {!isPostCheckoutCompletion && (
-                    <p className="text-[13px] text-center mt-6" style={{ color: "#5a7a6a" }}>
-                      Already have an account?{" "}
-                      <a href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</a>
-                    </p>
-                  )}
-                </form>
-              ) : (
-                <>
-                  <SignUp
-                    path="/signup"
-                    signInUrl="/login"
-                    fallbackRedirectUrl="/dashboard"
-                    unsafeMetadata={{ agencyName: trimmedAgency, plan, stripeSessionId: sessionId }}
-                    localization={{
-                      signUp: {
-                        start: {
-                          title: "Create your account",
-                          subtitle: trimmedAgency
-                            ? `Set a username and password to finish setting up ${trimmedAgency}.`
-                            : "Set a username and password to get started.",
-                        },
-                      },
-                    }}
-                    appearance={{
-                      layout: {
-                        socialButtonsPlacement: "top",
-                      },
-                      variables: {
-                        colorPrimary: "#0b3a2a",
-                        colorText: "#13201b",
-                        colorTextSecondary: "#5a7a6a",
-                        colorInputBackground: "rgba(255,255,255,0.6)",
-                        colorInputText: "#13201b",
-                        borderRadius: "12px",
-                        fontFamily: "inherit",
-                      },
-                      elements: {
-                        rootBox: "!w-full !min-w-0",
-                        cardBox: "!w-full !min-w-0 shadow-none bg-transparent",
-                        card: "!w-full !min-w-0 !max-w-full box-border shadow-none bg-transparent p-0 gap-4",
-                        header: "px-0",
-                        headerTitle: "text-[1.5rem] font-semibold tracking-tight",
-                        headerSubtitle: "text-[13px]",
-                        form: "!w-full gap-3.5",
-                        formFieldRow: "flex-col gap-3.5",
-                        formField: "!w-full !min-w-0",
-                        formFieldInput: "!w-full box-border rounded-[12px]",
-                        socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
-                        formButtonPrimary:
-                          "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
-                        footer: "bg-transparent px-0",
-                        footerAction: "text-[13px]",
-                        dividerRow: "my-4",
-                      },
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => goTo(0)}
-                    className="w-full text-sm py-1.5 mt-3 transition rounded"
-                    style={{ color: "#5a7a6a" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#13201b")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#5a7a6a")}
-                  >
-                    ← Back
-                  </button>
-                </>
-              )}
-            </div>
+                  ← Back
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes panelIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes driftA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-34px, 28px) scale(1.09); } }
-        @keyframes driftB { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(28px, -22px) scale(1.06); } }
-        @media (prefers-reduced-motion: reduce) {
-          * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
-        }
-      `}</style>
-    </main>
+    </AuthShell>
   );
 }

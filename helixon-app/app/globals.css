@@ -275,3 +275,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pulse-dot { animation: none; }
 }
+
+/* ── Auth pages: login/signup shared ambient-background motion ──────────────
+   Previously an inline <style> tag duplicated identically in both pages;
+   moved here so AuthShell (components/auth/AuthShell.jsx) is the single
+   place either page needs to touch. */
+@keyframes auth-panel-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes auth-drift-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-34px, 28px) scale(1.09); } }
+@keyframes auth-drift-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(28px, -22px) scale(1.06); } }
+.auth-panel-in { animation: auth-panel-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.auth-drift-a { animation: auth-drift-a 20s ease-in-out infinite; }
+.auth-drift-b { animation: auth-drift-b 24s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-panel-in, .auth-drift-a, .auth-drift-b { animation: none; }
+}
