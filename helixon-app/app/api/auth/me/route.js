@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { getAgencyPlan } from "@/lib/plan";
 
 // Returns the currently signed-in user (email + first name from `profiles`,
 // plus isAdmin), or 401 if there's no valid session. Used by the dashboard
@@ -29,33 +30,12 @@ export async function GET() {
     firstName = profile?.first_name || user?.firstName || null;
 
     if (profile?.agency_id) {
-      const { data: agency } = await supabaseAdmin
-        .from("agencies")
-        .select("name")
-        .eq("id", profile.agency_id)
-        .maybeSingle();
+      const [{ data: agency }, resolvedPlan] = await Promise.all([
+        supabaseAdmin.from("agencies").select("name").eq("id", profile.agency_id).maybeSingle(),
+        getAgencyPlan(profile.agency_id),
+      ]);
       agencyName = agency?.name || null;
-
-      // subscriptions.user_id is a uuid FK to profiles.id, and only the
-      // agency owner (who actually paid) has a subscriptions row - an
-      // invited teammate's own profile has none. To show the *agency's*
-      // plan regardless of which team member is asking, look up the
-      // subscription against every profile sharing this agency_id, not
-      // just the current user's own profile.
-      const { data: agencyProfiles } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .eq("agency_id", profile.agency_id);
-      const profileIds = (agencyProfiles || []).map((p) => p.id);
-      if (profileIds.length > 0) {
-        const { data: subscription } = await supabaseAdmin
-          .from("subscriptions")
-          .select("plan")
-          .in("user_id", profileIds)
-          .eq("status", "active")
-          .maybeSingle();
-        plan = subscription?.plan || null;
-      }
+      plan = resolvedPlan;
     }
   } catch (e) {
     console.error("[auth/me] Profile lookup failed (non-fatal):", e.message);
@@ -78,6 +58,6 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, isAdmin },
+    user: { id: userId, email, firstName, isAdmin, agencyName, plan },
   });
 }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { PRICE_IDS } from "@/lib/plans";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-03-31.basil",
@@ -15,6 +16,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export async function POST(request) {
   try {
+    if (!(await rateLimit(getClientIp(request), 15))) {
+      return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json().catch(() => null);
     const plan = body?.plan;
 

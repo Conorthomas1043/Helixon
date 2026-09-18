@@ -3,6 +3,7 @@ import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { planLabel } from "@/lib/plans";
+import { getAgencyPlan } from "@/lib/plan";
 
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, and `analyses` from this response (the
@@ -71,11 +72,12 @@ export async function GET() {
     createdAt: s.created_at,
   }));
 
-  // agencies.plan_name/analyses_used/analyses_limit vs agencies.settings
-  // {plan, analyses_used} - this codebase has both conventions in
-  // different places (see app/api/employee/ops vs app/api/webhooks/clerk).
-  // Read whichever is actually populated rather than assuming one.
-  const planName = agency?.plan_name || agency?.settings?.plan || null;
+  // getAgencyPlan (subscriptions.plan) is the only source kept in sync on
+  // a self-service upgrade/downgrade - agencies.plan_name/settings.plan
+  // are written once at signup and never touched again, so they're only
+  // used as a last-resort fallback for an agency with no subscription row
+  // at all (e.g. a pre-Stripe seed/test account).
+  const planName = (await getAgencyPlan(agencyId)) || agency?.plan_name || agency?.settings?.plan || null;
   const analysesUsed = agency?.analyses_used ?? agency?.settings?.analyses_used ?? null;
   const analysesLimit = agency?.analyses_limit ?? agency?.settings?.analyses_limit ?? null;
 

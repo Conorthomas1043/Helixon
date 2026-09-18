@@ -850,8 +850,13 @@ function AgencyDashboardPage() {
     return { ...stats, jobs, recruiters };
   }, [data, stageOrder, lastStageKey]);
 
-  const agencyName = data?.agency?.name ?? "your agency";
-  const plan = data?.agency?.plan ?? null;
+  // /api/dashboard-stats returns { agencyName, plan, analyses } flat -
+  // this used to read data.agency.name/data.agency.plan, a key that never
+  // existed in the response, so the header silently always showed the
+  // "your agency" fallback and UsageSummary always got plan=null. Nothing
+  // threw (optional chaining swallows it), so it shipped unnoticed.
+  const agencyName = data?.agencyName ?? "your agency";
+  const plan = data?.plan ?? null;
 
   const subtitle = useMemo(() => {
     if (!data) return "";

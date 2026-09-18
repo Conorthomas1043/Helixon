@@ -1,5 +1,15 @@
 import { getRedis } from "@/lib/redis";
 
+// Same x-forwarded-for/x-real-ip extraction previously duplicated inline
+// in app/api/run - shared here now that more routes need it.
+export function getClientIp(request) {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
 /**
  * Fixed-window rate limit backed by the Vercel/Upstash Redis store,
  * using plain INCR + EXPIRE (works with the standard node-redis client

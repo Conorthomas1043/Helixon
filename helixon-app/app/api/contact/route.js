@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,6 +17,10 @@ const FROM_AUTOREPLY = "Helixon <noreply@helixon.co.uk>";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req) {
+  if (!(await rateLimit(getClientIp(req), 10))) {
+    return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   let body;
   try {
     body = await req.json();

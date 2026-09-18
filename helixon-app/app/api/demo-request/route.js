@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -33,6 +34,10 @@ function clean(val, maxLen = 300) {
 }
 
 export async function POST(request) {
+  if (!(await rateLimit(getClientIp(request), 10))) {
+    return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   let body;
   try {
     body = await request.json();

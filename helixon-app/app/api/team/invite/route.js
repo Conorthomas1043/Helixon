@@ -1,16 +1,21 @@
 import { NextResponse } from "next/server";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { ensureAgencyOrg, getOrgSeatUsage, inviteToAgencyOrg, revokeAgencyOrgInvitation, AGENCY_SEAT_LIMIT } from "@/lib/clerk-org";
+import { getAgencyPlan } from "@/lib/plan";
+import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { supabase } from "@/lib/supabase";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Team invites are an Agency-plan feature. subscriptions.plan is the only
-// reliably up-to-date source for "is this agency on Agency plan right now"
-// - see lib/clerk-org.js's comment on ensureAgencyOrg for why
-// agencies.settings.plan/plan_name can't be trusted for this check.
-function requireAgencyPlan(context) {
-  return context.hasActiveSubscription && context.subscription?.plan === "agency";
+// Team invites are an Agency-plan feature. Deliberately does NOT use
+// context.subscription (from requireCustomerContext), which is scoped to
+// the *current user's own* profile - only the agency owner (who actually
+// paid) has a subscriptions row, so that check would incorrectly lock
+// every invited teammate out of their own Team page. getAgencyPlan
+// resolves the same answer for whichever member of the agency is asking.
+async function requireAgencyPlan(context) {
+  const plan = await getAgencyPlan(context.agencyId);
+  return plan === "agency";
 }
 
 // GET: seat usage + pending invitations, so the dashboard can render
@@ -21,7 +26,7 @@ export async function GET() {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
-  if (!requireAgencyPlan(auth)) {
+  if (!(await requireAgencyPlan(auth))) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
 
@@ -60,11 +65,19 @@ export async function GET() {
 // POST: invite a teammate by email. Lazily creates the agency's Clerk
 // Organization on first use (see ensureAgencyOrg).
 export async function POST(request) {
+  // Tighter than the default 20/hr - the 5-seat cap already limits total
+  // damage, but nothing stops one seat from being used to spam invite
+  // emails (real emails sent through this app's own Clerk account) before
+  // it's ever accepted.
+  if (!(await rateLimit(getClientIp(request), 10))) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   const auth = await requireCustomerContext();
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
-  if (!requireAgencyPlan(auth)) {
+  if (!(await requireAgencyPlan(auth))) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
 
@@ -129,7 +142,7 @@ export async function DELETE(request) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
-  if (!requireAgencyPlan(auth)) {
+  if (!(await requireAgencyPlan(auth))) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
 

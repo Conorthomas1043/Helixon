@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { rateLimit } from "@/lib/ratelimit";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
@@ -86,13 +86,7 @@ export async function POST(request) {
       );
     }
 
-    const ip =
-      request.headers
-        .get("x-forwarded-for")
-        ?.split(",")[0]
-        ?.trim() ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
+    const ip = getClientIp(request);
 
     if (!(await rateLimit(ip))) {
       return NextResponse.json(
