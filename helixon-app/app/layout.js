@@ -8,12 +8,27 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
+  // Only the Clerk widgets use this font; preloading it on every page (home
+  // included) logged a "preloaded but not used" warning.
+  preload: false,
 });
 
+const TITLE = "Helixon - screen candidates in seconds";
+const DESCRIPTION =
+  "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under 30 seconds. Built for recruiters who screen at volume.";
+
 export const metadata = {
-  title: "Helixon - screen candidates in seconds",
-  description:
-    "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under 30 seconds. Built for recruiters who screen at volume.",
+  metadataBase: new URL("https://www.helixon.co.uk"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: "Helixon",
+    type: "website",
+    locale: "en_GB",
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default function RootLayout({ children }) {

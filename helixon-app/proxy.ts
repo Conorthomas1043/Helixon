@@ -15,7 +15,10 @@ const DEV_MODE = false;
 // this is the one place that needs to change.
 const ADMIN_LOGIN_PATH = "/admin/login";
 
-const SKIP_LOG = ["/api/internal/", "/_next/", "/favicon", "/robots"];
+const SKIP_LOG = ["/api/internal/", "/_next/", "/favicon", "/robots", "/sitemap"];
+
+// Pages that need a Clerk session just to load.
+const SIGNED_IN_ONLY_PREFIXES = ["/analyse", "/dashboard", "/account", "/billing"];
 
 export const config = {
   matcher: [
@@ -135,7 +138,11 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   // query) - middleware only answers "are they logged in", since doing a
   // second DB round-trip for subscription status on every request here
   // would be redundant with that check.
-  if (pathname.startsWith("/analyse")) {
+  // /dashboard, /account and /billing are gated the same way: their pages
+  // render a shell and only find out they're signed out when the data call
+  // returns 401, which showed logged-out visitors a broken "Unable to load
+  // dashboard" screen instead of the login page.
+  if (SIGNED_IN_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const { userId } = await auth();
     if (!userId) {
       // Carry the original destination through so <SignIn/>'s
