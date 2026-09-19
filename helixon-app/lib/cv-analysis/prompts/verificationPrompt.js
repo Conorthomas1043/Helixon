@@ -1,3 +1,5 @@
+import { jsonForPrompt } from "../../prompt-safety.js";
+
 export function verificationPrompt(result){
 
 return `
@@ -28,7 +30,9 @@ Return JSON
 
 Data
 
-${JSON.stringify(result)}
+<untrusted_data>
+${jsonForPrompt(result)}
+</untrusted_data>
 
 `;
 

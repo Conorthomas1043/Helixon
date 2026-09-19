@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
+import { cleanText, cleanLine } from "@/lib/sanitize";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -28,10 +29,13 @@ export async function POST(req) {
     return Response.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const name = (body?.name || "").toString().trim();
-  const email = (body?.email || "").toString().trim();
-  const topic = (body?.topic || "Something else").toString().trim();
-  const message = (body?.message || "").toString().trim();
+  // Single-line fields lose all line breaks (no header/subject injection into
+  // the email); the message keeps its paragraphs but loses control and
+  // invisible/bidi characters.
+  const name = cleanLine(body?.name, 200);
+  const email = cleanLine(body?.email, 254);
+  const topic = cleanLine(body?.topic, 60) || "Something else";
+  const message = cleanText(body?.message, { max: 5000 });
 
   if (!name || !email || !message) {
     return Response.json({ error: "Name, email, and message are required." }, { status: 400 });

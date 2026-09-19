@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { cleanText, cleanLine, cleanList, cleanNumber } from "@/lib/sanitize";
 
 // See app/api/candidates/route.js for why this was rewritten - Clerk auth
 // instead of the dead Supabase-Auth bearer-token check, and agency_id
@@ -46,8 +47,9 @@ export async function POST(request) {
   }
   const { agencyId, userId } = auth;
 
-  const body = await request.json();
-  if (!body.title?.trim()) {
+  const body = (await request.json().catch(() => null)) ?? {};
+  const title = cleanLine(body.title, 160);
+  if (!title) {
     return NextResponse.json({ error: "title required" }, { status: 400 });
   }
 
@@ -56,16 +58,16 @@ export async function POST(request) {
     .insert({
       agency_id: agencyId,
       user_id: userId,
-      title: body.title.trim(),
-      client: body.company ?? null,
-      location: body.location ?? null,
-      employment_type: body.employmentType ?? null,
-      seniority: body.seniority ?? null,
-      salary_range: body.salaryRange ?? null,
-      required_skills: body.requiredSkills ?? [],
-      preferred_skills: body.preferredSkills ?? [],
-      min_years_experience: body.minYearsExperience ?? null,
-      job_text: body.jobText ?? null,
+      title,
+      client: cleanLine(body.company, 160) || null,
+      location: cleanLine(body.location, 160) || null,
+      employment_type: cleanLine(body.employmentType, 60) || null,
+      seniority: cleanLine(body.seniority, 60) || null,
+      salary_range: cleanLine(body.salaryRange, 80) || null,
+      required_skills: cleanList(body.requiredSkills),
+      preferred_skills: cleanList(body.preferredSkills),
+      min_years_experience: cleanNumber(body.minYearsExperience, { min: 0, max: 60 }),
+      job_text: cleanText(body.jobText, { max: 20000 }) || null,
       status: "open",
     })
     .select()

@@ -4,6 +4,7 @@ import { ensureAgencyOrg, getOrgSeatUsage, inviteToAgencyOrg, revokeAgencyOrgInv
 import { getAgencyPlan } from "@/lib/plan";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { supabase } from "@/lib/supabase";
+import { cleanEmail } from "@/lib/sanitize";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -82,8 +83,8 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => null);
-  const email = (body?.email || "").trim().toLowerCase();
-  if (!EMAIL_RE.test(email)) {
+  const email = cleanEmail(body?.email);
+  if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
@@ -126,9 +127,16 @@ export async function POST(request) {
   try {
     await inviteToAgencyOrg({ orgId, inviterUserId: auth.userId, email });
   } catch (err) {
-    const message = err?.errors?.[0]?.longMessage || err.message || "Couldn't send the invite.";
-    console.error("[team/invite] Clerk invitation failed:", message);
-    return NextResponse.json({ error: message }, { status: 400 });
+    // The detail stays in the server log. Clerk's own messages ("already a
+    // member", "already has a pending invitation", ...) would tell the caller
+    // whether an arbitrary email address has an account, so the response is
+    // the same whatever went wrong.
+    const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
+    console.error("[team/invite] Clerk invitation failed:", detail);
+    return NextResponse.json(
+      { error: "We couldn't send that invite. Check the address, and that they aren't already on your team or invited, then try again." },
+      { status: 400 }
+    );
   }
 
   return NextResponse.json({ ok: true });
@@ -164,9 +172,9 @@ export async function DELETE(request) {
   try {
     await revokeAgencyOrgInvitation({ orgId: agency.clerk_org_id, invitationId, requestingUserId: auth.userId });
   } catch (err) {
-    const message = err?.errors?.[0]?.longMessage || err.message || "Couldn't cancel the invite.";
-    console.error("[team/invite] Clerk revoke failed:", message);
-    return NextResponse.json({ error: message }, { status: 400 });
+    const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
+    console.error("[team/invite] Clerk revoke failed:", detail);
+    return NextResponse.json({ error: "Couldn't cancel that invite. Please refresh and try again." }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

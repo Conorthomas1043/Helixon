@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { cleanText } from "@/lib/sanitize";
 
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
@@ -12,8 +13,9 @@ export async function POST(request, { params }) {
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const { body } = await request.json();
-  if (!body?.trim()) {
+  const payload = await request.json().catch(() => null);
+  const noteBody = cleanText(payload?.body, { max: 5000 });
+  if (!noteBody) {
     return NextResponse.json({ error: "Note body required" }, { status: 400 });
   }
 
@@ -35,7 +37,7 @@ export async function POST(request, { params }) {
       candidate_id: id,
       author_id: userId,
       author_name: authorName,
-      body: body.trim(),
+      body: noteBody,
     })
     .select()
     .single();

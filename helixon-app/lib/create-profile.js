@@ -96,12 +96,69 @@ export async function createProfileAndAgency({
 // time (a logged-in-but-never-finished-setup user, or a stale/failed
 // webhook). Errors are the caller's to decide how to handle - this never
 // throws for "session not paid", only for genuine lookup/write failures.
-export async function linkSubscriptionFromStripeSession({ profileId, stripeSessionId }) {
+//
+// The session id arrives from the client (the success-page URL, or Clerk
+// unsafeMetadata), so it can't be trusted as proof the caller paid. Three
+// guards stop someone else's - or an already-used - session being claimed:
+//   1. If checkout recorded who it was for (metadata.userId/clerkUserId,
+//      set when the buyer was already signed in), it must be this caller.
+//   2. Guest checkouts have no recorded owner, so the caller must instead
+//      prove they own the email that paid: it has to match one of their
+//      verified email addresses (`verifiedEmails`). Someone who only has the
+//      session id - from a shared link, browser history, a referrer - can't
+//      satisfy this. (A session with no email on it falls back to guard 3.)
+//   3. A Stripe subscription can only be linked to one profile, so a paid
+//      session can't be reused to unlock further accounts. Backed by a
+//      unique index (supabase/migrations/*_unique_stripe_subscription_id)
+//      so two simultaneous claims can't both succeed.
+// Returns { linked: false, reason } when a guard refuses.
+export async function linkSubscriptionFromStripeSession({
+  profileId,
+  stripeSessionId,
+  clerkUserId,
+  verifiedEmails = [],
+}) {
   if (!profileId || !stripeSessionId) return { linked: false };
 
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId);
   const paid = session.payment_status === "paid" || session.status === "complete";
   if (!paid) return { linked: false };
+
+  const ownerProfileId = session.metadata?.userId || null;
+  const ownerClerkId = session.metadata?.clerkUserId || null;
+  if (
+    (ownerProfileId && ownerProfileId !== profileId) ||
+    (ownerClerkId && clerkUserId && ownerClerkId !== clerkUserId)
+  ) {
+    console.warn(`[link-subscription] Session ${session.id} belongs to a different user - refusing to link.`);
+    return { linked: false, reason: "session_belongs_to_another_user" };
+  }
+
+  if (!ownerProfileId && !ownerClerkId) {
+    const paidEmail = (session.customer_details?.email || session.customer_email || "").trim().toLowerCase();
+    if (paidEmail) {
+      const claimantEmails = (verifiedEmails || []).map((e) => String(e).trim().toLowerCase());
+      if (!claimantEmails.includes(paidEmail)) {
+        console.warn(`[link-subscription] Session ${session.id} was paid with a different email than the claimant's verified emails - refusing to link.`);
+        return { linked: false, reason: "email_mismatch" };
+      }
+    }
+  }
+
+  if (session.subscription) {
+    const { data: claimedElsewhere, error: claimError } = await supabase
+      .from("subscriptions")
+      .select("user_id")
+      .eq("stripe_subscription_id", session.subscription)
+      .neq("user_id", profileId)
+      .limit(1);
+
+    if (claimError) throw new Error(claimError.message);
+    if (claimedElsewhere?.length) {
+      console.warn(`[link-subscription] Subscription ${session.subscription} is already linked to another profile - refusing to link.`);
+      return { linked: false, reason: "session_already_claimed" };
+    }
+  }
 
   const plan = session.metadata?.plan;
 
@@ -117,6 +174,15 @@ export async function linkSubscriptionFromStripeSession({ profileId, stripeSessi
     { onConflict: "user_id" }
   );
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    // 23505 = unique_violation: another profile claimed this subscription
+    // between the check above and this write (the unique index on
+    // stripe_subscription_id is what makes that race safe).
+    if (error.code === "23505") {
+      console.warn(`[link-subscription] Subscription ${session.subscription} was claimed concurrently - refusing to link.`);
+      return { linked: false, reason: "session_already_claimed" };
+    }
+    throw new Error(error.message);
+  }
   return { linked: true, plan };
 }

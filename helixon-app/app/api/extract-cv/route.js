@@ -1,55 +1,13 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { supabase } from "@/lib/supabase";
-const anthropic = new Anthropic({
-apiKey: process.env.ANTHROPIC_API_KEY
-});
-export async function POST(request) {
-try {
-const { cvText, agencyId } = await request.json();
-const m = await anthropic.messages.create({
-model: "claude-sonnet-4-5",
-max_tokens: 1500,
-messages: [{
-role: "user",
-content: `Extract this candidate's details.
-Return ONLY valid JSON (no extra text, no markdown):
-{
-"name": "string",
-"skills": ["string"],
-"years_experience": 0,
-"positions": [
-{ "title": "string", "company": "string", "duration": "string" }
-],
-"education": ["string"],
-"industries": ["string"]
+// Retired. This route had no authentication, called the Anthropic API on
+// demand (anyone could run up the bill) and inserted rows for any agencyId
+// supplied in the request. Nothing in the app calls it. It answers 410 Gone
+// until the file is deleted; the original is in git history.
+function gone() {
+  return Response.json({ ok: false, error: "This endpoint has been removed." }, { status: 410 });
 }
-CV:
-<<<
-${cvText}
->>>`
-}]
-});
-const raw = m.content[0].text
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
 
-const extracted = JSON.parse(raw);
-const { data, error } = await supabase
-.from("candidates")
-.insert({
-agency_id: agencyId,
-name: extracted.name,
-cv_text: cvText,
-extracted: extracted
-})
-.select();
-if (error) throw new Error(error.message);
-return Response.json({ ok: true, candidate: data[0] });
-} catch (err) {
-return Response.json(
-{ ok: false, error: err.message },
-{ status: 500 }
-);
-}
-}
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;

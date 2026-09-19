@@ -1,28 +1,14 @@
-import { supabase } from "@/lib/supabase";
-import { NextResponse } from "next/server";
-
-const VALID_STATUSES = ["open", "waitlist", "interviewing", "closed"];
-
-export async function POST(request, { params }) {
-  try {
-    const { id: jobId } = params;
-    const { status } = await request.json();
-
-    if (!VALID_STATUSES.includes(status)) {
-      return NextResponse.json({ ok: false, error: "Invalid status" }, { status: 400 });
-    }
-
-    const { error } = await supabase
-      .from("jobs")
-      .update({ status })
-      .eq("id", jobId);
-
-    if (error) throw new Error(error.message);
-
-    return NextResponse.json({ ok: true, jobId, status });
-
-  } catch (err) {
-    console.error("[jobs/:id/update-status] Error:", err.message);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
-  }
+// Retired. This route had no authentication and no agency check, so anyone
+// could change any job's status. (It was also already failing on every call
+// because it read `params` without awaiting it.) Nothing in the app calls it.
+// It answers 410 Gone until the file is deleted; the original is in git
+// history.
+function gone() {
+  return Response.json({ ok: false, error: "This endpoint has been removed." }, { status: 410 });
 }
+
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;

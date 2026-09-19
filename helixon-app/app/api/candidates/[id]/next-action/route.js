@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { cleanLine } from "@/lib/sanitize";
 
 // PATCH { label, dueAt } to set a new next action.
 // PATCH { completed: true } to complete the existing one.
@@ -25,9 +26,9 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await request.json();
+  const body = (await request.json().catch(() => null)) ?? {};
 
-  if (body.completed) {
+  if (body.completed === true) {
     const label = existing.next_action?.label;
 
     const { error } = await supabase.from("candidates").update({ next_action: null }).eq("id", id);
@@ -39,11 +40,22 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ nextAction: null });
   }
 
-  if (!body.label?.trim()) {
+  const label = cleanLine(body.label, 200);
+  if (!label) {
     return NextResponse.json({ error: "label required" }, { status: 400 });
   }
 
-  const nextAction = { label: body.label.trim(), dueAt: body.dueAt ?? null, completed: false };
+  // dueAt is stored as given, so it has to be a real date - normalised to ISO.
+  let dueAt = null;
+  if (body.dueAt != null && body.dueAt !== "") {
+    const due = typeof body.dueAt === "string" ? new Date(body.dueAt) : null;
+    if (!due || Number.isNaN(due.getTime())) {
+      return NextResponse.json({ error: "dueAt must be a valid date" }, { status: 400 });
+    }
+    dueAt = due.toISOString();
+  }
+
+  const nextAction = { label, dueAt, completed: false };
   const { error } = await supabase.from("candidates").update({ next_action: nextAction }).eq("id", id);
   if (error) {
     return NextResponse.json({ error: "Failed to set next action" }, { status: 500 });

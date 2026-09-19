@@ -168,7 +168,22 @@ async function handleUserCreated(clerkUser) {
   // second, separately-timed Stripe webhook race.
   if (meta.stripeSessionId) {
     try {
-      await linkSubscriptionFromStripeSession({ profileId, stripeSessionId: meta.stripeSessionId });
+      const verifiedEmails = (clerkUser.email_addresses || [])
+        .filter((e) => e.verification?.status === "verified")
+        .map((e) => e.email_address);
+
+      const linkResult = await linkSubscriptionFromStripeSession({
+        profileId,
+        stripeSessionId: meta.stripeSessionId,
+        clerkUserId,
+        verifiedEmails,
+      });
+      if (!linkResult.linked && linkResult.reason) {
+        // Not thrown: the account was created fine, and retrying this
+        // webhook wouldn't change the outcome. app/api/complete-signup will
+        // tell the user if they hit this on the signed-in path.
+        console.warn(`[clerk webhook] Not linking session ${meta.stripeSessionId} to user ${clerkUserId}: ${linkResult.reason}`);
+      }
     } catch (err) {
       // The account was created successfully either way - don't throw
       // here, or Clerk will retry this whole webhook and re-run into the

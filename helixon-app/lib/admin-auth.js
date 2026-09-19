@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
@@ -63,24 +64,52 @@ function allowedUsernames() {
 
 // ── Called by the login API route ────────────────────────────────────────────
 // Returns { ok, error } - never throws, so the route can respond cleanly.
-export function checkAdminCredentials(username, password) {
+//
+// ADMIN_PASSWORD_HASH_<USER> may be either:
+//   - a bcrypt hash ("$2a$/$2b$/$2y$..."), the preferred format - generate
+//     one with `node scripts/hash-admin-password.js`, or
+//   - a legacy unsalted sha256 hex digest. Still accepted so existing
+//     admins aren't locked out when this deploys; replace them with bcrypt
+//     hashes when convenient.
+//
+// Every failure - unknown user, missing config, wrong password - returns the
+// same message, and unknown users still pay for a full bcrypt comparison, so
+// neither the response nor its timing reveals which admin usernames exist.
+// The real reason is logged server-side only.
+const GENERIC_LOGIN_ERROR = "Incorrect username or password.";
+
+// A valid bcrypt hash of a random string, compared against for unknown
+// usernames so they cost the same as real ones.
+const DUMMY_BCRYPT_HASH = "$2b$12$EcOFc0xxNP4NfQuRkp7itu3fdh3A/NZ5l2Sg7pA/qNlXs0EbIwHyy";
+
+function isBcryptHash(value) {
+  return /^\$2[aby]\$\d{2}\$/.test(value || "");
+}
+
+export async function checkAdminCredentials(username, password) {
   const allowed = allowedUsernames();
-  if (!allowed.includes(username)) {
-    return { ok: false, error: "Unknown username." };
+  const known = allowed.includes(username);
+  const expected = known ? expectedHashFor(username) : null;
+
+  if (!known || !expected) {
+    await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
+    if (known && !expected) {
+      console.error(`[admin-auth] No ADMIN_PASSWORD_HASH_${username.toUpperCase()} configured for allowed admin "${username}".`);
+    }
+    return { ok: false, error: GENERIC_LOGIN_ERROR };
   }
-  const expected = expectedHashFor(username);
-  if (!expected) {
-    // Misconfiguration - env var missing for an otherwise-allowed username
-    return { ok: false, error: "Admin account not configured." };
+
+  let matches;
+  if (isBcryptHash(expected)) {
+    matches = await bcrypt.compare(password, expected);
+  } else {
+    const actual = hash(password);
+    matches =
+      actual.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
   }
-  const actual = hash(password);
-  const matches =
-    actual.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
-  if (!matches) {
-    return { ok: false, error: "Incorrect password. Try again." };
-  }
-  return { ok: true };
+
+  return matches ? { ok: true } : { ok: false, error: GENERIC_LOGIN_ERROR };
 }
 
 // ── Issues the session cookie after a successful login ───────────────────────

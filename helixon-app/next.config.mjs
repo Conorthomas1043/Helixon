@@ -8,9 +8,38 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=()" },
 ];
 
+// CORS: nothing on this site is meant to be read by other websites, so the
+// only origin ever allowed is our own. Vercel adds `Access-Control-Allow-
+// Origin: *` to prerendered pages by default, which lets any site read them
+// from a browser; naming our origin here replaces that. API routes never send
+// CORS headers of their own, so cross-origin browser calls to them are
+// refused, and Cross-Origin-Resource-Policy keeps other sites from embedding
+// their responses.
+const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.helixon.co.uk").replace(/\/+$/, "");
+
+const corsHeaders = [
+  { key: "Access-Control-Allow-Origin", value: SITE_ORIGIN },
+  { key: "Vary", value: "Origin" },
+];
+
+const apiHeaders = [
+  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+];
+
+// Private areas: keep them out of search results without listing them in
+// robots.txt (which would advertise where they are).
+const noIndexHeaders = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+
 const nextConfig = {
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: [...securityHeaders, ...corsHeaders] },
+      { source: "/api/:path*", headers: apiHeaders },
+      {
+        source: "/:area(admin|employee|dashboard|account|billing|analyse|api)/:path*",
+        headers: noIndexHeaders,
+      },
+    ];
   },
 };
 

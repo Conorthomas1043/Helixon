@@ -1,35 +1,12 @@
-import { supabase } from "@/lib/supabase";
-
-// POST - adds a candidate to a shortlist (prevents duplicates)
-export async function POST(request) {
-  const { shortlistId, candidateId, scoreId, note } = await request.json();
-
-  // Check if candidate is already on this shortlist
-  const { data: existing } = await supabase
-    .from("shortlist_candidates")
-    .select("id")
-    .eq("shortlist_id", shortlistId)
-    .eq("candidate_id", candidateId)
-    .single();
-
-  if (existing) {
-    return Response.json({ ok: false, error: "Already on shortlist" });
-  }
-
-  const { data, error } = await supabase
-    .from("shortlist_candidates")
-    .insert({
-      shortlist_id: shortlistId,
-      candidate_id: candidateId,
-      score_id: scoreId || null,
-      note: note || null,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return Response.json({ ok: true, entry: data });
+// Retired. This route had no authentication and no agency check while using
+// the service-role database client. Nothing in the app calls it. It answers
+// 410 Gone until the file is deleted; the original is in git history.
+function gone() {
+  return Response.json({ ok: false, error: "This endpoint has been removed." }, { status: 410 });
 }
+
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;

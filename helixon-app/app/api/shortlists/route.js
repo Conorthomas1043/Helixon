@@ -1,44 +1,13 @@
-import { supabase } from "@/lib/supabase";
-
-// GET - returns all shortlists for an agency, with their candidates nested inside
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const agencyId = searchParams.get("agencyId");
-
-  const { data, error } = await supabase
-    .from("shortlists")
-    .select(`
-      *,
-      jobs(title),
-      shortlist_candidates(
-        *,
-        candidates(name, extracted),
-        scores(match_score, recommendation, result)
-      )
-    `)
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return Response.json({ ok: true, shortlists: data });
+// Retired. This route had no authentication and trusted an agencyId from the
+// request while using the service-role database client. Nothing in the app
+// calls it. It answers 410 Gone until the file is deleted; the original is in
+// git history.
+function gone() {
+  return Response.json({ ok: false, error: "This endpoint has been removed." }, { status: 410 });
 }
 
-// POST - creates a new shortlist
-export async function POST(request) {
-  const { agencyId, jobId, name } = await request.json();
-
-  const { data, error } = await supabase
-    .from("shortlists")
-    .insert({ agency_id: agencyId, job_id: jobId, name })
-    .select()
-    .single();
-
-  if (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return Response.json({ ok: true, shortlist: data });
-}
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;

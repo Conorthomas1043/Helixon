@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { PRICE_IDS } from "@/lib/plans";
+import { cleanLine } from "@/lib/sanitize";
 import {
   createProfileAndAgency,
   generateUsername,
@@ -21,9 +23,11 @@ export async function POST(request) {
     }
 
     const body = await request.json().catch(() => null);
-    const agencyName = (body?.agencyName || "").trim();
+    const agencyName = cleanLine(body?.agencyName, 100);
     const sessionId = body?.sessionId || null;
-    const plan = body?.plan || null;
+    // Client-supplied, so only accept a real plan id - anything else is
+    // stored as the default instead of arbitrary text on the agency row.
+    const plan = typeof body?.plan === "string" && Object.hasOwn(PRICE_IDS, body.plan) ? body.plan : null;
 
     // Idempotency: if a profile already exists (e.g. the webhook won the
     // race, or the user double-submits), don't create a second one -
@@ -66,7 +70,29 @@ export async function POST(request) {
 
     if (sessionId) {
       try {
-        await linkSubscriptionFromStripeSession({ profileId, stripeSessionId: sessionId });
+        const user = await currentUser();
+        const verifiedEmails = (user?.emailAddresses || [])
+          .filter((e) => e.verification?.status === "verified")
+          .map((e) => e.emailAddress);
+
+        const result = await linkSubscriptionFromStripeSession({
+          profileId,
+          stripeSessionId: sessionId,
+          clerkUserId,
+          verifiedEmails,
+        });
+
+        // The account itself exists, but this payment can't be attached to
+        // it - say so instead of dropping them into the app with no plan.
+        // Deliberately vague about *why*, so this can't be used to probe
+        // which email a given session was paid with.
+        if (!result.linked && result.reason) {
+          const message =
+            result.reason === "email_mismatch"
+              ? "We couldn't match this payment to your account. Please sign in with the email address you paid with, or contact support and we'll sort it out."
+              : "This payment can't be linked to your account. Please contact support and we'll sort it out.";
+          return NextResponse.json({ ok: false, error: message }, { status: 409 });
+        }
       } catch (err) {
         // Their account exists either way - don't fail the whole request
         // over subscription linking; the Stripe webhook will retry entitlement.

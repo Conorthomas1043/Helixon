@@ -38,9 +38,21 @@ export function hashEmployeePassword(password) {
   return bcrypt.hashSync(password, 12);
 }
 
+// A real bcrypt hash (cost 12, same as real employee hashes) of a random
+// string. Compared against when the username doesn't exist, so an unknown
+// username costs the same ~100ms+ as a known one. Without it, the instant
+// response for unknown usernames lets an attacker tell which employee
+// usernames exist just by timing the login endpoint.
+const DUMMY_PASSWORD_HASH = "$2b$12$EcOFc0xxNP4NfQuRkp7itu3fdh3A/NZ5l2Sg7pA/qNlXs0EbIwHyy";
+
 function verifyEmployeePassword(employee, password) {
-  if (!employee || typeof password !== "string" || !password) return false;
-  return bcrypt.compareSync(password, employee.password_hash);
+  const candidate = typeof password === "string" ? password : "";
+  if (!employee || !employee.password_hash) {
+    bcrypt.compareSync(candidate, DUMMY_PASSWORD_HASH);
+    return false;
+  }
+  if (!candidate) return false;
+  return bcrypt.compareSync(candidate, employee.password_hash);
 }
 
 function generateToken() {

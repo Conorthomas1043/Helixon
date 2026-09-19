@@ -1,78 +1,13 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { supabase } from "@/lib/supabase";
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
-});
-
-export async function POST(request) {
-  try {
-    const { jobText, agencyId } = await request.json();
-
-    const m = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1200,
-      messages: [
-        {
-          role: "user",
-          content: `Extract this job description's requirements.
-
-Return ONLY valid JSON.
-Do not use markdown.
-Do not wrap the response in \`\`\`.
-
-{
-  "title": "string",
-  "required_skills": ["string"],
-  "preferred_skills": ["string"],
-  "min_years_experience": 0,
-  "industry": "string",
-  "seniority": "string"
+// Retired. This route had no authentication, called the Anthropic API on
+// demand (anyone could run up the bill) and inserted rows for any agencyId
+// supplied in the request. Nothing in the app calls it. It answers 410 Gone
+// until the file is deleted; the original is in git history.
+function gone() {
+  return Response.json({ ok: false, error: "This endpoint has been removed." }, { status: 410 });
 }
 
-Job description:
-<<<
-${jobText}
->>>`
-        }
-      ]
-    });
-
-    const raw = m.content[0].text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const parsed = JSON.parse(raw);
-
-    const { data, error } = await supabase
-      .from("jobs")
-      .insert({
-        agency_id: agencyId,
-        title: parsed.title,
-        job_text: jobText,
-        parsed: parsed
-      })
-      .select();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return Response.json({
-      ok: true,
-      job: data[0]
-    });
-
-  } catch (err) {
-    return Response.json(
-      {
-        ok: false,
-        error: err.message
-      },
-      {
-        status: 500
-      }
-    );
-  }
-}
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;

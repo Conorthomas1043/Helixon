@@ -1,3 +1,5 @@
+import { UNTRUSTED_CONTENT_RULES } from "../../prompt-safety.js";
+
 export default `
 You are an expert technical recruiter.
 
@@ -28,4 +30,4 @@ If information is missing, return empty values:
 - arrays should be []
 - strings should be ""
 - numbers should be 0
-`;
+` + UNTRUSTED_CONTENT_RULES;

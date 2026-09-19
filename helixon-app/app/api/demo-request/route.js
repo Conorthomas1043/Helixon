@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
+import { cleanText, cleanLine } from "@/lib/sanitize";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -28,9 +29,7 @@ function escapeHtml(str = "") {
 }
 
 function clean(val, maxLen = 300) {
-  if (typeof val !== "string") return null;
-  const trimmed = val.trim();
-  return trimmed ? trimmed.slice(0, maxLen) : null;
+  return cleanLine(val, maxLen) || null;
 }
 
 export async function POST(request) {
@@ -45,10 +44,10 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
   }
 
-  const name = typeof body?.name === "string" ? body.name.trim() : "";
-  const email = typeof body?.email === "string" ? body.email.trim() : "";
-  const company = typeof body?.company === "string" ? body.company.trim() : "";
-  const message = typeof body?.message === "string" ? body.message.trim() : "";
+  const name = cleanLine(body?.name, 200);
+  const email = cleanLine(body?.email, 254);
+  const company = cleanLine(body?.company, 200);
+  const message = cleanText(body?.message, { max: 5000 });
 
   if (!name) {
     return NextResponse.json({ ok: false, error: "Name is required." }, { status: 400 });
