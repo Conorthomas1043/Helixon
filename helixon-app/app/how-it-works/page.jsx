@@ -1,7 +1,7 @@
 import HowItWorksPage from "@/components/HowItWorksPage";
 
 export const metadata = {
-  title: "How it works - Helixon",
+  title: "How it works",
 };
 
 export default function Page() {

@@ -20,6 +20,24 @@
 
 export const ADMIN_SESSION_COOKIE = "helixon_admin_session";
 
+// A session ends after 30 minutes without activity (the idle expiry slides
+// forward each time the admin uses the console - see lib/admin-auth.js), and
+// after 8 hours in any case, however active. Both are checked here so the Edge
+// proxy and the API routes agree.
+export const ADMIN_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+export const ADMIN_ABSOLUTE_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+
+// Emergency kill switch. Set ADMIN_SESSIONS_VALID_AFTER (an ISO date such as
+// 2026-09-19T12:00:00Z, or epoch milliseconds) in the environment and redeploy:
+// every session issued before that moment stops working at once. Use it if a
+// laptop is lost or a cookie may have leaked. Unset = no effect.
+function sessionsValidAfter() {
+  const raw = (process.env.ADMIN_SESSIONS_VALID_AFTER || "").trim();
+  if (!raw) return 0;
+  const n = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function base64UrlToBytes(str) {
   let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) base64 += "=";
@@ -83,6 +101,25 @@ export async function verifyAdminSessionToken(token) {
 
     const payload = JSON.parse(data);
     if (!payload.exp || Date.now() > payload.exp) return null;
+
+    // Absolute lifetime (tokens issued before this field existed have none and
+    // are bounded by exp alone).
+    if (payload.max && Date.now() > payload.max) return null;
+
+    const validAfter = sessionsValidAfter();
+    if (validAfter && !(payload.iat >= validAfter)) return null;
+
+    // A valid signature only proves we issued this token at some point. The
+    // admin must ALSO still be on the allow-list, so removing someone from
+    // ADMIN_USERS cuts off their existing sessions straight away instead of
+    // letting them run out their remaining hours. Fails closed if the list is
+    // unset. (ADMIN_USERS is read here, not imported, because this runs on the
+    // Edge Runtime as well as in Node.)
+    const allowed = (process.env.ADMIN_USERS || "")
+      .split(",")
+      .map((u) => u.trim())
+      .filter(Boolean);
+    if (typeof payload.username !== "string" || !allowed.includes(payload.username)) return null;
 
     return payload;
   } catch {

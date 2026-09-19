@@ -99,7 +99,7 @@ export default function EmployeesPage() {
                   onChange={(event) =>
                     setForm({ ...form, password: event.target.value })
                   }
-                  minLength={8}
+                  minLength={12}
                   required
                 />
               </div>

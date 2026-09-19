@@ -20,6 +20,12 @@ export async function GET() {
   let firstName = null;
   let agencyName = null;
   let plan = null;
+  // Whether this signed-in account has a Helixon profile linked to an agency.
+  // Signing in with Clerk doesn't create one by itself - that happens when the
+  // account is created through checkout/signup (Clerk webhook or
+  // /api/complete-signup). Without it every agency-scoped API answers 403, so
+  // the dashboard uses this flag to explain that instead of failing.
+  let hasAgency = false;
   try {
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
@@ -28,6 +34,8 @@ export async function GET() {
       .maybeSingle();
     if (error) throw error;
     firstName = profile?.first_name || user?.firstName || null;
+
+    hasAgency = Boolean(profile?.agency_id);
 
     if (profile?.agency_id) {
       const [{ data: agency }, resolvedPlan] = await Promise.all([
@@ -39,6 +47,9 @@ export async function GET() {
     }
   } catch (e) {
     console.error("[auth/me] Profile lookup failed (non-fatal):", e.message);
+    // Unknown, not "no": don't tell the dashboard to show a setup screen just
+    // because a lookup failed.
+    hasAgency = null;
   }
 
   // NOTE: `admins.user_id` used to store the Supabase auth uuid. Going
@@ -58,6 +69,6 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, isAdmin, agencyName, plan },
+    user: { id: userId, email, firstName, isAdmin, agencyName, plan, hasAgency },
   });
 }

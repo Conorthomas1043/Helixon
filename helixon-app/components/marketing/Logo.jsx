@@ -25,7 +25,7 @@ export default function Logo({ size = "nav", showTagline = false, href = "/" }) 
           Helixon
         </span>
         {showTagline && (
-          <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
+          <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
             Built for recruitment agencies
           </span>
         )}

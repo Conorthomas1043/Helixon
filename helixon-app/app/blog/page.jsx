@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ChatWidget from "@/components/landing/ChatWidget";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
@@ -27,12 +28,12 @@ const POSTS = [
       "Keyword filters reward CVs written for the algorithm, not the role. Here's what to check instead when you're screening for a senior hire.",
   },
   {
-    title: "Introducing bulk upload for Solo and Team plans",
+    title: "Introducing bulk upload for Individual and Agency plans",
     category: "Product updates",
     date: "Jul 14, 2026",
     read: "3 min read",
     excerpt:
-      "Score an entire shortlist at once instead of one CV at a time - now live for Solo and Team accounts.",
+      "Score an entire shortlist at once instead of one CV at a time - now live for Individual and Agency accounts.",
   },
   {
     title: "The real cost of a slow screening process",
@@ -86,7 +87,7 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-10 text-center">
           <span
-            className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6"
             style={{
               background: "var(--mint)",
               color: "var(--forest)",
@@ -156,10 +157,12 @@ export default function BlogPage() {
         <section className="max-w-[1100px] mx-auto px-6 pb-24">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((post) => (
-              <a
+              // None of these posts exist yet, so the cards are not links (they
+              // were all href="#", which just jumped to the top of the page).
+              // Give each post a real page and turn this back into a <Link>.
+              <article
                 key={post.title}
-                href="#"
-                className="rounded-[16px] p-6 flex flex-col transition-transform hover:-translate-y-0.5"
+                className="rounded-[16px] p-6 flex flex-col"
                 style={{
                   background: "white",
                   border: "1px solid var(--border)",
@@ -168,7 +171,7 @@ export default function BlogPage() {
                 }}
               >
                 <span
-                  className="inline-flex text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start"
+                  className="inline-flex text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start"
                   style={{
                     background: "var(--mint)",
                     color: "var(--forest)",
@@ -195,14 +198,15 @@ export default function BlogPage() {
                 </p>
 
                 <div
-                  className="flex items-center gap-2 text-[10px]"
+                  className="flex items-center gap-2 text-[11px]"
                   style={{ color: "var(--ink-faint)" }}
                 >
                   <span>{post.date}</span>
                   <span>·</span>
                   <span>{post.read}</span>
+                  <span className="ml-auto font-semibold" style={{ color: "var(--forest)" }}>Coming soon</span>
                 </div>
-              </a>
+              </article>
             ))}
           </div>
         </section>
@@ -216,37 +220,36 @@ export default function BlogPage() {
               className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Get new posts in your inbox.
+              Want to see what&apos;s new?
             </h2>
 
             <p
-              className="text-xs mb-8 max-w-md mx-auto"
-              style={{ color: "rgba(255,255,255,0.75)" }}
+              className="text-sm mb-8 max-w-md mx-auto"
+              style={{ color: "rgba(255,255,255,0.8)" }}
             >
-              No spam - just the occasional screening tip or product update.
+              Our posts are on the way. In the meantime, the product updates page lists what we&apos;ve shipped recently.
             </p>
 
-            <form className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto">
-              <input
-                type="email"
-                required
-                placeholder="you@agency.com"
-                aria-label="Email address"
-                className="flex-1 text-sm px-4 py-3 rounded-[10px] focus:outline-none"
-                style={{ border: "none" }}
-              />
-
-              <button
-                type="submit"
-                className="text-sm font-semibold px-5 py-3 rounded-[10px] transition-transform hover:scale-[1.02]"
-                style={{
-                  background: "white",
-                  color: "var(--forest)",
-                }}
+            {/* This used to be an email signup form that wasn't connected to
+                anything - it collected an address and did nothing with it. A
+                real one needs a stored list with consent and an unsubscribe
+                link, so until that exists this points somewhere that works. */}
+            <div className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto justify-center">
+              <Link
+                href="/updates"
+                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-[10px] transition-transform hover:scale-[1.02]"
+                style={{ background: "white", color: "var(--forest)" }}
               >
-                Subscribe
-              </button>
-            </form>
+                Product updates
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-[10px]"
+                style={{ border: "1px solid rgba(255,255,255,0.5)", color: "white" }}
+              >
+                Get in touch
+              </Link>
+            </div>
           </div>
         </section>
 

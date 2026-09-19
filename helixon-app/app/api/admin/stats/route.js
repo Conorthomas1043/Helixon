@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireAdminSession } from "@/lib/admin-auth";
 import { getAdminSupabase } from "@/lib/admin-supabase";
+import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -135,12 +136,7 @@ export async function GET(request) {
     const failed = results.find((result) => result.error);
 
     if (failed) {
-      return json(
-        {
-          error: failed.error.message,
-        },
-        500
-      );
+      return adminDbError("stats", failed.error);
     }
 
     const trafficRows = requestRowsResult.data || [];
@@ -256,15 +252,6 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    const status =
-      error?.message === "Unauthorized" ? 401 : 500;
-
-    return json(
-      {
-        error:
-          error?.message || "Internal server error",
-      },
-      status
-    );
+    return adminErrorResponse("stats", error);
   }
 }

@@ -73,7 +73,7 @@ function PileToScore() {
       }}
     >
       <p
-        className="text-[10px] font-semibold uppercase tracking-widest mb-5"
+        className="text-[11px] font-semibold uppercase tracking-widest mb-5"
         style={{ color: "var(--ink-faint)" }}
       >
         The screening workflow
@@ -136,7 +136,7 @@ function PileToScore() {
           style={{ background: "var(--mist)" }}
         >
           <p
-            className="text-[9px] font-semibold uppercase tracking-wide mb-1"
+            className="text-[11px] font-semibold uppercase tracking-wide mb-1"
             style={{ color: "var(--ink-faint)" }}
           >
             Candidate review
@@ -154,7 +154,7 @@ function PileToScore() {
             </span>
 
             <span
-              className="text-[10px] font-medium"
+              className="text-[11px] font-medium"
               style={{ color: "var(--forest)" }}
             >
               Relevant evidence
@@ -188,7 +188,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div>
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6"
               style={{
                 background: "var(--mint)",
                 color: "var(--forest)",
@@ -237,7 +237,7 @@ export default function AboutPage() {
         <div className="max-w-[1100px] mx-auto px-6 py-20">
           <div className="text-center mb-12">
             <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-2"
+              className="text-[11px] font-semibold uppercase tracking-widest mb-2"
               style={{ color: "var(--ink-faint)" }}
             >
               The idea
@@ -301,7 +301,7 @@ export default function AboutPage() {
       <section className="max-w-[1100px] mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <p
-            className="text-[10px] font-semibold uppercase tracking-widest mb-2"
+            className="text-[11px] font-semibold uppercase tracking-widest mb-2"
             style={{ color: "var(--ink-faint)" }}
           >
             What we believe
@@ -384,7 +384,7 @@ export default function AboutPage() {
       >
         <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
           <p
-            className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+            className="text-[11px] font-semibold uppercase tracking-widest mb-3"
             style={{ color: "var(--ink-faint)" }}
           >
             Who&apos;s behind it

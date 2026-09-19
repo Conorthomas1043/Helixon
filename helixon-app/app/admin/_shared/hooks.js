@@ -2,21 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { confirmAction, promptNewPassword, promptText } from "./modal";
-import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin-csrf-constants";
-
-// ── CSRF header helper ────────────────────────────────────────────────────
-// Reads the non-httpOnly helixon_admin_csrf cookie (set by /api/admin/login,
-// see lib/admin-csrf.js) and echoes it back as a header on every mutating
-// admin fetch. The server compares cookie === header; see lib/admin-csrf.js
-// for why this defeats CSRF without needing server-side token storage.
-function csrfHeaders(extra = {}) {
-  const match = document.cookie
-    .split(";")
-    .map((c) => c.trim())
-    .find((c) => c.startsWith(`${ADMIN_CSRF_COOKIE}=`));
-  const token = match ? decodeURIComponent(match.split("=").slice(1).join("=")) : "";
-  return { ...extra, [ADMIN_CSRF_HEADER]: token };
-}
+import { csrfHeaders } from "./csrf"; // echoes the CSRF cookie back as a header on mutating requests
 
 export function useAdminStats(range) {
   const [stats, setStats] = useState(null);
@@ -150,6 +136,7 @@ export function useAdminTraffic(range) {
 
 export function useAdminUsers() {
   const [users, setUsers] = useState([]);
+  const [clerkWarning, setClerkWarning] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -172,6 +159,7 @@ export function useAdminUsers() {
       }
 
       setUsers(data.users || []);
+      setClerkWarning(data.clerkError || "");
     } catch (err) {
       setError(err?.message || "Failed to load users.");
     } finally {
@@ -254,12 +242,12 @@ export function useAdminUsers() {
     async (userId, email) => {
       const password = await promptNewPassword(
         `New password for ${email || "this user"}:`,
-        { minLength: 8 },
+        { minLength: 12 },
       );
       if (password === null) return;
 
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters.");
+      if (password.length < 12) {
+        setError("Password must be at least 12 characters.");
         return;
       }
 
@@ -270,6 +258,7 @@ export function useAdminUsers() {
 
   return {
     users,
+    clerkWarning,
     searchInput,
     setSearchInput,
     error,

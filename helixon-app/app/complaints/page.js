@@ -17,7 +17,7 @@ const SECTIONS = [
   {
     n: "2",
     title: "How to raise a complaint",
-    body: "Email complaints@helixon.app with a description of the issue, your agency name, and any relevant account or analysis details. You can also use the Contact page and select \"Support\" as the topic. There's no formal template required - just tell us what happened.",
+    body: "Email support@helixon.co.uk with a description of the issue, your agency name, and any relevant account or analysis details. You can also use the Contact page and select \"Support\" as the topic. There's no formal template required - just tell us what happened.",
   },
   {
     n: "3",
@@ -47,7 +47,7 @@ export default function ComplaintsPolicyPage() {
       <MarketingNav active="complaints" />
 
       <section className="max-w-[720px] mx-auto px-6 pt-16 pb-10">
-        <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           Complaints policy
         </h1>
@@ -82,7 +82,7 @@ export default function ComplaintsPolicyPage() {
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
           </svg>
           <p className="text-xs leading-relaxed" style={{ color: "var(--ink)" }}>
-            Ready to raise something? Email <a href="mailto:complaints@helixon.app" className="font-semibold" style={{ color: "var(--forest)" }}>complaints@helixon.app</a> or use our <a href="/contact" className="font-semibold" style={{ color: "var(--forest)" }}>Contact page</a>.
+            Ready to raise something? Email <a href="mailto:support@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>support@helixon.co.uk</a> or use our <a href="/contact" className="font-semibold" style={{ color: "var(--forest)" }}>Contact page</a>.
           </p>
         </div>
       </section>

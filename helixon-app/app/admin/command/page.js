@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList } from "../_shared/ui";
 import { Globe, useGlobePoints } from "../_shared/globe";
 import { RequestTable } from "../_shared/table";
+import RecentPanels from "./RecentPanels";
 import { useAdminStats, useAdminTraffic, useAdminOps, useAdminServices } from "../_shared/hooks";
 
 function formatCurrency(amount, currency = "GBP") {
@@ -134,30 +135,34 @@ export default function CommandPage() {
       </Panel>
 
       <div className="kpi-grid">
-        <KpiCard label="Requests" value={totals.requests ?? trafficRows.length} />
+        <KpiCard label="Requests" icon="traffic" value={totals.requests ?? trafficRows.length} />
 
         <KpiCard
           label="Blocked"
+          icon="ban"
           value={totals.blockedRequests ?? trafficRows.filter((row) => row.blocked).length}
           tone="var(--critical)"
         />
 
-        <KpiCard label="Users" value={userCount ?? "-"} foot={userCountIsLive ? "Live via Clerk" : "Supabase (stale - see note)"} />
-        <KpiCard label="Employees" value={totals.employees ?? "-"} tone="var(--ok)" />
+        <KpiCard label="Users" icon="users" value={userCount ?? "-"} foot={userCountIsLive ? "Live via Clerk" : "Supabase (stale - see note)"} />
+        <KpiCard label="Employees" icon="briefcase" value={totals.employees ?? "-"} tone="var(--ok)" />
       </div>
 
       <div className="kpi-grid cols-6">
-        <KpiCard label="Agencies" value={totals.agencies ?? "-"} />
-        <KpiCard label="Candidates" value={totals.candidates ?? "-"} />
-        <KpiCard label="Jobs" value={totals.jobs ?? "-"} />
-        <KpiCard label="Analyses run" value={totals.analyses ?? "-"} />
-        <KpiCard label="Demo requests" value={totals.demoRequests ?? "-"} />
+        <KpiCard label="Agencies" icon="building" value={totals.agencies ?? "-"} />
+        <KpiCard label="Candidates" icon="users" value={totals.candidates ?? "-"} />
+        <KpiCard label="Jobs" icon="briefcase" value={totals.jobs ?? "-"} />
+        <KpiCard label="Analyses run" icon="sparkles" value={totals.analyses ?? "-"} />
+        <KpiCard label="Demo requests" icon="inbox" value={totals.demoRequests ?? "-"} />
         <KpiCard
           label="Failed logins"
+          icon="alert"
           value={totals.failedAuthAttempts ?? "-"}
           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
         />
       </div>
+
+      <RecentPanels />
 
       <div className="grid-3 section">
         <Panel

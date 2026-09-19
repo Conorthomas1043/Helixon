@@ -114,7 +114,7 @@ export default function AppUpdatesPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
             </span>
           </a>
 
@@ -215,7 +215,7 @@ export default function AppUpdatesPage() {
                   >
                     <div className="flex items-center gap-2.5 mb-3">
                       <span
-                        className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
+                        className="text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
                         style={{ background: t.bg, color: t.color }}
                       >
                         {t.label}
@@ -235,7 +235,7 @@ export default function AppUpdatesPage() {
         <div className="mt-14 pt-8 border-t text-center" style={{ borderColor: "var(--border)" }}>
           <p className="text-xs mb-3" style={{ color: "#8aaa9a" }}>Have a feature request?</p>
           <a
-            href="mailto:feedback@helixon.io"
+            href="mailto:hello@helixon.co.uk"
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[10px]"
             style={{ background: "var(--mint)", color: "var(--forest)" }}
           >

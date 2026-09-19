@@ -101,7 +101,7 @@ export default function DpaPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
             </span>
           </a>
 
@@ -149,10 +149,17 @@ export default function DpaPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
             <span><strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026</span>
             <span><strong style={{ color: "#13201b" }}>Version:</strong> 3.1</span>
-            <a href="#" className="inline-flex items-center gap-1.5 font-semibold" style={{ color: "var(--forest)" }}>
-              Download PDF
+            {/* There is no PDF file to link to (this was href="#"). Printing the
+                page and choosing "Save as PDF" produces the same document. */}
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 font-semibold min-h-[32px]"
+              style={{ color: "var(--forest)" }}
+            >
+              Print or save as PDF
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" /></svg>
-            </a>
+            </button>
           </div>
         </div>
       </header>
@@ -186,7 +193,7 @@ export default function DpaPage() {
         {/* Sticky TOC */}
         <aside className="hidden lg:block">
           <nav className="sticky top-[80px] space-y-0.5 pr-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>On this page</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>On this page</p>
             {SECTIONS.map((s) => (
               <a
                 key={s.id}

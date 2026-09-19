@@ -33,12 +33,32 @@ export async function POST(request) {
   }
 
   const comment = cleanText(body?.reason ?? body?.comment, { max: 2000 }) || null;
-  const analysisId = cleanUuid(body?.analysisId);
 
+  // Optional link to the score being rated - only kept if it really belongs to
+  // this agency, so feedback can't be pinned to someone else's record.
+  let scoreId = cleanUuid(body?.scoreId);
+  if (scoreId) {
+    const { data: score } = await supabase
+      .from("scores")
+      .select("id")
+      .eq("id", scoreId)
+      .eq("agency_id", auth.agencyId)
+      .maybeSingle();
+    if (!score) scoreId = null;
+  }
+
+  // The feedback table's columns are score_id / agency_id / user_id. This route
+  // used to insert an `analysis_id` column that doesn't exist, so every
+  // submission failed and nothing was ever saved. user_id is left null on
+  // purpose: it is a foreign key to auth.users (the old Supabase Auth table),
+  // which a Clerk user's id can never satisfy - the agency is what identifies
+  // who the feedback came from.
   const { error } = await supabase.from("feedback").insert({
+    agency_id: auth.agencyId,
+    user_id: null,
+    score_id: scoreId,
     rating,
     comment,
-    analysis_id: analysisId,
   });
 
   if (error) {

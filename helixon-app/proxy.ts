@@ -15,7 +15,7 @@ const DEV_MODE = false;
 // this is the one place that needs to change.
 const ADMIN_LOGIN_PATH = "/admin/login";
 
-const SKIP_LOG = ["/api/internal/", "/_next/", "/favicon", "/robots", "/sitemap"];
+const SKIP_LOG = ["/api/internal/", "/api/csp-report", "/_next/", "/favicon", "/robots", "/sitemap"];
 
 // Pages that need a Clerk session just to load.
 const SIGNED_IN_ONLY_PREFIXES = ["/analyse", "/dashboard", "/account", "/billing"];
@@ -55,7 +55,7 @@ function notFoundResponse(request: NextRequest) {
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 // Called by other servers (Stripe, Clerk) or by this proxy itself: they carry
 // their own signature/secret and never have a browser Origin.
-const CSRF_EXEMPT_PREFIXES = ["/api/webhooks/", "/api/internal/"];
+const CSRF_EXEMPT_PREFIXES = ["/api/webhooks/", "/api/internal/", "/api/csp-report"];
 
 function addHostWithVariants(hosts: Set<string>, host?: string | null) {
   if (!host) return;

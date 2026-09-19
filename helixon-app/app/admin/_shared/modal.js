@@ -43,7 +43,7 @@ export function confirmAction(message, { title = "Confirm", danger = false } = {
 // Replacement for window.prompt() specifically for setting a new password.
 // Requires the value to be typed twice so a typo doesn't silently lock the
 // user out, and masks the input like any other password field.
-export function promptNewPassword(label, { minLength = 8 } = {}) {
+export function promptNewPassword(label, { minLength = 12 } = {}) {
   return open({ kind: "password", label, minLength });
 }
 

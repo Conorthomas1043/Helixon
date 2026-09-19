@@ -3,6 +3,8 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import {
   ADMIN_SESSION_COOKIE,
+  ADMIN_IDLE_TIMEOUT_MS,
+  ADMIN_ABSOLUTE_TIMEOUT_MS,
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
 import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
@@ -28,14 +30,18 @@ import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
 // Node's `crypto` since it only ever runs from the login route.
 //
 // Required env vars (set these in your hosting provider, e.g. Vercel):
-//   ADMIN_USERS               e.g. "Tanaka:Conor"  (comma-separated usernames)
-//   ADMIN_PASSWORD_HASH_TANAKA   sha256 hex hash of Tanaka's password
-//   ADMIN_PASSWORD_HASH_CONOR    sha256 hex hash of Conor's password
-//   ADMIN_SESSION_SECRET      a long random string used to sign session cookies
-//   ADMIN_KEY                 (already existed) used by /api/admin/stats
+//   ADMIN_USERS               e.g. "Tanaka,Conor"  (comma-separated usernames)
+//   ADMIN_PASSWORD_HASH_TANAKA   bcrypt hash (or legacy sha256 hex) of Tanaka's password
+//   ADMIN_PASSWORD_HASH_CONOR    bcrypt hash (or legacy sha256 hex) of Conor's password
+//   ADMIN_SESSION_SECRET      a long random string (32+ chars) used to sign session cookies
+//
+// Optional:
+//   ADMIN_TOTP_SECRET_<USER>     enables two-factor login for that admin (lib/admin-totp.js)
+//   ADMIN_REQUIRE_2FA=true       refuse admins who have no TOTP secret
+//   ADMIN_SESSIONS_VALID_AFTER   sign every admin out (lib/admin-session.js)
+//   ADMIN_LOGIN_SLUG             hide the default /admin/login route (proxy.ts)
 
 const SESSION_COOKIE = ADMIN_SESSION_COOKIE;
-const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 
 function hash(input) {
   return crypto.createHash("sha256").update(input).digest("hex");
@@ -44,6 +50,12 @@ function hash(input) {
 function sign(payload) {
   const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret) throw new Error("Missing ADMIN_SESSION_SECRET");
+  if (secret.length < 32) {
+    // Not enforced (that would lock every admin out on deploy if the current
+    // secret is short) - but a short HMAC key can be brute-forced offline from
+    // a captured cookie, so make it loud. Use 32+ random characters.
+    console.error("[admin-auth] ADMIN_SESSION_SECRET is shorter than 32 characters - replace it with a long random value.");
+  }
   const data = JSON.stringify(payload);
   const sig = crypto.createHmac("sha256", secret).update(data).digest("hex");
   return Buffer.from(data).toString("base64url") + "." + sig;
@@ -113,28 +125,36 @@ export async function checkAdminCredentials(username, password) {
 }
 
 // ── Issues the session cookie after a successful login ───────────────────────
-export async function createAdminSession(username) {
-  const token = sign({ username, exp: Date.now() + SESSION_TTL_MS });
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, {
-    httpOnly: true,
+function cookieOptions(maxAgeMs, httpOnly) {
+  return {
+    httpOnly,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_TTL_MS / 1000,
+    maxAge: Math.max(1, Math.floor(maxAgeMs / 1000)),
+  };
+}
+
+// The session token records when it was issued (iat, used by the
+// ADMIN_SESSIONS_VALID_AFTER kill switch), when it goes idle (exp - slides
+// forward with activity, see getAdminSession) and its hard limit (max).
+export async function createAdminSession(username) {
+  const now = Date.now();
+  const token = sign({
+    username,
+    iat: now,
+    exp: now + ADMIN_IDLE_TIMEOUT_MS,
+    max: now + ADMIN_ABSOLUTE_TIMEOUT_MS,
   });
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, token, cookieOptions(ADMIN_IDLE_TIMEOUT_MS, true));
 
   // CSRF token cookie - deliberately NOT httpOnly, since client JS needs to
   // read it and echo it back as a header on every mutating fetch (see
   // lib/admin-csrf.js for why this defeats CSRF despite being readable).
-  // Same lifetime/scope as the session it protects.
-  cookieStore.set(ADMIN_CSRF_COOKIE, generateCsrfToken(), {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_TTL_MS / 1000,
-  });
+  // It lives for the session's full possible length so it never expires
+  // before the session cookie it protects.
+  cookieStore.set(ADMIN_CSRF_COOKIE, generateCsrfToken(), cookieOptions(ADMIN_ABSOLUTE_TIMEOUT_MS, false));
 }
 
 export async function destroyAdminSession() {
@@ -144,14 +164,50 @@ export async function destroyAdminSession() {
 }
 
 // ── Reads the current admin session, if any ──────────────────────────────────
-// Returns { username } or null. Safe to call from any server component or route.
-export async function getAdminSession() {
+// Returns { username, expiresAt, absoluteExpiresAt } or null.
+//
+// Unless { refresh: false } is passed, using the console counts as activity:
+// the idle expiry is pushed 30 minutes out again (never past the 8-hour hard
+// limit) by re-issuing the cookie. That needs a Route Handler or Server Action
+// - in a Server Component the cookie can't be written, so the refresh is
+// skipped there and the session simply isn't extended by that render.
+export async function getAdminSession({ refresh = true } = {}) {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const payload = await verifyAdminSessionToken(token);
   if (!payload) return null;
-  return { username: payload.username };
+
+  let expiresAt = payload.exp;
+
+  // Tokens issued before the sliding session existed have no hard limit (max);
+  // they are left alone and run out at their original expiry.
+  if (refresh && payload.max) {
+    const now = Date.now();
+    const slid = Math.min(now + ADMIN_IDLE_TIMEOUT_MS, payload.max);
+    // Only re-issue when it buys at least a minute, so a burst of API calls
+    // doesn't send a Set-Cookie header on every one of them.
+    if (slid - payload.exp > 60_000) {
+      try {
+        const renewed = sign({
+          username: payload.username,
+          iat: payload.iat ?? now,
+          exp: slid,
+          max: payload.max,
+        });
+        cookieStore.set(SESSION_COOKIE, renewed, cookieOptions(slid - now, true));
+        expiresAt = slid;
+      } catch {
+        // Not in a context that can set cookies - leave the session as it is.
+      }
+    }
+  }
+
+  return {
+    username: payload.username,
+    expiresAt,
+    absoluteExpiresAt: payload.max || payload.exp,
+  };
 }
 
 // ── Guard for admin-only API routes ───────────────────────────────────────────
@@ -165,29 +221,22 @@ export async function getAdminSession() {
 //   }
 //
 // instead of repeating the null-check + 401 response in every handler.
-export async function requireAdminSession() {
-  const session = await getAdminSession();
+export async function requireAdminSession(options) {
+  const session = await getAdminSession(options);
   if (!session) {
     throw new Error("Unauthorized");
   }
   return session;
 }
 
-// ── Used by other API routes (e.g. bulk, run) to grant admin perks ───────────
-// like bypassing the free-trial paywall. Reads the same httpOnly cookie via
-// the incoming request - works in route handlers that receive `request`.
-export async function isAdminUser(request) {
-  try {
-    const cookieHeader = request.headers.get("cookie") || "";
-    const match = cookieHeader
-      .split(";")
-      .map((c) => c.trim())
-      .find((c) => c.startsWith(`${SESSION_COOKIE}=`));
-    if (!match) return false;
-    const token = decodeURIComponent(match.split("=").slice(1).join("="));
-    const payload = await verifyAdminSessionToken(token);
-    return !!payload;
-  } catch {
-    return false;
-  }
+// True when the hidden-admin setup is active (ADMIN_LOGIN_SLUG set; see
+// proxy.ts). Used to decide where to send someone after they log out.
+export function isAdminRouteHidden() {
+  const slug = (process.env.ADMIN_LOGIN_SLUG || "").replace(/^\/+|\/+$/g, "");
+  return /^[A-Za-z0-9_-]{8,}$/.test(slug);
 }
+
+// (isAdminUser(request) used to live here - a second, hand-rolled cookie
+// parser that let other routes grant admin perks such as bypassing the
+// paywall. Nothing called it, and an unused "am I admin" shortcut is a
+// liability, so it was removed.)

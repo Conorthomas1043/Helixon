@@ -16,7 +16,7 @@ const PUBLIC_PATHS = [
   "/terms",
   "/dpa",
   "/complaints",
-  "/CookiePolicy",
+  "/cookie-policy",
 ];
 
 export default function sitemap() {

@@ -108,7 +108,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                   <Link href="/dashboard" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: "var(--ink)" }}>
                     Dashboard
                   </Link>
-                  <Link href="/account/profile" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: "var(--ink-soft)" }}>
+                  <Link href="/account" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: "var(--ink-soft)" }}>
                     Account settings
                   </Link>
                   <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
@@ -158,7 +158,7 @@ export default function MarketingNav({ active, showTagline = true }) {
               key={key}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center"
+              className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center"
               style={{ color: active === key ? "var(--forest)" : "var(--ink-soft)", fontWeight: active === key ? 600 : 400, background: active === key ? "var(--mint)" : "transparent" }}
             >
               {label}
@@ -167,7 +167,7 @@ export default function MarketingNav({ active, showTagline = true }) {
 
           {signedIn ? (
             <>
-              <Link href="/account/profile" onClick={() => setMobileOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
+              <Link href="/account" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
                 Account settings
               </Link>
               <Button as="a" href="/dashboard" variant="primary" size="sm" onClick={() => setMobileOpen(false)} className="mt-1 min-h-[44px]">
@@ -176,7 +176,7 @@ export default function MarketingNav({ active, showTagline = true }) {
             </>
           ) : (
             <>
-              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-xs px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
                 Login
               </Link>
               <Button as="a" href="/demo" variant="primary" size="sm" onClick={() => setMobileOpen(false)} className="mt-1 min-h-[44px]">

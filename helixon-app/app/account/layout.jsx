@@ -1,15 +1,15 @@
-import AppNav from "@/components/AppNav";
+import DashboardNav from "@/components/DashboardNav";
 import SettingsNav from "@/components/account/SettingsNav";
 import PageTransition from "@/components/account/PageTransition";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency-display";
 
-export const metadata = {
-  title: "Account settings - Helixon",
-};
+// (No title here: each tab sets its own in app/account/[[...account]]/page.js,
+// and a title in this layout would only be overridden - or, with the site's
+// "%s | Helixon" template, doubled up.)
 
-// Server component: it renders client components (AppNav, SettingsNav,
+// Server component: it renders client components (DashboardNav, SettingsNav,
 // PageTransition) but doesn't need interactivity itself, so it stays out
 // of the client bundle. Now async so it can resolve the signed-in user's
 // real agency name server-side instead of the "Acme Recruiting" hardcode
@@ -24,19 +24,25 @@ export default async function AccountLayout({ children }) {
     agency = data;
   }
 
+  // Only a real agency (or the person's own first name) is worth a badge; the
+  // generic "your agency" placeholder read like a bug, so it's left out.
   const badgeLabel = agencyDisplayName(agency, profile);
+  const showBadge = badgeLabel !== "your agency";
 
   return (
     <main className="min-h-screen scroll-smooth" style={{ background: "var(--mist)" }}>
-      <AppNav active="account" />
+      {/* Same navigation as the rest of the signed-in app. This used to be a
+          different component ("Scoring | Dashboard") from the dashboard's
+          ("Overview | Analyse | Candidates ..."). */}
+      <DashboardNav />
 
       <section className="max-w-[880px] mx-auto px-6 pt-14 pb-8">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        {showBadge && <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
             <circle cx="12" cy="8" r="4" /><path d="M4 20a8 8 0 0116 0" />
           </svg>
           {badgeLabel}
-        </span>
+        </span>}
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
           Account settings
         </h1>

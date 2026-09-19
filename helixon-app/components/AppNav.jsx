@@ -139,7 +139,7 @@ export default function AppNav({ active }) {
                 )}
               </div>
               <Link
-                href="/account/profile"
+                href="/account"
                 role="menuitem"
                 className={`block px-3.5 py-2 text-sm transition-colors ${active === "account" ? "" : "hover:bg-[var(--mint)]"}`}
                 style={{ color: active === "account" ? COLORS.ink : COLORS.muted, background: active === "account" ? "var(--mint)" : "transparent", fontWeight: active === "account" ? 600 : 400 }}

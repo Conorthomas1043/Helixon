@@ -274,7 +274,7 @@ export default function DemoRequestPage() {
               </span>
 
               <span
-                className="hidden sm:block text-[9px] font-medium mt-0.5"
+                className="hidden sm:block text-[11px] font-medium mt-0.5"
                 style={{
                   color:
                     "var(--ink-faint)",

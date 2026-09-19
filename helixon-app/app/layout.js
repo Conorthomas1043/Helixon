@@ -19,8 +19,13 @@ const DESCRIPTION =
 
 export const metadata = {
   metadataBase: new URL("https://www.helixon.co.uk"),
-  title: TITLE,
+  // Pages set a short title ("Pricing"); the template makes it "Pricing | Helixon".
+  // The homepage (and anything without its own title) uses the default.
+  title: { default: TITLE, template: "%s | Helixon" },
   description: DESCRIPTION,
+  // "./" = this page's own URL, so every page gets a self-referencing canonical
+  // tag (resolved against metadataBase, so always the www address).
+  alternates: { canonical: "./" },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

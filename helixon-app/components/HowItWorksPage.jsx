@@ -56,7 +56,7 @@ export default function HowItWorksPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-14 text-center">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           Under 30 seconds, start to finish
         </span>
@@ -98,7 +98,7 @@ export default function HowItWorksPage() {
       {/* ── Under the hood ──────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
         <div className="text-center mb-12">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Under the hood</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Under the hood</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             What&apos;s actually happening at each step
           </h2>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
@@ -231,7 +232,7 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
 
 /* ─── Header ────────────────────────────────────────────────────────────── */
 
-function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshError, onRefresh }) {
+function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshing, refreshError, onRefresh }) {
   return (
     <header style={{
       ...CARD,
@@ -264,8 +265,12 @@ function DashboardHeader({ agencyName, plan, subtitle, isRefreshing, refreshErro
           )}
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 28px)", fontWeight: 600, color: TEXT, marginBottom: 6, marginTop: 0 }}>
-          {getGreeting()}, <span style={{ color: VIOLET_FG }}>{agencyName}</span>
+          {getGreeting()}
+          {greetingName ? <>, <span style={{ color: VIOLET_FG }}>{greetingName}</span></> : null}
         </h1>
+        {agencyName && (
+          <p style={{ fontSize: 13, color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>{agencyName}</p>
+        )}
         <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 520, marginBottom: 10, marginTop: 0 }}>{subtitle}</p>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 20 }} aria-live="polite">
@@ -855,7 +860,15 @@ function AgencyDashboardPage() {
   // existed in the response, so the header silently always showed the
   // "your agency" fallback and UsageSummary always got plan=null. Nothing
   // threw (optional chaining swallows it), so it shipped unnoticed.
-  const agencyName = data?.agencyName ?? "your agency";
+  //
+  // The greeting is for the person, so it uses their own first name from Clerk
+  // (available immediately, and independent of whether an agency row exists).
+  // The agency name is shown separately and only when it's a real name - the
+  // "your agency" placeholder that used to be spliced into the greeting is
+  // never displayed.
+  const { user: clerkUser } = useUser();
+  const greetingName = clerkUser?.firstName || null;
+  const agencyName = data?.agencyName && data.agencyName !== "your agency" ? data.agencyName : null;
   const plan = data?.plan ?? null;
 
   const subtitle = useMemo(() => {
@@ -872,11 +885,14 @@ function AgencyDashboardPage() {
     <main style={{ minHeight: "100vh", background: BG }}>
       <DashboardNav />
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* The page's h1 lives in DashboardHeader, which only renders once data
+            has loaded - so while loading (or on an error) there was no h1 at all. */}
+        {!data && <h1 className="sr-only">Dashboard overview</h1>}
         {!data && isFetching && <DashboardSkeleton />}
         {!data && !isFetching && hasError && <DashboardError onRetry={retry} />}
         {data && (
           <>
-            <DashboardHeader agencyName={agencyName} plan={plan} subtitle={subtitle} isRefreshing={isFetching} refreshError={!isFetching && hasError} onRefresh={retry} />
+            <DashboardHeader greetingName={greetingName} agencyName={agencyName} plan={plan} subtitle={subtitle} isRefreshing={isFetching} refreshError={!isFetching && hasError} onRefresh={retry} />
 
             {model.analyses.length === 0 ? (
               <div style={CARD}>

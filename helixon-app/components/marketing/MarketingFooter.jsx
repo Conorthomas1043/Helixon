@@ -20,6 +20,7 @@ const COLUMNS = [
       ["About", "/about"],
       ["Careers", "/careers"],
       ["Blog", "/blog"],
+      ["Product updates", "/updates"],
       ["Contact", "/contact"],
     ],
   },
@@ -28,7 +29,7 @@ const COLUMNS = [
     links: [
       ["Privacy Policy", "/privacy"],
       ["Terms of Service", "/terms"],
-      ["Cookie Policy", "/CookiePolicy"],
+      ["Cookie Policy", "/cookie-policy"],
       ["Data Processing Agreement", "/dpa"],
       ["Complaints", "/complaints"],
     ],
@@ -46,20 +47,22 @@ export default function MarketingFooter() {
           <div className="mb-3">
             <Logo size="footer" />
           </div>
-          <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
             Candidate screening built for recruitment agencies. GDPR-ready, EU-hosted.
           </p>
         </div>
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
               {col.title}
             </p>
-            <ul className="space-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+            {/* 13px text with a 36px-tall hit area: the links were ~13px tall,
+                too small to tap reliably on a phone. */}
+            <ul className="text-[13px]" style={{ color: "var(--ink-soft)" }}>
               {col.links.map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="hover:underline">
+                  <Link href={href} className="inline-flex items-center min-h-[36px] hover:underline">
                     {label}
                   </Link>
                 </li>
@@ -71,10 +74,10 @@ export default function MarketingFooter() {
 
       <div className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
+          <span className="text-xs" style={{ color: "var(--ink-faint)" }}>
             © {new Date().getFullYear()} Helixon. Screen candidates in seconds.
           </span>
-          <Link href={signedIn ? "/dashboard" : "/login"} className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>
+          <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex items-center min-h-[36px] text-xs hover:underline" style={{ color: "var(--ink-faint)" }}>
             {signedIn ? "Dashboard" : "Login"}
           </Link>
         </div>

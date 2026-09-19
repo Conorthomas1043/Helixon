@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CONSENT_KEY } from "@/components/CookieConsentBanner";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Helixon - Cookie policy.
@@ -32,15 +33,41 @@ const COOKIE_CATEGORIES = [
   },
 ];
 
+// These switches are the real consent control, not an illustration: they read
+// and write the same cookie as the banner. Consent is a single choice
+// ("all" or "essential-only"), so Preferences and Analytics move together, and
+// both start OFF until someone opts in (no cookie yet = off).
+function readConsent() {
+  const match = document.cookie.split("; ").find((c) => c.startsWith(`${CONSENT_KEY}=`));
+  return match ? match.split("=")[1] : null;
+}
+
 function ToggleRow({ category }) {
-  const [on, setOn] = useState(category.required ? true : true);
+  const [optionalOn, setOptionalOn] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setOptionalOn(readConsent() === "all");
+    sync();
+    window.addEventListener("helixon-cookie-consent", sync);
+    return () => window.removeEventListener("helixon-cookie-consent", sync);
+  }, []);
+
+  const on = category.required ? true : optionalOn;
+
+  function toggle() {
+    const value = optionalOn ? "essential-only" : "all";
+    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${CONSENT_KEY}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+    window.dispatchEvent(new Event("helixon-cookie-consent"));
+  }
+
   return (
     <div className="rounded-[12px] border p-5" style={{ borderColor: "var(--border)", background: "white" }}>
       <div className="flex items-start justify-between gap-4 mb-2">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: "#13201b" }}>{category.name}</h3>
           {category.required && (
-            <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <span className="inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
               Always on
             </span>
           )}
@@ -49,8 +76,9 @@ function ToggleRow({ category }) {
           type="button"
           role="switch"
           aria-checked={on}
+          aria-label={`${category.name} cookies${category.required ? " (always on)" : ""}`}
           disabled={category.required}
-          onClick={() => setOn((v) => !v)}
+          onClick={toggle}
           className="shrink-0 w-10 h-6 rounded-full relative transition-colors"
           style={{ background: on ? "var(--forest)" : "var(--border)", opacity: category.required ? 0.6 : 1, cursor: category.required ? "not-allowed" : "pointer" }}
         >
@@ -100,7 +128,7 @@ export default function CookiePolicyPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
             </span>
           </a>
 
@@ -174,9 +202,10 @@ export default function CookiePolicyPage() {
               <ToggleRow key={c.name} category={c} />
             ))}
           </div>
-          <p className="text-[11px] mt-3" style={{ color: "#8aaa9a" }}>
-            Toggles above are illustrative - manage your live preferences any time from the cookie settings link in
-            the site footer.
+          <p className="text-xs mt-3" style={{ color: "#5a7a6a" }}>
+            These switches are your live cookie settings. Preferences and Analytics are off until you turn them on, and
+            they switch together because you give (or withdraw) consent for optional cookies as one choice. Change it at
+            any time here.
           </p>
         </section>
 
@@ -229,7 +258,7 @@ export default function CookiePolicyPage() {
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
             <a href="/dpa">DPA</a>
-            <a href="/cookies" style={{ color: "var(--forest)", fontWeight: 600 }}>Cookies</a>
+            <a href="/cookie-policy" style={{ color: "var(--forest)", fontWeight: 600 }}>Cookies</a>
             <a href="/login">Login</a>
           </div>
         </div>

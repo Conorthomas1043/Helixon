@@ -70,7 +70,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
             </span>
           </Link>
           <Link href="/login" className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Login</Link>
@@ -99,7 +99,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
           >
             <HourglassScene />
 
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "#fef2f2", color: "var(--score-low)" }}>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "#fef2f2", color: "var(--score-low)" }}>
               Error 429
             </span>
 

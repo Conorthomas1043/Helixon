@@ -149,9 +149,9 @@ function RecruiterWorkspaceDemo() {
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{WORKSPACE_ROLE}</span>
-        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
       </div>
-      <p className="text-[10px] mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
+      <p className="text-[11px] mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
 
       <div className="rounded-[12px] overflow-hidden mb-5" style={{ border: "1px solid var(--border)" }}>
         {WORKSPACE_CANDIDATES.map((c, i) => {
@@ -163,13 +163,17 @@ function RecruiterWorkspaceDemo() {
               style={{
                 borderTop: i === 0 ? "none" : "1px solid var(--border)",
                 background: i % 2 === 0 ? "white" : "var(--mist)",
-                opacity: shown ? 1 : 0,
-                transform: shown ? "translateY(0)" : "translateY(4px)",
+                // Rows used to be fully transparent until the reveal animation
+                // ran, so the card first painted as an empty white box. They now
+                // paint immediately as grey placeholders and fill in.
+                transform: shown ? "translateY(0)" : "translateY(0)",
               }}
             >
-              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>{c.name}</span>
+              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                {shown ? c.name : <span aria-hidden="true" className="inline-block h-2.5 w-28 rounded-full align-middle" style={{ background: "var(--border)" }} />}
+              </span>
               <span className="flex items-center gap-2 shrink-0">
-                <span className="text-[9px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
+                <span className="text-[11px] font-semibold" style={{ color: scoreColor(c.score) }}>{shown ? scoreLabel(c.score) : ""}</span>
                 <span className="text-xs font-semibold w-6 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
                   {shown ? c.score : "-"}
                 </span>
@@ -183,12 +187,12 @@ function RecruiterWorkspaceDemo() {
         className="rounded-[10px] p-4 transition-all duration-500"
         style={{
           background: "var(--mist)",
-          opacity: breakdownVisible ? 1 : 0,
+          opacity: breakdownVisible ? 1 : 0.3,
           transform: breakdownVisible ? "translateY(0)" : "translateY(4px)",
         }}
       >
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
           <span className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{topCandidate.score}</span>
         </div>
         <ul className="space-y-1">
@@ -297,7 +301,7 @@ function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
     <div className="rounded-[16px] p-6 h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest mb-5" style={{ color: tone === "forest" ? "var(--forest)" : "var(--ink-faint)" }}>{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-5" style={{ color: tone === "forest" ? "var(--forest)" : "var(--ink-faint)" }}>{label}</p>
       <ol className="relative pl-5">
         <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
         {steps.map((step) => (
@@ -346,7 +350,7 @@ function UploadTabContent() {
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </svg>
         <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>Drop up to 50 CVs</p>
-        <p className="text-[10px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word, scanned or typed</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word, scanned or typed</p>
       </div>
       <div className="space-y-1.5">
         {files.map((f) => (
@@ -355,7 +359,7 @@ function UploadTabContent() {
             {f}
           </div>
         ))}
-        <p className="text-[10px] text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
+        <p className="text-[11px] text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
       </div>
     </div>
   );
@@ -368,13 +372,13 @@ function AnalyseTabContent() {
         <span className="text-xs font-semibold" style={{ color: "var(--ink)" }}>Match score</span>
         <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>92</span>
       </div>
-      <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
       <ul className="space-y-1 mb-4">
         {["5 years' React experience", "TypeScript", "SaaS product experience"].map((s) => (
           <li key={s} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--forest)" }}>✓</span>{s}</li>
         ))}
       </ul>
-      <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
       <ul className="space-y-1">
         <li className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--signal, #c9922e)" }}>△</span>2-month notice period</li>
       </ul>
@@ -389,7 +393,7 @@ function CompareTabContent() {
         <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "white" : "var(--mist)" }}>
           <span className="text-[11px] font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
           <span className="flex items-center gap-2">
-            <span className="text-[9px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
+            <span className="text-[11px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
             <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>{c.score}</span>
           </span>
         </div>
@@ -567,7 +571,7 @@ function AgencyWorkflowSection() {
     <section id="agency" className="max-w-[1100px] mx-auto px-6 py-20">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <Reveal>
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>For agencies</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>For agencies</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Built for the way agency teams already work
           </h2>
@@ -591,7 +595,7 @@ function AgencyWorkflowSection() {
                   <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "var(--forest)" }} aria-hidden="true">
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: "white" }} />
                   </span>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--forest)" }}>{step.role}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--forest)" }}>{step.role}</p>
                   <p className="text-xs" style={{ color: "var(--ink)" }}>{step.action}</p>
                 </li>
               ))}
@@ -699,7 +703,7 @@ function TrustSection() {
       <div className="max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.65)" }}>Trust & compliance</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.65)" }}>Trust & compliance</p>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white" style={{ fontFamily: "var(--font-display)" }}>
               Candidate data, handled properly
             </h2>
@@ -827,7 +831,7 @@ export default function LandingPage() {
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                 {signedIn ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "AI screening built for recruiters"}
               </span>
@@ -855,7 +859,7 @@ export default function LandingPage() {
             {TRUST_METRICS.map((m) => (
               <div key={m.label}>
                 <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{m.val}</p>
-                <p className="text-[10px] mt-1" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
+                <p className="text-[11px] mt-1" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
               </div>
             ))}
           </div>
@@ -910,7 +914,7 @@ export default function LandingPage() {
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-20">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Pricing</p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 Plans built around how agencies actually screen
               </h2>
@@ -931,7 +935,7 @@ export default function LandingPage() {
                 >
                   {plan.highlight && (
                     <span
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
                       style={{ background: "var(--signal, #f5a623)", color: "var(--forest)" }}
                     >
                       Recommended for agencies
@@ -974,7 +978,7 @@ export default function LandingPage() {
         <section id="faq" className="max-w-[1100px] mx-auto px-6 py-20">
           <Reveal>
             <div className="text-center mb-10">
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>FAQ</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>FAQ</p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 Questions recruiters usually ask
               </h2>

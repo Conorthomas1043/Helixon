@@ -3,7 +3,10 @@ import { isIP } from "node:net";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
 import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAudit } from "@/lib/admin-audit";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
+import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { getClientIp } from "@/lib/ratelimit";
+import { cleanLine } from "@/lib/sanitize";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -295,17 +298,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    return json(
-      {
-        error:
-          error?.message ||
-          "Internal server error",
-      },
-      error?.message ===
-        "Unauthorized"
-        ? 401
-        : 500,
-    );
+    return adminErrorResponse("traffic", error);
   }
 }
 
@@ -324,23 +317,45 @@ export async function POST(
       getAdminSupabase();
 
     const body =
-      await request.json();
+      (await request.json().catch(() => null)) ?? {};
 
     const ip =
       String(body.ip || "").trim();
 
-    const reason = String(
-      body.reason ||
-        "Admin block",
-    )
-      .trim()
-      .slice(0, 500);
+    const reason =
+      cleanLine(body.reason, 500) ||
+      "Admin block";
 
     if (!isValidIp(ip)) {
       return json(
         {
           error:
             "A valid IP address is required.",
+        },
+        400,
+      );
+    }
+
+    // Blocking makes proxy.ts bounce every request from that address to
+    // /rate-limited. Refuse the two blocks that can only hurt: private/
+    // reserved addresses (proxies and internal traffic - meaningless as a
+    // block, and can knock out a whole office or the platform itself) and the
+    // admin's own IP (an easy way to lock yourself out mid-incident).
+    if (isPrivateOrReservedIp(ip)) {
+      return json(
+        {
+          error:
+            "That is a private or reserved address and can't be blocked.",
+        },
+        400,
+      );
+    }
+
+    if (ip === getClientIp(request)) {
+      return json(
+        {
+          error:
+            "That is your own IP address - blocking it would lock you out.",
         },
         400,
       );
@@ -362,12 +377,7 @@ export async function POST(
         );
 
     if (error) {
-      return json(
-        {
-          error: error.message,
-        },
-        500,
-      );
+      return adminDbError("traffic", error);
     }
 
     await writeAdminAudit({
@@ -388,17 +398,7 @@ export async function POST(
       message: `${ip} blocked.`,
     });
   } catch (error) {
-    return json(
-      {
-        error:
-          error?.message ||
-          "Internal server error",
-      },
-      error?.message ===
-        "Unauthorized"
-        ? 401
-        : 500,
-    );
+    return adminErrorResponse("traffic", error);
   }
 }
 
@@ -417,7 +417,7 @@ export async function DELETE(
       getAdminSupabase();
 
     const body =
-      await request.json();
+      (await request.json().catch(() => null)) ?? {};
 
     const ip =
       String(body.ip || "").trim();
@@ -439,12 +439,7 @@ export async function DELETE(
         .eq("ip", ip);
 
     if (error) {
-      return json(
-        {
-          error: error.message,
-        },
-        500,
-      );
+      return adminDbError("traffic", error);
     }
 
     await writeAdminAudit({
@@ -464,16 +459,6 @@ export async function DELETE(
       message: `${ip} unblocked.`,
     });
   } catch (error) {
-    return json(
-      {
-        error:
-          error?.message ||
-          "Internal server error",
-      },
-      error?.message ===
-        "Unauthorized"
-        ? 401
-        : 500,
-    );
+    return adminErrorResponse("traffic", error);
   }
 }

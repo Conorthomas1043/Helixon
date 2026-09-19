@@ -81,7 +81,7 @@ export default function PricingPage() {
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-20">
         <div className="text-center mb-12">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
             Pricing
           </p>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -119,7 +119,7 @@ export default function PricingPage() {
               >
                 {plan.highlight && (
                   <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
                     style={{ background: "var(--signal)", color: "var(--forest)" }}
                   >
                     Most popular
