@@ -34,6 +34,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider
+      // Application paths, mirroring the Clerk dashboard (Configure >
+      // Paths). Set here as well so the app doesn't depend on the dashboard
+      // values staying in sync - these win when they differ.
+      signInUrl="/login"
+      signUpUrl="/signup"
+      afterSignOutUrl="/login"
       appearance={{
         variables: {
           colorPrimary: "#0b6e4f",
