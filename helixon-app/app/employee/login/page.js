@@ -1,7 +1,7 @@
 "use client";
 // app/employee/login/page.js
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -9,11 +9,34 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 export default function EmployeeLogin() {
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+
+  // Already signed in? Skip the form entirely, same check the /employee
+  // landing page does - previously this page had no such check, so a
+  // logged-in employee hitting /employee/login directly just saw the form
+  // again instead of being sent straight to their dashboard.
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/employee/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok) {
+            router.replace("/employee/dashboard");
+            return;
+          }
+        }
+      } catch {
+        // ignore - treat as signed out
+      }
+      setChecking(false);
+    })();
+  }, [router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,12 +53,31 @@ export default function EmployeeLogin() {
         setError(data.error || "Login failed.");
         return;
       }
+      // Read once by the dashboard on its next mount to show a one-time
+      // "Welcome back" banner - see app/employee/dashboard/page.js.
+      try {
+        sessionStorage.setItem("employee_just_logged_in", "1");
+      } catch {
+        // Storage can be unavailable (private browsing, quota) - the banner
+        // just won't show, which isn't worth failing the login over.
+      }
       router.replace("/employee/dashboard");
     } catch {
       setError("Network error.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checking) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }}
+        />
+      </main>
+    );
   }
 
   function fieldStyle(name) {

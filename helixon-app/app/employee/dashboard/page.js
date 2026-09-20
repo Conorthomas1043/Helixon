@@ -168,23 +168,40 @@ export default function EmployeeDashboard() {
   }
 
   async function toggleDone(todo) {
-    // Optimistic update
+    // Optimistic update, rolled back (via a resync from the server) if the
+    // request actually fails - previously a failed toggle left the UI
+    // showing a state that was never saved, with no indication anything
+    // had gone wrong.
     setTodos((prev) => prev.map((t) => t.id === todo.id ? { ...t, done: !todo.done } : t));
-    await fetch("/api/employee/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "toggle", id: todo.id, done: !todo.done }),
-    });
+    try {
+      const res = await fetch("/api/employee/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle", id: todo.id, done: !todo.done }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update task.");
+    } catch (err) {
+      alert(err.message || "Failed to update task. Please try again.");
+      fetchTodos();
+    }
   }
 
   async function handleDelete(id) {
     if (!confirm("Delete this task?")) return;
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    await fetch("/api/employee/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", id }),
-    });
+    try {
+      const res = await fetch("/api/employee/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete task.");
+    } catch (err) {
+      alert(err.message || "Failed to delete task. Please try again.");
+      fetchTodos();
+    }
   }
 
   async function handleLogout() {
@@ -285,6 +302,9 @@ export default function EmployeeDashboard() {
               </svg>
               Dashboard
             </span>
+            <Link href="/employee/ops" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
+              Platform ops
+            </Link>
             <a href="/" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
               Back to app
             </a>
@@ -698,14 +718,16 @@ export default function EmployeeDashboard() {
                   onClick={async () => {
                     if (!confirm("Clear all completed tasks?")) return;
                     const ids = doneTodos.map((t) => t.id);
-                    await Promise.all(ids.map((id) =>
+                    const results = await Promise.all(ids.map((id) =>
                       fetch("/api/employee/todos", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ action: "delete", id }),
-                      })
+                      }).then((r) => r.ok).catch(() => false)
                     ));
                     fetchTodos();
+                    const failed = results.filter((ok) => !ok).length;
+                    if (failed > 0) alert(`${failed} task${failed === 1 ? "" : "s"} could not be cleared. Please try again.`);
                   }}
                   className="text-xs transition"
                   style={{ color: "var(--ink-faint)" }}

@@ -69,21 +69,35 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
 
   async function toggleDone(todo) {
     setTodos((prev) => prev.map((t) => (t.id === todo.id ? { ...t, done: !todo.done } : t)));
-    await fetch("/api/employee/shared-todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "toggle", id: todo.id, done: !todo.done }),
-    });
+    try {
+      const res = await fetch("/api/employee/shared-todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle", id: todo.id, done: !todo.done }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update task.");
+    } catch (err) {
+      alert(err.message || "Failed to update task. Please try again.");
+      fetchAll();
+    }
   }
 
   async function handleDelete(id) {
     if (!confirm("Delete this team task?")) return;
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    await fetch("/api/employee/shared-todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", id }),
-    });
+    try {
+      const res = await fetch("/api/employee/shared-todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete task.");
+    } catch (err) {
+      alert(err.message || "Failed to delete task. Please try again.");
+      fetchAll();
+    }
   }
 
   const visible = useMemo(() => {
