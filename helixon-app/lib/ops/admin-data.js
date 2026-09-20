@@ -28,14 +28,24 @@ function sumNumeric(rows, keys) {
 export async function getAdminOpsData() {
   const client = adminClient();
   const [requests, logins, authLogins, mfa, audit, demos, agencies, trials, subscriptions, users, employees, candidates, jobs, analyses] = await Promise.all([
-    rows(client, "request_logs", 1200),
-    rows(client, "login_attempts", 600),
+    // request_logs and login_attempts use `ts`, not `created_at` - the
+    // default. Ordering by a column that doesn't exist makes Postgres
+    // error, which rows() silently swallows into [] - this made
+    // scoreRequest() never run on real data, zeroing out threats,
+    // ipInvestigations, and the request-derived slices of seo/kpis across
+    // the Pentester, Investigate and SEO pages.
+    rows(client, "request_logs", 1200, "ts"),
+    rows(client, "login_attempts", 600, "ts"),
     rows(client, "auth_login_attempts", 600),
     rows(client, "mfa_attempts", 600),
     rows(client, "admin_audit_logs", 600),
     rows(client, "demo_requests", 600),
     rows(client, "agencies", 1000),
-    rows(client, "trial_verifications", 600),
+    // trial_verifications has no created_at at all (only expires_at/used_at)
+    // - same failure mode, silently zeroing sales.trials. expires_at is set
+    // once at creation (now() + 24h), so ordering by it still orders by
+    // recency.
+    rows(client, "trial_verifications", 600, "expires_at"),
     rows(client, "subscriptions", 1000),
     rows(client, "users", 1000),
     rows(client, "employees", 500),
@@ -46,6 +56,11 @@ export async function getAdminOpsData() {
 
   const scoredRequests = requests.map((row) => ({
     ...row,
+    // request_logs' timestamp column is `ts`, not `created_at` like every
+    // other table here - normalised once so the Pentester/Investigate
+    // pages' existing `row.created_at` reads (matching the convention
+    // every other table in this file follows) don't need special-casing.
+    created_at: row.ts,
     threat: scoreRequest(row),
   }));
 

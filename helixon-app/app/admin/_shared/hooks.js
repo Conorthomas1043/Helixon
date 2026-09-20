@@ -365,7 +365,40 @@ export function useAdminEmployees() {
     [form, load],
   );
 
-  return { employees, form, setForm, error, busy, loading, reload: load, action, create };
+  const resetPassword = useCallback(
+    async (employeeId, username) => {
+      const password = await promptNewPassword(
+        `New password for ${username || "this employee"}:`,
+        { minLength: 12 },
+      );
+      if (password === null) return;
+
+      if (password.length < 12) {
+        setError("Password must be at least 12 characters.");
+        return;
+      }
+
+      await action(employeeId, "reset_password", { password });
+    },
+    [action],
+  );
+
+  const updateName = useCallback(
+    async (employeeId, currentName) => {
+      const fullName = await promptText("Full name:", { defaultValue: currentName || "" });
+      if (fullName === null) return;
+
+      if (!fullName.trim()) {
+        setError("A valid full name is required.");
+        return;
+      }
+
+      await action(employeeId, "update_name", { fullName: fullName.trim() });
+    },
+    [action],
+  );
+
+  return { employees, form, setForm, error, busy, loading, reload: load, action, create, resetPassword, updateName };
 }
 
 // Aggregated cross-package data (sales, SEO, security, revenue) - the same

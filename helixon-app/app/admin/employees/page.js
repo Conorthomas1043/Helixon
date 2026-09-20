@@ -17,7 +17,7 @@ const roles = [
 ];
 
 export default function EmployeesPage() {
-  const { employees, form, setForm, error, busy, action, create } =
+  const { employees, form, setForm, error, busy, action, create, resetPassword, updateName } =
     useAdminEmployees();
   const [view, setView] = useState("staff");
   const [range, setRange] = useState("30d");
@@ -200,6 +200,27 @@ export default function EmployeesPage() {
                               disabled={busy}
                             >
                               {employee.is_active ? "Deactivate" : "Activate"}
+                            </button>
+
+                            <button
+                              className="btn small"
+                              onClick={() =>
+                                updateName(
+                                  employee.id,
+                                  employee.full_name || employee.display_name,
+                                )
+                              }
+                              disabled={busy}
+                            >
+                              Rename
+                            </button>
+
+                            <button
+                              className="btn small"
+                              onClick={() => resetPassword(employee.id, employee.username)}
+                              disabled={busy}
+                            >
+                              Reset password
                             </button>
 
                             <select
