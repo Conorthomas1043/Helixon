@@ -14,6 +14,8 @@ export default function SecurityPage() {
 
   const blocked = traffic?.blockedIps || [];
   const totals = stats?.totals || {};
+  const policy = traffic?.firewallPolicy;
+  const autoBlockedCount = blocked.filter((item) => item.created_by === "firewall").length;
 
   const hotspots = useMemo(
     () => (traffic?.globe || []).slice().sort((a, b) => b.count - a.count).slice(0, 10),
@@ -44,6 +46,7 @@ export default function SecurityPage() {
 
       <div className="kpi-grid">
         <KpiCard label="Blocked IPs" value={blocked.length} tone="var(--critical)" />
+        <KpiCard label="Auto-blocked by firewall" value={autoBlockedCount} tone={autoBlockedCount ? "var(--critical)" : undefined} />
         <KpiCard label="Requests denied" value={totals.blockedRequests ?? "-"} />
         <KpiCard label="Login attempts" value={totals.loginAttempts ?? "-"} />
         <KpiCard
@@ -52,6 +55,32 @@ export default function SecurityPage() {
           tone={totals.failedAuthAttempts ? "var(--warn)" : undefined}
         />
       </div>
+
+      <Panel
+        title="Firewall policy"
+        sub="Enforced on every request in lib/security/firewall.js - not just displayed, actually blocking."
+        className="section"
+      >
+        {policy ? (
+          <div className="kpi-grid cols-3">
+            <KpiCard label="Auto-block threshold" value={`score ≥ ${policy.blockThreshold}`} tone="var(--critical)" />
+            <KpiCard label="Alert-only threshold" value={`score ≥ ${policy.alertThreshold}`} tone="var(--warn)" />
+            <KpiCard
+              label="Email alerts"
+              value={policy.alertEmailConfigured ? "On" : "Not configured"}
+              tone={policy.alertEmailConfigured ? "var(--good)" : "var(--warn)"}
+            />
+          </div>
+        ) : (
+          <div className="empty">Loading policy…</div>
+        )}
+        {policy && !policy.alertEmailConfigured && (
+          <div className="notice warn" style={{ marginTop: 12 }}>
+            Set SECURITY_ALERT_EMAIL and RESEND_API_KEY to get emailed when the firewall blocks or flags something -
+            right now attacks are only visible by opening this page or Pentester.
+          </div>
+        )}
+      </Panel>
 
       <div className="notice section">
         Raw response bodies are <b>not</b> stored. Request metadata, blocking
@@ -96,7 +125,13 @@ export default function SecurityPage() {
                     <tr key={item.ip}>
                       <td className="mono">{item.ip}</td>
                       <td className="muted">{item.reason || "Admin block"}</td>
-                      <td className="muted">{item.created_by || "-"}</td>
+                      <td className="muted">
+                        {item.created_by === "firewall" ? (
+                          <span className="pill bad">firewall (auto)</span>
+                        ) : (
+                          item.created_by || "-"
+                        )}
+                      </td>
                       <td className="mono">
                         {item.created_at ? new Date(item.created_at).toLocaleString() : "-"}
                       </td>

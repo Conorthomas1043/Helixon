@@ -7,6 +7,7 @@ import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
 import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
+import { getFirewallPolicy } from "@/lib/security/firewall";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -296,6 +297,8 @@ export async function GET(request) {
         resolvedIps: resolvedCount,
         unresolvedIps: unresolvedCount,
       },
+
+      firewallPolicy: getFirewallPolicy(),
     });
   } catch (error) {
     return adminErrorResponse("traffic", error);

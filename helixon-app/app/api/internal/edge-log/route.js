@@ -15,6 +15,7 @@
 
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
+import { enforceFirewallPolicy } from "@/lib/security/firewall";
 
 const INTERNAL_HEADER = "x-internal-secret";
 
@@ -62,7 +63,21 @@ export async function POST(request) {
       .eq("ip", ip)
       .maybeSingle();
 
-    const isBlocked = !!blockedRow;
+    // Strict firewall policy: scores this request against the same
+    // signature rules the admin Pentester page displays, and - unlike
+    // that page, which only lets a human block manually - auto-blocks and
+    // emails an alert when it crosses the threshold. See
+    // lib/security/firewall.js for the policy itself.
+    const isBlocked = await enforceFirewallPolicy({
+      supabase,
+      ip,
+      path,
+      method,
+      userAgent: ua,
+      country,
+      city,
+      alreadyBlocked: !!blockedRow,
+    });
 
     // Fire-and-forget log insert (we don't await errors; traffic logging
     // must never slow down or break real requests)
