@@ -45,13 +45,13 @@ export async function GET(request) {
   let query = supabase
     .from("candidates")
     .select(
-      "id, full_name, name, current_title, current_company, location, status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, extracted, jobs(id, title, client)",
+      "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, extracted, jobs(id, title, client)",
       { count: "exact" }
     )
     .eq("agency_id", agencyId);
 
   if (stage !== "all") query = query.eq("stage", stage);
-  if (status !== "all") query = query.eq("status", status);
+  if (status !== "all") query = query.eq("processing_status", status);
   if (recruiterId !== "all") query = query.eq("recruiter_id", recruiterId);
   if (jobId !== "all") query = query.eq("job_id", jobId);
   if (search) query = query.ilike("full_name", `%${search}%`);
@@ -89,7 +89,7 @@ export async function GET(request) {
       company: c.jobs?.client ?? null,
       recruiterId: c.recruiter_id,
       recruiterName: recruiterNames.get(c.recruiter_id) ?? null,
-      status: c.status,
+      status: c.processing_status,
       stage: c.stage,
       score: c.match_score,
       skills: c.extracted?.skills ?? [],

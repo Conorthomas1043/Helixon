@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
 
   const { data: job, error } = await supabase
     .from("jobs")
-    .select("*, candidates(id, status, stage, match_score)")
+    .select("*, candidates(id, processing_status, stage, match_score)")
     .eq("id", id)
     .eq("agency_id", agencyId)
     .maybeSingle();
@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const completed = job.candidates.filter((c) => c.status === "completed");
+  const completed = job.candidates.filter((c) => c.processing_status === "completed");
   return NextResponse.json({
     ...job,
     candidates: undefined,

@@ -19,7 +19,7 @@ export async function GET() {
     supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", agencyId),
     supabase
       .from("candidates")
-      .select("recruiter_id, status, stage, next_action")
+      .select("recruiter_id, processing_status, stage, next_action")
       .eq("agency_id", agencyId)
       .not("recruiter_id", "is", null),
   ]);
@@ -33,7 +33,7 @@ export async function GET() {
   return NextResponse.json(
     (members ?? []).map((m) => {
       const owned = (candidates ?? []).filter((c) => c.recruiter_id === m.clerk_user_id);
-      const completed = owned.filter((c) => c.status === "completed");
+      const completed = owned.filter((c) => c.processing_status === "completed");
       return {
         id: m.clerk_user_id,
         name: recruiterDisplayName(m) || "Unnamed",

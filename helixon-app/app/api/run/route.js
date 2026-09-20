@@ -405,11 +405,19 @@ export async function POST(request) {
           salary_estimate: salary,
         },
         source: "single",
-        // Matches lib/stage-labels.js's STAGE_LABELS/FUNNEL_ORDER (the
-        // ground truth the dashboard and PipelineStage component both key
-        // off) - the previous lowercase "new" matched nothing there, so
-        // every fresh analysis silently showed as "no stage".
-        stage: "Screened",
+        // scores.stage has its OWN check constraint - a separate, legacy
+        // lowercase vocabulary (new/shortlisted/contacted/interview/offer/
+        // placed/rejected/waitlist), NOT the Title Case funnel in
+        // lib/stage-labels.js that candidates.stage uses. Writing
+        // "Screened" here violates that constraint and throws on every
+        // single analysis (verified against the live DB: 101 existing
+        // scores rows are all stage="new", zero ever made it to
+        // "Screened" - this insert has never once succeeded with that
+        // value). scores is an append-only history row per analysis, not
+        // the live pipeline position, so "new" (freshly scored) is
+        // correct here regardless - the actual, continuously-updated
+        // stage recruiters work from lives on candidates.stage below.
+        stage: "new",
       })
       .select()
       .single();
@@ -426,17 +434,29 @@ export async function POST(request) {
      * dashboard pages built on them) read and update as a recruiter
      * works the pipeline - they need a starting value from the analysis
      * that created this candidate.
+     *
+     * candidates has no `status` column (only `processing_status`, set on
+     * the insert above) - a stray `status` field here made this whole
+     * update fail on every call (PostgREST rejects unknown columns), so
+     * stage/match_score/recommendation/job_id silently never landed on
+     * the candidate row. Confirmed against the live DB: all 84 existing
+     * candidates have stage=NULL. Checking the error now instead of
+     * discarding it so a future failure here is visible in logs rather
+     * than silently leaving the candidate stuck with no stage or score.
      */
-    await supabase
+    const { error: candidateUpdateError } = await supabase
       .from("candidates")
       .update({
         stage: "Screened",
         match_score: result?.match_score ?? 0,
         recommendation: result?.recommendation || "Review",
         job_id: job.id,
-        status: "completed",
       })
       .eq("id", candidate.id);
+
+    if (candidateUpdateError) {
+      console.error("[run] Failed to update candidate with analysis result:", candidateUpdateError.message);
+    }
 
     /*
      * Keep candidate activity useful for the CRM/admin

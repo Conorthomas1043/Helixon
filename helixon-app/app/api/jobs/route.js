@@ -15,7 +15,7 @@ export async function GET() {
 
   const { data: jobs, error } = await supabase
     .from("jobs")
-    .select("*, candidates(id, status, stage, match_score)")
+    .select("*, candidates(id, processing_status, stage, match_score)")
     .eq("agency_id", agencyId)
     .order("created_at", { ascending: false });
 
@@ -25,7 +25,7 @@ export async function GET() {
 
   return NextResponse.json(
     jobs.map((job) => {
-      const completed = job.candidates.filter((c) => c.status === "completed");
+      const completed = job.candidates.filter((c) => c.processing_status === "completed");
       return {
         ...job,
         candidates: undefined,

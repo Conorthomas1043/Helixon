@@ -33,7 +33,7 @@ export async function GET() {
     supabase
       .from("scores")
       .select(
-        "id, match_score, stage, created_at, candidates(id, full_name, name, processing_status, recruiter_id), jobs(title, client)"
+        "id, match_score, created_at, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
       )
       .eq("agency_id", agencyId)
       .order("created_at", { ascending: false })
@@ -67,7 +67,13 @@ export async function GET() {
     company: s.jobs?.client || null,
     recruiterName: recruiterNames.get(s.candidates?.recruiter_id) || null,
     status: s.candidates?.processing_status === "completed" ? "completed" : (s.candidates?.processing_status || "completed"),
-    stage: s.stage || null,
+    // The live, current pipeline position - candidates.stage, not scores.stage.
+    // scores is an immutable per-analysis history row (its stage is always
+    // "new", frozen at analysis time - see api/run's insert), so reading it
+    // here would show every past analysis as permanently stuck on "new"
+    // regardless of where the recruiter has actually since moved the
+    // candidate (Shortlisted, Interview, Placed, ...).
+    stage: s.candidates?.stage || null,
     score: typeof s.match_score === "number" ? s.match_score : null,
     createdAt: s.created_at,
   }));

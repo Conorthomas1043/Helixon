@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
 
   const { data, error } = await supabase
     .from("candidates")
-    .select("id, full_name, name, status, stage, match_score, recruiter_id, created_at")
+    .select("id, full_name, name, processing_status, stage, match_score, recruiter_id, created_at")
     .eq("job_id", id)
     .eq("agency_id", agencyId)
     .order("match_score", { ascending: false, nullsFirst: false });
@@ -35,7 +35,7 @@ export async function GET(request, { params }) {
     (data ?? []).map((c) => ({
       id: c.id,
       fullName: c.full_name || c.name || "Unnamed candidate",
-      status: c.status,
+      status: c.processing_status,
       stage: c.stage,
       score: c.match_score,
       recruiterId: c.recruiter_id,

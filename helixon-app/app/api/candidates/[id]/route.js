@@ -80,7 +80,7 @@ export async function GET(request, { params }) {
     company: candidate.jobs?.client ?? null,
     recruiterId: candidate.recruiter_id,
     recruiterName: recruiterNames.get(candidate.recruiter_id) ?? null,
-    status: candidate.status,
+    status: candidate.processing_status,
     stage: candidate.stage,
     score: candidate.match_score,
     matchSummary: candidate.match_summary,
