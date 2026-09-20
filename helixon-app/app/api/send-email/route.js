@@ -2,6 +2,7 @@ import { Resend } from "resend";
 
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { cleanLine } from "@/lib/sanitize";
 
 const resend = new Resend(
   process.env.RESEND_API_KEY
@@ -49,10 +50,7 @@ export async function POST(request) {
         ? body.to.trim().toLowerCase()
         : "";
 
-    const subject =
-      typeof body?.subject === "string"
-        ? body.subject.trim()
-        : "";
+    const subject = cleanLine(body?.subject, 200);
 
     if (!artifactId || !to) {
       return Response.json(
