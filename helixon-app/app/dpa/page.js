@@ -29,10 +29,15 @@ const SECTIONS = [
 ];
 
 const SUBPROCESSORS = [
-  { name: "Amazon Web Services (Frankfurt, eu-central-1)", purpose: "Hosting & storage", location: "European Union" },
+  { name: "Vercel Inc.", purpose: "Application hosting", location: "United States (SCC-covered)" },
+  { name: "Supabase Inc.", purpose: "Database hosting & storage (EU region)", location: "European Union" },
   { name: "Anthropic PBC", purpose: "CV & job description analysis (AI scoring)", location: "United States (SCC-covered)" },
-  { name: "Postmark", purpose: "Transactional email delivery", location: "European Union" },
-  { name: "Stripe", purpose: "Billing & payment processing", location: "European Union / United States (SCC-covered)" },
+  { name: "Google LLC (Gemini API)", purpose: "Website chat assistant", location: "United States (SCC-covered)" },
+  { name: "Clerk Inc.", purpose: "Account authentication", location: "United States (SCC-covered)" },
+  { name: "Stripe Inc.", purpose: "Billing & payment processing", location: "European Union / United States (SCC-covered)" },
+  { name: "Resend", purpose: "Transactional email delivery", location: "European Union / United States (SCC-covered)" },
+  { name: "Sentry (Functional Software, Inc.)", purpose: "Error monitoring", location: "United States (SCC-covered)" },
+  { name: "PostHog Inc.", purpose: "Product analytics (only where cookie consent is given)", location: "European Union" },
 ];
 
 // ── Scroll-spy hook ──────────────────────────────────────────────────────
@@ -216,9 +221,11 @@ export default function DpaPage() {
 
           <Section id="parties" title="1. Parties & scope">
             <p>This Data Processing Agreement (“DPA”) is entered into between the organisation using the Helixon
-              platform to screen candidates (“Customer”, “Controller”) and Helixon Ltd (“Helixon”, “Processor”),
-              and applies whenever Helixon processes personal data on Customer’s behalf in the course of providing
-              the Helixon service under the Terms of Service.</p>
+              platform to screen candidates (“Customer”, “Controller”) and the operator of Helixon (“Helixon”,
+              “Processor”), and applies whenever Helixon processes personal data on Customer’s behalf in the course
+              of providing the Helixon service under the Terms of Service. Helixon is not yet operated through an
+              incorporated company; this section will be updated with the registered company name once
+              incorporation is complete.</p>
             <p>In the event of a conflict between this DPA and the Terms of Service, this DPA governs with respect
               to the processing of personal data.</p>
           </Section>
@@ -353,9 +360,9 @@ export default function DpaPage() {
             <ul className="list-disc pl-5 space-y-1.5">
               <li>Encryption of personal data in transit (TLS 1.2+) and at rest (AES-256)</li>
               <li>Role-based access control and single sign-on for internal systems</li>
-              <li>Isolated, EU-region-only storage with no cross-region replication</li>
-              <li>Automatic deletion of uploaded CVs 90 days after the associated analysis is archived</li>
-              <li>Annual penetration testing and continuous dependency vulnerability scanning</li>
+              <li>Isolated, EU-region-only database storage with no cross-region replication</li>
+              <li>Automatic deletion of candidate and CV data 90 days after an agency's subscription is cancelled</li>
+              <li>Continuous dependency vulnerability scanning</li>
               <li>Documented incident response process with defined notification timelines</li>
             </ul>
           </Section>

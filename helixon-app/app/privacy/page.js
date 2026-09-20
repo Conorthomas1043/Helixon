@@ -5,7 +5,7 @@ const SECTIONS = [
   {
     title: "Who we are",
     body: [
-      "Helixon is operated by [YOUR COMPANY NAME] Ltd, registered in England and Wales (Company No. [YOUR NUMBER]). We provide AI-powered CV screening and recruitment workflow tools to recruitment agencies.",
+      "Helixon provides AI-powered CV screening and recruitment workflow tools to recruitment agencies. Helixon is not yet operated through an incorporated company - this section will be updated with our registered company name and number once incorporation is complete. Until then, the contact below is the right channel for any privacy query or data protection request.",
     ],
     contactEmail: "hello@helixon.co.uk",
   },
@@ -34,9 +34,15 @@ const SECTIONS = [
   {
     title: "Third party processors",
     list: [
-      "Anthropic (Claude API) - AI processing of CV and job data",
+      "Anthropic (Claude API) - AI processing of CV and job description data",
+      "Google (Gemini API) - AI processing of messages sent to the website chat assistant",
       "Supabase - Database hosting (EU region)",
       "Vercel - Application hosting",
+      "Clerk - Account authentication",
+      "Stripe - Billing and payment processing",
+      "Resend - Transactional email delivery",
+      "Sentry - Error monitoring",
+      "PostHog (EU-hosted) - Product analytics, only where you've given cookie consent",
     ],
   },
   {
