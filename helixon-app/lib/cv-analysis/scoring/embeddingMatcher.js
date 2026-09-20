@@ -6,30 +6,53 @@
 // This fills that gap with real embedding similarity, called only for the
 // skills the cheap path couldn't resolve.
 //
-// Uses Gemini's embedding model via @google/genai - already a dependency
-// and already configured (GEMINI_API_KEY; see app/api/assistant/route.js),
-// so this adds no new subprocessor/vendor. Embeddings are cached in Redis
-// (already used for rate limiting - lib/redis.js) keyed by normalised skill
-// text: skill vocabulary is highly repetitive across candidates and jobs
-// ("React", "Python", "AWS" recur constantly), so after initial warmup most
-// lookups are cache hits, not API calls. Redis being unconfigured or down
-// just means no caching (fail open), not a broken pipeline.
-import { GoogleGenAI } from "@google/genai";
+// Uses Voyage AI, not Gemini: Gemini is reserved for the public chat
+// assistant (app/api/assistant) - a separate vendor for a separate,
+// unrelated surface. Anthropic/Claude has no embeddings endpoint of its own,
+// so for the CV analysis pipeline (which otherwise runs entirely on Claude)
+// Voyage is the closest fit - it's Anthropic's own recommended embeddings
+// partner (https://docs.claude.com/en/docs/build-with-claude/embeddings),
+// not an unrelated third lab. Requires VOYAGE_API_KEY - a new vendor/
+// subprocessor, so the privacy policy/DPA subprocessor lists need updating
+// alongside this (see app/privacy, app/dpa).
+//
+// Embeddings are cached in Redis (already used for rate limiting -
+// lib/redis.js) keyed by normalised skill text: skill vocabulary is highly
+// repetitive across candidates and jobs ("React", "Python", "AWS" recur
+// constantly), so after initial warmup most lookups are cache hits, not API
+// calls. Redis being unconfigured or down just means no caching (fail
+// open), not a broken pipeline - same if VOYAGE_API_KEY isn't set at all.
 import { getRedis } from "@/lib/redis.js";
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
-const MODEL = "text-embedding-004";
-const CACHE_PREFIX = "cv-embed:";
+const VOYAGE_API_URL = "https://api.voyageai.com/v1/embeddings";
+const MODEL = "voyage-3.5-lite"; // short skill-name strings, not long documents - the lite model is plenty and cheaper
+const CACHE_PREFIX = "cv-embed:voyage:";
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 90; // skill-name embeddings don't drift - 90 days is safe
 export const SEMANTIC_MATCH_THRESHOLD = 0.84;
 
-let client = null;
-function ai() {
-  if (client) return client;
-  const apiKey = process.env.GEMINI_API_KEY;
+async function embedBatch(inputs) {
+  const apiKey = process.env.VOYAGE_API_KEY;
   if (!apiKey) return null;
-  client = new GoogleGenAI({ apiKey });
-  return client;
+
+  const response = await fetch(VOYAGE_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ input: inputs, model: MODEL }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Voyage embeddings request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  // Voyage returns items in the same order as the input array, each with
+  // an explicit `index` - sort by that rather than trusting array order.
+  const byIndex = new Map((data?.data || []).map((item) => [item.index, item.embedding]));
+  return inputs.map((_, i) => byIndex.get(i) || null);
 }
 
 async function getCached(key) {
@@ -68,12 +91,11 @@ function cosineSimilarity(a, b) {
 
 // Embeds a batch of skill-name strings, checking the Redis cache first and
 // calling the API only for what's missing. Returns a Map<normalisedSkill,
-// vector>. Never throws: if Gemini isn't configured or the call fails, it
+// vector>. Never throws: if Voyage isn't configured or the call fails, it
 // returns whatever was already cached (possibly empty) - callers treat a
 // missing vector as "no semantic match available" for that skill, not as a
 // pipeline failure.
 export async function embedSkills(skills) {
-  const model = ai();
   const result = new Map();
 
   const keys = [...new Set(skills.map(normaliseSkill).filter(Boolean))];
@@ -89,24 +111,21 @@ export async function embedSkills(skills) {
     }
   }
 
-  if (uncached.length === 0 || !model) return result;
+  if (uncached.length === 0) return result;
 
   try {
-    const response = await model.models.embedContent({
-      model: MODEL,
-      contents: uncached,
-    });
+    const vectors = await embedBatch(uncached);
+    if (!vectors) return result; // no VOYAGE_API_KEY configured
 
-    const embeddings = response?.embeddings || [];
     uncached.forEach((key, i) => {
-      const vector = embeddings[i]?.values;
+      const vector = vectors[i];
       if (Array.isArray(vector) && vector.length) {
         result.set(key, vector);
         setCached(key, vector); // fire-and-forget
       }
     });
   } catch (err) {
-    console.error("[embeddingMatcher] embedContent failed:", err.message);
+    console.error("[embeddingMatcher] Voyage embeddings request failed:", err.message);
   }
 
   return result;

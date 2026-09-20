@@ -32,6 +32,7 @@ const SUBPROCESSORS = [
   { name: "Vercel Inc.", purpose: "Application hosting", location: "United States (SCC-covered)" },
   { name: "Supabase Inc.", purpose: "Database hosting & storage (EU region)", location: "European Union" },
   { name: "Anthropic PBC", purpose: "CV & job description analysis (AI scoring)", location: "United States (SCC-covered)" },
+  { name: "Voyage AI, Inc.", purpose: "Skill-matching embeddings (CV analysis)", location: "United States (SCC-covered)" },
   { name: "Google LLC (Gemini API)", purpose: "Website chat assistant", location: "United States (SCC-covered)" },
   { name: "Clerk Inc.", purpose: "Account authentication", location: "United States (SCC-covered)" },
   { name: "Stripe Inc.", purpose: "Billing & payment processing", location: "European Union / United States (SCC-covered)" },

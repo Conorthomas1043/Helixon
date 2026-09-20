@@ -35,6 +35,7 @@ const SECTIONS = [
     title: "Third party processors",
     list: [
       "Anthropic (Claude API) - AI processing of CV and job description data",
+      "Voyage AI - Skill-matching embeddings, as part of CV analysis",
       "Google (Gemini API) - AI processing of messages sent to the website chat assistant",
       "Supabase - Database hosting (EU region)",
       "Vercel - Application hosting",
