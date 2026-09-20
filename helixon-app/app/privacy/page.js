@@ -48,7 +48,7 @@ const SECTIONS = [
   {
     title: "Data retention",
     body: [
-      "CV data is retained for the duration of the agency subscription plus 90 days after cancellation, then permanently deleted on request.",
+      "CV data is retained for the duration of the agency subscription, plus 90 days after cancellation, after which it is automatically and permanently deleted. Candidates and agencies can also request earlier deletion at any time - see \"Your rights\" below.",
     ],
   },
   {
