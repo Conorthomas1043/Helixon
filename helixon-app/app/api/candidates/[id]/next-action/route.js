@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
   if (body.completed === true) {
     const label = existing.next_action?.label;
 
-    const { error } = await supabase.from("candidates").update({ next_action: null }).eq("id", id);
+    const { error } = await supabase.from("candidates").update({ next_action: null }).eq("id", id).eq("agency_id", agencyId);
     if (error) {
       return NextResponse.json({ error: "Failed to complete next action" }, { status: 500 });
     }
@@ -56,7 +56,7 @@ export async function PATCH(request, { params }) {
   }
 
   const nextAction = { label, dueAt, completed: false };
-  const { error } = await supabase.from("candidates").update({ next_action: nextAction }).eq("id", id);
+  const { error } = await supabase.from("candidates").update({ next_action: nextAction }).eq("id", id).eq("agency_id", agencyId);
   if (error) {
     return NextResponse.json({ error: "Failed to set next action" }, { status: 500 });
   }

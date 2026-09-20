@@ -24,7 +24,7 @@ export async function DELETE(request, { params }) {
   }
 
   const tags = (candidate.tags ?? []).filter((t) => t !== tagId);
-  const { error } = await supabase.from("candidates").update({ tags }).eq("id", id);
+  const { error } = await supabase.from("candidates").update({ tags }).eq("id", id).eq("agency_id", agencyId);
   if (error) {
     return NextResponse.json({ error: "Failed to remove tag" }, { status: 500 });
   }

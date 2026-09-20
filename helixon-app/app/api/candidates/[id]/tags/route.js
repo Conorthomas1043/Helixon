@@ -35,7 +35,7 @@ export async function POST(request, { params }) {
   }
 
   const tags = [...existingTags, tagId];
-  const { error } = await supabase.from("candidates").update({ tags }).eq("id", id);
+  const { error } = await supabase.from("candidates").update({ tags }).eq("id", id).eq("agency_id", agencyId);
   if (error) {
     return NextResponse.json({ error: "Failed to add tag" }, { status: 500 });
   }

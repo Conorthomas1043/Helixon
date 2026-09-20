@@ -1,6 +1,19 @@
+// Previously this route authenticated via a Supabase Auth Bearer token and
+// looked the caller up by employees.email - but employees don't have
+// Supabase Auth accounts; they log in through lib/employee-auth.js's own
+// username/password + cookie-session system (see lib/session.js). That
+// mismatch meant this route could never actually be called: it 403'd
+// unconditionally (see the same fix already applied to
+// app/api/employee/shared-todos/route.js). Its frontend read a token from
+// window.__HELIXON_ACCESS_TOKEN__, which nothing in the app ever sets -
+// confirming the whole path was orphaned. Rewritten to use the same
+// getCurrentEmployeeId() session check every other /api/employee/* route
+// uses.
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { groupBy, classifyAcquisition } from "../../../../lib/ops/attribution";
+import { getCurrentEmployeeId } from "@/lib/session";
+import { groupBy, classifyAcquisition } from "@/lib/ops/attribution";
 
 function client() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -9,17 +22,17 @@ function client() {
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
-export async function GET(request) {
+export async function GET() {
   try {
-    const auth = request.headers.get("authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const supabase = client();
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const employeeId = await getCurrentEmployeeId();
+    if (!employeeId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const email = userData.user.email.toLowerCase();
-    const employee = await supabase.from("employees").select("id,email,linked_test_user_id").ilike("email", email).maybeSingle();
+    const supabase = client();
+    const employee = await supabase
+      .from("employees")
+      .select("id,email,username,display_name,full_name")
+      .eq("id", employeeId)
+      .maybeSingle();
     if (employee.error || !employee.data) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
 
     const [agencies, candidates, jobs, analyses, demos] = await Promise.all([
