@@ -38,6 +38,22 @@ function sessionsValidAfter() {
   return Number.isFinite(n) ? n : 0;
 }
 
+// Same idea as sessionsValidAfter(), scoped to one admin - ADMIN_USERS has no
+// server-side session store to revoke from individually, so the global kill
+// switch was previously the only lever, and it logs out every admin at once.
+// Set ADMIN_SESSION_VALID_AFTER_<USERNAME> (same date/epoch-ms format) after
+// rotating just that admin's ADMIN_PASSWORD_HASH_<USERNAME> and redeploy:
+// their existing session(s) stop working immediately, while every other
+// admin is unaffected and they can sign straight back in with the new
+// password. Unset = no effect.
+function sessionsValidAfterFor(username) {
+  if (typeof username !== "string" || !username) return 0;
+  const raw = (process.env[`ADMIN_SESSION_VALID_AFTER_${username.toUpperCase()}`] || "").trim();
+  if (!raw) return 0;
+  const n = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function base64UrlToBytes(str) {
   let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) base64 += "=";
@@ -108,6 +124,9 @@ export async function verifyAdminSessionToken(token) {
 
     const validAfter = sessionsValidAfter();
     if (validAfter && !(payload.iat >= validAfter)) return null;
+
+    const perUserValidAfter = sessionsValidAfterFor(payload.username);
+    if (perUserValidAfter && !(payload.iat >= perUserValidAfter)) return null;
 
     // A valid signature only proves we issued this token at some point. The
     // admin must ALSO still be on the allow-list, so removing someone from

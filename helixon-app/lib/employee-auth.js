@@ -27,6 +27,16 @@ const COOKIE_NAME = "employee_session";
 const SESSION_HOURS = 12;
 const LOGIN_TYPE = "employee";
 
+// Idle timeout, mirroring the sliding-window pattern lib/admin-session.js
+// uses: expires_at slides forward on each active check, capped at
+// SESSION_HOURS from the session's created_at. Previously expires_at was set
+// once at login and never touched again, so a session was a flat 12-hour
+// window from login regardless of activity - an actively-working employee
+// got signed out mid-shift exactly 12 hours after logging in, and a session
+// left open but idle stayed valid for the same fixed 12 hours either way.
+const IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+const ABSOLUTE_TIMEOUT_MS = SESSION_HOURS * 60 * 60 * 1000;
+
 const RATE_LIMIT_WINDOW_MINUTES = 15;
 const MAX_FAILURES_PER_USERNAME = 5;
 const MAX_FAILURES_PER_IP = 20;
@@ -136,7 +146,13 @@ export async function loginEmployee({ username, password, ip }) {
   await recordAttempt(username, ip, true);
 
   const token = generateToken();
-  const expiresAt = new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000).toISOString();
+  // Starts at the idle window, not the full absolute lifetime - getEmployeeSession()
+  // slides this forward on activity, capped at ABSOLUTE_TIMEOUT_MS from created_at.
+  const expiresAt = new Date(Date.now() + IDLE_TIMEOUT_MS).toISOString();
+  // The cookie's own browser-side expiry is the full absolute window, so the
+  // browser keeps sending it for as long as the session could possibly still
+  // be valid - actual validity is enforced server-side via expires_at above.
+  const cookieExpiresAt = new Date(Date.now() + ABSOLUTE_TIMEOUT_MS);
 
   const { error: sessionError } = await supabase.from("employee_sessions").insert({
     employee_id: employee.id,
@@ -159,7 +175,7 @@ export async function loginEmployee({ username, password, ip }) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: new Date(expiresAt),
+    expires: cookieExpiresAt,
   });
 
   return {
@@ -176,7 +192,15 @@ export async function loginEmployee({ username, password, ip }) {
 // ── Get current session ──────────────────────────────────────────────────
 // Re-checks is_active on every call (not just at login), so deactivating an
 // employee immediately invalidates any session they're still holding.
-export async function getEmployeeSession() {
+//
+// Also slides expires_at forward on each active call (using the session as
+// counts as activity), capped at ABSOLUTE_TIMEOUT_MS from created_at - same
+// sliding-window shape as lib/admin-session.js's idle/absolute pair. Without
+// this, expires_at was set once at login and never touched again, so an
+// actively-working employee got signed out exactly SESSION_HOURS after
+// login regardless of activity, and an idle-but-open session stayed valid
+// for that same fixed window instead of a shorter idle cutoff.
+export async function getEmployeeSession({ refresh = true } = {}) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
@@ -184,13 +208,30 @@ export async function getEmployeeSession() {
 
     const { data: session } = await supabase
       .from("employee_sessions")
-      .select("employee_id, expires_at, employees(id, username, role, full_name, display_name, is_active)")
+      .select("id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active)")
       .eq("token", token)
       .maybeSingle();
 
     if (!session) return null;
     if (new Date(session.expires_at) < new Date()) return null;
     if (!session.employees || session.employees.is_active === false) return null;
+
+    if (refresh) {
+      const now = Date.now();
+      const absoluteCap = new Date(session.created_at).getTime() + ABSOLUTE_TIMEOUT_MS;
+      const slid = Math.min(now + IDLE_TIMEOUT_MS, absoluteCap);
+      // Only re-issue when it buys at least a few minutes, so a burst of API
+      // calls doesn't write to the DB on every single one.
+      if (slid - new Date(session.expires_at).getTime() > 5 * 60 * 1000) {
+        supabase
+          .from("employee_sessions")
+          .update({ expires_at: new Date(slid).toISOString() })
+          .eq("id", session.id)
+          .then(({ error }) => {
+            if (error) console.error("[employee-auth] Failed to slide session expiry:", error.message);
+          });
+      }
+    }
 
     return session.employees;
   } catch {

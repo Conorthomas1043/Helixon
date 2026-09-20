@@ -39,6 +39,10 @@ import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
 //   ADMIN_TOTP_SECRET_<USER>     enables two-factor login for that admin (lib/admin-totp.js)
 //   ADMIN_REQUIRE_2FA=true       refuse admins who have no TOTP secret
 //   ADMIN_SESSIONS_VALID_AFTER   sign every admin out (lib/admin-session.js)
+//   ADMIN_SESSION_VALID_AFTER_<USER>  sign just <USER> out - set this alongside
+//                                a rotated ADMIN_PASSWORD_HASH_<USER> so the
+//                                old session can't keep being used after a
+//                                password change (lib/admin-session.js)
 //   ADMIN_LOGIN_SLUG             hide the default /admin/login route (proxy.ts)
 
 const SESSION_COOKIE = ADMIN_SESSION_COOKIE;
