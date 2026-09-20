@@ -1,6 +1,7 @@
 import { SCORE_WEIGHTS } from "../config.js";
 
 import { semanticMatch } from "./semanticMatcher.js";
+import { embedSkills, findSemanticMatch } from "./embeddingMatcher.js";
 
 import { collectEvidence, unsupportedSkills } from "./evidenceEngine.js";
 
@@ -27,12 +28,16 @@ import { analyseCertifications } from "./certificationEngine.js";
 import validateScore from "../validators/validateScore.js";
 
 
-// Match a list of job-required skill names against what the candidate has,
-// using the same taxonomy-aware matcher for both required and preferred.
-function matchSkillList(skillList, candidateSkills) {
+// Match a list of job-required skill names against what the candidate has.
+// Tries the static taxonomy/whole-word matcher first (free, deterministic,
+// covers the common case); anything it misses falls back to real embedding
+// similarity (embeddings map is pre-computed by the caller, covering only
+// the skills that actually need it - see scoreCandidate below).
+function matchSkillList(skillList, candidateSkills, embeddings) {
 
     const matched = [];
     const missing = [];
+    const semanticMatches = [];
 
     for (const skill of skillList) {
 
@@ -40,16 +45,24 @@ function matchSkillList(skillList, candidateSkills) {
 
         if (result.matched) {
             matched.push(skill);
+            continue;
+        }
+
+        const viaEmbedding = embeddings ? findSemanticMatch(skill, candidateSkills, embeddings) : null;
+
+        if (viaEmbedding) {
+            matched.push(skill);
+            semanticMatches.push({ skill, via: viaEmbedding.matched, similarity: viaEmbedding.score });
         } else {
             missing.push(skill);
         }
     }
 
-    return { matched, missing };
+    return { matched, missing, semanticMatches };
 }
 
 
-export default function scoreCandidate(
+export default async function scoreCandidate(
 
     candidate = {},
 
@@ -76,13 +89,24 @@ export default function scoreCandidate(
     const candidateSkills = candidate.skills || [];
 
 
-    const { matched: matchedRequired, missing: missingRequired } =
-        matchSkillList(requiredSkills, candidateSkills);
+    // Only pay for embeddings on the skills the free taxonomy pass actually
+    // missed - most jobs resolve entirely through semanticMatch and never
+    // trigger an API call at all.
+    const taxonomyMisses = [...requiredSkills, ...preferredSkills].filter(
+        (skill) => !semanticMatch(skill, candidateSkills).matched
+    );
+    const embeddings = taxonomyMisses.length
+        ? await embedSkills([...taxonomyMisses, ...candidateSkills])
+        : new Map();
 
-    const { matched: matchedPreferred, missing: missingPreferred } =
-        matchSkillList(preferredSkills, candidateSkills);
+    const { matched: matchedRequired, missing: missingRequired, semanticMatches: semanticRequired } =
+        matchSkillList(requiredSkills, candidateSkills, embeddings);
+
+    const { matched: matchedPreferred, missing: missingPreferred, semanticMatches: semanticPreferred } =
+        matchSkillList(preferredSkills, candidateSkills, embeddings);
 
     const matchedSkills = [...new Set([...matchedRequired, ...matchedPreferred])];
+    const semanticMatches = [...semanticRequired, ...semanticPreferred];
 
     // Skills the candidate listed that weren't asked for at all. Note: a
     // skill matched only via the semantic taxonomy (e.g. candidate has
@@ -153,7 +177,6 @@ export default function scoreCandidate(
     });
 
     const risk = hiringRisk({
-        gaps: gaps.gaps.length,
         confidence: confidenceResult.confidence,
         unsupportedSkills: unsupported.length,
         expiredCerts: certs.expired.length,
@@ -197,9 +220,15 @@ export default function scoreCandidate(
     if (progression.progression === "Regression") {
         weaknesses.push("Recent role titles suggest a step down in seniority");
     }
-    if (gaps.largest > 1) {
-        weaknesses.push(`Employment gap of ${gaps.largest} year(s) on the CV`);
-    }
+    // Employment gaps deliberately aren't scored as a weakness or red flag:
+    // a CV states that a gap exists but essentially never states why, and
+    // gaps correlate heavily with protected characteristics (parental/
+    // family leave, disability, long-term illness, caregiving). Treating
+    // "has a gap" as inherently negative by default penalises exactly the
+    // candidates equality law protects, based on a fact the system can't
+    // actually interpret. The gap itself is still returned (see
+    // employment_gaps below) as neutral information for a recruiter's own
+    // judgement, not as something the system has already decided is bad.
 
 
     const redFlags = [];
@@ -207,14 +236,16 @@ export default function scoreCandidate(
     for (const rule of knockout.failed) {
         redFlags.push(`Does not meet required criterion: ${rule.field} = ${rule.value}`);
     }
+    // Unverifiable requirements (right to work, security clearance, etc. -
+    // see knockoutEngine.js) are deliberately NOT a red flag: that framing
+    // would still read as "something's wrong with this candidate" for a
+    // fact their CV was simply never going to state either way. They're
+    // surfaced neutrally instead, in requirementsMet below.
     if (risk.level === "High") {
         redFlags.push("Overall hiring risk assessed as High");
     }
     if (certs.expired.length) {
         redFlags.push(`${certs.expired.length} certification(s) have expired`);
-    }
-    if (gaps.gaps.some((g) => g.recent && g.years > 1)) {
-        redFlags.push("Most recent employment gap is unexplained");
     }
 
 
@@ -233,10 +264,25 @@ export default function scoreCandidate(
     }
 
 
-    const requirementsMet = (job.knockout_requirements || []).map((rule) => ({
-        requirement: `${rule.field}: ${rule.value}`,
-        met: !knockout.failed.includes(rule),
-    }));
+    // Three real states, not two: "met" (verified from the CV), "not met"
+    // (verified from the CV and it fails) and "unverified" (the CV has no
+    // way to tell us - e.g. right to work, security clearance). Previously
+    // this only tracked failed vs. not-failed, which reported every
+    // unverifiable requirement as "met: true" - actively misleading, since
+    // nothing had actually confirmed it.
+    const requirementsMet = (job.knockout_requirements || []).map((rule) => {
+        const status = knockout.failed.includes(rule)
+            ? "not_met"
+            : knockout.unverified.includes(rule)
+                ? "unverified"
+                : "met";
+
+        return {
+            requirement: `${rule.field}: ${rule.value}`,
+            status,
+            met: status === "met", // kept for anything still reading the boolean shape
+        };
+    });
 
 
     const recommendation =
@@ -295,6 +341,12 @@ export default function scoreCandidate(
         missing_required: missingRequired,
         missing_preferred: missingPreferred,
         other_skills: otherSkills,
+        // Skills credited only via embedding similarity, not the static
+        // taxonomy or a literal name match - surfaced explicitly (skill,
+        // the candidate's actual wording, similarity score) so a recruiter
+        // can see and audit why something matched rather than trusting an
+        // invisible "AI decided" match.
+        semantic_matches: semanticMatches,
 
         strengths,
         weaknesses,
