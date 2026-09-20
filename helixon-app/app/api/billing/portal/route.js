@@ -11,7 +11,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 // Portal (invoices, payment method, cancel/change plan) instead of
 // re-building that UI here. Requires a Stripe customer, which only exists
 // once they've completed checkout at least once.
-export async function POST(request) {
+export async function POST() {
   const { user, profile } = await getCustomerContext();
   if (!user) {
     return NextResponse.json({ ok: false, error: "Please sign in to manage billing." }, { status: 401 });
@@ -34,12 +34,12 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "No billing account yet - subscribe to a plan first." }, { status: 404 });
   }
 
-  const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.helixon.co.uk").replace(/\/+$/, "");
 
   try {
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${origin}/billing`,
+      return_url: `${siteUrl}/billing`,
     });
     return NextResponse.json({ ok: true, redirectTo: session.url });
   } catch (err) {

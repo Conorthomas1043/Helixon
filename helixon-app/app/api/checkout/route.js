@@ -80,7 +80,11 @@ export async function POST(request) {
     // the product.
     const needsSignup = !profile;
 
-    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
+    // Never trust the client-supplied Origin header here: this route is
+    // unauthenticated (guest checkout is the front door), so anyone can
+    // script a direct POST with a forged Origin and redirect a real
+    // Stripe checkout's success/cancel URLs to a domain of their choosing.
+    const origin = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.helixon.co.uk").replace(/\/+$/, "");
 
     // Step 2 from the Stripe guide - "Create a Checkout Session"
     // (POST /v1/checkout/sessions). The Stripe SDK wraps that call here.
