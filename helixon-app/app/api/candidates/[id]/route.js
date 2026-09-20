@@ -100,3 +100,100 @@ export async function GET(request, { params }) {
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, timestamp: a.created_at })),
   });
 }
+
+// Permanently erases a candidate and every row that references them - the
+// tool an agency needs to actually fulfil a data subject's right to
+// erasure (privacy policy: "Requests should be directed to the recruitment
+// agency... who acts as the data controller"). Previously there was no way
+// to delete a candidate record anywhere in the product, so that promise
+// couldn't be kept.
+//
+// candidates.id is referenced by scores, artifacts, shortlist_candidates
+// and candidate_notes with NO ACTION (not cascade); scores.id is in turn
+// referenced by feedback and shortlist_candidates, also NO ACTION -
+// deleting the candidate (or its scores) first would fail with a foreign
+// key violation, so all of these are cleared explicitly first, in
+// dependency order (leaves before roots). candidate_activity does cascade
+// automatically. Not wrapped in a DB transaction (supabase-js has no
+// multi-statement transaction support without a Postgres function, and no
+// other multi-step write in this codebase uses one either) - if a step
+// fails partway, the error is surfaced rather than silently swallowed, so
+// a retry or manual follow-up is possible rather than reporting success
+// on a partial delete.
+export async function DELETE(request, { params }) {
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  const { agencyId } = auth;
+  const { id } = await params;
+
+  const { data: candidate, error: lookupError } = await supabase
+    .from("candidates")
+    .select("id")
+    .eq("id", id)
+    .eq("agency_id", agencyId)
+    .maybeSingle();
+
+  if (lookupError) {
+    return NextResponse.json({ error: "Failed to look up candidate" }, { status: 500 });
+  }
+  if (!candidate) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const { data: scoreRows, error: scoreLookupError } = await supabase
+    .from("scores")
+    .select("id")
+    .eq("candidate_id", id);
+
+  if (scoreLookupError) {
+    return NextResponse.json({ error: "Failed to look up candidate scores" }, { status: 500 });
+  }
+
+  const scoreIds = (scoreRows || []).map((s) => s.id);
+
+  // feedback and shortlist_candidates reference scores.id (NO ACTION), so
+  // both must be cleared before scores can be deleted.
+  if (scoreIds.length > 0) {
+    const { error } = await supabase.from("feedback").delete().in("score_id", scoreIds);
+    if (error) {
+      console.error(`[candidates DELETE] Failed clearing feedback for candidate ${id}:`, error.message);
+      return NextResponse.json(
+        { error: "Failed to erase candidate data (feedback). Nothing further was deleted - safe to retry." },
+        { status: 500 }
+      );
+    }
+  }
+
+  const cleanupSteps = [
+    ["shortlist_candidates", "candidate_id"],
+    ["scores", "candidate_id"],
+    ["artifacts", "candidate_id"],
+    ["candidate_notes", "candidate_id"],
+  ];
+
+  for (const [table, column] of cleanupSteps) {
+    const { error } = await supabase.from(table).delete().eq(column, id);
+    if (error) {
+      console.error(`[candidates DELETE] Failed clearing ${table} for candidate ${id}:`, error.message);
+      return NextResponse.json(
+        { error: `Failed to erase candidate data (${table}). Nothing further was deleted - safe to retry.` },
+        { status: 500 }
+      );
+    }
+  }
+
+  const { error: deleteError } = await supabase
+    .from("candidates")
+    .delete()
+    .eq("id", id)
+    .eq("agency_id", agencyId);
+
+  if (deleteError) {
+    console.error(`[candidates DELETE] Failed deleting candidate ${id}:`, deleteError.message);
+    return NextResponse.json({ error: "Failed to erase the candidate record." }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

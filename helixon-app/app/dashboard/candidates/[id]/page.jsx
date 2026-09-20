@@ -45,6 +45,7 @@ import {
   removeCandidateTag,
   setCandidateNextAction,
   completeNextAction,
+  deleteCandidate,
 } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
@@ -220,7 +221,7 @@ function ShortcutsHint() {
  * Header
  * ---------------------------------------------------------------------- */
 
-function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote }) {
+function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete }) {
   const score = candidate.score;
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
   const upcomingStage = candidate.status === "completed" ? nextStageAfter(candidate.stage) : null;
@@ -360,11 +361,24 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           </a>
         )}
         {candidate.nextAction && (
-          <span className="text-[12px] ml-auto" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
+          <span className="text-[12px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
             {overdue ? "Overdue: " : "Next: "}
             {candidate.nextAction.label}
           </span>
         )}
+        {/* Deliberately understated and pushed to the far right - this is a
+            permanent, irreversible erasure (see app/api/candidates/[id]'s
+            DELETE handler), not a routine action, and shouldn't sit visually
+            level with Shortlist/Add note/Email. */}
+        <button
+          type="button"
+          onClick={onDelete}
+          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: INK_FAINT }}
+          title="Permanently erase this candidate's data - e.g. to fulfil a right-to-erasure request"
+        >
+          Delete candidate
+        </button>
       </div>
     </header>
   );
@@ -951,6 +965,22 @@ export default function CandidateProfilePage({ params }) {
     [id]
   );
 
+  const handleDeleteCandidate = useCallback(async () => {
+    if (
+      !confirm(
+        `Permanently delete ${candidate?.fullName || "this candidate"}? This erases their CV, scores, notes and activity history, and cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteCandidate(id);
+      router.push("/dashboard/candidates");
+    } catch (err) {
+      alert(err?.message || "Failed to delete candidate. Please try again.");
+    }
+  }, [id, candidate, router]);
+
   const handleAddNote = useCallback(
     async (body) => {
       const note = await addCandidateNote(id, body).catch(() => null);
@@ -1041,6 +1071,7 @@ export default function CandidateProfilePage({ params }) {
               onQuickShortlist={() => handleStageChange("Shortlisted")}
               onMoveNext={handleStageChange}
               onFocusNote={focusNoteField}
+              onDelete={handleDeleteCandidate}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">

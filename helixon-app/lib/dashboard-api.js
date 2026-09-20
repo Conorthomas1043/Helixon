@@ -133,6 +133,14 @@ export async function updateCandidateStage(id, newStage) {
   });
 }
 
+// Permanently erases the candidate and every row referencing them (scores,
+// notes, artifacts, shortlist entries, feedback) - see app/api/candidates/
+// [id]/route.js's DELETE handler. This is the tool an agency needs to
+// fulfil a candidate's right-to-erasure request.
+export async function deleteCandidate(id) {
+  return apiFetch(`/api/candidates/${id}`, { method: "DELETE" });
+}
+
 export async function assignCandidate(id, recruiterId) {
   return apiFetch(`/api/candidates/${id}/assignment`, {
     method: "PATCH",
