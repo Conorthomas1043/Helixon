@@ -256,8 +256,8 @@ function RecruiterWorkspaceDemo() {
 
 const DASH_KPIS = [
   { label: "Analyses", value: 248, sub: "42 this week" },
-  { label: "Strong matches", value: 61, sub: "25% of completed", accent: true },
-  { label: "In pipeline", value: 34, sub: "Active, not yet placed" },
+  { label: "Strong matches", value: 61, sub: "25% of completed" },
+  { label: "Time to fill", value: 11, sub: "Days, median · 6 roles", accent: true },
   { label: "Avg. score", value: 72, sub: "Across completed", meter: 72 },
 ];
 
@@ -861,6 +861,7 @@ function BulkScreeningSection() {
 const DASHBOARD_POINTS = [
   "Every open role, every candidate and every score in one view",
   "Stalled candidates and unreviewed strong matches surfaced automatically",
+  "Time to fill, offer acceptance, source of hire and fee income — real agency analytics, not just a candidate list",
   "Shared across your team, with a full audit trail of who screened what",
 ];
 
