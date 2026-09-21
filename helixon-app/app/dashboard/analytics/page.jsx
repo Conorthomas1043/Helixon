@@ -116,6 +116,56 @@ function QualityDistribution({ quality }) {
   );
 }
 
+// The one place in the product that checks whether the match score is
+// actually worth anything, using this agency's own resolved outcomes
+// (Placed or Rejected) rather than a generic, once-off accuracy claim
+// measured on unrelated data. Stays honestly blank below the minimum
+// sample size instead of showing a rate two data points can't support.
+function ScoreCalibration({ calibration }) {
+  if (!calibration.hasEnoughData) {
+    return (
+      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        Not enough resolved outcomes yet to check this ({calibration.sampleSize} of{" "}
+        {calibration.minSample} needed). This fills in as candidates are marked Placed
+        or Rejected - the numbers below will always be this agency&apos;s own history,
+        never a generic claim.
+      </p>
+    );
+  }
+  return (
+    <div>
+      <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+        Of the {calibration.sampleSize} candidates who reached a final outcome (Placed
+        or Rejected), how often did each score band actually get placed:
+      </p>
+      <div className="space-y-2.5">
+        {calibration.bands.map((band) => (
+          <div key={band.key} className="flex items-center gap-3">
+            <span className="text-[11px] w-16 shrink-0" style={{ color: INK_MUTED }}>
+              {band.label}
+            </span>
+            <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+              {band.total > 0 && (
+                <div
+                  className="h-full rounded-[6px] flex items-center justify-end px-2"
+                  style={{ width: `${Math.max(4, band.placementRate)}%`, background: "var(--forest)" }}
+                >
+                  <span className="text-[11px] font-semibold tabular-nums text-white">
+                    {band.placementRate}%
+                  </span>
+                </div>
+              )}
+            </div>
+            <span className="text-[10px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+              {band.total > 0 ? `${band.placed}/${band.total} placed` : "no data"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PipelineBar({ pipeline }) {
   const stages = Object.keys(STAGE_LABELS);
   const max = Math.max(1, ...stages.map((k) => pipeline.stageCounts[k] ?? 0));
@@ -262,6 +312,11 @@ export default function AnalyticsPage() {
                   <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} />
                 </div>
               </div>
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Does the score work?" title="Score vs. actual outcome" />
+              <ScoreCalibration calibration={snapshot.calibration} />
             </div>
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>

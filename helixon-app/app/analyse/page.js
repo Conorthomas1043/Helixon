@@ -3015,6 +3015,10 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
   const [bulkJobFile, setBulkJobFile] = useState(null);
   const [bulkJobFileName, setBulkJobFileName] = useState(null);
   const [queue, setQueue] = useState([]);
+  // Defaults on for bulk specifically - mass-screening many candidates
+  // against one role with no per-candidate manual review is exactly the
+  // scenario blind screening exists for. Still a real toggle, not forced.
+  const [bulkBlind, setBulkBlind] = useState(true);
   const [running, setRunning] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [queueError, setQueueError] = useState(null);
@@ -3170,7 +3174,7 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
     updateItem(item.id, { status: "processing", errorMessage: null });
     const fd = new FormData();
     fd.append("cv", item.file);
-    fd.append("blind", "false");
+    fd.append("blind", bulkBlind ? "true" : "false");
     fd.append("requirements", "[]");
     fd.append("jobText", jobTextForRequest || "");
     if (jobFileForRequest) fd.append("jobFile", jobFileForRequest);
@@ -3460,6 +3464,27 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
               )}
             </div>
 
+            <label className="flex items-center gap-3 mb-6 cursor-pointer group">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={bulkBlind}
+                disabled={running}
+                onClick={() => setBulkBlind((value) => !value)}
+                className="w-9 h-5 rounded-full transition-colors relative shrink-0"
+                style={{ background: bulkBlind ? "var(--forest)" : "var(--border)" }}
+              >
+                <div
+                  className="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm"
+                  style={{ transform: bulkBlind ? "translateX(18px)" : "translateX(2px)" }}
+                />
+              </button>
+              <span className="text-xs" style={{ color: "#5a7a6a" }}>
+                Blind screening - redact name, contact details, location
+                &amp; university before scoring each candidate
+              </span>
+            </label>
+
             <div className="mb-6">
               <p className="text-xs font-semibold text-[#13201b] mb-2">
                 Candidates ({queue.length}/{BULK_MAX_FILES})
@@ -3585,9 +3610,9 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
               >
                 Done - {doneCount} scored
                 {failedCount > 0 ? `, ${failedCount} failed` : ""}.{" "}
-                {resolvedJobRef.current.id && (
+                {bulkJobId && (
                   <a
-                    href={`/dashboard/candidates?jobId=${resolvedJobRef.current.id}`}
+                    href={`/dashboard/candidates?jobId=${bulkJobId}`}
                     className="underline font-medium"
                   >
                     View these candidates →
@@ -5866,8 +5891,9 @@ function AnalyzePageContent() {
                       "#5a7a6a",
                   }}
                 >
-                  Blind screening - hide name,
-                  location &amp; university
+                  Blind screening - redact name, contact
+                  details, location &amp; university before
+                  scoring, not just from your view of the result
                 </span>
               </label>
             )}

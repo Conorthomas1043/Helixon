@@ -255,7 +255,8 @@ export async function POST(request) {
       jobParsed,
     } = await analyseCV(
       file,
-      jobText
+      jobText,
+      { blind }
     );
 
     const ex = extracted || {};

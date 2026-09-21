@@ -282,6 +282,8 @@ export async function getAnalyticsSnapshot() {
   const reachedOrFurther = (from) =>
     completed.filter((c) => FUNNEL_ORDER.indexOf(c.stage) >= FUNNEL_ORDER.indexOf(from)).length;
 
+  const calibration = computeScoreCalibration(completed);
+
   return {
     totals: {
       totalCandidates: candidates.length,
@@ -298,6 +300,46 @@ export async function getAnalyticsSnapshot() {
       offerRate: completed.length ? Math.round((reachedOrFurther("Offer") / completed.length) * 100) : 0,
       placementRate: completed.length ? Math.round((placed / completed.length) * 100) : 0,
     },
+    calibration,
     team,
+  };
+}
+
+const CALIBRATION_MIN_SAMPLE = 10;
+const CALIBRATION_BANDS = [
+  { key: "80+", label: "80+", test: (s) => s >= 80 },
+  { key: "60-79", label: "60-79", test: (s) => s >= 60 && s < 80 },
+  { key: "<60", label: "Below 60", test: (s) => s < 60 },
+];
+
+// Whether a higher match score actually predicts a better outcome is an
+// empirical question this agency's own history can answer - and the only
+// honest way to answer it, since no accuracy figure produced anywhere else
+// in this product was ever measured against a real recruiting outcome.
+// Only candidates who've reached a terminal stage (Placed or Rejected)
+// count as a resolved outcome - anyone still mid-pipeline hasn't resolved
+// yet and would bias the rate if counted either way.
+function computeScoreCalibration(completed) {
+  const resolved = completed.filter(
+    (c) => (c.stage === "Placed" || c.stage === "Rejected") && typeof c.score === "number"
+  );
+
+  const bands = CALIBRATION_BANDS.map((band) => {
+    const inBand = resolved.filter((c) => band.test(c.score));
+    const placedInBand = inBand.filter((c) => c.stage === "Placed").length;
+    return {
+      key: band.key,
+      label: band.label,
+      total: inBand.length,
+      placed: placedInBand,
+      placementRate: inBand.length ? Math.round((placedInBand / inBand.length) * 100) : null,
+    };
+  });
+
+  return {
+    sampleSize: resolved.length,
+    hasEnoughData: resolved.length >= CALIBRATION_MIN_SAMPLE,
+    minSample: CALIBRATION_MIN_SAMPLE,
+    bands,
   };
 }

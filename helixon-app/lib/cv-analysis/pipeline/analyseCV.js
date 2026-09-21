@@ -9,6 +9,8 @@ from "../extraction/index.js";
 import scoreCandidate
 from "../scoring/scoreCandidate.js";
 
+import { buildBlindCvText } from "../scoring/blindRedaction.js";
+
 import { debug, summarise } from "../utils/logger.js";
 
 
@@ -17,7 +19,8 @@ import { debug, summarise } from "../utils/logger.js";
 
 export default async function analyseCV(
     file,
-    jobText
+    jobText,
+    { blind = false } = {}
 ){
 
 
@@ -175,11 +178,19 @@ export default async function analyseCV(
     */
 
 
+    // Blind screening redacts what extraction just identified (name,
+    // contact details, location, employer, institutions) out of the text
+    // scoring actually sees, rather than only redacting the display copy
+    // returned to the recruiter afterward - see blindRedaction.js.
+    const scoringText = blind
+        ? buildBlindCvText(cvText, extracted)
+        : cvText;
+
     const result =
         await scoreCandidate(
             extracted,
             jobParsed,
-            cvText
+            scoringText
         );
 
 
