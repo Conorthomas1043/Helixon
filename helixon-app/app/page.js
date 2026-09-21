@@ -514,6 +514,96 @@ function BenefitsSection() {
 
 /* ── Bulk screening - the volume story, told without invented numbers ────── */
 
+/* ── Bulk preview card - a miniature of the real bulk-upload queue (queued/
+   analysing/done rows, live progress bar), same visual language as
+   RecruiterWorkspaceDemo above. Sample data only, not a live embed of the
+   authenticated app - see BulkAnalysisFlow in app/analyse/page.js for the
+   real thing this mirrors. ── */
+
+const BULK_PREVIEW_ROLE = "Senior Software Engineer";
+const BULK_PREVIEW_ROWS = [
+  { name: "Priya Anand", status: "done", score: 91 },
+  { name: "Marcus Webb", status: "done", score: 76 },
+  { name: "Chloe Ferreira", status: "processing", score: null },
+  { name: "Daniel Osei", status: "queued", score: null },
+  { name: "Leah Kaminski", status: "queued", score: null },
+];
+
+function BulkPreviewCard() {
+  const containerRef = useRef(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const pageVisible = usePageVisible();
+  const inView = useInView(containerRef);
+  const animate = pageVisible && inView && !reducedMotion;
+
+  const total = BULK_PREVIEW_ROWS.length;
+  const [doneCount, setDoneCount] = useState(reducedMotion ? 2 : 0);
+
+  useEffect(() => {
+    if (!animate) return;
+    setDoneCount(2);
+    const t = setTimeout(() => setDoneCount(3), 1400);
+    return () => clearTimeout(t);
+  }, [animate]);
+
+  const statusFor = (row, i) => (i < doneCount ? "done" : i === doneCount ? "processing" : "queued");
+
+  return (
+    <div
+      ref={containerRef}
+      className="rounded-[18px] p-6 w-full max-w-sm mx-auto"
+      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
+      aria-label="Example bulk-upload run showing several candidates queued for one role"
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{BULK_PREVIEW_ROLE}</span>
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Bulk upload</span>
+      </div>
+      <p className="text-[11px] mb-4" style={{ color: "var(--ink-faint)" }}>{total} CVs · one role</p>
+
+      <div className="rounded-[12px] overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
+        {BULK_PREVIEW_ROWS.map((row, i) => {
+          const status = statusFor(row, i);
+          return (
+            <div
+              key={row.name}
+              className="flex items-center justify-between px-3 py-2.5 transition-all duration-300"
+              style={{
+                borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                background: status === "processing" ? "var(--mint)" : i % 2 === 0 ? "white" : "var(--mist)",
+              }}
+            >
+              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>{row.name}</span>
+              {status === "done" && (
+                <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(row.score) }}>{row.score}</span>
+              )}
+              {status === "processing" && (
+                <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--forest)" }}>
+                  <span className="pulse-dot" aria-hidden="true" style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--forest)", display: "inline-block" }} />
+                  Analysing…
+                </span>
+              )}
+              {status === "queued" && <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>Queued</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: "var(--border-soft)" }}>
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${(doneCount / total) * 100}%`,
+            background: "var(--forest)",
+            transition: "width 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        />
+      </div>
+      <p className="text-[10px]" style={{ color: "var(--ink-faint)" }}>{doneCount} of {total} analysed</p>
+    </div>
+  );
+}
+
 function BulkScreeningSection() {
   const stages = [
     { label: "CVs in", detail: "Upload up to 50 at once, for one role" },
@@ -550,9 +640,12 @@ function BulkScreeningSection() {
           </h2>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-center mb-12">
         {nodes}
       </div>
+      <Reveal delay={stages.length * 80}>
+        <BulkPreviewCard />
+      </Reveal>
     </section>
   );
 }
