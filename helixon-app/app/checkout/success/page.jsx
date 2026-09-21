@@ -1,10 +1,6 @@
-import Stripe from "stripe";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
+import { stripe } from "@/lib/stripe";
 
 export const metadata = {
   title: "You're all set - Helixon",

@@ -17,16 +17,14 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 // Clerk's <UserProfile path="/account" routing="path"> only recognises
 // two of the four SettingsNav tabs as real internal sections: the base
 // path (/account) for Profile, and /account/security for Security.
-// Notifications and Danger zone aren't Clerk concepts, and there's no
-// Helixon-specific UI built for those yet - visiting either previously
-// still rendered the Clerk widget, which silently fell back to its
-// default Profile view while the heading above it kept whatever copy
-// happened to be selected. That combination (nav tab highlighted as
-// "active", heading and widget both showing Profile content) is a real,
-// user-visible bug: it looks like the Notifications/Danger zone page
-// loaded, but the content is just Profile again. Rendering an honest
-// "not built yet" placeholder for those two routes instead - still a
-// visible gap, but no longer a misleading one.
+// Notifications and Danger zone aren't Clerk concepts, so each gets its
+// own Helixon-built component below instead of falling through to
+// Clerk's widget (which used to silently render its default Profile view
+// under whichever tab's heading was selected - a real, user-visible bug:
+// the nav showed "Notifications" as active while the content was Profile
+// again). DangerZone does real account deletion via /api/account/delete;
+// NotificationsInfo is a deliberate, honest "nothing to configure yet"
+// panel, not a stub.
 const TAB_COPY = {
   "/account": {
     eyebrow: "Account",

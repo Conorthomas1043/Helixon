@@ -16,10 +16,10 @@ export default function NotFound() {
           We scored a lot of CVs, but not whatever page you were looking for. It may have moved, or the link's out of date.
         </p>
         <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
-          <a href="/" className="text-xs font-semibold px-5 py-3 rounded-[10px] text-white transition-colors" style={{ background: "var(--forest)" }}>
+          <a href="/dashboard" className="text-xs font-semibold px-5 py-3 rounded-[10px] text-white transition-colors" style={{ background: "var(--forest)" }}>
             Go to the app
           </a>
-          <a href="/landing" className="text-xs font-semibold px-5 py-3 rounded-[10px] transition-colors" style={{ border: "1px solid var(--border)", color: "#13201b" }}>
+          <a href="/" className="text-xs font-semibold px-5 py-3 rounded-[10px] transition-colors" style={{ border: "1px solid var(--border)", color: "#13201b" }}>
             Back to homepage
           </a>
         </div>

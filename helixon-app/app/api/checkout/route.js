@@ -1,13 +1,9 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { stripe } from "@/lib/stripe";
 import { PRICE_IDS } from "@/lib/plans";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-03-31.basil",
-});
 
 // Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
 // shared with the webhook's reverse lookup (planForPriceId) so an upgrade/

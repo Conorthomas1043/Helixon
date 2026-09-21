@@ -135,6 +135,24 @@ export async function updateJobStatus(jobId, status) {
   });
 }
 
+// `fields` is whatever subset of { title, client, location, employmentType,
+// seniority, minYearsExperience, requiredSkills, preferredSkills, status }
+// changed - api/jobs/[id]'s PATCH only updates the keys actually present.
+export async function updateJob(jobId, fields) {
+  const job = await apiFetch(`/api/jobs/${jobId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return adaptJob(job.job);
+}
+
+// Refuses (409) if the job has any candidates attached - see api/jobs/[id]'s
+// DELETE handler for why.
+export async function deleteJob(jobId) {
+  return apiFetch(`/api/jobs/${jobId}`, { method: "DELETE" });
+}
+
 export async function getRecruiters() {
   return apiFetch("/api/team");
 }

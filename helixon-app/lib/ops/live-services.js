@@ -34,7 +34,11 @@ export async function getStripeSnapshot() {
     return { configured: false };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
+  // Deliberately its own client, not the shared lib/stripe.js singleton -
+  // that one constructs unconditionally at module scope and throws
+  // immediately if STRIPE_SECRET_KEY is unset, which would defeat the
+  // "configured: false" guard above before it ever ran.
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-03-31.basil" });
 
   try {
     const byStatus = {};

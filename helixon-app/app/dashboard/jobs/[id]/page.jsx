@@ -11,8 +11,9 @@
 
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates, updateJobStatus } from "@/lib/dashboard-api";
+import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
@@ -160,12 +161,138 @@ function StateMessage({ title, body, onRetry }) {
   );
 }
 
+function TextField({ label, ...props }) {
+  return (
+    <label className="block">
+      <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <input
+        {...props}
+        className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ border: "1px solid var(--border)", color: INK }}
+      />
+    </label>
+  );
+}
+
+// Edits the structured fields a recruiter would actually want to fix
+// (title, client, location, seniority, employment type, minimum
+// experience, skills) - not the raw job spec text, which every future
+// analysis against this job re-parses fresh rather than reading back from
+// here (see api/jobs/[id]'s PATCH handler comment).
+function EditJobForm({ job, onCancel, onSave }) {
+  const [form, setForm] = useState({
+    title: job.title || "",
+    client: job.company || "",
+    location: job.location || "",
+    employmentType: job.employmentType || "",
+    seniority: job.seniority || "",
+    minYearsExperience: job.minYearsExperience ?? "",
+    requiredSkills: (job.requiredSkills || []).join(", "),
+    preferredSkills: (job.preferredSkills || []).join(", "),
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  function set(key, value) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function parseSkills(value) {
+    return value.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.title.trim()) {
+      setError("Title can't be empty.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave({
+        title: form.title.trim(),
+        client: form.client.trim() || null,
+        location: form.location.trim() || null,
+        employmentType: form.employmentType.trim() || null,
+        seniority: form.seniority.trim() || null,
+        minYearsExperience: form.minYearsExperience === "" ? null : Number(form.minYearsExperience),
+        requiredSkills: parseSkills(form.requiredSkills),
+        preferredSkills: parseSkills(form.preferredSkills),
+      });
+    } catch (err) {
+      setError(err?.message || "Failed to save changes. Please try again.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <TextField label="Title" value={form.title} onChange={(e) => set("title", e.target.value)} required maxLength={200} />
+      <div className="grid sm:grid-cols-2 gap-4">
+        <TextField label="Client" value={form.client} onChange={(e) => set("client", e.target.value)} maxLength={200} />
+        <TextField label="Location" value={form.location} onChange={(e) => set("location", e.target.value)} maxLength={200} />
+      </div>
+      <div className="grid sm:grid-cols-3 gap-4">
+        <TextField label="Seniority" value={form.seniority} onChange={(e) => set("seniority", e.target.value)} maxLength={50} />
+        <TextField label="Employment type" value={form.employmentType} onChange={(e) => set("employmentType", e.target.value)} maxLength={50} />
+        <TextField
+          label="Min. years experience"
+          type="number"
+          min={0}
+          max={60}
+          value={form.minYearsExperience}
+          onChange={(e) => set("minYearsExperience", e.target.value)}
+        />
+      </div>
+      <TextField
+        label="Required skills (comma-separated)"
+        value={form.requiredSkills}
+        onChange={(e) => set("requiredSkills", e.target.value)}
+      />
+      <TextField
+        label="Preferred skills (comma-separated)"
+        value={form.preferredSkills}
+        onChange={(e) => set("preferredSkills", e.target.value)}
+      />
+
+      {error && (
+        <p className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>
+      )}
+
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="submit"
+          disabled={saving}
+          className="text-[12px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          style={{ background: "var(--forest)", color: "white" }}
+        >
+          {saving ? "Saving…" : "Save changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          className="text-[12px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function JobDetailPage({ params }) {
   const { id } = use(params);
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
   const [stageFilter, setStageFilter] = useState("all");
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -205,6 +332,30 @@ export default function JobDetailPage({ params }) {
       setUpdatingStatus(false);
     }
   }, [data]);
+
+  const handleSaveEdit = useCallback(
+    async (fields) => {
+      const updated = await updateJob(id, fields);
+      setData((d) => ({ ...d, job: { ...d.job, ...updated } }));
+      setEditing(false);
+    },
+    [id]
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (!data?.job) return;
+    if (data.job.candidateCount > 0) return;
+    if (!window.confirm(`Delete "${data.job.title}"? This can't be undone.`)) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteJob(data.job.id);
+      router.push("/dashboard/jobs");
+    } catch (err) {
+      setDeleteError(err?.message || "Failed to delete this role. Please try again.");
+      setDeleting(false);
+    }
+  }, [data, router]);
 
   const job = data?.job;
   const candidates = data?.candidates ?? [];
@@ -259,7 +410,7 @@ export default function JobDetailPage({ params }) {
                     {job.company} · {job.location}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                   <span
                     className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
@@ -275,8 +426,32 @@ export default function JobDetailPage({ params }) {
                   >
                     {updatingStatus ? "Updating…" : job.status === "open" ? "Mark as closed" : "Reopen role"}
                   </button>
+                  {!editing && (
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting || job.candidateCount > 0}
+                    title={job.candidateCount > 0 ? "Candidates are attached to this role - mark it closed instead of deleting it." : undefined}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
+                    style={{ border: "1px solid var(--border)", color: "var(--score-low)" }}
+                  >
+                    {deleting ? "Deleting…" : "Delete role"}
+                  </button>
                 </div>
               </div>
+
+              {deleteError && (
+                <p className="text-[12px] mb-4" style={{ color: "var(--score-low)" }}>{deleteError}</p>
+              )}
 
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
                 <Stat label="Candidates" value={job.candidateCount} />
@@ -287,38 +462,44 @@ export default function JobDetailPage({ params }) {
                 <Stat label="Placed" value={job.placed} accent="var(--forest)" />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
-                <div>
-                  <FieldLabel>Role details</FieldLabel>
-                  <ul className="text-[13px] space-y-1" style={{ color: INK }}>
-                    <li>{job.seniority} · {job.employmentType}</li>
-                    <li>{job.salaryRange}</li>
-                    <li>{job.minYearsExperience}+ years' experience</li>
-                  </ul>
+              {editing ? (
+                <div className="pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+                  <EditJobForm job={job} onCancel={() => setEditing(false)} onSave={handleSaveEdit} />
                 </div>
-                <div>
-                  <FieldLabel>Required skills</FieldLabel>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {job.requiredSkills.map((s) => (
-                      <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
-                        {s}
-                      </span>
-                    ))}
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+                  <div>
+                    <FieldLabel>Role details</FieldLabel>
+                    <ul className="text-[13px] space-y-1" style={{ color: INK }}>
+                      <li>{job.seniority} · {job.employmentType}</li>
+                      <li>{job.salaryRange}</li>
+                      <li>{job.minYearsExperience}+ years' experience</li>
+                    </ul>
                   </div>
-                  {job.preferredSkills.length > 0 && (
-                    <>
-                      <FieldLabel>Preferred skills</FieldLabel>
-                      <div className="flex flex-wrap gap-1.5">
-                        {job.preferredSkills.map((s) => (
-                          <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  <div>
+                    <FieldLabel>Required skills</FieldLabel>
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {job.requiredSkills.map((s) => (
+                        <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                    {job.preferredSkills.length > 0 && (
+                      <>
+                        <FieldLabel>Preferred skills</FieldLabel>
+                        <div className="flex flex-wrap gap-1.5">
+                          {job.preferredSkills.map((s) => (
+                            <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </header>
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>

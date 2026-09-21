@@ -1,11 +1,7 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-03-31.basil",
-});
+import { stripe } from "@/lib/stripe";
 
 // POST /api/billing/portal - hands the user off to Stripe's hosted Billing
 // Portal (invoices, payment method, cancel/change plan) instead of

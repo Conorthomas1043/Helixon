@@ -1,9 +1,5 @@
-import Stripe from "stripe";
 import { supabase } from "@/lib/supabase";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
+import { stripe } from "@/lib/stripe";
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 

@@ -202,33 +202,6 @@ export function Divider() {
   return <div className="h-px my-6" style={{ background: "var(--border)" }} aria-hidden="true" />;
 }
 
-// ── "Not available yet" row ─────────────────────────────────────────────
-// For settings the backend genuinely doesn't support yet. Deliberately not
-// an interactive control (no disabled toggle, no dead button) - a static
-// row with a badge, so it reads as a roadmap item rather than a feature
-// that looks live but silently does nothing.
-export function ComingSoonRow({ label, description, note }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-1">
-      <div>
-        <span className="block text-sm font-medium" style={{ color: COLORS.ink }}>{label}</span>
-        {description && (
-          <span className="block text-xs mt-0.5" style={{ color: COLORS.faint }}>{description}</span>
-        )}
-        {note && (
-          <span className="block text-xs mt-1.5" style={{ color: COLORS.muted }}>{note}</span>
-        )}
-      </div>
-      <span
-        className="shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full mt-0.5 whitespace-nowrap"
-        style={{ background: "var(--mist)", color: COLORS.muted, border: "1px solid var(--border)" }}
-      >
-        Coming soon
-      </span>
-    </div>
-  );
-}
-
 // ── Page-level content surface ──────────────────────────────────────────
 // One per settings page. Now that each section lives on its own route,
 // this is the single content boundary rather than one of several stacked

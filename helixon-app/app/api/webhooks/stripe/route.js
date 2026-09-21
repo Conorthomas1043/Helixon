@@ -1,11 +1,7 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
+import { stripe } from "@/lib/stripe";
 import { planForPriceId } from "@/lib/plans";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook
 // signature - this is the "raw request body access" caveat that makes
