@@ -26,7 +26,7 @@
     "next": "16.3.5",
     "posthog-js": "^1.427.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react-dom": "19.3.0",
     "recharts": "^2.6.0",
     "redis": "^6.2.1",
     "resend": "^6.20.0",
