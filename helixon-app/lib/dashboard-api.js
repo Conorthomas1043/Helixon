@@ -127,6 +127,14 @@ export async function getJobCandidates(jobId) {
   return apiFetch(`/api/jobs/${jobId}/candidates`);
 }
 
+export async function updateJobStatus(jobId, status) {
+  return apiFetch(`/api/jobs/${jobId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+}
+
 export async function getRecruiters() {
   return apiFetch("/api/team");
 }

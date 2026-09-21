@@ -12,7 +12,7 @@
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates } from "@/lib/dashboard-api";
+import { getJobById, getJobCandidates, updateJobStatus } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
@@ -190,6 +190,22 @@ export default function JobDetailPage({ params }) {
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const handleToggleStatus = useCallback(async () => {
+    if (!data?.job) return;
+    const nextStatus = data.job.status === "open" ? "closed" : "open";
+    setUpdatingStatus(true);
+    try {
+      await updateJobStatus(data.job.id, nextStatus);
+      setData((d) => ({ ...d, job: { ...d.job, status: nextStatus } }));
+    } catch (err) {
+      alert(err?.message || "Failed to update this role's status. Please try again.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }, [data]);
+
   const job = data?.job;
   const candidates = data?.candidates ?? [];
   const filteredCandidates = stageFilter === "all" ? candidates : candidates.filter((c) => c.stage === stageFilter);
@@ -236,12 +252,23 @@ export default function JobDetailPage({ params }) {
                     {job.company} · {job.location}
                   </p>
                 </div>
-                <span
-                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0"
-                  style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
-                >
-                  {job.status === "open" ? "Open" : "Closed"}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
+                  >
+                    {job.status === "open" ? "Open" : "Closed"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleToggleStatus}
+                    disabled={updatingStatus}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                    style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                  >
+                    {updatingStatus ? "Updating…" : job.status === "open" ? "Mark as closed" : "Reopen role"}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
