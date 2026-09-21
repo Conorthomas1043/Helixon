@@ -211,19 +211,29 @@ body {
 }
 
 /* ── Landing: scroll reveals & cookie banner ─────────────────────────────── */
+/* The hidden starting state is scoped to `.js` (set on <html> by an inline
+   script in app/layout.js before first paint). Unscoped, this rule left
+   every revealed section of the marketing pages permanently invisible for
+   any visitor whose JavaScript doesn't run - which, on the landing page,
+   is nearly everything below the hero. Default is visible; the animation
+   is the enhancement. */
 .reveal {
+  opacity: 1;
+  transform: none;
+}
+.js .reveal {
   opacity: 0;
   transform: translateY(18px);
   transition:
     opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.reveal--visible {
+.js .reveal--visible {
   opacity: 1;
   transform: translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
 }
 
 .cookie-banner[data-visible="true"] > div {
