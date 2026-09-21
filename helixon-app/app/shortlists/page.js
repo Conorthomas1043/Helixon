@@ -67,7 +67,7 @@ function Nav() {
           <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
         </a>
         <div className="hidden sm:flex items-center gap-0.5">
-          {[["History", "/history"], ["Shortlists", "/shortlists"], ["Bulk Upload", "/bulk"], ["Pricing", "/landing#pricing"]].map(([label, href]) => (
+          {[["History", "/history"], ["Shortlists", "/shortlists"], ["Bulk Upload", "/analyse?mode=bulk"], ["Pricing", "/landing#pricing"]].map(([label, href]) => (
             <a key={label} href={href} className="text-xs px-2.5 py-1.5 rounded-[8px] transition-colors font-medium"
               style={{ color: label === "History" ? "var(--forest)" : "#5a7a6a" }}>{label}</a>
           ))}
@@ -81,7 +81,7 @@ function Nav() {
       </div>
       {mobileNavOpen && (
         <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-          {[["History", "/history"], ["Shortlists", "/shortlists"], ["Bulk Upload", "/bulk"], ["Pricing", "/landing#pricing"]].map(([label, href]) => (
+          {[["History", "/history"], ["Shortlists", "/shortlists"], ["Bulk Upload", "/analyse?mode=bulk"], ["Pricing", "/landing#pricing"]].map(([label, href]) => (
             <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
           ))}
         </div>

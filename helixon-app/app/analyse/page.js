@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import CandidateResult from "@/components/CandidateResult";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobs, getCandidates, getAnalyticsSnapshot } from "@/lib/dashboard-api";
+import { getJobs, getJobById, getCandidates, getAnalyticsSnapshot } from "@/lib/dashboard-api";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MIN_LOADING_MS = 900;
@@ -932,6 +932,7 @@ function AnalysisFlow({
   stage,
   onStartScan,
   onFinish,
+  onSwitchToBulk,
 }) {
   const [step, setStep] =
     useState(0);
@@ -1234,6 +1235,17 @@ function AnalysisFlow({
           >
             Continue →
           </button>
+
+          {onSwitchToBulk && (
+            <button
+              type="button"
+              onClick={onSwitchToBulk}
+              className="w-full text-[11px] font-medium mt-4 transition-colors"
+              style={{ color: "#5a7a6a" }}
+            >
+              Screening more than one candidate? Bulk upload →
+            </button>
+          )}
         </div>
       )}
 
@@ -2970,8 +2982,653 @@ function ScanningStep({
   );
 }
 
+/* ------------------------------------------------------------------------
+ * Bulk upload - screens every CV for one role in a single run, instead of
+ * the single-candidate wizard above repeated by hand once per candidate.
+ * Lives on the same /analyse route (no separate page) and reuses /api/run
+ * exactly as-is: one request per CV, run with limited concurrency from the
+ * browser. There is no server-side batch endpoint - each request is
+ * independent, so a slow or failing CV never blocks the rest, and nothing
+ * about /api/run needed to change.
+ *
+ * The very first request in a run is always sent alone, before any of the
+ * others are dispatched. It is the one that creates (or confirms) the job
+ * every candidate in this batch attaches to - firing several "no job yet"
+ * requests at once would each create its own duplicate job row for the
+ * same paste/upload. Every later request in the batch, and every manual
+ * per-row Retry, reuses that resolved job id.
+ *
+ * This runs entirely in the browser tab - closing it stops whatever is
+ * still queued, so the UI says so plainly rather than implying a durable
+ * background job that doesn't exist.
+ * ---------------------------------------------------------------------- */
+
+const BULK_MAX_FILES = 50;
+const BULK_CONCURRENCY = 2;
+
+function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
+  const [jobPickMode, setJobPickMode] = useState(
+    savedJobs.length > 0 ? "saved" : "paste"
+  );
+  const [bulkJobId, setBulkJobId] = useState(null);
+  const [bulkJobText, setBulkJobText] = useState("");
+  const [bulkJobFile, setBulkJobFile] = useState(null);
+  const [bulkJobFileName, setBulkJobFileName] = useState(null);
+  const [queue, setQueue] = useState([]);
+  const [running, setRunning] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [queueError, setQueueError] = useState(null);
+
+  const nextIdRef = useRef(0);
+  const abortRef = useRef(false);
+  const retryLockRef = useRef(false);
+  // Filled in once the batch's job is actually known (existing pick, or the
+  // job the first request created) - reused by every later request in the
+  // run and by per-row Retry, so nothing after the first request ever
+  // creates a second job for the same batch.
+  const resolvedJobRef = useRef({ id: null, text: "" });
+
+  useEffect(() => {
+    if (!running) return undefined;
+    const handler = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [running]);
+
+  function selectSavedJob(jobId) {
+    const job = savedJobs.find((j) => j.id === jobId);
+    setBulkJobId(job?.id || null);
+    setBulkJobText(
+      job?.job_text ||
+        [job?.title, job?.company ? `Client: ${job.company}` : null]
+          .filter(Boolean)
+          .join("\n")
+    );
+    setBulkJobFile(null);
+    setBulkJobFileName(null);
+  }
+
+  // Pre-selects the job reached via a /analyse?jobId=...&mode=bulk link
+  // (e.g. "Bulk screen candidates" on a job's own page) - same handoff
+  // AnalysisFlow's pickSavedJob effect does for the single-candidate flow.
+  useEffect(() => {
+    if (!prefilledJob) return;
+    setJobPickMode("saved");
+    selectSavedJob(prefilledJob.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately only reacts to prefilledJob arriving, not to selectSavedJob identity
+  }, [prefilledJob]);
+
+  function handleBulkJobFile(fileOrNull) {
+    if (!fileOrNull) {
+      setBulkJobFile(null);
+      setBulkJobFileName(null);
+      return;
+    }
+    if (!isAcceptedJobFile(fileOrNull)) {
+      setQueueError(
+        "Please upload a PDF, Word (.docx) or .txt file for the job spec."
+      );
+      return;
+    }
+    if (fileOrNull.size > MAX_FILE_BYTES) {
+      setQueueError(
+        `That file is ${formatBytes(fileOrNull.size)} - please choose a file under 10MB.`
+      );
+      return;
+    }
+    setQueueError(null);
+    if (
+      fileOrNull.type === "text/plain" ||
+      fileOrNull.name.toLowerCase().endsWith(".txt")
+    ) {
+      const reader = new FileReader();
+      reader.onload = (event) =>
+        setBulkJobText(String(event.target?.result || ""));
+      reader.readAsText(fileOrNull);
+      setBulkJobFile(null);
+      setBulkJobFileName(fileOrNull.name);
+    } else {
+      setBulkJobFile(fileOrNull);
+      setBulkJobFileName(fileOrNull.name);
+      setBulkJobText("");
+    }
+  }
+
+  function addFiles(fileList) {
+    const incoming = Array.from(fileList || []);
+    if (incoming.length === 0) return;
+
+    const accepted = [];
+    const rejected = [];
+    incoming.forEach((f) => {
+      if (!isAcceptedCvFile(f)) {
+        rejected.push(`${f.name} (unsupported type)`);
+        return;
+      }
+      if (f.size > MAX_FILE_BYTES) {
+        rejected.push(`${f.name} (${formatBytes(f.size)}, over 10MB)`);
+        return;
+      }
+      accepted.push(f);
+    });
+
+    setQueue((q) => {
+      const room = BULK_MAX_FILES - q.length;
+      const toAdd = accepted.slice(0, Math.max(0, room));
+      if (accepted.length > toAdd.length) {
+        rejected.push(
+          `${accepted.length - toAdd.length} more file(s) - a bulk run is capped at ${BULK_MAX_FILES} CVs`
+        );
+      }
+      const added = toAdd.map((file) => ({
+        id: nextIdRef.current++,
+        file,
+        status: "queued",
+        candidateId: null,
+        score: null,
+        name: null,
+        errorMessage: null,
+      }));
+      return [...q, ...added];
+    });
+
+    setQueueError(
+      rejected.length > 0 ? `Skipped: ${rejected.join(", ")}` : null
+    );
+  }
+
+  function removeFile(id) {
+    setQueue((q) => q.filter((it) => it.id !== id));
+  }
+
+  function updateItem(id, patch) {
+    setQueue((q) =>
+      q.map((it) => (it.id === id ? { ...it, ...patch } : it))
+    );
+  }
+
+  const jobReady = bulkJobId
+    ? true
+    : bulkJobFile
+      ? true
+      : bulkJobText.trim().length >= 50;
+
+  const pendingCount = queue.filter(
+    (it) => it.status === "queued" || it.status === "failed"
+  ).length;
+  const doneCount = queue.filter((it) => it.status === "done").length;
+  const failedCount = queue.filter((it) => it.status === "failed").length;
+  const settledCount = doneCount + failedCount;
+  const allSettled =
+    queue.length > 0 && settledCount === queue.length && !running;
+  const canStart = jobReady && pendingCount > 0 && !running;
+
+  async function runOne(item, jobIdForRequest, jobTextForRequest, jobFileForRequest) {
+    updateItem(item.id, { status: "processing", errorMessage: null });
+    const fd = new FormData();
+    fd.append("cv", item.file);
+    fd.append("blind", "false");
+    fd.append("requirements", "[]");
+    fd.append("jobText", jobTextForRequest || "");
+    if (jobFileForRequest) fd.append("jobFile", jobFileForRequest);
+    if (jobIdForRequest) fd.append("jobId", jobIdForRequest);
+
+    try {
+      const res = await fetch("/api/run", { method: "POST", body: fd });
+      const data = await res.json().catch(() => null);
+
+      if (res.status === 401) {
+        window.location.href = "/login?next=%2Fanalyse";
+        return { outcome: "aborted" };
+      }
+      if (res.status === 402 || data?.upgrade) {
+        window.location.href = "/pricing?reason=subscription_required";
+        return { outcome: "aborted" };
+      }
+      if (res.status === 429) {
+        updateItem(item.id, {
+          status: "rate_limited",
+          errorMessage: "Hourly analysis limit reached.",
+        });
+        return { outcome: "rate_limited" };
+      }
+      if (data?.ok) {
+        updateItem(item.id, {
+          status: "done",
+          candidateId: data.candidateId,
+          score: data.result?.match_score ?? null,
+          name: data.result?.name || item.file.name,
+        });
+        return { outcome: "ok", jobId: data.jobId };
+      }
+      updateItem(item.id, {
+        status: "failed",
+        errorMessage: data?.error || "Analysis failed.",
+      });
+      return { outcome: "failed" };
+    } catch {
+      updateItem(item.id, {
+        status: "failed",
+        errorMessage: "Network error - check your connection and retry.",
+      });
+      return { outcome: "failed" };
+    }
+  }
+
+  // Resolves and records the batch's real job id/text the first time any
+  // request in the run succeeds - from the initial sequential request, or
+  // from a later per-row Retry if that first request was the one rate
+  // limited. Every request after this point reuses what's recorded here
+  // instead of risking another duplicate job row.
+  async function recordResolvedJob(jobId, jobTextSent) {
+    let text = jobTextSent;
+    if (!text || text.trim().length < 50) {
+      try {
+        const job = await getJobById(jobId);
+        text = job.job_text || text;
+      } catch {
+        // Any later request that still needs real job text will fail
+        // clearly on its own (missing job description) instead of the
+        // whole run silently stalling here.
+      }
+    }
+    resolvedJobRef.current = { id: jobId, text };
+    setBulkJobId(jobId);
+  }
+
+  async function startBulk() {
+    const items = queue.filter(
+      (it) => it.status === "queued" || it.status === "failed"
+    );
+    if (!canStart || items.length === 0) return;
+
+    setRunning(true);
+    setRateLimited(false);
+    abortRef.current = false;
+
+    const first = items[0];
+    const firstResult = await runOne(
+      first,
+      bulkJobId,
+      bulkJobText,
+      bulkJobFile
+    );
+    if (firstResult.outcome === "aborted") {
+      setRunning(false);
+      return;
+    }
+    if (firstResult.outcome === "rate_limited") {
+      setRateLimited(true);
+      setRunning(false);
+      return;
+    }
+    if (firstResult.outcome === "ok" && !resolvedJobRef.current.id) {
+      await recordResolvedJob(firstResult.jobId, bulkJobText);
+    }
+
+    const { id: resolvedId, text: resolvedText } = resolvedJobRef.current;
+    const rest = items.slice(1);
+    let cursor = 0;
+
+    async function worker() {
+      while (cursor < rest.length) {
+        if (abortRef.current) return;
+        const item = rest[cursor++];
+        const outcome = await runOne(item, resolvedId, resolvedText, null);
+        if (outcome.outcome === "aborted") {
+          abortRef.current = true;
+          return;
+        }
+        if (outcome.outcome === "rate_limited") {
+          abortRef.current = true;
+          setRateLimited(true);
+          return;
+        }
+      }
+    }
+
+    await Promise.all(
+      Array.from({ length: BULK_CONCURRENCY }, worker)
+    );
+    setRunning(false);
+  }
+
+  async function retryOne(id) {
+    if (retryLockRef.current || running) return;
+    const item = queue.find((it) => it.id === id);
+    if (!item) return;
+
+    const alreadyResolved = !!resolvedJobRef.current.id;
+    if (!alreadyResolved) retryLockRef.current = true;
+
+    try {
+      const jobIdForRetry = alreadyResolved
+        ? resolvedJobRef.current.id
+        : bulkJobId;
+      const jobTextForRetry = alreadyResolved
+        ? resolvedJobRef.current.text
+        : bulkJobText;
+      const jobFileForRetry = alreadyResolved ? null : bulkJobFile;
+
+      const result = await runOne(
+        item,
+        jobIdForRetry,
+        jobTextForRetry,
+        jobFileForRetry
+      );
+      if (result.outcome === "ok" && !resolvedJobRef.current.id) {
+        await recordResolvedJob(result.jobId, jobTextForRetry);
+      }
+    } finally {
+      retryLockRef.current = false;
+    }
+  }
+
+  return (
+    <>
+      <DashboardNav />
+      <main
+        className="min-h-[calc(100vh-56px)] px-6 py-10"
+        style={{ background: "var(--mist)" }}
+      >
+        <div className="max-w-3xl mx-auto">
+          <div className="card p-8">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h1
+                  className="text-lg font-semibold text-[#13201b] tracking-tight leading-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Bulk screen candidates
+                </h1>
+                <p className="text-[#5a7a6a] text-xs mt-1">
+                  Upload every CV for one role at once - each is scored the
+                  same way as a single analysis.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onExit}
+                className="shrink-0 ml-3 text-[11px] px-3 py-1.5 rounded-[10px] font-medium"
+                style={{ border: "1px solid var(--border)", color: "#5a7a6a" }}
+              >
+                Single candidate
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-[#13201b] mb-2">Role</p>
+              <div className="flex gap-2 mb-3">
+                {savedJobs.length > 0 && (
+                  <button
+                    type="button"
+                    disabled={running}
+                    onClick={() => setJobPickMode("saved")}
+                    className="text-[11px] px-3 py-1.5 rounded-[10px] font-medium"
+                    style={{
+                      border: "1px solid var(--border)",
+                      background: jobPickMode === "saved" ? "var(--mint)" : "transparent",
+                      color: "#13201b",
+                    }}
+                  >
+                    Your jobs
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={running}
+                  onClick={() => setJobPickMode("paste")}
+                  className="text-[11px] px-3 py-1.5 rounded-[10px] font-medium"
+                  style={{
+                    border: "1px solid var(--border)",
+                    background: jobPickMode === "paste" ? "var(--mint)" : "transparent",
+                    color: "#13201b",
+                  }}
+                >
+                  Paste description
+                </button>
+                <button
+                  type="button"
+                  disabled={running}
+                  onClick={() => setJobPickMode("upload")}
+                  className="text-[11px] px-3 py-1.5 rounded-[10px] font-medium"
+                  style={{
+                    border: "1px solid var(--border)",
+                    background: jobPickMode === "upload" ? "var(--mint)" : "transparent",
+                    color: "#13201b",
+                  }}
+                >
+                  Upload spec
+                </button>
+              </div>
+
+              {jobPickMode === "saved" && (
+                <select
+                  disabled={running}
+                  value={bulkJobId || ""}
+                  onChange={(event) => selectSavedJob(event.target.value)}
+                  className="w-full text-xs px-3 py-2.5 rounded-[10px]"
+                  style={{ border: "1px solid var(--border)" }}
+                >
+                  <option value="">Select a role…</option>
+                  {savedJobs.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title}
+                      {j.company ? ` · ${j.company}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {jobPickMode === "paste" && (
+                <textarea
+                  disabled={running}
+                  value={bulkJobText}
+                  onChange={(event) => {
+                    setBulkJobText(event.target.value);
+                    setBulkJobId(null);
+                  }}
+                  placeholder="Paste the job description…"
+                  rows={5}
+                  className="w-full text-xs px-3 py-2.5 rounded-[10px]"
+                  style={{ border: "1px solid var(--border)" }}
+                />
+              )}
+
+              {jobPickMode === "upload" && (
+                <div>
+                  <input
+                    type="file"
+                    disabled={running}
+                    accept=".pdf,.docx,.txt"
+                    onChange={(event) => {
+                      handleBulkJobFile(event.target.files?.[0] || null);
+                      setBulkJobId(null);
+                      event.target.value = "";
+                    }}
+                    className="text-xs"
+                  />
+                  {bulkJobFileName && (
+                    <p className="text-[11px] mt-1" style={{ color: "#5a7a6a" }}>
+                      {bulkJobFileName}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-[#13201b] mb-2">
+                Candidates ({queue.length}/{BULK_MAX_FILES})
+              </p>
+              <label
+                className="flex flex-col items-center justify-center gap-1 py-6 rounded-[10px] cursor-pointer text-center"
+                style={{
+                  border: "1.5px dashed var(--border)",
+                  opacity: running ? 0.6 : 1,
+                  pointerEvents: running ? "none" : "auto",
+                }}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  addFiles(event.dataTransfer.files);
+                }}
+              >
+                <span className="text-xs font-medium text-[#13201b]">
+                  Drop CVs here or click to browse
+                </span>
+                <span className="text-[11px]" style={{ color: "#5a7a6a" }}>
+                  PDF or DOCX, up to 10MB each
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  disabled={running}
+                  accept=".pdf,.docx"
+                  className="hidden"
+                  onChange={(event) => {
+                    addFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              {queueError && (
+                <p className="text-[11px] mt-2" style={{ color: "#b91c1c" }}>
+                  {queueError}
+                </p>
+              )}
+            </div>
+
+            {queue.length > 0 && (
+              <ul className="mb-6" style={{ borderTop: "1px solid var(--border)" }}>
+                {queue.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 py-2.5 text-xs"
+                    style={{ borderBottom: "1px solid var(--border)" }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-[#13201b]">
+                        {item.name || item.file.name}
+                      </p>
+                      {item.status === "failed" && (
+                        <p className="text-[11px]" style={{ color: "#b91c1c" }}>
+                          {item.errorMessage}
+                        </p>
+                      )}
+                      {item.status === "rate_limited" && (
+                        <p className="text-[11px]" style={{ color: "#92620f" }}>
+                          Hourly limit reached - retry later.
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {item.status === "queued" && (
+                        <span style={{ color: "#5a7a6a" }}>Queued</span>
+                      )}
+                      {item.status === "processing" && (
+                        <span style={{ color: "#0b6e4f" }}>Analysing…</span>
+                      )}
+                      {item.status === "done" && (
+                        <a
+                          href={`/dashboard/candidates/${item.candidateId}`}
+                          className="font-mono font-semibold"
+                          style={{ color: "#0b6e4f" }}
+                        >
+                          {item.score ?? "-"} →
+                        </a>
+                      )}
+                      {(item.status === "failed" || item.status === "rate_limited") && !running && (
+                        <button
+                          type="button"
+                          onClick={() => retryOne(item.id)}
+                          className="underline"
+                          style={{ color: "#0b6e4f" }}
+                        >
+                          Retry
+                        </button>
+                      )}
+                      {item.status === "queued" && !running && (
+                        <button
+                          type="button"
+                          onClick={() => removeFile(item.id)}
+                          aria-label={`Remove ${item.file.name}`}
+                          style={{ color: "#5a7a6a" }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {rateLimited && (
+              <div
+                className="mb-5 px-3.5 py-3 rounded-[10px] text-xs"
+                style={{ background: "#fff8e6", border: "1px solid var(--border-soft)", color: "#92620f" }}
+              >
+                You&apos;ve reached the hourly analysis limit. {doneCount} of{" "}
+                {queue.length} finished - the rest are still queued below.
+                Wait a while, then press Retry on each remaining candidate.
+              </div>
+            )}
+
+            {allSettled && (
+              <div
+                className="mb-5 px-3.5 py-3 rounded-[10px] text-xs"
+                style={{ background: "#eef6f1", border: "1px solid var(--border-soft)", color: "#0b6e4f" }}
+              >
+                Done - {doneCount} scored
+                {failedCount > 0 ? `, ${failedCount} failed` : ""}.{" "}
+                {resolvedJobRef.current.id && (
+                  <a
+                    href={`/dashboard/candidates?jobId=${resolvedJobRef.current.id}`}
+                    className="underline font-medium"
+                  >
+                    View these candidates →
+                  </a>
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              disabled={!canStart}
+              onClick={startBulk}
+              className="w-full font-semibold py-3.5 rounded-[10px] text-xs transition-all text-white disabled:opacity-40"
+              style={{ background: "var(--forest)", boxShadow: "0 4px 14px -4px rgba(11,110,79,0.4)" }}
+            >
+              {running
+                ? `Analysing… (${settledCount} of ${queue.length} done)`
+                : `Analyse ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+            </button>
+            {running && (
+              <p className="text-[10px] text-center mt-2" style={{ color: "#b0c4ba" }}>
+                Keep this tab open - closing it stops any candidates still queued.
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
 function AnalyzePageContent() {
   const searchParams = useSearchParams();
+
+  // "single" is the default one-CV wizard below; "bulk" swaps in
+  // BulkAnalysisFlow instead - same route (/analyse), no separate page, so
+  // a /analyse?mode=bulk link (e.g. from an old "Bulk upload" nav item)
+  // lands straight in it.
+  const [flowMode, setFlowMode] = useState(
+    () => (searchParams?.get("mode") === "bulk" ? "bulk" : "single")
+  );
 
   const {
     toasts,
@@ -4372,6 +5029,16 @@ function AnalyzePageContent() {
     emailPurpose ===
       "chase_feedback";
 
+  if (flowMode === "bulk") {
+    return (
+      <BulkAnalysisFlow
+        savedJobs={savedJobs}
+        prefilledJob={prefilledJob}
+        onExit={() => setFlowMode("single")}
+      />
+    );
+  }
+
   if (!flowDone) {
     return (
       <>
@@ -4428,6 +5095,7 @@ function AnalyzePageContent() {
               );
             }
           }}
+          onSwitchToBulk={() => setFlowMode("bulk")}
         />
       </>
     );
@@ -4611,30 +5279,33 @@ function AnalyzePageContent() {
                 </p>
               </div>
 
-              <a
-                href="/bulk"
-                className="shrink-0 ml-3 text-[11px] px-3 py-1.5 rounded-[10px] transition-colors font-medium"
-                style={{
-                  border:
-                    "1px solid var(--border)",
-                  color:
-                    "#5a7a6a",
-                }}
-                onMouseEnter={(
-                  event
-                ) =>
-                  (event.currentTarget.style.background =
-                    "var(--mint)")
-                }
-                onMouseLeave={(
-                  event
-                ) =>
-                  (event.currentTarget.style.background =
-                    "transparent")
-                }
-              >
-                Bulk upload
-              </a>
+              {!compareMode && (
+                <button
+                  type="button"
+                  onClick={() => setFlowMode("bulk")}
+                  className="shrink-0 ml-3 text-[11px] px-3 py-1.5 rounded-[10px] transition-colors font-medium"
+                  style={{
+                    border:
+                      "1px solid var(--border)",
+                    color:
+                      "#5a7a6a",
+                  }}
+                  onMouseEnter={(
+                    event
+                  ) =>
+                    (event.currentTarget.style.background =
+                      "var(--mint)")
+                  }
+                  onMouseLeave={(
+                    event
+                  ) =>
+                    (event.currentTarget.style.background =
+                      "transparent")
+                  }
+                >
+                  Bulk upload
+                </button>
+              )}
             </div>
 
             {rerunBanner && (

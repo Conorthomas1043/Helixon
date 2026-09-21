@@ -233,6 +233,13 @@ export default function JobDetailPage({ params }) {
                   Open in candidate database →
                 </Link>
                 <Link
+                  href={`/analyse?jobId=${job.id}&mode=bulk`}
+                  className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  style={{ color: "var(--forest)" }}
+                >
+                  Bulk screen candidates →
+                </Link>
+                <Link
                   href={`/analyse?jobId=${job.id}`}
                   className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{ background: "var(--forest)", color: "white" }}
