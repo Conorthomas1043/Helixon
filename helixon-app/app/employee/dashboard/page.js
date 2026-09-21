@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import OnboardingPanel from "./onboarding-panel";
 import TeamTasksPanel from "./team-tasks-panel";
+import TeamPresencePanel from "../_shared/TeamPresencePanel";
+import { useHeartbeat } from "../_shared/useHeartbeat";
 
 const PRIORITY_META = {
   high: { label: "High", dot: "#e0554f", badge: "text-rose-700 border-rose-200", badgeBg: "#fdf1f0" },
@@ -63,6 +65,8 @@ export default function EmployeeDashboard() {
   const [employee, setEmployee] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [taskView, setTaskView] = useState("mine"); // mine | team
+
+  useHeartbeat(!checking);
 
   // ── Session check + current employee ────────────────────────────────────
   useEffect(() => {
@@ -361,6 +365,24 @@ export default function EmployeeDashboard() {
           </p>
         </div>
 
+        {/* ── Tools ─────────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          <Link
+            href="/employee/calendar"
+            className="text-xs font-semibold px-3.5 py-2 rounded-full transition hover:opacity-90"
+            style={{ background: "var(--mint)", color: "var(--forest)" }}
+          >
+            Calendar
+          </Link>
+          <Link
+            href="/employee/goals"
+            className="text-xs font-semibold px-3.5 py-2 rounded-full transition hover:opacity-90"
+            style={{ background: "var(--mint)", color: "var(--forest)" }}
+          >
+            Goals
+          </Link>
+        </div>
+
         <OnboardingPanel />
 
         {/* ── Attention banner ──────────────────────────────────────────── */}
@@ -439,6 +461,11 @@ export default function EmployeeDashboard() {
             </div>
           </div>
         )}
+
+        {/* ── Team presence ─────────────────────────────────────────────── */}
+        <div className="mb-8">
+          <TeamPresencePanel currentEmployeeId={employee?.id} />
+        </div>
 
         {/* ── My Tasks / Team Tasks toggle ──────────────────────────────── */}
         <div className="flex rounded-lg p-0.5 gap-0.5 mb-4 w-fit" style={{ background: "var(--mist)" }}>

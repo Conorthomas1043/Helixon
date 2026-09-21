@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useHeartbeat } from "../_shared/useHeartbeat";
 
 function BarList({ items, labelKey, countKey }) {
   const max = Math.max(1, ...items.map((i) => i[countKey]));
@@ -36,6 +37,8 @@ export default function EmployeeOpsPage() {
   const [checking, setChecking] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+
+  useHeartbeat();
 
   useEffect(() => {
     fetch("/api/employee/ops")

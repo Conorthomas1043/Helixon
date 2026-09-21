@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useHeartbeat } from "../_shared/useHeartbeat";
 
 const RED = "#e0554f";
 const AMBER = "#d99a3a";
@@ -73,6 +74,7 @@ const TABS = [
 
 export default function EmployeeMobileApp({ employee }) {
   const [tab, setTab] = useState("todos");
+  useHeartbeat();
 
   async function signOut() {
     try {
@@ -398,6 +400,69 @@ function Kpi({ label, value }) {
   );
 }
 
+const PRESENCE_DOT = { online: "#0b6e4f", busy: "#d99a3a", offline: "#b0c4ba" };
+const PRESENCE_LABEL = { online: "Online", busy: "Busy", offline: "Offline" };
+
+function formatSignedIn(iso) {
+  if (!iso) return null;
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ${minutes % 60}m`;
+}
+
+function TeamPresenceList() {
+  const [team, setTeam] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/employee/presence", { cache: "no-store" });
+      const data = await res.json();
+      if (data.ok) setTeam(data.team);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  const sorted = [...team].sort((a, b) => (a.status === "offline") - (b.status === "offline"));
+
+  return (
+    <>
+      <SectionTitle>Team</SectionTitle>
+      {loading && team.length === 0 ? (
+        <p className="text-[12px] text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+      ) : (
+        <div className="rounded-[14px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+          {sorted.map((person, i) => (
+            <div
+              key={person.id}
+              className="flex items-center justify-between gap-3 px-3.5 py-2.5"
+              style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: PRESENCE_DOT[person.status] }} />
+                <span className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
+              </div>
+              <span className="text-[11px] shrink-0" style={{ color: "var(--ink-faint)" }}>
+                {PRESENCE_LABEL[person.status]}
+                {person.signedInSince ? ` · ${formatSignedIn(person.signedInSince)}` : ""}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function StatsTab() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
@@ -446,6 +511,10 @@ function StatsTab() {
         <Icon path={ICONS.refresh} size={14} />
         Refresh
       </button>
+
+      <div className="mt-5">
+        <TeamPresenceList />
+      </div>
     </div>
   );
 }
