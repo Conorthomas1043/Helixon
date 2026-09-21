@@ -46,6 +46,33 @@ export async function getCandidates(query = {}) {
   return apiFetch(`/api/candidates?${buildCandidatesQuery(query).toString()}`);
 }
 
+// The API caps pageSize at 50 server-side (app/api/candidates/route.js)
+// regardless of what's requested - callers that need "every matching
+// candidate" (stage counts, analytics, CSV export) previously asked for
+// pageSize: 1000 assuming that's what they'd get, which the server always
+// silently clamped down to 50. That's not a performance nuance, it's a
+// correctness bug: any agency with more than 50 candidates matching a
+// filter got numbers computed from an arbitrary 50-row subset with no
+// indication anything was missing. This pages through every result
+// instead, using totalPages from each real response rather than assuming
+// a page size - capped at 100 pages (5,000 candidates) as a sanity limit
+// against a runaway loop, not because that's an expected agency size.
+async function getAllCandidates(query = {}) {
+  const { page, pageSize, ...rest } = query;
+  let all = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  do {
+    const result = await getCandidates({ ...rest, page: currentPage, pageSize: 50 });
+    all = all.concat(result.items ?? []);
+    totalPages = result.totalPages ?? 1;
+    currentPage += 1;
+  } while (currentPage <= totalPages && currentPage <= 100);
+
+  return all;
+}
+
 /**
  * getStageCounts - there's no dedicated facets endpoint, so this fetches
  * every candidate matching the current filters (ignoring `stage` itself
@@ -53,12 +80,17 @@ export async function getCandidates(query = {}) {
  */
 export async function getStageCounts(query = {}) {
   const { stage, page, pageSize, ...rest } = query;
-  const { items } = await getCandidates({ ...rest, stage: "all", page: 1, pageSize: 1000 });
+  const items = await getAllCandidates({ ...rest, stage: "all" });
   const counts = { all: items.length };
   Object.keys(STAGE_LABELS).forEach((s) => {
     counts[s] = items.filter((c) => c.stage === s).length;
   });
   return counts;
+}
+
+// Real, unpaginated candidate export - CSV download on the Candidates page.
+export async function getCandidatesForExport(query = {}) {
+  return getAllCandidates(query);
 }
 
 export async function getCandidateById(id) {
@@ -207,8 +239,8 @@ export async function completeNextAction(id) {
  * scale"), just now running over real rows instead of 26 fake ones.
  */
 export async function getAnalyticsSnapshot() {
-  const [{ items: candidates }, team] = await Promise.all([
-    getCandidates({ page: 1, pageSize: 1000, sortBy: "newest" }),
+  const [candidates, team] = await Promise.all([
+    getAllCandidates({ sortBy: "newest" }),
     getRecruiters(),
   ]);
 

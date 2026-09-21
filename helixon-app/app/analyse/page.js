@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import CandidateResult from "@/components/CandidateResult";
 import DashboardNav from "@/components/DashboardNav";
+import { getJobs, getCandidates, getAnalyticsSnapshot } from "@/lib/dashboard-api";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MIN_LOADING_MS = 900;
@@ -288,72 +290,6 @@ function lsSet(key, value) {
   }
 }
 
-function exportRecruiterData() {
-  const payload = {
-    exportedAt:
-      new Date().toISOString(),
-    analysisHistory: ls(
-      "analysisHistory",
-      []
-    ),
-    shortlist: ls(
-      "shortlist",
-      []
-    ),
-    jobTemplates: ls(
-      "jobTemplates",
-      []
-    ),
-    feedbackCount: ls(
-      "feedbackCount",
-      0
-    ),
-  };
-
-  const blob = new Blob(
-    [
-      JSON.stringify(
-        payload,
-        null,
-        2
-      ),
-    ],
-    {
-      type: "application/json",
-    }
-  );
-
-  const url =
-    URL.createObjectURL(blob);
-
-  const a =
-    document.createElement("a");
-
-  a.href = url;
-
-  a.download = `helixon-data-export-${Date.now()}.json`;
-
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-}
-
-function clearAllRecruiterData() {
-  [
-    "analysisHistory",
-    "shortlist",
-    "jobTemplates",
-    "feedbackCount",
-  ].forEach((key) => {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      // Ignore localStorage failures.
-    }
-  });
-}
 
 function Toast({ toasts }) {
   return (
@@ -522,106 +458,51 @@ function ComparePanel({
   );
 }
 
+// Was built entirely from localStorage's "analysisHistory"/"shortlist" -
+// a per-browser copy that necessarily disagreed with the real numbers on
+// /dashboard and /dashboard/analytics the moment a second device or a
+// teammate was involved ("shortlist" was worse: nothing ever wrote to it,
+// so that tile was always 0 for everyone). Now reads
+// getAnalyticsSnapshot(), the same real, agency-wide aggregation the
+// Analytics page itself uses, so this panel can never show a different
+// number than the rest of the dashboard for the same thing.
 function DashboardPanel({
   version,
-  onCleared,
 }) {
   const [data, setData] =
     useState(undefined);
 
-  const [
-    confirmingClear,
-    setConfirmingClear,
-  ] = useState(false);
-
   useEffect(() => {
-    const history = ls(
-      "analysisHistory",
-      []
-    );
+    let cancelled = false;
 
-    const total =
-      history.length;
+    getAnalyticsSnapshot()
+      .then((snapshot) => {
+        if (cancelled) return;
 
-    if (total === 0) {
-      setData({
-        empty: true,
+        if (!snapshot.totals.completed) {
+          setData({ empty: true });
+          return;
+        }
+
+        setData({
+          total: snapshot.totals.completed,
+          avgScore: snapshot.quality.avgScore,
+          strong: snapshot.quality.strong,
+          shortlisted: snapshot.pipeline.stageCounts?.Shortlisted || 0,
+          bands: [
+            { label: "Weak (<60)", count: snapshot.quality.weak },
+            { label: "Moderate (60–79)", count: snapshot.quality.moderate },
+            { label: "Strong (80+)", count: snapshot.quality.strong },
+          ],
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setData({ empty: true });
       });
-      return;
-    }
 
-    let scoreSum = 0;
-    let strong = 0;
-
-    const bandCounts = [
-      0,
-      0,
-      0,
-      0,
-    ];
-
-    for (const historyItem of history) {
-      const score =
-        historyItem.matchScore ||
-        0;
-
-      scoreSum += score;
-
-      if (
-        historyItem.recommendation ===
-        "Strong match"
-      ) {
-        strong++;
-      }
-
-      if (score < 40) {
-        bandCounts[0]++;
-      } else if (score < 60) {
-        bandCounts[1]++;
-      } else if (score < 80) {
-        bandCounts[2]++;
-      } else {
-        bandCounts[3]++;
-      }
-    }
-
-    const avgScore =
-      Math.round(
-        scoreSum / total
-      );
-
-    const shortlist =
-      ls(
-        "shortlist",
-        []
-      ).length;
-
-    const bands = [
-      {
-        label: "0–40",
-        count: bandCounts[0],
-      },
-      {
-        label: "40–60",
-        count: bandCounts[1],
-      },
-      {
-        label: "60–80",
-        count: bandCounts[2],
-      },
-      {
-        label: "80–100",
-        count: bandCounts[3],
-      },
-    ];
-
-    setData({
-      total,
-      avgScore,
-      strong,
-      shortlist,
-      bands,
-    });
+    return () => {
+      cancelled = true;
+    };
   }, [version]);
 
   if (data === undefined) {
@@ -656,7 +537,7 @@ function DashboardPanel({
     total,
     avgScore,
     strong,
-    shortlist,
+    shortlisted,
     bands,
   } = data;
 
@@ -677,81 +558,8 @@ function DashboardPanel({
           }}
           className="text-sm font-semibold text-[#13201b] tracking-tight"
         >
-          Your activity
+          Your team&apos;s activity
         </h2>
-
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={
-              exportRecruiterData
-            }
-            className="text-[10px] font-medium transition-colors"
-            style={{
-              color: "#5a7a6a",
-            }}
-          >
-            Export my data
-          </button>
-
-          {!confirmingClear ? (
-            <button
-              type="button"
-              onClick={() =>
-                setConfirmingClear(
-                  true
-                )
-              }
-              className="text-[10px] font-medium transition-colors"
-              style={{
-                color: "#b0c4ba",
-              }}
-            >
-              Delete my data
-            </button>
-          ) : (
-            <span className="flex items-center gap-1.5 text-[10px]">
-              <span
-                style={{
-                  color: "#5a7a6a",
-                }}
-              >
-                Delete everything?
-              </span>
-
-              <button
-                type="button"
-                onClick={() => {
-                  clearAllRecruiterData();
-                  setConfirmingClear(
-                    false
-                  );
-                  onCleared?.();
-                }}
-                className="font-semibold"
-                style={{
-                  color: "var(--score-low)",
-                }}
-              >
-                Yes
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setConfirmingClear(
-                    false
-                  )
-                }
-                style={{
-                  color: "#5a7a6a",
-                }}
-              >
-                Cancel
-              </button>
-            </span>
-          )}
-        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-3 mb-6">
@@ -770,7 +578,7 @@ function DashboardPanel({
           },
           {
             label: "Shortlisted",
-            val: shortlist,
+            val: shortlisted,
           },
         ].map((metric) => (
           <div
@@ -816,10 +624,8 @@ function DashboardPanel({
                   ? 4
                   : 0,
                 background:
-                  band.label ===
-                    "80–100" ||
-                  band.label ===
-                    "60–80"
+                  band.label.startsWith("Strong") ||
+                  band.label.startsWith("Moderate")
                     ? "#0b6e4f"
                     : "#e3e8e5",
               }}
@@ -835,6 +641,14 @@ function DashboardPanel({
   );
 }
 
+// Was built against localStorage's "analysisHistory" - a per-browser record
+// of runs made from this exact page in this exact browser, with no
+// connection to the real database. "Hasn't been followed up on" was really
+// just "this browser's local copy is more than 7 days old" - meaningless
+// the moment a candidate was viewed or moved on a different device, and
+// invisible to a teammate entirely. Now reads real candidates
+// (score/stage/lastActivityAt, same fields the rest of the dashboard uses)
+// so this agrees with what Pipeline/Candidates actually show.
 function StaleCandidatesBanner({
   version,
 }) {
@@ -847,47 +661,34 @@ function StaleCandidatesBanner({
   ] = useState(false);
 
   useEffect(() => {
-    const history = ls(
-      "analysisHistory",
-      []
-    );
+    let cancelled = false;
 
-    const now = Date.now();
+    getCandidates({ page: 1, pageSize: 1000, sortBy: "newest" })
+      .then(({ items }) => {
+        if (cancelled) return;
 
-    const SEVEN_DAYS =
-      7 *
-      24 *
-      60 *
-      60 *
-      1000;
+        const now = Date.now();
+        const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
-    const staleOnes =
-      history.filter(
-        (historyItem) => {
-          if (!historyItem.timestamp) {
-            return false;
-          }
+        const staleOnes = (items || []).filter((c) => {
+          if (!c.lastActivityAt) return false;
+          if (c.stage === "Placed" || c.stage === "Rejected") return false;
 
-          const age =
-            now -
-            new Date(
-              historyItem.timestamp
-            ).getTime();
+          const age = now - new Date(c.lastActivityAt).getTime();
+          const strong = (c.score || 0) >= 75;
 
-          const strong =
-            historyItem.recommendation ===
-              "Strong match" ||
-            (historyItem.matchScore ||
-              0) >= 75;
+          return strong && age > SEVEN_DAYS;
+        });
 
-          return (
-            strong &&
-            age > SEVEN_DAYS
-          );
-        }
-      );
+        setStale(staleOnes);
+      })
+      .catch(() => {
+        if (!cancelled) setStale([]);
+      });
 
-    setStale(staleOnes);
+    return () => {
+      cancelled = true;
+    };
   }, [version]);
 
   if (
@@ -933,8 +734,8 @@ function StaleCandidatesBanner({
         </span>{" "}
         been followed up on in over a
         week
-        {stale[0]?.cvName
-          ? ` - including ${stale[0].cvName}`
+        {stale[0]?.fullName
+          ? ` - including ${stale[0].fullName}`
           : ""}
         . Worth a nudge before they go
         cold.
@@ -1113,6 +914,10 @@ function AnalysisFlow({
   setAnalysisName,
   jobText,
   setJobText,
+  savedJobs,
+  existingJobId,
+  setExistingJobId,
+  prefilledJob,
   jobFile,
   onJobFileChange,
   onJobFileDrop,
@@ -1179,6 +984,39 @@ function AnalysisFlow({
     onJobFileChange(null);
   }
 
+  // job.job_text is the original description text as submitted, present
+  // for every job created through this same flow - falls back to
+  // reconstructing something reasonable from the structured fields for the
+  // rare job that doesn't have it (e.g. created some other way), so the
+  // textarea is never just blank.
+  function pickSavedJob(job) {
+    setExistingJobId(job.id);
+
+    setJobText(
+      job.job_text ||
+        [
+          job.title,
+          job.company ? `Client: ${job.company}` : null,
+          job.requiredSkills?.length ? `Required skills: ${job.requiredSkills.join(", ")}` : null,
+          job.preferredSkills?.length ? `Preferred skills: ${job.preferredSkills.join(", ")}` : null,
+        ]
+          .filter(Boolean)
+          .join("\n")
+    );
+
+    onJobFileChange(null);
+  }
+
+  // Pre-selects a job reached via a /analyse?jobId=... link from the Jobs
+  // page ("Analyse a candidate for this role") - runs once, when the
+  // parent finishes resolving which saved job that id refers to.
+  useEffect(() => {
+    if (!prefilledJob) return;
+    setJobMode("saved");
+    pickSavedJob(prefilledJob);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately only reacts to prefilledJob arriving, not to pickPreset/pickSavedJob identity
+  }, [prefilledJob]);
+
   function chooseMode(mode) {
     setJobMode(mode);
 
@@ -1186,6 +1024,10 @@ function AnalysisFlow({
       setSelectedPreset(
         null
       );
+    }
+
+    if (mode !== "saved") {
+      setExistingJobId(null);
     }
 
     if (mode !== "upload") {
@@ -1442,8 +1284,18 @@ function AnalysisFlow({
             your own.
           </p>
 
-          <div className="grid grid-cols-3 gap-3 mb-7">
+          <div className={savedJobs.length > 0 ? "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7" : "grid grid-cols-3 gap-3 mb-7"}>
             {[
+              ...(savedJobs.length > 0
+                ? [
+                    {
+                      id: "saved",
+                      label: "Your jobs",
+                      sub: `${savedJobs.length} open role${savedJobs.length === 1 ? "" : "s"}`,
+                      icon: "💼",
+                    },
+                  ]
+                : []),
               {
                 id: "preset",
                 label: "Preset role",
@@ -1515,6 +1367,66 @@ function AnalysisFlow({
               </button>
             ))}
           </div>
+
+          {jobMode === "saved" && (
+            <div className="mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {savedJobs.map((job) => (
+                  <button
+                    key={job.id}
+                    type="button"
+                    onClick={() => pickSavedJob(job)}
+                    className="text-left p-4 rounded-[12px] transition-all"
+                    style={{
+                      border: `1.5px solid ${existingJobId === job.id ? "var(--forest)" : "var(--border)"}`,
+                      background: existingJobId === job.id ? "#f0f9f4" : "white",
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span
+                        className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: "var(--mint)", color: "var(--forest)" }}
+                      >
+                        {job.status === "open" ? "Open" : "Closed"}
+                      </span>
+                      <span className="text-[9px]" style={{ color: "#8aaa9a" }}>
+                        {job.candidateCount ?? 0} candidate{job.candidateCount === 1 ? "" : "s"} so far
+                      </span>
+                    </div>
+
+                    <p className="text-xs font-semibold mb-1" style={{ color: "#13201b" }}>
+                      {job.title}
+                    </p>
+
+                    {job.company && (
+                      <p className="text-[10px]" style={{ color: "#5a7a6a" }}>
+                        {job.company}
+                      </p>
+                    )}
+
+                    {existingJobId === job.id && (
+                      <p className="text-[10px] mt-2 font-medium" style={{ color: "var(--forest)" }}>
+                        ✓ Selected - you can still edit it below
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {existingJobId && (
+                <textarea
+                  value={jobText}
+                  onChange={(event) => setJobText(event.target.value)}
+                  rows={6}
+                  placeholder="Edit this role's description here…"
+                  className="w-full p-3.5 text-xs mt-4 resize-none outline-none rounded-[10px] transition-all"
+                  style={{ border: "1px solid var(--border)", background: "white", color: "#13201b", fontFamily: "var(--font-body)" }}
+                  onFocus={(event) => (event.target.style.boxShadow = "0 0 0 3px rgba(11,110,79,0.12)")}
+                  onBlur={(event) => (event.target.style.boxShadow = "none")}
+                />
+              )}
+            </div>
+          )}
 
           {jobMode ===
             "preset" && (
@@ -3058,7 +2970,9 @@ function ScanningStep({
   );
 }
 
-export default function AnalyzePage() {
+function AnalyzePageContent() {
+  const searchParams = useSearchParams();
+
   const {
     toasts,
     toast,
@@ -3112,6 +3026,39 @@ export default function AnalyzePage() {
 
   const [jobId, setJobId] =
     useState(null);
+
+  // The real jobs already saved for this agency (/dashboard/jobs), fetched
+  // once so the job-selection step can offer "pick one of your open roles"
+  // alongside the preset/upload/paste options - previously the only way to
+  // screen a candidate against a role you were already hiring for was to
+  // re-paste the same job description every time, since this page had no
+  // way to see or reuse anything from the real Jobs list.
+  const [savedJobs, setSavedJobs] = useState([]);
+
+  // Set when the user picks one of savedJobs (or arrives via a
+  // /analyse?jobId=... deep link from the Jobs page) - sent to /api/run as
+  // `jobId` so the analysis attaches to that existing job row instead of
+  // creating a new, duplicate one every time.
+  const [existingJobId, setExistingJobId] = useState(null);
+
+  // Resolved once savedJobs has loaded and the URL has a ?jobId= - used by
+  // AnalysisFlow to pre-select that job when the page is reached via a
+  // "Analyse a candidate for this role" link on the Jobs page.
+  const [prefilledJob, setPrefilledJob] = useState(null);
+
+  useEffect(() => {
+    getJobs()
+      .then((jobs) => setSavedJobs(jobs))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const targetId = searchParams?.get("jobId");
+    if (!targetId || savedJobs.length === 0) return;
+    const match = savedJobs.find((j) => j.id === targetId);
+    if (match) setPrefilledJob(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only needs to react to savedJobs finishing its first load, not to searchParams changing after
+  }, [savedJobs]);
 
   const [error, setError] =
     useState(null);
@@ -3651,6 +3598,19 @@ export default function AnalyzePage() {
         requirements
       )
     );
+
+    // Attaches this analysis to a job the user actually picked from their
+    // real Jobs list, instead of always creating a brand new job row - see
+    // app/api/run/route.js's existingJobId handling. Not cleared by the
+    // !compareMode reset above (which clears the *result* of the previous
+    // run) - this reflects what the user picked in the job-selection step,
+    // which stays selected across a rerun/compare of the same candidate.
+    if (existingJobId) {
+      formData.append(
+        "jobId",
+        existingJobId
+      );
+    }
 
     try {
       const response =
@@ -4430,6 +4390,10 @@ export default function AnalyzePage() {
           setJobText={
             setJobText
           }
+          savedJobs={savedJobs}
+          existingJobId={existingJobId}
+          setExistingJobId={setExistingJobId}
+          prefilledJob={prefilledJob}
           jobFile={jobFile}
           onJobFileChange={
             handleJobFileChange
@@ -4502,18 +4466,6 @@ export default function AnalyzePage() {
           version={
             historyVersion
           }
-          onCleared={() => {
-            setHistoryVersion(
-              (version) =>
-                version + 1
-            );
-
-            setTemplates([]);
-
-            toast(
-              "Your data has been deleted"
-            );
-          }}
         />
 
         {analysisName &&
@@ -6488,5 +6440,25 @@ export default function AnalyzePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// useSearchParams() (for the ?jobId= deep link from the Jobs page) requires
+// a Suspense boundary in the app router, or static prerendering fails the
+// build - same reason app/dashboard/pipeline/page.jsx wraps its content the
+// same way.
+function AnalysePageFallback() {
+  return (
+    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <DashboardNav />
+    </main>
+  );
+}
+
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<AnalysePageFallback />}>
+      <AnalyzePageContent />
+    </Suspense>
   );
 }

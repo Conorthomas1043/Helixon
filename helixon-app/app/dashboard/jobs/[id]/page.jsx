@@ -204,17 +204,26 @@ export default function JobDetailPage({ params }) {
 
         {status === "ready" && job && (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <Link href="/dashboard/jobs" className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
                 ← All jobs
               </Link>
-              <Link
-                href={`/dashboard/candidates?jobId=${job.id}`}
-                className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-                style={{ color: "var(--forest)" }}
-              >
-                Open in candidate database →
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link
+                  href={`/dashboard/candidates?jobId=${job.id}`}
+                  className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  style={{ color: "var(--forest)" }}
+                >
+                  Open in candidate database →
+                </Link>
+                <Link
+                  href={`/analyse?jobId=${job.id}`}
+                  className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{ background: "var(--forest)", color: "white" }}
+                >
+                  Analyse a candidate →
+                </Link>
+              </div>
             </div>
 
             <header className="rounded-[16px] p-6 sm:p-8" style={CARD}>

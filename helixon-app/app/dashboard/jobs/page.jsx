@@ -42,41 +42,50 @@ function Chip({ children }) {
 
 function JobCard({ job }) {
   return (
-    <Link
-      href={`/dashboard/jobs/${job.id}`}
-      className="block rounded-[14px] p-5 transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={CARD}
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-            {job.title}
-          </p>
-          <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
-            {job.company} · {job.location}
-          </p>
+    <div className="rounded-[14px] p-5 transition-colors hover:bg-[var(--mist)]" style={CARD}>
+      <Link
+        href={`/dashboard/jobs/${job.id}`}
+        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded-[10px]"
+      >
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+              {job.title}
+            </p>
+            <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+              {job.company} · {job.location}
+            </p>
+          </div>
+          <span
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+            style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
+          >
+            {job.status === "open" ? "Open" : "Closed"}
+          </span>
         </div>
-        <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-          style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
-        >
-          {job.status === "open" ? "Open" : "Closed"}
-        </span>
-      </div>
 
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        <Chip>{job.seniority}</Chip>
-        <Chip>{job.employmentType}</Chip>
-        <Chip>{job.salaryRange}</Chip>
-      </div>
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          <Chip>{job.seniority}</Chip>
+          <Chip>{job.employmentType}</Chip>
+          <Chip>{job.salaryRange}</Chip>
+        </div>
 
-      <div className="grid grid-cols-4 gap-2 text-center pt-3" style={{ borderTop: "1px solid var(--border)" }}>
-        <Stat label="Candidates" value={job.candidateCount} />
-        <Stat label="Strong" value={job.strongMatches} accent="var(--forest)" />
-        <Stat label="Interview" value={job.interviewing} />
-        <Stat label="Placed" value={job.placed} accent="var(--forest)" />
-      </div>
-    </Link>
+        <div className="grid grid-cols-4 gap-2 text-center pt-3" style={{ borderTop: "1px solid var(--border)" }}>
+          <Stat label="Candidates" value={job.candidateCount} />
+          <Stat label="Strong" value={job.strongMatches} accent="var(--forest)" />
+          <Stat label="Interview" value={job.interviewing} />
+          <Stat label="Placed" value={job.placed} accent="var(--forest)" />
+        </div>
+      </Link>
+
+      <Link
+        href={`/analyse?jobId=${job.id}`}
+        className="inline-flex items-center text-[12px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+        style={{ color: "var(--forest)" }}
+      >
+        Analyse a candidate for this role →
+      </Link>
+    </div>
   );
 }
 

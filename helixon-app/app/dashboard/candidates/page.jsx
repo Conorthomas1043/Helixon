@@ -33,7 +33,9 @@ import {
   getRecruiters,
   updateCandidateStage,
   addCandidateTag,
+  getCandidatesForExport,
 } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
@@ -455,6 +457,40 @@ function CandidateDatabaseContent() {
     setFilters(DEFAULT_FILTERS);
   }, []);
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      // Same filters currently applied to the list, minus pagination - the
+      // export is "everything matching what you're looking at", not just
+      // the current page.
+      const { page, pageSize, sortBy, ...activeFilters } = filters;
+      const items = await getCandidatesForExport(activeFilters);
+      downloadCsv(
+        `candidates-${new Date().toISOString().slice(0, 10)}.csv`,
+        items.map((c) => ({
+          Name: c.fullName,
+          "Current title": c.currentTitle || "",
+          "Current company": c.currentCompany || "",
+          Location: c.location || "",
+          Job: c.jobTitle || "",
+          Client: c.company || "",
+          Recruiter: c.recruiterName || "",
+          Stage: c.stage ? STAGE_LABELS[c.stage] || c.stage : "",
+          Score: c.score ?? "",
+          Status: c.status,
+          "Created at": c.createdAt || "",
+          "Last activity": c.lastActivityAt || "",
+        }))
+      );
+    } catch (err) {
+      alert(err?.message || "Failed to export candidates. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }, [filters]);
+
   const toggleTag = useCallback((tagId) => {
     setFilters((f) => ({
       ...f,
@@ -595,6 +631,19 @@ function CandidateDatabaseContent() {
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: filtersOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
+              style={{ background: "white", color: INK_MUTED, border: "1px solid var(--border)" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" />
+              </svg>
+              {exporting ? "Exporting…" : "Export CSV"}
             </button>
           </div>
 
