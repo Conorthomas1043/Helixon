@@ -8,6 +8,17 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 
 import { NextResponse } from "next/server";
 
+// A single analysis can now involve up to 5 sequential/parallel Claude
+// calls (2 extraction + up to 3 for fitJudgeEngine's self-consistency
+// sampling), each with its own retry-with-backoff on transient failures
+// (askClaude.js) - realistically a handful of seconds each, but no
+// explicit budget was declared here before, so this route was relying on
+// whatever Vercel's account-default execution limit happens to be. Set
+// explicitly so the intended timeout is visible in code rather than
+// implicit. Verify this against your actual Vercel plan - Hobby caps
+// function duration well below this regardless of what's set here.
+export const maxDuration = 240;
+
 // .doc is deliberately not accepted - extractCvText() has no parser for
 // the legacy binary format and always throws for it (see that file), so
 // advertising support for it just produces a 400 after the user waits on

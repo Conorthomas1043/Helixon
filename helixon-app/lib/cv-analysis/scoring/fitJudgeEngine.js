@@ -44,33 +44,48 @@ function clamp(n) {
   return Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
 }
 
+// typeof check first, not just Number.isFinite(Number(v)) - Number(null) is
+// 0 and Number.isFinite(0) is true, which would wrongly accept a null score.
+// Only a genuine, finite number counts as valid; a stray string/null/bool
+// score from a malformed Claude response is rejected outright rather than
+// silently corrupting the median below (mixed-type array sort is undefined
+// behaviour in JS - confirmed this produced a wrong-but-plausible-looking
+// median instead of an obvious failure, which is the worse outcome).
+function isValidScore(v) {
+  return typeof v === "number" && Number.isFinite(v);
+}
+
 function isValidJudgment(j) {
   return (
     j &&
     typeof j === "object" &&
-    typeof j.industry_relevance?.score !== "undefined" &&
-    typeof j.career_trajectory?.score !== "undefined" &&
-    typeof j.achievement_quality?.score !== "undefined"
+    isValidScore(j.industry_relevance?.score) &&
+    isValidScore(j.career_trajectory?.score) &&
+    isValidScore(j.achievement_quality?.score)
   );
 }
 
-function heuristicFallback(candidate, job, reason) {
+// Rationale text here is user-facing (surfaced directly in
+// score_rationale.culture on the candidate profile), so it reads like a
+// normal, honest product explanation rather than an engineering log line -
+// no "Claude", no internal reason codes.
+function heuristicFallback(candidate, job) {
   const industryScore = scoreIndustry(candidate, job);
   const progression = analyseProgression(candidate.positions || []);
 
   return {
     industry_relevance: {
       score: industryScore,
-      rationale: `Claude judgement unavailable (${reason}) - fell back to exact industry-name matching.`,
+      rationale: "Industry relevance estimated by name match only - AI assessment wasn't available for this analysis.",
     },
     career_trajectory: {
       score: progression.score,
       label: progression.progression,
-      rationale: `Claude judgement unavailable (${reason}) - fell back to a title-keyword heuristic.`,
+      rationale: "Career trajectory estimated from job titles only - AI assessment wasn't available for this analysis.",
     },
     achievement_quality: {
       score: 0,
-      rationale: `Claude judgement unavailable (${reason}).`,
+      rationale: "Achievement quality couldn't be assessed for this analysis.",
     },
     method: "heuristic_fallback",
     samples: 0,
@@ -78,15 +93,19 @@ function heuristicFallback(candidate, job, reason) {
 }
 
 export async function judgeFit(candidate, job, cvText) {
-  const prompt = fitJudgmentPrompt({ candidate, job, cvText });
-
   let settled;
   try {
+    const prompt = fitJudgmentPrompt({ candidate, job, cvText });
     settled = await Promise.allSettled(
       Array.from({ length: SAMPLES }, () => askClaude(prompt, { temperature: JUDGMENT_TEMPERATURE }))
     );
-  } catch {
-    return heuristicFallback(candidate, job, "request failed");
+  } catch (err) {
+    // Covers prompt-building failures too (not just the Claude calls) -
+    // previously fitJudgmentPrompt() ran outside this try/catch, so a
+    // malformed candidate/job object could throw uncaught here and crash
+    // the whole analysis instead of degrading to the fallback below.
+    console.error("[fitJudgeEngine] judgeFit failed before/during sampling:", err.message);
+    return heuristicFallback(candidate, job);
   }
 
   const valid = settled
@@ -94,7 +113,7 @@ export async function judgeFit(candidate, job, cvText) {
     .map((s) => s.value);
 
   if (valid.length === 0) {
-    return heuristicFallback(candidate, job, "no valid response");
+    return heuristicFallback(candidate, job);
   }
 
   const label = valid[0].career_trajectory.label;

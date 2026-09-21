@@ -5,7 +5,8 @@ import cleanJson from "../utils/cleanJson.js";
 import sanitise from "../utils/sanitise.js";
 
 import {
-    MODEL
+    MODEL,
+    MAX_RETRIES
 }
 from "../config.js";
 
@@ -14,7 +15,40 @@ from "../prompts/systemPrompt.js";
 
 import { debug, error, summarise } from "../utils/logger.js";
 
+import { sleep, backoff, retryable } from "../utils/retry.js";
 
+// retryable()/backoff()/sleep() existed as unused utilities before this -
+// defined, exported, never imported by anything that actually calls
+// Claude, so a single transient failure (rate limit, a 5xx from
+// Anthropic's side) had no recovery anywhere in the pipeline. Every
+// extraction and scoring call goes through this function, so wiring the
+// retry in here covers all of them at once.
+async function withRetry(fn) {
+    let lastError;
+
+    for (let attemptNum = 0; attemptNum <= MAX_RETRIES; attemptNum++) {
+        try {
+            return await fn();
+        } catch (err) {
+            lastError = err;
+
+            // err.status is set on Anthropic SDK API errors (rate limits,
+            // 5xx). Errors this function raises itself below (empty
+            // response, unparseable JSON) have no .status, so retryable()
+            // - which only matches 429/5xx - correctly treats those as
+            // not retryable and rethrows immediately rather than retrying
+            // a deterministic failure 3 extra times for nothing.
+            if (attemptNum >= MAX_RETRIES || !retryable(err?.status)) {
+                throw err;
+            }
+
+            error(`Claude request failed (status ${err?.status}), retrying (attempt ${attemptNum + 1}/${MAX_RETRIES})`);
+            await sleep(backoff(attemptNum));
+        }
+    }
+
+    throw lastError;
+}
 
 
 
@@ -25,6 +59,10 @@ import { debug, error, summarise } from "../utils/logger.js";
 // wants genuine sampling variance to average out via self-consistency
 // (median of several samples) rather than one deterministic-but-noisy call.
 export default async function askClaude(userPrompt, { temperature = 0 } = {}){
+    return withRetry(() => sendToClaude(userPrompt, temperature));
+}
+
+async function sendToClaude(userPrompt, temperature){
 
 
 

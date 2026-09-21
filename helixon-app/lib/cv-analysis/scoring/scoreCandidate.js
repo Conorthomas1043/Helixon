@@ -216,7 +216,14 @@ export default async function scoreCandidate(
             strengths.push(`Demonstrated experience with ${skill}, supported by CV evidence`);
         }
     }
-    if (achievements.some((a) => a.quantified && a.impact)) {
+    // Gated on the judged achievement_quality score, not just "the regex
+    // found a line with a number in it" - achievementsScoreValue now comes
+    // from Claude's holistic judgement (see fitJudgeEngine.js), and
+    // without this gate a candidate could get "achievement quality: 20"
+    // right next to "CV includes quantified, impact-driven achievements",
+    // which contradicts itself. 50 is the same "at least middling"
+    // threshold used for confidenceLabel above.
+    if (achievementsScoreValue >= 50 && achievements.some((a) => a.quantified && a.impact)) {
         strengths.push("CV includes quantified, impact-driven achievements");
     }
     if (progression.progression === "Positive") {
@@ -269,9 +276,15 @@ export default async function scoreCandidate(
 
     const standoutFactors = [];
 
-    for (const a of achievements) {
-        if (a.quantified && a.impact) {
-            standoutFactors.push(a.text);
+    // Same gate as strengths above - only quote achievement lines as
+    // "standout" when Claude's own judgement agrees they're actually
+    // strong, so this can't show a quoted "standout achievement" next to
+    // a low achievement_quality score.
+    if (achievementsScoreValue >= 50) {
+        for (const a of achievements) {
+            if (a.quantified && a.impact) {
+                standoutFactors.push(a.text);
+            }
         }
     }
     if (industryRaw >= 80) {
@@ -321,7 +334,7 @@ export default async function scoreCandidate(
         experience: minYears
             ? `${yearsExperience} years of experience vs. ${minYears} required`
             : `${yearsExperience} years of experience`,
-        culture: judgment.industry_relevance.rationale || "No confirmed industry-specific experience",
+        culture: judgment.industry_relevance.rationale,
         capped: knockout.failed.length > 0,
         cap_reason: knockout.failed.length
             ? `Score capped after failing ${knockout.failed.length} required criterion/criteria`
