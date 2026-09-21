@@ -166,6 +166,71 @@ function ScoreCalibration({ calibration }) {
   );
 }
 
+// "Time to fill"/"time to hire" and time-in-stage answer questions the
+// rest of this page can't: not just how many candidates convert, but how
+// long that actually takes, and where along the way. Median (not mean) -
+// see app/api/analytics/timing's own comment on why.
+function TimingRow({ timing }) {
+  const fmtDays = (d) => (d === null || d === undefined ? "—" : `${d}d`);
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatCard
+        label="Time to fill"
+        value={fmtDays(timing?.timeToFillDays)}
+        sub={timing?.timeToFillSampleSize ? `median · ${timing.timeToFillSampleSize} role${timing.timeToFillSampleSize === 1 ? "" : "s"} filled` : "no placements yet"}
+      />
+      <StatCard
+        label="Time to hire"
+        value={fmtDays(timing?.timeToHireDays)}
+        sub={timing?.timeToHireSampleSize ? `median · ${timing.timeToHireSampleSize} placement${timing.timeToHireSampleSize === 1 ? "" : "s"}` : "no placements yet"}
+      />
+      <StatCard
+        label="Offer acceptance"
+        value={timing?.offerAcceptance?.rate === null || timing?.offerAcceptance?.rate === undefined ? "—" : `${timing.offerAcceptance.rate}%`}
+        sub={
+          timing?.offerAcceptance
+            ? `${timing.offerAcceptance.accepted} accepted, ${timing.offerAcceptance.declined} declined${timing.offerAcceptance.pending ? `, ${timing.offerAcceptance.pending} pending` : ""}`
+            : undefined
+        }
+      />
+    </div>
+  );
+}
+
+function TimeInStage({ timeInStage }) {
+  const withData = (timeInStage || []).filter((s) => s.count > 0);
+  if (withData.length === 0) {
+    return (
+      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        Fills in as candidates move through stages - this reads real stage-change history, not just current position.
+      </p>
+    );
+  }
+  const max = Math.max(1, ...withData.map((s) => s.medianDays || 0));
+  return (
+    <div className="space-y-2.5">
+      {withData.map((s) => (
+        <div key={s.key} className="flex items-center gap-3">
+          <span className="text-[11px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
+            {s.label}
+          </span>
+          <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+            <div
+              className="h-full rounded-[6px] flex items-center justify-end px-2"
+              style={{ width: `${Math.max(4, Math.round(((s.medianDays || 0) / max) * 100))}%`, background: "#a9c4b5" }}
+            >
+              <span className="text-[11px] font-semibold tabular-nums text-white">{s.medianDays}d</span>
+            </div>
+          </div>
+          <span className="text-[10px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
+            {s.count} sample{s.count === 1 ? "" : "s"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PipelineBar({ pipeline }) {
   const stages = Object.keys(STAGE_LABELS);
   const max = Math.max(1, ...stages.map((k) => pipeline.stageCounts[k] ?? 0));
@@ -295,6 +360,11 @@ export default function AnalyticsPage() {
               <StatCard label="Placement rate" value={`${snapshot.conversion.placementRate}%`} sub="of analysed candidates" />
             </div>
 
+            <div>
+              <SectionHeading eyebrow="Speed & efficiency" title="How long it actually takes" />
+              <TimingRow timing={snapshot.timing} />
+            </div>
+
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Funnel" title="Analysed → Placed" />
               <FunnelChart funnel={snapshot.funnel} />
@@ -332,6 +402,11 @@ export default function AnalyticsPage() {
                 }
               />
               <PipelineBar pipeline={snapshot.pipeline} />
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Bottlenecks" title="Median time spent in each stage" />
+              <TimeInStage timeInStage={snapshot.timing?.timeInStage} />
             </div>
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>

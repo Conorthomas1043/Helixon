@@ -264,10 +264,26 @@ export async function completeNextAction(id) {
  * ("a real backend should aggregate this server-side... at production
  * scale"), just now running over real rows instead of 26 fake ones.
  */
+// Speed/efficiency + offer-acceptance figures from app/api/analytics/timing
+// - a separate, server-aggregated call (it needs candidate_activity's full
+// stage-transition history, which getAllCandidates()'s per-candidate rows
+// don't carry). Fails soft: a broken/slow timing query shouldn't blank out
+// the rest of the Analytics page, which has real value without it.
+async function getTimingSnapshot() {
+  try {
+    const data = await apiFetch("/api/analytics/timing");
+    if (!data.ok) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function getAnalyticsSnapshot() {
-  const [candidates, team] = await Promise.all([
+  const [candidates, team, timing] = await Promise.all([
     getAllCandidates({ sortBy: "newest" }),
     getRecruiters(),
+    getTimingSnapshot(),
   ]);
 
   const completed = candidates.filter((c) => c.status === "completed");
@@ -320,6 +336,7 @@ export async function getAnalyticsSnapshot() {
     },
     calibration,
     team,
+    timing,
   };
 }
 
