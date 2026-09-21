@@ -436,6 +436,41 @@ export function useAdminOps() {
   return { ops, error, loading, reload: load };
 }
 
+// Combined infrastructure/product health: Stripe/Clerk/Redis/Resend/Sentry
+// (the same data useAdminServices reads) plus the database itself, the AI
+// providers the product runs on, and a live check that key public pages
+// still return 200. See app/api/admin/health and lib/ops/health-checks.js.
+export function useAdminHealth() {
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/health", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Failed to load health data.");
+      }
+
+      setHealth(data);
+    } catch (err) {
+      setError(err?.message || "Failed to load health data.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { health, error, loading, reload: load };
+}
+
 // Live per-service data (Stripe, Clerk, Redis, Resend, Sentry) - queried
 // directly from each service rather than through the Supabase mirror, which
 // is missing fields (e.g. subscription amounts) and, for users, is no

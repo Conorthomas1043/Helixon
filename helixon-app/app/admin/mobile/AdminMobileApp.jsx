@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAdminStats, useAdminTraffic, useAdminUsers } from "../_shared/hooks";
+import { useAdminStats, useAdminTraffic, useAdminUsers, useAdminHealth } from "../_shared/hooks";
 import { useAdminSession } from "../_shared/session";
 import { ModalHost, confirmAction } from "../_shared/modal";
 import { ToastHost, toast } from "../_shared/toast";
@@ -14,6 +14,7 @@ const GREEN = "#0b6e4f";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: "command" },
+  { id: "health", label: "Health", icon: "activity" },
   { id: "security", label: "Security", icon: "shield" },
   { id: "users", label: "Users", icon: "users" },
 ];
@@ -77,6 +78,7 @@ export default function AdminMobileApp({ username }) {
         style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom))" }}
       >
         {tab === "overview" && <OverviewTab />}
+        {tab === "health" && <HealthTab />}
         {tab === "security" && <SecurityTab />}
         {tab === "users" && <UsersTab />}
       </main>
@@ -235,6 +237,141 @@ function OverviewTab() {
         <Icon name="refresh" size={14} />
         Refresh
       </button>
+    </div>
+  );
+}
+
+// ── Health ───────────────────────────────────────────────────────────────
+// Mobile counterpart of /admin/health: the database, the AI providers the
+// product runs on, third-party services, and how many of the curated
+// public-page checks are currently failing. Condensed - full per-page
+// detail (path/status/latency table) stays desktop-only.
+
+function StatusRow({ label, snapshot, ok, note, first }) {
+  const tone = !snapshot?.configured ? "#94a3b8" : snapshot?.error || snapshot?.connected === false ? RED : ok ? GREEN : AMBER;
+  const text = !snapshot?.configured ? "Not configured" : snapshot?.error || note || "Connected";
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3.5 py-3" style={{ borderTop: first ? "none" : "1px solid var(--border)" }}>
+      <span className="text-[13px] font-medium" style={{ color: "var(--ink)" }}>
+        {label}
+      </span>
+      <span className="flex items-center gap-1.5 text-[11px] font-medium truncate" style={{ color: tone, maxWidth: "60%" }}>
+        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: tone }} />
+        <span className="truncate">{text}</span>
+      </span>
+    </div>
+  );
+}
+
+function HealthTab() {
+  const { health, error, loading, reload } = useAdminHealth();
+  const database = health?.database;
+  const ai = health?.aiProviders;
+  const pages = health?.pages;
+
+  const overall = useMemo(() => {
+    if (!health) return null;
+    const criticalDown = [database, ai?.anthropic, ai?.gemini].some((s) => s?.configured && (s.error || s.connected === false));
+    const degraded = [health?.stripe, health?.clerk, health?.redis, health?.resend, health?.sentry].some((s) => s?.configured && s.error);
+    const pagesFailing = (pages?.failing || 0) > 0;
+    if (criticalDown) return { tone: RED, label: "Critical - core dependency down" };
+    if (degraded || pagesFailing) return { tone: AMBER, label: "Degraded - see details" };
+    return { tone: GREEN, label: "All systems operational" };
+  }, [health, database, ai, pages]);
+
+  return (
+    <div>
+      <SectionTitle>System health</SectionTitle>
+      <ErrorNotice message={error} />
+
+      {loading && !health ? (
+        <EmptyRow>Loading…</EmptyRow>
+      ) : (
+        <>
+          {overall && (
+            <div className="flex items-center gap-2.5 rounded-[14px] p-3.5 mb-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: overall.tone }} />
+              <span className="text-[13px] font-semibold" style={{ color: overall.tone }}>
+                {overall.label}
+              </span>
+            </div>
+          )}
+
+          <SectionTitle>Core infrastructure</SectionTitle>
+          <Card>
+            <StatusRow
+              first
+              label="Database"
+              snapshot={database}
+              ok={database?.connected}
+              note={database?.connected ? `${database.latencyMs}ms query` : "Configured, unreachable"}
+            />
+            <StatusRow
+              label="Redis"
+              snapshot={health?.redis}
+              ok={health?.redis?.connected}
+              note={health?.redis?.connected ? `${health.redis.latencyMs}ms ping` : "Rate limiting fails open"}
+            />
+          </Card>
+
+          <SectionTitle>AI providers</SectionTitle>
+          <Card>
+            <StatusRow
+              first
+              label="Anthropic"
+              snapshot={ai?.anthropic}
+              ok={ai?.anthropic?.connected}
+              note={ai?.anthropic?.connected ? `${ai.anthropic.latencyMs}ms` : "Configured, unreachable"}
+            />
+            <StatusRow
+              label="Gemini"
+              snapshot={ai?.gemini}
+              ok={ai?.gemini?.connected}
+              note={ai?.gemini?.connected ? `${ai.gemini.latencyMs}ms` : "Configured, unreachable"}
+            />
+            <StatusRow label="Voyage" snapshot={ai?.voyage} ok={ai?.voyage?.configured} note="Not live-checked" />
+          </Card>
+
+          <SectionTitle>Business services</SectionTitle>
+          <Card>
+            <StatusRow first label="Stripe" snapshot={health?.stripe} ok note={health?.stripe?.configured ? `${health.stripe.totalSubscriptions ?? 0} subs` : undefined} />
+            <StatusRow label="Clerk" snapshot={health?.clerk} ok note={health?.clerk?.configured ? `${health.clerk.totalUsers ?? 0} users` : undefined} />
+            <StatusRow label="Resend" snapshot={health?.resend} ok={health?.resend?.allVerified} note={health?.resend?.configured ? `${health.resend.domains?.length ?? 0} domain(s)` : undefined} />
+            <StatusRow
+              label="Sentry"
+              snapshot={health?.sentry}
+              ok={health?.sentry?.configured && !health?.sentry?.unresolvedLast24h}
+              note={health?.sentry?.configured ? `${health.sentry.unresolvedLast24h ?? 0} unresolved` : undefined}
+            />
+          </Card>
+
+          <SectionTitle>Public pages</SectionTitle>
+          <Card>
+            {!pages || pages.pages.length === 0 ? (
+              <EmptyRow>No page checks yet.</EmptyRow>
+            ) : pages.failing === 0 ? (
+              <StatusRow first label={`${pages.pages.length} pages checked`} snapshot={{ configured: true }} ok note="All returning 2xx/3xx" />
+            ) : (
+              pages.pages
+                .filter((p) => !p.ok)
+                .map((p, i) => (
+                  <StatusRow key={p.path} first={i === 0} label={p.path} snapshot={{ configured: true, error: p.error }} ok={false} note={p.status ? `HTTP ${p.status}` : p.error} />
+                ))
+            )}
+          </Card>
+
+          <button
+            type="button"
+            onClick={reload}
+            className="mt-4 w-full flex items-center justify-center gap-1.5 text-[12px] font-medium py-2.5 rounded-[10px]"
+            style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
+          >
+            <Icon name="refresh" size={14} />
+            Refresh
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
-import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList } from "../_shared/ui";
+import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList, ServiceStatus } from "../_shared/ui";
 import { Globe, useGlobePoints } from "../_shared/globe";
 import { RequestTable } from "../_shared/table";
 import RecentPanels from "./RecentPanels";
-import { useAdminStats, useAdminTraffic, useAdminOps, useAdminServices } from "../_shared/hooks";
+import { useAdminStats, useAdminTraffic, useAdminOps, useAdminHealth } from "../_shared/hooks";
 
 function formatCurrency(amount, currency = "GBP") {
   const n = Number(amount || 0);
@@ -17,34 +17,6 @@ function formatCurrency(amount, currency = "GBP") {
     currency: (currency || "GBP").toUpperCase(),
     maximumFractionDigits: 0,
   });
-}
-
-function ServiceStatus({ label, snapshot, ok, note }) {
-  const tone = !snapshot?.configured
-    ? "var(--muted)"
-    : snapshot?.error
-      ? "var(--critical)"
-      : ok
-        ? "var(--ok)"
-        : "var(--warn)";
-
-  const text = !snapshot?.configured
-    ? "Not configured"
-    : snapshot?.error
-      ? snapshot.error
-      : note || "Connected";
-
-  return (
-    <div className="bar-row" style={{ alignItems: "center" }}>
-      <span className="bar-row-label" style={{ minWidth: 90 }}>
-        {label}
-      </span>
-      <span className="mono" style={{ color: tone, fontSize: 13 }}>
-        <span className="legend-dot" style={{ background: tone, marginRight: 6 }} />
-        {text}
-      </span>
-    </div>
-  );
 }
 
 export default function CommandPage() {
@@ -60,7 +32,7 @@ export default function CommandPage() {
     reload: reloadTraffic,
   } = useAdminTraffic(range);
   const { ops, error: opsError, reload: reloadOps } = useAdminOps();
-  const { services, error: servicesError, reload: reloadServices } = useAdminServices();
+  const { health, error: healthError, reload: reloadHealth } = useAdminHealth();
 
   const trafficRows = traffic?.rows || [];
   const blocked = traffic?.blockedIps || [];
@@ -69,11 +41,12 @@ export default function CommandPage() {
   const sales = ops?.sales || {};
   const seo = ops?.seo || {};
 
-  const stripe = services?.stripe;
-  const clerk = services?.clerk;
-  const redis = services?.redis;
-  const resend = services?.resend;
-  const sentry = services?.sentry;
+  const stripe = health?.stripe;
+  const clerk = health?.clerk;
+  const redis = health?.redis;
+  const resend = health?.resend;
+  const sentry = health?.sentry;
+  const database = health?.database;
 
   // Prefer the live Stripe/Clerk numbers over the mirrored Supabase ones -
   // the subscriptions table never gets an amount field written to it, and
@@ -100,7 +73,7 @@ export default function CommandPage() {
     reloadStats();
     reloadTraffic();
     reloadOps();
-    reloadServices();
+    reloadHealth();
   }
 
   return (
@@ -117,20 +90,36 @@ export default function CommandPage() {
 
       {error && <div className="notice error section">{error}</div>}
       {opsError && <div className="notice error section">{opsError}</div>}
-      {servicesError && <div className="notice error section">{servicesError}</div>}
+      {healthError && <div className="notice error section">{healthError}</div>}
 
       {/* Live service connectivity - the actual APIs, not their Supabase
           mirrors. Anything showing "Not configured" is missing an env var
           (STRIPE_SECRET_KEY, CLERK_SECRET_KEY, REDIS_URL / UPSTASH_REDIS_REDIS_URL,
-          RESEND_API_KEY, SENTRY_AUTH_TOKEN). */}
-      <Panel title="Live services" sub="Direct API connections, not Supabase mirrors" className="section">
+          RESEND_API_KEY, SENTRY_AUTH_TOKEN). The Supabase row is a real,
+          live ping (lib/ops/health-checks.js) - it used to be a hardcoded
+          "Connected" regardless of whether the database actually was. */}
+      <Panel
+        title="Live services"
+        sub="Direct API connections, not Supabase mirrors"
+        className="section"
+        action={
+          <Link className="panel-link" href="/admin/health">
+            Full system health
+          </Link>
+        }
+      >
         <div className="grid-3">
           <ServiceStatus label="Stripe" snapshot={stripe} ok note={stripe?.configured ? `${stripe.totalSubscriptions ?? 0} subscriptions seen` : undefined} />
           <ServiceStatus label="Clerk" snapshot={clerk} ok note={clerk?.configured ? `${clerk.totalUsers ?? 0} users` : undefined} />
           <ServiceStatus label="Redis" snapshot={redis} ok={redis?.connected} note={redis?.connected ? `${redis.latencyMs}ms ping` : redis?.configured ? "Configured, unreachable" : undefined} />
           <ServiceStatus label="Resend" snapshot={resend} ok={resend?.allVerified} note={resend?.configured ? `${resend.domains?.length ?? 0} domain(s)` : undefined} />
           <ServiceStatus label="Sentry" snapshot={sentry} ok={sentry?.configured && !sentry?.unresolvedLast24h} note={sentry?.configured ? `${sentry.unresolvedLast24h ?? 0} unresolved (24h)` : "Add SENTRY_AUTH_TOKEN to enable"} />
-          <ServiceStatus label="Supabase" snapshot={{ configured: true }} ok note="Product data (candidates, jobs, agencies)" />
+          <ServiceStatus
+            label="Supabase"
+            snapshot={database}
+            ok={database?.connected}
+            note={database?.connected ? `${database.latencyMs}ms query` : database?.configured ? "Configured, unreachable" : undefined}
+          />
         </div>
       </Panel>
 

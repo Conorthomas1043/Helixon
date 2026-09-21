@@ -3,7 +3,10 @@
 export const NAV_GROUPS = [
   {
     label: "Overview",
-    items: [{ href: "/admin/command", label: "Command", icon: "command", hint: "Live snapshot of the business" }],
+    items: [
+      { href: "/admin/command", label: "Command", icon: "command", hint: "Live snapshot of the business" },
+      { href: "/admin/health", label: "System health", icon: "activity", hint: "Database, AI providers, services, and public page checks" },
+    ],
   },
   {
     label: "Customers",

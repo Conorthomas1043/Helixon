@@ -176,6 +176,40 @@ export function Drawer({ open, onClose, title, subtitle, children }) {
   );
 }
 
+// A single live/configured/error status line for one external dependency -
+// used by the Command page's "Live services" panel and /admin/health.
+// `snapshot` is one of the { configured, connected|error, ... } shapes
+// lib/ops/live-services.js and lib/ops/health-checks.js return; `ok` is the
+// caller's own judgement of "healthy" for whatever that service's shape
+// means (e.g. Redis: connected; Resend: every domain verified).
+export function ServiceStatus({ label, snapshot, ok, note }) {
+  const tone = !snapshot?.configured
+    ? "var(--muted)"
+    : snapshot?.error
+      ? "var(--critical)"
+      : ok
+        ? "var(--ok)"
+        : "var(--warn)";
+
+  const text = !snapshot?.configured
+    ? "Not configured"
+    : snapshot?.error
+      ? snapshot.error
+      : note || "Connected";
+
+  return (
+    <div className="bar-row" style={{ alignItems: "center" }}>
+      <span className="bar-row-label" style={{ minWidth: 90 }}>
+        {label}
+      </span>
+      <span className="mono" style={{ color: tone, fontSize: 13 }}>
+        <span className="legend-dot" style={{ background: tone, marginRight: 6 }} />
+        {text}
+      </span>
+    </div>
+  );
+}
+
 export function Panel({ title, sub, action, children, className = "" }) {
   return (
     <div className={`panel ${className}`}>
