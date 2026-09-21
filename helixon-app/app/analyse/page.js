@@ -3022,6 +3022,7 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
   const [running, setRunning] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [queueError, setQueueError] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const nextIdRef = useRef(0);
   const abortRef = useRef(false);
@@ -3339,7 +3340,7 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
         style={{ background: "var(--mist)" }}
       >
         <div className="max-w-3xl mx-auto">
-          <div className="card p-8">
+          <div className="card p-8 fade-up-in">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1
@@ -3490,20 +3491,27 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
                 Candidates ({queue.length}/{BULK_MAX_FILES})
               </p>
               <label
-                className="flex flex-col items-center justify-center gap-1 py-6 rounded-[10px] cursor-pointer text-center"
+                className="flex flex-col items-center justify-center gap-1 py-6 rounded-[10px] cursor-pointer text-center transition-all duration-200"
                 style={{
-                  border: "1.5px dashed var(--border)",
+                  border: `1.5px dashed ${dragActive ? "var(--forest)" : "var(--border)"}`,
+                  background: dragActive ? "var(--mint)" : "transparent",
                   opacity: running ? 0.6 : 1,
                   pointerEvents: running ? "none" : "auto",
+                  transform: dragActive ? "scale(1.01)" : "scale(1)",
                 }}
-                onDragOver={(event) => event.preventDefault()}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDragActive(true);
+                }}
+                onDragLeave={() => setDragActive(false)}
                 onDrop={(event) => {
                   event.preventDefault();
+                  setDragActive(false);
                   addFiles(event.dataTransfer.files);
                 }}
               >
                 <span className="text-xs font-medium text-[#13201b]">
-                  Drop CVs here or click to browse
+                  {dragActive ? "Drop to add" : "Drop CVs here or click to browse"}
                 </span>
                 <span className="text-[11px]" style={{ color: "#5a7a6a" }}>
                   PDF or DOCX, up to 10MB each
@@ -3529,11 +3537,17 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
 
             {queue.length > 0 && (
               <ul className="mb-6" style={{ borderTop: "1px solid var(--border)" }}>
-                {queue.map((item) => (
+                {queue.map((item, i) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-3 py-2.5 text-xs"
-                    style={{ borderBottom: "1px solid var(--border)" }}
+                    className="flex items-center justify-between gap-3 py-2.5 text-xs fade-up-in"
+                    style={{
+                      borderBottom: "1px solid var(--border)",
+                      "--stagger-delay": `${Math.min(i, 12) * 40}ms`,
+                      background: item.status === "processing" ? "var(--mint)" : "transparent",
+                      transition: "background 0.4s ease",
+                      borderRadius: 6,
+                    }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-[#13201b]">
@@ -3555,12 +3569,15 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
                         <span style={{ color: "#5a7a6a" }}>Queued</span>
                       )}
                       {item.status === "processing" && (
-                        <span style={{ color: "#0b6e4f" }}>Analysing…</span>
+                        <span className="flex items-center gap-1.5" style={{ color: "#0b6e4f" }}>
+                          <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: "50%", background: "#0b6e4f", display: "inline-block" }} aria-hidden="true" />
+                          Analysing…
+                        </span>
                       )}
                       {item.status === "done" && (
                         <a
                           href={`/dashboard/candidates/${item.candidateId}`}
-                          className="font-mono font-semibold"
+                          className="font-mono font-semibold fade-up-in"
                           style={{ color: "#0b6e4f" }}
                         >
                           {item.score ?? "-"} →
@@ -3605,10 +3622,10 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
 
             {allSettled && (
               <div
-                className="mb-5 px-3.5 py-3 rounded-[10px] text-xs"
+                className="mb-5 px-3.5 py-3 rounded-[10px] text-xs fade-up-in"
                 style={{ background: "#eef6f1", border: "1px solid var(--border-soft)", color: "#0b6e4f" }}
               >
-                Done - {doneCount} scored
+                ✓ Done - {doneCount} scored
                 {failedCount > 0 ? `, ${failedCount} failed` : ""}.{" "}
                 {bulkJobId && (
                   <a
@@ -3625,12 +3642,26 @@ function BulkAnalysisFlow({ savedJobs, prefilledJob, onExit }) {
               type="button"
               disabled={!canStart}
               onClick={startBulk}
-              className="w-full font-semibold py-3.5 rounded-[10px] text-xs transition-all text-white disabled:opacity-40"
+              className="relative w-full font-semibold py-3.5 rounded-[10px] text-xs transition-all text-white disabled:opacity-40 overflow-hidden"
               style={{ background: "var(--forest)", boxShadow: "0 4px 14px -4px rgba(11,110,79,0.4)" }}
             >
-              {running
-                ? `Analysing… (${settledCount} of ${queue.length} done)`
-                : `Analyse ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+              {running && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: `${queue.length ? (settledCount / queue.length) * 100 : 0}%`,
+                    background: "rgba(255,255,255,0.16)",
+                    transition: "width 0.4s ease",
+                  }}
+                />
+              )}
+              <span className="relative">
+                {running
+                  ? `Analysing… (${settledCount} of ${queue.length} done)`
+                  : `Analyse ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+              </span>
             </button>
             {running && (
               <p className="text-[10px] text-center mt-2" style={{ color: "#b0c4ba" }}>
