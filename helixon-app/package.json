@@ -31,7 +31,7 @@
     "redis": "^6.2.1",
     "resend": "^6.20.0",
     "stripe": "^22.5.0",
-    "svix": "^2.3.0",
+    "svix": "^2.5.0",
     "unpdf": "^1.8.0"
   },
   "devDependencies": {
