@@ -2,6 +2,7 @@ import { Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -100,6 +101,9 @@ export default function RootLayout({ children }) {
 
         <body className="min-h-full flex flex-col antialiased">
           {children}
+          {/* Site-wide, not just the marketing homepage - see
+              CookieConsentBanner.jsx for why. */}
+          <CookieConsentBanner />
           <SpeedInsights />
           <Analytics />
         </body>

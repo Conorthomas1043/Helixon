@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useUser } from "@clerk/nextjs";
-import CookieConsentBanner from "../components/CookieConsentBanner";
 import Button from "@/components/landing/Button";
 import ChatWidget from "@/components/landing/ChatWidget";
 import MarketingNav from "@/components/marketing/MarketingNav";
@@ -1197,7 +1196,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <CookieConsentBanner />
       <main className="min-h-screen" style={{ background: "var(--mist)" }}>
 
         <MarketingNav active="home" />

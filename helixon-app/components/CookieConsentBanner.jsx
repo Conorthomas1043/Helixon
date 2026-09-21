@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export const CONSENT_KEY = "helixon_cookie_consent";
 
@@ -22,7 +23,20 @@ export function useCookieBannerVisible() {
   return visible;
 }
 
+// Rendered from the root layout (app/layout.js) so it appears on whatever
+// page a visitor actually lands on - not just "/". It used to be mounted
+// only on the marketing homepage, so anyone entering through a deep link
+// (an email, a bookmark, /pricing, /dashboard) was never shown it at all.
+// PostHog/Sentry Replay (instrumentation-client.js) already fail safe -
+// nothing optional starts until this cookie says "all" - so that gap was
+// never a tracking-without-consent violation, just a real completeness one:
+// most entry points never got a chance to opt in either way, and a
+// regulator would reasonably expect the prompt on first visit regardless
+// of entry page, not just the homepage.
+const SUPPRESSED_PREFIXES = ["/admin", "/employee"];
+
 export default function CookieConsentBanner({ embedded = false }) {
+  const pathname = usePathname();
   const visible = useCookieBannerVisible();
   const [mounted, setMounted] = useState(false);
 
@@ -39,6 +53,14 @@ export default function CookieConsentBanner({ embedded = false }) {
     document.cookie = `${CONSENT_KEY}=${value}; expires=${expires}; path=/; SameSite=Lax`;
     window.dispatchEvent(new Event("helixon-cookie-consent"));
   }
+
+  // Admin/employee consoles are internal staff tools with their own
+  // separate auth model, not a public/customer-facing surface - a
+  // consumer cookie-consent banner ("Essential cookies keep Helixon
+  // running... for recruiters like you") doesn't fit there. An explicit
+  // `embedded` placement (e.g. a "manage cookie preferences" control)
+  // still renders regardless of path.
+  if (!embedded && SUPPRESSED_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
 
   if (!visible) return null;
 
