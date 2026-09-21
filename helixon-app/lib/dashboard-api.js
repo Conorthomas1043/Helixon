@@ -98,6 +98,42 @@ export async function getCandidateById(id) {
   return { ...candidate, job: candidate.job ? { ...candidate.job, company: candidate.job.client } : null };
 }
 
+// Self-reported fields: source of hire, rejection reason, placement fee/
+// cost, 30/90-day retention. See app/api/candidates/[id]/details/route.js.
+export async function updateCandidateDetails(id, fields) {
+  return apiFetch(`/api/candidates/${id}/details`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+}
+
+// Manual outreach logging (call/email/meeting/CV sent) - see
+// app/api/candidates/[id]/activity/route.js.
+export async function logCandidateActivity(id, type, note) {
+  return apiFetch(`/api/candidates/${id}/activity`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, note }),
+  });
+}
+
+// Candidate NPS / hiring-manager feedback requests - see
+// app/api/candidates/[id]/feedback-requests/route.js.
+export async function getFeedbackRequests(candidateId) {
+  const res = await apiFetch(`/api/candidates/${candidateId}/feedback-requests`);
+  return res.requests;
+}
+
+export async function createFeedbackRequest(candidateId, { kind, recipientLabel }) {
+  const res = await apiFetch(`/api/candidates/${candidateId}/feedback-requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, recipientLabel }),
+  });
+  return res.request;
+}
+
 // Job rows come back from the API in their raw (snake_case) DB column
 // names; the dashboard pages were built against the mock module's
 // camelCase job shape, so adapt here rather than in every page.
@@ -125,6 +161,22 @@ export async function getJobById(id) {
 
 export async function getJobCandidates(jobId) {
   return apiFetch(`/api/jobs/${jobId}/candidates`);
+}
+
+// Sourcing-channel clicks/spend for one job - see
+// app/api/jobs/[id]/channels/route.js.
+export async function getJobChannels(jobId) {
+  const res = await apiFetch(`/api/jobs/${jobId}/channels`);
+  return res.channels;
+}
+
+export async function setJobChannel(jobId, { channel, clicks, spend }) {
+  const res = await apiFetch(`/api/jobs/${jobId}/channels`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ channel, clicks, spend }),
+  });
+  return res.channel;
 }
 
 export async function updateJobStatus(jobId, status) {

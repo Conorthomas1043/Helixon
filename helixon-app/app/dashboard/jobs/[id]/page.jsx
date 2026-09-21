@@ -13,15 +13,103 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob } from "@/lib/dashboard-api";
+import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
   if (!job) return null;
-  const candidates = await getJobCandidates(id);
-  return { job, candidates };
+  const [candidates, channels] = await Promise.all([
+    getJobCandidates(id),
+    getJobChannels(id).catch(() => []),
+  ]);
+  return { job, candidates, channels };
+}
+
+const CHANNEL_LABELS = {
+  referral: "Referral",
+  job_board: "Job board",
+  linkedin: "LinkedIn",
+  direct_sourcing: "Direct sourcing",
+  agency_database: "Agency database",
+  other: "Other",
+};
+const CHANNEL_KEYS = Object.keys(CHANNEL_LABELS);
+
+function ChannelRow({ channelKey, value, onSave }) {
+  const [clicks, setClicks] = useState(value?.clicks ?? 0);
+  const [spend, setSpend] = useState(value?.spend ?? 0);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setClicks(value?.clicks ?? 0);
+    setSpend(value?.spend ?? 0);
+  }, [value?.clicks, value?.spend]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await onSave(channelKey, { clicks: Number(clicks) || 0, spend: Number(spend) || 0 });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <span className="text-[13px] font-medium w-32 shrink-0" style={{ color: INK }}>
+        {CHANNEL_LABELS[channelKey]}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="number"
+          min="0"
+          value={clicks}
+          onChange={(e) => setClicks(e.target.value)}
+          onBlur={save}
+          aria-label={`${CHANNEL_LABELS[channelKey]} clicks/applicants seen`}
+          className="w-20 text-[13px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        />
+        <span className="text-[11px]" style={{ color: INK_FAINT }}>clicks</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={spend}
+          onChange={(e) => setSpend(e.target.value)}
+          onBlur={save}
+          aria-label={`${CHANNEL_LABELS[channelKey]} spend`}
+          className="w-24 text-[13px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        />
+        <span className="text-[11px]" style={{ color: INK_FAINT }}>spend {saving ? "· saving…" : ""}</span>
+      </div>
+    </div>
+  );
+}
+
+function SourcingChannelsPanel({ channels, onSaveChannel }) {
+  const byChannel = new Map((channels || []).map((c) => [c.channel, c]));
+  return (
+    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+      <h2 className="text-base font-semibold mb-1" style={{ fontFamily: "var(--font-display)", color: INK }}>
+        Sourcing channels
+      </h2>
+      <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+        Self-reported - whatever your job board/LinkedIn campaign dashboard shows. Combined with each candidate&apos;s
+        source (set on their profile) for apply rate and cost per applicant in Analytics.
+      </p>
+      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+        {CHANNEL_KEYS.map((key) => (
+          <ChannelRow key={key} channelKey={key} value={byChannel.get(key)} onSave={onSaveChannel} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function FieldLabel({ children }) {
@@ -357,6 +445,19 @@ export default function JobDetailPage({ params }) {
     }
   }, [data, router]);
 
+  const handleSaveChannel = useCallback(
+    async (channel, { clicks, spend }) => {
+      const saved = await setJobChannel(id, { channel, clicks, spend }).catch(() => null);
+      if (saved) {
+        setData((d) => ({
+          ...d,
+          channels: [...(d.channels || []).filter((c) => c.channel !== channel), saved],
+        }));
+      }
+    },
+    [id]
+  );
+
   const job = data?.job;
   const candidates = data?.candidates ?? [];
   const filteredCandidates = stageFilter === "all" ? candidates : candidates.filter((c) => c.stage === stageFilter);
@@ -535,6 +636,8 @@ export default function JobDetailPage({ params }) {
                 </ul>
               )}
             </div>
+
+            <SourcingChannelsPanel channels={data?.channels} onSaveChannel={handleSaveChannel} />
           </>
         )}
       </div>

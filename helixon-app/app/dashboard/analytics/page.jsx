@@ -231,6 +231,176 @@ function TimeInStage({ timeInStage }) {
   );
 }
 
+// Reusable "label · count (rate%)" bar list - source of hire, rejection
+// reasons, both shaped the same way by app/api/analytics/timing.
+function RankedList({ items, emptyLabel, rateLabel }) {
+  if (!items || items.length === 0) {
+    return (
+      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        {emptyLabel}
+      </p>
+    );
+  }
+  const max = Math.max(1, ...items.map((i) => i.count ?? i.total ?? 0));
+  return (
+    <div className="space-y-2.5">
+      {items.map((item) => {
+        const value = item.count ?? item.total ?? 0;
+        const pct = Math.max(4, Math.round((value / max) * 100));
+        return (
+          <div key={item.key} className="flex items-center gap-3">
+            <span className="text-[12px] w-32 shrink-0 truncate" style={{ color: INK_MUTED }}>
+              {item.label}
+            </span>
+            <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+              <div
+                className="h-full rounded-[6px] flex items-center justify-end px-2"
+                style={{ width: `${pct}%`, background: "#a9c4b5" }}
+              >
+                <span className="text-[11px] font-semibold tabular-nums text-white">{value}</span>
+              </div>
+            </div>
+            {rateLabel && item.placementRate !== null && item.placementRate !== undefined && (
+              <span className="text-[10px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+                {item.placementRate}% {rateLabel}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function OutreachRow({ outreach }) {
+  if (!outreach || outreach.total === 0) {
+    return (
+      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        No outreach logged yet - use &quot;Log a call/email/meeting&quot; on a candidate&apos;s profile.
+      </p>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {outreach.byType.map((t) => (
+        <StatCard key={t.key} label={t.label} value={t.count} />
+      ))}
+    </div>
+  );
+}
+
+function AdvertisingTable({ advertising }) {
+  if (!advertising || advertising.length === 0) {
+    return (
+      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        Log clicks/spend per channel on a job&apos;s page to see apply rate and cost per applicant here.
+      </p>
+    );
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-[12px]">
+        <thead>
+          <tr style={{ color: INK_FAINT }}>
+            <th className="text-left font-semibold pb-2">Channel</th>
+            <th className="text-right font-semibold pb-2">Clicks</th>
+            <th className="text-right font-semibold pb-2">Spend</th>
+            <th className="text-right font-semibold pb-2">Applicants</th>
+            <th className="text-right font-semibold pb-2">Apply rate</th>
+            <th className="text-right font-semibold pb-2">Cost/applicant</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+          {advertising.map((row) => (
+            <tr key={row.key}>
+              <td className="py-2 font-medium" style={{ color: INK }}>{row.label}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.clicks}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>£{row.spend.toLocaleString()}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.applicants}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.applyRate !== null ? `${row.applyRate}%` : "—"}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.costPerApplicant !== null ? `£${row.costPerApplicant.toLocaleString()}` : "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function FinancialRow({ financial }) {
+  const fmt = (n) => (n === null || n === undefined ? "—" : `£${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`);
+  return (
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <StatCard label="Fee income" value={fmt(financial.totalFee)} sub={`${financial.placementsWithFee} placement${financial.placementsWithFee === 1 ? "" : "s"} reported`} />
+        <StatCard label="Cost attributed" value={fmt(financial.totalCost)} />
+        <StatCard label="Margin" value={fmt(financial.margin)} sub={financial.margin === null ? "no cost entries yet" : undefined} />
+        <StatCard label="Avg fee / placement" value={fmt(financial.avgFee)} />
+      </div>
+      {financial.byRecruiter.length > 0 && (
+        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+          {financial.byRecruiter.map((r) => (
+            <li key={r.name} className="flex items-center justify-between gap-3 py-2">
+              <span className="text-[13px] font-medium" style={{ color: INK }}>{r.name}</span>
+              <span className="text-[12px]" style={{ color: INK_MUTED }}>
+                <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{fmt(r.total)}</strong> · {r.placements} placement{r.placements === 1 ? "" : "s"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-[11px] mt-3" style={{ color: INK_FAINT }}>
+        Self-reported, entered per placement on the candidate&apos;s profile - Helixon has no independent way to verify these.
+      </p>
+    </>
+  );
+}
+
+function RetentionAndReuse({ retention, reuse }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <StatCard
+        label="30-day retention"
+        value={retention.thirtyDay.rate === null ? "—" : `${retention.thirtyDay.rate}%`}
+        sub={retention.thirtyDay.rate === null ? "no check-ins yet" : `${retention.thirtyDay.retained} retained, ${retention.thirtyDay.left} left`}
+      />
+      <StatCard
+        label="90-day retention"
+        value={retention.ninetyDay.rate === null ? "—" : `${retention.ninetyDay.rate}%`}
+        sub={retention.ninetyDay.rate === null ? "no check-ins yet" : `${retention.ninetyDay.retained} retained, ${retention.ninetyDay.left} left`}
+      />
+      <StatCard
+        label="Candidate reuse"
+        value={reuse.rate === null ? "—" : `${reuse.rate}%`}
+        sub={reuse.totalPeople ? `${reuse.reused} of ${reuse.totalPeople} submitted to 2+ roles` : "matched by email"}
+      />
+    </div>
+  );
+}
+
+function FeedbackRow({ feedback }) {
+  const nps = feedback.candidateNps;
+  const client = feedback.clientSatisfaction;
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <StatCard
+          label="Candidate NPS"
+          value={nps.score === null ? "—" : nps.score}
+          sub={nps.responses ? `${nps.responses} response${nps.responses === 1 ? "" : "s"} · ${nps.promoters} promoters, ${nps.detractors} detractors` : "no responses yet"}
+        />
+      </div>
+      <div>
+        <StatCard
+          label="Client satisfaction"
+          value={client.avgRating === null ? "—" : `${client.avgRating}/5`}
+          sub={client.responses ? `${client.responses} response${client.responses === 1 ? "" : "s"}` : "no responses yet"}
+        />
+      </div>
+    </div>
+  );
+}
+
 function PipelineBar({ pipeline }) {
   const stages = Object.keys(STAGE_LABELS);
   const max = Math.max(1, ...stages.map((k) => pipeline.stageCounts[k] ?? 0));
@@ -436,6 +606,44 @@ export default function AnalyticsPage() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Activity" title="Outreach logged" />
+              <OutreachRow outreach={snapshot.timing?.outreach} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+                <SectionHeading eyebrow="Sourcing" title="Source of hire" />
+                <RankedList items={snapshot.timing?.source} emptyLabel="No candidates have a source set yet - set one from a candidate's profile." rateLabel="placed" />
+              </div>
+              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+                <SectionHeading eyebrow="Diagnosis" title="Why candidates fall through" />
+                <RankedList items={snapshot.timing?.rejectionReasons} emptyLabel="No rejection reasons recorded yet." />
+              </div>
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Sourcing" title="Advertising & campaign performance" />
+              <AdvertisingTable advertising={snapshot.timing?.advertising} />
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Commercial" title="Financials" />
+              {snapshot.timing?.financial && <FinancialRow financial={snapshot.timing.financial} />}
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Quality" title="Retention & reuse" />
+              {snapshot.timing?.retention && snapshot.timing?.reuse && (
+                <RetentionAndReuse retention={snapshot.timing.retention} reuse={snapshot.timing.reuse} />
+              )}
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading eyebrow="Sentiment" title="Candidate & client feedback" />
+              {snapshot.timing?.feedback && <FeedbackRow feedback={snapshot.timing.feedback} />}
             </div>
           </>
         )}

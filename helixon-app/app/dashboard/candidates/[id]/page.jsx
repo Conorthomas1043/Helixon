@@ -46,6 +46,10 @@ import {
   setCandidateNextAction,
   completeNextAction,
   deleteCandidate,
+  updateCandidateDetails,
+  logCandidateActivity,
+  getFeedbackRequests,
+  createFeedbackRequest,
 } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
@@ -105,6 +109,11 @@ function activityDescription(entry) {
     case "next_action_set":
     case "next_action_completed":
       return entry.meta?.label ?? "";
+    case "call_logged":
+    case "email_logged":
+    case "meeting_logged":
+    case "cv_sent_logged":
+      return entry.meta?.note ?? "";
     default:
       return "";
   }
@@ -120,7 +129,18 @@ const EVENT_LABELS = {
   note_added: "Note added",
   next_action_set: "Next action set",
   next_action_completed: "Next action completed",
+  call_logged: "Call logged",
+  email_logged: "Email logged",
+  meeting_logged: "Meeting logged",
+  cv_sent_logged: "CV sent",
 };
+
+const OUTREACH_ACTIONS = [
+  { type: "call_logged", label: "Log a call" },
+  { type: "email_logged", label: "Log an email" },
+  { type: "meeting_logged", label: "Log a meeting" },
+  { type: "cv_sent_logged", label: "Log CV sent" },
+];
 
 /* ------------------------------------------------------------------------
  * Shared bits
@@ -613,7 +633,7 @@ function ActivityTimeline({ activity }) {
  * Recruiter workspace (stage / recruiter / tags / next action)
  * ---------------------------------------------------------------------- */
 
-function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssign, onAddTag, onRemoveTag, onSetNextAction, onCompleteNextAction }) {
+function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssign, onAddTag, onRemoveTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
   const [nextActionLabel, setNextActionLabel] = useState("");
   const [nextActionDue, setNextActionDue] = useState("");
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
@@ -622,6 +642,27 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssi
   return (
     <div className="rounded-[14px] p-5 sm:p-6 space-y-5" style={CARD}>
       <SectionHeading eyebrow="Recruiter workspace" title="Manage this candidate" />
+
+      <div>
+        <FieldLabel>Log outreach</FieldLabel>
+        <div className="flex flex-wrap gap-1.5">
+          {OUTREACH_ACTIONS.map((a) => (
+            <button
+              key={a.type}
+              type="button"
+              onClick={() => onLogActivity(a.type)}
+              disabled={loggingActivity === a.type}
+              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+            >
+              {loggingActivity === a.type ? "Logging…" : a.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
+          Records that you did this, for your own activity metrics - not sent from Helixon.
+        </p>
+      </div>
 
       <div>
         <FieldLabel>Stage</FieldLabel>
@@ -758,6 +799,234 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssi
           </form>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Outcome reporting (source of hire, rejection reason, placement fee/cost,
+ * 30/90-day retention) - all self-reported, all feeding the agency-level
+ * figures on /dashboard/analytics. None of it is inferred or automated.
+ * ---------------------------------------------------------------------- */
+
+const SOURCE_OPTIONS = [
+  { value: "", label: "Not set" },
+  { value: "referral", label: "Referral" },
+  { value: "job_board", label: "Job board" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "direct_sourcing", label: "Direct sourcing" },
+  { value: "agency_database", label: "Agency database" },
+  { value: "other", label: "Other" },
+];
+
+const REJECTION_REASON_OPTIONS = [
+  { value: "", label: "Not set" },
+  { value: "unrealistic_requirements", label: "Unrealistic requirements" },
+  { value: "compensation", label: "Compensation mismatch" },
+  { value: "culture_fit", label: "Culture fit" },
+  { value: "skills_gap", label: "Skills gap" },
+  { value: "slow_process", label: "Process too slow" },
+  { value: "candidate_withdrew", label: "Candidate withdrew" },
+  { value: "client_declined", label: "Client declined" },
+  { value: "role_closed", label: "Role closed" },
+  { value: "other", label: "Other" },
+];
+
+function RetentionToggle({ value, onChange }) {
+  const options = [
+    { value: "retained", label: "Still there" },
+    { value: "left", label: "Left" },
+  ];
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(value === o.value ? null : o.value)}
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={
+            value === o.value
+              ? { background: o.value === "retained" ? "var(--forest)" : RED, color: "white" }
+              : { border: "1px solid var(--border)", color: INK_MUTED, background: "white" }
+          }
+        >
+          {o.label}
+        </button>
+      ))}
+      {!value && (
+        <span className="text-[11px]" style={{ color: INK_FAINT }}>
+          Not checked yet
+        </span>
+      )}
+    </div>
+  );
+}
+
+function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
+  const [fee, setFee] = useState(candidate.placementFee ?? "");
+  const [cost, setCost] = useState(candidate.placementCost ?? "");
+
+  useEffect(() => {
+    setFee(candidate.placementFee ?? "");
+    setCost(candidate.placementCost ?? "");
+  }, [candidate.placementFee, candidate.placementCost]);
+
+  const isRejected = candidate.stage === "Rejected";
+  const isPlaced = candidate.stage === "Placed";
+
+  return (
+    <div className="rounded-[14px] p-5 sm:p-6 space-y-5" style={CARD}>
+      <SectionHeading eyebrow="Reporting" title="Source & outcome" />
+
+      <div>
+        <FieldLabel>Source of hire</FieldLabel>
+        <SelectField
+          ariaLabel="Source of hire"
+          value={candidate.source ?? ""}
+          onChange={(v) => onUpdateDetails({ source: v || null })}
+          options={SOURCE_OPTIONS}
+        />
+      </div>
+
+      {isRejected && (
+        <div>
+          <FieldLabel>Why did this fall through?</FieldLabel>
+          <SelectField
+            ariaLabel="Rejection reason"
+            value={candidate.rejectionReason ?? ""}
+            onChange={(v) => onUpdateDetails({ rejectionReason: v || null })}
+            options={REJECTION_REASON_OPTIONS}
+          />
+          <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
+            Feeds the &quot;why we lose candidates&quot; breakdown in Analytics - add detail in Notes if useful.
+          </p>
+        </div>
+      )}
+
+      {isPlaced && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Fee earned</FieldLabel>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={fee}
+                onChange={(e) => setFee(e.target.value)}
+                onBlur={() => onUpdateDetails({ placementFee: fee === "" ? null : Number(fee) })}
+                placeholder="0.00"
+                className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+            </div>
+            <div>
+              <FieldLabel>Cost attributed</FieldLabel>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={cost}
+                onChange={(e) => setCost(e.target.value)}
+                onBlur={() => onUpdateDetails({ placementCost: cost === "" ? null : Number(cost) })}
+                placeholder="0.00"
+                className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+            </div>
+          </div>
+          <p className="text-[11px] -mt-3" style={{ color: INK_FAINT }}>
+            Self-reported - feeds fee income/margin figures in Analytics. Helixon has no way to verify these.
+          </p>
+
+          <div>
+            <FieldLabel>Still placed, 30 days on?</FieldLabel>
+            <RetentionToggle value={candidate.retention30d} onChange={(v) => onUpdateDetails({ retention30d: v })} />
+          </div>
+          <div>
+            <FieldLabel>Still placed, 90 days on?</FieldLabel>
+            <RetentionToggle value={candidate.retention90d} onChange={(v) => onUpdateDetails({ retention90d: v })} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Feedback requests (candidate NPS + hiring-manager/client feedback)
+ * ---------------------------------------------------------------------- */
+
+function FeedbackRequestsPanel({ requests, onCreate, creating }) {
+  const [copiedId, setCopiedId] = useState(null);
+
+  function copy(req) {
+    navigator.clipboard?.writeText(req.url).then(() => {
+      setCopiedId(req.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }
+
+  return (
+    <div className="rounded-[14px] p-5 sm:p-6 space-y-4" style={CARD}>
+      <SectionHeading eyebrow="Feedback" title="Request feedback" />
+      <p className="text-[12px] -mt-2" style={{ color: INK_FAINT }}>
+        Generates a link to an unauthenticated page - no account needed on their end. Feeds candidate NPS / client
+        satisfaction figures in Analytics.
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => onCreate("candidate_nps")}
+          disabled={creating === "candidate_nps"}
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+        >
+          {creating === "candidate_nps" ? "Creating…" : "Request candidate feedback"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onCreate("client_feedback")}
+          disabled={creating === "client_feedback"}
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+        >
+          {creating === "client_feedback" ? "Creating…" : "Request client feedback"}
+        </button>
+      </div>
+
+      {requests.length > 0 && (
+        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+          {requests.map((req) => (
+            <li key={req.id} className="py-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold" style={{ color: INK }}>
+                  {req.kind === "candidate_nps" ? "Candidate feedback" : "Client feedback"}
+                </p>
+                <p className="text-[11px]" style={{ color: INK_MUTED }}>
+                  {req.respondedAt
+                    ? `Responded · rated ${req.rating}${req.kind === "candidate_nps" ? "/10" : "/5"}${req.comment ? ` · "${req.comment}"` : ""}`
+                    : "Awaiting response"}
+                </p>
+              </div>
+              {!req.respondedAt && req.url && (
+                <button
+                  type="button"
+                  onClick={() => copy(req)}
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                >
+                  {copiedId === req.id ? "Copied" : "Copy link"}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -905,6 +1174,8 @@ export default function CandidateProfilePage({ params }) {
   const [status, setStatus] = useState("loading"); // loading | ready | error | not-found
   const [reloadKey, setReloadKey] = useState(0);
   const [recruiters, setRecruiters] = useState([]);
+  const [feedbackRequests, setFeedbackRequests] = useState([]);
+  const [creatingFeedbackRequest, setCreatingFeedbackRequest] = useState(null);
   const tags = TAG_CATALOG;
   // No prev/next-candidate endpoint exists yet - the UI already disables
   // these buttons cleanly when both are null.
@@ -914,6 +1185,23 @@ export default function CandidateProfilePage({ params }) {
   useEffect(() => {
     getRecruiters().then(setRecruiters).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    getFeedbackRequests(id).then(setFeedbackRequests).catch(() => {});
+  }, [id]);
+
+  const handleCreateFeedbackRequest = useCallback(
+    async (kind) => {
+      setCreatingFeedbackRequest(kind);
+      try {
+        const req = await createFeedbackRequest(id, { kind }).catch(() => null);
+        if (req) setFeedbackRequests((list) => [req, ...list]);
+      } finally {
+        setCreatingFeedbackRequest(null);
+      }
+    },
+    [id]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -1022,6 +1310,30 @@ export default function CandidateProfilePage({ params }) {
     if (res) setCandidate((c) => (c ? { ...c, nextAction: res.nextAction } : c));
   }, [id]);
 
+  const handleUpdateDetails = useCallback(
+    async (fields) => {
+      const res = await updateCandidateDetails(id, fields).catch(() => null);
+      if (res) setCandidate((c) => (c ? { ...c, ...res } : c));
+    },
+    [id]
+  );
+
+  const [loggingActivity, setLoggingActivity] = useState(null);
+  const handleLogActivity = useCallback(
+    async (type) => {
+      setLoggingActivity(type);
+      try {
+        const res = await logCandidateActivity(id, type).catch(() => null);
+        if (res?.activity) {
+          setCandidate((c) => (c ? { ...c, activity: [res.activity, ...c.activity] } : c));
+        }
+      } finally {
+        setLoggingActivity(null);
+      }
+    },
+    [id]
+  );
+
   const focusNoteField = useCallback(() => {
     document.getElementById("candidate-note-input")?.focus();
   }, []);
@@ -1092,6 +1404,14 @@ export default function CandidateProfilePage({ params }) {
                   onRemoveTag={handleRemoveTag}
                   onSetNextAction={handleSetNextAction}
                   onCompleteNextAction={handleCompleteNextAction}
+                  onLogActivity={handleLogActivity}
+                  loggingActivity={loggingActivity}
+                />
+                <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
+                <FeedbackRequestsPanel
+                  requests={feedbackRequests}
+                  onCreate={handleCreateFeedbackRequest}
+                  creating={creatingFeedbackRequest}
                 />
                 <NotesPanel notes={candidate.notes} onAddNote={handleAddNote} />
               </div>
