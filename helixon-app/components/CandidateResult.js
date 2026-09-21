@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { updateCandidateStage, addCandidateNote } from "@/lib/dashboard-api";
 
 // ============================================================================
 // CandidateResult - the full rich result panel, extracted from app/page.js so
@@ -35,18 +36,6 @@ function scoreColour(v) {
   if (v >= 80) return "var(--score-strong)";
   if (v >= 60) return "var(--score-mid)";
   return "var(--score-low)";
-}
-
-// ── localStorage helpers - reads happen only inside useEffect below, never
-// during render, to avoid SSR/client hydration mismatches. ──────────────────
-function ls(key, fallback) {
-  if (typeof window === "undefined") return fallback;
-  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
-}
-function lsSet(key, val) {
-  if (typeof window === "undefined") return;
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* silent */ }
 }
 
 function SectionLabel({ children }) {
@@ -151,11 +140,33 @@ function Field({ icon, label, children }) {
 }
 
 // ── Pipeline stage ───────────────────────────────────────────────────────────
+// Writes the real, agency-shared candidates.stage (same updateCandidateStage
+// call the candidate profile and Pipeline board use) - this used to write to
+// a `pipeline:${candidateId}` localStorage key instead, which nothing else
+// in the app ever read. Changing the stage here looked exactly like a real,
+// shared action but was invisible to every other page and every other
+// recruiter. A freshly-analysed candidate is always inserted with stage
+// "Screened" (see api/run/route.js), so that's a safe starting value without
+// needing an extra fetch just to render this widget.
 function PipelineStage({ candidateId, toast }) {
-  const key = `pipeline:${candidateId}`;
   const [stage, setStage] = useState("Screened");
-  useEffect(() => { setStage(ls(key, "Screened")); }, [key]);
-  function update(s) { setStage(s); lsSet(key, s); toast?.(`Moved to ${s}`, "success"); }
+  const [saving, setSaving] = useState(false);
+
+  async function update(s) {
+    if (s === stage || saving) return;
+    const previous = stage;
+    setStage(s);
+    setSaving(true);
+    try {
+      await updateCandidateStage(candidateId, s);
+      toast?.(`Moved to ${s}`, "success");
+    } catch {
+      setStage(previous);
+      toast?.("Couldn't update stage - try again");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div>
@@ -165,8 +176,8 @@ function PipelineStage({ candidateId, toast }) {
           const active = stage === s;
           const style = PIPELINE_STYLES[s];
           return (
-            <button key={s} type="button" onClick={() => update(s)}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all"
+            <button key={s} type="button" disabled={saving} onClick={() => update(s)}
+              className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all disabled:opacity-60"
               style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "var(--ink-soft)", borderColor: "var(--border)" }}>
               {s}
             </button>
@@ -177,44 +188,33 @@ function PipelineStage({ candidateId, toast }) {
   );
 }
 
-// ── Shortlist button ─────────────────────────────────────────────────────────
-function ShortlistButton({ result, candidateId, toast }) {
-  const [added, setAdded] = useState(false);
-  useEffect(() => { setAdded(ls("shortlist", []).some((c) => c.id === candidateId)); }, [candidateId]);
-
-  function toggle() {
-    const list = ls("shortlist", []);
-    if (added) {
-      lsSet("shortlist", list.filter((c) => c.id !== candidateId));
-      toast?.("Removed from shortlist");
-    } else {
-      list.unshift({ id: candidateId, name: result.name || "Unknown", score: result.match_score, recommendation: result.recommendation, email: result.email || null, addedAt: new Date().toISOString() });
-      lsSet("shortlist", list);
-      toast?.("Added to shortlist ✓");
-    }
-    setAdded((v) => !v);
-  }
-
-  return (
-    <button type="button" onClick={toggle}
-      className="flex items-center gap-2 px-4 py-2 rounded-[10px] text-xs font-semibold border transition-colors"
-      style={added ? { background: "var(--forest)", color: "white", borderColor: "var(--forest)" } : { background: "white", color: "var(--forest)", borderColor: "var(--forest)" }}
-      onMouseEnter={e => { if (!added) e.currentTarget.style.background = "var(--mint)"; }}
-      onMouseLeave={e => { if (!added) e.currentTarget.style.background = "white"; }}>
-      {added ? "✓ Added to shortlist" : "+ Add to shortlist"}
-    </button>
-  );
-}
-
 // ── Recruiter notes ──────────────────────────────────────────────────────────
+// Posts to the real, shared candidate_notes table (same addCandidateNote
+// call the candidate profile page uses) - this used to overwrite a single
+// `notes:${candidateId}` localStorage key, invisible to every teammate and
+// even to the recruiter's own next visit to that candidate's real profile.
+// Notes are append-only there, not a single editable field, so saving here
+// clears the box rather than leaving typed text that looks like "the" note.
 function RecruiterNotes({ candidateId, toast }) {
-  const key = `notes:${candidateId}`;
   const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  useEffect(() => { setNote(ls(key, "")); }, [key]);
 
-  function save() {
-    lsSet(key, note); setSaved(true); setTimeout(() => setSaved(false), 2000); toast?.("Note saved");
+  async function save() {
+    const body = note.trim();
+    if (!body || saving) return;
+    setSaving(true);
+    try {
+      await addCandidateNote(candidateId, body);
+      setNote("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      toast?.("Note saved");
+    } catch {
+      toast?.("Couldn't save note - try again");
+    } finally {
+      setSaving(false);
+    }
   }
   function onKeyDown(e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); }
 
@@ -222,16 +222,16 @@ function RecruiterNotes({ candidateId, toast }) {
     <div>
       <SectionLabel>Recruiter notes</SectionLabel>
       <textarea value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={onKeyDown}
-        placeholder="Add private notes… (Ctrl+Enter to save)" rows={4}
+        placeholder="Add a note visible to your whole team… (Ctrl+Enter to save)" rows={4}
         className="w-full rounded-xl p-3 text-xs resize-none outline-none mb-2 transition-all"
         style={{ border: "1px solid var(--border)", color: "#13201b", fontFamily: "var(--font-body)" }}
         onFocus={e => e.target.style.boxShadow = "0 0 0 3px rgba(11,110,79,0.12)"}
         onBlur={e => e.target.style.boxShadow = "none"} />
       <div className="flex items-center justify-between">
         <span className="text-[10px] transition-opacity duration-300" style={{ color: "var(--forest)", opacity: saved ? 1 : 0 }}>✓ Saved</span>
-        <button type="button" onClick={save} className="text-[10px] font-semibold px-3 py-1.5 rounded-lg transition-colors text-white" style={{ background: "#13201b" }}
-          onMouseEnter={e => e.currentTarget.style.background = "#0a120e"} onMouseLeave={e => e.currentTarget.style.background = "#13201b"}>
-          Save note
+        <button type="button" onClick={save} disabled={saving || !note.trim()} className="text-[10px] font-semibold px-3 py-1.5 rounded-lg transition-colors text-white disabled:opacity-50" style={{ background: "#13201b" }}
+          onMouseEnter={e => { if (!saving) e.currentTarget.style.background = "#0a120e"; }} onMouseLeave={e => e.currentTarget.style.background = "#13201b"}>
+          {saving ? "Saving…" : "Save note"}
         </button>
       </div>
     </div>
@@ -253,16 +253,31 @@ export default function CandidateResult({
   const noop = () => {};
   const safeToast = toast || noop;
 
-  if (!result) return null;
+  // Score/experience bars grow in from 0 once, on first reveal - same
+  // two-step pattern used across the dashboard, so this first "here's your
+  // result" moment doesn't just paint the bars already at final width.
+  const [barsGrown, setBarsGrown] = useState(false);
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const t = setTimeout(() => setBarsGrown(true), 150);
+    return () => clearTimeout(t);
+  }, [expanded]);
 
-  const matched = result.matched_skills ?? [];
-  const missingRequired = result.missing_required ?? [];
-  const missingPreferred = result.missing_preferred ?? [];
-  const missingCount = missingRequired.length + missingPreferred.length + (!missingRequired.length && !missingPreferred.length ? (result.missing_skills?.length || 0) : 0);
-  const redFlagCount = result.red_flags?.length || 0;
-  const hasContact = !result.blind_mode && (result.email || result.phone || result.linkedin || result.github || result.portfolio_url || result.location || result.current_title || result.notice_period || result.willing_to_relocate != null);
+  // Null-safe: this used to sit behind an early `if (!result) return null;`
+  // placed BEFORE the arrow-key effect below, which made that hook call
+  // conditional on `result` - a real Rules-of-Hooks violation (a re-render
+  // where `result` flips from null to populated changes how many hooks ran).
+  // The parent only ever mounts this with a real result in practice, but
+  // the component itself shouldn't rely on that - every hook now runs
+  // unconditionally, and the render bails out to null only in the JSX below.
+  const matched = result?.matched_skills ?? [];
+  const missingRequired = result?.missing_required ?? [];
+  const missingPreferred = result?.missing_preferred ?? [];
+  const missingCount = missingRequired.length + missingPreferred.length + (!missingRequired.length && !missingPreferred.length ? (result?.missing_skills?.length || 0) : 0);
+  const redFlagCount = result?.red_flags?.length || 0;
+  const hasContact = !!result && !result.blind_mode && (result.email || result.phone || result.linkedin || result.github || result.portfolio_url || result.location || result.current_title || result.notice_period || result.willing_to_relocate != null);
 
-  const TABS = [
+  const TABS = result ? [
     { key: "overview",   label: "Overview",   icon: TabIcons.overview },
     { key: "skills",     label: "Skills",     icon: TabIcons.skills, badge: missingCount > 0 ? String(missingCount) : null, tone: "warn" },
     { key: "experience", label: "Experience", icon: TabIcons.experience },
@@ -270,11 +285,11 @@ export default function CandidateResult({
     ...(result.interview_questions?.length ? [{ key: "prep", label: "Interview prep", icon: TabIcons.prep }] : []),
     ...(hasContact || result.salary_estimate ? [{ key: "contact", label: "Contact", icon: TabIcons.contact }] : []),
     ...(showInteractive ? [{ key: "pipeline", label: "Pipeline", icon: TabIcons.pipeline }] : []),
-  ];
+  ] : [];
 
   // ← / → tab navigation, ignored while typing
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || !result) return;
     function onArrowKey(e) {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
       const tag = document.activeElement?.tagName;
@@ -290,6 +305,8 @@ export default function CandidateResult({
     return () => window.removeEventListener("keydown", onArrowKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, expanded, result]);
+
+  if (!result) return null;
 
   const badgeStyle = (tone) => ({
     warn:  { background: "#fef3e8", color: "#b45309" },
@@ -355,7 +372,7 @@ export default function CandidateResult({
           </div>
 
           {/* ── Tab panel ───────────────────────────────────────────────── */}
-          <div className="px-6 py-6" role="tabpanel">
+          <div key={activeTab} className="px-6 py-6 fade-up-in" role="tabpanel">
 
             {/* Overview */}
             {activeTab === "overview" && (
@@ -368,14 +385,14 @@ export default function CandidateResult({
                         { key: "skills",     label: "Skills match", val: result.skill_score },
                         { key: "experience", label: "Experience",   val: result.experience_score },
                         { key: "culture",    label: "Culture & fit", val: result.culture_score },
-                      ].filter((r) => r.val != null).map((row) => (
+                      ].filter((r) => r.val != null).map((row, i) => (
                         <div key={row.key}>
                           <div className="flex justify-between text-[11px] mb-1">
                             <span style={{ color: "#5a7a6a" }}>{row.label}</span>
                             <span className="font-semibold" style={{ color: scoreColour(row.val) }}>{row.val}</span>
                           </div>
                           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border-soft)" }}>
-                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${row.val}%`, background: scoreColour(row.val) }} />
+                            <div className="h-full rounded-full" style={{ width: barsGrown ? `${row.val}%` : 0, background: scoreColour(row.val), transition: `width 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${i * 100}ms` }} />
                           </div>
                           {result.score_rationale?.[row.key] && (
                             <p className="text-[10px] mt-1 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{result.score_rationale[row.key]}</p>
@@ -460,6 +477,7 @@ export default function CandidateResult({
                     <div className="space-y-2.5">
                       {result.experience_breakdown.map((item, i) => {
                         const maxYears = Math.max(...result.experience_breakdown.map((b) => b.years), 1);
+                        const pct = Math.round((item.years / maxYears) * 100);
                         return (
                           <div key={i}>
                             <div className="flex justify-between text-[11px] mb-1">
@@ -467,7 +485,7 @@ export default function CandidateResult({
                               <span className="font-semibold" style={{ color: item.years > 0 ? "var(--forest)" : "#c8d8ce" }}>{item.years > 0 ? `${item.years} yr${item.years !== 1 ? "s" : ""}` : "None"}</span>
                             </div>
                             <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--border-soft)" }}>
-                              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.round((item.years / maxYears) * 100)}%`, background: "var(--forest)" }} />
+                              <div className="h-full rounded-full" style={{ width: barsGrown ? `${pct}%` : 0, background: "var(--forest)", transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${Math.min(i, 8) * 60}ms` }} />
                             </div>
                           </div>
                         );
@@ -581,14 +599,13 @@ export default function CandidateResult({
               </div>
             )}
 
-            {/* Pipeline / shortlist / notes - the "action" tab */}
+            {/* Pipeline / notes - the "action" tab. "Shortlisted" is one of
+                the real pipeline stages below, not a separate bookmark -
+                a standalone Shortlist toggle here would be a second,
+                independently-driftable answer to the same question. */}
             {activeTab === "pipeline" && showInteractive && (
               <div className="space-y-6">
                 {candidateId && <PipelineStage candidateId={candidateId} toast={safeToast} />}
-                <div>
-                  <SectionLabel>Shortlist</SectionLabel>
-                  <ShortlistButton result={result} candidateId={candidateId} toast={safeToast} />
-                </div>
                 {candidateId && <RecruiterNotes candidateId={candidateId} toast={safeToast} />}
               </div>
             )}
