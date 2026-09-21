@@ -5,9 +5,7 @@ import { embedSkills, findSemanticMatch } from "./embeddingMatcher.js";
 
 import { collectEvidence, unsupportedSkills } from "./evidenceEngine.js";
 
-import { achievementScore, extractAchievements } from "./achievementEngine.js";
-
-import { analyseProgression } from "./progressionEngine.js";
+import { extractAchievements } from "./achievementEngine.js";
 
 import { buildBreakdown } from "./explainabilityEngine.js";
 
@@ -15,7 +13,7 @@ import { calculateConfidence } from "./confidenceEngine.js";
 
 import { hiringRisk } from "./riskEngine.js";
 
-import { scoreIndustry } from "./industryEngine.js";
+import { judgeFit } from "./fitJudgeEngine.js";
 
 import interviewQuestions from "./interviewQuestions.js";
 
@@ -89,6 +87,12 @@ export default async function scoreCandidate(
     const candidateSkills = candidate.skills || [];
 
 
+    // Kicked off now, awaited later (alongside the embeddings fetch below) -
+    // judgeFit makes its own (up to 3, parallel) Claude calls, so starting
+    // it here means that latency overlaps with the skill-matching work
+    // instead of adding on top of it.
+    const judgmentPromise = judgeFit(candidate, job, rawCV);
+
     // Only pay for embeddings on the skills the free taxonomy pass actually
     // missed - most jobs resolve entirely through semanticMatch and never
     // trigger an API call at all.
@@ -144,10 +148,19 @@ export default async function scoreCandidate(
         // no minimum stated - use 5 years as a reasonable full-credit baseline
         : Math.round(Math.min(1, yearsExperience / 5) * SCORE_WEIGHTS.experience);
 
-    const progression = analyseProgression(candidate.positions || []);
-    const careerScore = Math.round(((progression.score || 0) / 100) * SCORE_WEIGHTS.career);
+    // Industry relevance, career trajectory and achievement quality are
+    // judgement calls, not checklist items - see fitJudgeEngine.js for why
+    // these replaced industryEngine.js/progressionEngine.js's keyword
+    // heuristics (exact-string industry match; a 10-word English title
+    // ladder that scored anything else, e.g. "Consultant"/"VP"/"Partner",
+    // as level 0). Falls back to those same heuristics if Claude judgement
+    // is unavailable - see judgeFit's heuristicFallback.
+    const judgment = await judgmentPromise;
 
-    const industryRaw = scoreIndustry(candidate, job); // 0-100
+    const progression = { progression: judgment.career_trajectory.label, score: judgment.career_trajectory.score };
+    const careerScore = Math.round((judgment.career_trajectory.score / 100) * SCORE_WEIGHTS.career);
+
+    const industryRaw = judgment.industry_relevance.score; // 0-100
     const industryScore = Math.round((industryRaw / 100) * SCORE_WEIGHTS.industry);
 
     const breakdown = buildBreakdown({
@@ -163,8 +176,13 @@ export default async function scoreCandidate(
 
     // --- supporting analysis ---
 
+    // extractAchievements still finds the actual CV lines to quote in
+    // standoutFactors below (the LLM judgement doesn't return line-level
+    // text) - only the numeric quality score comes from judgeFit now,
+    // replacing achievementEngine.js's "count lines with a number or an
+    // impact verb" heuristic.
     const achievements = extractAchievements(rawCV);
-    const achievementsScoreValue = achievementScore(achievements);
+    const achievementsScoreValue = judgment.achievement_quality.score;
 
     const gaps = analyseEmploymentGaps(candidate.positions || []);
     const certs = analyseCertifications(candidate.certifications || []);
@@ -256,7 +274,7 @@ export default async function scoreCandidate(
             standoutFactors.push(a.text);
         }
     }
-    if (industryRaw === 100) {
+    if (industryRaw >= 80) {
         standoutFactors.push("Direct industry experience matches this role");
     }
     if (progression.progression === "Positive") {
@@ -303,9 +321,7 @@ export default async function scoreCandidate(
         experience: minYears
             ? `${yearsExperience} years of experience vs. ${minYears} required`
             : `${yearsExperience} years of experience`,
-        culture: industryRaw === 100
-            ? "Candidate has direct experience in this industry"
-            : "No confirmed industry-specific experience",
+        culture: judgment.industry_relevance.rationale || "No confirmed industry-specific experience",
         capped: knockout.failed.length > 0,
         cap_reason: knockout.failed.length
             ? `Score capped after failing ${knockout.failed.length} required criterion/criteria`
@@ -360,6 +376,10 @@ export default async function scoreCandidate(
         achievement_score: achievementsScoreValue,
         career_progression: progression,
         employment_gaps: gaps,
+        // Full judgement with rationales, including whether it came from
+        // Claude or the heuristic fallback (judgment.method) - so a drop
+        // to heuristic_fallback is visible to whoever's looking, not silent.
+        fit_judgment: judgment,
         risk,
 
     };

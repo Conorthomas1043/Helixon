@@ -18,7 +18,13 @@ import { debug, error, summarise } from "../utils/logger.js";
 
 
 
-export default async function askClaude(userPrompt){
+// `temperature` defaults to 0 - extraction must be repeatable (the same CV
+// and job text should produce the same structured output every time: same
+// candidate re-analysed, re-runs after a bug fix, A/B comparisons). The one
+// caller that intentionally overrides this is fitJudgeEngine.js, which
+// wants genuine sampling variance to average out via self-consistency
+// (median of several samples) rather than one deterministic-but-noisy call.
+export default async function askClaude(userPrompt, { temperature = 0 } = {}){
 
 
 
@@ -29,13 +35,7 @@ export default async function askClaude(userPrompt){
 
             max_tokens:8000,
 
-            // Extraction/scoring must be repeatable: the same CV and job
-            // text should produce the same structured output every time
-            // (same candidate re-analysed, re-runs after a bug fix, A/B
-            // comparisons, etc). Temperature 0 removes sampling
-            // randomness as the source of any run-to-run drift, so any
-            // difference that remains is a real input or prompt change.
-            temperature:0,
+            temperature,
 
             system:systemPrompt,
 
