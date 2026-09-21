@@ -80,13 +80,18 @@ export default function EmployeeOpsPage() {
             </span>
           </Link>
 
-          <Link
-            href="/employee/dashboard"
-            className="text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:bg-white"
-            style={{ borderColor: "var(--border)", color: "var(--ink-soft)" }}
-          >
-            ← My dashboard
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/employee/settings" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
+              Settings
+            </Link>
+            <Link
+              href="/employee/dashboard"
+              className="text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:bg-white"
+              style={{ borderColor: "var(--border)", color: "var(--ink-soft)" }}
+            >
+              ← My dashboard
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -164,7 +169,7 @@ export default function EmployeeOpsPage() {
             </div>
 
             <p className="text-[11px] mt-8" style={{ color: "var(--ink-faint)" }}>
-              Signed in as {data.employee.email || data.employee.display_name || data.employee.username}. This view
+              Signed in as {data.employee.display_name || data.employee.username}. This view
               excludes revenue, per-agency detail, IP/security data, and audit logs - see the admin console for those.
             </p>
           </>

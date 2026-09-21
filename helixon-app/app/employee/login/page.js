@@ -1,20 +1,26 @@
 "use client";
 // app/employee/login/page.js
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-export default function EmployeeLogin() {
+function EmployeeLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  // Set by app/employee/settings after a self-service password change,
+  // which signs the browser out everywhere as part of that change - without
+  // this the employee lands back on a bare login form with no explanation
+  // for why they were suddenly signed out.
+  const passwordChanged = searchParams.get("passwordChanged") === "1";
 
   // Already signed in? Skip the form entirely, same check the /employee
   // landing page does - previously this page had no such check, so a
@@ -126,6 +132,21 @@ export default function EmployeeLogin() {
             Use your Helixon employee account.
           </p>
 
+          {passwordChanged && (
+            <div
+              role="status"
+              className="flex items-start gap-2.5 p-3 rounded-[10px] mb-4"
+              style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+            >
+              <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
+              </svg>
+              <p className="text-[13px]" style={{ color: "var(--forest)" }}>
+                Password updated. Sign in with your new password.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
@@ -199,5 +220,16 @@ export default function EmployeeLogin() {
         </div>
       </div>
     </main>
+  );
+}
+
+// useSearchParams() (for ?passwordChanged=1) requires a Suspense boundary
+// in the app router, or static prerendering fails the build - same reason
+// app/login/[[...rest]]/page.jsx wraps its own content component.
+export default function EmployeeLogin() {
+  return (
+    <Suspense fallback={null}>
+      <EmployeeLoginForm />
+    </Suspense>
   );
 }

@@ -308,6 +308,9 @@ export default function EmployeeDashboard() {
             <Link href="/employee/mobile" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
               Mobile
             </Link>
+            <Link href="/employee/settings" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
+              Settings
+            </Link>
             <a href="/" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>
               Back to app
             </a>

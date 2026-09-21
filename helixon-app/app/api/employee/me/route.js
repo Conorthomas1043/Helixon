@@ -16,6 +16,7 @@ export async function GET() {
       username: employee.username,
       role: employee.role,
       fullName: employee.full_name || employee.display_name,
+      lastLogin: employee.last_login || null,
     },
   });
 }

@@ -28,9 +28,14 @@ export async function GET() {
     if (!employeeId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const supabase = client();
+    // NOTE: employees has no `email` column (see the identical note in
+    // app/api/employee/shared-todos/route.js) - selecting one here used to
+    // make this query fail on every single call, which this route treated
+    // as "not an employee" and answered with a 403 regardless of who was
+    // asking. That made /employee/ops permanently broken for everyone.
     const employee = await supabase
       .from("employees")
-      .select("id,email,username,display_name,full_name")
+      .select("id,username,display_name,full_name")
       .eq("id", employeeId)
       .maybeSingle();
     if (employee.error || !employee.data) return NextResponse.json({ error: "Employee access required" }, { status: 403 });

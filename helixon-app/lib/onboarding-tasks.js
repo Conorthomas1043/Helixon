@@ -14,7 +14,8 @@ export const ONBOARDING_TASKS = [
   {
     key: "account-setup",
     label: "Set your password and confirm you can log in",
-    description: "Log in at /employee/login with the credentials an admin created for you.",
+    description:
+      "Log in at /employee/login with the credentials an admin created for you, then set your own password under Settings.",
   },
   {
     key: "read-handbook",

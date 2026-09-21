@@ -208,7 +208,9 @@ export async function getEmployeeSession({ refresh = true } = {}) {
 
     const { data: session } = await supabase
       .from("employee_sessions")
-      .select("id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active)")
+      .select(
+        "id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active, last_login)",
+      )
       .eq("token", token)
       .maybeSingle();
 
