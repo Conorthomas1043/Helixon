@@ -15,6 +15,39 @@ import { getAgencyPlan } from "@/lib/plan";
 // Supabase auth pattern api/run and api/checkout already use - the
 // previous version queried a `recruiters` table and a Supabase-Auth
 // bearer-token session that nothing else in the app uses anymore.
+const SCORE_ROW_BATCH = 1000;
+// Same 5,000-row sanity cap getAllCandidates() (lib/dashboard-api.js) uses
+// for the identical problem - a limit to stop a runaway loop, not an
+// expected agency size.
+const SCORE_ROW_CAP = 5000;
+
+// The old `.limit(200)` silently computed every Overview metric (attention
+// items, top candidates, stage counts, KPIs) from at most the 200 most
+// recent scores, with nothing telling an agency past that size their
+// numbers were missing data. computeCandidateStats needs real per-row
+// detail (not just counts), so this pages through every row instead of
+// switching to SQL aggregates - same trade-off getAllCandidates() made for
+// Candidates/Analytics.
+async function fetchAllScoreRows(agencyId) {
+  let all = [];
+  let from = 0;
+  while (from < SCORE_ROW_CAP) {
+    const { data, error } = await supabase
+      .from("scores")
+      .select(
+        "id, match_score, created_at, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
+      )
+      .eq("agency_id", agencyId)
+      .order("created_at", { ascending: false })
+      .range(from, from + SCORE_ROW_BATCH - 1);
+    if (error) return { data: null, error };
+    all = all.concat(data ?? []);
+    if (!data || data.length < SCORE_ROW_BATCH) break;
+    from += SCORE_ROW_BATCH;
+  }
+  return { data: all, error: null };
+}
+
 export async function GET() {
   const { user, agencyId, profile } = await getCustomerContext();
 
@@ -30,14 +63,7 @@ export async function GET() {
 
   const [{ data: agency, error: agencyError }, { data: scoreRows, error: scoreError }] = await Promise.all([
     supabase.from("agencies").select("name, plan_name, analyses_used, analyses_limit, settings").eq("id", agencyId).maybeSingle(),
-    supabase
-      .from("scores")
-      .select(
-        "id, match_score, created_at, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
-      )
-      .eq("agency_id", agencyId)
-      .order("created_at", { ascending: false })
-      .limit(200),
+    fetchAllScoreRows(agencyId),
   ]);
 
   if (agencyError || scoreError) {

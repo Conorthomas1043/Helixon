@@ -23,7 +23,7 @@ export const RED_BG = "#fef2f2";
 export const GREEN_BG = "var(--mint)";
 
 export const CARD = {
-  background: "white",
+  background: "var(--bg)",
   border: "1px solid var(--border)",
 };
 

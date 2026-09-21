@@ -8,10 +8,11 @@
  *   treat this as a reference implementation to reconcile, not a
  *   replacement.
  * - Every number here comes from getAnalyticsSnapshot() in
- *   lib/mock-data.js, computed over the current in-memory candidate set -
+ *   lib/dashboard-api.js, reduced client-side over the agency's real
+ *   candidate rows (fetched in full via getAllCandidates(), not a mock) -
  *   nothing on this page is a fabricated/static figure. See that
  *   function's comment for the production caveat (server-side
- *   aggregation, not client-side reduction over the full table).
+ *   aggregation, not client-side reduction, at real scale).
  * - No charting library is used, to match the existing dashboard's
  *   hand-rolled bar/funnel visuals (plain divs) rather than introducing a
  *   new dependency for this pass.

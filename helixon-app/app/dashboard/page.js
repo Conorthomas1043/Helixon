@@ -372,7 +372,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
       {maxCount === 0 ? (
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${stageOrder.length}, 1fr)`, gap: 10 }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {stageOrder.map((stageKey) => {
             const count = stageCounts[stageKey] ?? 0;
             const heightPct = maxCount > 0 ? Math.max(8, Math.round((count / maxCount) * 100)) : 0;
@@ -440,7 +440,8 @@ function UsageSummary({ plan }) {
 
 /* ─── Attention panel ───────────────────────────────────────────────────── */
 
-function AttentionPanel({ items }) {
+function AttentionPanel({ items, total }) {
+  const hiddenCount = Math.max(0, total - items.length);
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Priority" title="Needs your attention" />
@@ -476,13 +477,19 @@ function AttentionPanel({ items }) {
           ))}
         </ul>
       )}
+      {hiddenCount > 0 && (
+        <Link href="/dashboard/candidates" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
+          {hiddenCount} more {hiddenCount === 1 ? "item needs" : "items need"} attention →
+        </Link>
+      )}
     </div>
   );
 }
 
 /* ─── Top candidates ────────────────────────────────────────────────────── */
 
-function TopCandidates({ candidates }) {
+function TopCandidates({ candidates, total }) {
+  const hiddenCount = Math.max(0, total - candidates.length);
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Top talent" title="Strongest candidates" />
@@ -515,6 +522,11 @@ function TopCandidates({ candidates }) {
             </li>
           ))}
         </ul>
+      )}
+      {hiddenCount > 0 && (
+        <Link href="/dashboard/candidates" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
+          {hiddenCount} more strong {hiddenCount === 1 ? "candidate" : "candidates"} →
+        </Link>
       )}
     </div>
   );
@@ -692,12 +704,11 @@ function RecentAnalyses({ analyses }) {
             <caption className="sr-only">Recent candidate analyses</caption>
             <thead>
               <tr>
-                {["Candidate", "Recruiter", "Stage", "Status", "Score", "Date"].map((h, i) => (
+                {["Candidate", "Recruiter", "Stage", "Status", "Score", "Date"].map((h) => (
                   <th key={h} scope="col" style={{
                     padding: "8px 12px 8px 0",
                     fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
                     borderBottom: `1px solid ${BORDER}`,
-                    display: h === "Recruiter" ? "table-cell" : undefined,
                   }}>
                     {h}
                   </th>
@@ -772,8 +783,8 @@ function DashboardSkeleton() {
       </div>
       <div style={{ ...CARD, padding: 24 }}>
         <Block style={{ height: 16, width: 180, marginBottom: 20 }} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10 }}>
-          {[...Array(6)].map((_, i) => <Block key={i} style={{ height: 80 }} />)}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {[...Array(5)].map((_, i) => <Block key={i} style={{ height: 80 }} />)}
         </div>
       </div>
     </div>
@@ -907,10 +918,10 @@ function AgencyDashboardPage() {
                   <UsageSummary plan={plan} />
                 </div>
 
-                <AttentionPanel items={model.attentionItems} />
+                <AttentionPanel items={model.attentionItems} total={model.attentionItemsTotal} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <TopCandidates candidates={model.topCandidates} />
+                  <TopCandidates candidates={model.topCandidates} total={model.topCandidatesTotal} />
                   <ActivityOverview analyses={model.analyses} />
                 </div>
 

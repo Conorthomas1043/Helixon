@@ -28,7 +28,15 @@ import { getCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/l
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
 
-const STAGE_ORDER = FUNNEL_ORDER;
+// The board shows every stage a completed candidate can actually be in,
+// including "Rejected" - FUNNEL_ORDER deliberately excludes it (it's a
+// terminal exit, not a funnel step - see stage-labels.js), which is correct
+// for percentage/stalled math but was wrong reused as this board's literal
+// column list: rejected candidates had no column to land in and silently
+// vanished from the board entirely. Forward/back arrow navigation below
+// still only moves within FUNNEL_ORDER - "un-rejecting" a candidate is done
+// from the full stage picker on their profile page.
+const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 
 async function fetchPipeline(query) {
   const { items } = await getCandidates(query);
@@ -66,9 +74,11 @@ function Avatar({ name }) {
 }
 
 function PipelineCard({ candidate, onMove }) {
-  const stageIdx = STAGE_ORDER.indexOf(candidate.stage);
+  // Rejected isn't part of the funnel, so it has no "back"/"forward"
+  // neighbour here - both arrows stay disabled for it (see BOARD_STAGES).
+  const stageIdx = FUNNEL_ORDER.indexOf(candidate.stage);
   const canGoBack = stageIdx > 0;
-  const canGoForward = stageIdx < STAGE_ORDER.length - 1;
+  const canGoForward = stageIdx >= 0 && stageIdx < FUNNEL_ORDER.length - 1;
 
   return (
     <div className="rounded-[10px] p-3 bg-white" style={{ border: "1px solid var(--border)" }}>
@@ -97,7 +107,7 @@ function PipelineCard({ candidate, onMove }) {
           <button
             type="button"
             disabled={!canGoBack}
-            onClick={() => onMove(candidate.id, STAGE_ORDER[stageIdx - 1])}
+            onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx - 1])}
             aria-label={`Move ${candidate.fullName} back a stage`}
             className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] disabled:opacity-30 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: INK_MUTED }}
@@ -107,7 +117,7 @@ function PipelineCard({ candidate, onMove }) {
           <button
             type="button"
             disabled={!canGoForward}
-            onClick={() => onMove(candidate.id, STAGE_ORDER[stageIdx + 1])}
+            onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx + 1])}
             aria-label={`Move ${candidate.fullName} forward a stage`}
             className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] disabled:opacity-30 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: "var(--forest)" }}
@@ -126,8 +136,8 @@ function Block({ className = "" }) {
 
 function PipelineSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" aria-busy="true" aria-label="Loading pipeline">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" aria-busy="true" aria-label="Loading pipeline">
+      {Array.from({ length: 7 }).map((_, i) => (
         <div key={i} className="rounded-[14px] p-3" style={CARD}>
           <Block className="h-4 w-16 mb-3" />
           <Block className="h-20 w-full mb-2" />
@@ -218,7 +228,7 @@ function PipelineContent() {
 
   const byStage = useMemo(() => {
     const map = {};
-    STAGE_ORDER.forEach((k) => (map[k] = []));
+    BOARD_STAGES.forEach((k) => (map[k] = []));
     (candidates ?? []).forEach((c) => {
       if (map[c.stage]) map[c.stage].push(c);
     });
@@ -259,8 +269,8 @@ function PipelineContent() {
         {status === "loading" && <PipelineSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}
         {status === "ready" && candidates && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-start">
-            {STAGE_ORDER.map((key) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 items-start">
+            {BOARD_STAGES.map((key) => (
               <div
                 key={key}
                 className="rounded-[14px] p-3"

@@ -149,10 +149,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
     return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
   });
 
-  const topCandidates = [...completed]
-    .filter((a) => a.score !== null)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+  const topCandidatesAll = [...completed].filter((a) => a.score !== null).sort((a, b) => b.score - a.score);
 
   return {
     analyses,
@@ -171,7 +168,12 @@ export function computeCandidateStats(candidates, now = Date.now()) {
     },
     stageCounts,
     maxStageCount,
+    // Both lists are shown truncated on Overview (6 attention items, 5 top
+    // candidates) - the *Total counts let the panel say "N more" and link
+    // to the full list instead of silently dropping the rest with no trace.
     attentionItems: attentionItems.slice(0, 6),
-    topCandidates,
+    attentionItemsTotal: attentionItems.length,
+    topCandidates: topCandidatesAll.slice(0, 5),
+    topCandidatesTotal: topCandidatesAll.length,
   };
 }
