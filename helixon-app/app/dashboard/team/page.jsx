@@ -17,8 +17,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
-import { getRecruiters as fetchRecruiters, getTeamSeatUsage, inviteTeammate, cancelTeamInvite } from "@/lib/dashboard-api";
+import { getRecruiters as fetchRecruiters, getTeamSeatUsage, inviteTeammate, cancelTeamInvite, removeTeammate } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -173,7 +174,7 @@ function Metric({ label, value, accent }) {
   );
 }
 
-function RecruiterCard({ recruiter }) {
+function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
       <div className="flex items-center gap-3 mb-4">
@@ -203,13 +204,31 @@ function RecruiterCard({ recruiter }) {
         <Metric label="Placed" value={recruiter.placed} accent="var(--forest)" />
       </div>
 
-      <Link
-        href={`/dashboard/candidates?recruiterId=${recruiter.id}`}
-        className="inline-flex items-center text-[12px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-        style={{ color: "var(--forest)" }}
-      >
-        View {recruiter.name.split(" ")[0]}&apos;s candidates →
-      </Link>
+      <div className="flex items-center justify-between mt-4">
+        <Link
+          href={`/dashboard/candidates?recruiterId=${recruiter.id}`}
+          className="inline-flex items-center text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          style={{ color: "var(--forest)" }}
+        >
+          View {recruiter.name.split(" ")[0]}&apos;s candidates →
+        </Link>
+
+        {/* Understated on purpose - removing someone from the team is a
+            rare, deliberate action and shouldn't sit visually level with
+            "View candidates". Not shown on your own card (see canRemove)
+            or when you're the only person on the team. */}
+        {canRemove && (
+          <button
+            type="button"
+            onClick={() => onRemove(recruiter)}
+            disabled={removing}
+            className="text-[12px] font-medium shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+            style={{ color: INK_FAINT }}
+          >
+            {removing ? "Removing…" : "Remove"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -253,9 +272,12 @@ function ErrorState({ onRetry }) {
 }
 
 export default function TeamPage() {
+  const { user } = useUser();
   const [recruiters, setRecruiters] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
+  const [removingId, setRemovingId] = useState(null);
+  const [removeError, setRemoveError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -275,6 +297,22 @@ export default function TeamPage() {
   }, [reloadKey]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  async function handleRemove(recruiter) {
+    if (!confirm(`Remove ${recruiter.name} from the team? They'll lose access to this workspace immediately, and this frees up their seat.`)) {
+      return;
+    }
+    setRemoveError("");
+    setRemovingId(recruiter.id);
+    try {
+      await removeTeammate(recruiter.id);
+      retry();
+    } catch (err) {
+      setRemoveError(err.message || "Couldn't remove that team member.");
+    } finally {
+      setRemovingId(null);
+    }
+  }
 
   const totalOverdue = recruiters?.reduce((sum, r) => sum + r.overdue, 0) ?? 0;
   const totalActive = recruiters?.reduce((sum, r) => sum + r.activeCandidates, 0) ?? 0;
@@ -309,12 +347,22 @@ export default function TeamPage() {
 
         <TeamInvitePanel />
 
+        {removeError && (
+          <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
+        )}
+
         {status === "loading" && <TeamSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}
         {status === "ready" && recruiters && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {recruiters.map((r) => (
-              <RecruiterCard key={r.id} recruiter={r} />
+              <RecruiterCard
+                key={r.id}
+                recruiter={r}
+                canRemove={recruiters.length > 1 && r.id !== user?.id}
+                removing={removingId === r.id}
+                onRemove={handleRemove}
+              />
             ))}
           </div>
         )}

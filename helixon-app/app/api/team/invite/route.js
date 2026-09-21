@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { ensureAgencyOrg, getOrgSeatUsage, inviteToAgencyOrg, revokeAgencyOrgInvitation, AGENCY_SEAT_LIMIT } from "@/lib/clerk-org";
+import {
+  ensureAgencyOrg,
+  getOrgSeatUsage,
+  inviteToAgencyOrg,
+  revokeAgencyOrgInvitation,
+  getOrgMemberRole,
+  removeAgencyOrgMember,
+  AGENCY_SEAT_LIMIT,
+} from "@/lib/clerk-org";
 import { getAgencyPlan } from "@/lib/plan";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { supabase } from "@/lib/supabase";
@@ -142,9 +150,11 @@ export async function POST(request) {
   return NextResponse.json({ ok: true });
 }
 
-// DELETE: cancel a pending invite before it's accepted, freeing the seat
-// it was holding. Needs the org id too since Clerk's revoke call is
-// scoped by organizationId, not just invitationId.
+// DELETE: either cancels a pending invite before it's accepted (body:
+// { invitationId }), or removes an existing, accepted team member (body:
+// { userId }) - both free the seat they held, just at different points in
+// the invite lifecycle, so one endpoint covers both rather than splitting
+// "team offboarding" across two routes.
 export async function DELETE(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
@@ -156,8 +166,10 @@ export async function DELETE(request) {
 
   const body = await request.json().catch(() => null);
   const invitationId = body?.invitationId;
-  if (!invitationId) {
-    return NextResponse.json({ error: "invitationId is required." }, { status: 400 });
+  const memberUserId = body?.userId;
+
+  if (!invitationId && !memberUserId) {
+    return NextResponse.json({ error: "invitationId or userId is required." }, { status: 400 });
   }
 
   const { data: agency, error: agencyError } = await supabase
@@ -169,12 +181,66 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "No team workspace found for your agency." }, { status: 404 });
   }
 
+  if (invitationId) {
+    try {
+      await revokeAgencyOrgInvitation({ orgId: agency.clerk_org_id, invitationId, requestingUserId: auth.userId });
+    } catch (err) {
+      const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
+      console.error("[team/invite] Clerk revoke failed:", detail);
+      return NextResponse.json({ error: "Couldn't cancel that invite. Please refresh and try again." }, { status: 400 });
+    }
+
+    return NextResponse.json({ ok: true });
+  }
+
+  // Removing an existing member - block removing yourself (you'd lose
+  // access to your own team page mid-request; closing an account is a
+  // separate, deliberate flow - see app/api/account/delete) and block
+  // removing the workspace owner (never a valid action, whoever's asking).
+  if (memberUserId === auth.userId) {
+    return NextResponse.json(
+      { error: "You can't remove yourself from the team here. Use Account settings to close your account instead." },
+      { status: 400 }
+    );
+  }
+
+  let role;
   try {
-    await revokeAgencyOrgInvitation({ orgId: agency.clerk_org_id, invitationId, requestingUserId: auth.userId });
+    role = await getOrgMemberRole({ orgId: agency.clerk_org_id, userId: memberUserId });
+  } catch (err) {
+    console.error("[team/invite] Failed to look up member role:", err.message);
+    return NextResponse.json({ error: "Couldn't verify that team member. Please refresh and try again." }, { status: 400 });
+  }
+
+  if (!role) {
+    return NextResponse.json({ error: "That person isn't on your team." }, { status: 404 });
+  }
+  if (role === "org:admin") {
+    return NextResponse.json({ error: "The workspace owner can't be removed from the team." }, { status: 400 });
+  }
+
+  try {
+    await removeAgencyOrgMember({ orgId: agency.clerk_org_id, userId: memberUserId });
   } catch (err) {
     const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
-    console.error("[team/invite] Clerk revoke failed:", detail);
-    return NextResponse.json({ error: "Couldn't cancel that invite. Please refresh and try again." }, { status: 400 });
+    console.error("[team/invite] Clerk member removal failed:", detail);
+    return NextResponse.json({ error: "Couldn't remove that team member. Please refresh and try again." }, { status: 400 });
+  }
+
+  // Belt and braces: the organizationMembership.deleted webhook clears
+  // profiles.agency_id too, but that arrives asynchronously (and depends
+  // on the webhook being configured at all in this Clerk instance) -
+  // clearing it here means the removed member loses dashboard access to
+  // this agency's data immediately, not however long webhook delivery
+  // takes. Scoped by agency_id so this can't ever touch a different
+  // agency_id the same clerk_user_id might have moved to in the meantime.
+  const { error: detachError } = await supabase
+    .from("profiles")
+    .update({ agency_id: null })
+    .eq("clerk_user_id", memberUserId)
+    .eq("agency_id", auth.agencyId);
+  if (detachError) {
+    console.error("[team/invite] Removed from Clerk org but failed to detach profile:", detachError.message);
   }
 
   return NextResponse.json({ ok: true });

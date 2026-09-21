@@ -16,8 +16,9 @@ import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@
 // Setup required in the Clerk dashboard: Webhooks -> Add endpoint ->
 //   https://<your-domain>/api/webhooks/clerk
 // Subscribe to: user.created (required), user.deleted (optional, see below),
-// organizationMembership.created and organizationInvitation.created
-// (required for Agency-plan team invites - see lib/clerk-org.js).
+// organizationMembership.created, organizationMembership.deleted and
+// organizationInvitation.created (required for Agency-plan team invites
+// and offboarding - see lib/clerk-org.js).
 // Copy the "Signing secret" into CLERK_WEBHOOK_SECRET.
 //
 // agencyName/username/firstName/lastName arrive via `unsafeMetadata`,
@@ -70,6 +71,8 @@ export async function POST(request) {
         .eq("clerk_user_id", event.data.id);
     } else if (event.type === "organizationMembership.created") {
       await handleOrganizationMembershipCreated(event.data);
+    } else if (event.type === "organizationMembership.deleted") {
+      await handleOrganizationMembershipDeleted(event.data);
     } else if (event.type === "organizationInvitation.created") {
       await handleOrganizationInvitationCreated(event.data);
     }
@@ -243,6 +246,47 @@ async function handleOrganizationMembershipCreated(membership) {
     agency_id: agency.id,
   });
   if (insertError) throw new Error(insertError.message);
+}
+
+// Fires when a member leaves or is removed from a Clerk Organization -
+// primarily the backstop for app/api/team/invite's DELETE handler (which
+// already clears profiles.agency_id synchronously when removal happens
+// through this app), but this is what actually detaches someone if a
+// removal happens some other way (directly via Clerk's own dashboard/API,
+// bypassing this app's route entirely) - same reasoning as
+// handleOrganizationInvitationCreated's backstop below. Without this, a
+// member removed outside the app would keep full dashboard access to the
+// agency's candidates and jobs indefinitely.
+//
+// Deliberately does not touch clerk_user_id (unlike user.deleted's
+// handler above) - the person's account still exists, they've just left
+// this one agency, so keeping the account link is correct.
+async function handleOrganizationMembershipDeleted(membership) {
+  const clerkUserId = membership.public_user_data?.user_id;
+  const orgId = membership.organization?.id;
+  if (!clerkUserId || !orgId) {
+    console.error("[clerk webhook] organizationMembership.deleted missing user_id or organization.id");
+    return;
+  }
+
+  const { data: agency, error: agencyError } = await supabase
+    .from("agencies")
+    .select("id")
+    .eq("clerk_org_id", orgId)
+    .maybeSingle();
+  if (agencyError) throw new Error(agencyError.message);
+  if (!agency) return; // org isn't linked to any agency - nothing to detach
+
+  // Only clear agency_id if it still points at the agency they were just
+  // removed from - guards against stomping on a more recent state if this
+  // event happens to arrive out of order after the person joined somewhere
+  // else (Clerk webhooks aren't guaranteed to be delivered in order).
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ agency_id: null })
+    .eq("clerk_user_id", clerkUserId)
+    .eq("agency_id", agency.id);
+  if (updateError) throw new Error(updateError.message);
 }
 
 // Backstop against the 5-seat cap already enforced when an invite is sent

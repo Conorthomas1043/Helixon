@@ -125,6 +125,17 @@ export async function cancelTeamInvite(invitationId) {
   });
 }
 
+// Removes an existing (already-accepted) team member, freeing their seat.
+// Same endpoint as cancelTeamInvite, distinguished by { userId } instead of
+// { invitationId } - see app/api/team/invite's DELETE handler.
+export async function removeTeammate(userId) {
+  return apiFetch("/api/team/invite", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId }),
+  });
+}
+
 export async function updateCandidateStage(id, newStage) {
   return apiFetch(`/api/candidates/${id}/stage`, {
     method: "PATCH",

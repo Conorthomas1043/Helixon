@@ -95,3 +95,28 @@ export async function revokeAgencyOrgInvitation({ orgId, invitationId, requestin
     requestingUserId,
   });
 }
+
+// Looks up a member's role directly rather than trusting anything the
+// client sent - used before removing someone, to refuse removing the
+// workspace owner. ensureAgencyOrg's createOrganization({ createdBy })
+// automatically makes the owner "org:admin"; inviteToAgencyOrg always
+// grants invited teammates "org:member" (never admin), so exactly one
+// "org:admin" - the owner - exists per org by construction. Returns null
+// if the given user isn't a member of this org at all.
+export async function getOrgMemberRole({ orgId, userId }) {
+  const client = await clerkClient();
+  const memberships = await client.organizations.getOrganizationMembershipList({ organizationId: orgId, limit: 100 });
+  const match = (memberships.data ?? []).find((m) => m.publicUserData?.userId === userId);
+  return match?.role ?? null;
+}
+
+// Removes an existing (accepted) member from the org, freeing the seat
+// they held. Distinct from revokeAgencyOrgInvitation, which only cancels a
+// *pending* invitation before it's ever accepted.
+export async function removeAgencyOrgMember({ orgId, userId }) {
+  const client = await clerkClient();
+  return client.organizations.deleteOrganizationMembership({
+    organizationId: orgId,
+    userId,
+  });
+}
