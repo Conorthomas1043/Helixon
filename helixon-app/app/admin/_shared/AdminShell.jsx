@@ -135,6 +135,10 @@ export default function AdminShell({ children, initialUsername }) {
                 )}
               </div>
             </div>
+            <Link href="/admin/mobile" className="side-link" style={{ fontSize: 12 }}>
+              <Icon name="command" />
+              Mobile view
+            </Link>
             <button className="logout" onClick={signOut}>
               <Icon name="logout" />
               Log out

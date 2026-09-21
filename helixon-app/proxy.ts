@@ -278,8 +278,16 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     }
   }
 
-  // ── 4. Continue - attach IP header for downstream API routes ─────────────
-  const response = NextResponse.next();
+  // ── 4. Continue - attach headers for downstream server components/routes ──
+  // x-pathname lets a layout (e.g. app/admin/layout.js) know which page is
+  // being rendered - Next doesn't otherwise expose the resolved pathname to
+  // a layout, only to the page itself. It has to go on the *request*
+  // headers (not the response) to be readable via headers() in a server
+  // component/route handler - a response header would only reach the
+  // browser.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("x-client-ip", ip);
   return response;
 });
