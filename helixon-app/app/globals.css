@@ -289,3 +289,86 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .auth-panel-in, .auth-drift-a, .auth-drift-b { animation: none; }
 }
+
+/* ── Dashboard/Analyse: shared entrance + live-data motion ───────────────────
+   One small vocabulary reused across Overview, Analytics, Pipeline and the
+   Analyse flow, instead of each page inventing its own. Every rule here has
+   a prefers-reduced-motion fallback that jumps straight to the end state. */
+
+/* Staggered fade-up for KPI/list/card grids that populate once data has
+   loaded - set the per-item delay with the --stagger-delay custom property
+   (e.g. style={{ "--stagger-delay": `${i * 60}ms` }}). */
+@keyframes fade-up-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up-in {
+  animation: fade-up-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-up-in { animation: none; }
+}
+
+/* Generic hover/focus lift for clickable dashboard cards and list rows -
+   the same motion .landing-card uses on the marketing site, generalised so
+   the in-app dashboard doesn't reinvent it under a different name. */
+.lift-on-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.lift-on-hover:hover,
+.lift-on-hover:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raise);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift-on-hover:hover, .lift-on-hover:focus-visible { transform: none; }
+}
+
+/* Shimmer skeleton - a moving highlight instead of a flat opacity pulse,
+   for the loading state of anything about to show live numbers. */
+@keyframes shimmer-sweep {
+  100% { transform: translateX(100%); }
+}
+.shimmer-block {
+  position: relative;
+  overflow: hidden;
+  background: var(--mist);
+}
+.shimmer-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-block::after { animation: none; display: none; }
+}
+
+/* Soft ambient glow behind a hero/summary card - low-key "alive" motion for
+   a surface with no other animation happening on it (e.g. the dashboard
+   header, or the landing-page workspace preview). */
+@keyframes ambient-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-2%, 2%) scale(1.04); }
+}
+.ambient-glow {
+  animation: ambient-drift 14s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow { animation: none; }
+}
+
+/* Live-updating value - a brief highlight flash when a number changes,
+   e.g. a KPI refreshing to a new count. Re-triggered by toggling the
+   class (see components/dashboard/CountUp.jsx). */
+@keyframes value-flash {
+  0%   { color: var(--forest); }
+  100% { color: inherit; }
+}
+.value-flash { animation: value-flash 0.9s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .value-flash { animation: none; }
+}

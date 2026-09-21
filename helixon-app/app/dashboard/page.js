@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
+import CountUp from "@/components/dashboard/CountUp";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
 
@@ -236,6 +237,8 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
   return (
     <header style={{
       ...CARD,
+      position: "relative",
+      overflow: "hidden",
       padding: "28px 32px",
       display: "flex",
       flexWrap: "wrap",
@@ -244,7 +247,21 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
       justifyContent: "space-between",
       background: `linear-gradient(135deg, ${SURFACE} 0%, rgba(var(--forest-rgb),0.06) 100%)`,
     }}>
-      <div style={{ minWidth: 0, flex: 1 }}>
+      <div
+        className="ambient-glow"
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: "-40%",
+          right: "-10%",
+          width: 320,
+          height: 320,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(var(--forest-rgb),0.10) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+      <div style={{ minWidth: 0, flex: 1, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           {plan && (
             <span style={{
@@ -276,7 +293,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
         <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 20 }} aria-live="polite">
           {isRefreshing && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: TEXT_FAINT }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN_FG, display: "inline-block", animation: "pulse 1.5s infinite" }} aria-hidden="true" />
+              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN_FG, display: "inline-block" }} aria-hidden="true" />
               Refreshing…
             </span>
           )}
@@ -296,7 +313,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <Link href="/dashboard/candidates" style={{
           display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
           padding: "8px 16px", borderRadius: 8, border: `1px solid ${BORDER2}`,
@@ -325,18 +342,38 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
 
 /* ─── KPIs ──────────────────────────────────────────────────────────────── */
 
-function KpiCard({ label, value, sub, meter, accent }) {
+function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
+  // Meter bar grows in from 0 on mount rather than just appearing at its
+  // final width - a two-step state flip so the width change is a real
+  // CSS transition, not just paint-in-place.
+  const [meterGrown, setMeterGrown] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setMeterGrown(true), index * 70 + 150);
+    return () => clearTimeout(t);
+  }, [index]);
+
   return (
-    <div style={{ ...CARD, padding: 20 }}>
+    <div
+      className="fade-up-in lift-on-hover"
+      style={{ ...CARD, padding: 20, "--stagger-delay": `${index * 70}ms` }}
+    >
       <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
         {label}
       </p>
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
-        {value}
+        <CountUp value={value} format={formatNumber} />
       </p>
       {typeof meter === "number" && (
         <div style={{ height: 3, background: BORDER2, borderRadius: 9999, marginTop: 12, marginBottom: 6, overflow: "hidden" }}>
-          <div style={{ height: 3, width: `${Math.min(100, Math.max(0, meter))}%`, background: VIOLET, borderRadius: 9999 }} />
+          <div
+            style={{
+              height: 3,
+              width: meterGrown ? `${Math.min(100, Math.max(0, meter))}%` : "0%",
+              background: VIOLET,
+              borderRadius: 9999,
+              transition: "width 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          />
         </div>
       )}
       {sub && <p style={{ fontSize: 12, color: TEXT_FAINT, marginTop: typeof meter === "number" ? 2 : 8, marginBottom: 0 }}>{sub}</p>}
@@ -347,10 +384,10 @@ function KpiCard({ label, value, sub, meter, accent }) {
 function DashboardKpis({ totals }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-live="polite">
-      <KpiCard label="Total analyses" value={formatNumber(totals.total)} sub={`${formatNumber(totals.last7)} in the last 7 days`} />
-      <KpiCard label="Strong matches" value={formatNumber(totals.strongMatches)} sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed` : "No completed yet"} accent={GREEN_FG} />
-      <KpiCard label="In pipeline" value={formatNumber(totals.inPipeline)} sub="Active, not yet placed" accent={CYAN} />
-      <KpiCard label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "-"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
+      <KpiCard index={0} label="Total analyses" value={totals.total} sub={`${formatNumber(totals.last7)} in the last 7 days`} />
+      <KpiCard index={1} label="Strong matches" value={totals.strongMatches} sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed` : "No completed yet"} accent={GREEN_FG} />
+      <KpiCard index={2} label="In pipeline" value={totals.inPipeline} sub="Active, not yet placed" accent={CYAN} />
+      <KpiCard index={3} label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "-"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
     </div>
   );
 }
@@ -358,6 +395,14 @@ function DashboardKpis({ totals }) {
 /* ─── Pipeline ──────────────────────────────────────────────────────────── */
 
 function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
+  // Bars grow in from 0 on mount instead of appearing at final height -
+  // same two-step pattern as KpiCard's meter.
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setGrown(true), 150);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
@@ -373,15 +418,30 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-          {stageOrder.map((stageKey) => {
+          {stageOrder.map((stageKey, i) => {
             const count = stageCounts[stageKey] ?? 0;
             const heightPct = maxCount > 0 ? Math.max(8, Math.round((count / maxCount) * 100)) : 0;
             const isPlaced = stageKey === stageOrder[stageOrder.length - 1];
             return (
-              <Link key={stageKey} href={`/dashboard/pipeline?stage=${stageKey}`} style={{ textDecoration: "none", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 8px", borderRadius: 10, border: `1px solid ${BORDER}`, background: SURFACE2 }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: TEXT, lineHeight: 1 }}>{formatNumber(count)}</span>
+              <Link
+                key={stageKey}
+                href={`/dashboard/pipeline?stage=${stageKey}`}
+                className="lift-on-hover"
+                style={{ textDecoration: "none", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 8px", borderRadius: 10, border: `1px solid ${BORDER}`, background: SURFACE2 }}
+              >
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: TEXT, lineHeight: 1 }}>
+                  <CountUp value={count} format={formatNumber} />
+                </span>
                 <div style={{ width: "100%", height: 36, background: BORDER2, borderRadius: 6, marginTop: 8, marginBottom: 8, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
-                  <div style={{ width: "100%", height: `${heightPct}%`, background: isPlaced ? GREEN : VIOLET, borderRadius: "0 0 4px 4px", transition: "height 0.3s" }} />
+                  <div
+                    style={{
+                      width: "100%",
+                      height: grown ? `${heightPct}%` : 0,
+                      background: isPlaced ? GREEN : VIOLET,
+                      borderRadius: "0 0 4px 4px",
+                      transition: `height 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 60}ms`,
+                    }}
+                  />
                 </div>
                 <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
                   {STAGE_LABELS[stageKey]}
@@ -449,8 +509,12 @@ function AttentionPanel({ items, total }) {
         <EmptyState title="Nothing needs attention" body="No failed analyses, stalled candidates, or unreviewed strong matches right now." />
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {items.map((item) => (
-            <li key={item.id} style={{ borderTop: `1px solid ${BORDER}` }}>
+          {items.map((item, i) => (
+            <li
+              key={item.id}
+              className="fade-up-in"
+              style={{ borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
+            >
               <Link href={item.actionHref} title={`${item.candidateName} - ${item.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
@@ -498,7 +562,11 @@ function TopCandidates({ candidates, total }) {
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {candidates.map((c, i) => (
-            <li key={c.id} style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : "none" }}>
+            <li
+              key={c.id}
+              className="fade-up-in"
+              style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : "none", "--stagger-delay": `${i * 50}ms` }}
+            >
               <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} - ${c.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
@@ -536,6 +604,14 @@ function TopCandidates({ candidates, total }) {
 
 function ActivityOverview({ analyses }) {
   const [windowDays, setWindowDays] = useState(7);
+  // Re-triggers whenever the 7D/30D toggle changes, so switching windows
+  // re-grows the bars instead of just snapping to new heights.
+  const [barsGrown, setBarsGrown] = useState(false);
+  useEffect(() => {
+    setBarsGrown(false);
+    const t = setTimeout(() => setBarsGrown(true), 60);
+    return () => clearTimeout(t);
+  }, [windowDays]);
 
   const stats = useMemo(() => {
     const now = Date.now();
@@ -587,7 +663,9 @@ function ActivityOverview({ analyses }) {
         }
       />
       <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 600, color: TEXT, fontVariantNumeric: "tabular-nums" }}>{formatNumber(stats.currentCount)}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 600, color: TEXT, fontVariantNumeric: "tabular-nums" }}>
+          <CountUp value={stats.currentCount} format={formatNumber} />
+        </span>
         <span style={{ fontSize: 12, color: TEXT_SUB }}>in the last {windowDays} days</span>
       </div>
       <p style={{ fontSize: 12, marginBottom: 16, color: delta >= 0 ? GREEN_FG : RED }}>
@@ -599,8 +677,9 @@ function ActivityOverview({ analyses }) {
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 3 }}>
             <div style={{
               width: "100%", borderRadius: "3px 3px 0 0",
-              height: `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%`,
+              height: barsGrown ? `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%` : 0,
               background: VIOLET, opacity: d.count === 0 ? 0.15 : 0.85,
+              transition: `height 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 20}ms`,
             }} />
             <span style={{ fontSize: 9, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
           </div>
@@ -608,9 +687,9 @@ function ActivityOverview({ analyses }) {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, paddingTop: 12, borderTop: `1px solid ${BORDER}`, color: TEXT_SUB }}>
-        <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.completed)}</strong> completed</span>
-        <span><strong style={{ color: AMBER_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.processing)}</strong> processing</span>
-        <span><strong style={{ color: RED, fontFamily: "var(--font-mono)" }}>{formatNumber(stats.failed)}</strong> failed</span>
+        <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.completed} format={formatNumber} /></strong> completed</span>
+        <span><strong style={{ color: AMBER_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.processing} format={formatNumber} /></strong> processing</span>
+        <span><strong style={{ color: RED, fontFamily: "var(--font-mono)" }}><CountUp value={stats.failed} format={formatNumber} /></strong> failed</span>
       </div>
     </div>
   );
@@ -630,8 +709,12 @@ function ActiveJobs({ jobs }) {
         <EmptyState title="No active jobs" body="Jobs appear here once candidates have been analysed against them." />
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {jobs.map((job) => (
-            <li key={job.key} style={{ padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
+          {jobs.map((job, i) => (
+            <li
+              key={job.key}
+              className="fade-up-in"
+              style={{ padding: "12px 0", borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
+            >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}>
                   {job.jobTitle}
@@ -669,8 +752,12 @@ function RecruiterPerformance({ recruiters }) {
         action={<Link href="/dashboard/analytics" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>Full analytics →</Link>}
       />
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-        {recruiters.map((r) => (
-          <li key={r.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 0", borderTop: `1px solid ${BORDER}` }}>
+        {recruiters.map((r, i) => (
+          <li
+            key={r.name}
+            className="fade-up-in"
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 0", borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: VIOLET_FG, flexShrink: 0 }}>
                 {r.name[0]}
@@ -716,10 +803,15 @@ function RecentAnalyses({ analyses }) {
               </tr>
             </thead>
             <tbody>
-              {analyses.map((a) => {
+              {analyses.map((a, i) => {
                 const href = a.status === "completed" ? `/dashboard/candidates/${a.id}` : `/analyse/${a.id}`;
                 return (
-                  <tr key={a.id} onClick={() => router.push(href)} style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}` }} className="hover:bg-[var(--mist)] transition-colors">
+                  <tr
+                    key={a.id}
+                    onClick={() => router.push(href)}
+                    style={{ cursor: "pointer", borderBottom: `1px solid ${BORDER}`, "--stagger-delay": `${i * 40}ms` }}
+                    className="hover:bg-[var(--mist)] transition-colors fade-up-in"
+                  >
                     <td style={{ padding: "12px 12px 12px 0", minWidth: 0 }}>
                       <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} - ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.candidateName}</p>
@@ -762,7 +854,7 @@ function DashboardFooter() {
 /* ─── Skeleton ──────────────────────────────────────────────────────────── */
 
 function Block({ style = {} }) {
-  return <div className="animate-pulse motion-reduce:animate-none" style={{ background: SURFACE2, borderRadius: 8, ...style }} />;
+  return <div className="shimmer-block" style={{ borderRadius: 8, ...style }} />;
 }
 
 function DashboardSkeleton() {
