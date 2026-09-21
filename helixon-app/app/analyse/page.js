@@ -6,6 +6,7 @@ import posthog from "posthog-js";
 import CandidateResult from "@/components/CandidateResult";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs, getJobById, getCandidates, getAnalyticsSnapshot } from "@/lib/dashboard-api";
+import CountUp from "@/components/dashboard/CountUp";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MIN_LOADING_MS = 900;
@@ -1326,7 +1327,7 @@ function AnalysisFlow({
                 sub: "Paste or type",
                 icon: "✎",
               },
-            ].map((option) => (
+            ].map((option, i) => (
               <button
                 key={option.id}
                 type="button"
@@ -1335,7 +1336,7 @@ function AnalysisFlow({
                     option.id
                   )
                 }
-                className="text-center p-4 rounded-[12px] transition-all"
+                className="text-center p-4 rounded-[12px] transition-all fade-up-in lift-on-hover"
                 style={{
                   border: `1.5px solid ${
                     jobMode ===
@@ -1348,6 +1349,7 @@ function AnalysisFlow({
                     option.id
                       ? "#f0f9f4"
                       : "white",
+                  "--stagger-delay": `${i * 60}ms`,
                 }}
               >
                 <span
@@ -1383,15 +1385,16 @@ function AnalysisFlow({
           {jobMode === "saved" && (
             <div className="mb-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {savedJobs.map((job) => (
+                {savedJobs.map((job, i) => (
                   <button
                     key={job.id}
                     type="button"
                     onClick={() => pickSavedJob(job)}
-                    className="text-left p-4 rounded-[12px] transition-all"
+                    className="text-left p-4 rounded-[12px] transition-all fade-up-in lift-on-hover"
                     style={{
                       border: `1.5px solid ${existingJobId === job.id ? "var(--forest)" : "var(--border)"}`,
                       background: existingJobId === job.id ? "#f0f9f4" : "white",
+                      "--stagger-delay": `${Math.min(i, 10) * 40}ms`,
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -1478,7 +1481,7 @@ function AnalysisFlow({
 
               <div className="grid grid-cols-2 gap-3">
                 {filteredPresets.map(
-                  (preset) => (
+                  (preset, i) => (
                     <button
                       key={preset.id}
                       type="button"
@@ -1487,7 +1490,7 @@ function AnalysisFlow({
                           preset
                         )
                       }
-                      className="text-left p-4 rounded-[12px] transition-all"
+                      className="text-left p-4 rounded-[12px] transition-all fade-up-in lift-on-hover"
                       style={{
                         border: `1.5px solid ${
                           selectedPreset ===
@@ -1500,6 +1503,7 @@ function AnalysisFlow({
                           preset.id
                             ? "#f0f9f4"
                             : "white",
+                        "--stagger-delay": `${Math.min(i, 10) * 30}ms`,
                       }}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -2895,7 +2899,7 @@ function ScanningStep({
                     : "#5a7a6a",
                 }}
               >
-                {confidence}%
+                <CountUp value={confidence} format={(n) => `${n}%`} />
               </span>
             </div>
 
