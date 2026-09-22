@@ -15,7 +15,12 @@
 import { supabase } from "@/lib/supabase";
 
 const BUCKET = "employee-files";
-export const MAX_FILE_BYTES = 20 * 1024 * 1024; // 20MB - the hosting platform may enforce a smaller request-body limit of its own
+// This is meant to house everyday team documents - call scripts, Word
+// docs, PDFs, spreadsheets, slide decks - not video or other large media,
+// so 50MB comfortably covers that without inviting the bucket to become a
+// dumping ground. The hosting platform may still enforce a smaller
+// request-body limit of its own on top of this.
+export const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
 const SIGNED_URL_TTL_SECONDS = 60;
 
 const FOLDER_SELECT = "id,name,parent_id,created_by,created_at, creator:created_by(id,display_name,full_name,username)";
