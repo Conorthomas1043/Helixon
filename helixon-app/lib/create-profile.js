@@ -68,6 +68,7 @@ export async function createProfileAndAgency({
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
+      id: crypto.randomUUID(), // `profiles.id` has no DB default - every insert must supply one
       clerk_user_id: clerkUserId,
       first_name: firstName || null,
       last_name: lastName || null,
