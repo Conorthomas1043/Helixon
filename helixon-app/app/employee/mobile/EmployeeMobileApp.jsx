@@ -687,9 +687,7 @@ function CallsTab({ employee }) {
   const load = useCallback(async () => {
     setError("");
     try {
-      const from = new Date();
-      from.setDate(from.getDate() - 7);
-      const res = await fetch(`/api/employee/cold-calls?from=${from.toISOString()}&mine=1&stats=1`, { cache: "no-store" });
+      const res = await fetch(`/api/employee/cold-calls?mine=1&stats=1`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "Could not load calls.");
       setCalls(data.calls || []);
@@ -772,7 +770,7 @@ function CallsTab({ employee }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2.5">
-        <SectionTitle>My calls (last 7 days)</SectionTitle>
+        <SectionTitle>My calls</SectionTitle>
         <button
           type="button"
           onClick={showAddForm ? () => setShowAddForm(false) : () => setShowAddForm(true)}
@@ -846,7 +844,7 @@ function CallsTab({ employee }) {
       {loading ? (
         <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : calls.length === 0 ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged in the last 7 days.</p>
+        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged yet.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {calls.map((call) => (
