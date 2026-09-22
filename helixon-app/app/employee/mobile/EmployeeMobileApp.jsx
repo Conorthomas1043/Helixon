@@ -72,11 +72,13 @@ const ICONS = {
     </>
   ),
   chevronRight: <path d="M9 18l6-6-6-6" />,
+  phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />,
 };
 
 const TABS = [
   { id: "todos", label: "To-dos", icon: "todo" },
   { id: "calendar", label: "Calendar", icon: "calendar" },
+  { id: "calls", label: "Calls", icon: "phone" },
   { id: "stats", label: "Stats", icon: "chart" },
 ];
 
@@ -164,6 +166,7 @@ export default function EmployeeMobileApp({ employee }) {
       <main className="px-4 pt-4" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom))" }}>
         {tab === "todos" && <TodosTab />}
         {tab === "calendar" && <CalendarTab employee={employee} />}
+        {tab === "calls" && <CallsTab employee={employee} />}
         {tab === "stats" && <StatsTab />}
       </main>
 
@@ -628,6 +631,224 @@ function CalendarTab({ employee }) {
         style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
         <span className="text-[12px] font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
+        <Icon path={ICONS.chevronRight} size={16} />
+      </Link>
+    </div>
+  );
+}
+
+// ── Cold calls ───────────────────────────────────────────────────────────
+// Same data/API as app/employee/cold-calls (the desktop page). Shows the
+// signed-in employee's own recent calls plus a compact today/this-week
+// leaderboard - the full outcome breakdown stays on the desktop page.
+
+const OUTCOME_LABEL = {
+  no_answer: "No answer",
+  voicemail: "Voicemail",
+  gatekeeper: "Gatekeeper",
+  not_interested: "Not interested",
+  wrong_number: "Wrong number",
+  callback_requested: "Callback requested",
+  interested: "Interested",
+  meeting_booked: "Meeting booked",
+};
+
+const OUTCOME_DOT = {
+  no_answer: GRAY,
+  voicemail: GRAY,
+  gatekeeper: GRAY,
+  not_interested: RED,
+  wrong_number: RED,
+  callback_requested: AMBER,
+  interested: "#0b6e4f",
+  meeting_booked: "#0b6e4f",
+};
+
+function CallsTab({ employee }) {
+  const [calls, setCalls] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [outcomes, setOutcomes] = useState(Object.keys(OUTCOME_LABEL));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [form, setForm] = useState({ contact_name: "", company: "", outcome: "no_answer", notes: "" });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      const from = new Date();
+      from.setDate(from.getDate() - 7);
+      const res = await fetch(`/api/employee/cold-calls?from=${from.toISOString()}&mine=1&stats=1`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not load calls.");
+      setCalls(data.calls || []);
+      setStats(data.stats);
+      if (data.outcomes?.length) setOutcomes(data.outcomes);
+    } catch (err) {
+      setError(err?.message || "Could not load calls.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleSave(e) {
+    e.preventDefault();
+    setSaving(true);
+    setFormError("");
+    try {
+      const res = await fetch("/api/employee/cold-calls", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          contact_name: form.contact_name.trim(),
+          company: form.company.trim(),
+          outcome: form.outcome,
+          notes: form.notes.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) { setFormError(data.error || "Failed to save."); return; }
+      setForm({ contact_name: "", company: "", outcome: "no_answer", notes: "" });
+      setShowAddForm(false);
+      load();
+    } catch {
+      setFormError("Network error.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(call) {
+    if (!window.confirm(`Delete this call log entry?`)) return;
+    setCalls((current) => current.filter((c) => c.id !== call.id));
+    try {
+      const res = await fetch("/api/employee/cold-calls", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "delete", id: call.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete.");
+    } catch (err) {
+      setError(err?.message || "Failed to delete.");
+      load();
+    }
+  }
+
+  const me = stats?.byEmployee?.find((row) => row.employeeId === employee?.id);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <SectionTitle>My calls (last 7 days)</SectionTitle>
+        <button
+          type="button"
+          onClick={showAddForm ? () => setShowAddForm(false) : () => setShowAddForm(true)}
+          className="text-[11px] font-semibold px-3 py-1.5 rounded-full"
+          style={{ background: "var(--mint)", color: "var(--forest)" }}
+        >
+          {showAddForm ? "Cancel" : "+ Log call"}
+        </button>
+      </div>
+
+      {me && (
+        <div className="rounded-[14px] px-3.5 py-2.5 mb-3 flex items-center justify-between" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <span className="text-[12px] font-medium" style={{ color: "var(--ink-soft)" }}>Today</span>
+          <span className="text-[13px] font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{me.today} calls</span>
+        </div>
+      )}
+
+      {showAddForm && (
+        <form onSubmit={handleSave} className="rounded-[14px] p-3.5 mb-3 flex flex-col gap-2.5" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <input
+            autoFocus
+            type="text"
+            value={form.contact_name}
+            onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
+            placeholder="Contact name"
+            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          />
+          <input
+            type="text"
+            value={form.company}
+            onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
+            placeholder="Company (optional)"
+            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          />
+          <select
+            value={form.outcome}
+            onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
+            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          >
+            {outcomes.map((o) => (
+              <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
+            ))}
+          </select>
+          <textarea
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            placeholder="Notes (optional)"
+            rows={2}
+            className="text-[13px] rounded-[10px] px-3 py-2.5 resize-none"
+            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          />
+          {formError && (
+            <p className="text-[11px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={saving}
+            className="text-[13px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            {saving ? "Saving…" : "Log call"}
+          </button>
+        </form>
+      )}
+
+      <ErrorNotice message={error} />
+
+      {loading ? (
+        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+      ) : calls.length === 0 ? (
+        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged in the last 7 days.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {calls.map((call) => (
+            <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: OUTCOME_DOT[call.outcome] || GRAY }} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                  {call.contact_name || call.company || "Unnamed contact"}
+                </div>
+                <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                  {OUTCOME_LABEL[call.outcome] || call.outcome} · {new Date(call.called_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+              <button type="button" onClick={() => handleDelete(call)} aria-label="Delete call" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
+                <Icon path={ICONS.trash} size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Link
+        href="/employee/cold-calls"
+        className="flex items-center justify-between px-3.5 py-3 rounded-[12px] mt-4"
+        style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+      >
+        <span className="text-[12px] font-medium">Full team log & leaderboard</span>
         <Icon path={ICONS.chevronRight} size={16} />
       </Link>
     </div>

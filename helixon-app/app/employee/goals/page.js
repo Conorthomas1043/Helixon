@@ -229,6 +229,7 @@ export default function EmployeeGoalsPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Link href="/employee/calendar" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>Calendar</Link>
+            <Link href="/employee/cold-calls" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>Cold calls</Link>
             <Link href="/employee/dashboard" className="text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:bg-white" style={{ borderColor: "var(--border)", color: "var(--ink-soft)" }}>
               ← My dashboard
             </Link>

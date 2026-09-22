@@ -381,6 +381,13 @@ export default function EmployeeDashboard() {
           >
             Goals
           </Link>
+          <Link
+            href="/employee/cold-calls"
+            className="text-xs font-semibold px-3.5 py-2 rounded-full transition hover:opacity-90"
+            style={{ background: "var(--mint)", color: "var(--forest)" }}
+          >
+            Cold calls
+          </Link>
         </div>
 
         <OnboardingPanel />
