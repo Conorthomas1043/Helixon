@@ -379,6 +379,10 @@ async function applyClerkAction({ client, supabase, userId, action, body }) {
     await client.users.updateUser(userId, { firstName, lastName });
   } else if (action === "provision_agency") {
     return provisionAgency({ client, supabase, userId, body });
+  } else if (action === "grant_demo_access") {
+    return grantDemoAccess({ client, supabase, userId });
+  } else if (action === "revoke_demo_access") {
+    return revokeDemoAccess({ supabase, userId });
   } else if (action === "confirm_email") {
     return { status: 400, error: "Clerk verifies email addresses itself - there is nothing to confirm." };
   } else {
@@ -434,6 +438,71 @@ async function provisionAgency({ client, supabase, userId, body }) {
     await supabase.from("agencies").delete().eq("id", agency.id); // don't leave an orphan behind
     throw new Error(linkError.message);
   }
+  return null;
+}
+
+// Unlocks full paid access for a demo/sales account with no real payment -
+// app/api/run's requireCustomerContext({ requireSubscription: true }) only
+// checks for a `subscriptions` row with status "active"; it has no idea
+// whether Stripe was ever involved. This writes exactly that row, with no
+// Stripe customer/subscription id, and tags the account in Clerk's
+// publicMetadata.is_test_user (the same flag the Users table's "Test" pill
+// already reads - see listClerkUsers above). Billing is completely
+// untouched: no Stripe object is created, so there's nothing to cancel or
+// refund later, only this row to revoke.
+const DEMO_PLAN = "agency"; // the fuller of the two real plans - a demo should show everything
+
+async function grantDemoAccess({ client, supabase, userId }) {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, agency_id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  if (profileError) throw new Error(profileError.message);
+  if (!profile) return { status: 404, error: "This account has no profile yet." };
+  if (!profile.agency_id) {
+    return { status: 409, error: "This account has no agency yet - use “Set up agency” first." };
+  }
+
+  const { error } = await supabase.from("subscriptions").upsert(
+    {
+      user_id: profile.id,
+      plan: DEMO_PLAN,
+      stripe_customer_id: null,
+      stripe_subscription_id: null,
+      status: "active",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) throw new Error(error.message);
+
+  await client.users.updateUser(userId, {
+    publicMetadata: { is_test_user: true, test_label: "Demo access (no payment)" },
+  });
+
+  return null;
+}
+
+// The mirror of grantDemoAccess - deliberately scoped to rows with no
+// Stripe subscription id, so this can never cancel a real paying
+// customer's subscription even if called on the wrong account by mistake.
+async function revokeDemoAccess({ supabase, userId }) {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  if (profileError) throw new Error(profileError.message);
+  if (!profile) return null;
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ status: "canceled", updated_at: new Date().toISOString() })
+    .eq("user_id", profile.id)
+    .is("stripe_subscription_id", null);
+  if (error) throw new Error(error.message);
+
   return null;
 }
 

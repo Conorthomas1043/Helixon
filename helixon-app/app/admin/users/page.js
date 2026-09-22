@@ -26,7 +26,10 @@ export default function UsersPage() {
 
   const banned = users.filter((user) => user.bannedUntil).length;
   const unverified = users.filter((user) => !user.emailConfirmedAt).length;
-  const paying = users.filter((user) => user.subscription?.status === "active").length;
+  // Excludes demo/test accounts (subscription granted via "Grant demo
+  // access", no real Stripe subscription behind it) - this KPI is meant to
+  // answer "how many people are actually paying us".
+  const paying = users.filter((user) => user.subscription?.status === "active" && !user.isTestUser).length;
   // Signed in but with no agency: these accounts get "not connected to an agency"
   // errors everywhere in the app until someone sets them up.
   const unlinked = users.filter((user) => user.provider === "clerk" && !user.agency).length;
@@ -119,6 +122,21 @@ export default function UsersPage() {
           {user.provider === "clerk" && !user.agency && (
             <button className="btn small primary" onClick={() => provision(user)} disabled={busy}>
               Set up agency
+            </button>
+          )}
+          {user.provider === "clerk" && user.agency && user.subscription?.status !== "active" && (
+            <button
+              className="btn small"
+              onClick={() => action(user.id, "grant_demo_access")}
+              disabled={busy}
+              title="Unlocks candidate screening with no real payment - for demos and sales calls"
+            >
+              Grant demo access
+            </button>
+          )}
+          {user.provider === "clerk" && user.subscription?.status === "active" && user.isTestUser && (
+            <button className="btn small" onClick={() => action(user.id, "revoke_demo_access")} disabled={busy}>
+              Revoke demo access
             </button>
           )}
           <button className="btn small" onClick={() => action(user.id, user.bannedUntil ? "unban" : "ban")} disabled={busy}>
