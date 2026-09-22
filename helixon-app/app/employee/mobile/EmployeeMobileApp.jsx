@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 
@@ -73,12 +73,20 @@ const ICONS = {
   ),
   chevronRight: <path d="M9 18l6-6-6-6" />,
   phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />,
+  folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />,
+  file: (
+    <>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+    </>
+  ),
 };
 
 const TABS = [
   { id: "todos", label: "To-dos", icon: "todo" },
   { id: "calendar", label: "Calendar", icon: "calendar" },
   { id: "calls", label: "Calls", icon: "phone" },
+  { id: "files", label: "Files", icon: "folder" },
   { id: "stats", label: "Stats", icon: "chart" },
 ];
 
@@ -167,6 +175,7 @@ export default function EmployeeMobileApp({ employee }) {
         {tab === "todos" && <TodosTab />}
         {tab === "calendar" && <CalendarTab employee={employee} />}
         {tab === "calls" && <CallsTab employee={employee} />}
+        {tab === "files" && <FilesTab employee={employee} />}
         {tab === "stats" && <StatsTab />}
       </main>
 
@@ -882,6 +891,229 @@ function CallsTab({ employee }) {
         <span className="text-[12px] font-medium">Full team log & leaderboard</span>
         <Icon path={ICONS.chevronRight} size={16} />
       </Link>
+    </div>
+  );
+}
+
+// ── Files ────────────────────────────────────────────────────────────────
+// Same data/API as app/employee/files (the desktop page) - folder
+// navigation plus upload/download/delete.
+
+function formatBytes(bytes) {
+  if (bytes === null || bytes === undefined) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function FilesTab({ employee }) {
+  const fileInputRef = useRef(null);
+  const [folderId, setFolderId] = useState(null);
+  const [breadcrumb, setBreadcrumb] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showNewFolder, setShowNewFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      const params = new URLSearchParams();
+      if (folderId) params.set("folderId", folderId);
+      const res = await fetch(`/api/employee/files?${params}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not load files.");
+      setBreadcrumb(data.breadcrumb || []);
+      setFolders(data.folders || []);
+      setFiles(data.files || []);
+    } catch (err) {
+      setError(err?.message || "Could not load files.");
+    } finally {
+      setLoading(false);
+    }
+  }, [folderId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function createFolder(e) {
+    e.preventDefault();
+    if (!newFolderName.trim()) return;
+    try {
+      const res = await fetch("/api/employee/files", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "create_folder", name: newFolderName.trim(), parent_id: folderId }),
+      });
+      const data = await res.json();
+      if (!data.ok) { setError(data.error || "Could not create folder."); return; }
+      setNewFolderName("");
+      setShowNewFolder(false);
+      load();
+    } catch {
+      setError("Could not create folder.");
+    }
+  }
+
+  async function deleteFolder(folder) {
+    if (!window.confirm(`Delete "${folder.name}"? It must be empty.`)) return;
+    try {
+      const res = await fetch("/api/employee/files", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "delete_folder", id: folder.id }),
+      });
+      const data = await res.json();
+      if (!data.ok) { setError(data.error || "Could not delete folder."); return; }
+      load();
+    } catch {
+      setError("Could not delete folder.");
+    }
+  }
+
+  async function deleteFile(file) {
+    if (!window.confirm(`Delete "${file.name}"?`)) return;
+    setFiles((current) => current.filter((f) => f.id !== file.id));
+    try {
+      const res = await fetch("/api/employee/files", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "delete_file", id: file.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete.");
+    } catch (err) {
+      setError(err?.message || "Failed to delete.");
+      load();
+    }
+  }
+
+  async function handleFilesSelected(e) {
+    const selected = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (selected.length === 0) return;
+    setUploading(true);
+    setError("");
+    for (const file of selected) {
+      const form = new FormData();
+      form.append("file", file);
+      if (folderId) form.append("folderId", folderId);
+      try {
+        const res = await fetch("/api/employee/files/upload", { method: "POST", body: form });
+        const data = await res.json();
+        if (!data.ok) setError(`${file.name}: ${data.error || "Upload failed."}`);
+      } catch {
+        setError(`${file.name}: Network error.`);
+      }
+    }
+    setUploading(false);
+    load();
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <SectionTitle>Files</SectionTitle>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setShowNewFolder((v) => !v)}
+            className="text-[11px] font-semibold px-3 py-1.5 rounded-full"
+            style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+          >
+            + Folder
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="text-[11px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50"
+            style={{ background: "var(--mint)", color: "var(--forest)" }}
+          >
+            {uploading ? "Uploading…" : "Upload"}
+          </button>
+          <input ref={fileInputRef} type="file" multiple onChange={handleFilesSelected} className="hidden" />
+        </div>
+      </div>
+
+      <div className="flex items-center flex-wrap gap-1 mb-2.5 text-[11px]" style={{ color: "var(--ink-faint)" }}>
+        <button onClick={() => setFolderId(null)} className="font-medium" style={{ color: folderId ? "var(--ink-soft)" : "var(--forest)" }}>
+          Files
+        </button>
+        {breadcrumb.map((crumb, i) => (
+          <span key={crumb.id} className="flex items-center gap-1">
+            <span>/</span>
+            <button onClick={() => setFolderId(crumb.id)} className="font-medium" style={{ color: i === breadcrumb.length - 1 ? "var(--forest)" : "var(--ink-soft)" }}>
+              {crumb.name}
+            </button>
+          </span>
+        ))}
+      </div>
+
+      {showNewFolder && (
+        <form onSubmit={createFolder} className="flex gap-2 mb-3">
+          <input
+            autoFocus
+            type="text"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder="Folder name"
+            className="flex-1 text-[13px] rounded-[10px] px-3 py-2.5"
+            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          />
+          <button type="submit" className="text-[12px] font-semibold px-3 py-2 rounded-[10px]" style={{ background: "var(--forest)", color: "white" }}>
+            Add
+          </button>
+        </form>
+      )}
+
+      <ErrorNotice message={error} />
+
+      {loading ? (
+        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+      ) : folders.length === 0 && files.length === 0 ? (
+        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {folders.map((folder) => {
+            const canDelete = folder.created_by === employee?.id;
+            return (
+              <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+                <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.folder} size={16} /></span>
+                <button onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
+                  <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</div>
+                </button>
+                {canDelete && (
+                  <button type="button" onClick={() => deleteFolder(folder)} aria-label="Delete folder" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
+                    <Icon path={ICONS.trash} size={14} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {files.map((file) => {
+            const canDelete = file.uploaded_by === employee?.id;
+            return (
+              <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+                <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.file} size={16} /></span>
+                <a href={`/api/employee/files/${file.id}/download`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0">
+                  <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</div>
+                  <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>{formatBytes(file.size_bytes)}</div>
+                </a>
+                {canDelete && (
+                  <button type="button" onClick={() => deleteFile(file)} aria-label="Delete file" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
+                    <Icon path={ICONS.trash} size={14} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
