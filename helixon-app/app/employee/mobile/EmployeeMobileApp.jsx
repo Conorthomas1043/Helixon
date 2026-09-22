@@ -725,6 +725,22 @@ function CallsTab({ employee }) {
     }
   }
 
+  async function setOutcome(call, outcome) {
+    setCalls((current) => current.map((c) => (c.id === call.id ? { ...c, outcome } : c)));
+    try {
+      const res = await fetch("/api/employee/cold-calls", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "update", id: call.id, outcome }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update outcome.");
+    } catch (err) {
+      setError(err?.message || "Failed to update outcome.");
+      load();
+    }
+  }
+
   async function handleDelete(call) {
     if (!window.confirm(`Delete this call log entry?`)) return;
     setCalls((current) => current.filter((c) => c.id !== call.id));
@@ -831,9 +847,24 @@ function CallsTab({ employee }) {
                 <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>
                   {call.contact_name || call.company || "Unnamed contact"}
                 </div>
-                <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>
-                  {OUTCOME_LABEL[call.outcome] || call.outcome} · {new Date(call.called_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <select
+                    value={call.outcome}
+                    onChange={(e) => setOutcome(call, e.target.value)}
+                    className="text-[10px] font-semibold pl-1.5 pr-1 py-0.5 rounded-full"
+                    style={{ background: "var(--mist)", color: "var(--ink-soft)", border: "1px solid var(--border)" }}
+                  >
+                    {outcomes.map((o) => (
+                      <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
+                    ))}
+                  </select>
+                  <span className="text-[10px]" style={{ color: "var(--ink-faint)" }}>
+                    {new Date(call.called_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </span>
                 </div>
+                {call.notes && (
+                  <div className="text-[11px] mt-1" style={{ color: "var(--ink-soft)" }}>{call.notes}</div>
+                )}
               </div>
               <button type="button" onClick={() => handleDelete(call)} aria-label="Delete call" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
                 <Icon path={ICONS.trash} size={14} />

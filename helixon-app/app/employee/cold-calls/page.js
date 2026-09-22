@@ -161,6 +161,22 @@ export default function ColdCallsPage() {
     }
   }
 
+  async function setOutcome(call, outcome) {
+    setCalls((prev) => prev.map((c) => (c.id === call.id ? { ...c, outcome } : c)));
+    try {
+      const res = await fetch("/api/employee/cold-calls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update", id: call.id, outcome }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update outcome.");
+    } catch (err) {
+      alert(err.message || "Failed to update outcome.");
+      fetchAll();
+    }
+  }
+
   async function handleDelete(id) {
     if (!confirm("Delete this call log entry?")) return;
     setCalls((prev) => prev.filter((c) => c.id !== id));
@@ -391,9 +407,22 @@ export default function ColdCallsPage() {
                                   <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
                                     {call.contact_name || call.company || "Unnamed contact"}
                                   </p>
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
-                                    {meta.label}
-                                  </span>
+                                  {canEdit ? (
+                                    <select
+                                      value={call.outcome}
+                                      onChange={(e) => setOutcome(call, e.target.value)}
+                                      className="text-[10px] font-semibold pl-2 pr-1 py-0.5 rounded-full"
+                                      style={{ background: meta.bg, color: meta.color, border: "none" }}
+                                    >
+                                      {Object.entries(OUTCOME_META).map(([value, m]) => (
+                                        <option key={value} value={value}>{m.label}</option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
+                                      {meta.label}
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
                                   {call.company && call.contact_name ? `${call.company} · ` : ""}
