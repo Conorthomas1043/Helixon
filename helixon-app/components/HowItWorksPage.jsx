@@ -2,7 +2,6 @@
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
-import StepIllustration from "@/components/marketing/StepIllustration";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // How It Works - expands the landing page's 3-step teaser into a full
@@ -13,21 +12,18 @@ import StepIllustration from "@/components/marketing/StepIllustration";
 const STEPS = [
   {
     n: "1",
-    illustration: "read",
     title: "Name your analysis & pick the job",
     body: "Give the analysis a name you'll recognise later - the client, the req number, whatever fits your workflow. Then pick a preset role or paste in your own job description. Helixon reads it the same way a hiring manager would: required skills, nice-to-haves, seniority, and tone.",
     icon: <><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></>,
   },
   {
     n: "2",
-    illustration: "upload",
     title: "Upload the CV",
     body: "Drag in a PDF or Word file. No reformatting, no copy-pasting into a template - Helixon parses the document as-is, including tables, multi-column layouts, and scanned exports, in a matter of seconds.",
     icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
   },
   {
     n: "3",
-    illustration: "score",
     title: "Get your score",
     body: "You get a match score out of 100, a plain-English summary of why, standout factors, red flags worth asking about, and a ready-to-send follow-up email - all on one screen, ready to drop into your pipeline.",
     icon: <><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9" /></>,
@@ -75,7 +71,7 @@ export default function HowItWorksPage() {
       {/* ── Steps ────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
         <div className="space-y-5">
-          {STEPS.map((s) => (
+          {STEPS.map((s, i) => (
             <div key={s.n} className="rounded-[16px] p-7 flex flex-col sm:flex-row gap-6 items-start" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
               <div className="flex items-center gap-4 sm:flex-col sm:items-start shrink-0">
                 <span className="w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold" style={{ background: "var(--mint)", color: "var(--forest)" }}>
@@ -87,9 +83,13 @@ export default function HowItWorksPage() {
                 <h2 className="text-base font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.title}</h2>
                 <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
               </div>
-              <div className="w-full max-w-[320px] sm:w-[260px] sm:ml-auto self-center shrink-0">
-                <StepIllustration kind={s.illustration} />
-              </div>
+              {i < STEPS.length - 1 && (
+                <div className="hidden sm:flex ml-auto self-center shrink-0" style={{ color: "var(--ink-mute)" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 4l8 8-8 8" />
+                  </svg>
+                </div>
+              )}
             </div>
           ))}
         </div>
