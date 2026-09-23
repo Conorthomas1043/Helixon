@@ -382,3 +382,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .value-flash { animation: none; }
 }
+/* ── How It Works step illustrations ─────────────────────────────────────────
+   Motion itself lives in components/marketing/StepIllustration.jsx (Web
+   Animations API, only while on screen). These rules just give SVG parts a
+   sensible transform origin, and hide the purely decorative scan line in the
+   static frame (SSR, no-JS, reduced motion). The score ring is excluded: it
+   only animates stroke-dashoffset, and its own rotate(-90 cx cy) attribute
+   would be thrown off-centre by a fill-box origin. */
+.illo [data-illo]:not([data-illo="ring"]) {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.illo [data-illo="grow"] { transform-origin: left center; }
+.illo [data-illo="scan"] { opacity: 0; }
