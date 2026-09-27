@@ -10,9 +10,9 @@
 //     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search] [--threads N] [--search-delay MS]
 //
 // --threads (default 8) is how many companies are worked on at once;
-// --search-delay (default 2500) is the gap between DuckDuckGo searches.
+// --search-delay (default 2500) is the gap between searches on each engine.
 // A fast run: --threads 24 --search-delay 1000 (it backs off by itself if
-// DuckDuckGo starts refusing).
+// an engine starts refusing).
 //
 // Output defaults to "<input>-enriched.csv". Results are cached in
 // "<output>.cache.json", so an interrupted run picks up where it left off;
@@ -31,7 +31,8 @@
 //      are tried; one is accepted only if the page shows the company's
 //      registered number or its full name (UK companies must publish their
 //      number on their site, so this is a strong check).
-//      Failing that, the company is searched on DuckDuckGo (no key needed)
+//      Failing that, the company is searched on DuckDuckGo / Bing / Brave /
+//      Mojeek in rotation (no key needed)
 //      and the top non-directory results get the same check.
 //   4. The website (homepage + careers/jobs pages it links to) is scanned for
 //      known ATS / recruitment CRM fingerprints, and for a phone number when
@@ -135,7 +136,8 @@ export function extractPhones(html) {
     const p = normaliseUkPhone(decodeURIComponent(m[1]));
     if (p) found.push(p);
   }
-  if (!found.length) {
+  // tel: links first (most reliable), then numbers written in the text.
+  {
     const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ");
     for (const m of text.matchAll(/(?:\+44\s?\(?0?\)?\s?|\b0)\d[\d\s-]{8,12}\d/g)) {
       const p = normaliseUkPhone(m[0]);
@@ -167,6 +169,20 @@ async function companiesHouse(number, key) {
   return res.json();
 }
 
+async function companiesHouseDirectors(number, key) {
+  const wait = 520 - (Date.now() - lastChCall);
+  if (wait > 0) await sleep(wait);
+  lastChCall = Date.now();
+  const res = await fetchWithTimeout(`https://api.company-information.service.gov.uk/company/${encodeURIComponent(number)}/officers?items_per_page=50`, {
+    headers: { Authorization: "Basic " + Buffer.from(key + ":").toString("base64") },
+  });
+  if (!res.ok) return [];
+  const { items = [] } = await res.json();
+  return items
+    .filter((o) => !o.resigned_on)
+    .map((o) => `${o.name} (${o.officer_role}${o.appointed_on ? `, since ${o.appointed_on.slice(0, 4)}` : ""})`);
+}
+
 export function classify(ch) {
   if (ch.notFound) return { flag: "RED", label: "Company number not found at Companies House" };
   const status = ch.company_status || "unknown";
@@ -188,7 +204,7 @@ async function placesLookup(company, city, office, key) {
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": key,
-      "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.businessStatus",
+      "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.businessStatus,places.rating,places.userRatingCount,places.googleMapsUri",
     },
     body: JSON.stringify({ textQuery: `${company} ${city}`.trim(), regionCode: "GB" }),
   });
@@ -205,6 +221,9 @@ async function placesLookup(company, city, office, key) {
         name,
         phone: normaliseUkPhone(p.nationalPhoneNumber || p.internationalPhoneNumber || "") || null,
         website: p.websiteUri || null,
+        address: p.formattedAddress || null,
+        rating: p.rating ? `${p.rating} (${p.userRatingCount || 0} reviews)` : null,
+        mapsUrl: p.googleMapsUri || null,
       };
     }
   }
@@ -223,12 +242,46 @@ async function getPage(url) {
   }
 }
 
-function pageMentionsCompany(html, company, number) {
-  const text = html.toUpperCase().replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+// Normalised for comparison: "A&B Recruitment Limited." -> "A AND B RECRUITMENT LTD"
+const canon = (str) => ` ${String(str).toUpperCase().replace(/&/g, " AND ").replace(/[^A-Z0-9]+/g, " ").replace(/\bLIMITED\b/g, "LTD").trim()} `;
+
+// A page belongs to the company only if it shows the registered number or the
+// full registered name including "Ltd"/"Limited" (both legally required on a
+// UK company's website). Matching on the name alone would accept any site
+// that happens to say e.g. "best recruitment agency".
+export function pageText(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ").replace(/&amp;/gi, "&").replace(/&#0?39;|&rsquo;|&lsquo;|&apos;/gi, "'")
+    .replace(/&copy;|&#169;/gi, "©").replace(/&quot;/gi, '"').replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ");
+}
+
+// "company number" / "registered name" / null
+export function matchReason(html, company, number) {
+  const text = pageText(html);
   const bareNumber = number.replace(/^0+/, "");
-  if (new RegExp(`\\b0*${bareNumber}\\b`).test(text)) return true;
-  const core = nameTokens(company).join(" ");
-  return core.length > 6 && text.replace(/[^A-Z0-9 ]/g, " ").replace(/\s+/g, " ").includes(core);
+  if (new RegExp(`(?:NO|NUMBER|REG|REGISTERED|COMPANY)[^0-9A-Z]{0,40}0*${bareNumber}\\b`, "i").test(text)) return "company number";
+  if (new RegExp(`\\b0*${bareNumber}\\b`).test(text) && /registered|company (no|number)|reg\.? no/i.test(text)) return "company number";
+  return canon(text).includes(canon(company)) ? "registered name" : null;
+}
+
+export const pageMentionsCompany = (html, company, number) => matchReason(html, company, number) !== null;
+
+// The registered number/name is usually in the footer, or on the contact,
+// terms or privacy page - check those before giving up on a site.
+async function verifySite(origin, company, number) {
+  const home = await getPage(origin + "/");
+  if (!home) return null;
+  let why = matchReason(home.html, company, number);
+  if (why) return { ...home, evidence: `${why} on ${home.url}` };
+  for (const sub of ["/contact", "/contact-us", "/about", "/about-us", "/terms", "/privacy-policy"]) {
+    const p = await getPage(origin + sub);
+    why = p && matchReason(p.html, company, number);
+    if (why) return { ...home, evidence: `${why} on ${p.url}` };
+  }
+  return null;
 }
 
 async function guessWebsite(company, number) {
@@ -239,8 +292,8 @@ async function guessWebsite(company, number) {
   if (noGeneric.length) stems.add(noGeneric.join("") + "recruitment");
   for (const stem of stems) {
     for (const tld of [".co.uk", ".com", ".uk"]) {
-      const page = await getPage(`https://www.${stem.toLowerCase()}${tld}/`);
-      if (page && pageMentionsCompany(page.html, company, number)) return page;
+      const page = await verifySite(`https://www.${stem.toLowerCase()}${tld}`, company, number);
+      if (page) return page;
     }
   }
   return null;
@@ -250,58 +303,80 @@ async function guessWebsite(company, number) {
 // company's own website.
 const DIRECTORY_HOSTS = /(company-information\.service\.gov\.uk|gov\.uk|linkedin|facebook|instagram|twitter|x\.com|youtube|glassdoor|indeed|reed\.co|totaljobs|cv-library|endole|companycheck|opencorporates|bizstats|rocketreach|zoominfo|dnb\.com|companieslist|find-open|yell\.com|thegazette|duedil|checkcompany|companyhub|craft\.co|crunchbase|wikipedia|agencycentral|globaldatabase|cylex|192\.com|bing\.com|duckduckgo)/i;
 
-// Searches go out one at a time, --search-delay ms apart, however many
-// threads are running; the threads overlap on the slow part (fetching and
-// scanning websites). If DuckDuckGo starts blocking, the gap doubles.
+// Search engines are rotated. Each engine gets one search at a time,
+// --search-delay ms apart; one that starts refusing is rested for 5 minutes
+// while the others carry on. Threads overlap on the slow part (fetching and
+// checking websites), not on the searches.
 export const searchConfig = { delay: 2500 };
-let searchSlot = Promise.resolve();
-function nextSearchSlot() {
-  const slot = searchSlot.then(() => sleep(searchConfig.delay));
-  searchSlot = slot;
-  return slot;
+const ENGINES = [
+  { name: "DuckDuckGo", url: (q) => "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q) },
+  { name: "Bing", url: (q) => "https://www.bing.com/search?setlang=en-GB&cc=GB&q=" + encodeURIComponent(q) },
+  { name: "Brave", url: (q) => "https://search.brave.com/search?source=web&q=" + encodeURIComponent(q) },
+  { name: "Mojeek", url: (q) => "https://www.mojeek.com/search?q=" + encodeURIComponent(q) },
+].map((e) => ({ ...e, slot: Promise.resolve(), restUntil: 0, busy: 0 }));
+const ENGINE_HOSTS = /(duckduckgo|bing|microsoft|msn|brave|mojeek|google)\./i;
+
+// Result links, unwrapped from each engine's redirect format.
+export function resultLinks(html) {
+  const out = [];
+  for (const m of html.matchAll(/href="([^"]+)"/g)) {
+    let href = m[1].replace(/&amp;/g, "&");
+    try {
+      let u = new URL(href, "https://example.invalid");
+      if (ENGINE_HOSTS.test(u.hostname) || u.hostname === "example.invalid") {
+        const wrapped = u.searchParams.get("uddg") || u.searchParams.get("url") || u.searchParams.get("u");
+        if (!wrapped) continue;
+        // Bing: u=a1<base64url of the target>
+        href = /^a1/.test(wrapped) ? Buffer.from(wrapped.slice(2).replace(/-/g, "+").replace(/_/g, "/"), "base64").toString() : wrapped;
+        u = new URL(href);
+        if (ENGINE_HOSTS.test(u.hostname)) continue;
+      }
+      if (/^https?:$/.test(u.protocol)) out.push(u);
+    } catch { /* not a URL */ }
+  }
+  return out;
 }
 
-async function ddgSearch(q) {
-  for (let attempt = 0; attempt < 4; attempt++) {
-    await nextSearchSlot();
+async function webSearch(q) {
+  for (let attempt = 0; attempt < ENGINES.length * 3; attempt++) {
+    const now = Date.now();
+    const ready = ENGINES.filter((e) => e.restUntil <= now);
+    if (!ready.length) {
+      const until = Math.min(...ENGINES.map((e) => e.restUntil));
+      await sleep(until - now + 100);
+      continue;
+    }
+    const engine = ready.sort((x, y) => x.busy - y.busy)[0];
+    engine.busy++;
+    const slot = engine.slot.then(() => sleep(searchConfig.delay));
+    engine.slot = slot;
+    await slot;
+    engine.busy--;
+    if (engine.restUntil > Date.now()) continue; // got benched while we queued
     let res, html = "";
     try {
-      res = await fetchWithTimeout("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: { "User-Agent": UA } });
+      res = await fetchWithTimeout(engine.url(q), { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36", "Accept-Language": "en-GB,en;q=0.9", Accept: "text/html" } });
       html = await res.text();
-    } catch { /* network blip - retry */ }
-    const blocked = !res || res.status === 202 || res.status === 403 || res.status === 429 || /anomaly|captcha/i.test(html);
-    if (res?.ok && !blocked) return html;
-    searchConfig.delay = Math.min(searchConfig.delay * 2, 30000);
-    console.warn(`  DuckDuckGo is throttling - backing off (search gap now ${searchConfig.delay}ms)`);
-    await sleep(30000 * (attempt + 1));
+    } catch { /* network blip */ }
+    const blocked = !res || !res.ok || res.status === 202 || /anomaly|captcha|unusual traffic|are you a robot/i.test(html);
+    if (!blocked) return html;
+    if (engine.restUntil <= Date.now()) console.warn(`  ${engine.name} is refusing searches - resting it for 5 min`);
+    engine.restUntil = Date.now() + 5 * 60_000;
   }
   // Not cached, so this row is retried on the next run.
-  throw new Error("DuckDuckGo kept blocking searches");
+  throw new Error("every search engine is refusing searches right now");
 }
 
 async function searchWebsite(company, city, number) {
   const q = `"${company.replace(/\b(LIMITED|LTD)\b\.?/gi, "").trim()}" ${city}`;
-  const html = await ddgSearch(q);
+  const html = await webSearch(q);
   const origins = [];
-  for (const m of html.matchAll(/class="result__a"[^>]*href="([^"]+)"/g)) {
-    let href = m[1].replace(/&amp;/g, "&");
-    const uddg = href.match(/[?&]uddg=([^&]+)/);
-    if (uddg) href = decodeURIComponent(uddg[1]);
-    try {
-      const u = new URL(href, "https://duckduckgo.com");
-      if (!DIRECTORY_HOSTS.test(u.hostname) && !origins.includes(u.origin)) origins.push(u.origin);
-    } catch { /* bad link */ }
+  for (const u of resultLinks(html)) {
+    if (!DIRECTORY_HOSTS.test(u.hostname) && !origins.includes(u.origin)) origins.push(u.origin);
   }
   for (const origin of origins.slice(0, 5)) {
-    const page = await getPage(origin + "/");
-    if (page && pageMentionsCompany(page.html, company, number)) return page;
-    // The registered number is often only on the contact / terms page.
-    if (page) {
-      for (const sub of ["/contact", "/contact-us", "/terms", "/privacy-policy"]) {
-        const p = await getPage(origin + sub);
-        if (p && pageMentionsCompany(p.html, company, number)) return page;
-      }
-    }
+    const page = await verifySite(origin, company, number);
+    if (page) return page;
   }
   return null;
 }
@@ -357,24 +432,109 @@ export function detectAts(htmls) {
   return [...found];
 }
 
+const SECTORS = [
+  ["Healthcare / Nursing", /\b(healthcare|nurs(e|ing)|medical|NHS|clinical|doctors?|locum|pharmac)/i],
+  ["Social care / Care", /\b(social care|care (home|staff|worker|assistant)|domiciliary|support workers?|carers?\b)/i],
+  ["Education", /\b(teach(er|ing)|education|schools?|SEN\b|teaching assistant)/i],
+  ["IT / Tech", /\b(IT recruitment|software|developers?|tech(nology)? (jobs|recruitment)|cyber|data (engineer|scien)|devops)/i],
+  ["Construction", /\b(construction|civil engineering|site manager|labourers?|trades(people|men)?|CSCS)/i],
+  ["Engineering / Manufacturing", /\b(engineering|manufactur|mechanical|electrical engineer|production)/i],
+  ["Industrial / Warehouse / Logistics", /\b(warehouse|logistics|industrial|forklift|pickers?|packers?)/i],
+  ["Driving", /\b(HGV|LGV|drivers?|driving jobs|couriers?|delivery drivers?)/i],
+  ["Hospitality / Catering", /\b(hospitality|catering|chefs?|hotel|kitchen porter|waiting staff|events staff)/i],
+  ["Office / Admin", /\b(office support|administrat|receptionist|secretar|PA\b|clerical)/i],
+  ["Finance / Accountancy", /\b(accountan|finance (jobs|recruitment)|bookkeep|payroll|audit)/i],
+  ["Legal", /\b(legal (jobs|recruitment)|solicitors?|paralegal|lawyers?)/i],
+  ["Sales / Marketing", /\b(sales (jobs|recruitment|executive)|marketing (jobs|recruitment)|business development)/i],
+  ["Security", /\b(security (officers?|guards?|staff)|SIA\b|door supervisor)/i],
+  ["Cleaning / Facilities", /\b(cleaning|cleaners?|facilities management|housekeep)/i],
+  ["Executive search", /\b(executive search|headhunt|C-suite|board level)/i],
+  ["International / Overseas", /\b(overseas|international recruitment|visa sponsorship|sponsorship licen[cs]e)/i],
+];
+
+const PLATFORMS = [
+  ["WordPress", /wp-content|wp-includes/i], ["Wix", /wixstatic|_wixCssImports|wix\.com/i],
+  ["Squarespace", /squarespace/i], ["Shopify", /cdn\.shopify/i], ["Webflow", /webflow/i],
+  ["GoDaddy Builder", /img1\.wsimg\.com|godaddy/i], ["Weebly", /weebly/i], ["Joomla", /\/media\/jui\/|joomla/i],
+  ["Drupal", /drupal/i], ["Framer", /framerusercontent/i], ["Duda", /dudaone|multiscreensite/i],
+  ["HubSpot CMS", /hs-sites|hubspot/i], ["Next.js", /\/_next\/static/i], ["Hostinger Builder", /zyrosite|hostinger/i],
+];
+
+const SOCIAL = {
+  linkedin: /https?:\/\/([a-z]+\.)?linkedin\.com\/(company|in|school)\/[^"'\s<>?#]+/i,
+  facebook: /https?:\/\/(www\.|m\.)?facebook\.com\/(?!sharer|share|plugins|tr\b|dialog)[^"'\s<>?#]+/i,
+  instagram: /https?:\/\/(www\.)?instagram\.com\/(?!p\/|share)[^"'\s<>?#]+/i,
+  twitter: /https?:\/\/(www\.)?(twitter|x)\.com\/(?!share|intent|home)[^"'\s<>?#]+/i,
+  tiktok: /https?:\/\/(www\.)?tiktok\.com\/@[^"'\s<>?#]+/i,
+  youtube: /https?:\/\/(www\.)?youtube\.com\/(c\/|channel\/|user\/|@)[^"'\s<>?#]+/i,
+};
+
+// Cloudflare hides emails as data-cfemail="<hex>"; first byte is the XOR key.
+const cfDecode = (hex) => {
+  const k = parseInt(hex.slice(0, 2), 16);
+  let out = "";
+  for (let i = 2; i < hex.length; i += 2) out += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16) ^ k);
+  return out;
+};
+
+export function extractEmails(html) {
+  const found = [];
+  for (const m of html.matchAll(/mailto:([^"'?\s>]+)/gi)) found.push(decodeURIComponent(m[1]));
+  for (const m of html.matchAll(/data-cfemail="([0-9a-f]+)"/gi)) found.push(cfDecode(m[1]));
+  for (const m of pageText(html).matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)) found.push(m[0]);
+  return [...new Set(found.map((e) => e.toLowerCase().replace(/\.$/, "")))]
+    .filter((e) => /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(e) && !/\.(png|jpe?g|gif|svg|webp)$|example\.|sentry|wixpress|domain\.com|yourdomain|email\.com$/.test(e));
+}
+
+const firstMatch = (htmls, re) => { for (const h of htmls) { const m = h.match(re); if (m) return m[0]; } return null; };
+const meta = (html, name) => {
+  const m = html.match(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]*content=["']([^"']*)["']`, "i"))
+    || html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:name|property)=["']${name}["']`, "i"));
+  return m ? pageText(m[1]).trim() : null;
+};
+
 async function scanWebsite(home) {
-  const htmls = [home.html];
+  const pages = [home];
+  const offsite = [];
   const base = new URL(home.url);
-  const links = new Set();
+  const links = new Map();
   for (const m of home.html.matchAll(/href=["']([^"'#]+)["']/gi)) {
     try {
       const u = new URL(m[1], base);
-      if (/career|job|vacanc|candidate|apply|contact/i.test(u.pathname)) {
-        if (u.hostname === base.hostname) links.add(u.href);
-        else htmls.push(u.href); // off-site job board link: its hostname alone is a fingerprint
+      if (/career|job|vacanc|candidate|apply|contact|about|sector|speciali|client|employer|team/i.test(u.pathname)) {
+        if (u.hostname.replace(/^www\./, "") === base.hostname.replace(/^www\./, "")) links.set(u.origin + u.pathname, u.href);
+        else offsite.push(u.href); // off-site job board link: its hostname alone is a fingerprint
       }
     } catch { /* bad href */ }
   }
-  for (const link of [...links].slice(0, 4)) {
+  // Jobs/contact pages first - they carry the ATS and contact details.
+  const ordered = [...links.values()].sort((x, y) => (/job|vacanc|career|contact/i.test(y) ? 1 : 0) - (/job|vacanc|career|contact/i.test(x) ? 1 : 0));
+  for (const link of ordered.slice(0, 6)) {
     const p = await getPage(link);
-    if (p) htmls.push(p.html);
+    if (p) pages.push(p);
   }
-  return { ats: detectAts(htmls), phones: htmls.flatMap((h) => (h.startsWith("http") ? [] : extractPhones(h))) };
+  const htmls = pages.map((p) => p.html);
+  const allText = htmls.map(pageText).join(" ");
+  const info = {};
+  for (const [k, re] of Object.entries(SOCIAL)) info[k] = firstMatch(htmls, re);
+  const emails = extractEmails(htmls.join(" "));
+  const domain = base.hostname.replace(/^www\./, "");
+  info.email = [...emails.filter((e) => e.endsWith(domain)), ...emails.filter((e) => !e.endsWith(domain))].slice(0, 3).join("; ") || null;
+  info.sectors = SECTORS.filter(([, re]) => re.test(allText)).map(([n]) => n).join("; ") || null;
+  info.platform = PLATFORMS.filter(([, re]) => re.test(home.html)).map(([n]) => n).join("; ") || null;
+  info.jobsPage = pages.find((p) => /job|vacanc|career/i.test(new URL(p.url).pathname))?.url
+    || offsite.find((u) => /job|vacanc|career/i.test(u)) || null;
+  info.postcodes = [...new Set([...allText.matchAll(/\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b/g)].map((m) => m[0].replace(/^(\S+?)(\d[A-Z]{2})$/, "$1 $2")))].slice(0, 3).join("; ") || null;
+  info.title = (home.html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] && pageText(home.html.match(/<title[^>]*>([^<]*)<\/title>/i)[1]).trim()) || null;
+  info.description = meta(home.html, "description") || meta(home.html, "og:description");
+  const years = [...allText.matchAll(/(?:©|copyright)\s*(?:\d{4}\s*[-–]\s*)?(20\d\d)/gi)].map((m) => +m[1]);
+  info.copyrightYear = years.length ? String(Math.max(...years)) : null;
+  info.pagesScanned = pages.length;
+  return {
+    ats: detectAts([...htmls, ...offsite]),
+    phones: htmls.flatMap(extractPhones),
+    info,
+  };
 }
 
 // ---------- main ----------
@@ -390,6 +550,11 @@ async function enrich(row, env) {
     if (!ch.notFound) {
       out.accounts = ch.accounts?.last_accounts?.type || "unknown";
       out.city = ch.registered_office_address?.locality || null;
+      out.status = ch.company_status || null;
+      out.sic = (ch.sic_codes || []).join("; ") || null;
+      const ro = ch.registered_office_address || {};
+      out.registeredOffice = [ro.address_line_1, ro.address_line_2, ro.locality, ro.postal_code].filter(Boolean).join(", ") || null;
+      out.directors = (await companiesHouseDirectors(number, env.chKey)).join("; ") || null;
     }
   }
 
@@ -399,7 +564,11 @@ async function enrich(row, env) {
   }
 
   let site = null;
-  if (place?.website) site = await getPage(place.website);
+  if (place) Object.assign(out, { placesAddress: place.address, rating: place.rating, mapsUrl: place.mapsUrl });
+  if (place?.website) {
+    site = await getPage(place.website);
+    if (site) site.evidence = "Google Places (name + address match)";
+  }
   if (!site) site = await guessWebsite(row.company, number);
   if (!site && !env.noSearch) site = await searchWebsite(row.company, row.city, number);
 
@@ -409,11 +578,29 @@ async function enrich(row, env) {
     const scan = await scanWebsite(site);
     out.ats = scan.ats.length ? scan.ats.join("; ") : "None detected";
     if (!out.phone && scan.phones.length) out.phone = scan.phones[0];
+    out.otherPhones = scan.phones.filter((p) => p !== out.phone).slice(0, 3).join("; ") || null;
+    out.evidence = site.evidence || null;
+    Object.assign(out, scan.info);
   } else {
     out.ats = out.website ? "Website unreachable" : "No website found";
   }
+  out.v = CACHE_VERSION;
   return out;
 }
+
+// Bump when matching/extraction changes so old cached results are redone.
+const CACHE_VERSION = 3;
+
+// Extra columns appended after the export's own columns.
+const EXTRA_COLUMNS = [
+  ["email", "Email"], ["otherPhones", "Other Phones"], ["linkedin", "LinkedIn"], ["facebook", "Facebook"],
+  ["instagram", "Instagram"], ["twitter", "X / Twitter"], ["tiktok", "TikTok"], ["youtube", "YouTube"],
+  ["sectors", "Sectors"], ["jobsPage", "Jobs Page"], ["platform", "Website Platform"],
+  ["copyrightYear", "Site Copyright Year"], ["title", "Site Title"], ["description", "Site Description"],
+  ["postcodes", "Postcodes on Site"], ["placesAddress", "Google Address"], ["rating", "Google Rating"], ["mapsUrl", "Google Maps"],
+  ["status", "Company Status"], ["sic", "SIC Codes"], ["registeredOffice", "Registered Office"], ["directors", "Directors"],
+  ["evidence", "Website Match Evidence"],
+];
 
 async function main() {
   const args = process.argv.slice(2);
@@ -435,11 +622,12 @@ async function main() {
   }
   const env = { noSearch: flags.has("--no-search"), chKey: process.env.COMPANIES_HOUSE_API_KEY, placesKey: process.env.GOOGLE_PLACES_API_KEY };
   if (!env.chKey) console.warn("COMPANIES_HOUSE_API_KEY not set - Flag/Label/City/Accounts Type will not be re-checked.");
-  if (!env.placesKey) console.warn("GOOGLE_PLACES_API_KEY not set - phone/website will come from verified domain guesses and DuckDuckGo search.");
+  if (!env.placesKey) console.warn("GOOGLE_PLACES_API_KEY not set - phone/website will come from verified domain guesses and web search.");
 
   const output = outArg || input.replace(/\.csv$/i, "") + "-enriched.csv";
   const cachePath = output + ".cache.json";
   const cache = !flags.has("--refresh") && fs.existsSync(cachePath) ? JSON.parse(fs.readFileSync(cachePath, "utf8")) : {};
+  for (const k of Object.keys(cache)) if (cache[k]?.v !== CACHE_VERSION) delete cache[k];
 
   const raw = fs.readFileSync(input, "utf8");
   const eol = raw.includes("\r\n") ? "\r\n" : "\n";
@@ -475,11 +663,19 @@ async function main() {
       console.log(`${r[C.company]} -> ${e ? `${e.phone || "no phone"} | ${e.website || "no site"} | ${e.ats}` : "error, will retry next run"}`);
     }
   };
+  process.on("SIGINT", () => {
+    saveCache();
+    console.log(`\nStopped - progress saved to ${cachePath}. Run the same command again to carry on.`);
+    process.exit(130);
+  });
   await Promise.all(Array.from({ length: threads }, worker));
   saveCache();
 
+  for (const [, title] of EXTRA_COLUMNS) if (!header.some((h) => h.trim() === title)) header.push(title);
+  const extraIdx = EXTRA_COLUMNS.map(([, title]) => header.findIndex((h) => h.trim() === title));
   let phones = 0, sites = 0;
   for (const r of rows) {
+    while (r.length < header.length) r.push("");
     const e = cache[r[C.number].trim()];
     if (!e) continue;
     r[C.phone] = e.phone || "NOT FOUND - search manually";
@@ -488,6 +684,7 @@ async function main() {
     if (e.flag) { r[C.flag] = e.flag; r[C.label] = e.label; }
     if (e.accounts) r[C.accounts] = e.accounts;
     if (e.city) r[C.city] = e.city;
+    EXTRA_COLUMNS.forEach(([key], i) => { r[extraIdx[i]] = e[key] ?? ""; });
     if (e.phone) phones++;
     if (e.website) sites++;
   }
