@@ -43,6 +43,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 // ---------- CSV ----------
 
@@ -494,6 +495,6 @@ async function main() {
   console.log(`\nWrote ${output}: ${rows.length} rows, ${phones} phones, ${sites} websites.`);
 }
 
-if (import.meta.url === `file://${path.resolve(process.argv[1] || "")}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   main().catch((e) => { console.error(e); process.exit(1); });
 }
