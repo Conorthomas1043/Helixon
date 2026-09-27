@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentEmployeeId } from "@/lib/session";
 import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee-cold-calls";
+import { finishRow } from "@/lib/employee-call-list";
 
 const VALID_OUTCOMES = new Set(OUTCOMES);
 
@@ -43,6 +44,15 @@ export async function POST(request) {
     }
     const call = await addColdCall(employeeId, body);
     if (!call) return NextResponse.json({ ok: false, error: "Could not log the call." }, { status: 500 });
+    // Logged from the imported call list - tick that contact off. The call
+    // itself is already saved, so a failure here is logged, not fatal.
+    if (typeof body.call_list_id === "string" && body.call_list_id) {
+      try {
+        await finishRow(employeeId, body.call_list_id, { status: "done", coldCallId: call.id });
+      } catch (err) {
+        console.error("[cold-calls] Could not mark call-list row done:", err?.message || err);
+      }
+    }
     return NextResponse.json({ ok: true, call });
   }
 

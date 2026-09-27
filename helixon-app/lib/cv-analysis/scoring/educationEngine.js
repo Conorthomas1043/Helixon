@@ -20,7 +20,7 @@ hnd:55,
 
 hnc:45,
 
-a level:20
+"a level":20
 
 };
 

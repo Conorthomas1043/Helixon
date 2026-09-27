@@ -4,10 +4,11 @@
 // call (it doubles as a team leaderboard), but only the person who made
 // a call can edit or delete it. See lib/employee-cold-calls.js.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useHeartbeat } from "../_shared/useHeartbeat";
+import CallListPanel from "./CallListPanel";
 
 const OUTCOME_META = {
   no_answer: { label: "No answer", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
@@ -67,6 +68,11 @@ export default function ColdCallsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  // Set when the form was opened from the call list, so saving ticks that
+  // contact off (see app/api/employee/cold-calls).
+  const [callListId, setCallListId] = useState(null);
+  const [callListVersion, setCallListVersion] = useState(0);
+  const formRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -110,7 +116,24 @@ export default function ColdCallsPage() {
     setForm({ ...EMPTY_FORM, called_at: toLocalInputValue(new Date()) });
     setFormError("");
     setEditingId(null);
+    setCallListId(null);
     setShowAddForm(true);
+  }
+
+  function openFromList(row) {
+    setForm({
+      ...EMPTY_FORM,
+      contact_name: row.contact_name || "",
+      company: row.company || "",
+      phone: row.phone || "",
+      notes: row.notes || "",
+      called_at: toLocalInputValue(new Date()),
+    });
+    setFormError("");
+    setEditingId(null);
+    setCallListId(row.id);
+    setShowAddForm(true);
+    requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
   function openEdit(call) {
@@ -125,6 +148,7 @@ export default function ColdCallsPage() {
     });
     setFormError("");
     setEditingId(call.id);
+    setCallListId(null);
     setShowAddForm(true);
   }
 
@@ -144,6 +168,7 @@ export default function ColdCallsPage() {
         called_at: form.called_at ? new Date(form.called_at).toISOString() : new Date().toISOString(),
       };
       if (editingId) payload.id = editingId;
+      else if (callListId) payload.call_list_id = callListId;
 
       const res = await fetch("/api/employee/cold-calls", {
         method: "POST",
@@ -153,6 +178,8 @@ export default function ColdCallsPage() {
       const data = await res.json();
       if (!data.ok) { setFormError(data.error || "Failed to save."); return; }
       setShowAddForm(false);
+      if (callListId) setCallListVersion((v) => v + 1);
+      setCallListId(null);
       fetchAll();
     } catch {
       setFormError("Network error.");
@@ -250,7 +277,7 @@ export default function ColdCallsPage() {
               Cold calls
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
-              Log outbound calls and track outcomes across the sales team. You logged <b>{todayTotal}</b> today.
+              Import a call list, work through it together and log outcomes across the sales team. You logged <b>{todayTotal}</b> today.
             </p>
           </div>
           <button
@@ -269,7 +296,12 @@ export default function ColdCallsPage() {
         )}
 
         {showAddForm && (
-          <div className="rounded-[16px] p-5 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div ref={formRef} className="rounded-[16px] p-5 mb-6 scroll-mt-20" style={{ background: "white", border: "1px solid var(--border)" }}>
+            {callListId && (
+              <p className="text-xs font-semibold mb-3" style={{ color: "var(--forest)" }}>
+                Logging a call from the call list - saving ticks this contact off.
+              </p>
+            )}
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -364,6 +396,8 @@ export default function ColdCallsPage() {
             </form>
           </div>
         )}
+
+        <CallListPanel employee={employee} onLogCall={openFromList} refreshKey={callListVersion} />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* ── Call log ────────────────────────────────────────────────── */}
