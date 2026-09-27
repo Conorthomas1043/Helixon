@@ -7,7 +7,12 @@
 //
 // Usage:
 //   [COMPANIES_HOUSE_API_KEY=...] [GOOGLE_PLACES_API_KEY=...]  (both optional) \
-//     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search]
+//     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search] [--threads N] [--search-delay MS]
+//
+// --threads (default 8) is how many companies are worked on at once;
+// --search-delay (default 2500) is the gap between DuckDuckGo searches.
+// A fast run: --threads 24 --search-delay 1000 (it backs off by itself if
+// DuckDuckGo starts refusing).
 //
 // Output defaults to "<input>-enriched.csv". Results are cached in
 // "<output>.cache.json", so an interrupted run picks up where it left off;
@@ -244,20 +249,38 @@ async function guessWebsite(company, number) {
 // company's own website.
 const DIRECTORY_HOSTS = /(company-information\.service\.gov\.uk|gov\.uk|linkedin|facebook|instagram|twitter|x\.com|youtube|glassdoor|indeed|reed\.co|totaljobs|cv-library|endole|companycheck|opencorporates|bizstats|rocketreach|zoominfo|dnb\.com|companieslist|find-open|yell\.com|thegazette|duedil|checkcompany|companyhub|craft\.co|crunchbase|wikipedia|agencycentral|globaldatabase|cylex|192\.com|bing\.com|duckduckgo)/i;
 
-let lastSearch = 0;
-async function searchWebsite(company, city, number) {
-  const wait = 2500 - (Date.now() - lastSearch); // keep DuckDuckGo from rate-limiting us
-  if (wait > 0) await sleep(wait);
-  lastSearch = Date.now();
-  const q = `"${company.replace(/\b(LIMITED|LTD)\b\.?/gi, "").trim()}" ${city}`;
-  let html;
-  try {
-    const res = await fetchWithTimeout("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: { "User-Agent": UA } });
-    if (!res.ok) return null;
-    html = await res.text();
-  } catch {
-    return null;
+// Searches go out one at a time, --search-delay ms apart, however many
+// threads are running; the threads overlap on the slow part (fetching and
+// scanning websites). If DuckDuckGo starts blocking, the gap doubles.
+export const searchConfig = { delay: 2500 };
+let searchSlot = Promise.resolve();
+function nextSearchSlot() {
+  const slot = searchSlot.then(() => sleep(searchConfig.delay));
+  searchSlot = slot;
+  return slot;
+}
+
+async function ddgSearch(q) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await nextSearchSlot();
+    let res, html = "";
+    try {
+      res = await fetchWithTimeout("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: { "User-Agent": UA } });
+      html = await res.text();
+    } catch { /* network blip - retry */ }
+    const blocked = !res || res.status === 202 || res.status === 403 || res.status === 429 || /anomaly|captcha/i.test(html);
+    if (res?.ok && !blocked) return html;
+    searchConfig.delay = Math.min(searchConfig.delay * 2, 30000);
+    console.warn(`  DuckDuckGo is throttling - backing off (search gap now ${searchConfig.delay}ms)`);
+    await sleep(30000 * (attempt + 1));
   }
+  // Not cached, so this row is retried on the next run.
+  throw new Error("DuckDuckGo kept blocking searches");
+}
+
+async function searchWebsite(company, city, number) {
+  const q = `"${company.replace(/\b(LIMITED|LTD)\b\.?/gi, "").trim()}" ${city}`;
+  const html = await ddgSearch(q);
   const origins = [];
   for (const m of html.matchAll(/class="result__a"[^>]*href="([^"]+)"/g)) {
     let href = m[1].replace(/&amp;/g, "&");
@@ -396,10 +419,17 @@ async function main() {
   const flags = new Set(args.filter((a) => a.startsWith("--")));
   const limitIdx = args.indexOf("--limit");
   const limit = limitIdx >= 0 ? Number(args[limitIdx + 1]) : Infinity;
-  const positional = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--limit");
+  const numFlag = (name, dflt) => {
+    const i = args.indexOf(name);
+    return i >= 0 ? Number(args[i + 1]) : dflt;
+  };
+  const threads = numFlag("--threads", 8);
+  searchConfig.delay = numFlag("--search-delay", 2500);
+  const valueFlags = ["--limit", "--threads", "--search-delay"];
+  const positional = args.filter((a, i) => !a.startsWith("--") && !valueFlags.includes(args[i - 1]));
   const [input, outArg] = positional;
   if (!input) {
-    console.error('Usage: node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search]');
+    console.error('Usage: node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search] [--threads N] [--search-delay MS]');
     process.exit(1);
   }
   const env = { noSearch: flags.has("--no-search"), chKey: process.env.COMPANIES_HOUSE_API_KEY, placesKey: process.env.GOOGLE_PLACES_API_KEY };
@@ -444,7 +474,7 @@ async function main() {
       console.log(`${r[C.company]} -> ${e ? `${e.phone || "no phone"} | ${e.website || "no site"} | ${e.ats}` : "error, will retry next run"}`);
     }
   };
-  await Promise.all(Array.from({ length: 4 }, worker));
+  await Promise.all(Array.from({ length: threads }, worker));
   saveCache();
 
   let phones = 0, sites = 0;
