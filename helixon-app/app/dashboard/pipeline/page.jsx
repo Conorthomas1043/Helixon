@@ -23,7 +23,7 @@ import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
-import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials, formatRelativeTime } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidate-format";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 
@@ -69,16 +69,9 @@ function PipelineCard({ candidate, onMove, pending }) {
     >
       <Link
         href={`/dashboard/candidates/${candidate.id}`}
-        className="flex items-start gap-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+        className="flex items-start gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
         draggable={false}
       >
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[11px] font-semibold"
-          style={{ background: "var(--mist)", color: "var(--forest)" }}
-          aria-hidden="true"
-        >
-          {initials(candidate.fullName)}
-        </div>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: INK }}>
             {candidate.fullName}
@@ -135,7 +128,7 @@ function PipelineSkeleton() {
   return (
     <div className="flex gap-3 overflow-hidden" aria-busy="true" aria-label="Loading pipeline">
       {BOARD_STAGES.map((s) => (
-        <div key={s} className="rounded-[14px] p-3 w-[260px] shrink-0 lg:flex-1 lg:w-auto" style={CARD}>
+        <div key={s} className="rounded-[14px] p-3 w-[264px] shrink-0 lg:flex-1 lg:w-auto lg:min-w-0" style={CARD}>
           <Block className="h-4 w-20 mb-3" />
           <Block className="h-[74px] w-full mb-2" />
           <Block className="h-[74px] w-full" />
@@ -291,7 +284,7 @@ function PipelineContent() {
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate pipeline
@@ -303,7 +296,7 @@ function PipelineContent() {
               Drag a card to another column, or use the arrows to move it a stage.
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap xl:justify-end">
             <input
               type="search"
               value={search}
@@ -379,7 +372,7 @@ function PipelineContent() {
                         setDragOver(null);
                         handleMove(e.dataTransfer.getData("text/plain"), key);
                       }}
-                      className="rounded-[14px] p-2.5 w-[272px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-[200px] transition-colors"
+                      className="rounded-[14px] p-2.5 w-[264px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-0 transition-colors"
                       style={{
                         background: over ? "var(--mint)" : "rgba(255,255,255,0.6)",
                         border: highlighted || over ? "1.5px solid var(--forest)" : "1px solid var(--border)",

@@ -52,8 +52,12 @@ async function fetchDashboardData() {
   const res = await fetch("/api/dashboard-stats", { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load dashboard data");
   const raw = await res.json();
+  // The page reads agencyName/plan at the top level - these used to be
+  // nested under `agency`, so the header never showed the agency name and
+  // the plan card always said "No plan limit on file".
   return {
-    agency: { name: raw.agencyName, plan: raw.plan },
+    agencyName: raw.agencyName ?? null,
+    plan: raw.plan ?? null,
     recentAnalyses: raw.analyses ?? [],
   };
 }
@@ -157,30 +161,6 @@ function StageBadge({ stage }) {
       border: `1px solid rgba(var(--forest-rgb),0.2)`,
     }}>
       {STAGE_LABELS[stage]}
-    </span>
-  );
-}
-
-function StatusBadge({ status }) {
-  const map = {
-    completed: { bg: GREEN_BG, fg: GREEN_FG, border: "rgba(var(--forest-rgb),0.2)", label: "Completed" },
-    processing: { bg: AMBER_BG, fg: AMBER_FG, border: "rgba(180,83,9,0.2)", label: "Processing" },
-    failed: { bg: RED_BG, fg: RED, border: "rgba(192,57,43,0.2)", label: "Failed" },
-  };
-  const s = map[status] || map.completed;
-  return (
-    <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      fontSize: 10,
-      fontWeight: 600,
-      padding: "2px 8px",
-      borderRadius: 9999,
-      background: s.bg,
-      color: s.fg,
-      border: `1px solid ${s.border}`,
-    }}>
-      {s.label}
     </span>
   );
 }
@@ -491,42 +471,37 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
 
 /* ─── Usage ─────────────────────────────────────────────────────────────── */
 
-function UsageSummary({ plan }) {
-  const hasLimit = plan && typeof plan.analysesLimit === "number" && plan.analysesLimit > 0;
-  const used = plan?.analysesUsed ?? 0;
-  const limit = plan?.analysesLimit ?? null;
-  const remaining = hasLimit ? Math.max(0, limit - used) : null;
-  const pct = hasLimit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-  const isOverLimit = hasLimit && used >= limit;
+// Plan name plus real usage counted from the agency's analyses. The
+// agencies.analyses_used counter is never incremented and analyses_limit is
+// a placeholder default, so a used/limit meter built on them would show
+// every agency "0 of 3" - better to show what actually happened.
+function UsageSummary({ plan, analyses }) {
+  const DAY = 86400000;
+  const now = Date.now();
+  const last30 = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < 30 * DAY).length;
+  const thisMonth = analyses.filter((a) => {
+    if (!a.createdAt) return false;
+    const d = a.createdAt;
+    const n = new Date(now);
+    return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+  }).length;
 
   return (
     <div style={{ ...CARD, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
-      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>
-        {plan?.name ? `${plan.name} plan` : "Plan usage"}
-      </p>
-      {hasLimit ? (
-        <>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: "0 0 2px 0", fontVariantNumeric: "tabular-nums" }}>
-            {formatNumber(used)} <span style={{ color: TEXT_FAINT, fontWeight: 400 }}>/ {formatNumber(limit)}</span>
-          </p>
-          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "0 0 12px 0" }}>analyses this cycle</p>
-          <div style={{ height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden" }}>
-            <div style={{ height: 4, width: `${pct}%`, background: pct >= 90 ? RED : VIOLET, borderRadius: 9999 }} />
-          </div>
-          <p style={{ fontSize: 12, marginTop: 6, color: isOverLimit ? RED : TEXT_FAINT, marginBottom: 0 }}>
-            {isOverLimit ? "Plan limit reached" : `${formatNumber(remaining)} analyses remaining`}
-          </p>
-          {isOverLimit && (
-            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 8, background: RED_BG, border: `1px solid rgba(192,57,43,0.2)`, fontSize: 12, color: RED, lineHeight: 1.5 }}>
-              Upgrade your plan to continue screening.
-            </div>
-          )}
-        </>
-      ) : (
-        <p style={{ fontSize: 13, color: TEXT_SUB, marginTop: 8 }}>No plan limit on file.</p>
-      )}
+      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
+      <p style={{ fontSize: 18, fontWeight: 600, color: TEXT, margin: 0, fontFamily: "var(--font-display)" }}>{plan?.name ? `${plan.name}` : "No active plan"}</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        <div>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: 0, fontVariantNumeric: "tabular-nums" }}>{formatNumber(thisMonth)}</p>
+          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "2px 0 0" }}>analyses this month</p>
+        </div>
+        <div>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: 0, fontVariantNumeric: "tabular-nums" }}>{formatNumber(last30)}</p>
+          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "2px 0 0" }}>in the last 30 days</p>
+        </div>
+      </div>
       <Link href="/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: VIOLET_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-        Upgrade plan →
+        {plan?.name ? "Manage plan →" : "Choose a plan →"}
       </Link>
     </div>
   );
@@ -669,9 +644,11 @@ function ActivityOverview({ analyses }) {
       currentCount: current.length,
       previousCount: previous.length,
       dayBuckets,
-      completed: current.filter((a) => a.status === "completed").length,
-      processing: current.filter((a) => a.status === "processing").length,
-      failed: current.filter((a) => a.status === "failed").length,
+      strong: current.filter((a) => a.score !== null && a.score >= 80).length,
+      avgScore: (() => {
+        const scored = current.filter((a) => a.score !== null);
+        return scored.length ? Math.round(scored.reduce((n, a) => n + a.score, 0) / scored.length) : null;
+      })(),
     };
   }, [analyses, windowDays]);
 
@@ -721,9 +698,8 @@ function ActivityOverview({ analyses }) {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, paddingTop: 12, borderTop: `1px solid ${BORDER}`, color: TEXT_SUB }}>
-        <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.completed} format={formatNumber} /></strong> completed</span>
-        <span><strong style={{ color: AMBER_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.processing} format={formatNumber} /></strong> processing</span>
-        <span><strong style={{ color: RED, fontFamily: "var(--font-mono)" }}><CountUp value={stats.failed} format={formatNumber} /></strong> failed</span>
+        <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.strong} format={formatNumber} /></strong> strong matches</span>
+        <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{stats.avgScore ?? "-"}</strong> avg score</span>
       </div>
     </div>
   );
@@ -760,7 +736,7 @@ function ActiveJobs({ jobs }) {
                 <div style={{ flex: 1, height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden", display: "flex" }}>
                   {job.stageSegments.map((seg) =>
                     seg.pct > 0 ? (
-                      <div key={seg.key} style={{ width: `${seg.pct}%`, background: seg.isPlaced ? GREEN : VIOLET, opacity: 0.8 }} />
+                      <div key={seg.key} title={`${STAGE_LABELS[seg.key]}: ${seg.pct}%`} style={{ width: `${seg.pct}%`, background: STAGE_COLORS[seg.key] }} />
                     ) : null
                   )}
                 </div>
@@ -825,9 +801,10 @@ function RecentAnalyses({ analyses }) {
             <caption className="sr-only">Recent candidate analyses</caption>
             <thead>
               <tr>
-                {["Candidate", "Recruiter", "Stage", "Status", "Score", "Date"].map((h) => (
+                {["Candidate", "Recruiter", "Stage", "Score", "Date"].map((h) => (
                   <th key={h} scope="col" style={{
-                    padding: "8px 12px 8px 0",
+                    padding: h === "Date" ? "8px 0 8px 12px" : "8px 12px 8px 0",
+                    textAlign: h === "Score" || h === "Date" ? "right" : "left",
                     fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
                     borderBottom: `1px solid ${BORDER}`,
                   }}>
@@ -854,7 +831,6 @@ function RecentAnalyses({ analyses }) {
                     </td>
                     <td style={{ padding: "12px 12px 12px 0", fontSize: 13, color: TEXT_SUB, whiteSpace: "nowrap" }}>{a.recruiterName ?? "Unassigned"}</td>
                     <td style={{ padding: "12px 12px 12px 0" }}><StageBadge stage={a.stage} /></td>
-                    <td style={{ padding: "12px 12px 12px 0" }}><StatusBadge status={a.status} /></td>
                     <td style={{ padding: "12px 12px 12px 0", textAlign: "right" }}>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(a.score), fontVariantNumeric: "tabular-nums" }}>{a.score ?? "-"}</span>
                     </td>
@@ -1041,7 +1017,7 @@ function AgencyDashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} />
-                  <UsageSummary plan={plan} />
+                  <UsageSummary plan={plan} analyses={model.analyses} />
                 </div>
 
                 <AttentionPanel items={model.attentionItems} total={model.attentionItemsTotal} />
