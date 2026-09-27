@@ -3,10 +3,15 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { getAgencyPlan } from "@/lib/plan";
 
-// Returns the currently signed-in user (email + first name from `profiles`,
-// plus isAdmin), or 401 if there's no valid session. Used by the dashboard
+// Returns the currently signed-in user (email + first name from `profiles`),
+// or 401 if there's no valid session. Used by the dashboard
 // to personalize the header/account menu and to drive the one-time
 // "Welcome back" banner after login.
+//
+// This used to also return `isAdmin` from a lookup of the `admins` table by
+// Clerk user id - but that column holds old Supabase auth uuids, so it never
+// matched anyone, and nothing read the flag. Admin access is the separate
+// credential login in lib/admin-auth.js.
 export async function GET() {
   const { userId } = await auth();
 
@@ -52,23 +57,8 @@ export async function GET() {
     hasAgency = null;
   }
 
-  // NOTE: `admins.user_id` used to store the Supabase auth uuid. Going
-  // forward it needs to store the Clerk user id instead for this check to
-  // keep matching anyone - update any existing rows accordingly.
-  let isAdmin = false;
-  try {
-    const { data: adminRow } = await supabaseAdmin
-      .from("admins")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    isAdmin = !!adminRow;
-  } catch (e) {
-    console.error("[auth/me] Admin lookup failed (non-fatal):", e.message);
-  }
-
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, isAdmin, agencyName, plan, hasAgency },
+    user: { id: userId, email, firstName, agencyName, plan, hasAgency },
   });
 }
