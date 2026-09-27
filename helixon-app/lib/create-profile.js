@@ -33,6 +33,26 @@ export async function generateUsername(seed) {
   throw new Error("Could not generate an available username.");
 }
 
+// Inserts an `agencies` row. `intake_email` is unique, and an earlier
+// half-finished signup can leave an agency behind that already holds the
+// person's email - the insert then fails with a duplicate key and the whole
+// setup 500s. The intake email is only informational, so on that one
+// conflict retry without it rather than failing.
+export async function insertAgency({ name, email, plan }) {
+  const row = { name, intake_email: email || null, settings: { plan: plan || "solo", analyses_used: 0 } };
+
+  let { data, error } = await supabase.from("agencies").insert(row).select("id").single();
+  if (error?.code === "23505" && row.intake_email && /intake_email/.test(error.message || "")) {
+    ({ data, error } = await supabase
+      .from("agencies")
+      .insert({ ...row, intake_email: null })
+      .select("id")
+      .single());
+  }
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 // Creates the `agencies` row and the `profiles` row for a Clerk user who
 // doesn't have one yet. Same shape as the old app/api/auth/signup/route.js
 // insert, and the same logic app/api/webhooks/clerk/route.js runs on
@@ -53,17 +73,11 @@ export async function createProfileAndAgency({
     throw new Error("A valid username is required.");
   }
 
-  const { data: agency, error: agencyError } = await supabase
-    .from("agencies")
-    .insert({
-      name: agencyName || `${firstName || "New"}'s agency`,
-      intake_email: email || null,
-      settings: { plan: plan || "solo", analyses_used: 0 },
-    })
-    .select("id")
-    .single();
-
-  if (agencyError) throw new Error(agencyError.message);
+  const agency = await insertAgency({
+    name: agencyName || `${firstName || "New"}'s agency`,
+    email,
+    plan,
+  });
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
