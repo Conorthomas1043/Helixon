@@ -91,6 +91,10 @@ export async function GET() {
   // "completed" analysis in the KPIs and averages.
   const analyses = (scoreRows ?? []).filter((s) => s.candidates).map((s) => ({
     id: s.id,
+    // The candidate's own id - every "open this candidate" link on the
+    // dashboard needs this, not the score id above (they used to link to
+    // /dashboard/candidates/<score id>, which never resolves).
+    candidateId: s.candidates?.id ?? null,
     candidateName: s.candidates?.full_name || s.candidates?.name || "Unnamed candidate",
     jobTitle: s.jobs?.title || "Unspecified role",
     company: s.jobs?.client || null,

@@ -67,7 +67,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       reasonLabel: "Analysis failed",
       tone: TONE.red,
       actionLabel: "Retry analysis",
-      actionHref: `/analyse/${a.id}`,
+      actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
       priority: 0,
     });
   });
@@ -84,7 +84,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         reasonLabel: "Still processing",
         tone: TONE.amber,
         actionLabel: "Open analysis",
-        actionHref: `/analyse/${a.id}`,
+        actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
         priority: 1,
       });
     });
@@ -103,7 +103,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         reasonLabel: a.stage ? `Strong match · ${STAGE_LABELS[a.stage]}` : "Strong match · Unstaged",
         tone: TONE.green,
         actionLabel: "Review candidate",
-        actionHref: `/dashboard/candidates/${a.id}`,
+        actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
         priority: 2,
       });
     });
@@ -120,7 +120,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`,
         tone: TONE.amber,
         actionLabel: "Review candidate",
-        actionHref: `/dashboard/candidates/${a.id}`,
+        actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
         priority: 3,
       });
     });
@@ -139,7 +139,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         reasonLabel: "Awaiting stage",
         tone: TONE.neutral,
         actionLabel: "Assign stage",
-        actionHref: `/dashboard/candidates/${a.id}`,
+        actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
         priority: 4,
       });
     });

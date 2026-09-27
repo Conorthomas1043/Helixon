@@ -1,0 +1,447 @@
+"use client";
+
+// Bulk screening: one role, up to BULK_MAX_FILES CVs, each scored exactly
+// like a single analysis.
+//
+// Run order matters: until the role has a job row (a pasted/uploaded role
+// gets one from the first successful request), CVs go one at a time so the
+// job can be recorded and reused - otherwise concurrent requests would each
+// create a duplicate job. After that, BULK_CONCURRENCY workers drain the
+// queue. A 429 stops the run and leaves the rest paused for Retry.
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getJobById } from "@/lib/dashboard-api";
+import { Card, CardHeader, Segmented, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
+import {
+  BULK_CONCURRENCY,
+  BULK_MAX_FILES,
+  CV_ACCEPT,
+  JOB_ACCEPT,
+  cvFileProblem,
+  formatBytes,
+  isTextFile,
+  jobFileProblem,
+  savedJobText,
+  scoreTone,
+} from "../_lib/analyse";
+
+const STATUS_LABEL = { queued: "Queued", processing: "Analysing", done: "Done", failed: "Failed", rate_limited: "Paused" };
+
+export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent }) {
+  const [jobPickMode, setJobPickMode] = useState(savedJobs.length > 0 ? "saved" : "paste");
+  const [bulkJobId, setBulkJobId] = useState(null);
+  const [bulkJobText, setBulkJobText] = useState("");
+  const [bulkJobFile, setBulkJobFile] = useState(null);
+  const [bulkJobFileName, setBulkJobFileName] = useState(null);
+  const [queue, setQueue] = useState([]);
+  // On by default for bulk: mass screening with no per-candidate review is
+  // exactly where blind screening earns its keep. Still a real toggle.
+  const [bulkBlind, setBulkBlind] = useState(true);
+  const [running, setRunning] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [queueError, setQueueError] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const nextIdRef = useRef(0);
+  const abortRef = useRef(false);
+  const retryLockRef = useRef(false);
+  const resolvedJobRef = useRef({ id: null, text: "" });
+  const cvInputRef = useRef(null);
+  const jobInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!running) return undefined;
+    const handler = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [running]);
+
+  function selectSavedJob(jobId) {
+    const job = savedJobs.find((j) => j.id === jobId);
+    setBulkJobId(job?.id || null);
+    setBulkJobText(savedJobText(job));
+    setBulkJobFile(null);
+    setBulkJobFileName(null);
+  }
+
+  useEffect(() => {
+    if (!prefilledJob) return undefined;
+    const t = setTimeout(() => {
+      setJobPickMode("saved");
+      selectSavedJob(prefilledJob.id);
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only reacts to prefilledJob arriving
+  }, [prefilledJob]);
+
+  function handleBulkJobFile(file) {
+    setBulkJobId(null);
+    if (!file) {
+      setBulkJobFile(null);
+      setBulkJobFileName(null);
+      return;
+    }
+    const problem = jobFileProblem(file);
+    if (problem) {
+      setQueueError(problem);
+      return;
+    }
+    setQueueError(null);
+    setBulkJobFileName(file.name);
+    if (isTextFile(file)) {
+      const reader = new FileReader();
+      reader.onload = (event) => setBulkJobText(String(event.target?.result || ""));
+      reader.readAsText(file);
+      setBulkJobFile(null);
+    } else {
+      setBulkJobFile(file);
+      setBulkJobText("");
+    }
+  }
+
+  function addFiles(fileList) {
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+    const accepted = [];
+    const rejected = [];
+    incoming.forEach((f) => {
+      const problem = cvFileProblem(f);
+      if (problem) rejected.push(`${f.name} (${f.size > 10 * 1024 * 1024 ? "over 10 MB" : "not a PDF or DOCX"})`);
+      else accepted.push(f);
+    });
+    setQueue((q) => {
+      const room = BULK_MAX_FILES - q.length;
+      const toAdd = accepted.slice(0, Math.max(0, room));
+      if (accepted.length > toAdd.length) rejected.push(`${accepted.length - toAdd.length} more - a run is capped at ${BULK_MAX_FILES} CVs`);
+      return [...q, ...toAdd.map((file) => ({ id: nextIdRef.current++, file, status: "queued", candidateId: null, score: null, name: null, errorMessage: null }))];
+    });
+    setQueueError(rejected.length ? `Skipped ${rejected.join(", ")}.` : null);
+  }
+
+  function updateItem(id, patch) {
+    setQueue((q) => q.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+  }
+
+  const jobReady = bulkJobId ? true : bulkJobFile ? true : bulkJobText.trim().length >= 50;
+  const pendingCount = queue.filter((it) => it.status === "queued" || it.status === "failed").length;
+  const doneCount = queue.filter((it) => it.status === "done").length;
+  const failedCount = queue.filter((it) => it.status === "failed").length;
+  const settledCount = doneCount + failedCount;
+  const allSettled = queue.length > 0 && settledCount === queue.length && !running;
+  const canStart = jobReady && pendingCount > 0 && !running && consent;
+
+  async function runOne(item, jobIdForRequest, jobTextForRequest, jobFileForRequest) {
+    updateItem(item.id, { status: "processing", errorMessage: null });
+    const fd = new FormData();
+    fd.append("cv", item.file);
+    fd.append("blind", bulkBlind ? "true" : "false");
+    fd.append("requirements", "[]");
+    fd.append("jobText", jobTextForRequest || "");
+    if (jobFileForRequest) fd.append("jobFile", jobFileForRequest);
+    if (jobIdForRequest) fd.append("jobId", jobIdForRequest);
+
+    try {
+      const res = await fetch("/api/run", { method: "POST", body: fd });
+      const data = await res.json().catch(() => null);
+      if (res.status === 401) {
+        window.location.href = "/login?next=%2Fanalyse%3Fmode%3Dbulk";
+        return { outcome: "aborted" };
+      }
+      if (res.status === 402 || data?.upgrade) {
+        window.location.href = "/pricing?reason=subscription_required";
+        return { outcome: "aborted" };
+      }
+      if (res.status === 429) {
+        updateItem(item.id, { status: "rate_limited", errorMessage: "Hourly analysis limit reached." });
+        return { outcome: "rate_limited" };
+      }
+      if (data?.ok) {
+        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null });
+        return { outcome: "ok", jobId: data.jobId };
+      }
+      updateItem(item.id, { status: "failed", errorMessage: data?.error || "Analysis failed." });
+      return { outcome: "failed" };
+    } catch {
+      updateItem(item.id, { status: "failed", errorMessage: "Network error - check your connection and retry." });
+      return { outcome: "failed" };
+    }
+  }
+
+  async function recordResolvedJob(jobId, jobTextSent) {
+    let text = jobTextSent;
+    if (!text || text.trim().length < 50) {
+      try {
+        const job = await getJobById(jobId);
+        text = job.job_text || text;
+      } catch {
+        // A later request that still lacks job text fails clearly on its own.
+      }
+    }
+    resolvedJobRef.current = { id: jobId, text };
+    setBulkJobId(jobId);
+  }
+
+  async function startBulk() {
+    const items = queue.filter((it) => it.status === "queued" || it.status === "failed");
+    if (!canStart || !items.length) return;
+    setRunning(true);
+    setRateLimited(false);
+    abortRef.current = false;
+
+    // A picked saved job is already resolved. Otherwise run CVs one at a
+    // time until one succeeds and creates the job, so parallel requests
+    // never each create a duplicate job - and a failed first CV doesn't
+    // leave the rest with no role to score against.
+    if (bulkJobId && !resolvedJobRef.current.id) resolvedJobRef.current = { id: bulkJobId, text: bulkJobText };
+    let idx = 0;
+    while (!resolvedJobRef.current.id && idx < items.length) {
+      const outcome = await runOne(items[idx], null, bulkJobText, bulkJobFile);
+      idx++;
+      if (outcome.outcome === "aborted") {
+        setRunning(false);
+        return;
+      }
+      if (outcome.outcome === "rate_limited") {
+        setRateLimited(true);
+        setRunning(false);
+        return;
+      }
+      if (outcome.outcome === "ok") await recordResolvedJob(outcome.jobId, bulkJobText);
+    }
+
+    const { id: resolvedId, text: resolvedText } = resolvedJobRef.current;
+    const rest = items.slice(idx);
+    let cursor = 0;
+    async function worker() {
+      while (cursor < rest.length) {
+        if (abortRef.current) return;
+        const item = rest[cursor++];
+        const outcome = await runOne(item, resolvedId, resolvedText, null);
+        if (outcome.outcome === "aborted") {
+          abortRef.current = true;
+          return;
+        }
+        if (outcome.outcome === "rate_limited") {
+          abortRef.current = true;
+          setRateLimited(true);
+          return;
+        }
+      }
+    }
+    await Promise.all(Array.from({ length: BULK_CONCURRENCY }, worker));
+    setRunning(false);
+  }
+
+  async function retryOne(id) {
+    if (retryLockRef.current || running) return;
+    const item = queue.find((it) => it.id === id);
+    if (!item) return;
+    const alreadyResolved = !!resolvedJobRef.current.id;
+    if (!alreadyResolved) retryLockRef.current = true;
+    try {
+      const jobId = alreadyResolved ? resolvedJobRef.current.id : bulkJobId;
+      const jobText = alreadyResolved ? resolvedJobRef.current.text : bulkJobText;
+      const result = await runOne(item, jobId, jobText, alreadyResolved ? null : bulkJobFile);
+      if (result.outcome === "ok" && !resolvedJobRef.current.id) await recordResolvedJob(result.jobId, jobText);
+    } finally {
+      retryLockRef.current = false;
+    }
+  }
+
+  const ranked = useMemo(() => {
+    if (!allSettled) return queue;
+    return [...queue].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  }, [queue, allSettled]);
+
+  const progress = queue.length ? Math.round((settledCount / queue.length) * 100) : 0;
+  const missing = !jobReady ? "Add the role first." : !queue.length ? "Add at least one CV." : !consent ? "Confirm your lawful basis to continue." : null;
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-start">
+      <Card className={cx(running && "opacity-60 pointer-events-none")}>
+        <CardHeader title="Role" description="Every CV in this run is scored against it." />
+        <div className="px-5 pt-4">
+          <Segmented
+            size="sm"
+            value={jobPickMode}
+            onChange={setJobPickMode}
+            ariaLabel="How to add the role"
+            options={[
+              ...(savedJobs.length ? [{ value: "saved", label: "Your jobs", icon: "briefcase" }] : []),
+              { value: "paste", label: "Paste", icon: "text" },
+              { value: "upload", label: "Upload spec", icon: "upload" },
+            ]}
+          />
+        </div>
+        <div className="px-5 py-4 space-y-4">
+          {jobPickMode === "saved" && (
+            <Select value={bulkJobId || ""} onChange={(e) => selectSavedJob(e.target.value)} aria-label="Choose a job">
+              <option value="">Choose one of your jobs…</option>
+              {savedJobs.map((j) => (
+                <option key={j.id} value={j.id}>
+                  {j.title}
+                  {j.company ? ` · ${j.company}` : ""}
+                </option>
+              ))}
+            </Select>
+          )}
+          {jobPickMode === "paste" && (
+            <Textarea
+              value={bulkJobText}
+              onChange={(e) => {
+                setBulkJobText(e.target.value);
+                setBulkJobId(null);
+              }}
+              rows={9}
+              placeholder="Paste the full job description"
+              aria-label="Job description"
+            />
+          )}
+          {jobPickMode === "upload" && (
+            <div>
+              <Button icon="upload" onClick={() => jobInputRef.current?.click()}>
+                {bulkJobFileName ? "Replace spec" : "Choose spec file"}
+              </Button>
+              {bulkJobFileName && <p className="text-[12.5px] text-[var(--ink-soft)] mt-2">{bulkJobFileName}</p>}
+              <input ref={jobInputRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { handleBulkJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
+            </div>
+          )}
+          <div className="pt-4 border-t border-[var(--border-soft)] space-y-4">
+            <Switch id="bulk-blind" checked={bulkBlind} onChange={setBulkBlind} label="Blind screening" description="Hide names, contact details and institutions when scoring." />
+            <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]" />
+              <span className="text-[12.5px] leading-relaxed text-[var(--ink-soft)]">I have a lawful basis (for example consent or legitimate interest under UK GDPR) to screen these CVs.</span>
+            </label>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Candidates"
+          description={`${queue.length} of ${BULK_MAX_FILES} CVs`}
+          action={
+            queue.length > 0 && !running && !allSettled ? (
+              <Button size="sm" variant="ghost" onClick={() => setQueue((q) => q.filter((it) => it.status !== "queued"))}>
+                Clear queued
+              </Button>
+            ) : null
+          }
+        />
+        <div className="px-5 py-4 space-y-4">
+          {!running && queue.length < BULK_MAX_FILES && (
+            <button
+              type="button"
+              onClick={() => cvInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragActive(true);
+              }}
+              onDragLeave={() => setDragActive(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                addFiles(e.dataTransfer.files);
+              }}
+              className={cx(
+                "w-full flex flex-col items-center justify-center gap-1.5 rounded-[12px] border border-dashed transition-colors",
+                queue.length ? "py-5" : "py-12",
+                dragActive ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+              )}
+            >
+              <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
+              <span className="text-[13.5px] font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
+              <span className="text-[12px] text-[var(--ink-faint)]">PDF or Word · up to 10 MB each</span>
+            </button>
+          )}
+          <input ref={cvInputRef} type="file" multiple accept={CV_ACCEPT} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
+          {queueError && <Notice tone="warn" onDismiss={() => setQueueError(null)}>{queueError}</Notice>}
+
+          {(running || settledCount > 0) && (
+            <div>
+              <div className="flex justify-between text-[12.5px] mb-1.5">
+                <span className="text-[var(--ink-soft)]">{running ? "Analysing…" : allSettled ? "Run complete" : "Paused"}</span>
+                <span className="tabular-nums text-[var(--ink)]">
+                  {settledCount} / {queue.length}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[var(--border-soft)] overflow-hidden">
+                <div className="h-full rounded-full bg-[var(--forest)] transition-[width] duration-500" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          )}
+
+          {rateLimited && (
+            <Notice tone="warn">
+              Hourly analysis limit reached - {doneCount} of {queue.length} finished. The rest are paused; press Retry on them later.
+            </Notice>
+          )}
+          {allSettled && (
+            <Notice tone="ok">
+              {doneCount} scored{failedCount ? `, ${failedCount} failed` : ""}. Ranked by score below.{" "}
+              {bulkJobId && (
+                <a href={`/dashboard/jobs/${bulkJobId}`} className="font-semibold underline underline-offset-2">
+                  Open the job
+                </a>
+              )}
+            </Notice>
+          )}
+
+          {queue.length > 0 && (
+            <ul className="divide-y divide-[var(--border-soft)] border-y border-[var(--border-soft)]">
+              {ranked.map((item) => {
+                const tone = scoreTone(item.score);
+                return (
+                  <li key={item.id} className={cx("flex items-center gap-3 py-2.5", item.status === "processing" && "bg-[#f4faf7] -mx-5 px-5")}>
+                    <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] text-[var(--ink)] truncate">{item.name || item.file.name}</p>
+                      <p className={cx("text-[12px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
+                        {item.status === "failed" || item.status === "rate_limited" ? item.errorMessage : item.name ? item.file.name : formatBytes(item.file.size)}
+                      </p>
+                    </div>
+                    {item.status === "done" ? (
+                      <a href={`/dashboard/candidates/${item.candidateId}`} className="flex items-center gap-2 group" aria-label={`Open ${item.name || item.file.name}, score ${item.score}`}>
+                        <span className="h-6 min-w-[36px] px-1.5 rounded-[6px] text-[12.5px] font-semibold tabular-nums flex items-center justify-center" style={{ background: tone.bg, color: tone.fg }}>
+                          {item.score ?? "–"}
+                        </span>
+                        <Icon name="arrowRight" size={14} className="text-[var(--ink-faint)] group-hover:text-[var(--ink)]" />
+                      </a>
+                    ) : item.status === "processing" ? (
+                      <span className="text-[12px] text-[var(--forest)] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> Analysing
+                      </span>
+                    ) : (item.status === "failed" || item.status === "rate_limited") && !running ? (
+                      <Button size="sm" onClick={() => retryOne(item.id)} icon="refresh">
+                        Retry
+                      </Button>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <span className="text-[12px] text-[var(--ink-faint)]">{STATUS_LABEL[item.status]}</span>
+                        {item.status === "queued" && !running && (
+                          <button type="button" onClick={() => setQueue((q) => q.filter((it) => it.id !== item.id))} aria-label={`Remove ${item.file.name}`} className="p-1 rounded text-[var(--ink-faint)] hover:text-[var(--ink)]">
+                            <Icon name="x" size={13} />
+                          </button>
+                        )}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <div>
+            <Button variant="primary" size="lg" className="w-full" disabled={!canStart} onClick={startBulk}>
+              {running ? `Analysing ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Analyse ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+            </Button>
+            {missing && !running && <p className="text-[12px] text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}

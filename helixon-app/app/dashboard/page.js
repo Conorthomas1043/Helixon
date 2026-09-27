@@ -67,6 +67,7 @@ function normalizeAnalysis(raw, index) {
   const createdAt = createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate : null;
   return {
     id: raw.id ?? raw._id ?? `analysis-${index}`,
+    candidateId: raw.candidateId ?? null,
     candidateName: raw.candidateName ?? raw.candidate?.name ?? raw.candidate ?? "Unnamed candidate",
     jobTitle: raw.jobTitle ?? raw.job?.title ?? raw.job ?? "Unspecified role",
     company: raw.company ?? raw.job?.company ?? raw.client ?? null,
@@ -600,7 +601,7 @@ function TopCandidates({ candidates, total }) {
               className="fade-up-in"
               style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : "none", "--stagger-delay": `${i * 50}ms` }}
             >
-              <Link href={`/dashboard/candidates/${c.id}`} title={`${c.candidateName} - ${c.jobTitle}`} style={{
+              <Link href={`/dashboard/candidates/${c.candidateId ?? c.id}`} title={`${c.candidateName} - ${c.jobTitle}`} style={{
                 display: "flex", alignItems: "center", gap: 12, padding: "12px 8px",
                 borderRadius: 10, textDecoration: "none",
               }} className="hover:bg-[var(--mist)] transition-colors">
@@ -837,7 +838,7 @@ function RecentAnalyses({ analyses }) {
             </thead>
             <tbody>
               {analyses.map((a, i) => {
-                const href = a.status === "completed" ? `/dashboard/candidates/${a.id}` : `/analyse/${a.id}`;
+                const href = `/dashboard/candidates/${a.candidateId ?? a.id}`;
                 return (
                   <tr
                     key={a.id}
