@@ -6,8 +6,8 @@
 // against live Companies House data.
 //
 // Usage:
-//   COMPANIES_HOUSE_API_KEY=... GOOGLE_PLACES_API_KEY=... \
-//     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh]
+//   [COMPANIES_HOUSE_API_KEY=...] [GOOGLE_PLACES_API_KEY=...]  (both optional) \
+//     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search]
 //
 // Output defaults to "<input>-enriched.csv". Results are cached in
 // "<output>.cache.json", so an interrupted run picks up where it left off;
@@ -26,6 +26,8 @@
 //      are tried; one is accepted only if the page shows the company's
 //      registered number or its full name (UK companies must publish their
 //      number on their site, so this is a strong check).
+//      Failing that, the company is searched on DuckDuckGo (no key needed)
+//      and the top non-directory results get the same check.
 //   4. The website (homepage + careers/jobs pages it links to) is scanned for
 //      known ATS / recruitment CRM fingerprints, and for a phone number when
 //      Places had none (tel: links first, then UK-format numbers in text).
@@ -238,6 +240,48 @@ async function guessWebsite(company, number) {
   return null;
 }
 
+// Sites that list every company, so a hit there says nothing about the
+// company's own website.
+const DIRECTORY_HOSTS = /(company-information\.service\.gov\.uk|gov\.uk|linkedin|facebook|instagram|twitter|x\.com|youtube|glassdoor|indeed|reed\.co|totaljobs|cv-library|endole|companycheck|opencorporates|bizstats|rocketreach|zoominfo|dnb\.com|companieslist|find-open|yell\.com|thegazette|duedil|checkcompany|companyhub|craft\.co|crunchbase|wikipedia|agencycentral|globaldatabase|cylex|192\.com|bing\.com|duckduckgo)/i;
+
+let lastSearch = 0;
+async function searchWebsite(company, city, number) {
+  const wait = 2500 - (Date.now() - lastSearch); // keep DuckDuckGo from rate-limiting us
+  if (wait > 0) await sleep(wait);
+  lastSearch = Date.now();
+  const q = `"${company.replace(/\b(LIMITED|LTD)\b\.?/gi, "").trim()}" ${city}`;
+  let html;
+  try {
+    const res = await fetchWithTimeout("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q), { headers: { "User-Agent": UA } });
+    if (!res.ok) return null;
+    html = await res.text();
+  } catch {
+    return null;
+  }
+  const origins = [];
+  for (const m of html.matchAll(/class="result__a"[^>]*href="([^"]+)"/g)) {
+    let href = m[1].replace(/&amp;/g, "&");
+    const uddg = href.match(/[?&]uddg=([^&]+)/);
+    if (uddg) href = decodeURIComponent(uddg[1]);
+    try {
+      const u = new URL(href, "https://duckduckgo.com");
+      if (!DIRECTORY_HOSTS.test(u.hostname) && !origins.includes(u.origin)) origins.push(u.origin);
+    } catch { /* bad link */ }
+  }
+  for (const origin of origins.slice(0, 5)) {
+    const page = await getPage(origin + "/");
+    if (page && pageMentionsCompany(page.html, company, number)) return page;
+    // The registered number is often only on the contact / terms page.
+    if (page) {
+      for (const sub of ["/contact", "/contact-us", "/terms", "/privacy-policy"]) {
+        const p = await getPage(origin + sub);
+        if (p && pageMentionsCompany(p.html, company, number)) return page;
+      }
+    }
+  }
+  return null;
+}
+
 // Fingerprints are matched against the raw HTML (script src, iframe src,
 // job-board links) of the homepage and any careers/jobs pages it links to.
 export const ATS_SIGNATURES = [
@@ -333,6 +377,7 @@ async function enrich(row, env) {
   let site = null;
   if (place?.website) site = await getPage(place.website);
   if (!site) site = await guessWebsite(row.company, number);
+  if (!site && !env.noSearch) site = await searchWebsite(row.company, row.city, number);
 
   out.website = site ? new URL(site.url).origin : place?.website || null;
   out.phone = place?.phone || null;
@@ -354,12 +399,12 @@ async function main() {
   const positional = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--limit");
   const [input, outArg] = positional;
   if (!input) {
-    console.error('Usage: node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh]');
+    console.error('Usage: node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search]');
     process.exit(1);
   }
-  const env = { chKey: process.env.COMPANIES_HOUSE_API_KEY, placesKey: process.env.GOOGLE_PLACES_API_KEY };
+  const env = { noSearch: flags.has("--no-search"), chKey: process.env.COMPANIES_HOUSE_API_KEY, placesKey: process.env.GOOGLE_PLACES_API_KEY };
   if (!env.chKey) console.warn("COMPANIES_HOUSE_API_KEY not set - Flag/Label/City/Accounts Type will not be re-checked.");
-  if (!env.placesKey) console.warn("GOOGLE_PLACES_API_KEY not set - phone/website will come only from verified domain guesses.");
+  if (!env.placesKey) console.warn("GOOGLE_PLACES_API_KEY not set - phone/website will come from verified domain guesses and DuckDuckGo search.");
 
   const output = outArg || input.replace(/\.csv$/i, "") + "-enriched.csv";
   const cachePath = output + ".cache.json";
