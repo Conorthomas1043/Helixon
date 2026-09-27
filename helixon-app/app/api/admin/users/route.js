@@ -5,7 +5,7 @@ import { getAdminSupabase } from "@/lib/admin-supabase";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
-import { createProfileAndAgency, generateUsername } from "@/lib/create-profile";
+import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/create-profile";
 
 // Customers now sign in through Clerk, so real accounts live in Clerk (mirrored
 // in `profiles` by clerk_user_id). This route used to manage ONLY Supabase Auth
@@ -426,12 +426,7 @@ async function provisionAgency({ client, supabase, userId, body }) {
   }
 
   // A profile exists but was never given an agency.
-  const { data: agency, error: agencyError } = await supabase
-    .from("agencies")
-    .insert({ name: agencyName, intake_email: email, settings: { plan: "solo", analyses_used: 0 } })
-    .select("id")
-    .single();
-  if (agencyError) throw new Error(agencyError.message);
+  const agency = await insertAgency({ name: agencyName, email, plan: "solo" });
 
   const { error: linkError } = await supabase.from("profiles").update({ agency_id: agency.id }).eq("id", existing.id);
   if (linkError) {
