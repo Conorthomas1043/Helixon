@@ -52,17 +52,15 @@ async function withRetry(fn) {
 
 
 
-// `temperature` defaults to 0 - extraction must be repeatable (the same CV
-// and job text should produce the same structured output every time: same
-// candidate re-analysed, re-runs after a bug fix, A/B comparisons). The one
-// caller that intentionally overrides this is fitJudgeEngine.js, which
-// wants genuine sampling variance to average out via self-consistency
-// (median of several samples) rather than one deterministic-but-noisy call.
-export default async function askClaude(userPrompt, { temperature = 0 } = {}){
-    return withRetry(() => sendToClaude(userPrompt, temperature));
+// No `temperature`: claude-sonnet-5 (config.js MODEL) removed the sampling
+// parameters and rejects any request that sends one with a 400. This used
+// to pass temperature: 0 on every call, so every extraction failed and
+// /api/run answered 500 before a candidate was ever saved.
+export default async function askClaude(userPrompt){
+    return withRetry(() => sendToClaude(userPrompt));
 }
 
-async function sendToClaude(userPrompt, temperature){
+async function sendToClaude(userPrompt){
 
 
 
@@ -71,9 +69,9 @@ async function sendToClaude(userPrompt, temperature){
 
             model:MODEL,
 
-            max_tokens:8000,
-
-            temperature,
+            // Sonnet 5 thinks adaptively by default and thinking counts
+            // against max_tokens - 8000 risked cutting the JSON off mid-way.
+            max_tokens:16000,
 
             system:systemPrompt,
 
@@ -99,10 +97,30 @@ async function sendToClaude(userPrompt, temperature){
 
 
 
+    if(response?.stop_reason === "refusal"){
+
+        throw new Error(
+            "Claude declined to analyse this content"
+        );
+
+    }
+
+    if(response?.stop_reason === "max_tokens"){
+
+        error("Claude response hit max_tokens");
+
+        throw new Error(
+            "Claude response was cut off"
+        );
+
+    }
+
+    // Only text blocks - thinking blocks come back first on Sonnet 5.
     const text =
         response
         ?.content
-        ?.map(x=>x.text || "")
+        ?.filter(x=>x.type === "text")
+        .map(x=>x.text || "")
         .join("");
 
 

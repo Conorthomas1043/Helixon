@@ -15,14 +15,13 @@
 // Claude is unavailable or every sample fails to parse, so a Claude outage
 // degrades scoring rather than breaking it.
 //
-// Samples 3 times at a non-zero temperature and takes the median score per
-// component: self-consistency, a documented technique for reducing the
-// variance of a single LLM judgement by averaging out sample noise. This
-// is a deliberate trade-off against the extraction calls' temperature 0
-// (chosen there specifically for byte-for-byte reproducibility) - it means
-// re-analysing the exact same candidate/job pair can produce a slightly
-// different industry/career/achievement score run to run, in exchange for
-// each individual run being more reliable. It also means 3x the Claude
+// Samples 3 times and takes the median score per component:
+// self-consistency, a documented technique for reducing the variance of a
+// single LLM judgement by averaging out sample noise. (The model samples
+// with its own default variability - claude-sonnet-5 doesn't accept a
+// temperature setting.) Re-analysing the exact same candidate/job pair can
+// produce a slightly different industry/career/achievement score run to
+// run, in exchange for each individual run being more reliable. It also means 3x the Claude
 // calls of a single-sample judgement, run in parallel so latency stays
 // close to one call, not three.
 import askClaude from "../anthropic/askClaude.js";
@@ -31,7 +30,6 @@ import { scoreIndustry } from "./industryEngine.js";
 import { analyseProgression } from "./progressionEngine.js";
 
 const SAMPLES = 3;
-const JUDGMENT_TEMPERATURE = 0.4;
 const VALID_LABELS = new Set(["Positive", "Static", "Regression", "Unknown"]);
 
 function median(numbers) {
@@ -97,7 +95,7 @@ export async function judgeFit(candidate, job, cvText) {
   try {
     const prompt = fitJudgmentPrompt({ candidate, job, cvText });
     settled = await Promise.allSettled(
-      Array.from({ length: SAMPLES }, () => askClaude(prompt, { temperature: JUDGMENT_TEMPERATURE }))
+      Array.from({ length: SAMPLES }, () => askClaude(prompt))
     );
   } catch (err) {
     // Covers prompt-building failures too (not just the Claude calls) -
