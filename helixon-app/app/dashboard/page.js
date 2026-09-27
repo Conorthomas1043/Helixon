@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
 import CountUp from "@/components/dashboard/CountUp";
-import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
+import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
@@ -394,7 +394,12 @@ function DashboardKpis({ totals }) {
 
 /* ─── Pipeline ──────────────────────────────────────────────────────────── */
 
-function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
+// Funnel of where every candidate stands, plus the share that made it from
+// each stage to the next. "Reached" counts a candidate in their current
+// stage and every stage before it (someone in Interview has, by definition,
+// been Screened and Shortlisted), so the conversion between two stages is
+// reached(next) / reached(this).
+function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
   // Bars grow in from 0 on mount instead of appearing at final height -
   // same two-step pattern as KpiCard's meter.
   const [grown, setGrown] = useState(false);
@@ -402,6 +407,9 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
     const t = setTimeout(() => setGrown(true), 150);
     return () => clearTimeout(t);
   }, []);
+
+  const reached = stageOrder.map((_, i) => stageOrder.slice(i).reduce((n, k) => n + (stageCounts[k] ?? 0), 0));
+  const active = reached[0] ?? 0;
 
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
@@ -417,39 +425,64 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount }) {
       {maxCount === 0 ? (
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-          {stageOrder.map((stageKey, i) => {
-            const count = stageCounts[stageKey] ?? 0;
-            const heightPct = maxCount > 0 ? Math.max(8, Math.round((count / maxCount) * 100)) : 0;
-            const isPlaced = stageKey === stageOrder[stageOrder.length - 1];
-            return (
-              <Link
-                key={stageKey}
-                href={`/dashboard/pipeline?stage=${stageKey}`}
-                className="lift-on-hover"
-                style={{ textDecoration: "none", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 8px", borderRadius: 10, border: `1px solid ${BORDER}`, background: SURFACE2 }}
-              >
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: TEXT, lineHeight: 1 }}>
-                  <CountUp value={count} format={formatNumber} />
-                </span>
-                <div style={{ width: "100%", height: 36, background: BORDER2, borderRadius: 6, marginTop: 8, marginBottom: 8, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: grown ? `${heightPct}%` : 0,
-                      background: isPlaced ? GREEN : VIOLET,
-                      borderRadius: "0 0 4px 4px",
-                      transition: `height 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 60}ms`,
-                    }}
-                  />
+        <>
+          <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
+            {stageOrder.map((stageKey, i) => {
+              const count = stageCounts[stageKey] ?? 0;
+              const heightPct = maxCount > 0 ? Math.max(6, Math.round((count / maxCount) * 100)) : 0;
+              const conversion = i > 0 && reached[i - 1] > 0 ? Math.round((reached[i] / reached[i - 1]) * 100) : null;
+              return (
+                <div key={stageKey} className="flex items-stretch gap-1.5 flex-1 min-w-[92px]">
+                  {conversion !== null && (
+                    <div className="flex flex-col items-center justify-center shrink-0 w-9" title={`${conversion}% of candidates who reached ${STAGE_LABELS[stageOrder[i - 1]]} got to ${STAGE_LABELS[stageKey]}`}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>{conversion}%</span>
+                      <span aria-hidden="true" style={{ fontSize: 12, color: TEXT_FAINT, lineHeight: 1 }}>→</span>
+                    </div>
+                  )}
+                  <Link
+                    href={`/dashboard/pipeline?stage=${stageKey}`}
+                    className="lift-on-hover flex-1"
+                    aria-label={`${STAGE_LABELS[stageKey]}: ${count} candidates`}
+                    style={{ textDecoration: "none", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 8px", borderRadius: 10, border: `1px solid ${BORDER}`, borderTop: `3px solid ${STAGE_COLORS[stageKey]}`, background: SURFACE2 }}
+                  >
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 600, color: TEXT, lineHeight: 1 }}>
+                      <CountUp value={count} format={formatNumber} />
+                    </span>
+                    <div style={{ width: "100%", height: 40, background: BORDER2, borderRadius: 6, marginTop: 8, marginBottom: 8, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: grown ? `${heightPct}%` : 0,
+                          background: STAGE_COLORS[stageKey],
+                          borderRadius: "0 0 4px 4px",
+                          transition: `height 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 60}ms`,
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
+                      {STAGE_LABELS[stageKey]}
+                    </span>
+                  </Link>
                 </div>
-                <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
-                  {STAGE_LABELS[stageKey]}
-                </span>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3" style={{ fontSize: 12, color: TEXT_SUB }}>
+            <span>
+              <b style={{ color: TEXT, fontVariantNumeric: "tabular-nums" }}>{formatNumber(active)}</b> active
+            </span>
+            {active > 0 && (
+              <span>
+                <b style={{ color: GREEN_FG, fontVariantNumeric: "tabular-nums" }}>{Math.round(((stageCounts[stageOrder[stageOrder.length - 1]] ?? 0) / active) * 100)}%</b> placed overall
+              </span>
+            )}
+            {rejected > 0 && (
+              <Link href="/dashboard/pipeline?stage=Rejected" style={{ color: TEXT_SUB, textDecoration: "none" }}>
+                <b style={{ color: "var(--score-low)", fontVariantNumeric: "tabular-nums" }}>{formatNumber(rejected)}</b> rejected
               </Link>
-            );
-          })}
-        </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
@@ -1006,7 +1039,7 @@ function AgencyDashboardPage() {
                 <DashboardKpis totals={model.totals} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-                  <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} />
+                  <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} />
                   <UsageSummary plan={plan} />
                 </div>
 

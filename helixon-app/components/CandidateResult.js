@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { updateCandidateStage, addCandidateNote } from "@/lib/dashboard-api";
+import { FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 
 // ============================================================================
 // CandidateResult - the full rich result panel, extracted from app/page.js so
@@ -14,16 +15,6 @@ import { updateCandidateStage, addCandidateNote } from "@/lib/dashboard-api";
 // feel like the same product. Sections are grouped into:
 //   Overview · Skills · Experience · Evidence · Prep · Contact · Pipeline
 // ============================================================================
-
-const PIPELINE_STAGES = ["Screened", "Shortlisted", "Interview", "Offer", "Placed", "Rejected"];
-const PIPELINE_STYLES = {
-  Screened:    { bg: "var(--mist)", text: "#5a7a6a" },
-  Shortlisted: { bg: "#e8f0fb",     text: "#2563eb" },
-  Interview:   { bg: "#fef3e8",     text: "#b45309" },
-  Offer:       { bg: "#f3ecfb",     text: "#7c3aed" },
-  Placed:      { bg: "var(--mint)", text: "var(--forest)" },
-  Rejected:    { bg: "#fef2f2",     text: "#dc2626" },
-};
 
 function fmtSalary(n) { return n ? "£" + Math.round(n / 1000) + "k" : ""; }
 function fmtYearRange(start, end) {
@@ -148,6 +139,11 @@ function Field({ icon, label, children }) {
 // recruiter. A freshly-analysed candidate is always inserted with stage
 // "Screened" (see api/run/route.js), so that's a safe starting value without
 // needing an extra fetch just to render this widget.
+// Funnel stepper: every stage up to the current one is filled in, so it
+// reads as progress rather than six unrelated pills. Rejected sits apart as
+// the exit. Keyed by candidateId where it's rendered, so analysing the next
+// candidate starts back at "Screened" instead of inheriting the last one's
+// stage.
 function PipelineStage({ candidateId, toast }) {
   const [stage, setStage] = useState("Screened");
   const [saving, setSaving] = useState(false);
@@ -168,21 +164,65 @@ function PipelineStage({ candidateId, toast }) {
     }
   }
 
+  const rejected = stage === "Rejected";
+  const currentIdx = FUNNEL_ORDER.indexOf(stage);
+
   return (
     <div>
       <SectionLabel>Pipeline stage</SectionLabel>
-      <div className="flex flex-wrap gap-1.5">
-        {PIPELINE_STAGES.map((s) => {
-          const active = stage === s;
-          const style = PIPELINE_STYLES[s];
-          return (
-            <button key={s} type="button" disabled={saving} onClick={() => update(s)}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all disabled:opacity-60"
-              style={active ? { background: style.bg, color: style.text, borderColor: "transparent" } : { background: "white", color: "var(--ink-soft)", borderColor: "var(--border)" }}>
-              {s}
-            </button>
-          );
-        })}
+      <div className="flex items-center gap-2 flex-wrap">
+        <ol className="flex items-center flex-1 min-w-[260px]" aria-label="Pipeline stage">
+          {FUNNEL_ORDER.map((s, i) => {
+            const reached = !rejected && i <= currentIdx;
+            const current = !rejected && i === currentIdx;
+            const color = STAGE_COLORS[s];
+            return (
+              <li key={s} className="flex items-center flex-1 last:flex-none">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => update(s)}
+                  aria-current={current ? "step" : undefined}
+                  className="group flex flex-col items-center gap-1 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                >
+                  <span
+                    className="w-3.5 h-3.5 rounded-full transition-all"
+                    style={{
+                      background: reached ? color : "white",
+                      border: `2px solid ${reached ? color : "var(--border)"}`,
+                      boxShadow: current ? `0 0 0 4px color-mix(in srgb, ${color} 22%, transparent)` : "none",
+                    }}
+                  />
+                  <span className="text-[10px] font-semibold whitespace-nowrap" style={{ color: current ? "var(--ink)" : reached ? "var(--ink-soft)" : "var(--ink-faint)" }}>
+                    {s}
+                  </span>
+                </button>
+                {i < FUNNEL_ORDER.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="flex-1 h-0.5 mx-1 -mt-4 rounded-full transition-colors"
+                    style={{ background: !rejected && i < currentIdx ? STAGE_COLORS[FUNNEL_ORDER[i + 1]] : "var(--border)" }}
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => update(rejected ? "Screened" : "Rejected")}
+          className="text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all disabled:opacity-60"
+          style={
+            rejected
+              ? { background: "#fef2f2", color: "#dc2626", borderColor: "transparent" }
+              : { background: "white", color: "var(--ink-soft)", borderColor: "var(--border)" }
+          }
+          aria-pressed={rejected}
+          title={rejected ? "Put back into the pipeline at Screened" : "Reject this candidate"}
+        >
+          {rejected ? "Rejected · undo" : "Reject"}
+        </button>
       </div>
     </div>
   );
@@ -605,7 +645,7 @@ export default function CandidateResult({
                 independently-driftable answer to the same question. */}
             {activeTab === "pipeline" && showInteractive && (
               <div className="space-y-6">
-                {candidateId && <PipelineStage candidateId={candidateId} toast={safeToast} />}
+                {candidateId && <PipelineStage key={candidateId} candidateId={candidateId} toast={safeToast} />}
                 {candidateId && <RecruiterNotes candidateId={candidateId} toast={safeToast} />}
               </div>
             )}

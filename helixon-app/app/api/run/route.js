@@ -5,6 +5,7 @@ import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { getScoreBand } from "@/lib/scoreBands";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 import { NextResponse } from "next/server";
 
@@ -18,6 +19,10 @@ import { NextResponse } from "next/server";
 // implicit. Verify this against your actual Vercel plan - Hobby caps
 // function duration well below this regardless of what's set here.
 export const maxDuration = 240;
+
+// Analyses per signed-in user per hour - comfortably above one full bulk
+// upload (50 CVs) so a batch never stalls part-way through.
+const RUN_LIMIT_PER_USER_PER_HOUR = 100;
 
 // .doc is deliberately not accepted - extractCvText() has no parser for
 // the legacy binary format and always throws for it (see that file), so
@@ -97,9 +102,13 @@ export async function POST(request) {
       );
     }
 
+    // Loose per-IP guard against floods before we do any work. The real
+    // allowance is per user, below - it used to be 20/hour per IP, which a
+    // single 50-CV bulk upload (BULK_MAX_FILES in app/analyse) blew through
+    // at file 21, and which a whole office behind one IP shared.
     const ip = getClientIp(request);
 
-    if (!(await rateLimit(ip))) {
+    if (!(await rateLimit(`run-ip:${ip}`, 300))) {
       return NextResponse.json(
         {
           ok: false,
@@ -137,10 +146,21 @@ export async function POST(request) {
     }
 
     const {
-      user,
       userId,
       agencyId,
+      profile,
     } = auth;
+
+    if (!(await rateLimit(`run-user:${userId}`, RUN_LIMIT_PER_USER_PER_HOUR))) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Hourly analysis limit reached. Please try again later.",
+        },
+        { status: 429 }
+      );
+    }
 
     const form = await request.formData();
 
@@ -248,6 +268,30 @@ export async function POST(request) {
       );
     }
 
+    /*
+     * IDOR protection: a supplied job ID must belong to this user's
+     * agency. Checked BEFORE the analysis - it used to run after the
+     * candidate row was inserted, so a bad jobId both burned a full
+     * (paid) Claude analysis and left an orphaned candidate behind with
+     * no job, score or stage.
+     */
+    let existingJob = null;
+    if (existingJobId) {
+      const { data, error: existingJobError } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("id", existingJobId)
+        .eq("agency_id", agencyId)
+        .maybeSingle();
+      if (existingJobError || !data) {
+        return NextResponse.json(
+          { ok: false, error: "That saved job could not be found." },
+          { status: 404 }
+        );
+      }
+      existingJob = data;
+    }
+
     const {
       cvText,
       extracted,
@@ -309,35 +353,16 @@ export async function POST(request) {
       );
     }
 
+    // Anything created from here on is removed again if a later step
+    // fails, so a half-finished analysis never shows up in the pipeline.
+    let createdJobId = null;
+    const cleanup = async () => {
+      await supabase.from("candidates").delete().eq("id", candidate.id);
+      if (createdJobId) await supabase.from("jobs").delete().eq("id", createdJobId);
+    };
+
     let job;
-
-    if (existingJobId) {
-      /*
-       * IDOR protection:
-       * even when a job ID is supplied, it must belong
-       * to this user's agency.
-       */
-      const {
-        data: existingJob,
-        error: existingJobError,
-      } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("id", existingJobId)
-        .eq("agency_id", agencyId)
-        .single();
-
-      if (existingJobError || !existingJob) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error:
-              "That saved job could not be found.",
-          },
-          { status: 404 }
-        );
-      }
-
+    if (existingJob) {
       job = existingJob;
     } else {
       const {
@@ -391,10 +416,11 @@ export async function POST(request) {
         .single();
 
       if (jobError) {
+        await cleanup();
         throw new Error(jobError.message);
       }
-
       job = newJob;
+      createdJobId = newJob.id;
     }
 
     const {
@@ -435,6 +461,7 @@ export async function POST(request) {
       .single();
 
     if (scoreError) {
+      await cleanup();
       throw new Error(scoreError.message);
     }
 
@@ -481,7 +508,7 @@ export async function POST(request) {
           candidate.id,
         type: "screened",
         actor:
-          user.email || userId,
+          recruiterDisplayName(profile) || userId,
         meta: {
           job_id: job.id,
           score_id: score.id,
@@ -642,7 +669,9 @@ export async function POST(request) {
         status: job.status,
       },
 
-      stage: score.stage,
+      // The live pipeline stage (candidates.stage), not the legacy
+      // scores.stage history value ("new").
+      stage: "Screened",
     });
   } catch (error) {
     console.error(

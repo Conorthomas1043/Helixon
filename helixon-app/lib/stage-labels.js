@@ -16,3 +16,15 @@ export const STAGE_LABELS = {
 // logic. Rejected is deliberately excluded - it's a terminal exit, not a
 // funnel step, so it shouldn't be "last stage" for isPlaced/inPipeline math.
 export const FUNNEL_ORDER = ["Screened", "Shortlisted", "Interview", "Offer", "Placed"];
+
+// One accent per stage, shared by the pipeline board and the dashboard
+// funnel so a stage is the same colour everywhere - progressively greener
+// through the funnel, red for the terminal exit.
+export const STAGE_COLORS = {
+  Screened: "#94a3b8",
+  Shortlisted: "#5b8def",
+  Interview: "#8b6cf0",
+  Offer: "var(--gold)",
+  Placed: "var(--forest)",
+  Rejected: "var(--score-low)",
+};

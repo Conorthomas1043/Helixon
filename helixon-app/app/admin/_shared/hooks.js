@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { confirmAction, promptNewPassword, promptText } from "./modal";
 import { csrfHeaders } from "./csrf"; // echoes the CSRF cookie back as a header on mutating requests
+import { toast } from "./toast";
 
 export function useAdminStats(range) {
   const [stats, setStats] = useState(null);
@@ -134,6 +135,17 @@ export function useAdminTraffic(range) {
   return { traffic, error, busy, loading, reload: load, block, unblock };
 }
 
+const USER_ACTION_DONE = {
+  ban: "User banned.",
+  unban: "User unbanned.",
+  reset_password: "Password updated.",
+  update_profile: "Profile saved.",
+  provision_agency: "Agency set up.",
+  grant_demo_access: "Demo access granted.",
+  revoke_demo_access: "Demo access revoked.",
+  confirm_email: "Email confirmed.",
+};
+
 export function useAdminUsers() {
   const [users, setUsers] = useState([]);
   const [clerkWarning, setClerkWarning] = useState("");
@@ -176,6 +188,10 @@ export function useAdminUsers() {
     load();
   }, [load]);
 
+  // Confirms success with a toast (it used to reload silently, so an admin
+  // couldn't tell whether a click had done anything) and reports failures
+  // as a toast too - the page-top error notice is often scrolled out of view.
+  // Resolves true on success.
   const action = useCallback(
     async (userId, actionName, extra = {}) => {
       setBusy(true);
@@ -188,15 +204,20 @@ export function useAdminUsers() {
           body: JSON.stringify({ userId, action: actionName, ...extra }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
           throw new Error(data.error || "User action failed.");
         }
 
+        toast.success(USER_ACTION_DONE[actionName] || "Done.");
         await load();
+        return true;
       } catch (err) {
-        setError(err?.message || "User action failed.");
+        const message = err?.message || "User action failed.";
+        setError(message);
+        toast.error(message);
+        return false;
       } finally {
         setBusy(false);
       }
@@ -228,9 +249,14 @@ export function useAdminUsers() {
           throw new Error(data.error || "Failed to delete user.");
         }
 
+        toast.success(`Deleted ${email || "user"}.`);
         await load();
+        return true;
       } catch (err) {
-        setError(err?.message || "Failed to delete user.");
+        const message = err?.message || "Failed to delete user.";
+        setError(message);
+        toast.error(message);
+        return false;
       } finally {
         setBusy(false);
       }
@@ -247,8 +273,8 @@ export function useAdminUsers() {
       if (password === null) return;
 
       if (password.length < 12) {
-        setError("Password must be at least 12 characters.");
-        return;
+        toast.error("Password must be at least 12 characters.");
+        return false;
       }
 
       await action(userId, "reset_password", { password });

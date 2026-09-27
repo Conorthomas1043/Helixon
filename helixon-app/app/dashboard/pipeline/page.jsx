@@ -1,46 +1,37 @@
 "use client";
 
 /* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/pipeline. Already linked from the existing dashboard
- *   ("View pipeline", "Open pipeline →", per-stage links) and from
- *   DashboardNav - same reconciliation note as the Jobs/Analytics pages if
- *   a real implementation already exists here.
- * - Only candidates with status "completed" have a stage, so this board
- *   only shows those - processing/failed candidates live in the
- *   candidate database's status filter instead.
- * - Move-forward/back buttons call the same updateCandidateStage mock
- *   mutation the candidate profile page uses. No drag-and-drop - button-
- *   based movement is more robust for a first pass and fully keyboard-
- *   accessible without extra work.
- * - PipelinePage reads `useSearchParams()` for the "?stage=" deep link
- *   from the dashboard, so the part of the tree that uses it is wrapped
- *   in <Suspense> - required by Next.js for any component that reads
- *   search params, or static prerendering fails the build.
+ * /dashboard/pipeline - kanban board of every completed candidate by stage.
+ *
+ * - Loads EVERY matching candidate (getPipelineCandidates pages through the
+ *   API's 50-row cap). It used to request pageSize: 500 and silently show
+ *   only the top 50 by score.
+ * - Moves are optimistic: the card jumps immediately, and snaps back with a
+ *   visible error if the server refuses. Previously each move reloaded the
+ *   whole board (skeleton flash, lost scroll) and failures were swallowed.
+ * - Cards can be dragged between columns on desktop, or moved with the
+ *   arrow buttons (keyboard/touch). Dropping on "Rejected" rejects; the
+ *   arrows only walk the funnel.
+ * - "?stage=Shortlisted" (from the dashboard's funnel bars) highlights and
+ *   scrolls to that column. Reads useSearchParams(), so the content sits in
+ *   a <Suspense> boundary as Next.js requires.
  * ---------------------------------------------------------------------- */
 
-import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
-import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
-import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
+import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
+import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
+import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials, formatRelativeTime } from "@/lib/candidate-format";
 
-// The board shows every stage a completed candidate can actually be in,
-// including "Rejected" - FUNNEL_ORDER deliberately excludes it (it's a
-// terminal exit, not a funnel step - see stage-labels.js), which is correct
-// for percentage/stalled math but was wrong reused as this board's literal
-// column list: rejected candidates had no column to land in and silently
-// vanished from the board entirely. Forward/back arrow navigation below
-// still only moves within FUNNEL_ORDER - "un-rejecting" a candidate is done
-// from the full stage picker on their profile page.
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 
-async function fetchPipeline(query) {
-  const { items } = await getCandidates(query);
-  return items;
+function scoreBg(score) {
+  if (score === null || score === undefined) return "var(--mist)";
+  if (score >= 80) return "var(--mint)";
+  if (score >= 60) return "#fff8e6";
+  return "#fef2f2";
 }
 
 function Select({ value, onChange, options, ariaLabel }) {
@@ -61,65 +52,71 @@ function Select({ value, onChange, options, ariaLabel }) {
   );
 }
 
-function Avatar({ name }) {
-  return (
-    <div
-      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-semibold"
-      style={{ background: "white", color: "var(--forest)" }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </div>
-  );
-}
-
-function PipelineCard({ candidate, onMove }) {
-  // Rejected isn't part of the funnel, so it has no "back"/"forward"
-  // neighbour here - both arrows stay disabled for it (see BOARD_STAGES).
+function PipelineCard({ candidate, onMove, pending }) {
   const stageIdx = FUNNEL_ORDER.indexOf(candidate.stage);
   const canGoBack = stageIdx > 0;
   const canGoForward = stageIdx >= 0 && stageIdx < FUNNEL_ORDER.length - 1;
 
   return (
-    <div className="rounded-[10px] p-3 bg-white" style={{ border: "1px solid var(--border)" }}>
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", candidate.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="group rounded-[12px] p-3 bg-white cursor-grab active:cursor-grabbing transition-shadow hover:shadow-[var(--shadow-sm)]"
+      style={{ border: "1px solid var(--border)", opacity: pending ? 0.6 : 1 }}
+    >
       <Link
         href={`/dashboard/candidates/${candidate.id}`}
-        className="flex items-center gap-2 mb-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+        className="flex items-start gap-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+        draggable={false}
       >
-        <Avatar name={candidate.fullName} />
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[11px] font-semibold"
+          style={{ background: "var(--mist)", color: "var(--forest)" }}
+          aria-hidden="true"
+        >
+          {initials(candidate.fullName)}
+        </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold truncate" style={{ color: INK }}>
+          <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: INK }}>
             {candidate.fullName}
           </p>
-          <p className="text-[11px] truncate" style={{ color: INK_MUTED }}>
+          <p className="text-[11px] truncate mt-0.5" style={{ color: INK_MUTED }}>
             {candidate.jobTitle}
           </p>
         </div>
-        <span className="text-[12px] font-semibold tabular-nums shrink-0" style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score) }}>
-          {candidate.score ?? "-"}
+        <span
+          className="text-[12px] font-semibold tabular-nums shrink-0 px-1.5 py-0.5 rounded-md"
+          style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score), background: scoreBg(candidate.score) }}
+          aria-label={candidate.score == null ? "No score" : `Score ${candidate.score}`}
+        >
+          {candidate.score ?? "–"}
         </span>
       </Link>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-2.5 gap-2">
         <span className="text-[10px] truncate" style={{ color: INK_FAINT }}>
           {candidate.recruiterName ?? "Unassigned"}
+          {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
         </span>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
-            disabled={!canGoBack}
+            disabled={!canGoBack || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx - 1])}
-            aria-label={`Move ${candidate.fullName} back a stage`}
-            className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] disabled:opacity-30 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={`Move ${candidate.fullName} back to ${FUNNEL_ORDER[stageIdx - 1] ?? "previous stage"}`}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] disabled:opacity-25 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: INK_MUTED }}
           >
             ←
           </button>
           <button
             type="button"
-            disabled={!canGoForward}
+            disabled={!canGoForward || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx + 1])}
-            aria-label={`Move ${candidate.fullName} forward a stage`}
-            className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] disabled:opacity-30 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={`Move ${candidate.fullName} forward to ${FUNNEL_ORDER[stageIdx + 1] ?? "next stage"}`}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] disabled:opacity-25 hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: "var(--forest)" }}
           >
             →
@@ -131,17 +128,17 @@ function PipelineCard({ candidate, onMove }) {
 }
 
 function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
+  return <div className={`shimmer-block rounded-[10px] ${className}`} />;
 }
 
 function PipelineSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" aria-busy="true" aria-label="Loading pipeline">
-      {Array.from({ length: 7 }).map((_, i) => (
-        <div key={i} className="rounded-[14px] p-3" style={CARD}>
-          <Block className="h-4 w-16 mb-3" />
-          <Block className="h-20 w-full mb-2" />
-          <Block className="h-20 w-full" />
+    <div className="flex gap-3 overflow-hidden" aria-busy="true" aria-label="Loading pipeline">
+      {BOARD_STAGES.map((s) => (
+        <div key={s} className="rounded-[14px] p-3 w-[260px] shrink-0 lg:flex-1 lg:w-auto" style={CARD}>
+          <Block className="h-4 w-20 mb-3" />
+          <Block className="h-[74px] w-full mb-2" />
+          <Block className="h-[74px] w-full" />
         </div>
       ))}
     </div>
@@ -169,27 +166,52 @@ function ErrorState({ onRetry }) {
   );
 }
 
-/* ------------------------------------------------------------------------
- * Page content - reads useSearchParams(), so it must live inside the
- * <Suspense> boundary set up by the default export below.
- * ---------------------------------------------------------------------- */
+// Stacked bar of the whole funnel - each segment's width is its share of
+// active (non-rejected) candidates.
+function FunnelStrip({ byStage }) {
+  const active = FUNNEL_ORDER.reduce((n, s) => n + byStage[s].length, 0);
+  if (active === 0) return null;
+  return (
+    <div className="rounded-[14px] p-4" style={CARD}>
+      <div className="flex h-2.5 rounded-full overflow-hidden" style={{ background: "var(--mist)" }} role="img" aria-label="Share of active candidates in each stage">
+        {FUNNEL_ORDER.map((s) =>
+          byStage[s].length ? (
+            <div key={s} style={{ width: `${(byStage[s].length / active) * 100}%`, background: STAGE_ACCENT[s], transition: "width .4s cubic-bezier(0.16,1,0.3,1)" }} />
+          ) : null
+        )}
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-3">
+        {BOARD_STAGES.map((s) => (
+          <span key={s} className="flex items-center gap-1.5 text-[11px]" style={{ color: INK_MUTED }}>
+            <span className="w-2 h-2 rounded-full" style={{ background: STAGE_ACCENT[s] }} />
+            {STAGE_LABELS[s]} <b className="tabular-nums" style={{ color: INK }}>{byStage[s].length}</b>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function PipelineContent() {
-  // The dashboard's per-stage pipeline bars link here as
-  // "/dashboard/pipeline?stage=shortlisted" etc. - that stage's column
-  // gets a highlighted border on arrival so the link actually lands
-  // somewhere meaningful rather than just opening the general board.
   const searchParams = useSearchParams();
-  const highlightStage = searchParams?.get("stage");
+  const rawStage = searchParams?.get("stage") || "";
+  // Accept "shortlisted" as well as "Shortlisted" in the deep link.
+  const highlightStage = BOARD_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) || null;
 
   const [jobId, setJobId] = useState("all");
   const [recruiterId, setRecruiterId] = useState("all");
+  const [search, setSearch] = useState("");
+  const [hideRejected, setHideRejected] = useState(false);
   const [candidates, setCandidates] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
+  const [pendingIds, setPendingIds] = useState(() => new Set());
+  const [moveError, setMoveError] = useState("");
+  const [dragOver, setDragOver] = useState(null);
 
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
+  const columnRefs = useRef({});
 
   useEffect(() => {
     Promise.all([getJobs(), getRecruiters()])
@@ -202,8 +224,7 @@ function PipelineContent() {
 
   useEffect(() => {
     let cancelled = false;
-    setStatus("loading");
-    fetchPipeline({ jobId, recruiterId, status: "completed", sortBy: "score_desc", page: 1, pageSize: 500 })
+    getPipelineCandidates({ jobId, recruiterId, status: "completed", sortBy: "score_desc" })
       .then((items) => {
         if (cancelled) return;
         setCandidates(items);
@@ -217,102 +238,191 @@ function PipelineContent() {
     };
   }, [jobId, recruiterId, reloadKey]);
 
-  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+  // Bring the deep-linked column into view once the board has rendered.
+  useEffect(() => {
+    if (status !== "ready" || !highlightStage) return;
+    columnRefs.current[highlightStage]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [status, highlightStage]);
+
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setReloadKey((k) => k + 1);
+  }, []);
 
   const handleMove = useCallback(
     (id, newStage) => {
-      updateCandidateStage(id, newStage).then(retry).catch(() => {});
+      const current = candidates?.find((c) => c.id === id);
+      if (!current || !newStage || current.stage === newStage) return;
+      const previousStage = current.stage;
+      setMoveError("");
+      setCandidates((list) => list.map((c) => (c.id === id ? { ...c, stage: newStage } : c)));
+      setPendingIds((s) => new Set(s).add(id));
+      updateCandidateStage(id, newStage)
+        .catch((err) => {
+          setCandidates((list) => list.map((c) => (c.id === id ? { ...c, stage: previousStage } : c)));
+          setMoveError(`Couldn't move ${current.fullName} to ${STAGE_LABELS[newStage]}: ${err.message || "please try again"}.`);
+        })
+        .finally(() =>
+          setPendingIds((s) => {
+            const next = new Set(s);
+            next.delete(id);
+            return next;
+          })
+        );
     },
-    [retry]
+    [candidates]
   );
 
   const byStage = useMemo(() => {
+    const q = search.trim().toLowerCase();
     const map = {};
     BOARD_STAGES.forEach((k) => (map[k] = []));
     (candidates ?? []).forEach((c) => {
+      if (q && !`${c.fullName} ${c.jobTitle}`.toLowerCase().includes(q)) return;
       if (map[c.stage]) map[c.stage].push(c);
     });
     return map;
-  }, [candidates]);
+  }, [candidates, search]);
+
+  const columns = hideRejected ? FUNNEL_ORDER : BOARD_STAGES;
+  const total = candidates?.length ?? 0;
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate pipeline
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
-              Pipeline
+              Pipeline {status === "ready" && <span className="text-base font-medium tabular-nums" style={{ color: INK_FAINT }}>· {total}</span>}
             </h1>
+            <p className="text-[12px] mt-1 hidden lg:block" style={{ color: INK_FAINT }}>
+              Drag a card to another column, or use the arrows to move it a stage.
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Select ariaLabel="Filter by job" value={jobId} onChange={setJobId} options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]} />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search candidate or role"
+              aria-label="Search pipeline"
+              className="text-[12px] px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2"
+              style={{ border: "1px solid var(--border)", color: INK }}
+            />
+            <Select ariaLabel="Filter by job" value={jobId} onChange={(v) => { setStatus("loading"); setJobId(v); }} options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]} />
             <Select
               ariaLabel="Filter by recruiter"
               value={recruiterId}
-              onChange={setRecruiterId}
+              onChange={(v) => { setStatus("loading"); setRecruiterId(v); }}
               options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
             />
+            <label className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer" style={{ border: "1px solid var(--border)", color: INK_MUTED }}>
+              <input type="checkbox" checked={hideRejected} onChange={(e) => setHideRejected(e.target.checked)} className="accent-[var(--forest)]" />
+              Hide rejected
+            </label>
             <Link
-              href="/dashboard"
-              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              href="/analyse"
+              className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ background: "var(--forest)", color: "white" }}
             >
-              ← Dashboard
+              + New analysis
             </Link>
           </div>
         </header>
 
+        {moveError && (
+          <div role="alert" className="rounded-[12px] px-4 py-2.5 text-[13px] flex items-center justify-between gap-3" style={{ background: "#fdf1f0", color: "#c0392b", border: "1px solid #f4d4d2" }}>
+            {moveError}
+            <button type="button" onClick={() => setMoveError("")} aria-label="Dismiss" className="font-semibold">×</button>
+          </div>
+        )}
+
         {status === "loading" && <PipelineSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}
         {status === "ready" && candidates && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 items-start">
-            {BOARD_STAGES.map((key) => (
-              <div
-                key={key}
-                className="rounded-[14px] p-3"
-                style={key === highlightStage ? { ...CARD, border: "1.5px solid var(--forest)" } : CARD}
-              >
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: key === highlightStage ? "var(--forest)" : INK_MUTED }}>
-                    {STAGE_LABELS[key]}
-                  </span>
-                  <span className="text-[11px] tabular-nums font-semibold" style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}>
-                    {byStage[key].length}
-                  </span>
-                </div>
-                <div className="space-y-2 min-h-[40px]">
-                  {byStage[key].length === 0 ? (
-                    <p className="text-[11px] text-center py-4" style={{ color: INK_FAINT }}>
-                      Empty
-                    </p>
-                  ) : (
-                    byStage[key].map((c) => <PipelineCard key={c.id} candidate={c} onMove={handleMove} />)
-                  )}
-                </div>
+          <>
+            <FunnelStrip byStage={byStage} />
+            {total === 0 ? (
+              <div className="rounded-[16px] p-10 text-center" style={CARD}>
+                <p className="text-base font-semibold mb-1" style={{ color: INK }}>No candidates yet</p>
+                <p className="text-sm mb-5" style={{ color: INK_MUTED }}>Analyse a CV and the candidate will land in Screened.</p>
+                <Link href="/analyse" className="inline-flex text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "white" }}>
+                  Analyse a CV
+                </Link>
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="flex gap-3 items-start overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
+                {columns.map((key) => {
+                  const items = byStage[key];
+                  const scored = items.filter((c) => c.score != null);
+                  const avg = scored.length ? Math.round(scored.reduce((n, c) => n + c.score, 0) / scored.length) : null;
+                  const highlighted = key === highlightStage;
+                  const over = dragOver === key;
+                  return (
+                    <section
+                      key={key}
+                      ref={(el) => (columnRefs.current[key] = el)}
+                      aria-label={`${STAGE_LABELS[key]} - ${items.length} candidates`}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (dragOver !== key) setDragOver(key);
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setDragOver(null);
+                        handleMove(e.dataTransfer.getData("text/plain"), key);
+                      }}
+                      className="rounded-[14px] p-2.5 w-[272px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-[200px] transition-colors"
+                      style={{
+                        background: over ? "var(--mint)" : "rgba(255,255,255,0.6)",
+                        border: highlighted || over ? "1.5px solid var(--forest)" : "1px solid var(--border)",
+                        borderTop: `3px solid ${STAGE_ACCENT[key]}`,
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-2.5 px-1.5 pt-0.5">
+                        <span className="text-[12px] font-semibold" style={{ color: highlighted ? "var(--forest)" : INK }}>
+                          {STAGE_LABELS[key]}
+                          <span className="ml-1.5 tabular-nums font-medium" style={{ color: INK_FAINT }}>{items.length}</span>
+                        </span>
+                        {avg !== null && (
+                          <span className="text-[10px] tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
+                            avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-2 min-h-[64px] max-h-[70vh] overflow-y-auto">
+                        {items.length === 0 ? (
+                          <p className="text-[11px] text-center py-6 rounded-[10px]" style={{ color: INK_FAINT, border: "1px dashed var(--border)" }}>
+                            {over ? "Drop here" : "No candidates"}
+                          </p>
+                        ) : (
+                          items.map((c) => <PipelineCard key={c.id} candidate={c} onMove={handleMove} pending={pendingIds.has(c.id)} />)
+                        )}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
   );
 }
 
-/* ------------------------------------------------------------------------
- * Fallback shown during the (very brief) moment Suspense needs before
- * useSearchParams() resolves - reuses the same skeleton as the loading
- * state so there's no visible flash between the two.
- * ---------------------------------------------------------------------- */
-
 function PipelineFallback() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+      <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         <PipelineSkeleton />
       </div>
     </main>

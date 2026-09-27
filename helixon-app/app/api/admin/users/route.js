@@ -40,6 +40,16 @@ function primaryEmail(user) {
 
 // ── Listing ─────────────────────────────────────────────────────────────────
 
+// id -> name for the agencies the listed users belong to, so the console can
+// show "Acme Recruitment" instead of a bare uuid prefix.
+async function agencyNames(supabase, ids) {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (!unique.length) return new Map();
+  const { data, error } = await supabase.from("agencies").select("id,name").in("id", unique);
+  if (error) throw new Error(error.message);
+  return new Map((data || []).map((a) => [a.id, a.name]));
+}
+
 async function listLegacyUsers(supabase, { page, perPage, search }) {
   const { data: authData, error: authError } = await supabase.auth.admin.listUsers({ page, perPage });
   if (authError) throw new Error(authError.message);
@@ -74,6 +84,7 @@ async function listLegacyUsers(supabase, { page, perPage, search }) {
 
   const profileMap = new Map((profileResult.data || []).map((p) => [p.id, p]));
   const subscriptionMap = new Map((subscriptionResult.data || []).map((s) => [s.user_id, s]));
+  const legacyAgencyNames = await agencyNames(supabase, (profileResult.data || []).map((p) => p.agency_id));
 
   return users.map((user) => {
     const profile = profileMap.get(user.id);
@@ -91,7 +102,7 @@ async function listLegacyUsers(supabase, { page, perPage, search }) {
       firstName: profile?.first_name || user.user_metadata?.first_name || "",
       lastName: profile?.last_name || user.user_metadata?.last_name || "",
       username: profile?.username || "",
-      agency: profile?.agency_id ? { id: profile.agency_id } : null,
+      agency: profile?.agency_id ? { id: profile.agency_id, name: legacyAgencyNames.get(profile.agency_id) || null } : null,
       subscription: shapeSubscription(subscriptionMap.get(user.id)),
       isTestUser: Boolean(user.user_metadata?.is_test_user),
       testLabel: user.user_metadata?.test_label || null,
@@ -132,6 +143,7 @@ async function listClerkUsers(supabase, { page, perPage, search }) {
   }
 
   const profileByClerkId = new Map(profiles.map((p) => [p.clerk_user_id, p]));
+  const clerkAgencyNames = await agencyNames(supabase, profiles.map((p) => p.agency_id));
   const subscriptionByProfileId = new Map(subscriptions.map((s) => [s.user_id, s]));
 
   const users = clerkUsers.map((user) => {
@@ -151,7 +163,7 @@ async function listClerkUsers(supabase, { page, perPage, search }) {
       firstName: profile?.first_name || user.firstName || "",
       lastName: profile?.last_name || user.lastName || "",
       username: profile?.username || user.username || "",
-      agency: profile?.agency_id ? { id: profile.agency_id } : null,
+      agency: profile?.agency_id ? { id: profile.agency_id, name: clerkAgencyNames.get(profile.agency_id) || null } : null,
       subscription: shapeSubscription(profile ? subscriptionByProfileId.get(profile.id) : null),
       isTestUser: Boolean(user.publicMetadata?.is_test_user),
       testLabel: user.publicMetadata?.test_label || null,

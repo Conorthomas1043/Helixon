@@ -88,6 +88,12 @@ export async function getStageCounts(query = {}) {
   return counts;
 }
 
+// Every candidate for the pipeline board - the board used to ask for
+// pageSize: 500 and silently got the server's 50-row cap.
+export async function getPipelineCandidates(query = {}) {
+  return getAllCandidates(query);
+}
+
 // Real, unpaginated candidate export - CSV download on the Candidates page.
 export async function getCandidatesForExport(query = {}) {
   return getAllCandidates(query);

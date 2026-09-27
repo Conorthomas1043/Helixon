@@ -86,7 +86,10 @@ export async function GET() {
     );
   }
 
-  const analyses = (scoreRows ?? []).map((s) => ({
+  // A score whose candidate has since been deleted has nothing to show and
+  // no pipeline position - skip it rather than counting a phantom
+  // "completed" analysis in the KPIs and averages.
+  const analyses = (scoreRows ?? []).filter((s) => s.candidates).map((s) => ({
     id: s.id,
     candidateName: s.candidates?.full_name || s.candidates?.name || "Unnamed candidate",
     jobTitle: s.jobs?.title || "Unspecified role",

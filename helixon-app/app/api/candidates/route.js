@@ -42,10 +42,12 @@ export async function GET(request) {
   const page = Math.max(1, Number(params.get("page")) || 1);
   const pageSize = Math.min(50, Math.max(1, Number(params.get("pageSize")) || 8));
 
+  // skills:extracted->skills pulls just that key - selecting the whole
+  // parsed-CV `extracted` JSON per row made every list/board load heavy.
   let query = supabase
     .from("candidates")
     .select(
-      "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, extracted, jobs(id, title, client)",
+      "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, skills:extracted->skills, jobs(id, title, client)",
       { count: "exact" }
     )
     .eq("agency_id", agencyId);
@@ -92,7 +94,7 @@ export async function GET(request) {
       status: c.processing_status,
       stage: c.stage,
       score: c.match_score,
-      skills: c.extracted?.skills ?? [],
+      skills: Array.isArray(c.skills) ? c.skills : [],
       tags: c.tags ?? [],
       nextAction: c.next_action,
       createdAt: c.created_at,
