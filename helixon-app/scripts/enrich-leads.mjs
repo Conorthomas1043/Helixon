@@ -6,7 +6,7 @@
 // against live Companies House data.
 //
 // Usage:
-//   [COMPANIES_HOUSE_API_KEY=...] [GOOGLE_PLACES_API_KEY=...]  (both optional) \
+//   [COMPANIES_HOUSE_API_KEY=...] [GOOGLE_PLACES_API_KEY=...] [BRAVE_SEARCH_API_KEY=...]  (all optional) \
 //     node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search] [--threads N] [--search-delay MS]
 //
 // --threads (default 8) is how many companies are worked on at once;
@@ -32,7 +32,8 @@
 //      registered number or its full name (UK companies must publish their
 //      number on their site, so this is a strong check).
 //      Failing that, the company is searched on DuckDuckGo / Bing / Brave /
-//      Mojeek in rotation (no key needed)
+//      Mojeek in rotation (no key needed), or Brave's Search API first if
+//      BRAVE_SEARCH_API_KEY is set (free, and doesn't get blocked)
 //      and the top non-directory results get the same check.
 //   4. The website (homepage + careers/jobs pages it links to) is scanned for
 //      known ATS / recruitment CRM fingerprints, and for a phone number when
@@ -313,7 +314,26 @@ const ENGINES = [
   { name: "Bing", url: (q) => "https://www.bing.com/search?setlang=en-GB&cc=GB&q=" + encodeURIComponent(q) },
   { name: "Brave", url: (q) => "https://search.brave.com/search?source=web&q=" + encodeURIComponent(q) },
   { name: "Mojeek", url: (q) => "https://www.mojeek.com/search?q=" + encodeURIComponent(q) },
-].map((e) => ({ ...e, slot: Promise.resolve(), restUntil: 0, busy: 0 }));
+].map((e) => ({ ...e, slot: Promise.resolve(), restUntil: 0, busy: 0, strikes: 0 }));
+
+// Brave's official Search API (free plan: 2,000 searches/month, 1 per second -
+// api-dashboard.search.brave.com). Unlike scraping result pages, it doesn't
+// get blocked, so when BRAVE_SEARCH_API_KEY is set it's used first.
+export function addBraveApi(key) {
+  ENGINES.unshift({
+    name: "Brave Search API", delay: 1100, slot: Promise.resolve(), restUntil: 0, busy: 0, strikes: 0,
+    url: (q) => "https://api.search.brave.com/res/v1/web/search?country=gb&count=10&q=" + encodeURIComponent(q),
+    headers: { Accept: "application/json", "X-Subscription-Token": key },
+    // Turned into plain links so the same result parsing applies.
+    toHtml: (body) => (JSON.parse(body).web?.results || []).map((r) => `<a href="${r.url}">`).join(""),
+  });
+}
+
+const BROWSER_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+  "Accept-Language": "en-GB,en;q=0.9",
+  Accept: "text/html,application/xhtml+xml",
+};
 const ENGINE_HOSTS = /(duckduckgo|bing|microsoft|msn|brave|mojeek|google)\./i;
 
 // Result links, unwrapped from each engine's redirect format.
@@ -346,22 +366,36 @@ async function webSearch(q) {
       await sleep(until - now + 100);
       continue;
     }
-    const engine = ready.sort((x, y) => x.busy - y.busy)[0];
+    // The API (if any) is always first; otherwise spread across the least busy.
+    const engine = ready[0].toHtml ? ready[0] : ready.sort((x, y) => x.busy - y.busy)[0];
     engine.busy++;
-    const slot = engine.slot.then(() => sleep(searchConfig.delay));
+    const slot = engine.slot.then(() => sleep(engine.delay ?? searchConfig.delay));
     engine.slot = slot;
     await slot;
     engine.busy--;
     if (engine.restUntil > Date.now()) continue; // got benched while we queued
-    let res, html = "";
+    let res, html = "", err = null;
     try {
-      res = await fetchWithTimeout(engine.url(q), { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36", "Accept-Language": "en-GB,en;q=0.9", Accept: "text/html" } });
+      res = await fetchWithTimeout(engine.url(q), { headers: engine.headers || BROWSER_HEADERS });
       html = await res.text();
-    } catch { /* network blip */ }
-    const blocked = !res || !res.ok || res.status === 202 || /anomaly|captcha|unusual traffic|are you a robot/i.test(html);
-    if (!blocked) return html;
-    if (engine.restUntil <= Date.now()) console.warn(`  ${engine.name} is refusing searches - resting it for 5 min`);
-    engine.restUntil = Date.now() + 5 * 60_000;
+      if (engine.toHtml && res.ok) html = engine.toHtml(html);
+    } catch (e) { err = e; }
+    // A page that has result links wasn't blocked, whatever words its scripts
+    // contain; only a link-less page that looks like a challenge counts.
+    const hasResults = resultLinks(html).length > 0;
+    const challenge = !hasResults && /captcha|unusual traffic|are you a robot|anomaly-modal|challenge-form|verify you are human/i.test(html);
+    const why = err ? `network error: ${err.cause?.code || err.message}`
+      : !res.ok ? `HTTP ${res.status}` : res.status === 202 ? "HTTP 202 challenge" : challenge ? "bot check page" : null;
+    if (!why) {
+      engine.strikes = 0;
+      return html;
+    }
+    if (engine.restUntil <= Date.now()) {
+      engine.strikes++;
+      const mins = Math.min(5 * 2 ** (engine.strikes - 1), 60);
+      engine.restUntil = Date.now() + mins * 60_000;
+      console.warn(`  ${engine.name} refused a search (${why}) - resting it for ${mins} min`);
+    }
   }
   // Not cached, so this row is retried on the next run.
   throw new Error("every search engine is refusing searches right now");
@@ -620,6 +654,7 @@ async function main() {
     console.error('Usage: node scripts/enrich-leads.mjs "Helixon Leads - Leads.csv" [out.csv] [--limit N] [--refresh] [--no-search] [--threads N] [--search-delay MS]');
     process.exit(1);
   }
+  if (process.env.BRAVE_SEARCH_API_KEY) addBraveApi(process.env.BRAVE_SEARCH_API_KEY);
   const env = { noSearch: flags.has("--no-search"), chKey: process.env.COMPANIES_HOUSE_API_KEY, placesKey: process.env.GOOGLE_PLACES_API_KEY };
   if (!env.chKey) console.warn("COMPANIES_HOUSE_API_KEY not set - Flag/Label/City/Accounts Type will not be re-checked.");
   if (!env.placesKey) console.warn("GOOGLE_PLACES_API_KEY not set - phone/website will come from verified domain guesses and web search.");
