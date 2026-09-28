@@ -1,14 +1,19 @@
 "use client";
 
-// Side-by-side comparison of 2-4 saved candidates for one role
-// (app/analyse/compare). Data from /api/compare; the grid, winners and
-// verdict come from ../_lib/compare.js.
+// Side-by-side comparison of 2-4 saved candidates (app/analyse/compare,
+// the "Compare" tab). Data from /api/compare; the grid, winners and verdict
+// come from ../_lib/compare.js. Two views: "Scores" (the analysis, below)
+// and "Raw CVs" (RawCvCompare.jsx - the CVs themselves side by side).
+// Candidates can come from one role or be chosen from anyone already
+// screened (CandidateChooser.jsx).
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { Button, Card, Icon, Notice, Select, Spinner, cx } from "./ui";
+import { Button, Card, Icon, Notice, Segmented, Select, Spinner, cx } from "./ui";
+import CandidateChooser from "./CandidateChooser";
+import RawCvCompare from "./RawCvCompare";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
 
@@ -231,6 +236,7 @@ export default function CompareWorkspace() {
   const params = useSearchParams();
   const jobIdParam = params.get("jobId") || "";
   const idsParam = params.get("ids") || "";
+  const view = params.get("view") === "raw" ? "raw" : "scores";
   const ids = useMemo(() => idsParam.split(",").map((s) => s.trim()).filter(Boolean), [idsParam]);
 
   const [data, setData] = useState(null);
@@ -242,10 +248,26 @@ export default function CompareWorkspace() {
       const q = new URLSearchParams();
       if (jobIdParam || data?.job?.id) q.set("jobId", jobIdParam || data.job.id);
       if (next.length) q.set("ids", next.join(","));
+      if (view === "raw") q.set("view", "raw");
       router.replace(`/analyse/compare?${q.toString()}`);
     },
-    [router, jobIdParam, data]
+    [router, jobIdParam, data, view]
   );
+
+  const setView = useCallback(
+    (next) => {
+      const q = new URLSearchParams(params.toString());
+      if (next === "raw") q.set("view", "raw");
+      else q.delete("view");
+      router.replace(`/analyse/compare?${q.toString()}`);
+    },
+    [router, params]
+  );
+
+  // Choosing from everyone already screened: in the empty state (a draft
+  // list, then Compare), or added straight in from the header panel.
+  const [draft, setDraft] = useState([]);
+  const [addingAny, setAddingAny] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -311,7 +333,23 @@ export default function CompareWorkspace() {
             {job?.client && <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">{job.client}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {status === "ready" && n >= 2 && (
+              <Segmented
+                value={view}
+                onChange={setView}
+                ariaLabel="What to compare"
+                options={[
+                  { value: "scores", label: "Scores", icon: "compare" },
+                  { value: "raw", label: "Raw CVs", icon: "file" },
+                ]}
+              />
+            )}
             {status === "ready" && <Picker pool={data.pool || []} selected={ids} max={data.max || 4} onAdd={(id) => setIds([...ids, id])} />}
+            {status === "ready" && n >= 2 && ids.length < (data.max || 4) && (
+              <Button size="sm" icon="plus" onClick={() => setAddingAny((v) => !v)} aria-expanded={addingAny}>
+                Any candidate
+              </Button>
+            )}
             {job && (
               <Link href={`/dashboard/jobs/${job.id}`} className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-[8px] border border-[var(--border)] bg-white text-[13px] font-medium text-[var(--ink)] hover:bg-[var(--mist)]">
                 <Icon name="arrowLeft" size={14} /> Back to job
@@ -329,17 +367,51 @@ export default function CompareWorkspace() {
         {status === "error" && <Notice tone="error">{error}</Notice>}
 
         {status === "ready" && n < 2 && (
-          <Card className="p-10 text-center">
-            <p className="text-[15px] font-semibold text-[var(--ink)]">Pick at least two candidates</p>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1 max-w-md mx-auto">
-              {data.pool?.length
-                ? "Use “Add a candidate” above to choose who to compare for this role - up to four at a time."
-                : "Open a job with scored candidates and choose Compare, or tick candidates after a bulk run."}
+          <Card className="p-5 sm:p-6">
+            <p className="text-[15px] font-semibold text-[var(--ink)]">Choose who to compare</p>
+            <p className="text-[13px] text-[var(--ink-soft)] mt-1 mb-4">
+              Pick two to four candidates you&apos;ve already screened - then compare their scores, or their CVs side by side.
             </p>
+            <CandidateChooser
+              selected={[...new Set([...ids, ...draft])]}
+              max={data.max || 4}
+              onAdd={(id) => setDraft((d) => [...d, id])}
+              onCompare={() => {
+                setIds([...new Set([...ids, ...draft])]);
+                setDraft([]);
+              }}
+            />
           </Card>
         )}
 
-        {status === "ready" && n >= 2 && (
+        {status === "ready" && n >= 2 && addingAny && (
+          <Card className="p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-[14px] font-semibold text-[var(--ink)]">Add any screened candidate</p>
+              <button type="button" onClick={() => setAddingAny(false)} aria-label="Close" className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink)]">
+                <Icon name="x" size={16} />
+              </button>
+            </div>
+            <CandidateChooser
+              selected={ids}
+              max={data.max || 4}
+              onAdd={(id) => {
+                setIds([...ids, id]);
+                setAddingAny(false);
+              }}
+            />
+          </Card>
+        )}
+
+        {status === "ready" && n >= 2 && view === "raw" && (
+          <RawCvCompare
+            candidates={candidates}
+            labels={labels}
+            onRemove={n > 2 ? (id) => setIds(ids.filter((x) => x !== id)) : undefined}
+          />
+        )}
+
+        {status === "ready" && n >= 2 && view === "scores" && (
           <>
             {lines.length > 0 && (
               <Card className="p-5">

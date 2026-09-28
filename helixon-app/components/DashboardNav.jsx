@@ -8,12 +8,22 @@ import posthog from "posthog-js";
 const TABS = [
   { href: "/dashboard", label: "Overview" },
   { href: "/analyse", label: "Analyse" },
+  { href: "/analyse/compare", label: "Compare" },
   { href: "/dashboard/candidates", label: "Candidates" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/team", label: "Team" },
   { href: "/dashboard/analytics", label: "Analytics" },
 ];
+
+// The tab for the current page: the most specific match, so /analyse/compare
+// lights up "Compare" rather than both it and "Analyse".
+function activeTabHref(pathname) {
+  const matches = TABS.filter((t) =>
+    t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`)
+  );
+  return matches.sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null;
+}
 
 function initials(name) {
   return (name || "")
@@ -64,6 +74,7 @@ function DashboardNavContent() {
   const userEmail = user?.primaryEmailAddress?.emailAddress;
   const userName = user?.fullName;
   const pathname = usePathname();
+  const activeHref = activeTabHref(pathname);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -154,7 +165,7 @@ function DashboardNavContent() {
 
         <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
           {TABS.map((t) => {
-            const active = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`);
+            const active = t.href === activeHref;
             return (
               <Link
                 key={t.href}
@@ -210,7 +221,7 @@ function DashboardNavContent() {
       {/* Mobile tab row */}
       <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "#5a7a6a" }}>
         {TABS.map((t) => {
-          const active = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`);
+          const active = t.href === activeHref;
           return (
             <Link
               key={t.href}
