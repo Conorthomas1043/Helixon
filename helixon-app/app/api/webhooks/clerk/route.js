@@ -117,6 +117,17 @@ async function handleUserCreated(clerkUser) {
     return;
   }
 
+  // Clerk doesn't guarantee delivery order: if organizationMembership.created
+  // arrived first, it already created this user's profile in the agency
+  // that invited them - don't create a second profile and agency on top.
+  const { data: alreadyLinked, error: linkedError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("clerk_user_id", clerkUserId)
+    .maybeSingle();
+  if (linkedError) throw new Error(linkedError.message);
+  if (alreadyLinked) return;
+
   // ── Case 1: this username already has a profile (pre-Clerk account
   // being migrated - see the migration SQL's backfill note). Link it
   // instead of creating a duplicate agency/profile.
@@ -213,14 +224,6 @@ async function handleOrganizationMembershipCreated(membership) {
     return;
   }
 
-  const { data: existingProfile, error: existingError } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("clerk_user_id", clerkUserId)
-    .maybeSingle();
-  if (existingError) throw new Error(existingError.message);
-  if (existingProfile) return;
-
   const { data: agency, error: agencyError } = await supabase
     .from("agencies")
     .select("id")
@@ -229,6 +232,40 @@ async function handleOrganizationMembershipCreated(membership) {
   if (agencyError) throw new Error(agencyError.message);
   if (!agency) {
     console.error(`[clerk webhook] organizationMembership.created for org ${orgId}, but no agency has that clerk_org_id`);
+    return;
+  }
+
+  const { data: existingProfile, error: existingError } = await supabase
+    .from("profiles")
+    .select("id, agency_id")
+    .eq("clerk_user_id", clerkUserId)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
+
+  if (existingProfile) {
+    // The owner (their own org) - or a teammate already attached.
+    if (existingProfile.agency_id === agency.id) return;
+
+    // Someone who already had an account when they accepted. This used to
+    // return here unconditionally, so they stayed in whatever agency they
+    // had and never actually joined the team that invited them - most
+    // often a stray empty agency the user.created handler made for them
+    // when they signed up outside the invite flow.
+    if (await canMoveToInvitingAgency(existingProfile)) {
+      const { error: moveError } = await supabase
+        .from("profiles")
+        .update({ agency_id: agency.id })
+        .eq("id", existingProfile.id);
+      if (moveError) throw new Error(moveError.message);
+      return;
+    }
+
+    // Their own paid (or shared) workspace - never pulled out of it
+    // automatically. They hold a seat but see their own agency until they
+    // leave it; the owner can remove them from the Team page.
+    console.error(
+      `[clerk webhook] user ${clerkUserId} joined org ${orgId} but already belongs to another active agency; not moved`
+    );
     return;
   }
 
@@ -247,6 +284,31 @@ async function handleOrganizationMembershipCreated(membership) {
     agency_id: agency.id,
   });
   if (insertError) throw new Error(insertError.message);
+}
+
+// Whether an existing profile can be moved into the agency that just
+// invited them: only when their current agency is effectively empty - no
+// other members and no active subscription (typically the placeholder
+// agency created when they signed up outside the invite flow). Anyone
+// with a paid or shared workspace of their own stays where they are.
+async function canMoveToInvitingAgency(profile) {
+  if (!profile.agency_id) return true;
+
+  const { data: members, error: membersError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("agency_id", profile.agency_id);
+  if (membersError) throw new Error(membersError.message);
+  if ((members || []).some((m) => m.id !== profile.id)) return false;
+
+  const { data: subs, error: subsError } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("user_id", profile.id)
+    .eq("status", "active")
+    .limit(1);
+  if (subsError) throw new Error(subsError.message);
+  return (subs || []).length === 0;
 }
 
 // Fires when a member leaves or is removed from a Clerk Organization -

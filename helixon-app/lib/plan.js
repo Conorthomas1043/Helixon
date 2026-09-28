@@ -29,13 +29,17 @@ export async function getAgencyPlan(agencyId) {
   const profileIds = (agencyProfiles || []).map((p) => p.id);
   if (profileIds.length === 0) return null;
 
-  const { data: subscription, error: subError } = await supabase
+  // Not maybeSingle(): an agency can briefly have two active rows (a
+  // re-subscribe, or a second member's own subscription), and
+  // maybeSingle() errors on more than one row - which threw here and took
+  // the Team page's invite panel down with a 500. An Agency-plan row wins.
+  const { data: subscriptions, error: subError } = await supabase
     .from("subscriptions")
     .select("plan")
     .in("user_id", profileIds)
-    .eq("status", "active")
-    .maybeSingle();
+    .eq("status", "active");
   if (subError) throw new Error(subError.message);
 
-  return subscription?.plan || null;
+  const plans = (subscriptions || []).map((s) => s.plan).filter(Boolean);
+  return plans.includes("agency") ? "agency" : plans[0] || null;
 }

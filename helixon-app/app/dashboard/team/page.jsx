@@ -24,31 +24,40 @@ import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Agency-plan-only: invite teammates into the agency's Clerk Organization
-// (see lib/clerk-org.js) and manage pending invites against the seat cap.
-// Individual-plan accounts get a 403 from the API and simply don't see
-// this section at all - see the isAgencyPlan state below.
+// Invite teammates into the agency's Clerk Organization (see
+// lib/clerk-org.js) and manage pending invites against the seat cap.
+// Every state is shown - it used to render nothing at all unless the seat
+// lookup succeeded, so an Individual-plan account or any server error just
+// left the page with no way to add anyone and no hint why.
 function TeamInvitePanel() {
   const [usage, setUsage] = useState(null);
-  const [visible, setVisible] = useState(null); // null = still checking, true/false once known
+  const [state, setState] = useState("loading"); // loading | ready | upgrade | error
+  const [loadError, setLoadError] = useState("");
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [cancellingId, setCancellingId] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(() => {
-    getTeamSeatUsage().then(({ status, data }) => {
-      if (status === 403) {
-        setVisible(false);
-        return;
-      }
-      if (status !== 200 || !data) {
-        setVisible(false);
-        return;
-      }
-      setUsage(data);
-      setVisible(true);
-    });
+    getTeamSeatUsage()
+      .then(({ status, data }) => {
+        if (status === 403) {
+          setState("upgrade");
+          return;
+        }
+        if (status !== 200 || !data) {
+          setLoadError(data?.error || "Couldn't load your team seats.");
+          setState("error");
+          return;
+        }
+        setUsage(data);
+        setState("ready");
+      })
+      .catch(() => {
+        setLoadError("Couldn't reach the server. Check your connection.");
+        setState("error");
+      });
   }, []);
 
   useEffect(() => {
@@ -64,9 +73,11 @@ function TeamInvitePanel() {
     }
     setSending(true);
     setError("");
+    setNotice("");
     try {
       await inviteTeammate(trimmed);
       setEmail("");
+      setNotice(`Invite sent to ${trimmed}. They'll join as soon as they accept it.`);
       load();
     } catch (err) {
       setError(err.message || "Couldn't send the invite.");
@@ -75,38 +86,110 @@ function TeamInvitePanel() {
     }
   }
 
-  async function handleCancel(invitationId) {
-    setCancellingId(invitationId);
+  async function handleCancel(invite) {
+    setBusyId(invite.id);
+    setError("");
+    setNotice("");
     try {
-      await cancelTeamInvite(invitationId);
+      await cancelTeamInvite(invite.id);
       load();
     } catch (err) {
       setError(err.message || "Couldn't cancel the invite.");
     } finally {
-      setCancellingId(null);
+      setBusyId(null);
     }
   }
 
-  if (visible !== true || !usage) return null;
+  // Re-sends by cancelling and inviting again - the new email carries a
+  // fresh link (and, for invites sent before the link fix, one that
+  // actually lands on Helixon's own sign-up page).
+  async function handleResend(invite) {
+    setBusyId(invite.id);
+    setError("");
+    setNotice("");
+    try {
+      await cancelTeamInvite(invite.id);
+      await inviteTeammate(invite.email);
+      setNotice(`New invite sent to ${invite.email}.`);
+      load();
+    } catch (err) {
+      setError(err.message || "Couldn't resend the invite.");
+      load();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (state === "loading") {
+    return <div className="rounded-[14px] p-5 h-[132px] animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" aria-label="Loading team seats" />;
+  }
+
+  if (state === "upgrade") {
+    return (
+      <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
+        <div className="flex-1">
+          <p className="text-sm font-semibold" style={{ color: INK }}>Add your team</p>
+          <p className="text-[13px] mt-0.5" style={{ color: INK_MUTED }}>
+            Team seats are part of the Agency plan - up to 5 people sharing one workspace, jobs and pipeline.
+          </p>
+        </div>
+        <Link
+          href="/billing"
+          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ background: "var(--forest)", color: "white" }}
+        >
+          Upgrade to Agency
+        </Link>
+      </div>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
+        <div className="flex-1">
+          <p className="text-sm font-semibold" style={{ color: INK }}>Couldn&apos;t load team seats</p>
+          <p className="text-[13px] mt-0.5" style={{ color: INK_MUTED }}>{loadError}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setState("loading"); load(); }}
+          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   const full = usage.remaining <= 0;
+  const pct = Math.min(100, Math.round((usage.used / usage.limit) * 100));
 
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <p className="text-sm font-semibold" style={{ color: INK }}>Team seats</p>
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>
-            {usage.used} of {usage.limit} used{usage.pendingCount > 0 ? ` · ${usage.pendingCount} pending` : ""}
+          <p className="text-sm font-semibold" style={{ color: INK }}>Add a team member</p>
+          <p className="text-[12.5px] mt-0.5" style={{ color: INK_MUTED }}>
+            They&apos;ll get an email with a link to join your workspace.
           </p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-[12px] font-semibold tabular-nums" style={{ color: INK }}>
+            {usage.used} of {usage.limit} seats
+          </p>
+          <div className="w-24 h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "var(--mist)" }} aria-hidden="true">
+            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: full ? "var(--score-mid)" : "var(--forest)" }} />
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2 mb-2">
+      <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setError(""); }}
           placeholder="teammate@youragency.com"
           disabled={full || sending}
           aria-label="Teammate email address"
@@ -115,35 +198,62 @@ function TeamInvitePanel() {
         />
         <button
           type="submit"
-          disabled={full || sending}
+          disabled={full || sending || !email.trim()}
           className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
-          {sending ? "Sending…" : full ? "Seats full" : "Send invite"}
+          {sending ? "Sending…" : "Send invite"}
         </button>
       </form>
 
-      {error && (
-        <p role="alert" className="text-[12px] mb-2" style={{ color: "var(--score-low)" }}>{error}</p>
+      {full && (
+        <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>
+          All {usage.limit} seats are in use or pending. Cancel a pending invite or remove someone to free a seat.
+        </p>
       )}
+      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {notice && <p role="status" className="text-[12px] mt-2" style={{ color: "var(--forest)" }}>{notice}</p>}
 
       {usage.pendingInvites.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
-          {usage.pendingInvites.map((inv) => (
-            <li key={inv.id} className="flex items-center justify-between gap-3 text-[13px] py-1.5" style={{ color: INK_MUTED }}>
-              <span className="truncate">{inv.email}</span>
-              <button
-                type="button"
-                onClick={() => handleCancel(inv.id)}
-                disabled={cancellingId === inv.id}
-                className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-                style={{ color: INK_FAINT }}
-              >
-                {cancellingId === inv.id ? "Cancelling…" : "Cancel"}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: INK_FAINT }}>
+            Waiting to accept
+          </p>
+          <ul className="space-y-1">
+            {usage.pendingInvites.map((inv) => (
+              <li key={inv.id} className="flex items-center justify-between gap-3 text-[13px] py-1.5">
+                <span className="min-w-0">
+                  <span className="block truncate" style={{ color: INK }}>{inv.email}</span>
+                  {inv.createdAt && (
+                    <span className="block text-[11.5px]" style={{ color: INK_FAINT }}>
+                      Invited {new Date(inv.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </span>
+                  )}
+                </span>
+                <span className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleResend(inv)}
+                    disabled={busyId === inv.id}
+                    className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    style={{ color: "var(--forest)" }}
+                  >
+                    Resend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCancel(inv)}
+                    disabled={busyId === inv.id}
+                    className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    style={{ color: INK_FAINT }}
+                  >
+                    {busyId === inv.id ? "Working…" : "Cancel"}
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
@@ -281,7 +391,6 @@ export default function TeamPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setStatus("loading");
     fetchRecruiters()
       .then((r) => {
         if (cancelled) return;
@@ -296,7 +405,10 @@ export default function TeamPage() {
     };
   }, [reloadKey]);
 
-  const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setReloadKey((k) => k + 1);
+  }, []);
 
   async function handleRemove(recruiter) {
     if (!confirm(`Remove ${recruiter.name} from the team? They'll lose access to this workspace immediately, and this frees up their seat.`)) {

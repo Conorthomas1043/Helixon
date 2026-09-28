@@ -77,6 +77,18 @@ export async function getOrgSeatUsage(orgId) {
   };
 }
 
+// Where the invite email's link lands. Without a redirectUrl, Clerk sends
+// the invitee to its own hosted sign-up page instead of this app's
+// /signup - which is the only place that marks the new account as joining
+// via an invite (unsafeMetadata.viaOrgInvite, app/signup's ticket branch).
+// Signing up on the hosted page instead made the Clerk webhook treat them
+// as a brand-new customer: it created a separate, unpaid agency for them,
+// and they never joined the team that invited them.
+function inviteRedirectUrl() {
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.helixon.co.uk").replace(/\/+$/, "");
+  return `${site}/signup`;
+}
+
 export async function inviteToAgencyOrg({ orgId, inviterUserId, email }) {
   const client = await clerkClient();
   return client.organizations.createOrganizationInvitation({
@@ -84,6 +96,7 @@ export async function inviteToAgencyOrg({ orgId, inviterUserId, email }) {
     emailAddress: email,
     inviterUserId,
     role: "org:member",
+    redirectUrl: inviteRedirectUrl(),
   });
 }
 
