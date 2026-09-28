@@ -56,7 +56,12 @@ export async function GET(request) {
   if (status !== "all") query = query.eq("processing_status", status);
   if (recruiterId !== "all") query = query.eq("recruiter_id", recruiterId);
   if (jobId !== "all") query = query.eq("job_id", jobId);
-  if (search) query = query.ilike("full_name", `%${search}%`);
+  if (search) {
+    // Escape LIKE wildcards so "50%" is a literal search, not a wildcard
+    // scan, and cap the length - same treatment as the admin search routes.
+    const escaped = search.slice(0, 100).replace(/[\\%_]/g, "\\$&");
+    query = query.ilike("full_name", `%${escaped}%`);
+  }
   if (tagIds.length > 0) query = query.contains("tags", tagIds);
   if (scoreBand === "80+") query = query.gte("match_score", 80);
   else if (scoreBand === "60-79") query = query.gte("match_score", 60).lt("match_score", 80);

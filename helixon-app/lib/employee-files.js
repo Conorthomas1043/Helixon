@@ -97,8 +97,15 @@ export async function deleteFolder(employeeId, id) {
 }
 
 export async function uploadFile(employeeId, { folderId, name, buffer, mimeType, sizeBytes }) {
-  const cleanName = String(name).trim().slice(0, 255) || "file";
-  const storagePath = `${folderId || "root"}/${crypto.randomUUID()}-${cleanName}`;
+  const displayName = String(name).trim().slice(0, 255) || "file";
+  // The stored display name can still hold the original characters, but the
+  // storage KEY must not: a name like "../../x" (or one with slashes) would
+  // otherwise redirect the object out of its intended prefix once Supabase
+  // normalises the "..", letting one upload land on top of another key.
+  // Collapse every path separator and dot-run to a single "_" for the key.
+  const keyName =
+    displayName.replace(/[/\\]+/g, "_").replace(/\.{2,}/g, "_").replace(/^\.+/, "_") || "file";
+  const storagePath = `${folderId || "root"}/${crypto.randomUUID()}-${keyName}`;
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
@@ -113,7 +120,7 @@ export async function uploadFile(employeeId, { folderId, name, buffer, mimeType,
     .from("employee_files")
     .insert({
       folder_id: folderId || null,
-      name: cleanName,
+      name: displayName,
       storage_path: storagePath,
       size_bytes: sizeBytes,
       mime_type: mimeType || null,
