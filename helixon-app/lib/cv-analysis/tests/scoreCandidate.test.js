@@ -82,3 +82,12 @@ describe("scoreCandidate", () => {
     expect(result.match_score).toBe(100);
   });
 });
+
+describe("interview questions", () => {
+  it("probes listed-only required skills and never asks about gaps", async () => {
+    const result = await scoreCandidate(
+      candidate([{ skill: "Python", depth: "Expert" }, { skill: "SQL", depth: "Mentioned" }]), job, cv);
+    expect(result.interview_questions.some((q) => q.includes("SQL"))).toBe(true);
+    expect(result.interview_questions.some((q) => /gap/i.test(q))).toBe(false);
+  });
+});

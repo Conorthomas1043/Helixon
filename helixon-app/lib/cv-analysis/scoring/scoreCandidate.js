@@ -453,7 +453,10 @@ export default async function scoreCandidate(
 
     const questions = interviewQuestions({
         missing: missingRequired,
-        risk,
+        // Required skills the CV only lists - no work shown using them.
+        unsupported: requiredCredits
+            .filter((c) => c.basis === "Mentioned" || c.basis === "Unevidenced")
+            .map((c) => c.skill),
     });
 
 

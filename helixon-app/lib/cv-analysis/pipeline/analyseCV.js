@@ -191,12 +191,31 @@ export default async function analyseCV(
         ? buildBlindCvText(cvText, extracted)
         : cvText;
 
+    // Same for the structured candidate: scoring used to get the full
+    // extraction, so in blind mode the judgement prompt still received
+    // every employer name (positions[].employer), and result.summary -
+    // shown to the recruiter - opened with the candidate's real name.
+    const scoringCandidate = blind
+        ? {
+            ...extracted,
+            name: "Candidate",
+            current_employer: "",
+            positions: (extracted.positions || []).map((p) => ({ ...p, employer: "" })),
+        }
+        : extracted;
+
     const result =
         await scoreCandidate(
-            extracted,
+            scoringCandidate,
             jobParsed,
             scoringText
         );
+
+    // The stored result keeps the real extraction (the recruiter can
+    // unblind later); only what scoring saw and said was redacted.
+    if (blind) {
+        result.candidate = extracted;
+    }
 
 
 

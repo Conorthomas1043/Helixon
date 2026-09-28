@@ -22,6 +22,29 @@ function toArray(value) {
 }
 
 
+// Total years covered by dated positions, overlapping roles counted once.
+// Fallback for when extraction returns 0 years despite a dated work
+// history - which used to zero the experience component of the score.
+function yearsFromPositions(positions = []) {
+    const spans = positions
+        .map((p) => [Number(p.start_year) || 0, Number(p.end_year) || CURRENT_YEAR])
+        .filter(([start, end]) => start > 1950 && end >= start && end <= CURRENT_YEAR + 1)
+        .sort((a, b) => a[0] - b[0]);
+
+    let total = 0;
+    let [curStart, curEnd] = spans[0] || [0, 0];
+    for (const [start, end] of spans.slice(1)) {
+        if (start <= curEnd) {
+            curEnd = Math.max(curEnd, end);
+        } else {
+            total += curEnd - curStart;
+            [curStart, curEnd] = [start, end];
+        }
+    }
+    total += curEnd - curStart;
+    return Math.max(0, total);
+}
+
 export default function validateCandidate(candidate = {}) {
 
     if (!candidate || typeof candidate !== "object") {
@@ -200,7 +223,7 @@ export default function validateCandidate(candidate = {}) {
 
     candidate.years_experience =
 
-        Number(candidate.years_experience) || 0;
+        Number(candidate.years_experience) || yearsFromPositions(candidate.positions);
 
 
     // If the extractor didn't give us current_title/current_employer

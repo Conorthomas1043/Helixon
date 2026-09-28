@@ -65,7 +65,8 @@ Rules:
 - Preserve names exactly.
 - Extract all skills, including ones only mentioned in project/experience bullet points.
 - "skill_details" has one entry for every skill in "skills", using the same name. "depth" is "Expert" when the CV shows deep or sustained hands-on use (years of use, led/architected work with it), "Used" when it appears in the candidate's actual work or projects, and "Mentioned" when it is only listed (e.g. in a skills section) with no work that shows it. "years_used" and "last_used_year" come from the positions where the skill appears; use 0 if the CV doesn't show them.
-- Extract every job position, most recent first, with employer and start/end years.
+- Extract every job position, most recent first, with employer and start/end years. Use end_year 0 for a current role.
+- "years_experience" is total years of professional work, counted from the positions' dates with overlapping roles counted once (exclude education and pre-career part-time jobs unless relevant).
 - "current_title"/"current_employer" should match the candidate's most recent (or current) position.
 - Extract dates and employers.
 - Extract education, certifications (including expiry year if stated), and languages.

@@ -8,7 +8,7 @@ export const CURRENT_YEAR = new Date().getFullYear();
 
 export const CACHE_SIZE = 200;
 
-export const MAX_RETRIES = 3;
+export const MAX_RETRIES = 2;
 
 // Thinking effort per kind of Claude call (see anthropic/askClaude.js).
 // Extraction is transcription into a schema; judgement (fitJudgeEngine)
@@ -22,7 +22,9 @@ export const EXTRACTION_EFFORT = effortFromEnv("CV_EXTRACTION_EFFORT", "low");
 
 export const JUDGMENT_EFFORT = effortFromEnv("CV_JUDGMENT_EFFORT", "medium");
 
-export const DEFAULT_TIMEOUT = 60000;
+// Per attempt. A long CV's extraction returns a large JSON object (every
+// skill with its depth), which can take longer than a minute to generate.
+export const DEFAULT_TIMEOUT = 90000;
 
 // Achievement quality is judged on every analysis (fitJudgeEngine.js) but
 // used to carry no weight in the total; it now takes 10 points, from

@@ -6,7 +6,6 @@ import sanitise from "../utils/sanitise.js";
 
 import {
     MODEL,
-    MAX_RETRIES,
     EXTRACTION_EFFORT
 }
 from "../config.js";
@@ -16,39 +15,36 @@ from "../prompts/systemPrompt.js";
 
 import { debug, error, summarise } from "../utils/logger.js";
 
-import { sleep, backoff, retryable } from "../utils/retry.js";
+// Transient API failures (429, 5xx/529 overloaded, dropped connections,
+// timeouts) are retried by the Anthropic client itself - see anthropic.js
+// maxRetries - which also honours the API's retry-after header. This used
+// to wrap a second 3-retry loop around the client's own default 2 retries,
+// so one struggling request could be attempted up to 12 times and blow
+// straight through the route's time limit.
+//
+// What the client can't know to retry is a response that arrived fine but
+// isn't usable JSON. The model samples, so that's not deterministic - a
+// second attempt almost always parses - and one bad sample used to fail the
+// whole analysis with a 500.
+const MALFORMED_OUTPUT_RETRIES = 1;
 
-// retryable()/backoff()/sleep() existed as unused utilities before this -
-// defined, exported, never imported by anything that actually calls
-// Claude, so a single transient failure (rate limit, a 5xx from
-// Anthropic's side) had no recovery anywhere in the pipeline. Every
-// extraction and scoring call goes through this function, so wiring the
-// retry in here covers all of them at once.
 async function withRetry(fn) {
-    let lastError;
-
-    for (let attemptNum = 0; attemptNum <= MAX_RETRIES; attemptNum++) {
+    for (let attempt = 0; ; attempt++) {
         try {
             return await fn();
         } catch (err) {
-            lastError = err;
-
-            // err.status is set on Anthropic SDK API errors (rate limits,
-            // 5xx). Errors this function raises itself below (empty
-            // response, unparseable JSON) have no .status, so retryable()
-            // - which only matches 429/5xx - correctly treats those as
-            // not retryable and rethrows immediately rather than retrying
-            // a deterministic failure 3 extra times for nothing.
-            if (attemptNum >= MAX_RETRIES || !retryable(err?.status)) {
+            if (!err?.malformedOutput || attempt >= MALFORMED_OUTPUT_RETRIES) {
                 throw err;
             }
-
-            error(`Claude request failed (status ${err?.status}), retrying (attempt ${attemptNum + 1}/${MAX_RETRIES})`);
-            await sleep(backoff(attemptNum));
+            error(`Claude returned unusable output (${err.message}), retrying`);
         }
     }
+}
 
-    throw lastError;
+function malformed(message) {
+    const err = new Error(message);
+    err.malformedOutput = true;
+    return err;
 }
 
 
@@ -146,7 +142,7 @@ async function sendToClaude(userPrompt, effort){
         );
 
 
-        throw new Error(
+        throw malformed(
             "Claude returned empty response"
         );
 
@@ -189,7 +185,7 @@ async function sendToClaude(userPrompt, effort){
 
     if(!cleaned){
 
-        throw new Error(
+        throw malformed(
             "Claude response contained no JSON"
         );
 
@@ -228,7 +224,7 @@ async function sendToClaude(userPrompt, effort){
         );
 
 
-        throw new Error(
+        throw malformed(
             "Claude returned invalid JSON"
         );
 
