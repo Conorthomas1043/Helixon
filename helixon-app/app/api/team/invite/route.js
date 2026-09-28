@@ -71,6 +71,22 @@ export async function GET() {
   }
 }
 
+// Returns a 403/500 response unless userId is the org's owner ("org:admin"),
+// or null when they are.
+async function requireOrgOwner(orgId, userId) {
+  let role;
+  try {
+    role = await getOrgMemberRole({ orgId, userId });
+  } catch (err) {
+    console.error("[team/invite] Failed to look up caller role:", err.message);
+    return NextResponse.json({ error: "Couldn't verify your team role. Please try again." }, { status: 500 });
+  }
+  if (role !== "org:admin") {
+    return NextResponse.json({ error: "Only the workspace owner can manage the team." }, { status: 403 });
+  }
+  return null;
+}
+
 // POST: invite a teammate by email. Lazily creates the agency's Clerk
 // Organization on first use (see ensureAgencyOrg).
 export async function POST(request) {
@@ -116,6 +132,12 @@ export async function POST(request) {
     console.error("[team/invite] Failed to ensure org:", err.message);
     return NextResponse.json({ error: "Couldn't set up your team workspace. Please try again." }, { status: 500 });
   }
+
+  // Only the workspace owner manages the team. Invited teammates are
+  // "org:member" and share the same agency (and so pass every check above),
+  // so without this any of them could invite people or remove colleagues.
+  const ownerCheck = await requireOrgOwner(orgId, auth.userId);
+  if (ownerCheck) return ownerCheck;
 
   let usage;
   try {
@@ -180,6 +202,9 @@ export async function DELETE(request) {
   if (agencyError || !agency?.clerk_org_id) {
     return NextResponse.json({ error: "No team workspace found for your agency." }, { status: 404 });
   }
+
+  const ownerCheck = await requireOrgOwner(agency.clerk_org_id, auth.userId);
+  if (ownerCheck) return ownerCheck;
 
   if (invitationId) {
     try {

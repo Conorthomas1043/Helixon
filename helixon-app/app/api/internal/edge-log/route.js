@@ -42,7 +42,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { ip, ua, method, path, ts, referer, country, city, lat, lon } =
+    const { ip, ua, method, path, ts, referer, country, city, lat, lon, fetchSite } =
       body;
 
     const latitude = Number(lat);
@@ -76,6 +76,7 @@ export async function POST(request) {
       userAgent: ua,
       country,
       city,
+      fetchSite,
       alreadyBlocked: !!blockedRow,
     });
 

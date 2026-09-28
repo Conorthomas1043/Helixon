@@ -61,6 +61,7 @@ export async function enforceFirewallPolicy({
   userAgent,
   country,
   city,
+  fetchSite,
   alreadyBlocked,
 }) {
   if (alreadyBlocked || !ip || ip === "unknown") return Boolean(alreadyBlocked);
@@ -69,7 +70,19 @@ export async function enforceFirewallPolicy({
     const threat = scoreRequest({ path, user_agent: userAgent, method, blocked: false });
     if (threat.score < ALERT_THRESHOLD) return false;
 
-    if (threat.score >= BLOCK_THRESHOLD) {
+    // Never auto-block on a request another website made the visitor's
+    // browser send. Otherwise any page (or an email with an image) could
+    // embed <img src="https://helixon.co.uk/..%2f"> and get every visitor's
+    // IP - a customer, or a whole office behind one NAT - blocked until an
+    // admin notices. Browsers mark those requests Sec-Fetch-Site:
+    // cross-site/same-site, and a page can't forge the header. Scanners and
+    // hand-typed probes (no header, or "none"/"same-origin") are still
+    // blocked. A cross-site one is refused on its own (so a scanner can't
+    // dodge the policy just by sending the header) and flagged for a human,
+    // but the IP isn't put on the block list.
+    const inducedCrossSite = fetchSite === "cross-site" || fetchSite === "same-site";
+
+    if (threat.score >= BLOCK_THRESHOLD && !inducedCrossSite) {
       // Re-check rather than trusting the caller's alreadyBlocked=false:
       // closes the narrow race of two near-simultaneous requests from the
       // same brand-new attacking IP both trying to be "the" insert, so at
@@ -133,7 +146,7 @@ export async function enforceFirewallPolicy({
       }
     }
 
-    return false;
+    return inducedCrossSite && threat.score >= BLOCK_THRESHOLD;
   } catch (err) {
     console.error("[firewall] enforceFirewallPolicy error:", err.message);
     return Boolean(alreadyBlocked);

@@ -175,11 +175,20 @@ export async function POST(request) {
       );
     }
 
+    // Agency-controlled text going into a raw From header: strip the
+    // characters that end or restructure an address (quotes, angle
+    // brackets, commas, semicolons, colons, line breaks), so a company
+    // name like `x" <ceo@bank.example>` can't rewrite the sender.
     const fromName =
-      agency?.settings
-        ?.company_name ||
-      agency?.name ||
-      "Helixon";
+      String(
+        agency?.settings
+          ?.company_name ||
+        agency?.name ||
+        "Helixon"
+      )
+        .replace(/["<>,;:\\\r\n]/g, "")
+        .trim()
+        .slice(0, 80) || "Helixon";
 
     const {
       data: sent,
@@ -195,11 +204,15 @@ export async function POST(request) {
       });
 
     if (sendError) {
+      console.error(
+        "[send-email] Resend error:",
+        sendError.message
+      );
+
       return Response.json(
         {
           ok: false,
           error:
-            sendError.message ||
             "Failed to send email.",
         },
         { status: 502 }
@@ -241,7 +254,6 @@ export async function POST(request) {
       {
         ok: false,
         error:
-          error?.message ||
           "Unable to send email.",
       },
       { status: 500 }

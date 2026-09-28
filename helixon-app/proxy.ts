@@ -188,6 +188,10 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
           // https://vercel.com/docs/headers/request-headers
           lat: request.headers.get("x-vercel-ip-latitude") || "",
           lon: request.headers.get("x-vercel-ip-longitude") || "",
+          // Lets the firewall tell a request the visitor made themselves
+          // from one another site made their browser send (an <img>, a
+          // link) - see lib/security/firewall.js.
+          fetchSite: request.headers.get("sec-fetch-site") || "",
         }),
       }
     );

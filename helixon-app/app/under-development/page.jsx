@@ -65,7 +65,13 @@ function DiggingScene() {
 function GateForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("from") || "/";
+  // Same-site paths only. `from` is attacker-controllable, so without this a
+  // link like ?from=https://evil.example (or //evil.example, /\evil.example,
+  // javascript:...) turned the gate into an open redirect off our domain.
+  // Whitespace/control characters are refused too: browsers strip tabs and
+  // newlines from URLs, so "/\t/evil.example" would become "//evil.example".
+  const from = searchParams.get("from") || "";
+  const redirectTo = /^\/(?![/\\])[^\s\u0000-\u001f\u007f]*$/.test(from) ? from : "/";
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
