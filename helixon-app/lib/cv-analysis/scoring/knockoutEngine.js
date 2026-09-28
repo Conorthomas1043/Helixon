@@ -51,8 +51,13 @@ function heldCredentials(candidate) {
   return [
     ...certs.map((cert) => String(cert?.name || cert || "")),
     ...(Array.isArray(candidate.skills) ? candidate.skills.map(String) : []),
+    // What the CV states about right to work, transport, availability.
+    ...(Array.isArray(candidate.work_eligibility) ? candidate.work_eligibility.map(String) : []),
   ].filter(Boolean);
 }
+
+const stated = (candidate, pattern) =>
+  (Array.isArray(candidate.work_eligibility) ? candidate.work_eligibility : []).some((s) => pattern.test(String(s)));
 
 // "pass" when a held credential names the requirement (all its significant
 // words), "partial" when about half do, "none" otherwise.
@@ -83,6 +88,12 @@ const FIELD_ALIASES = {
   driving_license: "driving_licence",
   drivers_license: "driving_licence",
   driving: "driving_licence",
+  transport: "own_transport",
+  own_vehicle: "own_transport",
+  shifts: "availability",
+  shift_availability: "availability",
+  work_authorisation: "right_to_work",
+  work_authorization: "right_to_work",
   degree: "education",
   qualification_level: "education",
   dbs: "background_check",
@@ -153,6 +164,26 @@ function evaluateRule(rule, candidate) {
         !/\b(hgv|lgv|c\+e|class|cat|pcv|d1|c1)\b/.test(value) &&
         held.some((h) => /driv\w* licen[cs]e/i.test(h))
       ) {
+        return "pass";
+      }
+      return "unverifiable";
+    }
+
+    // Stated on many frontline CVs, rarely elsewhere - pass when the CV
+    // says so, otherwise the recruiter confirms. Never a fail.
+    case "right_to_work":
+      return stated(candidate, /right to work|eligible to work|work permit|settled status|british (citizen|passport)|indefinite leave|no (visa )?sponsorship (is )?required/i)
+        ? "pass" : "unverifiable";
+
+    case "own_transport":
+      return stated(candidate, /own (transport|vehicle|car)|driv\w* licen[cs]e|full (uk )?licen[cs]e/i) ? "pass" : "unverifiable";
+
+    case "availability": {
+      // Pass only when the stated availability covers what the role asks
+      // ("nights", "weekends", "immediate start").
+      const wantWords = significantWords(value).filter((w) => !["available", "availability", "to", "work", "must", "be", "able"].includes(w));
+      const statedText = (candidate.work_eligibility || []).join(" ");
+      if (wantWords.length && wantWords.every((w) => significantWords(statedText).some((s) => s.startsWith(w.replace(/s$/, ""))))) {
         return "pass";
       }
       return "unverifiable";

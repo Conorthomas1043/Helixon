@@ -21,6 +21,7 @@ export function fitJudgmentPrompt({ candidate, job, cvText, unmatchedSkills = []
     industry: job.industry || "",
     seniority: job.seniority || "",
     role_tier: job.role_tier || "",
+    role_type: job.role_type || "",
     required_skills: job.required_skills || [],
     min_years_experience: job.min_years_experience || 0,
   });
@@ -61,8 +62,8 @@ Scoring guidance:
 ${checkGuidance}
 Score anchors - use these so the same evidence always gets the same score:
 - industry_relevance: 90-100 same industry for most of their career; 70-80 same industry recently or an adjacent industry with directly transferable domain knowledge; 40-60 related/transferable but different domain; 10-30 unrelated domain; 50 if the job's industry isn't stated.
-- career_trajectory: 85-100 clear, repeated growth in scope or seniority; 60-80 some growth or a sensible lateral move to larger scope; 40-55 flat; 15-35 a clear, sustained step down in scope.
-- achievement_quality: 85-100 several specific, quantified, individually-owned results; 60-80 some quantified results or clearly-owned outcomes; 30-55 responsibilities with a few vague results; 0-25 duties only, no outcomes stated.
+- career_trajectory: 85-100 clear, repeated growth in scope or seniority; 60-80 some growth or a sensible lateral move to larger scope; 40-55 flat; 15-35 a clear, sustained step down in scope. Many occupations have no promotion ladder (operatives, drivers, cleaners, care workers, tradespeople, retail and hospitality staff): there, steady continuing work in the same kind of role, or growing responsibility within it (trusted with keys, training new starters, more complex jobs), scores 60-75 - never treat it as a lack of progression.
+- achievement_quality: 85-100 several specific, quantified, individually-owned results; 60-80 some quantified results or clearly-owned outcomes; 30-55 responsibilities with a few vague results; 0-25 duties only, no outcomes stated. For frontline roles (role_type "frontline"), recognition and reliability are achievements too - employee of the month, picking-rate or accuracy targets met, a clean driving record, being made a key-holder or trainer, positive inspection results.
 
 Ground every rationale in something actually present in the data below - never invent an achievement, employer, or fact that isn't there. If the data doesn't support a confident judgement, say so in the rationale and score conservatively (50) rather than guessing.
 

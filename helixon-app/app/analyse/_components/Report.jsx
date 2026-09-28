@@ -8,15 +8,22 @@ import { useEffect, useState } from "react";
 import { Card, Icon, Notice, cx } from "./ui";
 import { scoreTone } from "../_lib/analyse";
 
-// Salary estimates carry their own currency - the role can be anywhere.
-function fmtSalary(n, currency = "GBP") {
+// Salary estimates carry their own currency and pay period - the role can
+// be anywhere, and hourly work is shown as an hourly rate.
+function fmtSalary(n, currency = "GBP", period = "year") {
   if (!n) return "";
+  const hourlyOrDaily = period === "hour" || period === "day";
   try {
-    return new Intl.NumberFormat("en-GB", { style: "currency", currency, notation: "compact", maximumSignificantDigits: 3 }).format(n);
+    return new Intl.NumberFormat("en-GB", hourlyOrDaily
+      ? { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { style: "currency", currency, notation: "compact", maximumSignificantDigits: 3 }
+    ).format(n);
   } catch {
-    return `${currency} ${Math.round(n / 1000)}k`;
+    return hourlyOrDaily ? `${currency} ${n.toFixed(2)}` : `${currency} ${Math.round(n / 1000)}k`;
   }
 }
+
+const PAY_PERIOD_SUFFIX = { hour: " an hour", day: " a day" };
 
 function yearRange(start, end) {
   if (!start && !end) return "";
@@ -460,9 +467,11 @@ export default function Report({ result, roleLabel }) {
           )}
           {result.salary_estimate && (
             <div>
-              <p className="text-[12px] font-medium text-[var(--ink-soft)] mb-1">Estimated salary</p>
+              <p className="text-[12px] font-medium text-[var(--ink-soft)] mb-1">{result.salary_estimate.period === "hour" || result.salary_estimate.period === "day" ? "Estimated pay" : "Estimated salary"}</p>
               <p className="text-[22px] font-semibold tracking-tight text-[var(--ink)] tabular-nums" style={{ fontFamily: "var(--font-display)" }}>
-                {fmtSalary(result.salary_estimate.low, result.salary_estimate.currency)} – {fmtSalary(result.salary_estimate.high, result.salary_estimate.currency)}
+                {fmtSalary(result.salary_estimate.low, result.salary_estimate.currency, result.salary_estimate.period)}
+                {result.salary_estimate.high !== result.salary_estimate.low && <> – {fmtSalary(result.salary_estimate.high, result.salary_estimate.currency, result.salary_estimate.period)}</>}
+                {PAY_PERIOD_SUFFIX[result.salary_estimate.period] || ""}
                 {result.salary_estimate.seniority && <span className="text-[13px] font-normal text-[var(--ink-soft)] ml-2">{result.salary_estimate.seniority}</span>}
               </p>
               {result.salary_estimate.rationale && <p className="text-[12.5px] leading-relaxed text-[var(--ink-soft)] mt-1 max-w-[62ch]">{result.salary_estimate.rationale}</p>}

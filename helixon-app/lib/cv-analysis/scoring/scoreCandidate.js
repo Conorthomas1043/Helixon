@@ -1,4 +1,4 @@
-import { SCORE_WEIGHTS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
+import { scoreWeightsFor, FULL_CREDIT_YEARS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
 
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
@@ -249,7 +249,9 @@ export default async function scoreCandidate(
     const preferredCredits = matchedPreferred.map(creditFor);
 
 
-    // --- component scores, weighted per SCORE_WEIGHTS (out of 100) ---
+    // --- component scores, weighted per the role type's profile (out of 100) ---
+
+    const SCORE_WEIGHTS = scoreWeightsFor(job);
 
     // Each required skill counts by its importance to the role (Critical 3x
     // ... Low 0.5x, from job extraction) times how well the CV shows it.
@@ -277,8 +279,8 @@ export default async function scoreCandidate(
 
     const experienceScore = minYears > 0
         ? Math.round(Math.min(1, relevantYears / minYears) * SCORE_WEIGHTS.experience)
-        // no minimum stated - use 5 years as a reasonable full-credit baseline
-        : Math.round(Math.min(1, relevantYears / 5) * SCORE_WEIGHTS.experience);
+        // no minimum stated - full credit at a baseline for the kind of role
+        : Math.round(Math.min(1, relevantYears / (FULL_CREDIT_YEARS[job.role_type] || FULL_CREDIT_YEARS.professional)) * SCORE_WEIGHTS.experience);
 
     // Industry relevance, career trajectory and achievement quality are
     // judgement calls, not checklist items - see fitJudgeEngine.js for why
@@ -331,8 +333,20 @@ export default async function scoreCandidate(
         required: requiredSkills.length,
     });
 
+    // Risk is about the candidate, not their CV as a document: formatting
+    // problems (no dates, a sparse or plain layout - common for hourly and
+    // manual roles, where nobody needs a polished CV) lower confidence in
+    // this analysis, but they used to also push hiring risk up to "High"
+    // and add a red flag the candidate did nothing to earn.
+    const riskConfidence = calculateConfidence({
+        evidence,
+        cvIssues: [],
+        matched: matchedRequired.length,
+        required: requiredSkills.length,
+    }).confidence;
+
     const risk = hiringRisk({
-        confidence: confidenceResult.confidence,
+        confidence: riskConfidence,
         unsupportedSkills: unsupported.length,
         expiredCerts: certs.expired.length,
     });

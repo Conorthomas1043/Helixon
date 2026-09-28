@@ -7,11 +7,12 @@ const LEVELS=[
 [8,["chief","ceo","cfo","coo","cto","cmo","founder","owner","managing director","partner","president"]],
 [7,["director","vice president","vp","head of"]],
 [6,["general manager","senior manager","principal"]],
-[4,["assistant manager","deputy manager","team leader","team lead","supervisor","charge nurse","ward sister","foreman","chef de partie"]],
+[4,["assistant manager","deputy manager","team leader","team lead","supervisor","charge nurse","ward sister","foreman","chef de partie","shift leader","shift lead","chargehand","charge hand","senior carer","senior care assistant","lead hand"]],
 [5,["manager","head chef","sous chef","matron"]],
 [4,["lead"]],
 [3,["senior","specialist","consultant"]],
-[1,["assistant","junior","graduate","trainee","apprentice","commis"]],
+[3,["skilled","qualified","journeyman","multi skilled","approved electrician"]],
+[1,["assistant","junior","graduate","trainee","apprentice","commis","kitchen porter","porter","general operative","labourer","cleaner","picker","packer"]],
 [0,["intern","internship","work experience","placement"]]
 ];
 

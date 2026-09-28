@@ -1,136 +1,1308 @@
 {
-  "javascript": { "synonyms": ["ecmascript", "es6", "es2015", "vanilla js"] },
-  "node": { "synonyms": ["nodejs", "node.js"] },
-  "typescript": { "synonyms": ["ts"] },
-  "react": { "synonyms": ["reactjs", "react.js"], "includes": ["redux", "next", "nextjs", "next.js", "react native"] },
-  "angular": { "synonyms": ["angularjs", "angular2"] },
-  "vue": { "synonyms": ["vuejs", "vue.js"], "includes": ["nuxt", "nuxtjs"] },
-  "python": { "includes": ["django", "flask", "fastapi", "pandas"] },
-  "java": { "includes": ["spring", "spring boot"] },
-  "csharp": { "synonyms": ["c#"], "includes": [".net", "dotnet", "asp.net"] },
-  "aws": { "synonyms": ["amazon web services"], "includes": ["lambda", "ec2", "ecs", "s3", "iam", "cloudformation", "cdk"] },
-  "azure": { "synonyms": ["microsoft azure"], "includes": ["azure functions", "aks", "cosmos db"] },
-  "gcp": { "synonyms": ["google cloud", "google cloud platform"], "includes": ["bigquery", "gke"] },
-  "docker": { "synonyms": ["containerisation", "containerization"], "includes": ["containers"] },
-  "kubernetes": { "synonyms": ["k8s"] },
-  "sql": { "includes": ["mysql", "postgres", "postgresql", "tsql", "sql server", "oracle database"] },
-  "postgresql": { "synonyms": ["postgres"] },
-  "nosql": { "includes": ["mongodb", "dynamodb", "cassandra"] },
-  "ci_cd": { "synonyms": ["ci/cd", "continuous integration", "continuous deployment", "continuous delivery"], "includes": ["jenkins", "github actions", "gitlab ci"] },
-  "git": { "synonyms": ["version control"], "includes": ["github", "gitlab", "bitbucket"] },
-  "machine learning": { "synonyms": ["ml"], "includes": ["deep learning", "pytorch", "tensorflow", "scikit-learn"] },
-  "data analysis": { "synonyms": ["data analytics", "analytics"], "includes": ["power bi", "tableau"] },
-  "business intelligence": { "synonyms": ["bi"], "includes": ["power bi", "tableau", "looker", "qlik"] },
-
-  "business development": { "synonyms": ["bd", "bizdev", "new business development", "new business"] },
-  "b2b sales": { "synonyms": ["business to business sales", "b2b", "enterprise sales", "corporate sales"] },
-  "b2c sales": { "synonyms": ["business to consumer sales", "consumer sales", "direct sales"] },
-  "cold calling": { "synonyms": ["outbound calling", "telesales", "outbound sales calls", "cold calls"] },
-  "prospecting": { "synonyms": ["outbound prospecting", "lead generation", "lead gen", "pipeline generation"] },
-  "account management": { "synonyms": ["key account management", "client account management", "kam"] },
-  "sales": { "includes": ["b2b sales", "b2c sales", "field sales", "inside sales", "solution selling", "consultative selling"] },
-  "negotiation": { "synonyms": ["negotiating", "contract negotiation", "commercial negotiation"] },
-  "crm": { "synonyms": ["customer relationship management"], "includes": ["salesforce", "hubspot", "dynamics 365", "microsoft dynamics", "pipedrive", "zoho crm"] },
-  "pipeline management": { "synonyms": ["sales pipeline management", "forecasting pipeline"] },
-  "customer success": { "synonyms": ["client success", "csm", "customer success management"] },
-  "customer service": { "synonyms": ["customer care", "customer support", "client services", "customer experience"] },
-  "complaint handling": { "synonyms": ["complaints handling", "complaint resolution", "handling complaints"] },
-  "call centre": { "synonyms": ["call center", "contact centre", "contact center"] },
-
-  "digital marketing": { "includes": ["seo", "ppc", "paid social", "email marketing", "content marketing", "google ads"] },
-  "seo": { "synonyms": ["search engine optimisation", "search engine optimization"] },
-  "ppc": { "synonyms": ["pay per click", "paid search", "sem", "search engine marketing"], "includes": ["google ads"] },
-  "social media": { "synonyms": ["social media marketing", "social media management"], "includes": ["paid social"] },
-  "copywriting": { "synonyms": ["copy writing", "content writing"] },
-  "public relations": { "synonyms": ["pr", "media relations"] },
-
-  "accounting": { "synonyms": ["accountancy"], "includes": ["bookkeeping", "management accounts", "financial reporting", "reconciliations"] },
-  "bookkeeping": { "synonyms": ["book keeping"] },
-  "accounts payable": { "synonyms": ["purchase ledger"] },
-  "accounts receivable": { "synonyms": ["sales ledger"] },
-  "payroll": { "synonyms": ["payroll processing", "payroll administration"] },
-  "financial modelling": { "synonyms": ["financial modeling"] },
-  "budgeting": { "synonyms": ["budget management", "budget control"], "includes": ["forecasting"] },
-  "p&l": { "synonyms": ["p&l management", "profit and loss", "p and l"] },
-  "audit": { "synonyms": ["auditing"], "includes": ["internal audit", "external audit"] },
-  "accounting software": { "includes": ["xero", "sage", "quickbooks", "netsuite", "sap"] },
-  "aca": { "synonyms": ["aca qualified", "icaew chartered accountant"] },
-  "acca": { "synonyms": ["acca qualified"] },
-  "cima": { "synonyms": ["cima qualified"] },
-
-  "recruitment": { "synonyms": ["recruiting", "talent acquisition", "hiring"], "includes": ["resourcing", "headhunting", "candidate sourcing"] },
-  "employee relations": { "synonyms": ["people relations"] },
-  "hr": { "synonyms": ["human resources", "people operations", "personnel"] },
-  "learning and development": { "synonyms": ["l&d", "training and development", "staff training"] },
-  "onboarding": { "synonyms": ["employee onboarding", "inductions", "staff inductions"] },
-  "cipd": { "synonyms": ["cipd qualified"] },
-
-  "project management": { "synonyms": ["project delivery", "managing projects"], "includes": ["prince2", "pmp", "agile", "scrum", "waterfall"] },
-  "agile": { "synonyms": ["agile methodology", "agile methodologies"], "includes": ["scrum", "kanban"] },
-  "stakeholder management": { "synonyms": ["stakeholder engagement", "managing stakeholders"] },
-  "team leadership": { "synonyms": ["team management", "people management", "line management", "leading teams", "managing teams", "staff management"] },
-  "supervision": { "synonyms": ["supervising staff", "shift supervision"] },
-  "operations management": { "synonyms": ["operational management"] },
-  "process improvement": { "synonyms": ["continuous improvement", "business process improvement"], "includes": ["lean", "six sigma", "kaizen"] },
-  "supply chain": { "synonyms": ["supply chain management", "scm"], "includes": ["procurement", "logistics", "inventory management"] },
-  "procurement": { "synonyms": ["purchasing", "buying"] },
-  "inventory management": { "synonyms": ["stock control", "stock management", "inventory control"] },
-  "logistics": { "includes": ["warehousing", "distribution", "transport planning", "freight"] },
-  "health and safety": { "synonyms": ["h&s", "hse", "occupational health and safety", "ehs"], "includes": ["nebosh", "iosh", "risk assessment"] },
-  "microsoft office": { "synonyms": ["ms office", "office 365", "microsoft 365"], "includes": ["excel", "word", "powerpoint", "outlook"] },
-  "excel": { "synonyms": ["microsoft excel", "ms excel", "spreadsheets"] },
-  "data entry": { "synonyms": ["data input", "data processing"] },
-  "administration": { "synonyms": ["admin", "office administration", "administrative support"] },
-  "diary management": { "synonyms": ["calendar management", "scheduling"] },
-
-  "patient care": { "synonyms": ["direct patient care", "caring for patients"] },
-  "personal care": { "synonyms": ["care work", "caregiving", "domiciliary care", "home care"] },
-  "safeguarding": { "synonyms": ["safeguarding adults", "safeguarding children", "child protection"] },
-  "medication administration": { "synonyms": ["administering medication", "medicines management", "medication management"] },
-  "first aid": { "synonyms": ["first aider", "first aid at work"] },
-  "nmc registration": { "synonyms": ["nmc registered", "nmc pin", "registered nurse", "rgn", "rmn"] },
-  "phlebotomy": { "synonyms": ["venepuncture", "blood taking"] },
-  "clinical documentation": { "synonyms": ["clinical records", "patient records", "care plans", "care planning"] },
-
-  "teaching": { "synonyms": ["classroom teaching", "delivering lessons"], "includes": ["lesson planning", "classroom management"] },
-  "qts": { "synonyms": ["qualified teacher status"] },
-  "sen": { "synonyms": ["send", "special educational needs"] },
-  "tutoring": { "synonyms": ["tuition", "private tutoring"] },
-
-  "food safety": { "synonyms": ["food hygiene", "food safety and hygiene"], "includes": ["haccp", "food hygiene level 2", "food hygiene level 3"] },
-  "cash handling": { "synonyms": ["handling cash", "cashier", "till operation", "epos"] },
-  "front of house": { "synonyms": ["foh", "guest services"] },
-  "bartending": { "synonyms": ["bar work", "bar tending", "mixology"] },
-  "visual merchandising": { "synonyms": ["merchandising"] },
-  "retail": { "includes": ["visual merchandising", "cash handling", "stock replenishment"] },
-
-  "forklift": { "synonyms": ["forklift operation", "forklift driving", "flt", "counterbalance", "reach truck"] },
-  "driving licence": { "synonyms": ["driving license", "full uk driving licence", "full driving licence", "clean driving licence"] },
-  "hgv": { "synonyms": ["hgv class 1", "hgv class 2", "c+e", "lgv", "cat c", "cat ce"] },
-  "cscs": { "synonyms": ["cscs card"] },
-  "electrical installation": { "synonyms": ["electrical installations", "wiring"], "includes": ["18th edition", "17th edition"] },
-  "gas safe": { "synonyms": ["gas safe registered", "gas safe engineer"] },
-  "plumbing": { "synonyms": ["plumber"] },
-  "carpentry": { "synonyms": ["joinery", "carpenter", "joiner"] },
-  "cnc": { "synonyms": ["cnc machining", "cnc operation", "cnc programming"] },
-  "autocad": { "synonyms": ["auto cad"] },
-  "sia licence": { "synonyms": ["sia license", "sia door supervisor", "sia security guarding"] },
-
-  "legal research": { "synonyms": ["case research"] },
-  "conveyancing": { "synonyms": ["residential conveyancing", "commercial conveyancing"] },
-  "litigation": { "synonyms": ["dispute resolution", "civil litigation"] },
-  "contract drafting": { "synonyms": ["drafting contracts", "contract preparation"] },
-  "compliance": { "synonyms": ["regulatory compliance"], "includes": ["gdpr", "aml", "kyc", "fca"] },
-  "aml": { "synonyms": ["anti money laundering", "anti-money laundering"] },
-
-  "graphic design": { "includes": ["adobe photoshop", "adobe illustrator", "adobe indesign", "figma", "canva"] },
-  "adobe creative suite": { "synonyms": ["adobe creative cloud"], "includes": ["adobe photoshop", "adobe illustrator", "adobe indesign", "adobe premiere pro", "after effects"] },
-  "video editing": { "includes": ["adobe premiere pro", "final cut pro", "davinci resolve", "after effects"] },
-  "ux design": { "synonyms": ["user experience design", "ux"], "includes": ["user research", "wireframing", "prototyping", "figma"] },
-
-  "communication": { "synonyms": ["communication skills", "written communication", "verbal communication", "interpersonal skills"] },
-  "presentation skills": { "synonyms": ["presenting", "public speaking", "presentations"] },
-  "problem solving": { "synonyms": ["problem-solving", "troubleshooting"] },
-  "time management": { "synonyms": ["prioritisation", "prioritization", "organisational skills", "organizational skills"] },
-  "coaching": { "synonyms": ["mentoring", "staff coaching"] }
+  "javascript": {
+    "synonyms": [
+      "ecmascript",
+      "es6",
+      "es2015",
+      "vanilla js"
+    ]
+  },
+  "node": {
+    "synonyms": [
+      "nodejs",
+      "node.js"
+    ]
+  },
+  "typescript": {
+    "synonyms": [
+      "ts"
+    ]
+  },
+  "react": {
+    "synonyms": [
+      "reactjs",
+      "react.js"
+    ],
+    "includes": [
+      "redux",
+      "next",
+      "nextjs",
+      "next.js",
+      "react native"
+    ]
+  },
+  "angular": {
+    "synonyms": [
+      "angularjs",
+      "angular2"
+    ]
+  },
+  "vue": {
+    "synonyms": [
+      "vuejs",
+      "vue.js"
+    ],
+    "includes": [
+      "nuxt",
+      "nuxtjs"
+    ]
+  },
+  "python": {
+    "includes": [
+      "django",
+      "flask",
+      "fastapi",
+      "pandas"
+    ]
+  },
+  "java": {
+    "includes": [
+      "spring",
+      "spring boot"
+    ]
+  },
+  "csharp": {
+    "synonyms": [
+      "c#"
+    ],
+    "includes": [
+      ".net",
+      "dotnet",
+      "asp.net"
+    ]
+  },
+  "aws": {
+    "synonyms": [
+      "amazon web services"
+    ],
+    "includes": [
+      "lambda",
+      "ec2",
+      "ecs",
+      "s3",
+      "iam",
+      "cloudformation",
+      "cdk"
+    ]
+  },
+  "azure": {
+    "synonyms": [
+      "microsoft azure"
+    ],
+    "includes": [
+      "azure functions",
+      "aks",
+      "cosmos db"
+    ]
+  },
+  "gcp": {
+    "synonyms": [
+      "google cloud",
+      "google cloud platform"
+    ],
+    "includes": [
+      "bigquery",
+      "gke"
+    ]
+  },
+  "docker": {
+    "synonyms": [
+      "containerisation",
+      "containerization"
+    ],
+    "includes": [
+      "containers"
+    ]
+  },
+  "kubernetes": {
+    "synonyms": [
+      "k8s"
+    ]
+  },
+  "sql": {
+    "includes": [
+      "mysql",
+      "postgres",
+      "postgresql",
+      "tsql",
+      "sql server",
+      "oracle database"
+    ]
+  },
+  "postgresql": {
+    "synonyms": [
+      "postgres"
+    ]
+  },
+  "nosql": {
+    "includes": [
+      "mongodb",
+      "dynamodb",
+      "cassandra"
+    ]
+  },
+  "ci_cd": {
+    "synonyms": [
+      "ci/cd",
+      "continuous integration",
+      "continuous deployment",
+      "continuous delivery"
+    ],
+    "includes": [
+      "jenkins",
+      "github actions",
+      "gitlab ci"
+    ]
+  },
+  "git": {
+    "synonyms": [
+      "version control"
+    ],
+    "includes": [
+      "github",
+      "gitlab",
+      "bitbucket"
+    ]
+  },
+  "machine learning": {
+    "synonyms": [
+      "ml"
+    ],
+    "includes": [
+      "deep learning",
+      "pytorch",
+      "tensorflow",
+      "scikit-learn"
+    ]
+  },
+  "data analysis": {
+    "synonyms": [
+      "data analytics",
+      "analytics"
+    ],
+    "includes": [
+      "power bi",
+      "tableau"
+    ]
+  },
+  "business intelligence": {
+    "synonyms": [
+      "bi"
+    ],
+    "includes": [
+      "power bi",
+      "tableau",
+      "looker",
+      "qlik"
+    ]
+  },
+  "business development": {
+    "synonyms": [
+      "bd",
+      "bizdev",
+      "new business development",
+      "new business"
+    ]
+  },
+  "b2b sales": {
+    "synonyms": [
+      "business to business sales",
+      "b2b",
+      "enterprise sales",
+      "corporate sales"
+    ]
+  },
+  "b2c sales": {
+    "synonyms": [
+      "business to consumer sales",
+      "consumer sales",
+      "direct sales"
+    ]
+  },
+  "cold calling": {
+    "synonyms": [
+      "outbound calling",
+      "telesales",
+      "outbound sales calls",
+      "cold calls"
+    ]
+  },
+  "prospecting": {
+    "synonyms": [
+      "outbound prospecting",
+      "lead generation",
+      "lead gen",
+      "pipeline generation"
+    ]
+  },
+  "account management": {
+    "synonyms": [
+      "key account management",
+      "client account management",
+      "kam"
+    ]
+  },
+  "sales": {
+    "includes": [
+      "b2b sales",
+      "b2c sales",
+      "field sales",
+      "inside sales",
+      "solution selling",
+      "consultative selling"
+    ]
+  },
+  "negotiation": {
+    "synonyms": [
+      "negotiating",
+      "contract negotiation",
+      "commercial negotiation"
+    ]
+  },
+  "crm": {
+    "synonyms": [
+      "customer relationship management"
+    ],
+    "includes": [
+      "salesforce",
+      "hubspot",
+      "dynamics 365",
+      "microsoft dynamics",
+      "pipedrive",
+      "zoho crm"
+    ]
+  },
+  "pipeline management": {
+    "synonyms": [
+      "sales pipeline management",
+      "forecasting pipeline"
+    ]
+  },
+  "customer success": {
+    "synonyms": [
+      "client success",
+      "csm",
+      "customer success management"
+    ]
+  },
+  "customer service": {
+    "synonyms": [
+      "customer care",
+      "customer support",
+      "client services",
+      "customer experience"
+    ]
+  },
+  "complaint handling": {
+    "synonyms": [
+      "complaints handling",
+      "complaint resolution",
+      "handling complaints"
+    ]
+  },
+  "call centre": {
+    "synonyms": [
+      "call center",
+      "contact centre",
+      "contact center"
+    ]
+  },
+  "digital marketing": {
+    "includes": [
+      "seo",
+      "ppc",
+      "paid social",
+      "email marketing",
+      "content marketing",
+      "google ads"
+    ]
+  },
+  "seo": {
+    "synonyms": [
+      "search engine optimisation",
+      "search engine optimization"
+    ]
+  },
+  "ppc": {
+    "synonyms": [
+      "pay per click",
+      "paid search",
+      "sem",
+      "search engine marketing"
+    ],
+    "includes": [
+      "google ads"
+    ]
+  },
+  "social media": {
+    "synonyms": [
+      "social media marketing",
+      "social media management"
+    ],
+    "includes": [
+      "paid social"
+    ]
+  },
+  "copywriting": {
+    "synonyms": [
+      "copy writing",
+      "content writing"
+    ]
+  },
+  "public relations": {
+    "synonyms": [
+      "pr",
+      "media relations"
+    ]
+  },
+  "accounting": {
+    "synonyms": [
+      "accountancy"
+    ],
+    "includes": [
+      "bookkeeping",
+      "management accounts",
+      "financial reporting",
+      "reconciliations"
+    ]
+  },
+  "bookkeeping": {
+    "synonyms": [
+      "book keeping"
+    ]
+  },
+  "accounts payable": {
+    "synonyms": [
+      "purchase ledger"
+    ]
+  },
+  "accounts receivable": {
+    "synonyms": [
+      "sales ledger"
+    ]
+  },
+  "payroll": {
+    "synonyms": [
+      "payroll processing",
+      "payroll administration"
+    ]
+  },
+  "financial modelling": {
+    "synonyms": [
+      "financial modeling"
+    ]
+  },
+  "budgeting": {
+    "synonyms": [
+      "budget management",
+      "budget control"
+    ],
+    "includes": [
+      "forecasting"
+    ]
+  },
+  "p&l": {
+    "synonyms": [
+      "p&l management",
+      "profit and loss",
+      "p and l"
+    ]
+  },
+  "audit": {
+    "synonyms": [
+      "auditing"
+    ],
+    "includes": [
+      "internal audit",
+      "external audit"
+    ]
+  },
+  "accounting software": {
+    "includes": [
+      "xero",
+      "sage",
+      "quickbooks",
+      "netsuite",
+      "sap"
+    ]
+  },
+  "aca": {
+    "synonyms": [
+      "aca qualified",
+      "icaew chartered accountant"
+    ]
+  },
+  "acca": {
+    "synonyms": [
+      "acca qualified"
+    ]
+  },
+  "cima": {
+    "synonyms": [
+      "cima qualified"
+    ]
+  },
+  "recruitment": {
+    "synonyms": [
+      "recruiting",
+      "talent acquisition",
+      "hiring"
+    ],
+    "includes": [
+      "resourcing",
+      "headhunting",
+      "candidate sourcing"
+    ]
+  },
+  "employee relations": {
+    "synonyms": [
+      "people relations"
+    ]
+  },
+  "hr": {
+    "synonyms": [
+      "human resources",
+      "people operations",
+      "personnel"
+    ]
+  },
+  "learning and development": {
+    "synonyms": [
+      "l&d",
+      "training and development",
+      "staff training"
+    ]
+  },
+  "onboarding": {
+    "synonyms": [
+      "employee onboarding",
+      "inductions",
+      "staff inductions"
+    ]
+  },
+  "cipd": {
+    "synonyms": [
+      "cipd qualified"
+    ]
+  },
+  "project management": {
+    "synonyms": [
+      "project delivery",
+      "managing projects"
+    ],
+    "includes": [
+      "prince2",
+      "pmp",
+      "agile",
+      "scrum",
+      "waterfall"
+    ]
+  },
+  "agile": {
+    "synonyms": [
+      "agile methodology",
+      "agile methodologies"
+    ],
+    "includes": [
+      "scrum",
+      "kanban"
+    ]
+  },
+  "stakeholder management": {
+    "synonyms": [
+      "stakeholder engagement",
+      "managing stakeholders"
+    ]
+  },
+  "team leadership": {
+    "synonyms": [
+      "team management",
+      "people management",
+      "line management",
+      "leading teams",
+      "managing teams",
+      "staff management"
+    ]
+  },
+  "supervision": {
+    "synonyms": [
+      "supervising staff",
+      "shift supervision"
+    ]
+  },
+  "operations management": {
+    "synonyms": [
+      "operational management"
+    ]
+  },
+  "process improvement": {
+    "synonyms": [
+      "continuous improvement",
+      "business process improvement"
+    ],
+    "includes": [
+      "lean",
+      "six sigma",
+      "kaizen"
+    ]
+  },
+  "supply chain": {
+    "synonyms": [
+      "supply chain management",
+      "scm"
+    ],
+    "includes": [
+      "procurement",
+      "logistics",
+      "inventory management"
+    ]
+  },
+  "procurement": {
+    "synonyms": [
+      "purchasing",
+      "buying"
+    ]
+  },
+  "inventory management": {
+    "synonyms": [
+      "stock control",
+      "stock management",
+      "inventory control"
+    ]
+  },
+  "logistics": {
+    "includes": [
+      "warehousing",
+      "distribution",
+      "transport planning",
+      "freight"
+    ]
+  },
+  "health and safety": {
+    "synonyms": [
+      "h&s",
+      "hse",
+      "occupational health and safety",
+      "ehs"
+    ],
+    "includes": [
+      "nebosh",
+      "iosh",
+      "risk assessment"
+    ]
+  },
+  "microsoft office": {
+    "synonyms": [
+      "ms office",
+      "office 365",
+      "microsoft 365"
+    ],
+    "includes": [
+      "excel",
+      "word",
+      "powerpoint",
+      "outlook"
+    ]
+  },
+  "excel": {
+    "synonyms": [
+      "microsoft excel",
+      "ms excel",
+      "spreadsheets"
+    ]
+  },
+  "data entry": {
+    "synonyms": [
+      "data input",
+      "data processing"
+    ]
+  },
+  "administration": {
+    "synonyms": [
+      "admin",
+      "office administration",
+      "administrative support"
+    ]
+  },
+  "diary management": {
+    "synonyms": [
+      "calendar management",
+      "scheduling"
+    ]
+  },
+  "patient care": {
+    "synonyms": [
+      "direct patient care",
+      "caring for patients"
+    ]
+  },
+  "personal care": {
+    "synonyms": [
+      "care work",
+      "caregiving",
+      "domiciliary care",
+      "home care"
+    ]
+  },
+  "safeguarding": {
+    "synonyms": [
+      "safeguarding adults",
+      "safeguarding children",
+      "child protection"
+    ]
+  },
+  "medication administration": {
+    "synonyms": [
+      "administering medication",
+      "medicines management",
+      "medication management"
+    ]
+  },
+  "first aid": {
+    "synonyms": [
+      "first aider",
+      "first aid at work"
+    ]
+  },
+  "nmc registration": {
+    "synonyms": [
+      "nmc registered",
+      "nmc pin",
+      "registered nurse",
+      "rgn",
+      "rmn"
+    ]
+  },
+  "phlebotomy": {
+    "synonyms": [
+      "venepuncture",
+      "blood taking"
+    ]
+  },
+  "clinical documentation": {
+    "synonyms": [
+      "clinical records",
+      "patient records",
+      "care plans",
+      "care planning"
+    ]
+  },
+  "teaching": {
+    "synonyms": [
+      "classroom teaching",
+      "delivering lessons"
+    ],
+    "includes": [
+      "lesson planning",
+      "classroom management"
+    ]
+  },
+  "qts": {
+    "synonyms": [
+      "qualified teacher status"
+    ]
+  },
+  "sen": {
+    "synonyms": [
+      "send",
+      "special educational needs"
+    ]
+  },
+  "tutoring": {
+    "synonyms": [
+      "tuition",
+      "private tutoring"
+    ]
+  },
+  "food safety": {
+    "synonyms": [
+      "food hygiene",
+      "food safety and hygiene"
+    ],
+    "includes": [
+      "haccp",
+      "food hygiene level 2",
+      "food hygiene level 3"
+    ]
+  },
+  "cash handling": {
+    "synonyms": [
+      "handling cash",
+      "cashier",
+      "till operation",
+      "epos"
+    ]
+  },
+  "front of house": {
+    "synonyms": [
+      "foh",
+      "guest services"
+    ]
+  },
+  "bartending": {
+    "synonyms": [
+      "bar work",
+      "bar tending",
+      "mixology"
+    ]
+  },
+  "visual merchandising": {
+    "synonyms": [
+      "merchandising"
+    ]
+  },
+  "retail": {
+    "includes": [
+      "visual merchandising",
+      "cash handling",
+      "stock replenishment"
+    ]
+  },
+  "forklift": {
+    "synonyms": [
+      "forklift operation",
+      "forklift driving",
+      "flt",
+      "counterbalance",
+      "reach truck"
+    ]
+  },
+  "driving licence": {
+    "synonyms": [
+      "driving license",
+      "full uk driving licence",
+      "full driving licence",
+      "clean driving licence"
+    ]
+  },
+  "hgv": {
+    "synonyms": [
+      "hgv class 1",
+      "hgv class 2",
+      "c+e",
+      "lgv",
+      "cat c",
+      "cat ce"
+    ]
+  },
+  "cscs": {
+    "synonyms": [
+      "cscs card"
+    ]
+  },
+  "electrical installation": {
+    "synonyms": [
+      "electrical installations",
+      "wiring"
+    ],
+    "includes": [
+      "18th edition",
+      "17th edition"
+    ]
+  },
+  "gas safe": {
+    "synonyms": [
+      "gas safe registered",
+      "gas safe engineer"
+    ]
+  },
+  "plumbing": {
+    "synonyms": [
+      "plumber"
+    ]
+  },
+  "carpentry": {
+    "synonyms": [
+      "joinery",
+      "carpenter",
+      "joiner"
+    ]
+  },
+  "cnc": {
+    "synonyms": [
+      "cnc machining",
+      "cnc operation",
+      "cnc programming"
+    ]
+  },
+  "autocad": {
+    "synonyms": [
+      "auto cad"
+    ]
+  },
+  "sia licence": {
+    "synonyms": [
+      "sia license",
+      "sia door supervisor",
+      "sia security guarding"
+    ]
+  },
+  "legal research": {
+    "synonyms": [
+      "case research"
+    ]
+  },
+  "conveyancing": {
+    "synonyms": [
+      "residential conveyancing",
+      "commercial conveyancing"
+    ]
+  },
+  "litigation": {
+    "synonyms": [
+      "dispute resolution",
+      "civil litigation"
+    ]
+  },
+  "contract drafting": {
+    "synonyms": [
+      "drafting contracts",
+      "contract preparation"
+    ]
+  },
+  "compliance": {
+    "synonyms": [
+      "regulatory compliance"
+    ],
+    "includes": [
+      "gdpr",
+      "aml",
+      "kyc",
+      "fca"
+    ]
+  },
+  "aml": {
+    "synonyms": [
+      "anti money laundering",
+      "anti-money laundering"
+    ]
+  },
+  "graphic design": {
+    "includes": [
+      "adobe photoshop",
+      "adobe illustrator",
+      "adobe indesign",
+      "figma",
+      "canva"
+    ]
+  },
+  "adobe creative suite": {
+    "synonyms": [
+      "adobe creative cloud"
+    ],
+    "includes": [
+      "adobe photoshop",
+      "adobe illustrator",
+      "adobe indesign",
+      "adobe premiere pro",
+      "after effects"
+    ]
+  },
+  "video editing": {
+    "includes": [
+      "adobe premiere pro",
+      "final cut pro",
+      "davinci resolve",
+      "after effects"
+    ]
+  },
+  "ux design": {
+    "synonyms": [
+      "user experience design",
+      "ux"
+    ],
+    "includes": [
+      "user research",
+      "wireframing",
+      "prototyping",
+      "figma"
+    ]
+  },
+  "communication": {
+    "synonyms": [
+      "communication skills",
+      "written communication",
+      "verbal communication",
+      "interpersonal skills"
+    ]
+  },
+  "presentation skills": {
+    "synonyms": [
+      "presenting",
+      "public speaking",
+      "presentations"
+    ]
+  },
+  "problem solving": {
+    "synonyms": [
+      "problem-solving",
+      "troubleshooting"
+    ]
+  },
+  "time management": {
+    "synonyms": [
+      "prioritisation",
+      "prioritization",
+      "organisational skills",
+      "organizational skills"
+    ]
+  },
+  "coaching": {
+    "synonyms": [
+      "mentoring",
+      "staff coaching"
+    ]
+  },
+  "order picking": {
+    "synonyms": [
+      "picking",
+      "pick and pack",
+      "picking and packing",
+      "order fulfilment",
+      "order fulfillment",
+      "picker packer"
+    ]
+  },
+  "packing": {
+    "synonyms": [
+      "packaging",
+      "packer"
+    ]
+  },
+  "goods in": {
+    "synonyms": [
+      "goods inwards",
+      "goods receipt",
+      "receiving goods"
+    ]
+  },
+  "loading and unloading": {
+    "synonyms": [
+      "loading",
+      "unloading",
+      "vehicle loading",
+      "trailer loading"
+    ]
+  },
+  "pallet truck": {
+    "synonyms": [
+      "ppt",
+      "powered pallet truck",
+      "hand pallet truck",
+      "pump truck"
+    ]
+  },
+  "mhe": {
+    "synonyms": [
+      "materials handling equipment",
+      "mhe licence"
+    ],
+    "includes": [
+      "forklift",
+      "pallet truck",
+      "reach truck",
+      "counterbalance",
+      "order picker",
+      "vna"
+    ]
+  },
+  "manual handling": {
+    "synonyms": [
+      "moving and handling",
+      "safe manual handling",
+      "manual handling training"
+    ]
+  },
+  "delivery driving": {
+    "synonyms": [
+      "delivery driver",
+      "multi-drop",
+      "multi drop",
+      "multidrop",
+      "courier",
+      "van driving",
+      "van driver"
+    ]
+  },
+  "route planning": {
+    "synonyms": [
+      "route optimisation",
+      "delivery route planning"
+    ]
+  },
+  "cleaning": {
+    "synonyms": [
+      "commercial cleaning",
+      "domestic cleaning",
+      "office cleaning",
+      "contract cleaning",
+      "housekeeping",
+      "cleaner"
+    ],
+    "includes": [
+      "deep cleaning"
+    ]
+  },
+  "deep cleaning": {
+    "synonyms": [
+      "deep clean",
+      "deep cleans"
+    ]
+  },
+  "coshh": {
+    "synonyms": [
+      "control of substances hazardous to health",
+      "coshh awareness"
+    ]
+  },
+  "food preparation": {
+    "synonyms": [
+      "food prep",
+      "prep cook",
+      "food production"
+    ]
+  },
+  "cooking": {
+    "synonyms": [
+      "line cooking",
+      "hot food preparation",
+      "grill cooking"
+    ]
+  },
+  "kitchen porter": {
+    "synonyms": [
+      "kp",
+      "pot wash",
+      "pot washing",
+      "dishwashing",
+      "dish washing",
+      "kitchen assistant"
+    ]
+  },
+  "barista": {
+    "synonyms": [
+      "coffee making",
+      "espresso machine"
+    ]
+  },
+  "waiting": {
+    "synonyms": [
+      "waiting tables",
+      "table service",
+      "waiter",
+      "waitress",
+      "waitressing",
+      "waiting staff",
+      "food service"
+    ]
+  },
+  "groundworks": {
+    "synonyms": [
+      "groundworker",
+      "ground works"
+    ]
+  },
+  "labouring": {
+    "synonyms": [
+      "labourer",
+      "general labouring",
+      "site labouring",
+      "laborer",
+      "general labourer"
+    ]
+  },
+  "bricklaying": {
+    "synonyms": [
+      "bricklayer",
+      "brickwork"
+    ]
+  },
+  "painting and decorating": {
+    "synonyms": [
+      "painter and decorator",
+      "decorating",
+      "painter decorator"
+    ]
+  },
+  "plastering": {
+    "synonyms": [
+      "plasterer"
+    ]
+  },
+  "tiling": {
+    "synonyms": [
+      "tiler",
+      "wall and floor tiling"
+    ]
+  },
+  "scaffolding": {
+    "synonyms": [
+      "scaffolder"
+    ]
+  },
+  "power tools": {
+    "synonyms": [
+      "hand and power tools",
+      "hand tools"
+    ]
+  },
+  "welding": {
+    "synonyms": [
+      "welder",
+      "fabrication welding"
+    ],
+    "includes": [
+      "mig welding",
+      "tig welding",
+      "arc welding"
+    ]
+  },
+  "maintenance": {
+    "synonyms": [
+      "building maintenance",
+      "facilities maintenance",
+      "general maintenance",
+      "handyman",
+      "maintenance operative"
+    ],
+    "includes": [
+      "ppm",
+      "planned preventive maintenance",
+      "reactive maintenance"
+    ]
+  },
+  "ipaf": {
+    "synonyms": [
+      "ipaf licence",
+      "ipaf card",
+      "mewp"
+    ]
+  },
+  "pasma": {
+    "synonyms": [
+      "pasma certificate",
+      "pasma card"
+    ]
+  },
+  "production line": {
+    "synonyms": [
+      "production operative",
+      "assembly line",
+      "line work",
+      "production work",
+      "manufacturing operative"
+    ]
+  },
+  "machine operation": {
+    "synonyms": [
+      "machine operator",
+      "operating machinery",
+      "machinery operation"
+    ]
+  },
+  "assembly": {
+    "synonyms": [
+      "assembler",
+      "product assembly",
+      "assembly work"
+    ]
+  },
+  "quality control": {
+    "synonyms": [
+      "qc",
+      "quality inspection",
+      "quality checks",
+      "quality checking"
+    ]
+  },
+  "gmp": {
+    "synonyms": [
+      "good manufacturing practice"
+    ]
+  },
+  "cctv": {
+    "synonyms": [
+      "cctv monitoring",
+      "cctv operation",
+      "cctv operator"
+    ]
+  },
+  "door supervision": {
+    "synonyms": [
+      "door supervisor",
+      "door staff"
+    ]
+  },
+  "patrolling": {
+    "synonyms": [
+      "patrols",
+      "site patrols",
+      "mobile patrols",
+      "security patrols"
+    ]
+  },
+  "access control": {
+    "synonyms": [
+      "controlling access",
+      "visitor access control"
+    ]
+  },
+  "stock replenishment": {
+    "synonyms": [
+      "shelf stacking",
+      "replenishment",
+      "filling shelves",
+      "stocking shelves",
+      "merchandising stock"
+    ]
+  },
+  "dementia care": {
+    "synonyms": [
+      "dementia awareness",
+      "caring for people with dementia"
+    ]
+  },
+  "care certificate": {
+    "synonyms": [
+      "the care certificate"
+    ]
+  },
+  "grounds maintenance": {
+    "synonyms": [
+      "gardening",
+      "landscaping",
+      "grounds keeping",
+      "groundskeeping"
+    ]
+  },
+  "animal care": {
+    "synonyms": [
+      "animal husbandry",
+      "livestock care"
+    ]
+  },
+  "teamwork": {
+    "synonyms": [
+      "team work",
+      "team player",
+      "working in a team",
+      "working as part of a team"
+    ]
+  },
+  "reliability": {
+    "synonyms": [
+      "reliable",
+      "punctuality",
+      "punctual",
+      "dependable"
+    ]
+  },
+  "english": {
+    "synonyms": [
+      "english language",
+      "spoken english",
+      "written english",
+      "fluent english"
+    ]
+  }
 }

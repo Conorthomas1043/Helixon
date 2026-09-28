@@ -5,13 +5,16 @@
 // jobExtractionPrompt.js market_salary) - and placed within it by how the
 // candidate's relevant experience compares with what the role asks for.
 // That works for any job: a care assistant and a solicitor get their own
-// markets. It used to be one fixed set of UK tech salary bands picked by
+// markets, and hourly-paid work stays hourly (£12.60/hour, not a made-up
+// annual figure). It used to be one fixed set of UK tech salary bands picked by
 // years of experience, so e.g. ten years as a care worker came out at
 // £120k-£180k.
 //
 // For a job parsed before market_salary existed, the old years-based bands
 // are still used - but only for technology roles (or an unknown family),
 // since that's the only market they describe; otherwise no estimate.
+
+import { FULL_CREDIT_YEARS } from "../config.js";
 
 const TECH_BANDS = {
 
@@ -72,9 +75,9 @@ export function estimateSalary(candidate = {}, { relevantYears = null, job = {} 
   if (market && market.low > 0 && market.high >= market.low) {
 
     // Where in the role's range this candidate is likely to land, from
-    // their relevant experience against what the role asks for (or 3
-    // years when it doesn't say).
-    const expected = Math.max(1, Number(job.min_years_experience) || 3);
+    // their relevant experience against what the role asks for (or the
+    // role type's full-credit baseline when it doesn't say).
+    const expected = Math.max(1, Number(job.min_years_experience) || FULL_CREDIT_YEARS[job.role_type] || 3);
     const ratio = years / expected;
     const span = market.high - market.low;
 
@@ -83,7 +86,9 @@ export function estimateSalary(candidate = {}, { relevantYears = null, job = {} 
       ratio > 1.75 ? [0.6, 1, "upper end"] :
       [0.25, 0.75, "middle"];
 
-    const round = (n) => Math.round(n / 500) * 500;
+    const period = market.period || "year";
+    // £500 steps for salaries; 5p/5c steps for hourly and day rates.
+    const round = (n) => (period === "year" ? Math.round(n / 500) * 500 : Math.round(n * 20) / 20);
 
     const source = advertisedText
       ? `the role's advertised range (${advertisedText})`
@@ -92,6 +97,7 @@ export function estimateSalary(candidate = {}, { relevantYears = null, job = {} 
     return {
       seniority: position === "upper end" ? "Upper range" : position === "lower end" ? "Lower range" : "Mid range",
       currency: market.currency || "GBP",
+      period,
       low: round(market.low + span * from),
       high: round(market.low + span * to),
       confidence: advertisedText ? 60 : 40,

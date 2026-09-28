@@ -26,25 +26,41 @@ export const JUDGMENT_EFFORT = effortFromEnv("CV_JUDGMENT_EFFORT", "medium");
 // skill with its depth), which can take longer than a minute to generate.
 export const DEFAULT_TIMEOUT = 90000;
 
-// Achievement quality is judged on every analysis (fitJudgeEngine.js) but
-// used to carry no weight in the total; it now takes 10 points, from
-// required skills (40 -> 35) and raw experience (25 -> 20), so a
-// candidate with demonstrable results outranks one who only lists duties.
-export const SCORE_WEIGHTS = {
+// Points per component (each profile sums to 100), chosen by the kind of
+// role (job.role_type from job extraction).
+//
+// professional / executive: achievement quality is judged on every
+// analysis and takes 10 points, so a candidate with demonstrable results
+// outranks one who only lists duties.
+//
+// frontline (hourly, shift-based, manual and hands-on roles - warehouse,
+// driving, cleaning, kitchen, factory, construction, security, care,
+// retail floor): CVs for this work rarely state quantified achievements
+// and many of these occupations have no promotion ladder, so scoring them
+// like office roles penalised good candidates for the shape of their CV
+// rather than their ability to do the job. Weight goes to what the job
+// actually asks for instead.
+export const SCORE_WEIGHT_PROFILES = {
 
-    required:35,
+    professional: { required:35, experience:20, preferred:15, industry:10, career:10, achievements:10 },
 
-    experience:20,
+    executive: { required:30, experience:20, preferred:10, industry:10, career:15, achievements:15 },
 
-    preferred:15,
-
-    industry:10,
-
-    career:10,
-
-    achievements:10
+    frontline: { required:45, experience:25, preferred:15, industry:10, career:5, achievements:0 }
 
 };
+
+// Default / jobs parsed before role_type existed.
+export const SCORE_WEIGHTS = SCORE_WEIGHT_PROFILES.professional;
+
+export function scoreWeightsFor(job = {}) {
+    return SCORE_WEIGHT_PROFILES[job.role_type] || SCORE_WEIGHTS;
+}
+
+// Years of relevant experience that earn full experience points when a
+// job doesn't state a minimum. Entry-level frontline work shouldn't need
+// five years to score fully.
+export const FULL_CREDIT_YEARS = { professional: 5, executive: 10, frontline: 2 };
 
 // How much of a matched skill's points the candidate earns, by how deeply
 // the CV shows it (candidate.skill_details[].depth). A skill that's only
@@ -100,6 +116,10 @@ export const PROTECTED_ATTRIBUTE_PATTERNS = [
     /\b(genetic)\b/i,
     /\b(veteran|military status)\b/i,
     /\bcitizenship\b/i, // distinct from legitimate "right to work" checks
+    // Physical/health requirements (disability) - a CV screen must not
+    // auto-reject on them; the job prompt says to omit them too.
+    /\b(physically fit|physical fitness|fitness level|heavy lifting|able to stand|good health|in good health|medical condition|health condition)\b/i,
+    /\blift(ing)?\b.*\b\d+ ?(kg|kgs|lbs?)\b/i,
 ];
 
 // Legitimate, non-discriminatory checks that can look superficially similar

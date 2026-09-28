@@ -83,6 +83,8 @@ export default function validateCandidate(candidate = {}) {
 
         willing_to_relocate: null,
 
+        work_eligibility: [],
+
 
         skills: [],
 
@@ -137,6 +139,9 @@ export default function validateCandidate(candidate = {}) {
     candidate.current_employer = toStringOrEmpty(candidate.current_employer);
     candidate.notice_period = toStringOrEmpty(candidate.notice_period);
     candidate.willing_to_relocate = toBooleanOrNull(candidate.willing_to_relocate);
+    candidate.work_eligibility = toArray(candidate.work_eligibility)
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean);
 
 
 

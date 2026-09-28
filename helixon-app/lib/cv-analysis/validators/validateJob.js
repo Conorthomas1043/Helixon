@@ -96,7 +96,11 @@ export const JOB_FAMILIES = [
     "logistics", "legal", "creative", "admin", "executive", "other",
 ];
 
-// { low, high, currency } annual salary for the role - stated in the job
+const PAY_PERIODS = ["year", "hour", "day"];
+
+export const ROLE_TYPES = ["frontline", "professional", "executive"];
+
+// { low, high, currency, period } pay for the role - stated in the job
 // text, or Claude's estimate for the role, seniority and location. null
 // when missing or implausible, so salaryEngine.js knows not to use it.
 function toMarketSalary(value) {
@@ -104,10 +108,15 @@ function toMarketSalary(value) {
     const low = Number(value.low);
     const high = Number(value.high);
     const currency = String(value.currency || "").trim().toUpperCase();
-    if (!Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high < low || high > 5_000_000) {
+    const period = PAY_PERIODS.includes(value.period) ? value.period : "year";
+    // Upper bound per period, to reject e.g. an annual figure labelled hourly.
+    const ceiling = { hour: 2_000, day: 20_000, year: 5_000_000 }[period];
+    if (!Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high < low || high > ceiling) {
         return null;
     }
-    return { low: Math.round(low), high: Math.round(high), currency: /^[A-Z]{3}$/.test(currency) ? currency : "GBP" };
+    // Hourly/day rates keep their pence/cents (£12.21/hour).
+    const round = (n) => (period === "year" ? Math.round(n) : Math.round(n * 100) / 100);
+    return { low: round(low), high: round(high), currency: /^[A-Z]{3}$/.test(currency) ? currency : "GBP", period };
 }
 
 // { "<required skill>": "Critical" | "High" | "Medium" | "Low" }, keyed by
@@ -163,6 +172,13 @@ export default function validateJob(job = {}) {
         salary_range: toStringOrDefault(job.salary_range, ""),
 
         industry: toStringOrDefault(job.industry, "Unknown"),
+
+        // Picks the scoring weight profile (config.js SCORE_WEIGHT_PROFILES).
+        // "" for a job parsed before this field existed - scored as
+        // professional, as it always was.
+        role_type: ROLE_TYPES.includes(String(job.role_type || "").toLowerCase())
+            ? String(job.role_type).toLowerCase()
+            : (roleTier === "executive" ? "executive" : ""),
 
         // "" for a job parsed before this field existed.
         job_family: JOB_FAMILIES.includes(String(job.job_family || "").toLowerCase())

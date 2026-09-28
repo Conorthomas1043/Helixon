@@ -15,7 +15,11 @@ const HIGH_CONFIDENCE = [
   "ran", "oversaw", "handled", "resolved", "administered", "prepared",
   "processed", "produced", "supported", "cared", "treated", "assessed",
   "taught", "planned", "operated", "installed", "repaired", "inspected",
-  "recruited", "audited", "reconciled", "drafted"
+  "recruited", "audited", "reconciled", "drafted",
+  "picked", "packed", "loaded", "unloaded", "drove", "cleaned", "cooked",
+  "served", "stocked", "assembled", "fitted", "welded", "patrolled",
+  "monitored", "prepped", "replenished", "dispatched", "fixed", "wired",
+  "plastered", "decorated", "laid", "checked", "cared"
 ]
 
 

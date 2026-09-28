@@ -71,11 +71,65 @@ describe("validateJob", () => {
   it("keeps a plausible market salary and job family", () => {
     const job = validateJob({ job_family: "Healthcare", market_salary: { low: "24000", high: 30000, currency: "gbp" } });
     expect(job.job_family).toBe("healthcare");
-    expect(job.market_salary).toEqual({ low: 24000, high: 30000, currency: "GBP" });
+    expect(job.market_salary).toEqual({ low: 24000, high: 30000, currency: "GBP", period: "year" });
   });
 
   it("drops an implausible one", () => {
     expect(validateJob({ market_salary: { low: 50000, high: 20000 } }).market_salary).toBeNull();
     expect(validateJob({ market_salary: { low: 0, high: 0 } }).market_salary).toBeNull();
+  });
+});
+
+describe("frontline roles", () => {
+  it("parses an hourly rate and a frontline role type", () => {
+    const job = validateJob({ role_type: "Frontline", market_salary: { low: 12.21, high: 13.5, currency: "GBP", period: "hour" } });
+    expect(job.role_type).toBe("frontline");
+    expect(job.market_salary).toEqual({ low: 12.21, high: 13.5, currency: "GBP", period: "hour" });
+  });
+
+  it("rejects an annual figure labelled hourly", () => {
+    expect(validateJob({ market_salary: { low: 24000, high: 26000, period: "hour" } }).market_salary).toBeNull();
+  });
+
+  it("never turns physical or health requirements into knockouts", () => {
+    const job = validateJob({
+      knockout_requirements: [
+        { field: "physical", value: "Able to lift 25kg" },
+        { field: "fitness", value: "Must be physically fit" },
+        { field: "driving_licence", value: "Full UK driving licence" },
+      ],
+    });
+    expect(job.knockout_requirements.map((r) => r.field)).toEqual(["driving_licence"]);
+  });
+
+  it("uses what the CV states about right to work, transport and availability", () => {
+    const candidate = { work_eligibility: ["Full UK right to work", "Own transport", "Available nights and weekends"] };
+    const rules = [
+      { field: "right_to_work", value: "UK right to work", required: true },
+      { field: "own_transport", value: "Own transport", required: true },
+      { field: "availability", value: "Weekends", required: true },
+      { field: "availability", value: "Nights", required: true },
+    ];
+    const out = applyKnockouts(candidate, { knockout_requirements: rules }, 80);
+    expect(out.failed).toHaveLength(0);
+    expect(out.unverified).toHaveLength(0);
+  });
+
+  it("leaves unstated availability for the recruiter, never fails it", () => {
+    const out = applyKnockouts({}, { knockout_requirements: [{ field: "availability", value: "Nights", required: true }] }, 80);
+    expect(out.failed).toHaveLength(0);
+    expect(out.unverified).toHaveLength(1);
+  });
+
+  it("matches warehouse and kitchen vocabulary", () => {
+    expect(semanticMatch("Order picking", ["Pick and pack"]).matched).toBe(true);
+    expect(semanticMatch("MHE", ["Reach truck"]).matched).toBe(true);
+    expect(semanticMatch("Kitchen porter", ["Pot wash"]).matched).toBe(true);
+    expect(semanticMatch("Delivery driving", ["Multi-drop"]).matched).toBe(true);
+  });
+
+  it("understands frontline titles", () => {
+    expect(analyseProgression([{ title: "Shift Leader" }, { title: "Warehouse Operative" }]).progression).toBe("Positive");
+    expect(analyseProgression([{ title: "Senior Carer" }, { title: "Care Assistant" }]).progression).toBe("Positive");
   });
 });

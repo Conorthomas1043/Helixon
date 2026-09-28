@@ -1,12 +1,15 @@
 const METRIC_REGEX =
-/(\d+(%| percent| million| billion|k\b| users| requests| revenue| customers| clients| accounts| patients| staff| people| students| sites| stores| orders| calls| units| beds)|[£$€]\s?\d)/ig;
+/(\d+(%| percent| million| billion|k\b| users| requests| revenue| customers| clients| accounts| patients| staff| people| students| sites| stores| orders| calls| units| beds| pallets| deliveries| drops| covers| rooms| vehicles| homes| residents| picks| cases| lines| per hour| an hour| a day)|[£$€]\s?\d)/ig;
 
 
 const IMPACT_WORDS = [
   "increased", "reduced", "saved", "optimised", "optimized", "improved",
   "cut", "grew", "boosted", "accelerated", "delivered", "exceeded",
   "achieved", "won", "generated", "doubled", "tripled", "halved",
-  "awarded", "promoted", "ranked", "top performer", "record"
+  "awarded", "promoted", "ranked", "top performer", "record",
+  "employee of the month", "employee of the year", "key holder", "keyholder",
+  "trusted", "commended", "praised", "zero accidents", "100% attendance",
+  "clean licence", "clean driving licence"
 ]
 
 

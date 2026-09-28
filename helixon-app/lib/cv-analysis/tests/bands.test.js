@@ -28,6 +28,13 @@ describe("estimateSalary", () => {
     expect(experienced.rationale).toContain("£24k-£30k");
   });
 
+  it("keeps hourly pay hourly", () => {
+    const s = estimateSalary({}, { relevantYears: 1, job: { role_type: "frontline", market_salary: { low: 12.21, high: 14, currency: "GBP", period: "hour" } } });
+    expect(s.period).toBe("hour");
+    expect(s.low).toBeCloseTo(12.2, 1);
+    expect(s.high).toBeLessThan(15);
+  });
+
   it("keeps the currency of the role", () => {
     const s = estimateSalary({}, { relevantYears: 3, job: { market_salary: { low: 90000, high: 120000, currency: "USD" } } });
     expect(s.currency).toBe("USD");

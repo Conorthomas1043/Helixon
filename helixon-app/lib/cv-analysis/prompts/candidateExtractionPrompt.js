@@ -32,6 +32,7 @@ Schema:
 "current_employer":"",
 "notice_period":"",
 "willing_to_relocate":null,
+"work_eligibility":[],
 "years_experience":0,
 "skills":[],
 "positions":[
@@ -70,9 +71,10 @@ Rules:
 - "current_title"/"current_employer" should match the candidate's most recent (or current) position.
 - Extract dates and employers.
 - Extract education, certifications (including expiry year if stated), and languages. "certifications" includes licences, professional registrations and checks the CV states (e.g. "Full UK driving licence", "NMC registration", "CSCS card", "SIA licence", "Enhanced DBS", "Food Hygiene Level 2").
+- "work_eligibility" lists what the CV explicitly states about right to work, visa status, own transport, driving, shift/night/weekend availability or start date, as short phrases (e.g. "Full UK right to work", "Own transport", "Available nights and weekends", "Available immediately"). Only what's stated - [] if nothing is.
 - "willing_to_relocate" is true/false only if the CV states a relocation preference explicitly, otherwise null.
 - "experience_breakdown" is years of experience per skill area/domain the CV supports (e.g. "B2B sales", "Team management", "Acute nursing", "Backend development") - infer this only from what the positions/skills actually show.
-- "cv_quality_issues" lists concrete problems with the CV itself as a document (e.g. "no dates on earliest role", "inconsistent formatting"), not problems with the candidate.
+- "cv_quality_issues" lists concrete problems with the CV itself as a document (e.g. "no dates on earliest role", "inconsistent formatting"), not problems with the candidate. A short or plainly formatted CV is not an issue in itself - many roles don't call for a long one.
 
 Return JSON only.
 `;

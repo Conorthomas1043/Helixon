@@ -116,3 +116,33 @@ describe("requirements shown by described work (any profession)", () => {
     expect(result.evidence.find((e) => e.skill === "Personal care").supported).toBe(true);
   });
 });
+
+describe("frontline scoring", () => {
+  const warehouseJob = { role_type: "frontline", required_skills: ["Order picking"], preferred_skills: [], min_years_experience: 0 };
+  const warehouseCv = "Warehouse Operative 2023-2024\nPicked and packed orders";
+
+  it("doesn't dock points for an unquantified CV or a flat career", async () => {
+    judgeFit.mockImplementation(async () => ({
+      ...judgment,
+      achievement_quality: { score: 10, rationale: "" },
+      career_trajectory: { score: 60, label: "Static", rationale: "" },
+      relevant_experience: { years: 2, rationale: "" },
+    }));
+    const result = await scoreCandidate(
+      { skills: ["Order picking"], years_experience: 2, skill_details: [{ skill: "Order picking", depth: "Used" }] },
+      warehouseJob, warehouseCv);
+    expect(result.breakdown.Achievements).toBe(0);
+    expect(result.breakdown.Experience).toBe(25); // 2 years = full credit for frontline
+    expect(result.match_score).toBeGreaterThanOrEqual(80);
+  });
+
+  it("doesn't raise hiring risk because the CV is short or messy", async () => {
+    judgeFit.mockImplementation(async () => judgment);
+    const result = await scoreCandidate(
+      { skills: ["Order picking"], years_experience: 2, skill_details: [{ skill: "Order picking", depth: "Used" }],
+        cv_quality_issues: ["no dates", "inconsistent formatting", "very short", "no summary", "spelling"] },
+      warehouseJob, warehouseCv);
+    expect(result.risk.level).toBe("Low");
+    expect(result.red_flags).not.toContain("Overall hiring risk assessed as High");
+  });
+});
