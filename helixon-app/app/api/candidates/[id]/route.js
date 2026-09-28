@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { removeCandidateCvs } from "@/lib/candidate-files";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -48,7 +49,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const [{ data: notes }, { data: activity }, recruiterNames] = await Promise.all([
+  const [{ data: notes }, { data: activity }, recruiterNames, { data: latestScore }] = await Promise.all([
     supabase
       .from("candidate_notes")
       .select("id, author_name, body, created_at")
@@ -60,6 +61,15 @@ export async function GET(request, { params }) {
       .eq("candidate_id", id)
       .order("created_at", { ascending: false }),
     resolveRecruiterNames(supabase, [candidate.recruiter_id]),
+    // Whether the latest analysis was a blind screen - the documents panel
+    // asks before opening the original CV, which shows who they are.
+    supabase
+      .from("scores")
+      .select("result")
+      .eq("candidate_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const extracted = candidate.extracted || {};
@@ -89,9 +99,13 @@ export async function GET(request, { params }) {
     skills: extracted.skills ?? [],
     education: toEducation(extracted),
     workHistory: toWorkHistory(extracted),
-    resume: candidate.cv_filename
-      ? { name: candidate.cv_filename, sizeKb: null, uploadedAt: candidate.created_at }
+    // The original file (lib/candidate-files.js) - null for candidates
+    // analysed before files were kept. Fetched via /api/candidates/[id]/cv.
+    resume: candidate.cv_file_url
+      ? { name: candidate.cv_filename || "CV", uploadedAt: candidate.created_at }
       : null,
+    hasCvText: Boolean(candidate.cv_text && candidate.cv_text.trim()),
+    screenedBlind: latestScore?.result?.blind_mode === true,
     tags: candidate.tags ?? [],
     nextAction: candidate.next_action,
     source: candidate.source,
@@ -136,7 +150,7 @@ export async function DELETE(request, { params }) {
 
   const { data: candidate, error: lookupError } = await supabase
     .from("candidates")
-    .select("id")
+    .select("id, cv_file_url")
     .eq("id", id)
     .eq("agency_id", agencyId)
     .maybeSingle();
@@ -199,6 +213,14 @@ export async function DELETE(request, { params }) {
   if (deleteError) {
     console.error(`[candidates DELETE] Failed deleting candidate ${id}:`, deleteError.message);
     return NextResponse.json({ error: "Failed to erase the candidate record." }, { status: 500 });
+  }
+
+  // The original CV file is part of the erasure too. Removed after the
+  // record is gone, so a storage hiccup can't leave a half-deleted
+  // candidate; a failure is logged loudly for manual follow-up.
+  const storageError = await removeCandidateCvs([candidate.cv_file_url]);
+  if (storageError) {
+    console.error(`[candidates DELETE] Candidate ${id} erased but CV file removal failed:`, storageError.message);
   }
 
   return NextResponse.json({ ok: true });

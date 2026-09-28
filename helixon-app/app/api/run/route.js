@@ -6,6 +6,7 @@ import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { getScoreBand } from "@/lib/scoreBands";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
 
 import { NextResponse } from "next/server";
 
@@ -477,6 +478,9 @@ export async function POST(request) {
         result: {
           ...(result || {}),
           salary_estimate: salary,
+          // Read by the candidate page to warn before opening the original
+          // CV of someone screened blind.
+          blind_mode: blind,
         },
         source: "single",
         // scores.stage has its OWN check constraint - a separate, legacy
@@ -519,6 +523,18 @@ export async function POST(request) {
      * discarding it so a future failure here is visible in logs rather
      * than silently leaving the candidate stuck with no stage or score.
      */
+    // Keep the original CV file so recruiters can preview, download and
+    // send it (lib/candidate-files.js) - only the extracted text used to be
+    // kept. Stored after every other write has succeeded, so the cleanup()
+    // path above never has a file to leave behind, and a storage failure
+    // never costs the analysis itself: the candidate just has no file.
+    let storedCv = null;
+    try {
+      storedCv = await storeCandidateCv({ agencyId, candidateId: candidate.id, file });
+    } catch (err) {
+      console.error("[run] Failed to store CV file:", err?.message);
+    }
+
     const { error: candidateUpdateError } = await supabase
       .from("candidates")
       .update({
@@ -526,11 +542,15 @@ export async function POST(request) {
         match_score: result?.match_score ?? 0,
         recommendation: result?.recommendation || "Review",
         job_id: job.id,
+        ...(storedCv ? { cv_file_url: storedCv.path, cv_filename: storedCv.fileName } : {}),
       })
       .eq("id", candidate.id);
 
     if (candidateUpdateError) {
       console.error("[run] Failed to update candidate with analysis result:", candidateUpdateError.message);
+      // The file isn't linked to the candidate, so nothing could ever
+      // reach or delete it - remove it rather than orphan a CV.
+      if (storedCv) await removeCandidateCvs([storedCv.path]);
     }
 
     /*

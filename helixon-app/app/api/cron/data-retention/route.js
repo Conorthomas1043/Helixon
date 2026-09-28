@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin-audit";
+import { removeCandidateCvs } from "@/lib/candidate-files";
 
 // Fulfils the DPA's Annex C promise ("automatic deletion of candidate and
 // CV data 90 days after an agency's subscription is cancelled") - until
@@ -30,6 +31,11 @@ function timingSafeEqualStr(a, b) {
 async function purgeCandidates(candidateIds) {
   if (candidateIds.length === 0) return;
 
+  // Original CV files are candidate data too (the DPA promise covers
+  // them) - collect their paths before the rows that hold them go.
+  const { data: fileRows } = await supabase.from("candidates").select("cv_file_url").in("id", candidateIds);
+  const cvPaths = (fileRows || []).map((r) => r.cv_file_url).filter(Boolean);
+
   const { data: scoreRows } = await supabase.from("scores").select("id").in("candidate_id", candidateIds);
   const scoreIds = (scoreRows || []).map((s) => s.id);
   if (scoreIds.length > 0) {
@@ -41,6 +47,11 @@ async function purgeCandidates(candidateIds) {
   await supabase.from("artifacts").delete().in("candidate_id", candidateIds);
   await supabase.from("candidate_notes").delete().in("candidate_id", candidateIds);
   await supabase.from("candidates").delete().in("id", candidateIds);
+
+  const storageError = await removeCandidateCvs(cvPaths);
+  if (storageError) {
+    console.error("[data-retention] Candidates purged but CV file removal failed:", storageError.message);
+  }
 }
 
 export async function GET(request) {
