@@ -11,7 +11,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
-import { Card, CardHeader, Segmented, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
+import { Card, CardHeader, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
+import { MethodPicker, RoleBuilder, SpecChecklist, TemplateGallery } from "./RoleInputs";
+import { EMPTY_ROLE_DRAFT, composeRoleText } from "../_lib/roles";
 import {
   BULK_CONCURRENCY,
   BULK_MAX_FILES,
@@ -33,6 +35,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   const [bulkJobText, setBulkJobText] = useState("");
   const [bulkJobFile, setBulkJobFile] = useState(null);
   const [bulkJobFileName, setBulkJobFileName] = useState(null);
+  const [roleDraft, setRoleDraft] = useState(EMPTY_ROLE_DRAFT);
   const [queue, setQueue] = useState([]);
   // On by default for bulk: mass screening with no per-candidate review is
   // exactly where blind screening earns its keep. Still a real toggle.
@@ -262,18 +265,13 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-start">
       <Card className={cx(running && "opacity-60 pointer-events-none")}>
-        <CardHeader title="Role" description="Every CV in this run is scored against it." />
+        <CardHeader title="What are you hiring for?" description="Every CV in this run is scored against it - any kind of job." />
         <div className="px-5 pt-4">
-          <Segmented
-            size="sm"
+          <MethodPicker
             value={jobPickMode}
             onChange={setJobPickMode}
-            ariaLabel="How to add the role"
-            options={[
-              ...(savedJobs.length ? [{ value: "saved", label: "Your jobs", icon: "briefcase" }] : []),
-              { value: "paste", label: "Paste", icon: "text" },
-              { value: "upload", label: "Upload spec", icon: "upload" },
-            ]}
+            methods={[...(savedJobs.length ? ["saved"] : []), "build", "paste", "upload", "template"]}
+            counts={{ saved: savedJobs.length }}
           />
         </div>
         <div className="px-5 py-4 space-y-4">
@@ -288,26 +286,62 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
               ))}
             </Select>
           )}
-          {jobPickMode === "paste" && (
-            <Textarea
-              value={bulkJobText}
-              onChange={(e) => {
-                setBulkJobText(e.target.value);
+          {jobPickMode === "build" && (
+            <RoleBuilder
+              draft={roleDraft}
+              onChange={(next) => {
+                setRoleDraft(next);
+                setBulkJobText(composeRoleText(next));
                 setBulkJobId(null);
               }}
-              rows={9}
-              placeholder="Paste the full job description"
-              aria-label="Job description"
+              onEditAsText={(text) => {
+                setBulkJobText(text);
+                setBulkJobId(null);
+                setJobPickMode("paste");
+              }}
             />
+          )}
+          {jobPickMode === "paste" && (
+            <div className="space-y-3">
+              <Textarea
+                value={bulkJobText}
+                onChange={(e) => {
+                  setBulkJobText(e.target.value);
+                  setBulkJobId(null);
+                }}
+                rows={9}
+                placeholder={"Paste the job advert or description - any format works.\n\nFor example:\nCare Assistant, nights - £12/hour\nSupporting residents with personal care.\nMust have: Enhanced DBS."}
+                aria-label="Job description"
+              />
+              <SpecChecklist text={bulkJobText} />
+            </div>
           )}
           {jobPickMode === "upload" && (
             <div>
-              <Button icon="upload" onClick={() => jobInputRef.current?.click()}>
-                {bulkJobFileName ? "Replace spec" : "Choose spec file"}
-              </Button>
-              {bulkJobFileName && <p className="text-[12.5px] text-[var(--ink-soft)] mt-2">{bulkJobFileName}</p>}
+              <button
+                type="button"
+                onClick={() => jobInputRef.current?.click()}
+                className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[12px] border border-dashed border-[var(--ink-mute)] hover:bg-[var(--mist)] hover:border-[var(--forest)] transition-colors text-left"
+              >
+                <span className="w-9 h-9 rounded-[10px] bg-[var(--mist)] flex items-center justify-center text-[var(--ink-soft)] shrink-0">
+                  <Icon name={bulkJobFileName ? "file" : "upload"} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium text-[var(--ink)] truncate">{bulkJobFileName || "Choose the job spec"}</span>
+                  <span className="block text-[11.5px] text-[var(--ink-faint)]">{bulkJobFileName ? "Click to replace" : "PDF, Word or .txt · up to 10 MB"}</span>
+                </span>
+              </button>
               <input ref={jobInputRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { handleBulkJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
             </div>
+          )}
+          {jobPickMode === "template" && (
+            <TemplateGallery
+              onPick={(text) => {
+                setBulkJobText(text);
+                setBulkJobId(null);
+                setJobPickMode("paste");
+              }}
+            />
           )}
           <div className="pt-4 border-t border-[var(--border-soft)] space-y-4">
             <Switch id="bulk-blind" checked={bulkBlind} onChange={setBulkBlind} label="Blind screening" description="Hide names, contact details and institutions when scoring." />

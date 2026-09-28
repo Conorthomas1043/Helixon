@@ -36,6 +36,7 @@ import {
   recordAnalysis,
   savedJobText,
 } from "./_lib/analyse";
+import { EMPTY_ROLE_DRAFT } from "./_lib/roles";
 
 function redirectForStatus(response, data) {
   if (response.status === 402 || data?.upgrade) {
@@ -64,6 +65,9 @@ export default function AnalyseWorkspace() {
   const [jobText, setJobText] = useState("");
   const [jobFile, setJobFile] = useState(null);
   const [requirements, setRequirements] = useState([]);
+  // The "Build it" form's answers - kept here so they survive switching
+  // between methods and coming back for the next candidate.
+  const [roleDraft, setRoleDraft] = useState(EMPTY_ROLE_DRAFT);
   const [clientEmail, setClientEmail] = useState("");
 
   // ── Candidate ─────────────────────────────────────────────────────────
@@ -154,14 +158,14 @@ export default function AnalyseWorkspace() {
     const saved = savedJobs.find((j) => j.id === existingJobId);
     if (saved) return saved.title;
     if (jobFile) return jobFile.name;
-    const first = jobText.trim().split("\n")[0]?.trim();
+    const first = jobText.trim().split("\n")[0]?.trim().replace(/^job title:\s*/i, "");
     return first ? (first.length > 60 ? `${first.slice(0, 60)}…` : first) : null;
   }, [jobTitle, savedJobs, existingJobId, jobFile, jobText]);
 
   const roleReady = !!jobFile || jobText.trim().length >= 50;
   const activeFile = comparing ? compareFile : file;
   const missing = !roleReady
-    ? "Add the role - pick a job, paste a description or upload a spec."
+    ? "Add the role - pick a job, build one, paste an advert or upload a spec."
     : !activeFile
       ? "Add the candidate's CV."
       : !consent
@@ -227,7 +231,8 @@ export default function AnalyseWorkspace() {
     const text = jobText.trim();
     if (!text) return;
     const templates = ls("jobTemplates", []);
-    const name = text.split("\n")[0].slice(0, 60) + (text.split("\n")[0].length > 60 ? "…" : "");
+    const firstLine = text.split("\n")[0].replace(/^job title:\s*/i, "");
+    const name = firstLine.slice(0, 60) + (firstLine.length > 60 ? "…" : "");
     lsSet("jobTemplates", [{ id: crypto.randomUUID(), name, text, savedAt: new Date().toISOString(), uses: 0 }, ...templates].slice(0, 20));
     toast("Saved to your templates");
   }
@@ -595,6 +600,8 @@ export default function AnalyseWorkspace() {
                   jobFile={jobFile}
                   mode={roleMode}
                   setMode={onRoleModeChange}
+                  roleDraft={roleDraft}
+                  setRoleDraft={setRoleDraft}
                   onSelectSavedJob={(job) => { selectSavedJob(job); setJobTitle(null); }}
                   onJobTextChange={onRoleText}
                   onJobFile={onJobFile}
