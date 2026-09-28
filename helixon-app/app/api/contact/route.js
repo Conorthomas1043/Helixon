@@ -18,7 +18,7 @@ const FROM_AUTOREPLY = "Helixon <noreply@helixon.co.uk>";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req) {
-  if (!(await rateLimit(getClientIp(req), 10))) {
+  if (!(await rateLimit(`contact:${getClientIp(req)}`, 10))) {
     return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 

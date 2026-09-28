@@ -33,7 +33,7 @@ function clean(val, maxLen = 300) {
 }
 
 export async function POST(request) {
-  if (!(await rateLimit(getClientIp(request), 10))) {
+  if (!(await rateLimit(`demo:${getClientIp(request)}`, 10))) {
     return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
   }
 

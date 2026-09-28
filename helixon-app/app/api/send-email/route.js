@@ -3,6 +3,11 @@ import { Resend } from "resend";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
+import { rateLimit } from "@/lib/ratelimit";
+
+// Sends real email through Resend, so cap how many one account can fire off
+// even though each draft can only be sent once.
+const MAX_SENDS_PER_HOUR = 60;
 
 const resend = new Resend(
   process.env.RESEND_API_KEY
@@ -32,6 +37,13 @@ export async function POST(request) {
           error: auth.error,
         },
         { status: auth.status }
+      );
+    }
+
+    if (!(await rateLimit(`send-email:${auth.userId}`, MAX_SENDS_PER_HOUR))) {
+      return Response.json(
+        { ok: false, error: "Too many emails sent. Please try again later." },
+        { status: 429 }
       );
     }
 

@@ -15,6 +15,7 @@ import bcrypt from "bcryptjs";
 import { getCurrentEmployeeId, SESSION_COOKIE } from "@/lib/session";
 import { hashEmployeePassword } from "@/lib/employee-auth";
 import { supabase } from "@/lib/supabase";
+import { rateLimit } from "@/lib/ratelimit";
 
 // Same floor app/api/admin/employees/route.js enforces for employee
 // accounts - one password policy, not two.
@@ -25,6 +26,12 @@ export async function POST(request) {
   const employeeId = await getCurrentEmployeeId();
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
+  }
+
+  // Cap attempts so a hijacked session can't be used to brute-force the
+  // current password (it's re-verified below before any change).
+  if (!(await rateLimit(`employee-password:${employeeId}`, 10))) {
+    return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
   const body = await request.json().catch(() => ({}));

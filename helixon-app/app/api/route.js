@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { rateLimit } from "@/lib/ratelimit";
 
 // Wires up the password-change form on app/account/security/page.jsx.
 // (Note: this endpoint didn't exist before this migration either - the
@@ -11,6 +12,12 @@ export async function POST(request) {
 
   if (!userId) {
     return NextResponse.json({ ok: false, error: "Please sign in to continue." }, { status: 401 });
+  }
+
+  // Cap attempts so a hijacked session can't be used to brute-force the
+  // current password (Clerk re-verifies it below before any change).
+  if (!(await rateLimit(`account-password:${userId}`, 10))) {
+    return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
   const body = await request.json().catch(() => null);
