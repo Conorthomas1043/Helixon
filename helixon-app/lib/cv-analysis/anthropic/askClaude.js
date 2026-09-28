@@ -6,7 +6,8 @@ import sanitise from "../utils/sanitise.js";
 
 import {
     MODEL,
-    MAX_RETRIES
+    MAX_RETRIES,
+    EXTRACTION_EFFORT
 }
 from "../config.js";
 
@@ -56,11 +57,17 @@ async function withRetry(fn) {
 // parameters and rejects any request that sends one with a 400. This used
 // to pass temperature: 0 on every call, so every extraction failed and
 // /api/run answered 500 before a candidate was ever saved.
-export default async function askClaude(userPrompt){
-    return withRetry(() => sendToClaude(userPrompt));
+//
+// effort: how much Sonnet 5 thinks before answering. Left unset, it thinks
+// at "high" on every call - most of the latency of a structured-extraction
+// call was thinking tokens the task didn't need. Extraction (copying facts
+// out of a CV/job into a schema) runs at "low"; judgement calls pass
+// "medium". See config.js EXTRACTION_EFFORT / JUDGMENT_EFFORT.
+export default async function askClaude(userPrompt, { effort = EXTRACTION_EFFORT } = {}){
+    return withRetry(() => sendToClaude(userPrompt, effort));
 }
 
-async function sendToClaude(userPrompt){
+async function sendToClaude(userPrompt, effort){
 
 
 
@@ -72,6 +79,8 @@ async function sendToClaude(userPrompt){
             // Sonnet 5 thinks adaptively by default and thinking counts
             // against max_tokens - 8000 risked cutting the JSON off mid-way.
             max_tokens:16000,
+
+            output_config:{ effort },
 
             system:systemPrompt,
 

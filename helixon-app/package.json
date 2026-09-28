@@ -8,7 +8,8 @@
     "postbuild": "node scripts/obfuscate-build.mjs",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:cv": "node scripts/eval-cv-scoring.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

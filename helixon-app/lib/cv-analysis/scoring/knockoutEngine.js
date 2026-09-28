@@ -1,3 +1,5 @@
+import { containsPhrase, normaliseSkill } from "../utils/skillNormaliser.js";
+
 // Applies a job's hard pass/fail requirements (job.knockout_requirements,
 // extracted by jobExtractor.js and restricted to config.js's
 // ALLOWED_KNOCKOUT_FIELDS - see validateJob.js) against the candidate.
@@ -34,6 +36,15 @@
 // several of these fields (right_to_work, security_clearance, etc.) have no
 // corresponding candidate field at all, and treating "we don't know" the
 // same as "fail" is exactly the bug this file used to have.
+const CERT_FILLER = new Set([
+  "certified", "certification", "certificate", "certificates", "cert",
+  "professional", "the", "of", "in", "and", "for", "a", "an", "level",
+]);
+
+function significantWords(text) {
+  return normaliseSkill(text).split(" ").filter((w) => w && !CERT_FILLER.has(w));
+}
+
 function evaluateRule(rule, candidate) {
   const value = rule.value.toLowerCase();
 
@@ -46,9 +57,18 @@ function evaluateRule(rule, candidate) {
     }
 
     case "location": {
-      const location = String(candidate.location || "").toLowerCase();
+      // A remote/anywhere role has no location to fail.
+      if (/\b(remote|anywhere|worldwide|distributed)\b/.test(value)) return "pass";
+      if (candidate.willing_to_relocate === true) return "pass";
+      const location = String(candidate.location || "");
       if (!location) return "unverifiable";
-      return location.includes(value) ? "pass" : "fail";
+      if (containsPhrase(location, value) || containsPhrase(value, location)) return "pass";
+      // No text overlap isn't proof of a mismatch: "UK" vs "London",
+      // "Bay Area" vs "San Francisco" or "EMEA" vs "Berlin" share no words
+      // but satisfy each other. This used to be a hard fail - capping a
+      // qualified candidate at 40 and marking them "Not suitable" - so
+      // anything short of a textual match is left for the recruiter.
+      return "unverifiable";
     }
 
     case "certification":
@@ -57,9 +77,29 @@ function evaluateRule(rule, candidate) {
       // the extraction prompt explicitly enumerates every certification a
       // CV lists - so an empty list is real negative evidence, not merely
       // "unknown", the same way it would read to a human recruiter.
+      //
+      // Compared by significant words rather than one exact substring: the
+      // same certification is written many ways ("AWS Certified Solutions
+      // Architect" vs "AWS Solutions Architect - Associate"), and an
+      // exact-string miss used to hard-fail the candidate.
       const certs = Array.isArray(candidate.certifications) ? candidate.certifications : [];
-      const has = certs.some((cert) => String(cert?.name || "").toLowerCase().includes(value));
-      return has ? "pass" : "fail";
+      const held = [
+        ...certs.map((cert) => String(cert?.name || "")),
+        ...(Array.isArray(candidate.skills) ? candidate.skills.map(String) : []),
+      ].filter(Boolean);
+
+      const wanted = significantWords(value);
+      if (wanted.length === 0) return "unverifiable";
+
+      let best = 0;
+      for (const name of held) {
+        if (containsPhrase(name, value)) return "pass";
+        const have = new Set(significantWords(name));
+        best = Math.max(best, wanted.filter((w) => have.has(w)).length / wanted.length);
+      }
+      if (best === 1) return "pass";
+      if (best >= 0.5) return "unverifiable";
+      return "fail";
     }
 
     case "relocation": {

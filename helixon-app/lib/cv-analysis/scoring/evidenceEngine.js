@@ -1,4 +1,4 @@
-import { skillMatch } from "../utils/skillNormaliser.js";
+import { skillMatch, containsPhrase } from "../utils/skillNormaliser.js";
 
 
 const HIGH_CONFIDENCE = [
@@ -68,7 +68,15 @@ function normaliseCV(cvText = "") {
 
 
 
-export function collectEvidence(cvText = "", skills = []) {
+// Whole-word, so "led" doesn't fire on "called"/"skilled".
+const HIGH_CONFIDENCE_RE = new RegExp(`\\b(${HIGH_CONFIDENCE.join("|")})\\b`);
+
+
+// searchTerms (optional): Map of skill -> extra wordings to look for. A
+// required skill credited through an alias (job says "Kubernetes", CV says
+// "K8s") has to be searched for under the candidate's own wording, or it's
+// always reported as unsupported even though the CV clearly shows it.
+export function collectEvidence(cvText = "", skills = [], searchTerms = new Map()) {
 
 
   cvText = normaliseCV(cvText);
@@ -91,12 +99,14 @@ export function collectEvidence(cvText = "", skills = []) {
 
     const matches = [];
 
+    const terms = [skill, ...(searchTerms.get(skill) || [])];
+
 
 
     for (const line of lines) {
 
 
-      if (!skillMatch(skill,line)) {
+      if (!terms.some(term => containsPhrase(line, term))) {
 
         continue;
 
@@ -112,11 +122,7 @@ export function collectEvidence(cvText = "", skills = []) {
 
 
 
-      if (
-        HIGH_CONFIDENCE.some(
-          word => lower.includes(word)
-        )
-      ) {
+      if (HIGH_CONFIDENCE_RE.test(lower)) {
 
         confidence = "High";
 

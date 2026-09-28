@@ -6,7 +6,10 @@ export const SCORING_VERSION = "2026-07-v1";
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const BULK_MAX_FILES = 50;
-export const BULK_CONCURRENCY = 2;
+// Each CV after the first reuses the parsed job and makes 1-2 Claude calls
+// (was 5), so more can safely run at once. Raise further only if your
+// Anthropic rate limit allows - a 429 pauses the run for Retry.
+export const BULK_CONCURRENCY = 4;
 
 // What the running view walks through while /api/run works. The server
 // doesn't stream progress, so these advance on a timer - they describe the

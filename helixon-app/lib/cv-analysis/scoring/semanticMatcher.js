@@ -1,6 +1,6 @@
 import taxonomy from "../models/skillTaxonomy.json" with { type: "json" };
 
-import { normaliseSkill } from "../utils/skillNormaliser.js";
+import { normaliseSkill, containsPhrase } from "../utils/skillNormaliser.js";
 
 // Single source of truth for skill synonyms lives in
 // models/skillTaxonomy.json - add a new skill or alias there and every
@@ -35,15 +35,14 @@ function buildTaxonomyIndex(source) {
 }
 
 // Whole-word fallback: catches cases the taxonomy doesn't (yet) list,
-// e.g. a candidate skill of "React Native" satisfying a required skill
-// of "React". Deliberately word-boundary based rather than raw substring
-// matching - raw substring would wrongly match "Java" against
-// "JavaScript", which is a common false positive with naive matchers.
-function sharesWholeWord(a, b) {
-    const wordsA = a.split(" ").filter(Boolean);
-    const wordsB = b.split(" ").filter(Boolean);
-
-    return wordsA.includes(b) || wordsB.includes(a);
+// e.g. a candidate skill of "AWS Lambda" satisfying a required skill of
+// "AWS". One direction only - the whole required skill has to appear in
+// the candidate's skill. The reverse (any candidate word appearing in the
+// requirement) let a candidate's "Management" satisfy "Project Management"
+// and "Learning" satisfy "Machine Learning". Word-boundary based rather
+// than raw substring so "Java" never matches "JavaScript".
+function coversRequirement(requiredNorm, candidateNorm) {
+    return containsPhrase(candidateNorm, requiredNorm);
 }
 
 export function semanticMatch(required, candidate) {
@@ -67,7 +66,7 @@ export function semanticMatch(required, candidate) {
         }
     }
 
-    const wholeWord = candidates.find((c) => sharesWholeWord(requiredNorm, c.norm));
+    const wholeWord = candidates.find((c) => coversRequirement(requiredNorm, c.norm));
     if (wholeWord) {
         return { matched: true, exact: false, via: wholeWord.original };
     }

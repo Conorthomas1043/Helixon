@@ -1,9 +1,11 @@
 import { wrapUntrusted } from "../../prompt-safety.js";
 
-// askClaude() truncates the whole prompt to 18,000 characters
+// askClaude() truncates the whole prompt to 40,000 characters
 // (utils/sanitise.js). The CV is capped so that, with the schema above and
 // the rules below, it's never the closing tag and rules that get cut off.
-const MAX_CV_CHARS = 15500;
+// (Was 15,500 against an 18,000 limit, which silently dropped the end of a
+// long CV - usually the earliest roles, education and certifications.)
+const MAX_CV_CHARS = 36000;
 
 export function candidateExtractionPrompt(cvText){
 
@@ -62,6 +64,7 @@ Rules:
 - Do not invent information. Use "", 0, [] or null for anything not present in the CV.
 - Preserve names exactly.
 - Extract all skills, including ones only mentioned in project/experience bullet points.
+- "skill_details" has one entry for every skill in "skills", using the same name. "depth" is "Expert" when the CV shows deep or sustained hands-on use (years of use, led/architected work with it), "Used" when it appears in the candidate's actual work or projects, and "Mentioned" when it is only listed (e.g. in a skills section) with no work that shows it. "years_used" and "last_used_year" come from the positions where the skill appears; use 0 if the CV doesn't show them.
 - Extract every job position, most recent first, with employer and start/end years.
 - "current_title"/"current_employer" should match the candidate's most recent (or current) position.
 - Extract dates and employers.

@@ -9,15 +9,13 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 import { NextResponse } from "next/server";
 
-// A single analysis can now involve up to 5 sequential/parallel Claude
-// calls (2 extraction + up to 3 for fitJudgeEngine's self-consistency
-// sampling), each with its own retry-with-backoff on transient failures
-// (askClaude.js) - realistically a handful of seconds each, but no
-// explicit budget was declared here before, so this route was relying on
-// whatever Vercel's account-default execution limit happens to be. Set
-// explicitly so the intended timeout is visible in code rather than
-// implicit. Verify this against your actual Vercel plan - Hobby caps
-// function duration well below this regardless of what's set here.
+// A single analysis makes 2-3 Claude calls (candidate + job extraction in
+// parallel - the job one skipped for a saved job - then the fit judgement),
+// each with its own retry-with-backoff on transient failures
+// (askClaude.js). Set explicitly so the intended timeout is visible in code
+// rather than relying on the account-default execution limit. Verify this
+// against your actual Vercel plan - Hobby caps function duration well
+// below this regardless of what's set here.
 export const maxDuration = 240;
 
 // Analyses per signed-in user per hour - comfortably above one full bulk
@@ -292,6 +290,23 @@ export async function POST(request) {
       existingJob = data;
     }
 
+    // A saved job's requirements were already extracted when it was
+    // created - reuse them instead of sending the same description through
+    // Claude again. This is what every CV after the first in a bulk run
+    // does (BulkFlow passes the job created by the first CV). Only when the
+    // text is unchanged and no extra must-haves were added; otherwise the
+    // role has changed and is re-read.
+    const sameJobText =
+      existingJob?.job_text &&
+      existingJob.job_text.trim() === jobText.trim();
+    const knownJobParsed =
+      requirements.length === 0 &&
+      sameJobText &&
+      existingJob.parsed &&
+      Array.isArray(existingJob.parsed.required_skills)
+        ? existingJob.parsed
+        : null;
+
     const {
       cvText,
       extracted,
@@ -300,7 +315,7 @@ export async function POST(request) {
     } = await analyseCV(
       file,
       jobText,
-      { blind }
+      { blind, jobParsed: knownJobParsed }
     );
 
     const ex = extracted || {};

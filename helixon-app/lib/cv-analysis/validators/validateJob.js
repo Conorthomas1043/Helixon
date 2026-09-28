@@ -88,6 +88,32 @@ function toKnockoutRequirements(value) {
         .filter((rule) => !isDiscriminatoryKnockout(rule));
 }
 
+const IMPORTANCE_LEVELS = ["Critical", "High", "Medium", "Low"];
+
+// { "<required skill>": "Critical" | "High" | "Medium" | "Low" }, keyed by
+// the skill exactly as it appears in required_skills. Anything malformed
+// (unknown level, a skill that isn't in required_skills) is dropped, and a
+// required skill without an entry is scored at "Medium" - see
+// scoreCandidate.js - so a job parsed before this field existed still
+// scores exactly as it did.
+function toSkillImportance(value, requiredSkills) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return {};
+    }
+
+    const byLower = new Map(
+        Object.entries(value).map(([skill, level]) => [String(skill).trim().toLowerCase(), level])
+    );
+
+    const result = {};
+    for (const skill of requiredSkills) {
+        const raw = String(byLower.get(skill.toLowerCase()) || "").trim();
+        const level = IMPORTANCE_LEVELS.find((l) => l.toLowerCase() === raw.toLowerCase());
+        if (level) result[skill] = level;
+    }
+    return result;
+}
+
 export default function validateJob(job = {}) {
 
     if (!job || typeof job !== "object") {
@@ -95,6 +121,8 @@ export default function validateJob(job = {}) {
     }
 
     const roleTier = toStringOrDefault(job.role_tier, "skilled").toLowerCase();
+
+    const requiredSkills = toStringArray(job.required_skills);
 
     return {
 
@@ -118,11 +146,11 @@ export default function validateJob(job = {}) {
 
         min_years_experience: toNonNegativeInt(job.min_years_experience, 0),
 
-        required_skills: toStringArray(job.required_skills),
+        required_skills: requiredSkills,
 
         preferred_skills: toStringArray(job.preferred_skills),
 
-        importance: Array.isArray(job.importance) ? job.importance : [],
+        skill_importance: toSkillImportance(job.skill_importance, requiredSkills),
 
         knockout_requirements: toKnockoutRequirements(job.knockout_requirements),
 

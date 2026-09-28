@@ -13,6 +13,32 @@ import { buildBlindCvText } from "../scoring/blindRedaction.js";
 
 import { debug, summarise } from "../utils/logger.js";
 
+import validateJob from "../validators/validateJob.js";
+
+import { getCached as getCachedJob, setCached as setCachedJob } from "../cache/jobCache.js";
+
+
+// Job extraction, reusing a result when we already have one: the caller's
+// parsed job (a saved job being re-used - every CV after the first in a
+// bulk run), or this server instance's cache of recently parsed job texts.
+// A bulk upload of 50 CVs against one role used to send the identical job
+// description through Claude 50 times, and each run could read the role
+// slightly differently, so candidates in the same batch weren't scored
+// against quite the same requirements.
+async function parseJob(jobText, knownJob) {
+
+    if (knownJob && Array.isArray(knownJob.required_skills)) {
+        return validateJob(knownJob);
+    }
+
+    const cached = getCachedJob(jobText);
+    if (cached) return cached;
+
+    const parsed = await jobExtractor(jobText);
+    setCachedJob(jobText, parsed);
+    return parsed;
+}
+
 
 
 
@@ -20,7 +46,7 @@ import { debug, summarise } from "../utils/logger.js";
 export default async function analyseCV(
     file,
     jobText,
-    { blind = false } = {}
+    { blind = false, jobParsed: knownJob = null } = {}
 ){
 
 
@@ -97,20 +123,24 @@ export default async function analyseCV(
     /*
         STEP 2
 
-        Extract candidate information
+        Extract candidate information and job requirements
 
-        cvText string
-              |
-              v
-        candidate JSON
+        cvText string        job description
+              |                     |
+              v                     v
+        candidate JSON          job JSON
 
     */
 
 
-    const extracted =
-        await candidateExtractor(
-            cvText
-        );
+    // Run together - candidate and job extraction don't depend on each
+    // other, and each is a full Claude round trip. They used to run one
+    // after the other.
+    const [extracted, jobParsed] =
+        await Promise.all([
+            candidateExtractor(cvText),
+            parseJob(jobText, knownJob),
+        ]);
 
 
 
@@ -121,31 +151,6 @@ export default async function analyseCV(
         "analyseCV extracted:",
         summarise(extracted)
     );
-
-
-
-
-
-
-
-
-    /*
-        STEP 3
-
-        Extract job requirements
-
-        job description
-              |
-              v
-        job JSON
-
-    */
-
-
-    const jobParsed =
-        await jobExtractor(
-            jobText
-        );
 
 
 
@@ -162,7 +167,7 @@ export default async function analyseCV(
 
 
     /*
-        STEP 4
+        STEP 3
 
         Score candidate
 

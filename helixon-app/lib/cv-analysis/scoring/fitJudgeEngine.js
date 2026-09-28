@@ -15,21 +15,21 @@
 // Claude is unavailable or every sample fails to parse, so a Claude outage
 // degrades scoring rather than breaking it.
 //
-// Samples 3 times and takes the median score per component:
-// self-consistency, a documented technique for reducing the variance of a
-// single LLM judgement by averaging out sample noise. (The model samples
-// with its own default variability - claude-sonnet-5 doesn't accept a
-// temperature setting.) Re-analysing the exact same candidate/job pair can
-// produce a slightly different industry/career/achievement score run to
-// run, in exchange for each individual run being more reliable. It also means 3x the Claude
-// calls of a single-sample judgement, run in parallel so latency stays
-// close to one call, not three.
+// One sample by default, anchored by explicit score bands in the prompt
+// (fitJudgmentPrompt.js). This used to take the median of 3 samples to
+// smooth out run-to-run variance; the anchors do most of that job for a
+// third of the calls, which matters most in bulk runs where 3 judge calls
+// per CV were the bulk of the Anthropic rate-limit usage and the main
+// source of 429 retries. Set CV_FIT_JUDGE_SAMPLES (1-5) to sample more if
+// your own evaluation shows the extra consistency is worth it; with more
+// than one sample the median score per component is used, as before.
 import askClaude from "../anthropic/askClaude.js";
+import { JUDGMENT_EFFORT } from "../config.js";
 import { fitJudgmentPrompt } from "../prompts/fitJudgmentPrompt.js";
 import { scoreIndustry } from "./industryEngine.js";
 import { analyseProgression } from "./progressionEngine.js";
 
-const SAMPLES = 3;
+const SAMPLES = Math.min(5, Math.max(1, Math.round(Number(process.env.CV_FIT_JUDGE_SAMPLES) || 1)));
 const VALID_LABELS = new Set(["Positive", "Static", "Regression", "Unknown"]);
 
 function median(numbers) {
@@ -85,6 +85,7 @@ function heuristicFallback(candidate, job) {
       score: 0,
       rationale: "Achievement quality couldn't be assessed for this analysis.",
     },
+    relevant_experience: null,
     method: "heuristic_fallback",
     samples: 0,
   };
@@ -95,7 +96,7 @@ export async function judgeFit(candidate, job, cvText) {
   try {
     const prompt = fitJudgmentPrompt({ candidate, job, cvText });
     settled = await Promise.allSettled(
-      Array.from({ length: SAMPLES }, () => askClaude(prompt))
+      Array.from({ length: SAMPLES }, () => askClaude(prompt, { effort: JUDGMENT_EFFORT }))
     );
   } catch (err) {
     // Covers prompt-building failures too (not just the Claude calls) -
@@ -114,22 +115,50 @@ export async function judgeFit(candidate, job, cvText) {
     return heuristicFallback(candidate, job);
   }
 
-  const label = valid[0].career_trajectory.label;
+  // Rationale text comes from the sample whose scores sit closest to the
+  // medians, so the explanation shown argues for the score shown. (It used
+  // to always be sample 0, which could explain a 40 next to a displayed 75.)
+  const medians = {
+    industry_relevance: clamp(median(valid.map((v) => v.industry_relevance.score))),
+    career_trajectory: clamp(median(valid.map((v) => v.career_trajectory.score))),
+    achievement_quality: clamp(median(valid.map((v) => v.achievement_quality.score))),
+  };
+  const closest = (key) =>
+    valid.reduce((best, v) =>
+      Math.abs(v[key].score - medians[key]) < Math.abs(best[key].score - medians[key]) ? v : best
+    );
+
+  const careerSample = closest("career_trajectory");
+  const label = careerSample.career_trajectory.label;
+
+  const relevantYears = valid
+    .map((v) => v.relevant_experience?.years)
+    .filter(isValidScore)
+    .map((years) => Math.max(0, years));
 
   return {
     industry_relevance: {
-      score: clamp(median(valid.map((v) => v.industry_relevance.score))),
-      rationale: String(valid[0].industry_relevance.rationale || "").slice(0, 500),
+      score: medians.industry_relevance,
+      rationale: String(closest("industry_relevance").industry_relevance.rationale || "").slice(0, 500),
     },
     career_trajectory: {
-      score: clamp(median(valid.map((v) => v.career_trajectory.score))),
+      score: medians.career_trajectory,
       label: VALID_LABELS.has(label) ? label : "Unknown",
-      rationale: String(valid[0].career_trajectory.rationale || "").slice(0, 500),
+      rationale: String(careerSample.career_trajectory.rationale || "").slice(0, 500),
     },
     achievement_quality: {
-      score: clamp(median(valid.map((v) => v.achievement_quality.score))),
-      rationale: String(valid[0].achievement_quality.rationale || "").slice(0, 500),
+      score: medians.achievement_quality,
+      rationale: String(closest("achievement_quality").achievement_quality.rationale || "").slice(0, 500),
     },
+    // Years of experience relevant to this role, as opposed to total career
+    // length - null when no sample returned a usable number, in which case
+    // scoreCandidate falls back to total years.
+    relevant_experience: relevantYears.length
+      ? {
+          years: Math.round(median(relevantYears) * 10) / 10,
+          rationale: String(valid[0].relevant_experience?.rationale || "").slice(0, 500),
+        }
+      : null,
     method: "llm_judged",
     samples: valid.length,
   };

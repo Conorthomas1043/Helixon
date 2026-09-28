@@ -101,15 +101,16 @@ export async function embedSkills(skills) {
   const keys = [...new Set(skills.map(normaliseSkill).filter(Boolean))];
   if (keys.length === 0) return result;
 
+  // Looked up together, not one Redis round trip after another.
+  const cachedVectors = await Promise.all(keys.map(getCached));
   const uncached = [];
-  for (const key of keys) {
-    const cached = await getCached(key);
-    if (cached) {
-      result.set(key, cached);
+  keys.forEach((key, i) => {
+    if (cachedVectors[i]) {
+      result.set(key, cachedVectors[i]);
     } else {
       uncached.push(key);
     }
-  }
+  });
 
   if (uncached.length === 0) return result;
 

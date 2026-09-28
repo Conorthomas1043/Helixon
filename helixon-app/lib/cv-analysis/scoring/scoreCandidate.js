@@ -1,4 +1,6 @@
-import { SCORE_WEIGHTS } from "../config.js";
+import { SCORE_WEIGHTS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
+
+import { normaliseSkill } from "../utils/skillNormaliser.js";
 
 import { semanticMatch } from "./semanticMatcher.js";
 import { embedSkills, findSemanticMatch } from "./embeddingMatcher.js";
@@ -36,6 +38,10 @@ function matchSkillList(skillList, candidateSkills, embeddings) {
     const matched = [];
     const missing = [];
     const semanticMatches = [];
+    // skill -> the candidate's own wording it matched through (null for a
+    // literal match), used to find CV evidence and skill depth under the
+    // name the candidate actually wrote.
+    const via = new Map();
 
     for (const skill of skillList) {
 
@@ -43,6 +49,7 @@ function matchSkillList(skillList, candidateSkills, embeddings) {
 
         if (result.matched) {
             matched.push(skill);
+            via.set(skill, result.via || null);
             continue;
         }
 
@@ -50,13 +57,64 @@ function matchSkillList(skillList, candidateSkills, embeddings) {
 
         if (viaEmbedding) {
             matched.push(skill);
+            via.set(skill, viaEmbedding.matched);
             semanticMatches.push({ skill, via: viaEmbedding.matched, similarity: viaEmbedding.score });
         } else {
             missing.push(skill);
         }
     }
 
-    return { matched, missing, semanticMatches };
+    return { matched, missing, semanticMatches, via };
+}
+
+
+// Share (0-1) of a matched skill's points the candidate earns. Driven by
+// how deeply the CV shows the skill (skill_details.depth from extraction);
+// when extraction gave no depth for it, by whether any CV line mentions it
+// (see evidenceEngine.js). Skills last used long ago, and matches that rest
+// only on embedding similarity, earn a little less. Before this, every
+// matched skill earned full points - a keyword in a skills list scored the
+// same as years of hands-on use.
+function skillCredit({ skill, via, detailsByName, evidenceBySkill, semantic }) {
+
+    const detail =
+        detailsByName.get(normaliseSkill(via || skill)) ||
+        detailsByName.get(normaliseSkill(skill));
+
+    let credit;
+    let basis;
+
+    const depth = Object.keys(DEPTH_CREDIT).find(
+        (level) => level.toLowerCase() === String(detail?.depth || "").trim().toLowerCase()
+    );
+
+    if (depth) {
+        credit = DEPTH_CREDIT[depth];
+        basis = depth;
+    } else {
+        const supported = evidenceBySkill.get(skill)?.supported;
+        credit = supported ? DEPTH_CREDIT.Used : DEPTH_CREDIT.Mentioned;
+        basis = supported ? "Evidenced" : "Unevidenced";
+    }
+
+    const lastUsed = Number(detail?.last_used_year) || 0;
+    const stale = lastUsed > 0 && CURRENT_YEAR - lastUsed > 5;
+    if (stale) credit *= 0.8;
+
+    if (semantic) credit *= 0.9;
+
+    return { skill, credit: Math.round(credit * 100) / 100, basis, stale, semantic: !!semantic };
+}
+
+function weightedShare(credits, weightOf) {
+    let earned = 0;
+    let possible = 0;
+    for (const { skill, credit } of credits) {
+        const w = weightOf(skill);
+        earned += w * credit;
+        possible += w;
+    }
+    return { earned, possible };
 }
 
 
@@ -103,11 +161,13 @@ export default async function scoreCandidate(
         ? await embedSkills([...taxonomyMisses, ...candidateSkills])
         : new Map();
 
-    const { matched: matchedRequired, missing: missingRequired, semanticMatches: semanticRequired } =
+    const { matched: matchedRequired, missing: missingRequired, semanticMatches: semanticRequired, via: viaRequired } =
         matchSkillList(requiredSkills, candidateSkills, embeddings);
 
-    const { matched: matchedPreferred, missing: missingPreferred, semanticMatches: semanticPreferred } =
+    const { matched: matchedPreferred, missing: missingPreferred, semanticMatches: semanticPreferred, via: viaPreferred } =
         matchSkillList(preferredSkills, candidateSkills, embeddings);
+
+    const viaAll = new Map([...viaPreferred, ...viaRequired]);
 
     const matchedSkills = [...new Set([...matchedRequired, ...matchedPreferred])];
     const semanticMatches = [...semanticRequired, ...semanticPreferred];
@@ -126,27 +186,70 @@ export default async function scoreCandidate(
     );
 
 
-    const evidence = collectEvidence(rawCV, matchedSkills);
+    // Evidence for a skill matched through an alias is searched for under
+    // the candidate's wording too ("K8s" for a required "Kubernetes").
+    const searchTerms = new Map(
+        [...viaAll].filter(([, v]) => v).map(([skill, v]) => [skill, [v]])
+    );
+    const evidence = collectEvidence(rawCV, matchedSkills, searchTerms);
     const unsupported = unsupportedSkills(evidence);
+    const evidenceBySkill = new Map(evidence.map((e) => [e.skill, e]));
+
+    const detailsByName = new Map(
+        (candidate.skill_details || [])
+            .filter((d) => d && d.skill)
+            .map((d) => [normaliseSkill(d.skill), d])
+    );
+    const semanticSet = new Set(semanticMatches.map((m) => m.skill));
+    const creditFor = (skill) => skillCredit({
+        skill,
+        via: viaAll.get(skill),
+        detailsByName,
+        evidenceBySkill,
+        semantic: semanticSet.has(skill),
+    });
+
+    const importance = job.skill_importance || {};
+    const importanceWeight = (skill) => IMPORTANCE_MULTIPLIER[importance[skill]] ?? IMPORTANCE_MULTIPLIER.Medium;
+
+    const requiredCredits = matchedRequired.map(creditFor);
+    const preferredCredits = matchedPreferred.map(creditFor);
 
 
     // --- component scores, weighted per SCORE_WEIGHTS (out of 100) ---
 
-    const requiredScore = Math.round(
-        (matchedRequired.length / Math.max(1, requiredSkills.length)) * SCORE_WEIGHTS.required
-    );
+    // Each required skill counts by its importance to the role (Critical 3x
+    // ... Low 0.5x, from job extraction) times how well the CV shows it.
+    // Missing skills contribute their weight to "possible" and nothing to
+    // "earned". Used to be matched/total with every skill equal.
+    const requiredEarned = weightedShare(requiredCredits, importanceWeight).earned;
+    const requiredPossible = requiredSkills.reduce((sum, skill) => sum + importanceWeight(skill), 0);
+    const requiredScore = requiredSkills.length
+        ? Math.round((requiredEarned / requiredPossible) * SCORE_WEIGHTS.required)
+        : SCORE_WEIGHTS.required;
 
     const preferredScore = preferredSkills.length
-        ? Math.round((matchedPreferred.length / preferredSkills.length) * SCORE_WEIGHTS.preferred)
+        ? Math.round((weightedShare(preferredCredits, () => 1).earned / preferredSkills.length) * SCORE_WEIGHTS.preferred)
         : SCORE_WEIGHTS.preferred; // nothing preferred was asked for - don't penalise for it
 
     const minYears = Number(job.min_years_experience) || 0;
     const yearsExperience = Number(candidate.years_experience) || 0;
 
+    // judgment is needed from here on - started above, alongside the
+    // embeddings fetch.
+    const judgment = await judgmentPromise;
+
+    // Years relevant to THIS role (judged), not total career length - ten
+    // years in an unrelated field used to earn full experience points.
+    // Falls back to total years when the judgement didn't produce one.
+    const relevantYears = judgment.relevant_experience
+        ? Math.min(yearsExperience || Infinity, judgment.relevant_experience.years)
+        : yearsExperience;
+
     const experienceScore = minYears > 0
-        ? Math.round(Math.min(1, yearsExperience / minYears) * SCORE_WEIGHTS.experience)
+        ? Math.round(Math.min(1, relevantYears / minYears) * SCORE_WEIGHTS.experience)
         // no minimum stated - use 5 years as a reasonable full-credit baseline
-        : Math.round(Math.min(1, yearsExperience / 5) * SCORE_WEIGHTS.experience);
+        : Math.round(Math.min(1, relevantYears / 5) * SCORE_WEIGHTS.experience);
 
     // Industry relevance, career trajectory and achievement quality are
     // judgement calls, not checklist items - see fitJudgeEngine.js for why
@@ -155,13 +258,17 @@ export default async function scoreCandidate(
     // ladder that scored anything else, e.g. "Consultant"/"VP"/"Partner",
     // as level 0). Falls back to those same heuristics if Claude judgement
     // is unavailable - see judgeFit's heuristicFallback.
-    const judgment = await judgmentPromise;
-
     const progression = { progression: judgment.career_trajectory.label, score: judgment.career_trajectory.score };
     const careerScore = Math.round((judgment.career_trajectory.score / 100) * SCORE_WEIGHTS.career);
 
     const industryRaw = judgment.industry_relevance.score; // 0-100
     const industryScore = Math.round((industryRaw / 100) * SCORE_WEIGHTS.industry);
+
+    // The heuristic fallback can't judge achievements at all (it reports
+    // 0) - score that as neutral rather than docking every candidate 10
+    // points for a Claude outage.
+    const achievementsForScore = judgment.method === "llm_judged" ? judgment.achievement_quality.score : 50;
+    const achievementPoints = Math.round((achievementsForScore / 100) * SCORE_WEIGHTS.achievements);
 
     const breakdown = buildBreakdown({
         required: requiredScore,
@@ -169,6 +276,7 @@ export default async function scoreCandidate(
         experience: experienceScore,
         career: careerScore,
         industry: industryScore,
+        achievements: achievementPoints,
     });
 
     const knockout = applyKnockouts(candidate, job, breakdown.Total);
@@ -331,9 +439,10 @@ export default async function scoreCandidate(
 
     const scoreRationale = {
         skills: `${matchedRequired.length}/${requiredSkills.length || 0} required and ${matchedPreferred.length}/${preferredSkills.length || 0} preferred skills matched`,
-        experience: minYears
-            ? `${yearsExperience} years of experience vs. ${minYears} required`
-            : `${yearsExperience} years of experience`,
+        experience: (minYears
+            ? `${relevantYears} relevant years of experience vs. ${minYears} required`
+            : `${relevantYears} relevant years of experience`) +
+            (relevantYears !== yearsExperience ? ` (${yearsExperience} in total)` : ""),
         culture: judgment.industry_relevance.rationale,
         capped: knockout.failed.length > 0,
         cap_reason: knockout.failed.length
@@ -376,6 +485,14 @@ export default async function scoreCandidate(
         // can see and audit why something matched rather than trusting an
         // invisible "AI decided" match.
         semantic_matches: semanticMatches,
+        // Per-skill credit behind skill_score: how much of each matched
+        // skill's points it earned and why (depth, stale, semantic-only),
+        // plus the importance weight each required skill carried.
+        skill_credit: [
+            ...requiredCredits.map((c) => ({ ...c, type: "required", importance: importance[c.skill] || "Medium" })),
+            ...preferredCredits.map((c) => ({ ...c, type: "preferred" })),
+        ],
+        relevant_years_experience: relevantYears,
 
         strengths,
         weaknesses,

@@ -6,6 +6,6 @@ return text
 
 .replace(/\[\s*(SYS|INST|\/SYS|\/INST)\s*\]/gi,"")
 
-.slice(0,18000);
+.slice(0,40000);
 
 }

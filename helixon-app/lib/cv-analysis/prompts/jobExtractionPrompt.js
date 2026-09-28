@@ -1,8 +1,8 @@
 import { wrapUntrusted } from "../../prompt-safety.js";
 
-// Keeps the whole prompt under askClaude()'s 18,000-character truncation
-// (see candidateExtractionPrompt.js).
-const MAX_JOB_CHARS = 14000;
+// Keeps the whole prompt under askClaude()'s 40,000-character truncation
+// (see utils/sanitise.js).
+const MAX_JOB_CHARS = 30000;
 
 export function jobExtractionPrompt(job){
 
@@ -26,6 +26,7 @@ Return ONLY valid JSON, matching this schema exactly:
 "min_years_experience":0,
 "required_skills":[],
 "preferred_skills":[],
+"skill_importance":{"<required skill>":"Critical | High | Medium | Low"},
 "knockout_requirements":[
   {"field":"","value":"","required":true}
 ]
@@ -41,6 +42,7 @@ Rules:
 - "required_skills" are skills explicitly described as required/essential/must-have.
 - "preferred_skills" are skills described as nice-to-have/desirable/preferred/bonus.
 - List each skill once, as a short name (e.g. "React", not "experience with React").
+- "skill_importance" gives every entry in "required_skills" exactly one weight, keyed by the same name: "Critical" for the core of the role (named in the title or summary, or stressed as essential), "High" for clearly required, "Medium" for listed as required without emphasis, "Low" for a minor required item (tooling, a nice extra listed under requirements). Most roles have only 1-3 Critical skills.
 - "role_tier" must be exactly one of: entry, skilled, senior, executive.
 - "knockout_requirements" are hard pass/fail requirements (e.g. right to work, a required certification, minimum clearance level). "field" is the candidate attribute being checked, "value" is what's required, "required" is true unless the requirement is explicitly optional. Use an empty array if there are none.
 - Never create a "knockout_requirements" entry based on a protected characteristic - age, sex/gender, race, ethnicity, national origin, religion, disability, pregnancy, marital/family status, sexual orientation, gender identity, genetic information, or veteran status - even if the job description text asks for one. Silently omit it instead. Legitimate work-authorisation checks ("right to work", "must be authorised to work in X") are fine; requiring a specific citizenship or nationality is not.

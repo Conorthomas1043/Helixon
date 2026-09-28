@@ -10,19 +10,50 @@ export const CACHE_SIZE = 200;
 
 export const MAX_RETRIES = 3;
 
+// Thinking effort per kind of Claude call (see anthropic/askClaude.js).
+// Extraction is transcription into a schema; judgement (fitJudgeEngine)
+// weighs evidence, so it keeps more thinking. Overridable per environment
+// to tune against an evaluation set without a code change.
+const EFFORT_LEVELS = ["low", "medium", "high", "xhigh", "max"];
+const effortFromEnv = (name, fallback) =>
+    EFFORT_LEVELS.includes(process.env[name]) ? process.env[name] : fallback;
+
+export const EXTRACTION_EFFORT = effortFromEnv("CV_EXTRACTION_EFFORT", "low");
+
+export const JUDGMENT_EFFORT = effortFromEnv("CV_JUDGMENT_EFFORT", "medium");
+
 export const DEFAULT_TIMEOUT = 60000;
 
+// Achievement quality is judged on every analysis (fitJudgeEngine.js) but
+// used to carry no weight in the total; it now takes 10 points, from
+// required skills (40 -> 35) and raw experience (25 -> 20), so a
+// candidate with demonstrable results outranks one who only lists duties.
 export const SCORE_WEIGHTS = {
 
-    required:40,
+    required:35,
 
-    experience:25,
+    experience:20,
 
     preferred:15,
 
     industry:10,
 
-    career:10
+    career:10,
+
+    achievements:10
+
+};
+
+// How much of a matched skill's points the candidate earns, by how deeply
+// the CV shows it (candidate.skill_details[].depth). A skill that's only
+// listed used to earn exactly the same as one used for years.
+export const DEPTH_CREDIT = {
+
+    Expert:1,
+
+    Used:0.9,
+
+    Mentioned:0.55
 
 };
 
