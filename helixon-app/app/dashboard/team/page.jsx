@@ -7,11 +7,18 @@
 // this page hides those controls from everyone else. "Overdue" mirrors the
 // candidate profile page: nextAction.dueAt in the past and not completed.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
-import { getRecruiters as fetchRecruiters, getTeamSeatUsage, inviteTeammate, cancelTeamInvite, removeTeammate } from "@/lib/dashboard-api";
+import {
+  getRecruiters as fetchRecruiters,
+  getTeamSeatUsage,
+  inviteTeammate,
+  cancelTeamInvite,
+  removeTeammate,
+  assignUnassignedCandidates,
+} from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,7 +28,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Every state is shown - it used to render nothing at all unless the seat
 // lookup succeeded, so an Individual-plan account or any server error just
 // left the page with no way to add anyone and no hint why.
-function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removingId }) {
+function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removingId, members, onAssigned }) {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -229,6 +236,10 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
         </div>
       )}
 
+      {canManage && usage.unassignedCount > 0 && members?.length > 0 && (
+        <UnassignedCandidates count={usage.unassignedCount} members={members} onAssigned={onAssigned} />
+      )}
+
       {canManage && outside.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
           <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
@@ -255,6 +266,133 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
           </ul>
         </div>
       )}
+    </div>
+  );
+}
+
+// Candidates nobody on the team owns - left behind by an earlier removal,
+// or unassigned by hand. One step hands them all to someone.
+function UnassignedCandidates({ count, members, onAssigned }) {
+  const [to, setTo] = useState(() => members.find((m) => m.role === "owner")?.id || members[0]?.id || "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function assign() {
+    if (!to) return;
+    setBusy(true);
+    setError("");
+    try {
+      await assignUnassignedCandidates(to);
+      onAssigned();
+    } catch (err) {
+      setError(err.message || "Couldn't assign those candidates.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+      <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+        Unassigned candidates
+      </p>
+      <p className="text-[12px] mb-2" style={{ color: INK_MUTED }}>
+        {count} candidate{count === 1 ? " isn't" : "s aren't"} assigned to anyone on the team, so {count === 1 ? "it doesn't" : "they don't"} show in anyone&apos;s workload.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <select
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          aria-label="Assign unassigned candidates to"
+          className="flex-1 text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+        >
+          {members.map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={assign}
+          disabled={busy || !to}
+          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          style={{ background: "var(--forest)", color: "white" }}
+        >
+          {busy ? "Assigning…" : `Assign ${count === 1 ? "it" : `all ${count}`}`}
+        </button>
+      </div>
+      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+    </div>
+  );
+}
+
+// Replaces a bare confirm(): removing someone who owns candidates now asks
+// who takes them over, instead of leaving them attached to a person who's
+// gone (their card vanished and the candidates dropped out of the team view).
+function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) {
+  const others = members.filter((m) => m.id !== target.id);
+  const owns = target.totalCandidates || 0;
+  const [to, setTo] = useState(() => (others.some((m) => m.id === viewerId) ? viewerId : others[0]?.id || ""));
+  const cancelRef = useRef(null);
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape" && !busy) onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, onCancel]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-[16px] p-6 bg-white shadow-xl">
+        <h2 id="remove-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
+          Remove {target.name}?
+        </h2>
+        <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+          They&apos;ll lose access to this workspace immediately, and their seat is freed.
+        </p>
+
+        {owns > 0 && (
+          <label className="block mb-5">
+            <span className="block text-[12.5px] font-semibold mb-1.5" style={{ color: INK }}>
+              Hand their {owns} candidate{owns === 1 ? "" : "s"} to
+            </span>
+            <select
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+            >
+              {others.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}{m.id === viewerId ? " (you)" : ""}</option>
+              ))}
+              <option value="">Nobody - leave them unassigned</option>
+            </select>
+          </label>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button
+            ref={cancelRef}
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm(owns > 0 ? to || null : undefined)}
+            disabled={busy}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ background: RED_STRONG, color: "white" }}
+          >
+            {busy ? "Removing…" : "Remove"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -444,18 +582,27 @@ export default function TeamPage() {
     setReloadKey((k) => k + 1);
   }, []);
 
-  async function handleRemove(recruiter) {
-    if (!confirm(`Remove ${recruiter.name} from the team? They'll lose access to this workspace immediately, and this frees up their seat.`)) {
-      return;
-    }
+  const [removeTarget, setRemoveTarget] = useState(null);
+
+  function handleRemove(member) {
     setRemoveError("");
-    setRemovingId(recruiter.id);
+    setRemoveTarget(member);
+  }
+
+  const cancelRemove = useCallback(() => setRemoveTarget(null), []);
+
+  async function confirmRemove(reassignTo) {
+    const target = removeTarget;
+    setRemovingId(target.id);
     try {
-      await removeTeammate(recruiter.id);
+      const result = await removeTeammate(target.id, reassignTo);
+      if (result?.reassignFailed) setRemoveError(result.error);
+      setRemoveTarget(null);
       retry();
       loadUsage();
     } catch (err) {
       setRemoveError(err.message || "Couldn't remove that team member.");
+      setRemoveTarget(null);
     } finally {
       setRemovingId(null);
     }
@@ -499,6 +646,8 @@ export default function TeamPage() {
           reload={loadUsage}
           onRemoveSeat={handleRemove}
           removingId={removingId}
+          members={recruiters || []}
+          onAssigned={() => { retry(); loadUsage(); }}
         />
 
         {removeError && (
@@ -521,6 +670,17 @@ export default function TeamPage() {
           </div>
         )}
       </div>
+
+      {removeTarget && (
+        <RemoveDialog
+          target={removeTarget}
+          members={recruiters || []}
+          viewerId={user?.id}
+          busy={removingId === removeTarget.id}
+          onCancel={cancelRemove}
+          onConfirm={confirmRemove}
+        />
+      )}
     </main>
   );
 }

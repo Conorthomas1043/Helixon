@@ -243,12 +243,23 @@ export async function cancelTeamInvite(invitationId) {
 
 // Removes an existing (already-accepted) team member, freeing their seat.
 // Same endpoint as cancelTeamInvite, distinguished by { userId } instead of
-// { invitationId } - see app/api/team/invite's DELETE handler.
-export async function removeTeammate(userId) {
+// { invitationId } - see app/api/team/invite's DELETE handler. reassignTo:
+// a remaining member's id to take over their candidates, null to leave them
+// unassigned, or undefined to leave them as they are.
+export async function removeTeammate(userId, reassignTo) {
   return apiFetch("/api/team/invite", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId }),
+    body: JSON.stringify(reassignTo === undefined ? { userId } : { userId, reassignTo }),
+  });
+}
+
+// Hands every candidate no current member owns to one team member.
+export async function assignUnassignedCandidates(toUserId) {
+  return apiFetch("/api/team/invite", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reassignUnassignedTo: toUserId }),
   });
 }
 

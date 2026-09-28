@@ -252,11 +252,27 @@ async function handleOrganizationMembershipCreated(membership) {
     // often a stray empty agency the user.created handler made for them
     // when they signed up outside the invite flow.
     if (await canMoveToInvitingAgency(existingProfile)) {
-      const { error: moveError } = await supabase
-        .from("profiles")
-        .update({ agency_id: agency.id })
-        .eq("id", existingProfile.id);
+      if (!existingProfile.agency_id) {
+        const { error: moveError } = await supabase
+          .from("profiles")
+          .update({ agency_id: agency.id })
+          .eq("id", existingProfile.id);
+        if (moveError) throw new Error(moveError.message);
+        return;
+      }
+
+      // Bring their old workspace's candidates, jobs, scores, notes etc.
+      // with them. Re-pointing only the profile used to strand all of it on
+      // an agency nobody belonged to any more. One database transaction
+      // (supabase/migrations/*_move_member_into_agency.sql), so a failure
+      // moves nothing and Clerk's retry of this webhook can try again.
+      const { data: moved, error: moveError } = await supabase.rpc("move_member_into_agency", {
+        p_profile_id: existingProfile.id,
+        p_from: existingProfile.agency_id,
+        p_to: agency.id,
+      });
       if (moveError) throw new Error(moveError.message);
+      console.log(`[clerk webhook] user ${clerkUserId} joined agency ${agency.id} with their workspace data:`, moved);
       return;
     }
 
@@ -287,10 +303,10 @@ async function handleOrganizationMembershipCreated(membership) {
 }
 
 // Whether an existing profile can be moved into the agency that just
-// invited them: only when their current agency is effectively empty - no
-// other members and no active subscription (typically the placeholder
-// agency created when they signed up outside the invite flow). Anyone
-// with a paid or shared workspace of their own stays where they are.
+// invited them: only when nobody else is in their current agency and it has
+// no active subscription (typically a solo workspace from signing up outside
+// the invite flow, or one whose plan has lapsed). Its data moves with them.
+// Anyone with a paid or shared workspace of their own stays where they are.
 async function canMoveToInvitingAgency(profile) {
   if (!profile.agency_id) return true;
 

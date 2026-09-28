@@ -13,6 +13,14 @@ import { getAgencyPlan } from "@/lib/plan";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { supabase } from "@/lib/supabase";
 import { cleanEmail } from "@/lib/sanitize";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import {
+  agencyMembers,
+  candidateIdsOwnedBy,
+  isValidAssignee,
+  reassignCandidates,
+  unassignedCandidateIds,
+} from "@/lib/team-reassign";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -53,9 +61,20 @@ export async function GET() {
   // (the owner) rather than creating an org just to answer a GET request.
   // Nobody can have joined without an org, so whoever is asking is the
   // owner, and the first invite will make them the org's admin.
+  // Candidates no current member owns - only the owner can act on them.
+  const unassignedCount = async () => {
+    try {
+      return (await unassignedCandidateIds(supabase, auth.agencyId)).length;
+    } catch (err) {
+      console.error("[team/invite] Failed to count unassigned candidates:", err.message);
+      return 0;
+    }
+  };
+
   if (!agency?.clerk_org_id) {
     return NextResponse.json({
       canManage: true,
+      unassignedCount: await unassignedCount(),
       outsideMembers: [],
       memberCount: 1,
       pendingCount: 0,
@@ -84,9 +103,11 @@ export async function GET() {
       .map((m) => ({ userId: m.userId, name: m.name, email: m.identifier }));
 
     const viewer = members.find((m) => m.userId === auth.userId);
+    const canManage = viewer?.role === "org:admin";
     return NextResponse.json({
       ...usage,
-      canManage: viewer?.role === "org:admin",
+      canManage,
+      unassignedCount: canManage ? await unassignedCount() : 0,
       outsideMembers,
     });
   } catch (err) {
@@ -268,6 +289,19 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "The workspace owner can't be removed from the team." }, { status: 400 });
   }
 
+  // Who takes over the departing member's candidates: another current
+  // member's Clerk id, or null to leave them unassigned. Omitted = leave
+  // them as they are (they then show as unassigned on the Team page).
+  // Checked before anything is removed, so a bad target changes nothing.
+  const reassignTo = body?.reassignTo;
+  const reassigning = reassignTo !== undefined;
+  if (reassigning) {
+    if (reassignTo === memberUserId || !(await isValidAssignee(supabase, auth.agencyId, reassignTo ?? null))) {
+      return NextResponse.json({ error: "Pick someone who's staying on the team to take over their candidates." }, { status: 400 });
+    }
+  }
+  const departingName = recruiterDisplayName((await agencyMembers(supabase, auth.agencyId)).get(memberUserId));
+
   try {
     await removeAgencyOrgMember({ orgId: agency.clerk_org_id, userId: memberUserId });
   } catch (err) {
@@ -292,5 +326,72 @@ export async function DELETE(request) {
     console.error("[team/invite] Removed from Clerk org but failed to detach profile:", detachError.message);
   }
 
-  return NextResponse.json({ ok: true });
+  let reassigned = 0;
+  if (reassigning) {
+    try {
+      const ids = await candidateIdsOwnedBy(supabase, auth.agencyId, memberUserId);
+      reassigned = await reassignCandidates(supabase, {
+        agencyId: auth.agencyId,
+        candidateIds: ids,
+        toRecruiterId: reassignTo ?? null,
+        actor: recruiterDisplayName(auth.profile) || auth.userId,
+        fromLabel: departingName,
+      });
+    } catch (err) {
+      // They're off the team either way; their candidates now show in the
+      // Team page's "unassigned" pile, where they can be picked up in one go.
+      console.error("[team/invite] Member removed but reassigning their candidates failed:", err.message);
+      return NextResponse.json({
+        ok: true,
+        reassignFailed: true,
+        error: "They've been removed, but their candidates couldn't be reassigned. Use the unassigned candidates panel to hand them over.",
+      });
+    }
+  }
+
+  return NextResponse.json({ ok: true, reassigned });
+}
+
+// PATCH { reassignUnassignedTo }: hand every candidate that no current
+// member owns (left behind by an earlier removal, or unassigned by hand) to
+// one member in a single step. Owner only, like the rest of team management.
+export async function PATCH(request) {
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const { data: agency, error: agencyError } = await supabase
+    .from("agencies")
+    .select("clerk_org_id")
+    .eq("id", auth.agencyId)
+    .maybeSingle();
+  if (agencyError) {
+    return NextResponse.json({ error: "Failed to load your agency." }, { status: 500 });
+  }
+  // With no org yet there are no teammates, so the caller is the owner.
+  if (agency?.clerk_org_id) {
+    const ownerCheck = await requireOrgOwner(agency.clerk_org_id, auth.userId);
+    if (ownerCheck) return ownerCheck;
+  }
+
+  const body = await request.json().catch(() => null);
+  const to = body?.reassignUnassignedTo;
+  if (!to || !(await isValidAssignee(supabase, auth.agencyId, to))) {
+    return NextResponse.json({ error: "Pick a current team member to take these candidates." }, { status: 400 });
+  }
+
+  try {
+    const ids = await unassignedCandidateIds(supabase, auth.agencyId);
+    const reassigned = await reassignCandidates(supabase, {
+      agencyId: auth.agencyId,
+      candidateIds: ids,
+      toRecruiterId: to,
+      actor: recruiterDisplayName(auth.profile) || auth.userId,
+    });
+    return NextResponse.json({ ok: true, reassigned });
+  } catch (err) {
+    console.error("[team/invite] Bulk reassignment failed:", err.message);
+    return NextResponse.json({ error: "Couldn't reassign those candidates. Please try again." }, { status: 500 });
+  }
 }

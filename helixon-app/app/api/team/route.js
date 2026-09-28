@@ -57,6 +57,7 @@ export async function GET() {
         id: m.clerk_user_id,
         name: recruiterDisplayName(m) || "Unnamed",
         role: roles.get(m.clerk_user_id) || null,
+        totalCandidates: owned.length,
         activeCandidates: completed.filter((c) => c.stage !== "Placed" && c.stage !== "Rejected").length,
         awaitingReview: completed.filter((c) => c.stage === "Screened" || c.stage === null).length,
         interviewing: completed.filter((c) => c.stage === "Interview").length,
