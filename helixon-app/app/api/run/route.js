@@ -149,17 +149,6 @@ export async function POST(request) {
       profile,
     } = auth;
 
-    if (!(await rateLimit(`run-user:${userId}`, RUN_LIMIT_PER_USER_PER_HOUR))) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Hourly analysis limit reached. Please try again later.",
-        },
-        { status: 429 }
-      );
-    }
-
     const form = await request.formData();
 
     const file = form.get("cv");
@@ -266,6 +255,20 @@ export async function POST(request) {
       );
     }
 
+    // Counted only once the request is known to be valid - a rejected
+    // upload (wrong file type, job text too short, etc.) used to use up one
+    // of the user's hourly analyses without analysing anything.
+    if (!(await rateLimit(`run-user:${userId}`, RUN_LIMIT_PER_USER_PER_HOUR))) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Hourly analysis limit reached. Please try again later.",
+        },
+        { status: 429 }
+      );
+    }
+
     /*
      * IDOR protection: a supplied job ID must belong to this user's
      * agency. Checked BEFORE the analysis - it used to run after the
@@ -323,7 +326,10 @@ export async function POST(request) {
     let salary = null;
 
     try {
-      salary = estimateSalary(ex);
+      salary = estimateSalary(ex, {
+        relevantYears: result?.relevant_years_experience ?? null,
+        jobSalaryRange: jobParsed?.salary_range || "",
+      });
     } catch (error) {
       console.warn(
         "[run] Salary estimate failed:",

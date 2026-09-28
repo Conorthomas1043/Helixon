@@ -1,3 +1,12 @@
+// A rough salary guide from years of experience alone - no job title,
+// location, industry or specialism goes into it, so it's presented with a
+// rationale saying exactly that, and a confidence to match. (It used to
+// report 85% confidence for what is a five-band lookup on one number.)
+//
+// Uses years relevant to the role when scoring produced them (see
+// fitJudgeEngine.js) - ten years in an unrelated field isn't senior pay
+// for this job - and falls back to total years otherwise.
+
 const bands = {
 
   Junior: [28000, 42000],
@@ -13,14 +22,16 @@ const bands = {
 };
 
 
-export function estimateSalary(candidate = {}) {
+export function estimateSalary(candidate = {}, { relevantYears = null, jobSalaryRange = "" } = {}) {
+
+  const totalYears = Number(candidate?.years_experience) || 0;
+
+  const useRelevant = Number.isFinite(relevantYears) && relevantYears !== null;
+
+  const years = useRelevant ? relevantYears : totalYears;
+
 
   let seniority = "Junior";
-
-
-  const years =
-    Number(candidate?.years_experience) || 0;
-
 
   if (years >= 10) {
 
@@ -43,6 +54,12 @@ export function estimateSalary(candidate = {}) {
 
   const [low, high] = bands[seniority];
 
+  const yearsText = `${Math.round(years * 10) / 10} ${useRelevant ? "relevant " : ""}year${years === 1 ? "" : "s"} of experience`;
+
+  const advertised = typeof jobSalaryRange === "string" && jobSalaryRange.trim()
+    ? ` The role advertises ${jobSalaryRange.trim()}.`
+    : "";
+
 
   return {
 
@@ -54,7 +71,9 @@ export function estimateSalary(candidate = {}) {
 
     high,
 
-    confidence: years > 0 ? 85 : 40
+    confidence: years > 0 ? 45 : 20,
+
+    rationale: `Rough UK guide based only on ${yearsText} - it doesn't account for location, industry or specialism.${advertised}`
 
   };
 

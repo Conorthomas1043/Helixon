@@ -1,5 +1,7 @@
 // Shared constants and helpers for the /analyse workspace (single + bulk).
 
+import { STRONG_MATCH_MIN, REVIEW_MIN } from "@/lib/scoreBands";
+
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MIN_LOADING_MS = 900;
 export const SCORING_VERSION = "2026-07-v1";
@@ -140,8 +142,8 @@ export function savedJobText(job) {
 
 export function scoreTone(score) {
   if (score == null) return { fg: "var(--ink-faint)", bg: "var(--mist)", label: "No score" };
-  if (score >= 80) return { fg: "var(--score-strong)", bg: "var(--mint)", label: "Strong match" };
-  if (score >= 60) return { fg: "var(--score-mid)", bg: "#fdf6e9", label: "Worth a look" };
+  if (score >= STRONG_MATCH_MIN) return { fg: "var(--score-strong)", bg: "var(--mint)", label: "Strong match" };
+  if (score >= REVIEW_MIN) return { fg: "var(--score-mid)", bg: "#fdf6e9", label: "Worth a look" };
   return { fg: "var(--score-low)", bg: "#fbefed", label: "Weak match" };
 }
 

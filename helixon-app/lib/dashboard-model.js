@@ -8,6 +8,7 @@
 //     stage, score, createdAt (Date) }
 
 import { STAGE_LABELS, FUNNEL_ORDER } from "./stage-labels";
+import { STRONG_MATCH_MIN } from "./scoreBands";
 
 const DAY = 86400000;
 
@@ -34,7 +35,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
   const processing = analyses.filter((a) => a.status === "processing");
   const failed = analyses.filter((a) => a.status === "failed");
 
-  const strongMatches = completed.filter((a) => a.score !== null && a.score >= 80);
+  const strongMatches = completed.filter((a) => a.score !== null && a.score >= STRONG_MATCH_MIN);
   const avgScore = completed.length
     ? Math.round(completed.reduce((sum, a) => sum + (a.score ?? 0), 0) / completed.length)
     : 0;
@@ -92,7 +93,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
   // Strong match should surface whether or not it's been staged yet -
   // requiring stage === firstStageKey used to hide unstaged strong matches.
   completed
-    .filter((a) => a.score !== null && a.score >= 80 && (a.stage === firstStageKey || a.stage === null))
+    .filter((a) => a.score !== null && a.score >= STRONG_MATCH_MIN && (a.stage === firstStageKey || a.stage === null))
     .forEach((a) => {
       attentionItems.push({
         id: `${a.id}-unreviewed`,
@@ -128,7 +129,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
   // Completed, never staged, and not already caught as a strong match -
   // otherwise these candidates never prompt any action anywhere.
   completed
-    .filter((a) => a.stage === null && !(a.score !== null && a.score >= 80))
+    .filter((a) => a.stage === null && !(a.score !== null && a.score >= STRONG_MATCH_MIN))
     .forEach((a) => {
       attentionItems.push({
         id: `${a.id}-unstaged`,

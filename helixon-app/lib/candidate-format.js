@@ -12,6 +12,8 @@
  * instead of forking a second, slightly-different palette.
  * ---------------------------------------------------------------------- */
 
+import { STRONG_MATCH_MIN, REVIEW_MIN } from "./scoreBands";
+
 export const INK = "var(--ink)";
 export const INK_MUTED = "var(--ink-soft)";
 export const INK_FAINT = "var(--ink-faint)";
@@ -80,23 +82,23 @@ export function dayBucketLabel(date) {
 
 export function scoreColor(score) {
   if (score === null || score === undefined) return INK_FAINT;
-  if (score >= 80) return "var(--forest)";
-  if (score >= 60) return AMBER;
+  if (score >= STRONG_MATCH_MIN) return "var(--forest)";
+  if (score >= REVIEW_MIN) return AMBER;
   return RED;
 }
 
 export function scoreLabel(score) {
   if (score === null || score === undefined) return "No score";
-  if (score >= 80) return "Strong match";
-  if (score >= 60) return "Moderate match";
+  if (score >= STRONG_MATCH_MIN) return "Strong match";
+  if (score >= REVIEW_MIN) return "Moderate match";
   return "Weak match";
 }
 
 export function scoreBandOf(score) {
   if (score === null || score === undefined) return null;
-  if (score >= 80) return "80+";
-  if (score >= 60) return "60-79";
-  return "<60";
+  if (score >= STRONG_MATCH_MIN) return `${STRONG_MATCH_MIN}+`;
+  if (score >= REVIEW_MIN) return `${REVIEW_MIN}-${STRONG_MATCH_MIN - 1}`;
+  return `<${REVIEW_MIN}`;
 }
 
 export function truncate(text, max = 42) {

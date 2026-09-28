@@ -8,6 +8,7 @@ import DashboardNav from "@/components/DashboardNav";
 import CountUp from "@/components/dashboard/CountUp";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
+import { STRONG_MATCH_MIN, REVIEW_MIN } from "@/lib/scoreBands";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
@@ -117,15 +118,15 @@ function getGreeting() {
 
 function scoreColor(score) {
   if (score === null || score === undefined) return TEXT_FAINT;
-  if (score >= 80) return GREEN_FG;
-  if (score >= 60) return AMBER_FG;
+  if (score >= STRONG_MATCH_MIN) return GREEN_FG;
+  if (score >= REVIEW_MIN) return AMBER_FG;
   return RED;
 }
 
 function scoreLabel(score) {
   if (score === null || score === undefined) return "No score";
-  if (score >= 80) return "Strong";
-  if (score >= 60) return "Moderate";
+  if (score >= STRONG_MATCH_MIN) return "Strong";
+  if (score >= REVIEW_MIN) return "Moderate";
   return "Weak";
 }
 
@@ -644,7 +645,7 @@ function ActivityOverview({ analyses }) {
       currentCount: current.length,
       previousCount: previous.length,
       dayBuckets,
-      strong: current.filter((a) => a.score !== null && a.score >= 80).length,
+      strong: current.filter((a) => a.score !== null && a.score >= STRONG_MATCH_MIN).length,
       avgScore: (() => {
         const scored = current.filter((a) => a.score !== null);
         return scored.length ? Math.round(scored.reduce((n, a) => n + a.score, 0) / scored.length) : null;
@@ -946,7 +947,7 @@ function AgencyDashboardPage() {
       if (!jobMap.has(key)) jobMap.set(key, { key, jobTitle: a.jobTitle, company: a.company, candidateCount: 0, strongMatches: 0, stageCounts: {} });
       const job = jobMap.get(key);
       job.candidateCount += 1;
-      if (a.score !== null && a.score >= 80) job.strongMatches += 1;
+      if (a.score !== null && a.score >= STRONG_MATCH_MIN) job.strongMatches += 1;
       if (a.stage) job.stageCounts[a.stage] = (job.stageCounts[a.stage] ?? 0) + 1;
     });
     const jobs = Array.from(jobMap.values()).map((job) => ({

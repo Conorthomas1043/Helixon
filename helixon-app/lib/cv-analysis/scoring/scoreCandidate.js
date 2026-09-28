@@ -2,6 +2,8 @@ import { SCORE_WEIGHTS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from
 
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
+import { STRONG_MATCH_MIN, REVIEW_MIN } from "../../scoreBands.js";
+
 import { semanticMatch } from "./semanticMatcher.js";
 import { embedSkills, findSemanticMatch } from "./embeddingMatcher.js";
 
@@ -426,8 +428,8 @@ export default async function scoreCandidate(
 
     const recommendation =
         knockout.failed.length > 0 ? "Not suitable" :
-        knockout.score >= 80 ? "Strong match" :
-        knockout.score >= 55 ? "Worth reviewing" :
+        knockout.score >= STRONG_MATCH_MIN ? "Strong match" :
+        knockout.score >= REVIEW_MIN ? "Worth reviewing" :
         "Not suitable";
 
 
