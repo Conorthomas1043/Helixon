@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cleanUuid } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
@@ -83,12 +84,31 @@ const EMPTY_RESPONSE = {
   },
 };
 
-export async function GET() {
+// Optional filters, matching the Analytics page's: ?jobId=, ?recruiterId=,
+// ?days= (candidates created in the last N days). They narrow which
+// candidates everything is computed from; the channel figures follow the
+// job filter, and feedback stays agency-wide.
+export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
     return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
   const { agencyId } = auth;
+  const params = new URL(request.url).searchParams;
+  const jobFilter = cleanUuid(params.get("jobId"));
+  const recruiterFilter = (params.get("recruiterId") || "").slice(0, 100) || null;
+  const days = Number(params.get("days"));
+  const since = Number.isInteger(days) && days > 0 && days <= 3650 ? new Date(Date.now() - days * 86400000).toISOString() : null;
+
+  let candidateQuery = supabase
+    .from("candidates")
+    .select("id, job_id, created_at, stage, email, recruiter_id, source, rejection_reason, placement_fee, placement_cost, retention_30d, retention_90d")
+    .eq("agency_id", agencyId);
+  if (jobFilter) candidateQuery = candidateQuery.eq("job_id", jobFilter);
+  if (recruiterFilter) candidateQuery = candidateQuery.eq("recruiter_id", recruiterFilter);
+  if (since) candidateQuery = candidateQuery.gte("created_at", since);
+  let channelQuery = supabase.from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId);
+  if (jobFilter) channelQuery = channelQuery.eq("job_id", jobFilter);
 
   const [
     { data: candidates, error: candError },
@@ -97,12 +117,9 @@ export async function GET() {
     { data: feedbackResponses, error: feedbackError },
     { data: verdicts, error: verdictError },
   ] = await Promise.all([
-    supabase
-      .from("candidates")
-      .select("id, job_id, created_at, stage, email, recruiter_id, source, rejection_reason, placement_fee, placement_cost, retention_30d, retention_90d")
-      .eq("agency_id", agencyId),
+    candidateQuery,
     supabase.from("jobs").select("id, created_at").eq("agency_id", agencyId),
-    supabase.from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId),
+    channelQuery,
     supabase.from("feedback_requests").select("kind, rating").eq("agency_id", agencyId).not("responded_at", "is", null),
     // Recruiters' thumbs up/down on individual analyses (app/analyse).
     supabase.from("feedback").select("rating, comment").eq("agency_id", agencyId),

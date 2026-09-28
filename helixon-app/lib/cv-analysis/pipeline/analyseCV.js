@@ -43,15 +43,18 @@ async function parseJob(jobText, knownJob) {
 
 
 
+// cvText/extracted: a CV already on file (screening a saved candidate
+// against another job) - its stored text and extraction are reused, so
+// there's no file to read and one Claude round trip fewer.
 export default async function analyseCV(
     file,
     jobText,
-    { blind = false, jobParsed: knownJob = null } = {}
+    { blind = false, jobParsed: knownJob = null, cvText: knownCvText = null, extracted: knownExtracted = null } = {}
 ){
 
 
 
-    if(!file){
+    if(!file && !knownCvText){
 
         throw new Error(
             "CV file missing"
@@ -93,7 +96,7 @@ export default async function analyseCV(
 
 
     const cvText =
-        await extractCvText(file);
+        knownCvText || await extractCvText(file);
 
 
 
@@ -138,7 +141,9 @@ export default async function analyseCV(
     // after the other.
     const [extracted, jobParsed] =
         await Promise.all([
-            candidateExtractor(cvText),
+            knownExtracted && typeof knownExtracted === "object" && Object.keys(knownExtracted).length
+                ? knownExtracted
+                : candidateExtractor(cvText),
             parseJob(jobText, knownJob),
         ]);
 

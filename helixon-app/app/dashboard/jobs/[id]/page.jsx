@@ -406,11 +406,12 @@ export default function JobDetailPage({ params }) {
     if (!data?.job) return;
     const nextStatus = data.job.status === "open" ? "closed" : "open";
     setUpdatingStatus(true);
+    setDeleteError(null);
     try {
       await updateJobStatus(data.job.id, nextStatus);
       setData((d) => ({ ...d, job: { ...d.job, status: nextStatus } }));
     } catch (err) {
-      alert(err?.message || "Failed to update this role's status. Please try again.");
+      setDeleteError(err?.message || "Couldn't update this role's status. Please try again.");
     } finally {
       setUpdatingStatus(false);
     }
@@ -569,7 +570,7 @@ export default function JobDetailPage({ params }) {
                     <ul className="text-[13px] space-y-1" style={{ color: INK }}>
                       <li>{job.seniority} · {job.employmentType}</li>
                       <li>{job.salaryRange}</li>
-                      <li>{job.minYearsExperience}+ years' experience</li>
+                      <li>{job.minYearsExperience}+ years&apos; experience</li>
                     </ul>
                   </div>
                   <div>
@@ -603,7 +604,15 @@ export default function JobDetailPage({ params }) {
                 <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
                   Candidates ranked by fit
                 </h2>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                <Link
+                  href={`/dashboard/talent-pool?jobId=${job.id}`}
+                  className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{ border: "1px solid var(--forest)", color: "var(--forest)", background: "white" }}
+                  title="See who in your talent pool fits this job, and screen them without re-uploading CVs"
+                >
+                  ☆ Find in talent pool
+                </Link>
                 {(data?.candidates?.length ?? 0) >= 2 && (
                   <Link
                     href={`/analyse/compare?jobId=${job.id}`}
@@ -632,7 +641,21 @@ export default function JobDetailPage({ params }) {
 
               {filteredCandidates.length === 0 ? (
                 <p className="text-[13px] py-6 text-center" style={{ color: INK_MUTED }}>
-                  No candidates match this filter yet.
+                  {candidates.length === 0 ? (
+                    <>
+                      No candidates yet.{" "}
+                      <Link href={`/dashboard/talent-pool?jobId=${job.id}`} className="font-semibold underline" style={{ color: "var(--forest)" }}>
+                        Check your talent pool
+                      </Link>{" "}
+                      for people you&apos;ve already screened, or{" "}
+                      <Link href={`/analyse?jobId=${job.id}`} className="font-semibold underline" style={{ color: "var(--forest)" }}>
+                        analyse a new CV
+                      </Link>
+                      .
+                    </>
+                  ) : (
+                    "No candidates match this filter yet."
+                  )}
                 </p>
               ) : (
                 <ul className="divide-y" style={{ borderColor: "var(--border)" }}>

@@ -382,3 +382,39 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .value-flash { animation: none; }
 }
+/* Printing one section on its own (lib/print.js). Hidden with visibility
+   rather than display so the section keeps its own layout; it's lifted to
+   the top of the page, scroll boxes inside it are opened up so nothing is
+   cut off, and the page background is dropped. */
+@media print {
+  body.printing-section {
+    background: white !important;
+  }
+  body.printing-section * {
+    visibility: hidden;
+  }
+  body.printing-section .print-target,
+  body.printing-section .print-target * {
+    visibility: visible;
+  }
+  body.printing-section .print-target {
+    position: absolute;
+    inset: 0 0 auto 0;
+    width: 100%;
+    margin: 0;
+  }
+  body.printing-section .print-target .overflow-y-auto,
+  body.printing-section .print-target .overflow-x-auto,
+  body.printing-section .print-target .overflow-auto {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  body.printing-section .print-target .print-hide {
+    display: none !important;
+  }
+  /* Take everything else out of the flow too, or its (invisible) height
+     prints as blank trailing pages. Ancestors of the section are kept. */
+  body.printing-section *:not(:has(.print-target)):not(.print-target):not(.print-target *) {
+    display: none !important;
+  }
+}

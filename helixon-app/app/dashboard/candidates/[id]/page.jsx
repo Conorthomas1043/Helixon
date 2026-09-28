@@ -13,6 +13,7 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
 import {
   getCandidateById,
@@ -20,6 +21,14 @@ import {
   updateCandidateStage,
   assignCandidate,
   addCandidateNote,
+  getJobs,
+  saveToTalentPool,
+  removeFromTalentPool,
+  rescreenCandidate,
+  getTags,
+  createTag,
+  editCandidateNote,
+  deleteCandidateNote,
   addCandidateTag,
   removeCandidateTag,
   setCandidateNextAction,
@@ -37,6 +46,7 @@ import { Toasts, useToasts } from "@/app/analyse/_components/ui";
 import { useEmailComposer } from "@/app/analyse/_lib/useEmailComposer";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { printSection } from "@/lib/print";
 import {
   INK,
   INK_MUTED,
@@ -98,7 +108,10 @@ function activityDescription(entry) {
     case "meeting_logged":
     case "cv_sent_logged":
     case "details_updated":
+    case "talent_pool_added":
       return entry.meta?.note ?? "";
+    case "rescreened":
+      return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
     default:
       return "";
   }
@@ -122,6 +135,9 @@ const EVENT_LABELS = {
   meeting_logged: "Meeting logged",
   cv_sent_logged: "CV sent",
   details_updated: "Details edited",
+  talent_pool_added: "Saved to talent pool",
+  talent_pool_removed: "Removed from talent pool",
+  rescreened: "Screened for another job",
 };
 
 const OUTREACH_ACTIONS = [
@@ -134,6 +150,39 @@ const OUTREACH_ACTIONS = [
 /* ------------------------------------------------------------------------
  * Shared bits
  * ---------------------------------------------------------------------- */
+
+// Creates one of the agency's own tags and puts it on this candidate.
+function NewTagForm({ onCreate }) {
+  const [label, setLabel] = useState("");
+  const [saving, setSaving] = useState(false);
+  return (
+    <form
+      className="flex items-center gap-1 mt-1 pt-1.5"
+      style={{ borderTop: "1px solid var(--border)" }}
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!label.trim() || saving) return;
+        setSaving(true);
+        const ok = await onCreate(label);
+        setSaving(false);
+        if (ok) setLabel("");
+      }}
+    >
+      <input
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        maxLength={30}
+        placeholder="New tag…"
+        aria-label="New tag name"
+        className="min-w-0 flex-1 text-[12px] px-2 py-1 rounded-[6px] focus-visible:outline focus-visible:outline-2"
+        style={{ border: "1px solid var(--border)", color: INK }}
+      />
+      <button type="submit" disabled={!label.trim() || saving} className="text-[11px] font-semibold px-2 py-1 rounded-[6px] disabled:opacity-40" style={{ color: "var(--forest)" }}>
+        {saving ? "…" : "Add"}
+      </button>
+    </form>
+  );
+}
 
 function SectionHeading({ eyebrow, title, action }) {
   return (
@@ -768,7 +817,7 @@ function ActivityTimeline({ activity }) {
  * Recruiter workspace (stage / recruiter / tags / next action)
  * ---------------------------------------------------------------------- */
 
-function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssign, onAddTag, onRemoveTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
+function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssign, onAddTag, onRemoveTag, onCreateTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
   const [nextActionLabel, setNextActionLabel] = useState("");
   const [nextActionDue, setNextActionDue] = useState("");
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
@@ -847,15 +896,15 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssi
               </span>
             );
           })}
-          {availableTags.length > 0 && (
-            <details className="relative">
-              <summary
-                className="list-none cursor-pointer text-[11px] font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px dashed var(--border)", color: "var(--forest)" }}
-              >
-                + Add tag
-              </summary>
-              <div className="absolute left-0 mt-2 w-48 rounded-[10px] p-1.5 z-20" style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}>
+          <details className="relative">
+            <summary
+              className="list-none cursor-pointer text-[11px] font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ border: "1px dashed var(--border)", color: "var(--forest)" }}
+            >
+              + Add tag
+            </summary>
+            <div className="absolute left-0 mt-2 w-48 rounded-[10px] p-1.5 z-20" style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}>
+              <div className="max-h-56 overflow-y-auto">
                 {availableTags.map((t) => (
                   <button
                     key={t.id}
@@ -868,8 +917,9 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssi
                   </button>
                 ))}
               </div>
-            </details>
-          )}
+              <NewTagForm onCreate={onCreateTag} />
+            </div>
+          </details>
         </div>
       </div>
 
@@ -1170,18 +1220,82 @@ function FeedbackRequestsPanel({ requests, onCreate, creating }) {
  * Notes
  * ---------------------------------------------------------------------- */
 
-function NotesPanel({ notes, onAddNote }) {
+function NoteItem({ note, mine, onEdit, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(note.body);
+  const [saving, setSaving] = useState(false);
+
+  if (editing) {
+    return (
+      <li className="text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={3}
+          aria-label="Edit note"
+          className="w-full text-sm p-2.5 rounded-[8px] resize-none bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        />
+        <div className="flex justify-end gap-2 mt-2">
+          <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-[12px] font-semibold px-3 py-1 rounded-full" style={{ color: INK_MUTED }}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!text.trim() || saving}
+            onClick={async () => {
+              setSaving(true);
+              const ok = await onEdit(note.id, text);
+              setSaving(false);
+              if (ok) setEditing(false);
+            }}
+            className="text-[12px] font-semibold px-3 py-1 rounded-full disabled:opacity-40"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="group text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+      <p className="whitespace-pre-wrap" style={{ color: INK }}>{note.body}</p>
+      <div className="flex items-center justify-between gap-2 mt-1.5">
+        <p className="text-[11px]" style={{ color: INK_FAINT }}>
+          - {note.author} · {formatRelativeTime(note.createdAt)}
+        </p>
+        {mine && (
+          <span className="flex items-center gap-2 text-[11px] font-semibold">
+            <button type="button" onClick={() => setEditing(true)} className="hover:underline" style={{ color: INK_MUTED }}>
+              Edit
+            </button>
+            <button type="button" onClick={() => onDelete(note.id)} className="hover:underline" style={{ color: RED_STRONG }}>
+              Delete
+            </button>
+          </span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote }) {
   const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
 
   return (
     <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Working notes" title="Notes" />
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          if (!draft.trim()) return;
-          onAddNote(draft);
-          setDraft("");
+          if (!draft.trim() || saving) return;
+          setSaving(true);
+          const ok = await onAddNote(draft);
+          setSaving(false);
+          if (ok) setDraft("");
         }}
         className="mb-4"
       >
@@ -1197,11 +1311,11 @@ function NotesPanel({ notes, onAddNote }) {
         <div className="flex justify-end mt-2">
           <button
             type="submit"
-            disabled={!draft.trim()}
+            disabled={!draft.trim() || saving}
             className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
-            Add note
+            {saving ? "Saving…" : "Add note"}
           </button>
         </div>
       </form>
@@ -1213,15 +1327,180 @@ function NotesPanel({ notes, onAddNote }) {
       ) : (
         <ul className="space-y-2.5">
           {notes.map((n) => (
-            <li key={n.id} className="text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
-              <p style={{ color: INK }}>{n.body}</p>
-              <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
-                - {n.author} · {formatRelativeTime(n.createdAt)}
-              </p>
-            </li>
+            <NoteItem key={n.id} note={n} mine={Boolean(currentUserId) && n.authorId === currentUserId} onEdit={onEditNote} onDelete={onDeleteNote} />
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Talent pool & other roles - keep someone for future jobs, and screen them
+ * against another job from the CV already on file (lib/rescreen.js).
+ * ---------------------------------------------------------------------- */
+
+function TalentPoolPanel({ candidate, jobs, onSave, onRemove, onRescreen }) {
+  const [note, setNote] = useState("");
+  const [noting, setNoting] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [jobId, setJobId] = useState("");
+  const [screening, setScreening] = useState(false);
+  const pool = candidate.talentPool;
+
+  const screenedJobIds = new Set([candidate.jobId, ...candidate.otherRoles.map((r) => r.jobId)]);
+  const availableJobs = jobs.filter((j) => !screenedJobIds.has(j.id));
+  const openJobs = availableJobs.filter((j) => j.status === "open");
+  const closedJobs = availableJobs.filter((j) => j.status !== "open");
+
+  async function save() {
+    setBusy(true);
+    const ok = await onSave(note);
+    setBusy(false);
+    if (ok) {
+      setNote("");
+      setNoting(false);
+    }
+  }
+
+  return (
+    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+      <SectionHeading
+        eyebrow="Talent pool"
+        title={pool ? "Saved for future roles" : "Keep for future roles"}
+        action={
+          <Link href="/dashboard/talent-pool" className="text-[12px] font-semibold" style={{ color: "var(--forest)" }}>
+            Open pool →
+          </Link>
+        }
+      />
+
+      {pool ? (
+        <div className="rounded-[10px] p-3 mb-4" style={{ background: "var(--mint)" }}>
+          <p className="text-[12.5px] font-semibold" style={{ color: "var(--forest-deep)" }}>
+            In the talent pool
+          </p>
+          <p className="text-[11.5px] mt-0.5" style={{ color: INK_MUTED }}>
+            Saved {formatRelativeTime(new Date(pool.savedAt))}
+            {pool.savedBy ? ` by ${pool.savedBy}` : ""}
+          </p>
+          {pool.note && <p className="text-[12.5px] italic mt-1.5" style={{ color: INK }}>“{pool.note}”</p>}
+          <button
+            type="button"
+            onClick={async () => {
+              setBusy(true);
+              await onRemove();
+              setBusy(false);
+            }}
+            disabled={busy}
+            className="text-[11.5px] font-semibold mt-2 hover:underline disabled:opacity-50"
+            style={{ color: INK_MUTED }}
+          >
+            Remove from pool
+          </button>
+        </div>
+      ) : noting ? (
+        <div className="mb-4">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            maxLength={500}
+            placeholder="Why keep them? e.g. great fit for senior sales, wants remote (optional)"
+            aria-label="Why keep them"
+            className="w-full text-[13px] p-2.5 rounded-[10px] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          />
+          <div className="flex justify-end gap-2 mt-2">
+            <button type="button" onClick={() => setNoting(false)} className="text-[12px] font-semibold px-3 py-1.5 rounded-full" style={{ color: INK_MUTED }}>
+              Cancel
+            </button>
+            <button type="button" onClick={save} disabled={busy} className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+              {busy ? "Saving…" : "Save to pool"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setNoting(true)}
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-full"
+            style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
+          >
+            ☆ Save to talent pool
+          </button>
+          <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>
+            Not right for this role? Keep them - when a new job comes in, you can screen them against it without re-uploading.
+          </p>
+        </div>
+      )}
+
+      <FieldLabel>Screened for</FieldLabel>
+      <ul className="space-y-1.5 mb-4">
+        <li className="flex items-center justify-between gap-2 text-[12.5px]">
+          <span className="truncate" style={{ color: INK }}>
+            {candidate.jobTitle} <span style={{ color: INK_FAINT }}>(this page)</span>
+          </span>
+          <span className="tabular-nums font-semibold" style={{ color: scoreColor(candidate.score) }}>{candidate.score ?? "–"}</span>
+        </li>
+        {candidate.otherRoles.map((r) => (
+          <li key={r.candidateId} className="flex items-center justify-between gap-2 text-[12.5px]">
+            <Link href={`/dashboard/candidates/${r.candidateId}`} className="truncate hover:underline" style={{ color: "var(--forest)" }}>
+              {r.jobTitle}
+              {r.stage ? <span style={{ color: INK_FAINT }}> · {STAGE_LABELS[r.stage] || r.stage}</span> : null}
+            </Link>
+            <span className="tabular-nums font-semibold" style={{ color: scoreColor(r.score) }}>{r.score ?? "–"}</span>
+          </li>
+        ))}
+      </ul>
+
+      <FieldLabel>Screen for another job</FieldLabel>
+      {candidate.hasCvText ? (
+        <div className="flex gap-2">
+          <select
+            value={jobId}
+            onChange={(e) => setJobId(e.target.value)}
+            disabled={screening}
+            aria-label="Job to screen them for"
+            className="min-w-0 flex-1 text-[12.5px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            <option value="">{availableJobs.length ? "Choose a job…" : "No other jobs yet"}</option>
+            {openJobs.length > 0 && (
+              <optgroup label="Open">
+                {openJobs.map((j) => (
+                  <option key={j.id} value={j.id}>{j.title}</option>
+                ))}
+              </optgroup>
+            )}
+            {closedJobs.length > 0 && (
+              <optgroup label="Closed">
+                {closedJobs.map((j) => (
+                  <option key={j.id} value={j.id}>{j.title}</option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          <button
+            type="button"
+            disabled={!jobId || screening}
+            onClick={async () => {
+              setScreening(true);
+              const ok = await onRescreen(jobId);
+              setScreening(false);
+              if (ok) setJobId("");
+            }}
+            className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            {screening ? "Screening…" : "Screen"}
+          </button>
+        </div>
+      ) : (
+        <p className="text-[12px]" style={{ color: INK_FAINT }}>No CV text on file - upload their CV on Analyse to screen them for another job.</p>
+      )}
+      {screening && <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>Running a full analysis - about 20–40 seconds.</p>}
     </div>
   );
 }
@@ -1307,26 +1586,45 @@ function StateMessage({ title, body, retryLabel, onRetry }) {
  * you left that screen.
  * ---------------------------------------------------------------------- */
 
-function FullAnalysis({ analysis }) {
+function FullAnalysis({ analysis, candidateName }) {
   const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
   if (!analysis?.report) return null;
   const role = [analysis.jobTitle, analysis.jobClient].filter(Boolean).join(" @ ");
 
+  // Opens the report first if it's collapsed, then prints just this box -
+  // "Save as PDF" in the dialog gives a copy to send a client.
+  function print() {
+    setOpen(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => printSection(boxRef.current)));
+  }
+
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div ref={boxRef} className="rounded-[14px] p-5 sm:p-6" style={CARD}>
       <SectionHeading
-        eyebrow="Full analysis"
+        eyebrow={candidateName ? `Full analysis · ${candidateName}` : "Full analysis"}
         title="Screening report"
         action={
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-            style={{ color: "var(--forest)" }}
-          >
-            {open ? "Hide report" : "Show full report"}
-          </button>
+          <span className="flex items-center gap-3 print-hide">
+            <button
+              type="button"
+              onClick={print}
+              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              style={{ color: INK_MUTED }}
+              title="Print, or choose Save as PDF to send it"
+            >
+              Print / PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              style={{ color: "var(--forest)" }}
+            >
+              {open ? "Hide report" : "Show full report"}
+            </button>
+          </span>
         }
       />
       <p className="text-[12.5px]" style={{ color: INK_MUTED }}>
@@ -1492,6 +1790,8 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
 export default function CandidateProfilePage({ params }) {
   const { id } = use(params);
   const router = useRouter();
+  const { user: clerkUser } = useUser();
+  const currentUserId = clerkUser?.id ?? null;
 
   const [candidate, setCandidate] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error | not-found
@@ -1499,7 +1799,12 @@ export default function CandidateProfilePage({ params }) {
   const [recruiters, setRecruiters] = useState([]);
   const [feedbackRequests, setFeedbackRequests] = useState([]);
   const [creatingFeedbackRequest, setCreatingFeedbackRequest] = useState(null);
-  const tags = TAG_CATALOG;
+  // Every action on this page reports a failure here - they used to fail
+  // silently (a lost note, a stage that snapped back on reload).
+  const { toasts, toast } = useToasts();
+  const failed = useCallback((err, fallback) => toast(err?.message || fallback, "error"), [toast]);
+  // Built-in tags straight away; the agency's own arrive from /api/tags.
+  const [tags, setTags] = useState(TAG_CATALOG);
   // No prev/next-candidate endpoint exists yet - the UI already disables
   // these buttons cleanly when both are null.
   const prevId = null;
@@ -1507,6 +1812,7 @@ export default function CandidateProfilePage({ params }) {
 
   useEffect(() => {
     getRecruiters().then(setRecruiters).catch(() => {});
+    getTags().then(setTags).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -1517,13 +1823,15 @@ export default function CandidateProfilePage({ params }) {
     async (kind) => {
       setCreatingFeedbackRequest(kind);
       try {
-        const req = await createFeedbackRequest(id, { kind }).catch(() => null);
+        const req = await createFeedbackRequest(id, { kind });
         if (req) setFeedbackRequests((list) => [req, ...list]);
+      } catch (err) {
+        failed(err, "Couldn't create the feedback request.");
       } finally {
         setCreatingFeedbackRequest(null);
       }
     },
-    [id]
+    [id, failed]
   );
 
   useEffect(() => {
@@ -1572,7 +1880,7 @@ export default function CandidateProfilePage({ params }) {
   const handleStageChange = useCallback(
     async (stage) => {
       const previousStage = candidate?.stage ?? null;
-      const updated = await updateCandidateStage(id, stage).catch(() => null);
+      const updated = await updateCandidateStage(id, stage).catch((err) => failed(err, "Couldn't move this candidate."));
       if (updated) {
         if (previousStage !== stage && posthog.__loaded) {
           posthog.capture("candidate_stage_changed", {
@@ -1581,17 +1889,18 @@ export default function CandidateProfilePage({ params }) {
           });
         }
         setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage } : c));
+        toast(`Moved to ${STAGE_LABELS[updated.stage ?? stage] || stage}`);
       }
     },
-    [id, candidate]
+    [id, candidate, failed, toast]
   );
 
   const handleAssign = useCallback(
     async (recruiterId) => {
-      const updated = await assignCandidate(id, recruiterId || null).catch(() => null);
+      const updated = await assignCandidate(id, recruiterId || null).catch((err) => failed(err, "Couldn't reassign this candidate."));
       if (updated) setCandidate((c) => (c ? { ...c, recruiterId: updated.recruiter_id ?? recruiterId } : c));
     },
-    [id]
+    [id, failed]
   );
 
   const handleDeleteCandidate = useCallback(async () => {
@@ -1606,57 +1915,86 @@ export default function CandidateProfilePage({ params }) {
       await deleteCandidate(id);
       router.push("/dashboard/candidates");
     } catch (err) {
-      alert(err?.message || "Failed to delete candidate. Please try again.");
+      failed(err, "Couldn't delete this candidate. Please try again.");
     }
-  }, [id, candidate, router]);
+  }, [id, candidate, router, failed]);
 
   const handleAddNote = useCallback(
     async (body) => {
-      const note = await addCandidateNote(id, body).catch(() => null);
-      if (note) {
-        setCandidate((c) =>
-          c ? { ...c, notes: [{ id: note.id, author: note.author_name, createdAt: note.created_at, body: note.body }, ...c.notes] } : c
-        );
-      }
+      // Returns whether it saved, so the note box only clears on success.
+      const note = await addCandidateNote(id, body).catch((err) => failed(err, "Couldn't save the note - it's still in the box."));
+      if (!note) return false;
+      setCandidate((c) => (c ? { ...c, notes: [note, ...c.notes] } : c));
+      return true;
     },
-    [id]
+    [id, failed]
+  );
+
+  const handleEditNote = useCallback(
+    async (noteId, body) => {
+      const note = await editCandidateNote(id, noteId, body).catch((err) => failed(err, "Couldn't save the note."));
+      if (!note) return false;
+      setCandidate((c) => (c ? { ...c, notes: c.notes.map((n) => (n.id === noteId ? note : n)) } : c));
+      return true;
+    },
+    [id, failed]
+  );
+
+  const handleDeleteNote = useCallback(
+    async (noteId) => {
+      if (!confirm("Delete this note?")) return;
+      const ok = await deleteCandidateNote(id, noteId).catch((err) => failed(err, "Couldn't delete the note."));
+      if (ok) setCandidate((c) => (c ? { ...c, notes: c.notes.filter((n) => n.id !== noteId) } : c));
+    },
+    [id, failed]
   );
 
   const handleAddTag = useCallback(
     async (tagId) => {
-      const res = await addCandidateTag(id, tagId).catch(() => null);
+      const res = await addCandidateTag(id, tagId).catch((err) => failed(err, "Couldn't add the tag."));
       if (res) setCandidate((c) => (c ? { ...c, tags: res.tags } : c));
     },
-    [id]
+    [id, failed]
+  );
+
+  const handleCreateTag = useCallback(
+    async (label) => {
+      const tag = await createTag(label).catch((err) => failed(err, "Couldn't create the tag."));
+      if (!tag) return false;
+      setTags((list) => (list.some((t) => t.id === tag.id) ? list : [...list, tag]));
+      await handleAddTag(tag.id);
+      return true;
+    },
+    [failed, handleAddTag]
   );
 
   const handleRemoveTag = useCallback(
     async (tagId) => {
-      const res = await removeCandidateTag(id, tagId).catch(() => null);
+      const res = await removeCandidateTag(id, tagId).catch((err) => failed(err, "Couldn't remove the tag."));
       if (res) setCandidate((c) => (c ? { ...c, tags: res.tags } : c));
     },
-    [id]
+    [id, failed]
   );
 
   const handleSetNextAction = useCallback(
     async (payload) => {
-      const res = await setCandidateNextAction(id, payload).catch(() => null);
+      const res = await setCandidateNextAction(id, payload).catch((err) => failed(err, "Couldn't save the next action."));
       if (res) setCandidate((c) => (c ? { ...c, nextAction: res.nextAction } : c));
     },
-    [id]
+    [id, failed]
   );
 
   const handleCompleteNextAction = useCallback(async () => {
-    const res = await completeNextAction(id).catch(() => null);
+    const res = await completeNextAction(id).catch((err) => failed(err, "Couldn't mark it done."));
     if (res) setCandidate((c) => (c ? { ...c, nextAction: res.nextAction } : c));
-  }, [id]);
+  }, [id, failed]);
 
   const handleUpdateDetails = useCallback(
     async (fields) => {
-      const res = await updateCandidateDetails(id, fields).catch(() => null);
+      const res = await updateCandidateDetails(id, fields).catch((err) => failed(err, "Couldn't save that change."));
       if (res) setCandidate((c) => (c ? { ...c, ...res } : c));
     },
-    [id]
+    [id, failed]
   );
 
   const [loggingActivity, setLoggingActivity] = useState(null);
@@ -1664,7 +2002,7 @@ export default function CandidateProfilePage({ params }) {
     async (type) => {
       setLoggingActivity(type);
       try {
-        const res = await logCandidateActivity(id, type).catch(() => null);
+        const res = await logCandidateActivity(id, type).catch((err) => failed(err, "Couldn't log that."));
         if (res?.activity) {
           setCandidate((c) => (c ? { ...c, activity: [res.activity, ...c.activity] } : c));
         }
@@ -1672,7 +2010,62 @@ export default function CandidateProfilePage({ params }) {
         setLoggingActivity(null);
       }
     },
-    [id]
+    [id, failed]
+  );
+
+  const [jobs, setJobs] = useState([]);
+  useEffect(() => {
+    getJobs().then(setJobs).catch(() => {});
+  }, []);
+
+  const handleSaveToPool = useCallback(
+    async (note) => {
+      const talentPool = await saveToTalentPool(id, note).catch((err) => failed(err, "Couldn't save them to the talent pool."));
+      if (!talentPool) return false;
+      setCandidate((c) => (c ? { ...c, talentPool } : c));
+      toast("Saved to the talent pool");
+      refreshActivity();
+      return true;
+    },
+    [id, failed, toast, refreshActivity]
+  );
+
+  const handleRemoveFromPool = useCallback(async () => {
+    const ok = await removeFromTalentPool(id).catch((err) => failed(err, "Couldn't remove them from the pool."));
+    if (!ok) return;
+    setCandidate((c) => (c ? { ...c, talentPool: null } : c));
+    toast("Removed from the talent pool");
+    refreshActivity();
+  }, [id, failed, toast, refreshActivity]);
+
+  const handleRescreen = useCallback(
+    async (jobId) => {
+      try {
+        const r = await rescreenCandidate(id, jobId);
+        setCandidate((c) =>
+          c
+            ? {
+                ...c,
+                otherRoles: [
+                  { candidateId: r.candidateId, jobId, jobTitle: r.job?.title || "Role", score: r.score, stage: "Screened" },
+                  ...c.otherRoles,
+                ],
+              }
+            : c
+        );
+        toast(`Screened for ${r.job?.title || "that job"}: ${r.score}`);
+        refreshActivity();
+        return true;
+      } catch (err) {
+        if (err.status === 409 && err.existingId) {
+          router.push(`/dashboard/candidates/${err.existingId}`);
+          return true;
+        }
+        failed(err, "Couldn't screen them for that job.");
+        return false;
+      }
+    },
+    [id, failed, toast, refreshActivity, router]
   );
 
   const focusNoteField = useCallback(() => {
@@ -1731,12 +2124,19 @@ export default function CandidateProfilePage({ params }) {
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               <div className="space-y-4 lg:space-y-6">
                 <MatchOverview candidate={candidate} />
-                <FullAnalysis analysis={candidate.analysis} />
+                <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} />
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
                 <ActivityTimeline activity={candidate.activity} />
               </div>
               <div className="space-y-4 lg:space-y-6">
+                <TalentPoolPanel
+                  candidate={candidate}
+                  jobs={jobs}
+                  onSave={handleSaveToPool}
+                  onRemove={handleRemoveFromPool}
+                  onRescreen={handleRescreen}
+                />
                 <RecruiterWorkspace
                   candidate={candidate}
                   recruiters={recruiters}
@@ -1745,6 +2145,7 @@ export default function CandidateProfilePage({ params }) {
                   onAssign={handleAssign}
                   onAddTag={handleAddTag}
                   onRemoveTag={handleRemoveTag}
+                  onCreateTag={handleCreateTag}
                   onSetNextAction={handleSetNextAction}
                   onCompleteNextAction={handleCompleteNextAction}
                   onLogActivity={handleLogActivity}
@@ -1756,7 +2157,7 @@ export default function CandidateProfilePage({ params }) {
                   onCreate={handleCreateFeedbackRequest}
                   creating={creatingFeedbackRequest}
                 />
-                <NotesPanel notes={candidate.notes} onAddNote={handleAddNote} />
+                <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />
               </div>
             </div>
@@ -1766,6 +2167,7 @@ export default function CandidateProfilePage({ params }) {
       {editingDetails && candidate && (
         <EditDetailsDialog candidate={candidate} onCancel={closeEditDetails} onSaved={handleDetailsSaved} />
       )}
+      <Toasts toasts={toasts} />
     </main>
   );
 }

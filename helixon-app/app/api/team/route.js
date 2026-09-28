@@ -2,20 +2,29 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { listOrgMembers } from "@/lib/clerk-org";
+import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
 
 // "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
 // join through a Clerk Organization invite (app/api/team/invite), and the
 // Clerk webhook attaches their profile to the agency. Each member's role
-// ("owner" / "member") comes from that org.
+// ("owner" / "admin" / "member") comes from that org: the owner created it,
+// admins are other "org:admin" members (they can manage the team too).
 async function rolesFor(agencyId, profiles) {
   const { data: agency } = await supabase.from("agencies").select("clerk_org_id").eq("id", agencyId).maybeSingle();
   // No org yet: nobody has been invited, so a lone member is the owner.
   if (!agency?.clerk_org_id) {
     return new Map(profiles.length === 1 ? [[profiles[0].clerk_user_id, "owner"]] : []);
   }
-  const members = await listOrgMembers(agency.clerk_org_id);
-  return new Map(members.map((m) => [m.userId, m.role === "org:admin" ? "owner" : "member"]));
+  const [members, creatorId] = await Promise.all([
+    listOrgMembers(agency.clerk_org_id),
+    getOrgCreatorId(agency.clerk_org_id).catch(() => null),
+  ]);
+  const admins = members.filter((m) => m.role === "org:admin");
+  // Orgs from before admins existed have exactly one admin - the owner.
+  const ownerId = creatorId || (admins.length === 1 ? admins[0].userId : null);
+  return new Map(
+    members.map((m) => [m.userId, m.userId === ownerId ? "owner" : m.role === "org:admin" ? "admin" : "member"])
+  );
 }
 
 export async function GET() {

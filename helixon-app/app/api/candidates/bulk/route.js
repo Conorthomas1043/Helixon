@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { STAGE_LABELS } from "@/lib/stage-labels";
-import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { eraseCandidates } from "@/lib/candidate-erasure";
 
-// POST { ids: [...], action: "stage" | "tag" | "delete", stage?, tagId? }
+// POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
 // Bulk actions from the Candidates list in one request. They used to loop
 // one request per candidate from the browser (a 50-candidate stage change
@@ -45,7 +45,7 @@ export async function POST(request) {
 
   const { data: rows, error: lookupError } = await supabase
     .from("candidates")
-    .select("id, stage, tags")
+    .select("id, stage, tags, pooled_from_id")
     .eq("agency_id", agencyId)
     .in("id", ids);
   if (lookupError) {
@@ -76,7 +76,7 @@ export async function POST(request) {
   }
 
   if (body.action === "tag") {
-    const tag = TAG_CATALOG.find((t) => t.id === body.tagId);
+    const tag = typeof body.tagId === "string" ? await findAgencyTag(supabase, agencyId, body.tagId) : null;
     if (!tag) {
       return NextResponse.json({ error: "Unknown tag" }, { status: 400 });
     }
@@ -103,6 +103,32 @@ export async function POST(request) {
       );
     }
     return NextResponse.json({ ok: true, updated: tagging.length });
+  }
+
+  // Talent pool: one entry per person, on their first row (lib/rescreen.js).
+  if (body.action === "pool" || body.action === "unpool") {
+    const adding = body.action === "pool";
+    const roots = [...new Set((rows || []).map((r) => r.pooled_from_id || r.id))];
+    if (roots.length) {
+      let query = supabase
+        .from("candidates")
+        .update(adding ? { talent_pool_at: now, talent_pool_by: actor } : { talent_pool_at: null, talent_pool_by: null, talent_pool_note: null })
+        .eq("agency_id", agencyId)
+        .in("id", roots);
+      // Saving again mustn't reset when (or by whom) someone was first saved.
+      query = adding ? query.is("talent_pool_at", null) : query.not("talent_pool_at", "is", null);
+      const { data: changed, error } = await query.select("id");
+      if (error) {
+        return NextResponse.json({ error: "Failed to update the talent pool." }, { status: 500 });
+      }
+      if (changed?.length) {
+        await supabase.from("candidate_activity").insert(
+          changed.map((r) => ({ candidate_id: r.id, type: adding ? "talent_pool_added" : "talent_pool_removed", actor }))
+        );
+      }
+      return NextResponse.json({ ok: true, updated: changed?.length || 0 });
+    }
+    return NextResponse.json({ ok: true, updated: 0 });
   }
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });

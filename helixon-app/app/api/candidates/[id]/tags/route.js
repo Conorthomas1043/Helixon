@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
-import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 export async function POST(request, { params }) {
@@ -13,8 +13,9 @@ export async function POST(request, { params }) {
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const { tagId } = await request.json();
-  const tag = TAG_CATALOG.find((t) => t.id === tagId);
+  const body = await request.json().catch(() => null);
+  const tagId = typeof body?.tagId === "string" ? body.tagId : "";
+  const tag = await findAgencyTag(supabase, agencyId, tagId);
   if (!tag) {
     return NextResponse.json({ error: "Unknown tag" }, { status: 400 });
   }

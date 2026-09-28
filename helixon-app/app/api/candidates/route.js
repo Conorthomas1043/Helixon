@@ -39,6 +39,9 @@ export async function GET(request) {
   const dateRange = params.get("dateRange") ?? "all";
   const tagIds = (params.get("tagIds") || "").split(",").map((t) => t.trim()).filter(Boolean);
   const sortBy = params.get("sortBy") ?? "score_desc";
+  // Only people saved to the talent pool (one row per person - see
+  // app/api/candidates/[id]/talent-pool).
+  const poolOnly = params.get("pool") === "1";
   const page = Math.max(1, Number(params.get("page")) || 1);
   // Up to 200 so "load everything" callers (analytics, export) need few requests.
   const pageSize = Math.min(200, Math.max(1, Number(params.get("pageSize")) || 8));
@@ -48,7 +51,7 @@ export async function GET(request) {
   let query = supabase
     .from("candidates")
     .select(
-      "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, skills:extracted->skills, jobs(id, title, client)",
+      "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, skills:extracted->skills, jobs(id, title, client)",
       { count: "exact" }
     )
     .eq("agency_id", agencyId);
@@ -64,11 +67,12 @@ export async function GET(request) {
     query = query.ilike("full_name", `%${escaped}%`);
   }
   if (tagIds.length > 0) query = query.contains("tags", tagIds);
+  if (poolOnly) query = query.not("talent_pool_at", "is", null);
   if (scoreBand === "80+") query = query.gte("match_score", 80);
   else if (scoreBand === "60-79") query = query.gte("match_score", 60).lt("match_score", 80);
   else if (scoreBand === "<60") query = query.lt("match_score", 60);
   if (dateRange !== "all") {
-    const days = { today: 1, "7d": 7, "30d": 30 }[dateRange];
+    const days = { today: 1, "7d": 7, "30d": 30, "90d": 90, "365d": 365 }[dateRange];
     if (days) query = query.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
   }
 
@@ -84,6 +88,20 @@ export async function GET(request) {
   }
 
   const recruiterNames = await resolveRecruiterNames(supabase, (data ?? []).map((c) => c.recruiter_id));
+
+  // A row screened from someone already on file is in the pool when that
+  // person is.
+  const rootIds = [...new Set((data ?? []).map((c) => c.pooled_from_id).filter(Boolean))];
+  const pooledRoots = new Set();
+  if (rootIds.length) {
+    const { data: roots } = await supabase
+      .from("candidates")
+      .select("id")
+      .eq("agency_id", agencyId)
+      .in("id", rootIds)
+      .not("talent_pool_at", "is", null);
+    for (const r of roots ?? []) pooledRoots.add(r.id);
+  }
 
   return NextResponse.json({
     items: (data ?? []).map((c) => ({
@@ -105,6 +123,7 @@ export async function GET(request) {
       nextAction: c.next_action,
       createdAt: c.created_at,
       lastActivityAt: c.last_activity_at,
+      inTalentPool: Boolean(c.talent_pool_at) || pooledRoots.has(c.pooled_from_id),
     })),
     total: count ?? 0,
     page,

@@ -166,3 +166,17 @@ export async function removeAgencyOrgMember({ orgId, userId }) {
     userId,
   });
 }
+
+// Who created the org - the agency's owner. ensureAgencyOrg creates it with
+// createdBy set to the owner, and they are never demoted or removed.
+export async function getOrgCreatorId(orgId) {
+  const client = await clerkClient();
+  const org = await client.organizations.getOrganization({ organizationId: orgId });
+  return org?.createdBy ?? null;
+}
+
+// "org:admin" (can manage the team) or "org:member".
+export async function setOrgMemberRole({ orgId, userId, role }) {
+  const client = await clerkClient();
+  return client.organizations.updateOrganizationMembership({ organizationId: orgId, userId, role });
+}

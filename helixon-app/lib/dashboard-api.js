@@ -26,6 +26,7 @@ function buildCandidatesQuery(query = {}) {
   if (query.jobId && query.jobId !== "all") params.set("jobId", query.jobId);
   if (query.scoreBand && query.scoreBand !== "all") params.set("scoreBand", query.scoreBand);
   if (query.dateRange && query.dateRange !== "all") params.set("dateRange", query.dateRange);
+  if (query.pool) params.set("pool", "1");
   if (query.tagIds && query.tagIds.length > 0) params.set("tagIds", query.tagIds.join(","));
   if (query.sortBy) params.set("sortBy", query.sortBy);
   params.set("page", String(query.page || 1));
@@ -263,6 +264,15 @@ export async function removeTeammate(userId, reassignTo) {
   });
 }
 
+// role: "admin" (can manage the team) or "member".
+export async function setTeammateRole(userId, role) {
+  return apiFetch("/api/team/role", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, role }),
+  });
+}
+
 // Hands every candidate no current member owns to one team member.
 export async function assignUnassignedCandidates(toUserId) {
   return apiFetch("/api/team/invite", {
@@ -315,6 +325,78 @@ export async function addCandidateNote(id, body) {
   });
 }
 
+// Talent pool - see app/api/talent-pool and app/api/candidates/[id]/talent-pool.
+export async function getTalentPool({ search = "", jobId = "" } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (jobId) params.set("jobId", jobId);
+  return apiFetch(`/api/talent-pool?${params.toString()}`);
+}
+
+export async function saveToTalentPool(id, note = "") {
+  return (
+    await apiFetch(`/api/candidates/${id}/talent-pool`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note }),
+    })
+  ).talentPool;
+}
+
+export async function removeFromTalentPool(id) {
+  return apiFetch(`/api/candidates/${id}/talent-pool`, { method: "DELETE" });
+}
+
+// Screens someone already on file against another job, reusing their CV.
+// Resolves { candidateId, score, recommendation, job }; a 409 means they're
+// already screened for it (err.existingId).
+export async function rescreenCandidate(id, jobId) {
+  const res = await fetch(`/api/candidates/${id}/rescreen`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jobId }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) {
+    const err = new Error(data?.error || "Couldn't screen this candidate.");
+    err.status = res.status;
+    err.existingId = data?.existingId || null;
+    throw err;
+  }
+  return data;
+}
+
+export async function getTags() {
+  return (await apiFetch("/api/tags")).tags;
+}
+
+export async function createTag(label) {
+  return (
+    await apiFetch("/api/tags", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label }),
+    })
+  ).tag;
+}
+
+export async function deleteTag(id) {
+  return apiFetch(`/api/tags?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function editCandidateNote(id, noteId, body) {
+  return apiFetch(`/api/candidates/${id}/notes`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ noteId, body }),
+  });
+}
+
+export async function deleteCandidateNote(id, noteId) {
+  return apiFetch(`/api/candidates/${id}/notes?noteId=${encodeURIComponent(noteId)}`, { method: "DELETE" });
+}
+
 export async function addCandidateTag(id, tagId) {
   return apiFetch(`/api/candidates/${id}/tags`, {
     method: "POST",
@@ -357,9 +439,13 @@ export async function completeNextAction(id) {
 // stage-transition history, which getAllCandidates()'s per-candidate rows
 // don't carry). Fails soft: a broken/slow timing query shouldn't blank out
 // the rest of the Analytics page, which has real value without it.
-async function getTimingSnapshot() {
+async function getTimingSnapshot(filters = {}) {
   try {
-    const data = await apiFetch("/api/analytics/timing");
+    const params = new URLSearchParams();
+    if (filters.jobId && filters.jobId !== "all") params.set("jobId", filters.jobId);
+    if (filters.recruiterId && filters.recruiterId !== "all") params.set("recruiterId", filters.recruiterId);
+    if (ANALYTICS_PERIOD_DAYS[filters.period]) params.set("days", String(ANALYTICS_PERIOD_DAYS[filters.period]));
+    const data = await apiFetch(`/api/analytics/timing?${params.toString()}`);
     if (!data.ok) return null;
     return data;
   } catch {
@@ -367,12 +453,22 @@ async function getTimingSnapshot() {
   }
 }
 
-export async function getAnalyticsSnapshot() {
-  const [candidates, team, timing] = await Promise.all([
-    getAllCandidates({ sortBy: "newest" }),
+// Analytics page periods -> days (candidates created in that window).
+export const ANALYTICS_PERIOD_DAYS = { "30d": 30, "90d": 90, "365d": 365 };
+
+// filters: { period: "all" | "30d" | "90d" | "365d", jobId, recruiterId }
+export async function getAnalyticsSnapshot(filters = {}) {
+  const [candidates, allTeam, timing] = await Promise.all([
+    getAllCandidates({
+      sortBy: "newest",
+      jobId: filters.jobId,
+      recruiterId: filters.recruiterId,
+      dateRange: ANALYTICS_PERIOD_DAYS[filters.period] ? filters.period : "all",
+    }),
     getRecruiters(),
-    getTimingSnapshot(),
+    getTimingSnapshot(filters),
   ]);
+  const team = filters.recruiterId && filters.recruiterId !== "all" ? allTeam.filter((r) => r.id === filters.recruiterId) : allTeam;
 
   const completed = candidates.filter((c) => c.status === "completed");
   const processing = candidates.filter((c) => c.status === "processing").length;

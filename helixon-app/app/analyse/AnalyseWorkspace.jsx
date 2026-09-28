@@ -19,6 +19,7 @@ import RunningPanel from "./_components/RunningPanel";
 import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
+import { printSection } from "@/lib/print";
 import { Button, Card, Icon, Notice, Segmented, Toasts, useToasts } from "./_components/ui";
 import {
   MIN_LOADING_MS,
@@ -557,10 +558,13 @@ export default function AnalyseWorkspace() {
           </>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
-            <div className="space-y-5 min-w-0">
+            <div id="analysis-report" className="space-y-5 min-w-0">
               <Report result={result} roleLabel={roleLabel} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">
+              <Button variant="secondary" size="sm" icon="printer" className="w-full" onClick={() => printSection("analysis-report")}>
+                Print / save as PDF
+              </Button>
               {candidateId && <StageCard key={`stage-${candidateId}`} candidateId={candidateId} toast={toast} />}
               {candidateId && <NotesCard key={`notes-${candidateId}`} candidateId={candidateId} toast={toast} />}
               <EmailCard email={email} />

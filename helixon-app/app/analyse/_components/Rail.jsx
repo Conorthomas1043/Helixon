@@ -6,7 +6,7 @@
 // candidate_notes, email artifacts), not to this browser.
 
 import { useState } from "react";
-import { updateCandidateStage, addCandidateNote } from "@/lib/dashboard-api";
+import { updateCandidateStage, addCandidateNote, saveToTalentPool, removeFromTalentPool } from "@/lib/dashboard-api";
 import { FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { Card, Button, Icon, Textarea, Input, Select, Label, cx } from "./ui";
 import { EMAIL_PURPOSES, FEEDBACK_DOWN_REASONS } from "../_lib/analyse";
@@ -29,6 +29,23 @@ function RailCard({ title, children, action }) {
 export function StageCard({ candidateId, toast }) {
   const [stage, setStage] = useState("Screened");
   const [saving, setSaving] = useState(false);
+  const [pooled, setPooled] = useState(false);
+  const [pooling, setPooling] = useState(false);
+
+  // Keep them for future jobs (the talent pool - /dashboard/talent-pool).
+  async function togglePool() {
+    setPooling(true);
+    try {
+      if (pooled) await removeFromTalentPool(candidateId);
+      else await saveToTalentPool(candidateId);
+      setPooled(!pooled);
+      toast(pooled ? "Removed from the talent pool" : "Saved to the talent pool");
+    } catch {
+      toast("Couldn't update the talent pool - try again", "error");
+    } finally {
+      setPooling(false);
+    }
+  }
 
   async function update(next) {
     if (next === stage || saving) return;
@@ -97,6 +114,19 @@ export function StageCard({ candidateId, toast }) {
         >
           <Icon name="x" size={13} />
           {rejected ? "Rejected - undo" : "Reject candidate"}
+        </button>
+        <button
+          type="button"
+          disabled={pooling}
+          onClick={togglePool}
+          title="Keep them for future roles - screen them against a new job later without re-uploading"
+          className={cx(
+            "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-[8px] text-left text-[13px] transition-colors disabled:opacity-60",
+            pooled ? "bg-[var(--mint)] text-[var(--forest-deep)] font-medium" : "text-[var(--ink-soft)] hover:bg-[var(--mist)] hover:text-[var(--ink)]"
+          )}
+        >
+          <Icon name="bookmark" size={13} />
+          {pooled ? "In talent pool - undo" : "Save to talent pool"}
         </button>
       </div>
     </RailCard>

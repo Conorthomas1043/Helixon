@@ -173,6 +173,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
     // candidates) - the *Total counts let the panel say "N more" and link
     // to the full list instead of silently dropping the rest with no trace.
     attentionItems: attentionItems.slice(0, 6),
+    attentionItemsAll: attentionItems,
     attentionItemsTotal: attentionItems.length,
     topCandidates: topCandidatesAll.slice(0, 5),
     topCandidatesTotal: topCandidatesAll.length,

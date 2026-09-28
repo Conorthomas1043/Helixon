@@ -94,6 +94,26 @@ function PipelineCard({ candidate, onMove, pending }) {
           {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
         </span>
         <div className="flex items-center gap-0.5 shrink-0">
+          {/* Any stage, Rejected included - the arrows only walk the funnel,
+              so without this a card could only be rejected (or brought back
+              from Rejected) by dragging, which touch and keyboard can't do. */}
+          <label className="relative w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--mist)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" title="Move to…">
+            <span className="sr-only">Move {candidate.fullName} to</span>
+            <span aria-hidden="true" className="text-[13px] leading-none" style={{ color: INK_MUTED }}>⋯</span>
+            <select
+              value=""
+              disabled={pending}
+              onChange={(e) => e.target.value && onMove(candidate.id, e.target.value)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            >
+              <option value="">Move to…</option>
+              {BOARD_STAGES.filter((s) => s !== candidate.stage).map((s) => (
+                <option key={s} value={s}>
+                  {s === "Rejected" ? "Reject" : STAGE_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
             disabled={!canGoBack || pending}
@@ -293,7 +313,7 @@ function PipelineContent() {
               Pipeline {status === "ready" && <span className="text-base font-medium tabular-nums" style={{ color: INK_FAINT }}>· {total}</span>}
             </h1>
             <p className="text-[12px] mt-1 hidden lg:block" style={{ color: INK_FAINT }}>
-              Drag a card to another column, or use the arrows to move it a stage.
+              Drag a card to another column, use the arrows to move it a stage, or ⋯ to move it anywhere (including Rejected).
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap xl:justify-end">

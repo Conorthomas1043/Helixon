@@ -3,50 +3,116 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { cleanText } from "@/lib/sanitize";
+import { cleanText, cleanUuid } from "@/lib/sanitize";
 
-export async function POST(request, { params }) {
+// Team notes on a candidate. The text lives in candidate_notes.note - this
+// route used to write a `body` column that doesn't exist (and no
+// agency_id), so every note failed to save and none were ever stored.
+//
+// POST { body }            add a note
+// PATCH { noteId, body }   edit your own note
+// DELETE ?noteId=          delete your own note
+
+function toNote(row) {
+  return { id: row.id, author: row.author_name, authorId: row.author_id, createdAt: row.created_at, body: row.note };
+}
+
+async function context(params) {
   const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-  const { agencyId, userId, profile } = auth;
+  if (!auth.ok) return { response: NextResponse.json({ error: auth.error }, { status: auth.status }) };
   const { id } = await params;
-
-  const payload = await request.json().catch(() => null);
-  const noteBody = cleanText(payload?.body, { max: 5000 });
-  if (!noteBody) {
-    return NextResponse.json({ error: "Note body required" }, { status: 400 });
-  }
-
   const { data: candidate } = await supabase
     .from("candidates")
     .select("id")
     .eq("id", id)
-    .eq("agency_id", agencyId)
+    .eq("agency_id", auth.agencyId)
     .maybeSingle();
-  if (!candidate) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!candidate) return { response: NextResponse.json({ error: "Not found" }, { status: 404 }) };
+  return { auth, id };
+}
+
+// The caller's own note on this candidate, or an error response.
+async function ownNote(auth, candidateId, noteId) {
+  if (!noteId) return { response: NextResponse.json({ error: "Which note?" }, { status: 400 }) };
+  const { data: note } = await supabase
+    .from("candidate_notes")
+    .select("id, author_id")
+    .eq("id", noteId)
+    .eq("candidate_id", candidateId)
+    .eq("agency_id", auth.agencyId)
+    .maybeSingle();
+  if (!note) return { response: NextResponse.json({ error: "Note not found." }, { status: 404 }) };
+  if (note.author_id !== auth.userId) {
+    return { response: NextResponse.json({ error: "You can only change your own notes." }, { status: 403 }) };
+  }
+  return { note };
+}
+
+export async function POST(request, { params }) {
+  const ctx = await context(params);
+  if (ctx.response) return ctx.response;
+  const { auth, id } = ctx;
+
+  const payload = await request.json().catch(() => null);
+  const noteBody = cleanText(payload?.body, { max: 5000 });
+  if (!noteBody) {
+    return NextResponse.json({ error: "Write something first." }, { status: 400 });
   }
 
-  const authorName = recruiterDisplayName(profile) || userId;
-
+  const authorName = recruiterDisplayName(auth.profile) || auth.userId;
   const { data, error } = await supabase
     .from("candidate_notes")
-    .insert({
-      candidate_id: id,
-      author_id: userId,
-      author_name: authorName,
-      body: noteBody,
-    })
+    .insert({ agency_id: auth.agencyId, candidate_id: id, author_id: auth.userId, author_name: authorName, note: noteBody })
     .select()
     .single();
 
   if (error) {
+    console.error("[notes POST] Insert failed:", error.message);
     return NextResponse.json({ error: "Failed to save note" }, { status: 500 });
   }
 
   await logActivity(supabase, id, "note_added", authorName);
+  return NextResponse.json(toNote(data));
+}
 
-  return NextResponse.json(data);
+export async function PATCH(request, { params }) {
+  const ctx = await context(params);
+  if (ctx.response) return ctx.response;
+  const { auth, id } = ctx;
+
+  const payload = await request.json().catch(() => null);
+  const own = await ownNote(auth, id, cleanUuid(payload?.noteId));
+  if (own.response) return own.response;
+  const noteBody = cleanText(payload?.body, { max: 5000 });
+  if (!noteBody) {
+    return NextResponse.json({ error: "A note can't be empty - delete it instead." }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from("candidate_notes")
+    .update({ note: noteBody })
+    .eq("id", own.note.id)
+    .eq("agency_id", auth.agencyId)
+    .select()
+    .single();
+  if (error) {
+    return NextResponse.json({ error: "Failed to save note" }, { status: 500 });
+  }
+  return NextResponse.json(toNote(data));
+}
+
+export async function DELETE(request, { params }) {
+  const ctx = await context(params);
+  if (ctx.response) return ctx.response;
+  const { auth, id } = ctx;
+
+  const noteId = cleanUuid(new URL(request.url).searchParams.get("noteId"));
+  const own = await ownNote(auth, id, noteId);
+  if (own.response) return own.response;
+
+  const { error } = await supabase.from("candidate_notes").delete().eq("id", own.note.id).eq("agency_id", auth.agencyId);
+  if (error) {
+    return NextResponse.json({ error: "Failed to delete note" }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
 }

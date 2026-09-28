@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
-import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 export async function DELETE(request, { params }) {
@@ -29,7 +29,7 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: "Failed to remove tag" }, { status: 500 });
   }
 
-  const tag = TAG_CATALOG.find((t) => t.id === tagId);
+  const tag = await findAgencyTag(supabase, agencyId, tagId).catch(() => null);
   await logActivity(supabase, id, "tag_removed", recruiterDisplayName(profile) || userId, { tag: tag?.label ?? tagId });
   return NextResponse.json({ tags });
 }

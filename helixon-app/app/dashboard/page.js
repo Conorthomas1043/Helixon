@@ -74,8 +74,10 @@ function normalizeAnalysis(raw, index) {
     id: raw.id ?? raw._id ?? `analysis-${index}`,
     candidateId: raw.candidateId ?? null,
     candidateName: raw.candidateName ?? raw.candidate?.name ?? raw.candidate ?? "Unnamed candidate",
+    jobId: raw.jobId ?? null,
     jobTitle: raw.jobTitle ?? raw.job?.title ?? raw.job ?? "Unspecified role",
     company: raw.company ?? raw.job?.company ?? raw.client ?? null,
+    recruiterId: raw.recruiterId ?? null,
     recruiterName: raw.recruiterName ?? raw.recruiter?.name ?? raw.recruiter ?? null,
     status: raw.status === "processing" || raw.status === "failed" ? raw.status : "completed",
     stage: raw.stage && Object.prototype.hasOwnProperty.call(STAGE_LABELS, raw.stage) ? raw.stage : null,
@@ -201,7 +203,7 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
           fontSize: 13,
           fontWeight: 600,
           padding: "8px 16px",
-          borderRadius: 8,
+          borderRadius: 9999,
           background: VIOLET,
           color: "#fff",
           textDecoration: "none",
@@ -281,7 +283,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
           )}
           {!isRefreshing && refreshError && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, color: RED }}>
-              Couldn't refresh - showing last data.
+              Couldn&apos;t refresh - showing last data.
               <button type="button" onClick={onRefresh} style={{ color: RED, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 11 }}>
                 Retry
               </button>
@@ -298,21 +300,21 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <Link href="/dashboard/candidates" style={{
           display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
-          padding: "8px 16px", borderRadius: 8, border: `1px solid ${BORDER2}`,
-          color: TEXT_SUB, textDecoration: "none", background: SURFACE2,
+          padding: "10px 16px", borderRadius: 9999, border: `1px solid ${BORDER}`,
+          color: TEXT, textDecoration: "none", background: SURFACE,
         }}>
           Browse candidates
         </Link>
         <Link href="/dashboard/pipeline" style={{
           display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
-          padding: "8px 16px", borderRadius: 8, border: `1px solid ${BORDER2}`,
-          color: TEXT_SUB, textDecoration: "none", background: SURFACE2,
+          padding: "10px 16px", borderRadius: 9999, border: `1px solid ${BORDER}`,
+          color: TEXT, textDecoration: "none", background: SURFACE,
         }}>
           Pipeline
         </Link>
         <Link href="/analyse" style={{
           display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
-          padding: "8px 16px", borderRadius: 8,
+          padding: "10px 16px", borderRadius: 9999,
           background: VIOLET, color: "#fff", textDecoration: "none",
         }}>
           + New analysis
@@ -510,8 +512,12 @@ function UsageSummary({ plan, analyses }) {
 
 /* ─── Attention panel ───────────────────────────────────────────────────── */
 
-function AttentionPanel({ items, total }) {
-  const hiddenCount = Math.max(0, total - items.length);
+function AttentionPanel({ items: firstItems, allItems, total }) {
+  // Everything is already loaded - "show all" expands in place rather than
+  // sending you to an unfiltered candidate list.
+  const [expanded, setExpanded] = useState(false);
+  const items = expanded ? allItems : firstItems;
+  const hiddenCount = Math.max(0, total - firstItems.length);
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Priority" title="Needs your attention" />
@@ -552,9 +558,14 @@ function AttentionPanel({ items, total }) {
         </ul>
       )}
       {hiddenCount > 0 && (
-        <Link href="/dashboard/candidates" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
-          {hiddenCount} more {hiddenCount === 1 ? "item needs" : "items need"} attention →
-        </Link>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
+        >
+          {expanded ? "Show fewer" : `Show ${hiddenCount} more ${hiddenCount === 1 ? "item" : "items"} needing attention`}
+        </button>
       )}
     </div>
   );
@@ -568,7 +579,7 @@ function TopCandidates({ candidates, total }) {
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Top talent" title="Strongest candidates" />
       {candidates.length === 0 ? (
-        <EmptyState title="No strong matches yet" body="Candidates scoring 80 or above will appear here." />
+        <EmptyState title="No strong matches yet" body={`Candidates scoring ${STRONG_MATCH_MIN} or above will appear here.`} />
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {candidates.map((c, i) => (
@@ -602,7 +613,7 @@ function TopCandidates({ candidates, total }) {
         </ul>
       )}
       {hiddenCount > 0 && (
-        <Link href="/dashboard/candidates" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
+        <Link href="/dashboard/candidates?scoreBand=80%2B" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
           {hiddenCount} more strong {hiddenCount === 1 ? "candidate" : "candidates"} →
         </Link>
       )}
@@ -724,8 +735,13 @@ function ActiveJobs({ jobs }) {
             <li
               key={job.key}
               className="fade-up-in"
-              style={{ padding: "12px 0", borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
+              style={{ borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
             >
+              <Link
+                href={job.jobId ? `/dashboard/jobs/${job.jobId}` : "/dashboard/jobs"}
+                className="hover:bg-[var(--mist)] transition-colors"
+                style={{ display: "block", padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
+              >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}>
                   {job.jobTitle}
@@ -743,6 +759,7 @@ function ActiveJobs({ jobs }) {
                 </div>
                 <span style={{ fontSize: 11, color: TEXT_FAINT, flexShrink: 0 }}>{formatNumber(job.strongMatches)} strong</span>
               </div>
+              </Link>
             </li>
           ))}
         </ul>
@@ -765,10 +782,16 @@ function RecruiterPerformance({ recruiters }) {
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {recruiters.map((r, i) => (
           <li
-            key={r.name}
+            key={r.key}
             className="fade-up-in"
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 0", borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
+            style={{ borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
           >
+            <Link
+              href={r.id ? `/dashboard/candidates?recruiterId=${encodeURIComponent(r.id)}` : "/dashboard/team"}
+              title={`${r.name}'s candidates`}
+              className="hover:bg-[var(--mist)] transition-colors"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
+            >
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: VIOLET_FG, flexShrink: 0 }}>
                 {r.name[0]}
@@ -780,6 +803,7 @@ function RecruiterPerformance({ recruiters }) {
               <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "-"}</strong> avg</span>
               <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed</span>
             </div>
+            </Link>
           </li>
         ))}
       </ul>
@@ -793,7 +817,15 @@ function RecentAnalyses({ analyses }) {
   const router = useRouter();
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
-      <SectionHeading eyebrow="Activity feed" title="Recent analyses" />
+      <SectionHeading
+        eyebrow="Activity feed"
+        title="Recent analyses"
+        action={
+          <Link href="/dashboard/candidates?sortBy=newest" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>
+            View all →
+          </Link>
+        }
+      />
       {analyses.length === 0 ? (
         <EmptyState title="No analyses yet" body="Upload your first CV to start screening candidates." actionLabel="New analysis" actionHref="/analyse" />
       ) : (
@@ -855,7 +887,7 @@ function DashboardFooter() {
       <span>Helixon - recruiter dashboard</span>
       <nav style={{ display: "flex", alignItems: "center", gap: 20 }} aria-label="Support links">
         {[["FAQ", "/faq"], ["Contact", "/contact"], ["Privacy", "/privacy"]].map(([label, href]) => (
-          <Link key={href} href={href} style={{ color: TEXT_FAINT, textDecoration: "none" }} className="hover:text-white transition-colors">{label}</Link>
+          <Link key={href} href={href} style={{ color: TEXT_FAINT, textDecoration: "none" }} className="hover:text-[var(--ink)] transition-colors">{label}</Link>
         ))}
       </nav>
     </footer>
@@ -901,7 +933,7 @@ function DashboardError({ onRetry }) {
     <div style={{ ...CARD, padding: 40, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       <p style={{ fontSize: 15, fontWeight: 600, color: TEXT, marginBottom: 6 }}>Unable to load dashboard</p>
       <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
-      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 8, background: VIOLET, color: "#fff", border: "none", cursor: "pointer" }}>
+      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: VIOLET, color: "#fff", border: "none", cursor: "pointer" }}>
         Try again
       </button>
     </div>
@@ -943,8 +975,8 @@ function AgencyDashboardPage() {
 
     const jobMap = new Map();
     completed.forEach((a) => {
-      const key = `${a.jobTitle}__${a.company ?? ""}`;
-      if (!jobMap.has(key)) jobMap.set(key, { key, jobTitle: a.jobTitle, company: a.company, candidateCount: 0, strongMatches: 0, stageCounts: {} });
+      const key = a.jobId ?? `${a.jobTitle}__${a.company ?? ""}`;
+      if (!jobMap.has(key)) jobMap.set(key, { key, jobId: a.jobId, jobTitle: a.jobTitle, company: a.company, candidateCount: 0, strongMatches: 0, stageCounts: {} });
       const job = jobMap.get(key);
       job.candidateCount += 1;
       if (a.score !== null && a.score >= STRONG_MATCH_MIN) job.strongMatches += 1;
@@ -958,8 +990,9 @@ function AgencyDashboardPage() {
     const recruiterMap = new Map();
     completed.forEach((a) => {
       if (!a.recruiterName) return;
-      if (!recruiterMap.has(a.recruiterName)) recruiterMap.set(a.recruiterName, { name: a.recruiterName, completed: 0, scoreSum: 0, scoreCount: 0, placements: 0 });
-      const r = recruiterMap.get(a.recruiterName);
+      const rKey = a.recruiterId ?? a.recruiterName;
+      if (!recruiterMap.has(rKey)) recruiterMap.set(rKey, { key: rKey, id: a.recruiterId, name: a.recruiterName, completed: 0, scoreSum: 0, scoreCount: 0, placements: 0 });
+      const r = recruiterMap.get(rKey);
       r.completed += 1;
       if (a.score !== null) { r.scoreSum += a.score; r.scoreCount += 1; }
       if (a.stage === lastStageKey) r.placements += 1;
@@ -1021,7 +1054,7 @@ function AgencyDashboardPage() {
                   <UsageSummary plan={plan} analyses={model.analyses} />
                 </div>
 
-                <AttentionPanel items={model.attentionItems} total={model.attentionItemsTotal} />
+                <AttentionPanel items={model.attentionItems} allItems={model.attentionItemsAll ?? model.attentionItems} total={model.attentionItemsTotal} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <TopCandidates candidates={model.topCandidates} total={model.topCandidatesTotal} />

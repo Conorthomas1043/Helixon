@@ -55,7 +55,7 @@ export async function GET(request, { params }) {
   const [{ data: notes }, { data: activity }, recruiterNames, { data: latestScore }] = await Promise.all([
     supabase
       .from("candidate_notes")
-      .select("id, author_name, body, created_at")
+      .select("id, author_id, author_name, note, created_at")
       .eq("candidate_id", id)
       .order("created_at", { ascending: false }),
     supabase
@@ -77,6 +77,25 @@ export async function GET(request, { params }) {
   ]);
 
   const extracted = candidate.extracted || {};
+
+  // The talent pool entry and every role this person has been screened for
+  // live on their first row (lib/rescreen.js) - this one, or the one it was
+  // screened from.
+  const rootId = candidate.pooled_from_id || candidate.id;
+  const [{ data: root }, { data: related }] = await Promise.all([
+    rootId === candidate.id
+      ? { data: candidate }
+      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
+    supabase
+      .from("candidates")
+      .select("id, job_id, match_score, stage, created_at, jobs(title, client)")
+      .eq("agency_id", agencyId)
+      .eq("pooled_from_id", rootId)
+      .order("created_at", { ascending: false }),
+  ]);
+  const otherRoles = [...(root ? [root] : []), ...(related ?? [])]
+    .filter((r) => r.id !== candidate.id && r.job_id)
+    .map((r) => ({ candidateId: r.id, jobId: r.job_id, jobTitle: r.jobs?.title || "Role", client: r.jobs?.client ?? null, score: r.match_score, stage: r.stage }));
 
   // Candidates screened before match_summary/strengths/concerns were
   // written fall back to their latest analysis.
@@ -130,6 +149,10 @@ export async function GET(request, { params }) {
         }
       : null,
     tags: candidate.tags ?? [],
+    talentPool: root?.talent_pool_at
+      ? { savedAt: root.talent_pool_at, savedBy: root.talent_pool_by, note: root.talent_pool_note }
+      : null,
+    otherRoles,
     nextAction: candidate.next_action,
     source: candidate.source,
     rejectionReason: candidate.rejection_reason,
@@ -139,7 +162,7 @@ export async function GET(request, { params }) {
     retention90d: candidate.retention_90d,
     createdAt: candidate.created_at,
     lastActivityAt: candidate.last_activity_at,
-    notes: (notes ?? []).map((n) => ({ id: n.id, author: n.author_name, createdAt: n.created_at, body: n.body })),
+    notes: (notes ?? []).map((n) => ({ id: n.id, author: n.author_name, authorId: n.author_id, createdAt: n.created_at, body: n.note })),
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, timestamp: a.created_at })),
   });
 }

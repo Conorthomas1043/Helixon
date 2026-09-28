@@ -10,6 +10,7 @@ const TABS = [
   { href: "/analyse", label: "Analyse" },
   { href: "/analyse/compare", label: "Compare" },
   { href: "/dashboard/candidates", label: "Candidates" },
+  { href: "/dashboard/talent-pool", label: "Talent pool" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/team", label: "Team" },

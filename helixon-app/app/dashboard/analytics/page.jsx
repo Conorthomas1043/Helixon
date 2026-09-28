@@ -10,7 +10,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { getAnalyticsSnapshot as fetchAnalytics } from "@/lib/dashboard-api";
+import { getAnalyticsSnapshot as fetchAnalytics, getJobs, getRecruiters } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
 
@@ -496,15 +497,93 @@ function ErrorState({ onRetry }) {
   );
 }
 
+const PERIODS = [
+  { value: "all", label: "All time" },
+  { value: "30d", label: "Last 30 days" },
+  { value: "90d", label: "Last 90 days" },
+  { value: "365d", label: "Last 12 months" },
+];
+
+function FilterSelect({ value, onChange, options, ariaLabel }) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      style={{ border: `1px solid ${value !== "all" ? "var(--forest)" : "var(--border)"}`, color: INK }}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+// The headline figures as a two-column CSV (section, metric, value) - the
+// same numbers the page shows, for the filters currently applied.
+function snapshotRows(snapshot, filterLabel) {
+  const rows = [];
+  const add = (section, metric, value) => rows.push({ Section: section, Metric: metric, Value: value ?? "" });
+  add("Filters", "Applied", filterLabel);
+  add("Totals", "Candidates analysed", snapshot.totals.completed);
+  add("Totals", "Processing", snapshot.totals.processing);
+  add("Totals", "Failed", snapshot.totals.failed);
+  add("Quality", "Average match score", snapshot.quality.avgScore);
+  add("Quality", "Strong (80+)", snapshot.quality.strong);
+  add("Quality", "Moderate (60-79)", snapshot.quality.moderate);
+  add("Quality", "Weak (<60)", snapshot.quality.weak);
+  add("Conversion", "Shortlist rate %", snapshot.conversion.shortlistRate);
+  add("Conversion", "Interview rate %", snapshot.conversion.interviewRate);
+  add("Conversion", "Offer rate %", snapshot.conversion.offerRate);
+  add("Conversion", "Placement rate %", snapshot.conversion.placementRate);
+  snapshot.funnel.forEach((f) => add("Funnel", `Reached ${f.label}`, f.count));
+  Object.entries(snapshot.pipeline.stageCounts).forEach(([k, n]) => add("Pipeline", `Now in ${STAGE_LABELS[k] || k}`, n));
+  add("Pipeline", "Stalled 5+ days", snapshot.pipeline.stalled);
+  const t = snapshot.timing;
+  if (t) {
+    add("Speed", "Time to fill (days)", t.timeToFillDays);
+    add("Speed", "Time to hire (days)", t.timeToHireDays);
+    (t.source || []).forEach((i) => add("Source of hire", i.label, i.count ?? i.total));
+    (t.rejectionReasons || []).forEach((i) => add("Rejection reasons", i.label, i.count ?? i.total));
+  }
+  snapshot.team.forEach((r) => {
+    add("Team", `${r.name} - active`, r.activeCandidates);
+    add("Team", `${r.name} - placed`, r.placed);
+  });
+  return rows;
+}
+
 export default function AnalyticsPage() {
   const [snapshot, setSnapshot] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
+  const [period, setPeriod] = useState("all");
+  const [jobId, setJobId] = useState("all");
+  const [recruiterId, setRecruiterId] = useState("all");
+  const [jobs, setJobs] = useState([]);
+  const [recruiters, setRecruiters] = useState([]);
+
+  useEffect(() => {
+    getJobs().then(setJobs).catch(() => {});
+    getRecruiters().then(setRecruiters).catch(() => {});
+  }, []);
+
+  const filtered = period !== "all" || jobId !== "all" || recruiterId !== "all";
+  const filterLabel = [
+    period !== "all" && PERIODS.find((p) => p.value === period)?.label.toLowerCase(),
+    jobId !== "all" && (jobs.find((j) => j.id === jobId)?.title || "One job"),
+    recruiterId !== "all" && (recruiters.find((r) => r.id === recruiterId)?.name || "One recruiter"),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    fetchAnalytics()
+    fetchAnalytics({ period, jobId, recruiterId })
       .then((s) => {
         if (cancelled) return;
         setSnapshot(s);
@@ -516,7 +595,7 @@ export default function AnalyticsPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, period, jobId, recruiterId]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -541,6 +620,55 @@ export default function AnalyticsPage() {
             ← Dashboard
           </Link>
         </header>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterSelect ariaLabel="Period" value={period} onChange={setPeriod} options={PERIODS} />
+          <FilterSelect
+            ariaLabel="Job"
+            value={jobId}
+            onChange={setJobId}
+            options={[{ value: "all", label: "All jobs" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
+          />
+          <FilterSelect
+            ariaLabel="Recruiter"
+            value={recruiterId}
+            onChange={setRecruiterId}
+            options={[{ value: "all", label: "Everyone" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
+          />
+          {filtered && (
+            <button
+              type="button"
+              onClick={() => {
+                setPeriod("all");
+                setJobId("all");
+                setRecruiterId("all");
+              }}
+              className="text-[12.5px] font-semibold px-2"
+              style={{ color: "var(--forest)" }}
+            >
+              Clear
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={status !== "ready"}
+            onClick={() =>
+              downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, snapshotRows(snapshot, filterLabel || "All time"))
+            }
+            className="ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" />
+            </svg>
+            Export CSV
+          </button>
+        </div>
+        {filtered && (
+          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
+            Showing candidates for {filterLabel}. Channel figures follow the job filter; client and candidate feedback is agency-wide.
+          </p>
+        )}
 
         {status === "loading" && <AnalyticsSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}

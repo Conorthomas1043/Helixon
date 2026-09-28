@@ -127,7 +127,7 @@ async function requireOrgOwner(orgId, userId) {
     return NextResponse.json({ error: "Couldn't verify your team role. Please try again." }, { status: 500 });
   }
   if (role !== "org:admin") {
-    return NextResponse.json({ error: "Only the workspace owner can manage the team." }, { status: 403 });
+    return NextResponse.json({ error: "Only the workspace owner or an admin can manage the team." }, { status: 403 });
   }
   return null;
 }
@@ -286,7 +286,10 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "That person isn't on your team." }, { status: 404 });
   }
   if (role === "org:admin") {
-    return NextResponse.json({ error: "The workspace owner can't be removed from the team." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Admins can't be removed. Make them a member first (the workspace owner can never be removed)." },
+      { status: 400 }
+    );
   }
 
   // Who takes over the departing member's candidates: another current

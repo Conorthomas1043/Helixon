@@ -15,6 +15,7 @@ import { Card, Icon, Notice, Spinner, cx } from "./ui";
 import CandidateChooser from "./CandidateChooser";
 import RawCvCompare from "./RawCvCompare";
 import { LETTERS, PillButton, PillTabs, StagePicker, openOriginalCv } from "./compareBits";
+import { printSection } from "@/lib/print";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
 
@@ -304,7 +305,7 @@ export default function CompareWorkspace() {
   return (
     <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div id="compare-print" className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
@@ -318,7 +319,10 @@ export default function CompareWorkspace() {
             </p>
           </div>
           {status === "ready" && n >= 2 && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 print-hide">
+              <PillButton icon="printer" onClick={() => printSection("compare-print")} title="Print, or choose Save as PDF to send it">
+                Print / PDF
+              </PillButton>
               {job && (
                 <PillButton href={`/dashboard/jobs/${job.id}`} icon="briefcase">
                   View job
@@ -337,7 +341,7 @@ export default function CompareWorkspace() {
         </header>
 
         {status === "ready" && n >= 2 && (
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 print-hide">
             <PillTabs
               value={view}
               onChange={setView}
@@ -385,7 +389,7 @@ export default function CompareWorkspace() {
         )}
 
         {status === "ready" && n >= 2 && adding && (
-          <Card className="p-5 sm:p-6">
+          <Card className="p-5 sm:p-6 print-hide">
             <div className="flex items-start justify-between gap-3 mb-4">
               <div>
                 <p className="text-[15px] font-semibold text-[var(--ink)]">Add a candidate</p>

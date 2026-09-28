@@ -4,7 +4,7 @@
 // counts (app/api/jobs). Jobs are created here directly, or as a side effect
 // of screening a CV against a new job description on /analyse.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
@@ -313,6 +313,29 @@ export default function JobsPage() {
   const [creating, setCreating] = useState(false);
   const closeNew = useCallback(() => setCreating(false), []);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("open");
+  const [sortBy, setSortBy] = useState("newest");
+
+  // Search, open/closed and sort all happen here - the list is every job
+  // the agency has, already loaded.
+  const visibleJobs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = (jobs ?? []).filter(
+      (j) =>
+        (statusFilter === "all" || (statusFilter === "open" ? j.status === "open" : j.status !== "open")) &&
+        (!q || [j.title, j.company, j.location].filter(Boolean).join(" ").toLowerCase().includes(q))
+    );
+    const by = {
+      newest: (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+      oldest: (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
+      candidates: (a, b) => (b.candidateCount ?? 0) - (a.candidateCount ?? 0),
+      strong: (a, b) => (b.strongMatches ?? 0) - (a.strongMatches ?? 0),
+      title: (a, b) => String(a.title || "").localeCompare(String(b.title || "")),
+    }[sortBy];
+    return [...list].sort(by);
+  }, [jobs, search, statusFilter, sortBy]);
+
   const totalOpen = jobs?.filter((j) => j.status === "open").length ?? 0;
   const totalCandidates = jobs?.reduce((sum, j) => sum + j.candidateCount, 0) ?? 0;
 
@@ -357,11 +380,66 @@ export default function JobsPage() {
         {status === "error" && <ErrorState onRetry={retry} />}
         {status === "ready" && jobs && jobs.length === 0 && <EmptyState onNew={() => setCreating(true)} />}
         {status === "ready" && jobs && jobs.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title, client or location…"
+                aria-label="Search jobs"
+                className="text-[13px] px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+              {[
+                { value: "open", label: "Open" },
+                { value: "closed", label: "Closed" },
+                { value: "all", label: "All" },
+              ].map((o) => {
+                const count = o.value === "all" ? jobs.length : jobs.filter((j) => (o.value === "open" ? j.status === "open" : j.status !== "open")).length;
+                const on = statusFilter === o.value;
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => setStatusFilter(o.value)}
+                    aria-pressed={on}
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
+                  >
+                    {o.label}
+                    <span className="tabular-nums text-[10px] px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+              <select
+                aria-label="Sort jobs"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="sm:ml-auto text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="candidates">Most candidates</option>
+                <option value="strong">Most strong matches</option>
+                <option value="title">Title A–Z</option>
+              </select>
+            </div>
+            {visibleJobs.length === 0 ? (
+              <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+                No {statusFilter === "all" ? "" : `${statusFilter} `}jobs match{search.trim() ? ` "${search.trim()}"` : ""}.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {visibleJobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

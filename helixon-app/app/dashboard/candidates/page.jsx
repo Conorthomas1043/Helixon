@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import {
   getCandidates,
@@ -19,6 +19,8 @@ import {
   getRecruiters,
   bulkUpdateCandidates,
   getCandidatesForExport,
+  getTags,
+  deleteTag,
 } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
 import { STAGE_LABELS } from "@/lib/stage-labels";
@@ -54,6 +56,7 @@ const DEFAULT_FILTERS = {
   recruiterId: "all",
   jobId: "all",
   tagIds: [],
+  pool: false,
   dateRange: "all",
   sortBy: "score_desc",
   page: 1,
@@ -76,12 +79,48 @@ const SCORE_BANDS = [
   { value: "<60", label: "Below 60" },
 ];
 
+const STATUS_OPTIONS = [
+  { value: "all", label: "Any status" },
+  { value: "completed", label: "Analysed" },
+  { value: "processing", label: "Processing" },
+  { value: "failed", label: "Failed" },
+];
+
 const DATE_RANGES = [
   { value: "all", label: "Any time" },
   { value: "today", label: "Today" },
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
 ];
+
+// Filters <-> query string. Only values that differ from the defaults are
+// written, so a plain list stays at /dashboard/candidates.
+const LIST_KEYS = ["search", "stage", "scoreBand", "status", "recruiterId", "jobId", "dateRange", "sortBy"];
+
+function filtersFromParams(params) {
+  const f = { ...DEFAULT_FILTERS };
+  for (const key of LIST_KEYS) {
+    const v = params?.get(key);
+    if (v) f[key] = v;
+  }
+  const tags = params?.get("tags");
+  if (tags) f.tagIds = tags.split(",").filter(Boolean);
+  if (params?.get("pool") === "1") f.pool = true;
+  const page = Number(params?.get("page"));
+  if (Number.isInteger(page) && page > 1) f.page = page;
+  return f;
+}
+
+function paramsFromFilters(f) {
+  const q = new URLSearchParams();
+  for (const key of LIST_KEYS) {
+    if (f[key] && f[key] !== DEFAULT_FILTERS[key]) q.set(key, f[key]);
+  }
+  if (f.tagIds.length) q.set("tags", f.tagIds.join(","));
+  if (f.pool) q.set("pool", "1");
+  if (f.page > 1) q.set("page", String(f.page));
+  return q.toString();
+}
 
 /* ------------------------------------------------------------------------
  * Small pieces
@@ -133,19 +172,35 @@ function Select({ value, onChange, options, ariaLabel }) {
   );
 }
 
-function TagChip({ label, active, onClick }) {
+function TagChip({ label, active, onClick, onDelete }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+    <span
+      className="inline-flex items-center rounded-full transition-colors"
       style={{
         background: active ? "var(--forest)" : "var(--mist)",
         color: active ? "white" : INK_MUTED,
       }}
     >
-      {label}
-    </button>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active}
+        className={`text-[11px] font-semibold py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${onDelete ? "pl-2.5 pr-1" : "px-2.5"}`}
+      >
+        {label}
+      </button>
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label={`Delete the tag ${label}`}
+          title="Delete this tag"
+          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-[11px] hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
+        >
+          ×
+        </button>
+      )}
+    </span>
   );
 }
 
@@ -233,6 +288,11 @@ function CandidateRow({ candidate, selected, onToggleSelect }) {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {candidate.fullName}
+              {candidate.inTalentPool && (
+                <span className="ml-1.5 align-middle text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
+                  ☆ Pool
+                </span>
+              )}
             </p>
             <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
               {candidate.jobTitle}
@@ -348,19 +408,26 @@ function CandidateDatabaseContent() {
   // Supports deep-linking from Jobs/Team ("?jobId=…", "?recruiterId=…",
   // "?stage=…") so those pages can hand off into a pre-filtered view of
   // the same underlying candidate data rather than duplicating it.
+  //
+  // Every filter is mirrored back into the address bar, so Back from a
+  // profile returns to the same filtered list and a filtered view can be
+  // shared. They used to be read once and then lost.
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialFilters = useMemo(
-    () => ({
-      ...DEFAULT_FILTERS,
-      jobId: searchParams?.get("jobId") || "all",
-      recruiterId: searchParams?.get("recruiterId") || "all",
-      stage: searchParams?.get("stage") || "all",
-    }),
+    () => filtersFromParams(searchParams),
     [] // eslint-disable-line react-hooks/exhaustive-deps -- read once on mount; the UI's own filter controls take over after that
   );
 
   const [filters, setFilters] = useState(initialFilters);
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState(initialFilters.search);
+
+  useEffect(() => {
+    const qs = paramsFromFilters(filters);
+    if (qs !== (window.location.search || "").replace(/^\?/, "")) {
+      router.replace(`/dashboard/candidates${qs ? `?${qs}` : ""}`, { scroll: false });
+    }
+  }, [filters, router]);
   // Starts open when a deep link (jobId=/recruiterId=/etc.) already narrowed
   // the results, so the reason for the filtered view is visible immediately.
   const [filtersOpen, setFiltersOpen] = useState(
@@ -375,7 +442,7 @@ function CandidateDatabaseContent() {
 
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
-  const tags = TAG_CATALOG;
+  const [tags, setTags] = useState(TAG_CATALOG);
 
   useEffect(() => {
     let cancelled = false;
@@ -385,6 +452,9 @@ function CandidateDatabaseContent() {
         setJobs(j);
         setRecruiters(r);
       })
+      .catch(() => {});
+    getTags()
+      .then((t) => !cancelled && setTags(t))
       .catch(() => {});
     return () => {
       cancelled = true;
@@ -436,9 +506,11 @@ function CandidateDatabaseContent() {
   }, []);
 
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
 
   const handleExport = useCallback(async () => {
     setExporting(true);
+    setExportError("");
     try {
       // Same filters currently applied to the list, minus pagination - the
       // export is "everything matching what you're looking at", not just
@@ -463,7 +535,7 @@ function CandidateDatabaseContent() {
         }))
       );
     } catch (err) {
-      alert(err?.message || "Failed to export candidates. Please try again.");
+      setExportError(err?.message || "Couldn't export candidates. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -476,6 +548,21 @@ function CandidateDatabaseContent() {
       tagIds: f.tagIds.includes(tagId) ? f.tagIds.filter((t) => t !== tagId) : [...f.tagIds, tagId],
     }));
   }, []);
+
+  const removeCustomTag = useCallback(
+    async (tag) => {
+      if (!confirm(`Delete the tag "${tag.label}"? It's taken off every candidate that has it.`)) return;
+      try {
+        await deleteTag(tag.id);
+        setTags((list) => list.filter((t) => t.id !== tag.id));
+        setFilters((f) => (f.tagIds.includes(tag.id) ? { ...f, tagIds: f.tagIds.filter((x) => x !== tag.id), page: 1 } : f));
+        retry();
+      } catch (err) {
+        setExportError(err.message || "Couldn't delete the tag.");
+      }
+    },
+    [retry]
+  );
 
   const toggleSelect = useCallback((id) => {
     setSelectedIds((prev) => {
@@ -504,6 +591,7 @@ function CandidateDatabaseContent() {
     if (filters.jobId !== "all") n += 1;
     if (filters.dateRange !== "all") n += 1;
     if (filters.tagIds.length > 0) n += 1;
+    if (filters.pool) n += 1;
     return n;
   }, [filters]);
 
@@ -611,6 +699,10 @@ function CandidateDatabaseContent() {
 
             <span className="w-px h-5 mx-1 shrink-0" style={{ background: "var(--border)" }} />
 
+            <Pill active={filters.pool} onClick={() => updateFilter({ pool: !filters.pool })}>
+              ☆ Talent pool
+            </Pill>
+
             <button
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
@@ -650,6 +742,10 @@ function CandidateDatabaseContent() {
             </button>
           </div>
 
+          {exportError && (
+            <p role="alert" className="text-[12px]" style={{ color: RED }}>{exportError}</p>
+          )}
+
           {filtersOpen && (
             <div className="flex flex-wrap items-center gap-2 pt-3" style={{ borderTop: "1px solid var(--border-soft, var(--border))" }}>
               <Select ariaLabel="Filter by score" value={filters.scoreBand} onChange={(v) => updateFilter({ scoreBand: v })} options={SCORE_BANDS} />
@@ -665,12 +761,19 @@ function CandidateDatabaseContent() {
                 onChange={(v) => updateFilter({ jobId: v })}
                 options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
               />
+              <Select ariaLabel="Filter by status" value={filters.status} onChange={(v) => updateFilter({ status: v })} options={STATUS_OPTIONS} />
               <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
 
               <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
 
               {tags.map((t) => (
-                <TagChip key={t.id} label={t.label} active={filters.tagIds.includes(t.id)} onClick={() => toggleTag(t.id)} />
+                <TagChip
+                  key={t.id}
+                  label={t.label}
+                  active={filters.tagIds.includes(t.id)}
+                  onClick={() => toggleTag(t.id)}
+                  onDelete={t.custom ? () => removeCustomTag(t) : null}
+                />
               ))}
 
               {hasAnyFilter && (
@@ -705,6 +808,26 @@ function CandidateDatabaseContent() {
               onChange={bulkAddTag}
               options={[{ value: "", label: "Add tag…" }, ...tags.map((t) => ({ value: t.id, label: t.label }))]}
             />
+            <button
+              type="button"
+              onClick={() => runBulk({ action: "pool" })}
+              disabled={bulkBusy}
+              className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+              style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
+            >
+              ☆ Save to talent pool
+            </button>
+            {filters.pool && (
+              <button
+                type="button"
+                onClick={() => runBulk({ action: "unpool" }, { clearSelection: true })}
+                disabled={bulkBusy}
+                className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                style={{ color: INK_MUTED }}
+              >
+                Remove from pool
+              </button>
+            )}
             {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}

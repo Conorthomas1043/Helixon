@@ -17,6 +17,7 @@ import {
   inviteTeammate,
   cancelTeamInvite,
   removeTeammate,
+  setTeammateRole,
   assignUnassignedCandidates,
 } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
@@ -422,7 +423,9 @@ function Metric({ label, value, accent }) {
   );
 }
 
-function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
+const ROLE_LABELS = { owner: "Owner", admin: "Admin", member: "Member" };
+
+function RecruiterCard({ recruiter, canRemove, canChangeRole, changingRole, onChangeRole, removing, onRemove }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
       <div className="flex items-center gap-3 mb-4">
@@ -432,7 +435,7 @@ function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
             {recruiter.name}
           </p>
           <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
-            {recruiter.role === "owner" ? "Owner" : "Member"}
+            {ROLE_LABELS[recruiter.role] || "Member"}
           </p>
         </div>
         {recruiter.overdue > 0 && (
@@ -465,6 +468,19 @@ function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
             rare, deliberate action and shouldn't sit visually level with
             "View candidates". Not shown on your own card (see canRemove)
             or when you're the only person on the team. */}
+        <span className="flex items-center gap-3 shrink-0">
+        {canChangeRole && (
+          <button
+            type="button"
+            onClick={() => onChangeRole(recruiter, recruiter.role === "admin" ? "member" : "admin")}
+            disabled={changingRole}
+            title={recruiter.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
+            className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+            style={{ color: INK_MUTED }}
+          >
+            {changingRole ? "Saving…" : recruiter.role === "admin" ? "Make member" : "Make admin"}
+          </button>
+        )}
         {canRemove && (
           <button
             type="button"
@@ -476,6 +492,7 @@ function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
             {removing ? "Removing…" : "Remove"}
           </button>
         )}
+        </span>
       </div>
     </div>
   );
@@ -584,6 +601,22 @@ export default function TeamPage() {
 
   const [removeTarget, setRemoveTarget] = useState(null);
 
+  const [changingRoleId, setChangingRoleId] = useState(null);
+  async function handleChangeRole(member, role) {
+    if (role === "admin" && !confirm(`Make ${member.name} an admin? They'll be able to invite, remove and reassign people.`)) return;
+    setChangingRoleId(member.id);
+    setRemoveError("");
+    try {
+      await setTeammateRole(member.id, role);
+      retry();
+      loadUsage();
+    } catch (err) {
+      setRemoveError(err.message || "Couldn't change their role.");
+    } finally {
+      setChangingRoleId(null);
+    }
+  }
+
   function handleRemove(member) {
     setRemoveError("");
     setRemoveTarget(member);
@@ -662,7 +695,10 @@ export default function TeamPage() {
               <RecruiterCard
                 key={r.id}
                 recruiter={r}
-                canRemove={canManage && r.id !== user?.id && r.role !== "owner"}
+                canRemove={canManage && r.id !== user?.id && r.role === "member"}
+                canChangeRole={canManage && r.id !== user?.id && (r.role === "member" || r.role === "admin")}
+                changingRole={changingRoleId === r.id}
+                onChangeRole={handleChangeRole}
                 removing={removingId === r.id}
                 onRemove={handleRemove}
               />

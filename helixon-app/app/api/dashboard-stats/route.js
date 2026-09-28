@@ -35,7 +35,7 @@ async function fetchAllScoreRows(agencyId) {
     const { data, error } = await supabase
       .from("scores")
       .select(
-        "id, match_score, created_at, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
+        "id, match_score, created_at, job_id, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
       )
       .eq("agency_id", agencyId)
       .order("created_at", { ascending: false })
@@ -96,8 +96,10 @@ export async function GET() {
     // /dashboard/candidates/<score id>, which never resolves).
     candidateId: s.candidates?.id ?? null,
     candidateName: s.candidates?.full_name || s.candidates?.name || "Unnamed candidate",
+    jobId: s.job_id || null,
     jobTitle: s.jobs?.title || "Unspecified role",
     company: s.jobs?.client || null,
+    recruiterId: s.candidates?.recruiter_id || null,
     recruiterName: recruiterNames.get(s.candidates?.recruiter_id) || null,
     status: s.candidates?.processing_status === "completed" ? "completed" : (s.candidates?.processing_status || "completed"),
     // The live, current pipeline position - candidates.stage, not scores.stage.

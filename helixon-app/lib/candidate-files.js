@@ -74,3 +74,15 @@ export async function removeCandidateCvs(paths = []) {
   }
   return null;
 }
+
+// Copies a stored CV to a new candidate row (screening someone already on
+// file against another job). Each row gets its own copy so erasing one
+// never removes the file another still points at. Returns { path } or
+// throws.
+export async function copyCandidateCv({ agencyId, candidateId, fromPath }) {
+  const ext = String(fromPath || "").split(".").pop();
+  const path = `${agencyId}/${candidateId}/${crypto.randomUUID()}.${MIME_BY_EXT[ext] ? ext : "pdf"}`;
+  const { error } = await supabase.storage.from(BUCKET).copy(fromPath, path);
+  if (error) throw new Error(error.message);
+  return { path };
+}
