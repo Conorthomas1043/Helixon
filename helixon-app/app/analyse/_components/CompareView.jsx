@@ -11,13 +11,12 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { Button, Card, Icon, Notice, Segmented, Select, Spinner, cx } from "./ui";
+import { Card, Icon, Notice, Spinner, cx } from "./ui";
 import CandidateChooser from "./CandidateChooser";
 import RawCvCompare from "./RawCvCompare";
+import { LETTERS, PillButton, PillTabs, StagePicker, openOriginalCv } from "./compareBits";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
-
-const LETTERS = ["A", "B", "C", "D"];
 
 // ── Formatting ──────────────────────────────────────────────────────────
 
@@ -140,24 +139,14 @@ function Bullets({ items, tone }) {
 
 // ── Candidate header ────────────────────────────────────────────────────
 
-function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader }) {
+function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onStageChanged }) {
   const tone = scoreTone(c.matchScore);
   const [opening, setOpening] = useState(false);
 
   async function openCv() {
-    if (c.blind && !confirm("This candidate was screened blind. The original CV shows their name and contact details. Open it anyway?")) return;
     setOpening(true);
-    const tab = window.open("", "_blank");
-    try {
-      const res = await fetch(`/api/candidates/${c.id}/cv`, { credentials: "include" });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.url) throw new Error();
-      tab.location.href = data.url;
-    } catch {
-      tab?.close();
-    } finally {
-      setOpening(false);
-    }
+    await openOriginalCv(c);
+    setOpening(false);
   }
 
   return (
@@ -195,36 +184,12 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader }) {
             {opening ? "Opening…" : "Open CV"}
           </button>
         )}
-        {c.stage && <span className="text-[var(--ink-faint)]">{c.stage}</span>}
+      </div>
+      <div className="mt-3">
+        <StagePicker candidateId={c.id} stage={c.stage} onChanged={(stage) => onStageChanged(c.id, stage)} />
       </div>
       {c.otherRole && <p className="text-[11px] mt-2 text-[#8a5a12]">Scored against a different role</p>}
       {!c.analysed && <p className="text-[11px] mt-2 text-[#8a5a12]">No saved analysis</p>}
-    </div>
-  );
-}
-
-// ── Picker ──────────────────────────────────────────────────────────────
-
-function Picker({ pool, selected, max, onAdd }) {
-  const options = pool.filter((p) => !selected.includes(p.id));
-  if (!pool.length) return null;
-  const full = selected.length >= max;
-  return (
-    <div className="flex items-center gap-2">
-      <Select
-        aria-label="Add a candidate to compare"
-        value=""
-        disabled={full || !options.length}
-        onChange={(e) => e.target.value && onAdd(e.target.value)}
-        className="w-auto min-w-[230px]"
-      >
-        <option value="">{full ? `Up to ${max} at a time` : options.length ? "Add a candidate…" : "Everyone's already here"}</option>
-        {options.map((p, i) => (
-          <option key={p.id} value={p.id}>
-            {p.blind ? `Blind-screened candidate ${i + 1}` : p.name} · {p.score ?? "–"}
-          </option>
-        ))}
-      </Select>
     </div>
   );
 }
@@ -265,9 +230,25 @@ export default function CompareWorkspace() {
   );
 
   // Choosing from everyone already screened: in the empty state (a draft
-  // list, then Compare), or added straight in from the header panel.
+  // list, then Compare), or added straight in from the "Add candidate" panel.
   const [draft, setDraft] = useState([]);
-  const [addingAny, setAddingAny] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // A stage change made here shows straight away in both views.
+  const onStageChanged = useCallback((id, stage) => {
+    setData((d) => (d ? { ...d, candidates: d.candidates.map((c) => (c.id === id ? { ...c, stage } : c)) } : d));
+  }, []);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard blocked - nothing useful to do */
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -323,40 +304,54 @@ export default function CompareWorkspace() {
   return (
     <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 space-y-5">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-1">Compare candidates</p>
-            <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
-              {job ? job.title : "Side by side"}
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
+            <h1 className="text-2xl font-semibold text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
+              {job && n >= 2 ? job.title : "Side by side"}
             </h1>
-            {job?.client && <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">{job.client}</p>}
+            <p className="text-[13px] text-[var(--ink-soft)] mt-1">
+              {status === "ready" && n >= 2
+                ? [job?.client, `${n} candidates`].filter(Boolean).join(" · ")
+                : "Put 2 to 4 screened candidates next to each other - their scores, or their CVs."}
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {status === "ready" && n >= 2 && (
-              <Segmented
-                value={view}
-                onChange={setView}
-                ariaLabel="What to compare"
-                options={[
-                  { value: "scores", label: "Scores", icon: "compare" },
-                  { value: "raw", label: "Raw CVs", icon: "file" },
-                ]}
-              />
-            )}
-            {status === "ready" && <Picker pool={data.pool || []} selected={ids} max={data.max || 4} onAdd={(id) => setIds([...ids, id])} />}
-            {status === "ready" && n >= 2 && ids.length < (data.max || 4) && (
-              <Button size="sm" icon="plus" onClick={() => setAddingAny((v) => !v)} aria-expanded={addingAny}>
-                Any candidate
-              </Button>
-            )}
-            {job && (
-              <Link href={`/dashboard/jobs/${job.id}`} className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-[8px] border border-[var(--border)] bg-white text-[13px] font-medium text-[var(--ink)] hover:bg-[var(--mist)]">
-                <Icon name="arrowLeft" size={14} /> Back to job
-              </Link>
-            )}
-          </div>
+          {status === "ready" && n >= 2 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {job && (
+                <PillButton href={`/dashboard/jobs/${job.id}`} icon="briefcase">
+                  View job
+                </PillButton>
+              )}
+              <PillButton icon={copied ? "check" : "copy"} onClick={copyLink}>
+                {copied ? "Link copied" : "Copy link"}
+              </PillButton>
+              {ids.length < (data.max || 4) && (
+                <PillButton primary icon="plus" onClick={() => setAdding((v) => !v)} aria-expanded={adding}>
+                  Add candidate
+                </PillButton>
+              )}
+            </div>
+          )}
         </header>
+
+        {status === "ready" && n >= 2 && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <PillTabs
+              value={view}
+              onChange={setView}
+              ariaLabel="What to compare"
+              options={[
+                { value: "scores", label: "Scores", icon: "compare" },
+                { value: "raw", label: "Raw CVs", icon: "file" },
+              ]}
+            />
+            <p className="text-[12.5px] text-[var(--ink-faint)]">
+              {view === "raw" ? "Each CV as it was uploaded - jump them all to the same section." : "Scored against the role - best in each row highlighted."}
+            </p>
+          </div>
+        )}
 
         {status === "loading" && (
           <Card className="p-10 flex items-center justify-center gap-3 text-[13px] text-[var(--ink-soft)]">
@@ -375,7 +370,12 @@ export default function CompareWorkspace() {
             <CandidateChooser
               selected={[...new Set([...ids, ...draft])]}
               max={data.max || 4}
-              onAdd={(id) => setDraft((d) => [...d, id])}
+              pool={data.pool || []}
+              knownPeople={candidates}
+              onToggle={(id) => {
+                if (ids.includes(id)) setIds(ids.filter((x) => x !== id));
+                else setDraft((d) => (d.includes(id) ? d.filter((x) => x !== id) : [...d, id]));
+              }}
               onCompare={() => {
                 setIds([...new Set([...ids, ...draft])]);
                 setDraft([]);
@@ -384,20 +384,25 @@ export default function CompareWorkspace() {
           </Card>
         )}
 
-        {status === "ready" && n >= 2 && addingAny && (
-          <Card className="p-5">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <p className="text-[14px] font-semibold text-[var(--ink)]">Add any screened candidate</p>
-              <button type="button" onClick={() => setAddingAny(false)} aria-label="Close" className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink)]">
+        {status === "ready" && n >= 2 && adding && (
+          <Card className="p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[15px] font-semibold text-[var(--ink)]">Add a candidate</p>
+                <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">Anyone you&apos;ve screened - up to {data.max || 4} side by side.</p>
+              </div>
+              <button type="button" onClick={() => setAdding(false)} aria-label="Close" className="p-1.5 rounded-full text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)]">
                 <Icon name="x" size={16} />
               </button>
             </div>
             <CandidateChooser
               selected={ids}
               max={data.max || 4}
-              onAdd={(id) => {
-                setIds([...ids, id]);
-                setAddingAny(false);
+              pool={data.pool || []}
+              knownPeople={candidates}
+              onToggle={(id) => {
+                setIds(ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
+                if (!ids.includes(id) && ids.length + 1 >= (data.max || 4)) setAdding(false);
               }}
             />
           </Card>
@@ -408,6 +413,7 @@ export default function CompareWorkspace() {
             candidates={candidates}
             labels={labels}
             onRemove={n > 2 ? (id) => setIds(ids.filter((x) => x !== id)) : undefined}
+            onStageChanged={onStageChanged}
           />
         )}
 
@@ -447,6 +453,7 @@ export default function CompareWorkspace() {
                       isLeader={leader.length === 1 && leader[0] === i}
                       canRemove={n > 2}
                       onRemove={() => setIds(ids.filter((id) => id !== c.id))}
+                      onStageChanged={onStageChanged}
                     />
                   ))}
 
@@ -605,12 +612,7 @@ export default function CompareWorkspace() {
               </div>
             </Card>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[12px] text-[var(--ink-faint)]">Hover a score for the reasoning behind it. Skill quotes are taken word for word from each CV.</p>
-              <Button size="sm" variant="ghost" icon="copy" onClick={() => navigator.clipboard?.writeText(window.location.href)}>
-                Copy link to this comparison
-              </Button>
-            </div>
+            <p className="text-[12px] text-[var(--ink-faint)]">Hover a score for the reasoning behind it. Skill quotes are taken word for word from each CV.</p>
           </>
         )}
       </div>

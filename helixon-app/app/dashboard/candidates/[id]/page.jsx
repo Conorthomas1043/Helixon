@@ -360,6 +360,15 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         >
           Add note
         </button>
+        {candidate.status === "completed" && (
+          <Link
+            href={`/analyse/compare?ids=${candidate.id}`}
+            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            Compare with others
+          </Link>
+        )}
         {candidate.email && (
           <a
             href={`mailto:${candidate.email}`}

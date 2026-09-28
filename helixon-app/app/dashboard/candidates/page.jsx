@@ -705,6 +705,16 @@ function CandidateDatabaseContent() {
               onChange={bulkAddTag}
               options={[{ value: "", label: "Add tag…" }, ...tags.map((t) => ({ value: t.id, label: t.label }))]}
             />
+            {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
+              <Link
+                href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}
+                className="text-[12px] font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Compare side by side
+              </Link>
+            ) : selectedIds.size > 4 ? (
+              <span className="text-[12px]" style={{ color: INK_MUTED }}>Select up to 4 to compare</span>
+            ) : null}
             <button
               type="button"
               onClick={bulkDelete}
