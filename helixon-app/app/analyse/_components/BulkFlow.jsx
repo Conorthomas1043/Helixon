@@ -36,6 +36,8 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   const [bulkJobFile, setBulkJobFile] = useState(null);
   const [bulkJobFileName, setBulkJobFileName] = useState(null);
   const [roleDraft, setRoleDraft] = useState(EMPTY_ROLE_DRAFT);
+  // Finished candidates ticked for side-by-side comparison (max 4).
+  const [compareIds, setCompareIds] = useState([]);
   const [queue, setQueue] = useState([]);
   // On by default for bulk: mass screening with no per-candidate review is
   // exactly where blind screening earns its keep. Still a real toggle.
@@ -122,6 +124,18 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
       return [...q, ...toAdd.map((file) => ({ id: nextIdRef.current++, file, status: "queued", candidateId: null, score: null, name: null, errorMessage: null }))];
     });
     setQueueError(rejected.length ? `Skipped ${rejected.join(", ")}.` : null);
+  }
+
+  function toggleCompare(candidateId) {
+    setCompareIds((ids) => (ids.includes(candidateId) ? ids.filter((x) => x !== candidateId) : ids.length >= 4 ? ids : [...ids, candidateId]));
+  }
+
+  function openCompare(ids) {
+    const q = new URLSearchParams({ ids: ids.filter(Boolean).join(",") });
+    const jobIdForCompare = resolvedJobRef.current.id || bulkJobId;
+    if (jobIdForCompare) q.set("jobId", jobIdForCompare);
+    // New tab, so the run's results list stays open here.
+    window.open(`/analyse/compare?${q.toString()}`, "_blank", "noopener");
   }
 
   function updateItem(id, patch) {
@@ -413,6 +427,25 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
               Hourly analysis limit reached - {doneCount} of {queue.length} finished. The rest are paused; press Retry on them later.
             </Notice>
           )}
+          {doneCount >= 2 && !running && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--mist)] px-3 py-2">
+              <span className="text-[12.5px] text-[var(--ink-soft)]">
+                {compareIds.length ? `${compareIds.length} of 4 ticked to compare` : "Tick 2-4 candidates to compare them side by side"}
+              </span>
+              <span className="flex gap-2">
+                {compareIds.length === 0 && (
+                  <Button size="sm" icon="compare" onClick={() => openCompare(ranked.filter((it) => it.status === "done").slice(0, 3).map((it) => it.candidateId))}>
+                    Compare top {Math.min(3, doneCount)}
+                  </Button>
+                )}
+                {compareIds.length > 0 && (
+                  <Button size="sm" variant="primary" icon="compare" disabled={compareIds.length < 2} onClick={() => openCompare(compareIds)}>
+                    Compare {compareIds.length}
+                  </Button>
+                )}
+              </span>
+            </div>
+          )}
           {allSettled && (
             <Notice tone="ok">
               {doneCount} scored{failedCount ? `, ${failedCount} failed` : ""}. Ranked by score below.{" "}
@@ -430,7 +463,18 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                 const tone = scoreTone(item.score);
                 return (
                   <li key={item.id} className={cx("flex items-center gap-3 py-2.5", item.status === "processing" && "bg-[#f4faf7] -mx-5 px-5")}>
-                    <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
+                    {item.status === "done" && item.candidateId && !running ? (
+                      <input
+                        type="checkbox"
+                        checked={compareIds.includes(item.candidateId)}
+                        disabled={!compareIds.includes(item.candidateId) && compareIds.length >= 4}
+                        onChange={() => toggleCompare(item.candidateId)}
+                        aria-label={`Tick ${item.name || item.file.name} to compare`}
+                        className="w-4 h-4 shrink-0 accent-[var(--forest)]"
+                      />
+                    ) : (
+                      <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="text-[13.5px] text-[var(--ink)] truncate">{item.name || item.file.name}</p>
                       <p className={cx("text-[12px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>

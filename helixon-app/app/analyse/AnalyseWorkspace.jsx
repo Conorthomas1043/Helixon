@@ -8,7 +8,7 @@
 // plus Bulk mode (BulkFlow) for many CVs against one role.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import posthog from "posthog-js";
 import DashboardNav from "@/components/DashboardNav";
@@ -17,7 +17,6 @@ import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
 import Report from "./_components/Report";
-import Compare from "./_components/Compare";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
 import { Button, Card, Icon, Notice, Segmented, Toasts, useToasts } from "./_components/ui";
@@ -52,6 +51,7 @@ function redirectForStatus(response, data) {
 
 export default function AnalyseWorkspace() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { toasts, toast } = useToasts();
 
   const [mode, setMode] = useState(() => (searchParams?.get("mode") === "bulk" ? "bulk" : "single"));
@@ -86,7 +86,6 @@ export default function AnalyseWorkspace() {
   const [jobId, setJobId] = useState(null);
   const [jobTitle, setJobTitle] = useState(null);
   const [comparing, setComparing] = useState(false);
-  const [compareResult, setCompareResult] = useState(null);
   const [rerunning, setRerunning] = useState(false);
 
   // ── Email / feedback ──────────────────────────────────────────────────
@@ -271,15 +270,17 @@ export default function AnalyseWorkspace() {
       }
 
       if (isCompare) {
-        setCompareResult(data.result);
+        // Both candidates are saved now - open the full side-by-side page.
         setComparing(false);
         setCompareFile(null);
+        const q = new URLSearchParams({ ids: [candidateId, data.candidateId].filter(Boolean).join(",") });
+        if (data.jobId || jobId) q.set("jobId", data.jobId || jobId);
+        router.push(`/analyse/compare?${q.toString()}`);
       } else {
         setResult(data.result);
         setCandidateId(data.candidateId);
         setJobId(data.jobId);
         setJobTitle(data.job?.title || null);
-        setCompareResult(null);
         setEmailDraft(null);
         setSent(false);
         setFeedback({ sent: false, rating: null, reason: null });
@@ -345,7 +346,6 @@ export default function AnalyseWorkspace() {
     setFile(null);
     setCompareFile(null);
     setComparing(false);
-    setCompareResult(null);
     setRerunning(false);
     setReference("");
     setEmailDraft(null);
@@ -534,9 +534,12 @@ export default function AnalyseWorkspace() {
               <Button size="sm" icon="refresh" onClick={() => setRerunning(true)}>
                 Re-score
               </Button>
-              {!compareResult && (
-                <Button size="sm" icon="compare" onClick={() => setComparing(true)}>
-                  Compare
+              <Button size="sm" icon="compare" onClick={() => setComparing(true)}>
+                Compare with another CV
+              </Button>
+              {jobId && candidateId && (
+                <Button size="sm" icon="layers" onClick={() => router.push(`/analyse/compare?jobId=${jobId}&ids=${candidateId}`)}>
+                  Compare for this role
                 </Button>
               )}
               <Button size="sm" variant="dark" icon="plus" onClick={newCandidateSameRole}>
@@ -642,7 +645,6 @@ export default function AnalyseWorkspace() {
         ) : (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
             <div className="space-y-5 min-w-0">
-              {compareResult && <Compare a={result} b={compareResult} onClose={() => setCompareResult(null)} />}
               <Report result={result} roleLabel={roleLabel} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">

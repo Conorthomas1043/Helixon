@@ -1,0 +1,547 @@
+"use client";
+
+// Side-by-side comparison of 2-4 saved candidates for one role
+// (app/analyse/compare). Data from /api/compare; the grid, winners and
+// verdict come from ../_lib/compare.js.
+
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import DashboardNav from "@/components/DashboardNav";
+import { Button, Card, Icon, Notice, Select, Spinner, cx } from "./ui";
+import { scoreTone } from "../_lib/analyse";
+import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
+
+const LETTERS = ["A", "B", "C", "D"];
+
+// ── Formatting ──────────────────────────────────────────────────────────
+
+function fmtPay(salary) {
+  if (!salary?.low) return null;
+  const period = salary.period || "year";
+  const currency = salary.currency || "GBP";
+  const hourly = period === "hour" || period === "day";
+  const fmt = (n) => {
+    try {
+      return new Intl.NumberFormat("en-GB", hourly
+        ? { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }
+        : { style: "currency", currency, notation: "compact", maximumSignificantDigits: 3 }).format(n);
+    } catch {
+      return String(n);
+    }
+  };
+  const range = salary.high && salary.high !== salary.low ? `${fmt(salary.low)}–${fmt(salary.high)}` : fmt(salary.low);
+  return `${range}${period === "hour" ? " an hour" : period === "day" ? " a day" : ""}`;
+}
+
+const MUST_HAVE = {
+  met: { label: "Met", icon: "check", cls: "bg-[var(--mint)] text-[var(--forest-deep)] border-[#cfe6da]" },
+  not_met: { label: "Not met", icon: "x", cls: "bg-[#fbefed] text-[#a83226] border-[#f2d2cd]" },
+  unverified: { label: "To confirm", icon: "info", cls: "bg-white text-[var(--ink-soft)] border-[var(--border)]" },
+};
+
+const SKILL = {
+  strong: "bg-[var(--mint)] text-[var(--forest-deep)] border-[#cfe6da]",
+  weak: "bg-[#fdf6e9] text-[#8a5a12] border-[#f1dfbc]",
+  missing: "bg-[#fbefed] text-[#a83226] border-[#f2d2cd]",
+  unknown: "bg-white text-[var(--ink-faint)] border-[var(--border)]",
+};
+
+// ── Layout pieces ───────────────────────────────────────────────────────
+
+// Columns share the card's width; below ~190px each the grid keeps its
+// minimum and the card scrolls sideways (label column stays pinned).
+// Not `min-w-max`: that sizes every column to its longest unwrapped line
+// (a strengths sentence), pushing later candidates off the edge.
+function gridStyle(n) {
+  return {
+    gridTemplateColumns: `minmax(150px, 190px) repeat(${n}, minmax(190px, 1fr))`,
+    minWidth: `${170 + n * 200}px`,
+  };
+}
+
+function RowLabel({ children, hint }) {
+  return (
+    <div className="sticky left-0 z-[1] bg-white px-4 py-3 border-t border-[var(--border-soft)]">
+      <p className="text-[12.5px] font-medium text-[var(--ink)] leading-snug">{children}</p>
+      {hint && <p className="text-[11px] text-[var(--ink-faint)] mt-0.5">{hint}</p>}
+    </div>
+  );
+}
+
+function Cell({ children, best }) {
+  return (
+    <div className={cx("px-4 py-3 border-t border-[var(--border-soft)] min-w-0", best && "bg-[#f4faf7]")}>{children}</div>
+  );
+}
+
+function SectionRow({ n, title, extra }) {
+  return (
+    <div className="contents">
+      <div className="sticky left-0 z-[1] bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)]">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-soft)]">{title}</p>
+      </div>
+      {Array.from({ length: n }).map((_, i) => (
+        <div key={i} className="bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)] text-[11.5px] text-[var(--ink-soft)] tabular-nums">
+          {extra?.[i] ?? ""}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BestTag() {
+  return <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--forest)]">Best</span>;
+}
+
+function ScoreBar({ value, best }) {
+  if (value == null) return <span className="text-[13px] text-[var(--ink-faint)]">–</span>;
+  const tone = scoreTone(value);
+  return (
+    <div>
+      <div className="flex items-baseline">
+        <span className="text-[15px] font-semibold tabular-nums" style={{ color: tone.fg }}>{value}</span>
+        {best && <BestTag />}
+      </div>
+      <div className="h-1.5 rounded-full bg-[var(--mist)] mt-1.5 overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${Math.max(2, Math.min(100, value))}%`, background: tone.fg }} />
+      </div>
+    </div>
+  );
+}
+
+function Pill({ className, icon, children, title }) {
+  return (
+    <span title={title} className={cx("inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[11.5px] font-medium", className)}>
+      {icon && <Icon name={icon} size={11} strokeWidth={2.4} />}
+      {children}
+    </span>
+  );
+}
+
+function Bullets({ items, tone }) {
+  if (!items.length) return <span className="text-[12.5px] text-[var(--ink-faint)]">None noted</span>;
+  return (
+    <ul className="space-y-1.5">
+      {items.slice(0, 4).map((t, i) => (
+        <li key={i} className="flex gap-1.5 text-[12.5px] leading-snug text-[var(--ink-soft)]">
+          <span className={cx("mt-[6px] w-1.5 h-1.5 rounded-full shrink-0", tone === "bad" ? "bg-[var(--score-low)]" : "bg-[var(--forest)]")} />
+          <span>{t}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ── Candidate header ────────────────────────────────────────────────────
+
+function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader }) {
+  const tone = scoreTone(c.matchScore);
+  const [opening, setOpening] = useState(false);
+
+  async function openCv() {
+    if (c.blind && !confirm("This candidate was screened blind. The original CV shows their name and contact details. Open it anyway?")) return;
+    setOpening(true);
+    const tab = window.open("", "_blank");
+    try {
+      const res = await fetch(`/api/candidates/${c.id}/cv`, { credentials: "include" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.url) throw new Error();
+      tab.location.href = data.url;
+    } catch {
+      tab?.close();
+    } finally {
+      setOpening(false);
+    }
+  }
+
+  return (
+    <div className={cx("px-4 pt-4 pb-4 min-w-0 relative", isLeader && "bg-[#f4faf7]")}>
+      <div className="flex items-start gap-2.5">
+        <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
+        <div className="min-w-0 flex-1">
+          <Link href={`/dashboard/candidates/${c.id}`} className="block text-[14px] font-semibold text-[var(--ink)] truncate hover:underline" title={label}>
+            {label}
+          </Link>
+          <p className="text-[11.5px] text-[var(--ink-faint)] truncate">
+            {c.blind ? "Screened blind" : [c.currentTitle, c.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
+          </p>
+        </div>
+        {canRemove && (
+          <button type="button" onClick={onRemove} aria-label={`Remove ${label} from the comparison`} className="p-1 -mr-1 rounded text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)]">
+            <Icon name="x" size={14} />
+          </button>
+        )}
+      </div>
+      <div className="flex items-end justify-between gap-2 mt-3">
+        <div>
+          <span className="text-[30px] leading-none font-semibold tabular-nums" style={{ color: tone.fg, fontFamily: "var(--font-display)" }}>
+            {c.matchScore ?? "–"}
+          </span>
+          <span className="text-[12px] text-[var(--ink-faint)] ml-1">/100</span>
+        </div>
+        {isLeader && <Pill className="bg-[var(--forest)] text-white border-[var(--forest)]" icon="check">Top match</Pill>}
+      </div>
+      <p className="text-[12px] font-medium mt-1.5" style={{ color: tone.fg }}>{c.recommendation || tone.label}</p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[12px]">
+        <Link href={`/dashboard/candidates/${c.id}`} className="font-semibold text-[var(--forest)] hover:underline">Profile</Link>
+        {c.hasCv && (
+          <button type="button" onClick={openCv} disabled={opening} className="font-semibold text-[var(--forest)] hover:underline disabled:opacity-50">
+            {opening ? "Opening…" : "Open CV"}
+          </button>
+        )}
+        {c.stage && <span className="text-[var(--ink-faint)]">{c.stage}</span>}
+      </div>
+      {c.otherRole && <p className="text-[11px] mt-2 text-[#8a5a12]">Scored against a different role</p>}
+      {!c.analysed && <p className="text-[11px] mt-2 text-[#8a5a12]">No saved analysis</p>}
+    </div>
+  );
+}
+
+// ── Picker ──────────────────────────────────────────────────────────────
+
+function Picker({ pool, selected, max, onAdd }) {
+  const options = pool.filter((p) => !selected.includes(p.id));
+  if (!pool.length) return null;
+  const full = selected.length >= max;
+  return (
+    <div className="flex items-center gap-2">
+      <Select
+        aria-label="Add a candidate to compare"
+        value=""
+        disabled={full || !options.length}
+        onChange={(e) => e.target.value && onAdd(e.target.value)}
+        className="w-auto min-w-[230px]"
+      >
+        <option value="">{full ? `Up to ${max} at a time` : options.length ? "Add a candidate…" : "Everyone's already here"}</option>
+        {options.map((p, i) => (
+          <option key={p.id} value={p.id}>
+            {p.blind ? `Blind-screened candidate ${i + 1}` : p.name} · {p.score ?? "–"}
+          </option>
+        ))}
+      </Select>
+    </div>
+  );
+}
+
+// ── Page ────────────────────────────────────────────────────────────────
+
+export default function CompareWorkspace() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const jobIdParam = params.get("jobId") || "";
+  const idsParam = params.get("ids") || "";
+  const ids = useMemo(() => idsParam.split(",").map((s) => s.trim()).filter(Boolean), [idsParam]);
+
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+
+  const setIds = useCallback(
+    (next) => {
+      const q = new URLSearchParams();
+      if (jobIdParam || data?.job?.id) q.set("jobId", jobIdParam || data.job.id);
+      if (next.length) q.set("ids", next.join(","));
+      router.replace(`/analyse/compare?${q.toString()}`);
+    },
+    [router, jobIdParam, data]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const q = new URLSearchParams();
+    if (idsParam) q.set("ids", idsParam);
+    if (jobIdParam) q.set("jobId", jobIdParam);
+    fetch(`/api/compare?${q.toString()}`, { credentials: "include" })
+      .then(async (res) => {
+        const body = await res.json().catch(() => null);
+        if (cancelled) return;
+        if (!res.ok || !body) {
+          setError(body?.error || "Couldn't load the comparison.");
+          setStatus("error");
+          return;
+        }
+        setData(body);
+        setStatus("ready");
+        // Arriving from a job with nobody picked yet: start with the top 3.
+        if (!idsParam && body.pool?.length >= 2) {
+          const q2 = new URLSearchParams({ jobId: jobIdParam || body.job?.id || "", ids: body.pool.slice(0, 3).map((p) => p.id).join(",") });
+          router.replace(`/analyse/compare?${q2.toString()}`);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Couldn't reach the server. Check your connection.");
+          setStatus("error");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [idsParam, jobIdParam, router]);
+
+  const candidates = useMemo(() => data?.candidates || [], [data]);
+  const job = data?.job || null;
+  const labels = useMemo(() => columnLabels(candidates), [candidates]);
+  const required = useMemo(() => skillRows(job, candidates, "required"), [job, candidates]);
+  const preferred = useMemo(() => skillRows(job, candidates, "preferred"), [job, candidates]);
+  const mustHaves = useMemo(() => mustHaveRows(candidates), [candidates]);
+  const lines = useMemo(() => verdict(candidates, labels, required, mustHaves), [candidates, labels, required, mustHaves]);
+  const leader = winners(candidates.map((c) => c.matchScore));
+  const n = candidates.length;
+
+  const scoreRowDefs = [
+    { label: "Overall match", key: "matchScore" },
+    { label: "Skills", key: "skillScore", hint: "Required and preferred skills, by depth" },
+    { label: "Experience", key: "experienceScore", hint: "Relevant years and career" },
+    { label: "Industry relevance", key: "industryScore", rationale: "industry" },
+    { label: "Achievements", key: "achievementScore", rationale: "achievements" },
+  ].filter((r) => candidates.some((c) => c[r.key] != null));
+
+  return (
+    <main className="min-h-screen bg-[var(--mist)]">
+      <DashboardNav />
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 space-y-5">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-1">Compare candidates</p>
+            <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
+              {job ? job.title : "Side by side"}
+            </h1>
+            {job?.client && <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">{job.client}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {status === "ready" && <Picker pool={data.pool || []} selected={ids} max={data.max || 4} onAdd={(id) => setIds([...ids, id])} />}
+            {job && (
+              <Link href={`/dashboard/jobs/${job.id}`} className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-[8px] border border-[var(--border)] bg-white text-[13px] font-medium text-[var(--ink)] hover:bg-[var(--mist)]">
+                <Icon name="arrowLeft" size={14} /> Back to job
+              </Link>
+            )}
+          </div>
+        </header>
+
+        {status === "loading" && (
+          <Card className="p-10 flex items-center justify-center gap-3 text-[13px] text-[var(--ink-soft)]">
+            <Spinner /> Loading the comparison…
+          </Card>
+        )}
+
+        {status === "error" && <Notice tone="error">{error}</Notice>}
+
+        {status === "ready" && n < 2 && (
+          <Card className="p-10 text-center">
+            <p className="text-[15px] font-semibold text-[var(--ink)]">Pick at least two candidates</p>
+            <p className="text-[13px] text-[var(--ink-soft)] mt-1 max-w-md mx-auto">
+              {data.pool?.length
+                ? "Use “Add a candidate” above to choose who to compare for this role - up to four at a time."
+                : "Open a job with scored candidates and choose Compare, or tick candidates after a bulk run."}
+            </p>
+          </Card>
+        )}
+
+        {status === "ready" && n >= 2 && (
+          <>
+            {lines.length > 0 && (
+              <Card className="p-5">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Icon name="compare" size={16} className="text-[var(--forest)]" />
+                  <h2 className="text-[14px] font-semibold text-[var(--ink)]">At a glance</h2>
+                </div>
+                <ul className="space-y-1.5">
+                  {lines.map((l, i) => (
+                    <li key={i} className="flex gap-2 text-[13.5px] leading-relaxed text-[var(--ink)]">
+                      <span className="mt-[9px] w-1 h-1 rounded-full bg-[var(--ink-faint)] shrink-0" />
+                      {l}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-[11.5px] text-[var(--ink-faint)] mt-3">A summary of the numbers below - use it alongside your own judgement, not instead of it.</p>
+              </Card>
+            )}
+
+            <Card className="overflow-hidden">
+              <div className="overflow-x-auto">
+                <div className="grid w-full" style={gridStyle(n)}>
+                  {/* Header */}
+                  <div className="sticky left-0 z-[1] bg-white px-4 pt-4 pb-4 flex items-end">
+                    <p className="text-[11.5px] text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
+                  </div>
+                  {candidates.map((c, i) => (
+                    <CandidateHeader
+                      key={c.id}
+                      c={c}
+                      index={i}
+                      label={labels[i]}
+                      isLeader={leader.length === 1 && leader[0] === i}
+                      canRemove={n > 2}
+                      onRemove={() => setIds(ids.filter((id) => id !== c.id))}
+                    />
+                  ))}
+
+                  {/* Scores */}
+                  <SectionRow n={n} title="Scores" />
+                  {scoreRowDefs.map((row) => {
+                    const values = candidates.map((c) => c[row.key]);
+                    const best = winners(values);
+                    return (
+                      <Fragment key={row.key}>
+                        <RowLabel hint={row.hint}>{row.label}</RowLabel>
+                        {candidates.map((c, i) => (
+                          <Cell key={c.id} best={best.includes(i)}>
+                            <div title={row.rationale ? c.rationale?.[row.rationale] || undefined : undefined}>
+                              <ScoreBar value={values[i]} best={best.includes(i)} />
+                            </div>
+                          </Cell>
+                        ))}
+                      </Fragment>
+                    );
+                  })}
+
+                  {/* Required skills */}
+                  {required.length > 0 && (
+                    <>
+                      <SectionRow
+                        n={n}
+                        title="Required skills"
+                        extra={candidates.map((c, i) => {
+                          const cov = coverage(required, i);
+                          return cov.of ? `${cov.met} of ${cov.of} shown` : "";
+                        })}
+                      />
+                      {required.map((row) => (
+                        <Fragment key={row.skill}>
+                          <RowLabel hint={row.importance && row.importance !== "Medium" ? `${row.importance} importance` : undefined}>{row.skill}</RowLabel>
+                          {row.cells.map((cell, i) => (
+                            <Cell key={i}>
+                              <Pill
+                                className={SKILL[cell.state]}
+                                icon={cell.state === "missing" ? "x" : cell.state === "unknown" ? null : "check"}
+                                title={cell.evidence ? `From the CV: “${cell.evidence}”` : undefined}
+                              >
+                                {cell.label}
+                                {cell.stale ? " · a while ago" : ""}
+                              </Pill>
+                              {cell.evidence && (
+                                <p className="text-[11.5px] italic text-[var(--ink-faint)] mt-1.5 line-clamp-2">“{cell.evidence}”</p>
+                              )}
+                            </Cell>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Preferred skills */}
+                  {preferred.length > 0 && (
+                    <>
+                      <SectionRow
+                        n={n}
+                        title="Nice to have"
+                        extra={candidates.map((c, i) => {
+                          const cov = coverage(preferred, i);
+                          return cov.of ? `${cov.met} of ${cov.of}` : "";
+                        })}
+                      />
+                      {preferred.map((row) => (
+                        <Fragment key={row.skill}>
+                          <RowLabel>{row.skill}</RowLabel>
+                          {row.cells.map((cell, i) => (
+                            <Cell key={i}>
+                              <Pill className={SKILL[cell.state]} icon={cell.state === "missing" ? "x" : cell.state === "unknown" ? null : "check"}>
+                                {cell.label}
+                              </Pill>
+                            </Cell>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Must-haves */}
+                  {mustHaves.length > 0 && (
+                    <>
+                      <SectionRow n={n} title="Must-haves" />
+                      {mustHaves.map((row) => (
+                        <Fragment key={row.requirement}>
+                          <RowLabel>{row.requirement.replace(/^[a-z_]+:\s*/i, (m) => m.replace(/_/g, " ").replace(/^./, (x) => x.toUpperCase()))}</RowLabel>
+                          {row.cells.map((status, i) => (
+                            <Cell key={i}>
+                              {status ? (
+                                <Pill className={MUST_HAVE[status]?.cls} icon={MUST_HAVE[status]?.icon}>{MUST_HAVE[status]?.label || status}</Pill>
+                              ) : (
+                                <span className="text-[12.5px] text-[var(--ink-faint)]">Not checked</span>
+                              )}
+                            </Cell>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Experience & pay */}
+                  <SectionRow n={n} title="Experience and pay" />
+                  {(() => {
+                    const years = candidates.map((c) => c.relevantYears);
+                    const best = winners(years);
+                    return (
+                      <>
+                        <RowLabel hint={job?.minYears ? `Role asks for ${job.minYears}+` : undefined}>Relevant experience</RowLabel>
+                        {candidates.map((c, i) => (
+                          <Cell key={c.id} best={best.includes(i)}>
+                            <p className="text-[13.5px] text-[var(--ink)]" title={c.rationale?.experience || undefined}>
+                              {c.relevantYears != null ? `${c.relevantYears} yrs` : "–"}
+                              {best.includes(i) && <BestTag />}
+                            </p>
+                            {c.totalYears != null && c.totalYears !== c.relevantYears && (
+                              <p className="text-[11.5px] text-[var(--ink-faint)]">{c.totalYears} yrs in total</p>
+                            )}
+                          </Cell>
+                        ))}
+                      </>
+                    );
+                  })()}
+                  <RowLabel>Career</RowLabel>
+                  {candidates.map((c) => (
+                    <Cell key={c.id}>
+                      <p className="text-[13px] text-[var(--ink)]" title={c.rationale?.career || undefined}>
+                        {c.career === "Positive" ? "Progressing" : c.career === "Regression" ? "Stepped down" : c.career === "Static" ? "Steady" : "Not enough history"}
+                      </p>
+                    </Cell>
+                  ))}
+                  <RowLabel hint="A rough guide, not an offer">Pay guide</RowLabel>
+                  {candidates.map((c) => (
+                    <Cell key={c.id}>
+                      <p className="text-[13px] text-[var(--ink)] tabular-nums">{fmtPay(c.salary) || "–"}</p>
+                    </Cell>
+                  ))}
+
+                  {/* Strengths & concerns */}
+                  <SectionRow n={n} title="Strengths and concerns" />
+                  <RowLabel>Strengths</RowLabel>
+                  {candidates.map((c) => (
+                    <Cell key={c.id}>
+                      <Bullets items={[...c.standout, ...c.strengths].filter((v, i, a) => a.indexOf(v) === i)} />
+                    </Cell>
+                  ))}
+                  <RowLabel>Concerns</RowLabel>
+                  {candidates.map((c) => (
+                    <Cell key={c.id}>
+                      <Bullets items={[...c.redFlags, ...c.weaknesses]} tone="bad" />
+                    </Cell>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[12px] text-[var(--ink-faint)]">Hover a score for the reasoning behind it. Skill quotes are taken word for word from each CV.</p>
+              <Button size="sm" variant="ghost" icon="copy" onClick={() => navigator.clipboard?.writeText(window.location.href)}>
+                Copy link to this comparison
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
+  );
+}

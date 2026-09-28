@@ -608,6 +608,16 @@ export default function JobDetailPage({ params }) {
                 <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
                   Candidates ranked by fit
                 </h2>
+                <div className="flex items-center gap-2">
+                {(data?.candidates?.length ?? 0) >= 2 && (
+                  <Link
+                    href={`/analyse/compare?jobId=${job.id}`}
+                    className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                  >
+                    Compare candidates
+                  </Link>
+                )}
                 <select
                   aria-label="Filter by stage"
                   value={stageFilter}
@@ -622,6 +632,7 @@ export default function JobDetailPage({ params }) {
                     </option>
                   ))}
                 </select>
+                </div>
               </div>
 
               {filteredCandidates.length === 0 ? (
