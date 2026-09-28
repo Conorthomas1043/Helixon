@@ -49,6 +49,23 @@ async function extractJobSpecText(file) {
   return extractCvText(file);
 }
 
+// jobs.role_tier has a check constraint allowing only 'entry_level',
+// 'skilled' and 'senior' (live DB), while job extraction uses entry /
+// skilled / senior / executive (validateJob.js). Writing "entry" or
+// "executive" straight through failed the insert and the whole analysis
+// with a 500. The full value stays in jobs.parsed for scoring.
+const DB_ROLE_TIERS = {
+  entry: "entry_level",
+  entry_level: "entry_level",
+  skilled: "skilled",
+  senior: "senior",
+  executive: "senior",
+};
+
+function dbRoleTier(tier) {
+  return DB_ROLE_TIERS[String(tier || "").toLowerCase()] || "skilled";
+}
+
 function isAcceptedCvFile(file) {
   if (!file) return false;
 
@@ -406,9 +423,7 @@ export async function POST(request) {
             null,
           job_text: jobText,
           parsed: jobParsed || {},
-          role_tier:
-            jobParsed?.role_tier ||
-            "skilled",
+          role_tier: dbRoleTier(jobParsed?.role_tier),
           is_saved: saveJob,
           status: "open",
           location:
