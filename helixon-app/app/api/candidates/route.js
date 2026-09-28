@@ -40,7 +40,8 @@ export async function GET(request) {
   const tagIds = (params.get("tagIds") || "").split(",").map((t) => t.trim()).filter(Boolean);
   const sortBy = params.get("sortBy") ?? "score_desc";
   const page = Math.max(1, Number(params.get("page")) || 1);
-  const pageSize = Math.min(50, Math.max(1, Number(params.get("pageSize")) || 8));
+  // Up to 200 so "load everything" callers (analytics, export) need few requests.
+  const pageSize = Math.min(200, Math.max(1, Number(params.get("pageSize")) || 8));
 
   // skills:extracted->skills pulls just that key - selecting the whole
   // parsed-CV `extracted` JSON per row made every list/board load heavy.

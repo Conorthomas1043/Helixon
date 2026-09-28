@@ -1,22 +1,14 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/jobs. The existing dashboard's "All jobs →" link and
- *   DashboardNav's "Jobs" tab both already point here - if a real
- *   /dashboard/jobs page already exists in this project, treat this file
- *   as a reference implementation to reconcile against rather than a
- *   blind overwrite; it wasn't possible to check from this conversation.
- * - Jobs are real entities in lib/mock-data.js now (not derived from
- *   candidates), so requirements/status have somewhere honest to live.
- *   getJobs() aggregates live candidate counts per job on every call.
- * ---------------------------------------------------------------------- */
+// /dashboard/jobs - every role the agency is hiring for, with live candidate
+// counts (app/api/jobs). Jobs are created here directly, or as a side effect
+// of screening a CV against a new job description on /analyse.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobs as fetchJobs } from "@/lib/dashboard-api";
+import { getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
 
 function Stat({ label, value, accent }) {
@@ -128,15 +120,168 @@ function ErrorState({ onRetry }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({ onNew }) {
   return (
     <div className="rounded-[16px] flex flex-col items-center text-center py-14 px-6" style={CARD}>
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         No jobs yet
       </p>
-      <p className="text-[13px] max-w-sm" style={{ color: INK_MUTED }}>
-        Jobs will appear here once roles are added to Helixon.
+      <p className="text-[13px] max-w-sm mb-5" style={{ color: INK_MUTED }}>
+        Add a role you&apos;re hiring for, or screen a CV against a job description and the role is saved for you.
       </p>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={onNew}
+          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ background: "var(--forest)", color: "white" }}
+        >
+          Add a job
+        </button>
+        <Link
+          href="/analyse"
+          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        >
+          Screen a CV
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+const MIN_DESCRIPTION = 50;
+
+function splitSkills(text) {
+  return text.split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
+}
+
+function Field({ label, children, hint }) {
+  return (
+    <label className="block">
+      <span className="block text-[12px] font-semibold mb-1" style={{ color: INK }}>{label}</span>
+      {children}
+      {hint && <span className="block text-[11.5px] mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
+    </label>
+  );
+}
+
+// Adds a role directly, instead of only as a side effect of screening a CV.
+function NewJobDialog({ onCancel, onCreated }) {
+  const [f, setF] = useState({
+    title: "",
+    company: "",
+    location: "",
+    employmentType: "",
+    seniority: "",
+    salaryRange: "",
+    minYearsExperience: "",
+    requiredSkills: "",
+    preferredSkills: "",
+    jobText: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const firstRef = useRef(null);
+  const set = (key) => (e) => setF((v) => ({ ...v, [key]: e.target.value }));
+
+  useEffect(() => {
+    firstRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape" && !saving) onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saving, onCancel]);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (f.jobText.trim().length < MIN_DESCRIPTION) {
+      setError(`Add the job description (at least ${MIN_DESCRIPTION} characters) - CVs are screened against it.`);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const job = await createJob({
+        title: f.title.trim(),
+        company: f.company.trim(),
+        location: f.location.trim(),
+        employmentType: f.employmentType.trim(),
+        seniority: f.seniority.trim(),
+        salaryRange: f.salaryRange.trim(),
+        minYearsExperience: f.minYearsExperience === "" ? null : Number(f.minYearsExperience),
+        requiredSkills: splitSkills(f.requiredSkills),
+        preferredSkills: splitSkills(f.preferredSkills),
+        jobText: f.jobText.trim(),
+      });
+      onCreated(job);
+    } catch (err) {
+      setError(err.message || "Couldn't create the job.");
+      setSaving(false);
+    }
+  }
+
+  const input = "w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  const inputStyle = { border: "1px solid var(--border)", color: INK, background: "white" };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
+      <form
+        onSubmit={submit}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-job-title"
+        className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-[16px] p-6 bg-white shadow-xl"
+      >
+        <h2 id="new-job-title" className="text-base font-semibold mb-4" style={{ color: INK }}>New job</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="sm:col-span-2">
+            <Field label="Job title">
+              <input ref={firstRef} required maxLength={160} value={f.title} onChange={set("title")} className={input} style={inputStyle} />
+            </Field>
+          </div>
+          <Field label="Client"><input maxLength={160} value={f.company} onChange={set("company")} className={input} style={inputStyle} /></Field>
+          <Field label="Location"><input maxLength={160} value={f.location} onChange={set("location")} className={input} style={inputStyle} /></Field>
+          <Field label="Employment type"><input maxLength={60} placeholder="Permanent, contract…" value={f.employmentType} onChange={set("employmentType")} className={input} style={inputStyle} /></Field>
+          <Field label="Seniority"><input maxLength={60} placeholder="Junior, mid, senior…" value={f.seniority} onChange={set("seniority")} className={input} style={inputStyle} /></Field>
+          <Field label="Salary range"><input maxLength={80} placeholder="£40k–£50k" value={f.salaryRange} onChange={set("salaryRange")} className={input} style={inputStyle} /></Field>
+          <Field label="Minimum years' experience"><input type="number" min={0} max={60} value={f.minYearsExperience} onChange={set("minYearsExperience")} className={input} style={inputStyle} /></Field>
+          <div className="sm:col-span-2">
+            <Field label="Required skills" hint="Separate with commas.">
+              <input value={f.requiredSkills} onChange={set("requiredSkills")} className={input} style={inputStyle} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <Field label="Nice-to-have skills" hint="Separate with commas.">
+              <input value={f.preferredSkills} onChange={set("preferredSkills")} className={input} style={inputStyle} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <Field label="Job description" hint={`CVs are screened against this - paste the full spec (at least ${MIN_DESCRIPTION} characters).`}>
+              <textarea required rows={7} maxLength={20000} value={f.jobText} onChange={set("jobText")} className={input} style={inputStyle} />
+            </Field>
+          </div>
+        </div>
+        {error && <p role="alert" className="text-[12px] mt-3" style={{ color: "var(--score-low)" }}>{error}</p>}
+        <div className="flex justify-end gap-2 mt-5">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            {saving ? "Creating…" : "Create job"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -164,6 +309,9 @@ export default function JobsPage() {
   }, [reloadKey]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
+  const closeNew = useCallback(() => setCreating(false), []);
 
   const totalOpen = jobs?.filter((j) => j.status === "open").length ?? 0;
   const totalCandidates = jobs?.reduce((sum, j) => sum + j.candidateCount, 0) ?? 0;
@@ -186,18 +334,28 @@ export default function JobsPage() {
               </p>
             )}
           </div>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
-            style={{ border: "1px solid var(--border)", color: INK }}
-          >
-            ← Dashboard
-          </Link>
+          <div className="flex items-center gap-2 self-start">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ border: "1px solid var(--border)", color: INK }}
+            >
+              ← Dashboard
+            </Link>
+            <button
+              type="button"
+              onClick={() => setCreating(true)}
+              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ background: "var(--forest)", color: "white" }}
+            >
+              New job
+            </button>
+          </div>
         </header>
 
         {status === "loading" && <JobsSkeleton />}
         {status === "error" && <ErrorState onRetry={retry} />}
-        {status === "ready" && jobs && jobs.length === 0 && <EmptyState />}
+        {status === "ready" && jobs && jobs.length === 0 && <EmptyState onNew={() => setCreating(true)} />}
         {status === "ready" && jobs && jobs.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map((job) => (
@@ -206,6 +364,10 @@ export default function JobsPage() {
           </div>
         )}
       </div>
+
+      {creating && (
+        <NewJobDialog onCancel={closeNew} onCreated={(job) => router.push(`/dashboard/jobs/${job.id}`)} />
+      )}
     </main>
   );
 }

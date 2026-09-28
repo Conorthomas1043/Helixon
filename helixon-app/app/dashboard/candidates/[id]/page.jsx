@@ -1,36 +1,15 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/candidates/[id]. This is a NEW dedicated workspace,
- *   separate from whatever /analyse/[id] currently does (that route was
- *   assumed, per the existing dashboard file's own notes, to be the
- *   analysis-result view reached from "+ New analysis"). If /analyse/[id]
- *   already contains this recruiter workflow, prefer merging into it
- *   instead of maintaining two candidate detail routes.
- * - `params` is read synchronously (`{ params }` prop, App Router
- *   pre-Next.js-15 convention). On Next.js 15+, wrap with
- *   `const { id } = use(params)` instead.
- * - All mutations (stage, assignment, tags, notes, next action) call the
- *   mock functions in lib/mock-data.js, which mutate an in-memory array
- *   and return the updated candidate. There is no optimistic-update/
- *   rollback path here because there's no real network call to fail yet -
- *   add one when these become real PATCH/POST requests.
- * - Recently-viewed tracking uses localStorage and stores candidate IDs
- *   only (never resume contents or contact details), per the brief's
- *   privacy guidance.
- * - No document viewer is wired up - there's no real file storage to
- *   preview from, so the Documents section shows file metadata only and
- *   says so, rather than faking a PDF preview.
- * - No "email candidate" *sending* is implemented (no email backend to
- *   integrate); the Email action opens a mailto: link to the candidate's
- *   address, which needs no backend and isn't fake functionality.
- * - Archive / export / "more" actions are intentionally omitted - the
- *   brief asks not to build backend actions that don't exist yet.
- * ---------------------------------------------------------------------- */
+// /dashboard/candidates/[id] - one candidate's workspace: why they match, the
+// full screening report (rebuilt from their latest saved analysis), their
+// CV, activity timeline, stage / owner / tags / next action, outcome
+// reporting, feedback links, notes, and AI-drafted emails. Contact details
+// read off the CV can be corrected here.
+//
+// Recently-viewed tracking uses localStorage and stores candidate ids only,
+// never CV contents or contact details.
 
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
@@ -50,7 +29,12 @@ import {
   logCandidateActivity,
   getFeedbackRequests,
   createFeedbackRequest,
+  updateCandidateContact,
 } from "@/lib/dashboard-api";
+import Report from "@/app/analyse/_components/Report";
+import { EmailCard } from "@/app/analyse/_components/Rail";
+import { Toasts, useToasts } from "@/app/analyse/_components/ui";
+import { useEmailComposer } from "@/app/analyse/_lib/useEmailComposer";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
@@ -113,6 +97,7 @@ function activityDescription(entry) {
     case "email_logged":
     case "meeting_logged":
     case "cv_sent_logged":
+    case "details_updated":
       return entry.meta?.note ?? "";
     default:
       return "";
@@ -136,6 +121,7 @@ const EVENT_LABELS = {
   email_logged: "Email logged",
   meeting_logged: "Meeting logged",
   cv_sent_logged: "CV sent",
+  details_updated: "Details edited",
 };
 
 const OUTREACH_ACTIONS = [
@@ -244,7 +230,7 @@ function ShortcutsHint() {
  * Header
  * ---------------------------------------------------------------------- */
 
-function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete }) {
+function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete, onEdit }) {
   const score = candidate.score;
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
   const upcomingStage = candidate.status === "completed" ? nextStageAfter(candidate.stage) : null;
@@ -395,8 +381,16 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
             level with Shortlist/Add note/Email. */}
         <button
           type="button"
+          onClick={onEdit}
+          className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ border: "1px solid var(--border)", color: INK }}
+        >
+          Edit details
+        </button>
+        <button
+          type="button"
           onClick={onDelete}
-          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: INK_FAINT }}
           title="Permanently erase this candidate's data - e.g. to fulfil a right-to-erasure request"
         >
@@ -743,7 +737,7 @@ function ActivityTimeline({ activity }) {
                     </span>
                     <div className="min-w-0">
                       <p className="text-[13px] font-semibold" style={{ color: INK }}>
-                        {EVENT_LABELS[entry.type] ?? entry.type}
+                        {entry.meta?.sent_via === "helixon" ? "Email sent" : EVENT_LABELS[entry.type] ?? entry.type}
                       </p>
                       <p className="text-[12px]" style={{ color: INK_MUTED }}>
                         {activityDescription(entry)}
@@ -1298,6 +1292,194 @@ function StateMessage({ title, body, retryLabel, onRetry }) {
  * Page
  * ---------------------------------------------------------------------- */
 
+/* ------------------------------------------------------------------------
+ * Full analysis - the same report the Analyse screen shows straight after
+ * screening, rebuilt from the saved analysis. It used to be unreachable once
+ * you left that screen.
+ * ---------------------------------------------------------------------- */
+
+function FullAnalysis({ analysis }) {
+  const [open, setOpen] = useState(false);
+  if (!analysis?.report) return null;
+  const role = [analysis.jobTitle, analysis.jobClient].filter(Boolean).join(" @ ");
+
+  return (
+    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+      <SectionHeading
+        eyebrow="Full analysis"
+        title="Screening report"
+        action={
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+            style={{ color: "var(--forest)" }}
+          >
+            {open ? "Hide report" : "Show full report"}
+          </button>
+        }
+      />
+      <p className="text-[12.5px]" style={{ color: INK_MUTED }}>
+        Score breakdown, requirements met, skills, red flags, interview questions and salary estimate
+        {role ? ` for ${role}` : ""}
+        {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.
+      </p>
+      {open && (
+        <div className="mt-5">
+          <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Email - draft, edit and send an AI-written email about this candidate,
+ * any time (it used to be offered only on the Analyse screen after a run).
+ * ---------------------------------------------------------------------- */
+
+function EmailPanel({ candidate, onSent }) {
+  const router = useRouter();
+  const { toasts, toast } = useToasts();
+  const handleStatus = useCallback((response, data) => {
+    if (response.status === 402 || data?.upgrade) {
+      router.push("/pricing?reason=subscription_required");
+      return true;
+    }
+    if (response.status === 401) {
+      router.push(`/login?redirect_url=${encodeURIComponent(`/dashboard/candidates/${candidate.id}`)}`);
+      return true;
+    }
+    return false;
+  }, [candidate.id, router]);
+
+  const { email } = useEmailComposer({
+    candidateId: candidate.id,
+    jobId: candidate.jobId,
+    candidateEmail: candidate.email,
+    clientEmail: candidate.job?.client_email || "",
+    toast,
+    handleStatus,
+    onSent,
+  });
+
+  if (!candidate.jobId) return null;
+
+  return (
+    <>
+      <Toasts toasts={toasts} />
+      <EmailCard email={email} />
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------------
+ * Edit details - correct what was read off the CV.
+ * ---------------------------------------------------------------------- */
+
+const CONTACT_FIELDS = [
+  { key: "fullName", label: "Name", required: true },
+  { key: "email", label: "Email", type: "email" },
+  { key: "phone", label: "Phone", type: "tel" },
+  { key: "linkedin", label: "LinkedIn" },
+  { key: "location", label: "Location" },
+  { key: "currentTitle", label: "Current title" },
+  { key: "currentCompany", label: "Current company" },
+];
+
+function EditDetailsDialog({ candidate, onCancel, onSaved }) {
+  const [values, setValues] = useState(() =>
+    Object.fromEntries(CONTACT_FIELDS.map((f) => [f.key, candidate[f.key] || ""]))
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const firstRef = useRef(null);
+
+  useEffect(() => {
+    firstRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape" && !saving) onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saving, onCancel]);
+
+  async function save(e) {
+    e.preventDefault();
+    // Send only what changed.
+    const changes = Object.fromEntries(
+      CONTACT_FIELDS.filter((f) => (values[f.key] || "").trim() !== (candidate[f.key] || "")).map((f) => [f.key, values[f.key].trim()])
+    );
+    if (Object.keys(changes).length === 0) {
+      onCancel();
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const updated = await updateCandidateContact(candidate.id, changes);
+      onSaved(updated);
+    } catch (err) {
+      setError(err.message || "Couldn't save those details.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
+      <form
+        onSubmit={save}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-details-title"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[16px] p-6 bg-white shadow-xl"
+      >
+        <h2 id="edit-details-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
+          Edit candidate details
+        </h2>
+        <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+          Fix anything the CV reader got wrong. The change is noted on their timeline.
+        </p>
+        <div className="space-y-3">
+          {CONTACT_FIELDS.map((f, i) => (
+            <label key={f.key} className="block">
+              <span className="block text-[12px] font-semibold mb-1" style={{ color: INK }}>{f.label}</span>
+              <input
+                ref={i === 0 ? firstRef : undefined}
+                type={f.type || "text"}
+                value={values[f.key]}
+                required={f.required}
+                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+            </label>
+          ))}
+        </div>
+        {error && <p role="alert" className="text-[12px] mt-3" style={{ color: RED_STRONG }}>{error}</p>}
+        <div className="flex justify-end gap-2 mt-5">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function CandidateProfilePage({ params }) {
   const { id } = use(params);
   const router = useRouter();
@@ -1359,6 +1541,24 @@ export default function CandidateProfilePage({ params }) {
   }, [id, reloadKey]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  // After an email is sent from the profile, pull in the new timeline entry
+  // without flashing the whole page back to its loading skeleton.
+  const refreshActivity = useCallback(() => {
+    getCandidateById(id)
+      .then((c) => {
+        if (c) setCandidate((prev) => (prev ? { ...prev, activity: c.activity } : prev));
+      })
+      .catch(() => {});
+  }, [id]);
+
+  const [editingDetails, setEditingDetails] = useState(false);
+  const closeEditDetails = useCallback(() => setEditingDetails(false), []);
+  const handleDetailsSaved = useCallback((updated) => {
+    setEditingDetails(false);
+    setCandidate((c) => (c ? { ...c, ...updated } : c));
+    refreshActivity();
+  }, [refreshActivity]);
 
   const handleStageChange = useCallback(
     async (stage) => {
@@ -1516,11 +1716,13 @@ export default function CandidateProfilePage({ params }) {
               onMoveNext={handleStageChange}
               onFocusNote={focusNoteField}
               onDelete={handleDeleteCandidate}
+              onEdit={() => setEditingDetails(true)}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               <div className="space-y-4 lg:space-y-6">
                 <MatchOverview candidate={candidate} />
+                <FullAnalysis analysis={candidate.analysis} />
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
                 <ActivityTimeline activity={candidate.activity} />
@@ -1546,11 +1748,15 @@ export default function CandidateProfilePage({ params }) {
                   creating={creatingFeedbackRequest}
                 />
                 <NotesPanel notes={candidate.notes} onAddNote={handleAddNote} />
+                <EmailPanel candidate={candidate} onSent={refreshActivity} />
               </div>
             </div>
           </>
         )}
       </div>
+      {editingDetails && candidate && (
+        <EditDetailsDialog candidate={candidate} onCancel={closeEditDetails} onSaved={handleDetailsSaved} />
+      )}
     </main>
   );
 }

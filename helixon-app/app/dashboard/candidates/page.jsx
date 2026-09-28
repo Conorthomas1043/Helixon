@@ -1,26 +1,12 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/candidates. Sibling to the existing /dashboard page;
- *   adjust if this project's app-router root lives elsewhere (e.g. under
- *   src/app).
- * - DashboardNav is reused as-is from the existing dashboard. If it
- *   doesn't yet have a "Candidates" link, add one pointing here - it
- *   wasn't safe to guess-edit a component whose source wasn't available.
- * - getCandidates()/getStageCounts() in lib/mock-data.js are written to
- *   look like a server-side filter/sort/paginate query so they're a
- *   one-file swap for a real `/api/candidates` call later (see the
- *   comment block at the top of that file).
- * - Bulk stage-change and bulk tag-add call the same mock mutation
- *   functions the candidate profile page uses, once per selected
- *   candidate, then refetch. There's no bulk endpoint assumed to exist.
- * - CandidateDatabasePage reads `useSearchParams()` for deep-linking
- *   (?jobId=, ?recruiterId=, ?stage=), so the part of the tree that uses
- *   it is wrapped in <Suspense> - required by Next.js for any component
- *   that reads search params, or static prerendering fails the build.
- * ---------------------------------------------------------------------- */
+// /dashboard/candidates - the agency's candidate database: search, filter,
+// sort, paginate (app/api/candidates), CSV export, and bulk stage / tag /
+// delete in one request each (app/api/candidates/bulk).
+//
+// Filters deep-link (?jobId=, ?recruiterId=, ?stage=) via useSearchParams(),
+// so that part of the tree sits in a <Suspense> boundary, which Next.js
+// requires or static prerendering fails the build.
 
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
@@ -31,8 +17,7 @@ import {
   getStageCounts,
   getJobs,
   getRecruiters,
-  updateCandidateStage,
-  addCandidateTag,
+  bulkUpdateCandidates,
   getCandidatesForExport,
 } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
@@ -96,13 +81,6 @@ const DATE_RANGES = [
   { value: "today", label: "Today" },
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "Any status" },
-  { value: "completed", label: "Completed" },
-  { value: "processing", label: "Processing" },
-  { value: "failed", label: "Failed" },
 ];
 
 /* ------------------------------------------------------------------------
@@ -531,21 +509,46 @@ function CandidateDatabaseContent() {
 
   const hasAnyFilter = activeFilterCount > 0 || filters.search.trim().length > 0;
 
-  const bulkChangeStage = useCallback(
-    (newStage) => {
-      if (!newStage) return;
-      Promise.all([...selectedIds].map((id) => updateCandidateStage(id, newStage))).then(retry);
+  // One request per bulk action (app/api/candidates/bulk). These used to
+  // fire one request per candidate and swallow any failures.
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkError, setBulkError] = useState("");
+  const runBulk = useCallback(
+    async (payload, { clearSelection = false } = {}) => {
+      setBulkBusy(true);
+      setBulkError("");
+      try {
+        await bulkUpdateCandidates([...selectedIds], payload);
+        if (clearSelection) setSelectedIds(new Set());
+      } catch (err) {
+        setBulkError(err.message || "That didn't work. Please try again.");
+      } finally {
+        setBulkBusy(false);
+        retry();
+      }
     },
     [selectedIds, retry]
   );
 
+  const bulkChangeStage = useCallback(
+    (newStage) => {
+      if (newStage) runBulk({ action: "stage", stage: newStage });
+    },
+    [runBulk]
+  );
+
   const bulkAddTag = useCallback(
     (tagId) => {
-      if (!tagId) return;
-      Promise.all([...selectedIds].map((id) => addCandidateTag(id, tagId))).then(retry);
+      if (tagId) runBulk({ action: "tag", tagId });
     },
-    [selectedIds, retry]
+    [runBulk]
   );
+
+  const bulkDelete = useCallback(() => {
+    const n = selectedIds.size;
+    if (!confirm(`Permanently erase ${n} candidate${n === 1 ? "" : "s"}? Their CVs, analyses, notes and history are deleted and can't be recovered.`)) return;
+    runBulk({ action: "delete" }, { clearSelection: true });
+  }, [selectedIds, runBulk]);
 
   const result = data?.result;
   const stageCounts = data?.stageCounts;
@@ -663,7 +666,6 @@ function CandidateDatabaseContent() {
                 options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
               />
               <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
-              <Select ariaLabel="Filter by analysis status" value={filters.status} onChange={(v) => updateFilter({ status: v })} options={STATUS_OPTIONS} />
 
               <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
 
@@ -705,12 +707,25 @@ function CandidateDatabaseContent() {
             />
             <button
               type="button"
+              onClick={bulkDelete}
+              disabled={bulkBusy}
+              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              style={{ color: RED }}
+            >
+              Delete…
+            </button>
+            {bulkBusy && <span className="text-[12px]" style={{ color: INK_MUTED }}>Working…</span>}
+            <button
+              type="button"
               onClick={() => setSelectedIds(new Set())}
               className="text-[12px] font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: INK_MUTED }}
             >
               Clear selection
             </button>
+            {bulkError && (
+              <p role="alert" className="w-full text-[12px]" style={{ color: RED }}>{bulkError}</p>
+            )}
           </div>
         )}
 

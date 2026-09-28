@@ -3,10 +3,10 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
-import { getScoreBand } from "@/lib/scoreBands";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
+import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
 import { NextResponse } from "next/server";
 
@@ -82,27 +82,6 @@ function isAcceptedCvFile(file) {
   return ACCEPTED_CV_EXTENSIONS.some((ext) =>
     name.endsWith(ext)
   );
-}
-
-function redactExtracted(ex = {}) {
-  return {
-    ...ex,
-    name: "Candidate",
-    email: null,
-    phone: null,
-    linkedin: null,
-    github: null,
-    portfolio_url: null,
-    location: null,
-    current_employer: null,
-
-    education: (ex.education || []).map((item) => ({
-      ...item,
-      institution: item.institution
-        ? item.institution.replace(/./g, "█")
-        : item.institution,
-    })),
-  };
 }
 
 export async function POST(request) {
@@ -339,6 +318,18 @@ export async function POST(request) {
       { blind, jobParsed: knownJobParsed }
     );
 
+    // A job created by hand on the Jobs page has no parsed requirements
+    // until its first screening. Keep them, so later CVs against the same
+    // description reuse them instead of re-reading it every time.
+    if (existingJob && !knownJobParsed && sameJobText && requirements.length === 0 && jobParsed && !existingJob.parsed?.required_skills) {
+      const { error: parsedError } = await supabase
+        .from("jobs")
+        .update({ parsed: jobParsed })
+        .eq("id", existingJob.id)
+        .eq("agency_id", agencyId);
+      if (parsedError) console.warn("[run] Couldn't save parsed requirements on the job:", parsedError.message);
+    }
+
     const ex = extracted || {};
 
     let salary = null;
@@ -542,6 +533,10 @@ export async function POST(request) {
         match_score: result?.match_score ?? 0,
         recommendation: result?.recommendation || "Review",
         job_id: job.id,
+        // The profile's "Why they match" reads these - they were never
+        // written, so every profile said "None recorded" / "No concerns
+        // flagged" even when the analysis had found red flags.
+        ...matchHighlights(result),
         ...(storedCv ? { cv_file_url: storedCv.path, cv_filename: storedCv.fileName } : {}),
       })
       .eq("id", candidate.id);
@@ -573,146 +568,10 @@ export async function POST(request) {
         },
       });
 
-    const displayEx = blind
-      ? redactExtracted(ex)
-      : ex;
-
     return NextResponse.json({
       ok: true,
 
-      result: {
-        match_score:
-          result?.match_score ?? 0,
-
-        skill_score:
-          result?.skill_score ?? null,
-
-        experience_score:
-          result?.experience_score ?? null,
-
-        culture_score:
-          result?.culture_score ?? null,
-
-        score_band: getScoreBand(
-          result?.match_score ?? 0
-        ),
-
-        recommendation:
-          result?.recommendation ||
-          "Review",
-
-        summary:
-          result?.summary || "",
-
-        confidence:
-          result?.confidence ?? null,
-
-        score_rationale:
-          result?.score_rationale ??
-          null,
-
-        matched_skills:
-          result?.matched_skills ||
-          [],
-
-        missing_skills:
-          result?.missing_skills ||
-          [],
-
-        missing_required:
-          result?.missing_required ||
-          [],
-
-        missing_preferred:
-          result?.missing_preferred ||
-          [],
-
-        other_skills:
-          result?.other_skills ||
-          [],
-
-        strengths:
-          result?.strengths || [],
-
-        weaknesses:
-          result?.weaknesses ||
-          [],
-
-        red_flags:
-          result?.red_flags || [],
-
-        standout_factors:
-          result?.standout_factors ||
-          [],
-
-        interview_questions:
-          result?.interview_questions ||
-          [],
-
-        requirements_met:
-          result?.requirements_met ||
-          [],
-
-        experience_breakdown:
-          displayEx.experience_breakdown ||
-          [],
-
-        cv_quality_issues:
-          displayEx.cv_quality_issues ||
-          [],
-
-        education:
-          displayEx.education || [],
-
-        certifications:
-          displayEx.certifications ||
-          [],
-
-        languages:
-          displayEx.languages || [],
-
-        name:
-          displayEx.name,
-
-        email:
-          displayEx.email ?? null,
-
-        phone:
-          displayEx.phone ?? null,
-
-        linkedin:
-          displayEx.linkedin ?? null,
-
-        github:
-          displayEx.github ?? null,
-
-        portfolio_url:
-          displayEx.portfolio_url ??
-          null,
-
-        location:
-          displayEx.location ?? null,
-
-        current_title:
-          displayEx.current_title ??
-          null,
-
-        current_employer:
-          displayEx.current_employer ??
-          null,
-
-        notice_period:
-          displayEx.notice_period ??
-          null,
-
-        willing_to_relocate:
-          displayEx.willing_to_relocate ??
-          null,
-
-        salary_estimate: salary,
-
-        blind_mode: blind,
-      },
+      result: buildReport(result, ex, { salary, blind }),
 
       candidateId: candidate.id,
       jobId: job.id,

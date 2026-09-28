@@ -1,22 +1,11 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/analytics. DashboardNav already linked here before
- *   any of this work started - if a real analytics page already exists,
- *   treat this as a reference implementation to reconcile, not a
- *   replacement.
- * - Every number here comes from getAnalyticsSnapshot() in
- *   lib/dashboard-api.js, reduced client-side over the agency's real
- *   candidate rows (fetched in full via getAllCandidates(), not a mock) -
- *   nothing on this page is a fabricated/static figure. See that
- *   function's comment for the production caveat (server-side
- *   aggregation, not client-side reduction, at real scale).
- * - No charting library is used, to match the existing dashboard's
- *   hand-rolled bar/funnel visuals (plain divs) rather than introducing a
- *   new dependency for this pass.
- * ---------------------------------------------------------------------- */
+// /dashboard/analytics - every figure is computed from the agency's own data:
+// getAnalyticsSnapshot() in lib/dashboard-api.js reduces the full candidate
+// list client-side, and app/api/analytics/timing adds the time-based,
+// commercial, feedback and recruiter-verdict figures. Nothing here is a
+// static or generic number. Bars and funnels are plain divs, no chart
+// library.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -121,6 +110,41 @@ function QualityDistribution({ quality }) {
 // (Placed or Rejected) rather than a generic, once-off accuracy claim
 // measured on unrelated data. Stays honestly blank below the minimum
 // sample size instead of showing a rate two data points can't support.
+// The thumbs up/down recruiters give each analysis on the Analyse screen -
+// collected all along, but never shown anywhere until now.
+function RecruiterVerdicts({ verdicts }) {
+  if (!verdicts) return null;
+  return (
+    <div className="mt-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+      <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+        Recruiter verdicts
+      </p>
+      {verdicts.total === 0 ? (
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          No verdicts yet. Use the thumbs up / down under each analysis to record whether it got the candidate right.
+        </p>
+      ) : (
+        <>
+          <p className="text-[13px]" style={{ color: INK }}>
+            <span className="font-semibold tabular-nums">{verdicts.agreeRate}%</span> of rated analyses were marked
+            accurate ({verdicts.up} of {verdicts.total}).
+          </p>
+          {verdicts.topReasons.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {verdicts.topReasons.map((r) => (
+                <li key={r.reason} className="text-[12.5px] flex justify-between gap-3" style={{ color: INK_MUTED }}>
+                  <span>{r.reason}</span>
+                  <span className="tabular-nums">{r.count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function ScoreCalibration({ calibration }) {
   if (!calibration.hasEnoughData) {
     return (
@@ -557,6 +581,7 @@ export default function AnalyticsPage() {
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Does the score work?" title="Score vs. actual outcome" />
               <ScoreCalibration calibration={snapshot.calibration} />
+              <RecruiterVerdicts verdicts={snapshot.timing?.recruiterVerdicts} />
             </div>
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>

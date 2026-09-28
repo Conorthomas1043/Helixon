@@ -1,9 +1,12 @@
 import { Resend } from "resend";
+import { currentUser } from "@clerk/nextjs/server";
 
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
+import { logActivity } from "@/lib/candidate-activity";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 // Sends real email through Resend, so cap how many one account can fire off
 // even though each draft can only be sent once.
@@ -202,6 +205,17 @@ export async function POST(request) {
         .trim()
         .slice(0, 80) || "Helixon";
 
+    // Mail goes out from the no-reply sending address, so without a
+    // Reply-To every reply from a candidate or client was lost. Replies now
+    // go to the recruiter who sent it.
+    const sender = await currentUser().catch(() => null);
+    const replyTo =
+      sender?.primaryEmailAddress?.emailAddress || undefined;
+
+    const finalSubject =
+      subject ||
+      "Regarding your application";
+
     const {
       data: sent,
       error: sendError,
@@ -209,9 +223,8 @@ export async function POST(request) {
       await resend.emails.send({
         from: `${fromName} <${process.env.RESEND_FROM_EMAIL}>`,
         to,
-        subject:
-          subject ||
-          "Regarding your application",
+        ...(replyTo ? { replyTo } : {}),
+        subject: finalSubject,
         text: bodyText,
       });
 
@@ -250,6 +263,21 @@ export async function POST(request) {
       })
       .eq("id", artifactId)
       .eq("agency_id", agencyId);
+
+    // On the candidate's timeline, and counted with the rest of their
+    // outreach in Analytics ("Emails") - sends from Helixon used to leave
+    // no trace outside the draft itself.
+    if (artifact.candidate_id) {
+      await logActivity(
+        supabase,
+        artifact.candidate_id,
+        "email_logged",
+        recruiterDisplayName(auth.profile) || userId,
+        { note: `Sent from Helixon to ${to}: "${finalSubject}"`, sent_via: "helixon" }
+      ).catch((err) => {
+        console.error("[send-email] Sent, but couldn't record it on the timeline:", err?.message);
+      });
+    }
 
     return Response.json({
       ok: true,

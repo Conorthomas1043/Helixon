@@ -4,7 +4,7 @@
  * /dashboard/pipeline - kanban board of every completed candidate by stage.
  *
  * - Loads EVERY matching candidate (getPipelineCandidates pages through the
- *   API's 50-row cap). It used to request pageSize: 500 and silently show
+ *   API, 200 at a time). It used to request pageSize: 500 and silently show
  *   only the top 50 by score.
  * - Moves are optimistic: the card jumps immediately, and snaps back with a
  *   visible error if the server refuses. Previously each move reloaded the

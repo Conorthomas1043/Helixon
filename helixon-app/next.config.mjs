@@ -78,6 +78,10 @@ const nextConfig = {
       // site) and its own footer linked to a /cookies that never existed.
       { source: "/CookiePolicy", destination: "/cookie-policy", permanent: true },
       { source: "/cookies", destination: "/cookie-policy", permanent: true },
+      // /analyse/[id] was an older, unlinked copy of the candidate profile
+      // (same id) - send any old bookmark to the real one. Excludes
+      // /analyse/compare, which is a live page.
+      { source: "/analyse/:id((?!compare$)[^/]+)", destination: "/dashboard/candidates/:id", permanent: true },
     ];
   },
   async headers() {

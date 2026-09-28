@@ -21,8 +21,6 @@ import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
 import { Button, Card, Icon, Notice, Segmented, Toasts, useToasts } from "./_components/ui";
 import {
-  EMAIL_PURPOSES,
-  EMAIL_RE,
   MIN_LOADING_MS,
   RUN_STEPS,
   SCORING_VERSION,
@@ -36,6 +34,7 @@ import {
   savedJobText,
 } from "./_lib/analyse";
 import { EMPTY_ROLE_DRAFT } from "./_lib/roles";
+import { useEmailComposer } from "./_lib/useEmailComposer";
 
 function redirectForStatus(response, data) {
   if (response.status === 402 || data?.upgrade) {
@@ -89,16 +88,17 @@ export default function AnalyseWorkspace() {
   const [rerunning, setRerunning] = useState(false);
 
   // ── Email / feedback ──────────────────────────────────────────────────
-  const [emailPurpose, setEmailPurpose] = useState("invite_to_interview");
-  const [emailDraft, setEmailDraft] = useState(null);
-  const [emailEdited, setEmailEdited] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailCopied, setEmailCopied] = useState(false);
-  const [recipient, setRecipient] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const emailArtifactIdRef = useRef(null);
+  // The analysis the thumbs up/down rates (scores.id from /api/run).
+  const [scoreId, setScoreId] = useState(null);
   const [feedback, setFeedback] = useState({ sent: false, rating: null, reason: null });
+  const { email, reset: resetEmail } = useEmailComposer({
+    candidateId,
+    jobId,
+    candidateEmail: result?.email || null,
+    clientEmail,
+    toast,
+    handleStatus: redirectForStatus,
+  });
 
   const lastRunRef = useRef({});
 
@@ -280,9 +280,9 @@ export default function AnalyseWorkspace() {
         setResult(data.result);
         setCandidateId(data.candidateId);
         setJobId(data.jobId);
+        setScoreId(data.scoreId || null);
         setJobTitle(data.job?.title || null);
-        setEmailDraft(null);
-        setSent(false);
+        resetEmail();
         setFeedback({ sent: false, rating: null, reason: null });
         setRerunning(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -348,8 +348,8 @@ export default function AnalyseWorkspace() {
     setComparing(false);
     setRerunning(false);
     setReference("");
-    setEmailDraft(null);
-    setSent(false);
+    setScoreId(null);
+    resetEmail();
     setFeedback({ sent: false, rating: null, reason: null });
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -385,93 +385,6 @@ export default function AnalyseWorkspace() {
     }
   }
 
-  // ── Email ─────────────────────────────────────────────────────────────
-  const audience = EMAIL_PURPOSES.find((p) => p.value === emailPurpose)?.audience;
-
-  const generateEmail = useCallback(async () => {
-    if (!candidateId || !jobId) return;
-    setEmailLoading(true);
-    setEmailCopied(false);
-    setSent(false);
-    try {
-      const response = await fetch("/api/draft-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidateId, jobId, purpose: emailPurpose }),
-      });
-      const data = await response.json().catch(() => null);
-      if (redirectForStatus(response, data)) return;
-      if (data?.ok) {
-        emailArtifactIdRef.current = data.artifact.id;
-        const draft = data.artifact.content.original_text || data.artifact.content.final_text || "";
-        setEmailDraft(draft);
-        setEmailEdited(draft);
-        setRecipient(audience === "client" ? clientEmail : result?.email || "");
-      } else {
-        toast(data?.error || "Couldn't draft that email - try again", "error");
-      }
-    } catch {
-      toast("Network error while drafting - try again", "error");
-    } finally {
-      setEmailLoading(false);
-    }
-  }, [candidateId, jobId, emailPurpose, audience, clientEmail, result, toast]);
-
-  async function copyEmail() {
-    try {
-      await navigator.clipboard.writeText(emailEdited);
-    } catch {
-      toast("Couldn't access the clipboard", "error");
-      return;
-    }
-    setEmailCopied(true);
-    setTimeout(() => setEmailCopied(false), 2000);
-    const artifactId = emailArtifactIdRef.current;
-    if (artifactId) {
-      fetch("/api/update-artifact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artifactId, finalText: emailEdited }),
-      }).catch(() => {});
-    }
-  }
-
-  async function sendEmail() {
-    const to = recipient.trim();
-    if (!EMAIL_RE.test(to)) {
-      toast("That doesn't look like a valid email address", "error");
-      return;
-    }
-    if (!emailArtifactIdRef.current) return;
-    setSending(true);
-    try {
-      // Keep the recruiter's edits: the send uses the artifact's final text.
-      await fetch("/api/update-artifact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artifactId: emailArtifactIdRef.current, finalText: emailEdited }),
-      }).catch(() => {});
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artifactId: emailArtifactIdRef.current, to }),
-      });
-      const data = await response.json().catch(() => null);
-      if (redirectForStatus(response, data)) return;
-      if (data?.ok) {
-        setSent(true);
-        toast(`Sent to ${to}`);
-        if (posthog.__loaded) posthog.capture("candidate_email_sent", { purpose: emailPurpose });
-      } else {
-        toast(data?.error || "Couldn't send the email - try again", "error");
-      }
-    } catch {
-      toast("Network error while sending - try again", "error");
-    } finally {
-      setSending(false);
-    }
-  }
-
   async function submitFeedback(rating, reason = null) {
     setFeedback({ sent: true, rating, reason });
     lsSet("feedbackCount", ls("feedbackCount", 0) + 1);
@@ -480,7 +393,7 @@ export default function AnalyseWorkspace() {
       await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, reason }),
+        body: JSON.stringify({ rating, reason, scoreId }),
       });
     } catch {
       // Feedback is best-effort.
@@ -650,34 +563,7 @@ export default function AnalyseWorkspace() {
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">
               {candidateId && <StageCard key={`stage-${candidateId}`} candidateId={candidateId} toast={toast} />}
               {candidateId && <NotesCard key={`notes-${candidateId}`} candidateId={candidateId} toast={toast} />}
-              <EmailCard
-                email={{
-                  purpose: emailPurpose,
-                  setPurpose: (p) => {
-                    setEmailPurpose(p);
-                    setEmailDraft(null);
-                  },
-                  draft: emailDraft,
-                  edited: emailEdited,
-                  setEdited: (v) => {
-                    setEmailEdited(v);
-                    setSent(false);
-                  },
-                  loading: emailLoading,
-                  generate: generateEmail,
-                  copied: emailCopied,
-                  copy: copyEmail,
-                  recipient,
-                  setRecipient: (v) => {
-                    setRecipient(v);
-                    setSent(false);
-                  },
-                  sending,
-                  sent,
-                  send: sendEmail,
-                  clientEmailMissing: audience === "client" && !clientEmail && !recipient,
-                }}
-              />
+              <EmailCard email={email} />
               <FeedbackCard feedback={{ ...feedback, submit: submitFeedback }} />
               <p className="text-[12px] text-[var(--ink-faint)] px-1">
                 Saved to your pipeline.{" "}

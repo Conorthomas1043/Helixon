@@ -95,6 +95,7 @@ export async function GET() {
     { data: jobs, error: jobError },
     { data: channels, error: channelError },
     { data: feedbackResponses, error: feedbackError },
+    { data: verdicts, error: verdictError },
   ] = await Promise.all([
     supabase
       .from("candidates")
@@ -103,9 +104,11 @@ export async function GET() {
     supabase.from("jobs").select("id, created_at").eq("agency_id", agencyId),
     supabase.from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId),
     supabase.from("feedback_requests").select("kind, rating").eq("agency_id", agencyId).not("responded_at", "is", null),
+    // Recruiters' thumbs up/down on individual analyses (app/analyse).
+    supabase.from("feedback").select("rating, comment").eq("agency_id", agencyId),
   ]);
 
-  if (candError || jobError || channelError || feedbackError) {
+  if (candError || jobError || channelError || feedbackError || verdictError) {
     console.error("[analytics/timing] Query failed:", (candError || jobError || channelError || feedbackError).message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
@@ -339,8 +342,28 @@ export async function GET() {
     ? Math.round((clientResponses.reduce((sum, r) => sum + r.rating, 0) / clientResponses.length) * 10) / 10
     : null;
 
+  // How often recruiters agreed with an analysis, and why they didn't.
+  const verdictUp = (verdicts || []).filter((v) => v.rating === "up").length;
+  const verdictDown = (verdicts || []).filter((v) => v.rating === "down");
+  const reasonCounts = new Map();
+  for (const v of verdictDown) {
+    const reason = (v.comment || "No reason given").trim();
+    reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1);
+  }
+  const recruiterVerdicts = {
+    up: verdictUp,
+    down: verdictDown.length,
+    total: verdictUp + verdictDown.length,
+    agreeRate: verdictUp + verdictDown.length ? Math.round((verdictUp / (verdictUp + verdictDown.length)) * 100) : null,
+    topReasons: [...reasonCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([reason, count]) => ({ reason, count })),
+  };
+
   return NextResponse.json({
     ok: true,
+    recruiterVerdicts,
     timeToHireDays: median(timeToHireSamples),
     timeToHireSampleSize: timeToHireSamples.length,
     timeToFillDays: median(timeToFillSamples),

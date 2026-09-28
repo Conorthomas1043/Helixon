@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { removeCandidateCvs } from "@/lib/candidate-files";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { eraseCandidates } from "@/lib/candidate-erasure";
+import { buildReport, matchHighlights } from "@/lib/analysis-report";
+import { cleanEmail, cleanLine } from "@/lib/sanitize";
+import { logActivity } from "@/lib/candidate-activity";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -61,11 +64,12 @@ export async function GET(request, { params }) {
       .eq("candidate_id", id)
       .order("created_at", { ascending: false }),
     resolveRecruiterNames(supabase, [candidate.recruiter_id]),
-    // Whether the latest analysis was a blind screen - the documents panel
-    // asks before opening the original CV, which shows who they are.
+    // The latest analysis: the full report on the profile, and whether it
+    // was a blind screen (the documents panel asks before opening the
+    // original CV, which shows who they are).
     supabase
       .from("scores")
-      .select("result")
+      .select("id, job_id, created_at, result, jobs(title, client)")
       .eq("candidate_id", id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -73,6 +77,14 @@ export async function GET(request, { params }) {
   ]);
 
   const extracted = candidate.extracted || {};
+
+  // Candidates screened before match_summary/strengths/concerns were
+  // written fall back to their latest analysis.
+  const blind = latestScore?.result?.blind_mode === true;
+  const fallback = latestScore?.result ? matchHighlights(latestScore.result) : null;
+  const matchSummary = candidate.match_summary || fallback?.match_summary || null;
+  const strengths = candidate.strengths?.length ? candidate.strengths : fallback?.strengths ?? [];
+  const concerns = candidate.concerns?.length ? candidate.concerns : fallback?.concerns ?? [];
 
   return NextResponse.json({
     id: candidate.id,
@@ -93,9 +105,9 @@ export async function GET(request, { params }) {
     status: candidate.processing_status,
     stage: candidate.stage,
     score: candidate.match_score,
-    matchSummary: candidate.match_summary,
-    strengths: candidate.strengths ?? [],
-    concerns: candidate.concerns ?? [],
+    matchSummary,
+    strengths,
+    concerns,
     skills: extracted.skills ?? [],
     education: toEducation(extracted),
     workHistory: toWorkHistory(extracted),
@@ -105,7 +117,18 @@ export async function GET(request, { params }) {
       ? { name: candidate.cv_filename || "CV", uploadedAt: candidate.created_at }
       : null,
     hasCvText: Boolean(candidate.cv_text && candidate.cv_text.trim()),
-    screenedBlind: latestScore?.result?.blind_mode === true,
+    screenedBlind: blind,
+    // The full report from the latest analysis, same shape /api/run returns.
+    analysis: latestScore?.result
+      ? {
+          scoreId: latestScore.id,
+          jobId: latestScore.job_id,
+          jobTitle: latestScore.jobs?.title || null,
+          jobClient: latestScore.jobs?.client || null,
+          analysedAt: latestScore.created_at,
+          report: buildReport(latestScore.result, extracted, { blind }),
+        }
+      : null,
     tags: candidate.tags ?? [],
     nextAction: candidate.next_action,
     source: candidate.source,
@@ -121,25 +144,99 @@ export async function GET(request, { params }) {
   });
 }
 
+// Correcting what was read off the CV: name, contact details and current
+// role. Extraction gets these wrong sometimes (a mangled name, a phone number
+// from a referee), and there was no way to fix them. Only the fields sent are
+// changed; "" or null clears one (except the name).
+const EDITABLE = {
+  fullName: { column: "full_name", label: "name", clean: (v) => cleanLine(v, 120) },
+  email: { column: "email", label: "email", clean: (v) => cleanEmail(v), email: true },
+  phone: { column: "phone", label: "phone", clean: (v) => cleanLine(v, 40) },
+  linkedin: { column: "linkedin", label: "LinkedIn", clean: (v) => cleanLine(v, 200) },
+  location: { column: "location", label: "location", clean: (v) => cleanLine(v, 120) },
+  currentTitle: { column: "current_title", label: "current title", clean: (v) => cleanLine(v, 160) },
+  currentCompany: { column: "current_company", label: "current company", clean: (v) => cleanLine(v, 160) },
+};
+
+export async function PATCH(request, { params }) {
+  const auth = await requireCustomerContext();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  const { agencyId, userId, profile } = auth;
+  const { id } = await params;
+
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  const update = {};
+  const changed = [];
+  for (const [key, field] of Object.entries(EDITABLE)) {
+    if (!(key in body)) continue;
+    const raw = body[key];
+    const empty = raw === null || (typeof raw === "string" && raw.trim() === "");
+    if (empty) {
+      if (key === "fullName") {
+        return NextResponse.json({ error: "Name can't be empty." }, { status: 400 });
+      }
+      update[field.column] = null;
+    } else {
+      const value = field.clean(raw);
+      if (!value) {
+        return NextResponse.json(
+          { error: field.email ? "That doesn't look like a valid email address." : `Invalid ${field.label}.` },
+          { status: 400 }
+        );
+      }
+      update[field.column] = value;
+    }
+    changed.push(field.label);
+  }
+  // Older rows read `name`; keep it in step with full_name.
+  if (update.full_name) update.name = update.full_name;
+
+  if (changed.length === 0) {
+    return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from("candidates")
+    .update(update)
+    .eq("id", id)
+    .eq("agency_id", agencyId)
+    .select("id, full_name, name, email, phone, linkedin, location, current_title, current_company")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[candidates PATCH] Update failed:", error.message);
+    return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  await logActivity(supabase, id, "details_updated", recruiterDisplayName(profile) || userId, {
+    note: `Updated ${changed.join(", ")}`,
+  });
+
+  return NextResponse.json({
+    fullName: data.full_name || data.name || "Unnamed candidate",
+    email: data.email,
+    phone: data.phone,
+    linkedin: data.linkedin,
+    location: data.location,
+    currentTitle: data.current_title,
+    currentCompany: data.current_company,
+  });
+}
+
 // Permanently erases a candidate and every row that references them - the
-// tool an agency needs to actually fulfil a data subject's right to
-// erasure (privacy policy: "Requests should be directed to the recruitment
-// agency... who acts as the data controller"). Previously there was no way
-// to delete a candidate record anywhere in the product, so that promise
-// couldn't be kept.
-//
-// candidates.id is referenced by scores, artifacts, shortlist_candidates
-// and candidate_notes with NO ACTION (not cascade); scores.id is in turn
-// referenced by feedback and shortlist_candidates, also NO ACTION -
-// deleting the candidate (or its scores) first would fail with a foreign
-// key violation, so all of these are cleared explicitly first, in
-// dependency order (leaves before roots). candidate_activity does cascade
-// automatically. Not wrapped in a DB transaction (supabase-js has no
-// multi-statement transaction support without a Postgres function, and no
-// other multi-step write in this codebase uses one either) - if a step
-// fails partway, the error is surfaced rather than silently swallowed, so
-// a retry or manual follow-up is possible rather than reporting success
-// on a partial delete.
+// tool an agency needs to fulfil a data subject's right to erasure (privacy
+// policy: "Requests should be directed to the recruitment agency... who acts
+// as the data controller"). The ordering and failure handling live in
+// lib/candidate-erasure.js, shared with bulk delete.
 export async function DELETE(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
@@ -150,7 +247,7 @@ export async function DELETE(request, { params }) {
 
   const { data: candidate, error: lookupError } = await supabase
     .from("candidates")
-    .select("id, cv_file_url")
+    .select("id")
     .eq("id", id)
     .eq("agency_id", agencyId)
     .maybeSingle();
@@ -162,65 +259,12 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data: scoreRows, error: scoreLookupError } = await supabase
-    .from("scores")
-    .select("id")
-    .eq("candidate_id", id);
-
-  if (scoreLookupError) {
-    return NextResponse.json({ error: "Failed to look up candidate scores" }, { status: 500 });
-  }
-
-  const scoreIds = (scoreRows || []).map((s) => s.id);
-
-  // feedback and shortlist_candidates reference scores.id (NO ACTION), so
-  // both must be cleared before scores can be deleted.
-  if (scoreIds.length > 0) {
-    const { error } = await supabase.from("feedback").delete().in("score_id", scoreIds);
-    if (error) {
-      console.error(`[candidates DELETE] Failed clearing feedback for candidate ${id}:`, error.message);
-      return NextResponse.json(
-        { error: "Failed to erase candidate data (feedback). Nothing further was deleted - safe to retry." },
-        { status: 500 }
-      );
-    }
-  }
-
-  const cleanupSteps = [
-    ["shortlist_candidates", "candidate_id"],
-    ["scores", "candidate_id"],
-    ["artifacts", "candidate_id"],
-    ["candidate_notes", "candidate_id"],
-  ];
-
-  for (const [table, column] of cleanupSteps) {
-    const { error } = await supabase.from(table).delete().eq(column, id);
-    if (error) {
-      console.error(`[candidates DELETE] Failed clearing ${table} for candidate ${id}:`, error.message);
-      return NextResponse.json(
-        { error: `Failed to erase candidate data (${table}). Nothing further was deleted - safe to retry.` },
-        { status: 500 }
-      );
-    }
-  }
-
-  const { error: deleteError } = await supabase
-    .from("candidates")
-    .delete()
-    .eq("id", id)
-    .eq("agency_id", agencyId);
-
-  if (deleteError) {
-    console.error(`[candidates DELETE] Failed deleting candidate ${id}:`, deleteError.message);
-    return NextResponse.json({ error: "Failed to erase the candidate record." }, { status: 500 });
-  }
-
-  // The original CV file is part of the erasure too. Removed after the
-  // record is gone, so a storage hiccup can't leave a half-deleted
-  // candidate; a failure is logged loudly for manual follow-up.
-  const storageError = await removeCandidateCvs([candidate.cv_file_url]);
-  if (storageError) {
-    console.error(`[candidates DELETE] Candidate ${id} erased but CV file removal failed:`, storageError.message);
+  const { erased, failedStep } = await eraseCandidates(supabase, agencyId, [id]);
+  if (failedStep || erased !== 1) {
+    return NextResponse.json(
+      { error: `Failed to erase candidate data (${failedStep || "candidates"}). Safe to retry.` },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true });

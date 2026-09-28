@@ -1,19 +1,10 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * Thin fetch wrappers around the real candidate/job/team API routes
- * (app/api/candidates, app/api/jobs, app/api/team), mirroring the function
- * names lib/mock-data.js used to export. The dashboard pages were written
- * against that mock module by design ("swapping its body for a real
- * fetch() should be a one-file change" - see mock-data.js's header
- * comment); this file is that swap. Call sites mostly just gained
- * await/useEffect around what used to be synchronous mock calls.
- *
- * Stage values are the real ones from lib/stage-labels.js (Screened/
- * Shortlisted/Interview/Offer/Placed/Rejected), not the mock's invented
- * lowercase set - every page importing STAGE_LABELS/STAGE_ORDER should
- * import them from lib/stage-labels.js instead of lib/mock-data.js.
- * ---------------------------------------------------------------------- */
+// Thin fetch wrappers the dashboard and analyse pages use to reach the real
+// API routes (app/api/candidates, jobs, team, analytics/timing ...). Each
+// throws an Error carrying the server's message on a non-2xx response,
+// except where a caller needs the status itself (getTeamSeatUsage). Stage
+// values come from lib/stage-labels.js.
 
 import { FUNNEL_ORDER, STAGE_LABELS } from "@/lib/stage-labels";
 
@@ -46,17 +37,12 @@ export async function getCandidates(query = {}) {
   return apiFetch(`/api/candidates?${buildCandidatesQuery(query).toString()}`);
 }
 
-// The API caps pageSize at 50 server-side (app/api/candidates/route.js)
-// regardless of what's requested - callers that need "every matching
-// candidate" (stage counts, analytics, CSV export) previously asked for
-// pageSize: 1000 assuming that's what they'd get, which the server always
-// silently clamped down to 50. That's not a performance nuance, it's a
-// correctness bug: any agency with more than 50 candidates matching a
-// filter got numbers computed from an arbitrary 50-row subset with no
-// indication anything was missing. This pages through every result
-// instead, using totalPages from each real response rather than assuming
-// a page size - capped at 100 pages (5,000 candidates) as a sanity limit
-// against a runaway loop, not because that's an expected agency size.
+// The API caps pageSize at 200 (app/api/candidates/route.js), so callers
+// that need "every matching candidate" (stage counts, analytics, pipeline,
+// CSV export) page through the whole result using totalPages from each
+// real response. 200 per page keeps a large agency to a handful of
+// requests (it was 50, i.e. 100 sequential requests for 5,000 candidates).
+// Capped at 100 pages (20,000 candidates) against a runaway loop.
 async function getAllCandidates(query = {}) {
   const { page, pageSize, ...rest } = query;
   let all = [];
@@ -64,7 +50,7 @@ async function getAllCandidates(query = {}) {
   let totalPages = 1;
 
   do {
-    const result = await getCandidates({ ...rest, page: currentPage, pageSize: 50 });
+    const result = await getCandidates({ ...rest, page: currentPage, pageSize: 200 });
     all = all.concat(result.items ?? []);
     totalPages = result.totalPages ?? 1;
     currentPage += 1;
@@ -76,7 +62,7 @@ async function getAllCandidates(query = {}) {
 /**
  * getStageCounts - there's no dedicated facets endpoint, so this fetches
  * every candidate matching the current filters (ignoring `stage` itself
- * and pagination) and counts client-side, same as the mock version did.
+ * and pagination) and counts client-side.
  */
 export async function getStageCounts(query = {}) {
   const { stage, page, pageSize, ...rest } = query;
@@ -102,6 +88,16 @@ export async function getCandidatesForExport(query = {}) {
 export async function getCandidateById(id) {
   const candidate = await apiFetch(`/api/candidates/${id}`);
   return { ...candidate, job: candidate.job ? { ...candidate.job, company: candidate.job.client } : null };
+}
+
+// Name, contact details and current role, as corrected by a recruiter - see
+// app/api/candidates/[id]/route.js's PATCH.
+export async function updateCandidateContact(id, fields) {
+  return apiFetch(`/api/candidates/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
 }
 
 // Self-reported fields: source of hire, rejection reason, placement fee/
@@ -141,8 +137,8 @@ export async function createFeedbackRequest(candidateId, { kind, recipientLabel 
 }
 
 // Job rows come back from the API in their raw (snake_case) DB column
-// names; the dashboard pages were built against the mock module's
-// camelCase job shape, so adapt here rather than in every page.
+// names; the pages use a camelCase job shape, so adapt here rather than in
+// every page.
 function adaptJob(j) {
   return {
     ...j,
@@ -153,6 +149,19 @@ function adaptJob(j) {
     preferredSkills: j.preferred_skills ?? [],
     minYearsExperience: j.min_years_experience,
   };
+}
+
+// Creates a job directly (not as a side effect of screening a CV) - see
+// app/api/jobs/route.js's POST. `fields`: { title, company, location,
+// employmentType, seniority, salaryRange, requiredSkills, preferredSkills,
+// minYearsExperience, jobText }.
+export async function createJob(fields) {
+  const job = await apiFetch("/api/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return adaptJob(job);
 }
 
 export async function getJobs() {
@@ -263,6 +272,17 @@ export async function assignUnassignedCandidates(toUserId) {
   });
 }
 
+// One request for a bulk action on the Candidates list - see
+// app/api/candidates/bulk. payload: { action: "stage", stage } |
+// { action: "tag", tagId } | { action: "delete" }.
+export async function bulkUpdateCandidates(ids, payload) {
+  return apiFetch("/api/candidates/bulk", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids, ...payload }),
+  });
+}
+
 export async function updateCandidateStage(id, newStage) {
   return apiFetch(`/api/candidates/${id}/stage`, {
     method: "PATCH",
@@ -329,9 +349,8 @@ export async function completeNextAction(id) {
  * analytics page needs (see its own header comment: funnel/quality/
  * pipeline/conversion/team). Rather than build a second server-side
  * aggregation for the same data, this reduces the real candidate list
- * client-side - the same trade-off lib/mock-data.js's own version flagged
- * ("a real backend should aggregate this server-side... at production
- * scale"), just now running over real rows instead of 26 fake ones.
+ * client-side. At much larger scale this belongs in a server-side
+ * aggregate query instead.
  */
 // Speed/efficiency + offer-acceptance figures from app/api/analytics/timing
 // - a separate, server-aggregated call (it needs candidate_activity's full

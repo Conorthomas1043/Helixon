@@ -1,13 +1,8 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/jobs/[id]. `params` read synchronously - see the
- *   candidate profile page's header comment for the Next.js 15 note.
- * - Candidate ranking reuses getJobCandidates(jobId) from lib/mock-data.js
- *   (already sorted by score, descending).
- * ---------------------------------------------------------------------- */
+// /dashboard/jobs/[id] - one role: its requirements (editable), open/closed
+// status, sourcing channels, and its candidates ranked by match score
+// (app/api/jobs/[id] and /candidates).
 
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";

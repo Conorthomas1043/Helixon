@@ -50,7 +50,16 @@ export async function POST(request) {
   const body = (await request.json().catch(() => null)) ?? {};
   const title = cleanLine(body.title, 160);
   if (!title) {
-    return NextResponse.json({ error: "title required" }, { status: 400 });
+    return NextResponse.json({ error: "A job title is required." }, { status: 400 });
+  }
+  // CVs are screened against this text (app/api/run needs at least 50
+  // characters), so a job without a real description can't be used.
+  const jobText = cleanText(body.jobText, { max: 20000 });
+  if (jobText.length < 50) {
+    return NextResponse.json(
+      { error: "Add the job description (at least 50 characters) - CVs are screened against it." },
+      { status: 400 }
+    );
   }
 
   const { data, error } = await supabase
@@ -67,7 +76,7 @@ export async function POST(request) {
       required_skills: cleanList(body.requiredSkills),
       preferred_skills: cleanList(body.preferredSkills),
       min_years_experience: cleanNumber(body.minYearsExperience, { min: 0, max: 60 }),
-      job_text: cleanText(body.jobText, { max: 20000 }) || null,
+      job_text: jobText,
       status: "open",
     })
     .select()
