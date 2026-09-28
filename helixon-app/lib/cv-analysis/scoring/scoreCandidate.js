@@ -33,9 +33,9 @@ import validateScore from "../validators/validateScore.js";
 // Match a list of job-required skill names against what the candidate has.
 // Tries the static taxonomy/whole-word matcher first (free, deterministic,
 // covers the common case); anything it misses falls back to real embedding
-// similarity (embeddings map is pre-computed by the caller, covering only
+// similarity, then to the fit judgement's quoted CV evidence (embeddings map is pre-computed by the caller, covering only
 // the skills that actually need it - see scoreCandidate below).
-function matchSkillList(skillList, candidateSkills, embeddings) {
+function matchSkillList(skillList, candidateSkills, embeddings, judgedEvidence = new Map()) {
 
     const matched = [];
     const missing = [];
@@ -60,7 +60,11 @@ function matchSkillList(skillList, candidateSkills, embeddings) {
         if (viaEmbedding) {
             matched.push(skill);
             via.set(skill, viaEmbedding.matched);
-            semanticMatches.push({ skill, via: viaEmbedding.matched, similarity: viaEmbedding.score });
+            semanticMatches.push({ skill, via: viaEmbedding.matched, similarity: viaEmbedding.score, method: "embedding" });
+        } else if (judgedEvidence.has(skill)) {
+            matched.push(skill);
+            via.set(skill, null);
+            semanticMatches.push({ skill, via: judgedEvidence.get(skill), similarity: null, method: "cv_evidence" });
         } else {
             missing.push(skill);
         }
@@ -77,7 +81,13 @@ function matchSkillList(skillList, candidateSkills, embeddings) {
 // only on embedding similarity, earn a little less. Before this, every
 // matched skill earned full points - a keyword in a skills list scored the
 // same as years of hands-on use.
-function skillCredit({ skill, via, detailsByName, evidenceBySkill, semantic }) {
+function skillCredit({ skill, via, detailsByName, evidenceBySkill, semantic, judged }) {
+
+    // Confirmed from work the CV describes (quoted and verified), so it's
+    // demonstrated use - but no depth/recency data exists for it.
+    if (judged) {
+        return { skill, credit: DEPTH_CREDIT.Used, basis: "Judged", stale: false, semantic: false };
+    }
 
     const detail =
         detailsByName.get(normaliseSkill(via || skill)) ||
@@ -147,27 +157,39 @@ export default async function scoreCandidate(
     const candidateSkills = candidate.skills || [];
 
 
-    // Kicked off now, awaited later (alongside the embeddings fetch below) -
-    // judgeFit makes its own (up to 3, parallel) Claude calls, so starting
-    // it here means that latency overlaps with the skill-matching work
-    // instead of adding on top of it.
-    const judgmentPromise = judgeFit(candidate, job, rawCV);
-
-    // Only pay for embeddings on the skills the free taxonomy pass actually
-    // missed - most jobs resolve entirely through semanticMatch and never
-    // trigger an API call at all.
-    const taxonomyMisses = [...requiredSkills, ...preferredSkills].filter(
+    // The free taxonomy pass first (synchronous) - whatever it misses goes
+    // to both fallbacks below: embedding similarity and the fit judgement's
+    // requirement check.
+    const taxonomyMisses = [...new Set([...requiredSkills, ...preferredSkills])].filter(
         (skill) => !semanticMatch(skill, candidateSkills).matched
     );
+
+    // Kicked off now, awaited after the embeddings fetch - judgeFit makes
+    // its own Claude call(s), so starting it here overlaps that latency
+    // with the embedding lookup instead of adding on top of it.
+    const judgmentPromise = judgeFit(candidate, job, rawCV, { unmatchedSkills: taxonomyMisses });
+
+    // Only pay for embeddings on the skills the taxonomy pass missed.
     const embeddings = taxonomyMisses.length
         ? await embedSkills([...taxonomyMisses, ...candidateSkills])
         : new Map();
 
-    const { matched: matchedRequired, missing: missingRequired, semanticMatches: semanticRequired, via: viaRequired } =
-        matchSkillList(requiredSkills, candidateSkills, embeddings);
+    const judgment = await judgmentPromise;
 
-    const { matched: matchedPreferred, missing: missingPreferred, semanticMatches: semanticPreferred, via: viaPreferred } =
-        matchSkillList(preferredSkills, candidateSkills, embeddings);
+    // Requirements the CV shows through described work rather than by
+    // name ("negotiated supplier contracts" for "Negotiation"), confirmed
+    // by the judgement with a quote verified against the CV. Outside tech,
+    // most requirements are like this - a keyword match against the
+    // skills list alone marked them missing.
+    const judgedEvidence = new Map(
+        (judgment.requirements_check || []).map((r) => [r.skill, r.evidence])
+    );
+
+    const required = matchSkillList(requiredSkills, candidateSkills, embeddings, judgedEvidence);
+    const preferred = matchSkillList(preferredSkills, candidateSkills, embeddings, judgedEvidence);
+
+    const { matched: matchedRequired, missing: missingRequired, semanticMatches: semanticRequired, via: viaRequired } = required;
+    const { matched: matchedPreferred, missing: missingPreferred, semanticMatches: semanticPreferred, via: viaPreferred } = preferred;
 
     const viaAll = new Map([...viaPreferred, ...viaRequired]);
 
@@ -193,7 +215,15 @@ export default async function scoreCandidate(
     const searchTerms = new Map(
         [...viaAll].filter(([, v]) => v).map(([skill, v]) => [skill, [v]])
     );
-    const evidence = collectEvidence(rawCV, matchedSkills, searchTerms);
+    const judgedSkills = new Set(
+        semanticMatches.filter((m) => m.method === "cv_evidence").map((m) => m.skill)
+    );
+    // Judged skills carry the verified quote as their evidence.
+    const evidence = collectEvidence(rawCV, matchedSkills, searchTerms).map((e) =>
+        judgedSkills.has(e.skill)
+            ? { skill: e.skill, supported: true, evidence: [{ skill: e.skill, evidence: judgedEvidence.get(e.skill), confidence: "High" }] }
+            : e
+    );
     const unsupported = unsupportedSkills(evidence);
     const evidenceBySkill = new Map(evidence.map((e) => [e.skill, e]));
 
@@ -202,13 +232,14 @@ export default async function scoreCandidate(
             .filter((d) => d && d.skill)
             .map((d) => [normaliseSkill(d.skill), d])
     );
-    const semanticSet = new Set(semanticMatches.map((m) => m.skill));
+    const semanticSet = new Set(semanticMatches.filter((m) => m.method === "embedding").map((m) => m.skill));
     const creditFor = (skill) => skillCredit({
         skill,
         via: viaAll.get(skill),
         detailsByName,
         evidenceBySkill,
         semantic: semanticSet.has(skill),
+        judged: judgedSkills.has(skill),
     });
 
     const importance = job.skill_importance || {};
@@ -236,10 +267,6 @@ export default async function scoreCandidate(
 
     const minYears = Number(job.min_years_experience) || 0;
     const yearsExperience = Number(candidate.years_experience) || 0;
-
-    // judgment is needed from here on - started above, alongside the
-    // embeddings fetch.
-    const judgment = await judgmentPromise;
 
     // Years relevant to THIS role (judged), not total career length - ten
     // years in an unrelated field used to earn full experience points.
@@ -484,11 +511,12 @@ export default async function scoreCandidate(
         missing_required: missingRequired,
         missing_preferred: missingPreferred,
         other_skills: otherSkills,
-        // Skills credited only via embedding similarity, not the static
-        // taxonomy or a literal name match - surfaced explicitly (skill,
-        // the candidate's actual wording, similarity score) so a recruiter
-        // can see and audit why something matched rather than trusting an
-        // invisible "AI decided" match.
+        // Skills credited without a name/taxonomy match - via embedding
+        // similarity (method "embedding": the candidate's wording and the
+        // similarity score) or from work the CV describes (method
+        // "cv_evidence": the verified CV quote) - surfaced explicitly so a
+        // recruiter can see and audit why something matched rather than
+        // trusting an invisible "AI decided" match.
         semantic_matches: semanticMatches,
         // Per-skill credit behind skill_score: how much of each matched
         // skill's points it earned and why (depth, stale, semantic-only),

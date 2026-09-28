@@ -90,6 +90,26 @@ function toKnockoutRequirements(value) {
 
 const IMPORTANCE_LEVELS = ["Critical", "High", "Medium", "Low"];
 
+export const JOB_FAMILIES = [
+    "technology", "sales", "customer_service", "marketing", "finance", "hr",
+    "operations", "healthcare", "education", "hospitality", "retail", "trades",
+    "logistics", "legal", "creative", "admin", "executive", "other",
+];
+
+// { low, high, currency } annual salary for the role - stated in the job
+// text, or Claude's estimate for the role, seniority and location. null
+// when missing or implausible, so salaryEngine.js knows not to use it.
+function toMarketSalary(value) {
+    if (!value || typeof value !== "object") return null;
+    const low = Number(value.low);
+    const high = Number(value.high);
+    const currency = String(value.currency || "").trim().toUpperCase();
+    if (!Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high < low || high > 5_000_000) {
+        return null;
+    }
+    return { low: Math.round(low), high: Math.round(high), currency: /^[A-Z]{3}$/.test(currency) ? currency : "GBP" };
+}
+
 // { "<required skill>": "Critical" | "High" | "Medium" | "Low" }, keyed by
 // the skill exactly as it appears in required_skills. Anything malformed
 // (unknown level, a skill that isn't in required_skills) is dropped, and a
@@ -143,6 +163,13 @@ export default function validateJob(job = {}) {
         salary_range: toStringOrDefault(job.salary_range, ""),
 
         industry: toStringOrDefault(job.industry, "Unknown"),
+
+        // "" for a job parsed before this field existed.
+        job_family: JOB_FAMILIES.includes(String(job.job_family || "").toLowerCase())
+            ? String(job.job_family).toLowerCase()
+            : (job.job_family ? "other" : ""),
+
+        market_salary: toMarketSalary(job.market_salary),
 
         min_years_experience: toNonNegativeInt(job.min_years_experience, 0),
 

@@ -8,8 +8,14 @@ import { useEffect, useState } from "react";
 import { Card, Icon, Notice, cx } from "./ui";
 import { scoreTone } from "../_lib/analyse";
 
-function fmtSalary(n) {
-  return n ? `£${Math.round(n / 1000)}k` : "";
+// Salary estimates carry their own currency - the role can be anywhere.
+function fmtSalary(n, currency = "GBP") {
+  if (!n) return "";
+  try {
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency, notation: "compact", maximumSignificantDigits: 3 }).format(n);
+  } catch {
+    return `${currency} ${Math.round(n / 1000)}k`;
+  }
 }
 
 function yearRange(start, end) {
@@ -456,7 +462,7 @@ export default function Report({ result, roleLabel }) {
             <div>
               <p className="text-[12px] font-medium text-[var(--ink-soft)] mb-1">Estimated salary</p>
               <p className="text-[22px] font-semibold tracking-tight text-[var(--ink)] tabular-nums" style={{ fontFamily: "var(--font-display)" }}>
-                {fmtSalary(result.salary_estimate.low)} – {fmtSalary(result.salary_estimate.high)}
+                {fmtSalary(result.salary_estimate.low, result.salary_estimate.currency)} – {fmtSalary(result.salary_estimate.high, result.salary_estimate.currency)}
                 {result.salary_estimate.seniority && <span className="text-[13px] font-normal text-[var(--ink-soft)] ml-2">{result.salary_estimate.seniority}</span>}
               </p>
               {result.salary_estimate.rationale && <p className="text-[12.5px] leading-relaxed text-[var(--ink-soft)] mt-1 max-w-[62ch]">{result.salary_estimate.rationale}</p>}

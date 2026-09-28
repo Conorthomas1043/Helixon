@@ -45,10 +45,61 @@ function significantWords(text) {
   return normaliseSkill(text).split(" ").filter((w) => w && !CERT_FILLER.has(w));
 }
 
+// Everything the CV lists that a credential could be named in.
+function heldCredentials(candidate) {
+  const certs = Array.isArray(candidate.certifications) ? candidate.certifications : [];
+  return [
+    ...certs.map((cert) => String(cert?.name || cert || "")),
+    ...(Array.isArray(candidate.skills) ? candidate.skills.map(String) : []),
+  ].filter(Boolean);
+}
+
+// "pass" when a held credential names the requirement (all its significant
+// words), "partial" when about half do, "none" otherwise.
+function credentialMatch(value, held) {
+  const wanted = significantWords(value);
+  if (wanted.length === 0) return "none";
+
+  let best = 0;
+  for (const name of held) {
+    if (containsPhrase(name, value)) return "pass";
+    const have = new Set(significantWords(name));
+    best = Math.max(best, wanted.filter((w) => have.has(w)).length / wanted.length);
+  }
+  if (best === 1) return "pass";
+  if (best >= 0.5) return "partial";
+  return "none";
+}
+
+// Job extraction is asked for a fixed field vocabulary
+// (jobExtractionPrompt.js), but older saved jobs and model drift produce
+// variants - "Driving License", "professional registration", "degree".
+const FIELD_ALIASES = {
+  licence: "license",
+  registration: "license",
+  professional_registration: "license",
+  qualification: "certification",
+  certificate: "certification",
+  driving_license: "driving_licence",
+  drivers_license: "driving_licence",
+  driving: "driving_licence",
+  degree: "education",
+  qualification_level: "education",
+  dbs: "background_check",
+  dbs_check: "background_check",
+};
+
+function normaliseField(field) {
+  const f = String(field || "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return FIELD_ALIASES[f] || f;
+}
+
+const DEGREE_WORDS = /\b(degree|bachelor|bachelors|bsc|ba|beng|llb|master|masters|msc|ma|mba|meng|phd|doctorate)\b/;
+
 function evaluateRule(rule, candidate) {
   const value = rule.value.toLowerCase();
 
-  switch (rule.field) {
+  switch (normaliseField(rule.field)) {
     case "min_years_experience": {
       const required = parseFloat(rule.value);
       if (!Number.isFinite(required)) return "unverifiable";
@@ -71,35 +122,62 @@ function evaluateRule(rule, candidate) {
       return "unverifiable";
     }
 
-    case "certification":
-    case "license": {
-      // Unlike right-to-work/clearance (never stated on a CV either way),
-      // the extraction prompt explicitly enumerates every certification a
-      // CV lists - so an empty list is real negative evidence, not merely
-      // "unknown", the same way it would read to a human recruiter.
-      //
+    case "certification": {
       // Compared by significant words rather than one exact substring: the
       // same certification is written many ways ("AWS Certified Solutions
       // Architect" vs "AWS Solutions Architect - Associate"), and an
       // exact-string miss used to hard-fail the candidate.
-      const certs = Array.isArray(candidate.certifications) ? candidate.certifications : [];
-      const held = [
-        ...certs.map((cert) => String(cert?.name || "")),
-        ...(Array.isArray(candidate.skills) ? candidate.skills.map(String) : []),
-      ].filter(Boolean);
+      const held = heldCredentials(candidate);
+      const match = credentialMatch(value, held);
+      if (match === "pass") return "pass";
+      if (match === "partial") return "unverifiable";
+      // Only a real "no" when the CV does list its certifications and this
+      // isn't among them. A CV listing none at all is common in many
+      // fields (care, retail, hospitality, trades) and says nothing either
+      // way - it used to hard-fail, capping the candidate at 40.
+      const listsCertifications = Array.isArray(candidate.certifications) && candidate.certifications.length > 0;
+      return listsCertifications ? "fail" : "unverifiable";
+    }
 
-      const wanted = significantWords(value);
-      if (wanted.length === 0) return "unverifiable";
-
-      let best = 0;
-      for (const name of held) {
-        if (containsPhrase(name, value)) return "pass";
-        const have = new Set(significantWords(name));
-        best = Math.max(best, wanted.filter((w) => have.has(w)).length / wanted.length);
+    case "license":
+    case "driving_licence":
+    case "background_check":
+    case "security_clearance": {
+      // Licences, registrations and checks (driving licence, NMC PIN, SIA,
+      // CSCS, Enhanced DBS, clearance) pass when the CV states them, but
+      // are often simply left off a CV - absence is never a fail.
+      const held = heldCredentials(candidate);
+      if (credentialMatch(value, held) === "pass") return "pass";
+      if (
+        normaliseField(rule.field) === "driving_licence" &&
+        !/\b(hgv|lgv|c\+e|class|cat|pcv|d1|c1)\b/.test(value) &&
+        held.some((h) => /driv\w* licen[cs]e/i.test(h))
+      ) {
+        return "pass";
       }
-      if (best === 1) return "pass";
-      if (best >= 0.5) return "unverifiable";
-      return "fail";
+      return "unverifiable";
+    }
+
+    case "education": {
+      // Many roles accept equivalent experience, so this never fails - a
+      // match passes it, anything else goes to the recruiter.
+      const education = Array.isArray(candidate.education) ? candidate.education : [];
+      const studied = education.map((e) => `${e?.degree || ""} ${e?.field_of_study || ""}`.trim()).filter(Boolean);
+      if (credentialMatch(value, [...studied, ...heldCredentials(candidate)]) === "pass") return "pass";
+      // A requirement that's only "a degree" (no subject) is met by any degree.
+      const subject = significantWords(value).filter((w) => !DEGREE_WORDS.test(w) && !["or", "equivalent", "relevant", "related", "field", "subject"].includes(w));
+      if (DEGREE_WORDS.test(value) && subject.length === 0 && studied.some((d) => DEGREE_WORDS.test(d.toLowerCase()))) {
+        return "pass";
+      }
+      // "Degree in Nursing" is met by "BSc Adult Nursing": the subject
+      // words appear, whatever the degree is called.
+      if (subject.length && studied.some((d) => {
+        const words = significantWords(d);
+        return subject.every((w) => words.includes(w));
+      })) {
+        return "pass";
+      }
+      return "unverifiable";
     }
 
     case "relocation": {
@@ -110,13 +188,12 @@ function evaluateRule(rule, candidate) {
       return "unverifiable";
     }
 
-    // right_to_work, work_authorization(_authorisation), visa_sponsorship,
-    // security_clearance, background_check: nothing in the extraction
-    // schema captures these, and a CV essentially never states them
-    // explicitly either way, so there is no candidate-side signal to
-    // check against at all - always unverifiable, never auto-failed.
+    // right_to_work, work_authorisation, visa_sponsorship and anything
+    // else: a CV rarely states these either way, so they're never
+    // auto-failed - passed if the CV does state them, otherwise left for
+    // the recruiter to check.
     default:
-      return "unverifiable";
+      return credentialMatch(value, heldCredentials(candidate)) === "pass" ? "pass" : "unverifiable";
   }
 }
 

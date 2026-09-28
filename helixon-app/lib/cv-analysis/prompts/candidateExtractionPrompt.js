@@ -5,7 +5,7 @@ import { wrapUntrusted } from "../../prompt-safety.js";
 // the rules below, it's never the closing tag and rules that get cut off.
 // (Was 15,500 against an 18,000 limit, which silently dropped the end of a
 // long CV - usually the earliest roles, education and certifications.)
-const MAX_CV_CHARS = 36000;
+const MAX_CV_CHARS = 34000;
 
 export function candidateExtractionPrompt(cvText){
 
@@ -63,15 +63,15 @@ Rules:
 
 - Do not invent information. Use "", 0, [] or null for anything not present in the CV.
 - Preserve names exactly.
-- Extract all skills, including ones only mentioned in project/experience bullet points.
+- Extract all skills, including ones only mentioned in project/experience bullet points. The CV can be from any profession - include practical, people and domain skills the described work demonstrates (e.g. "Negotiation", "Account management", "Patient care", "Food safety", "Team leadership", "Forklift operation"), not only technical tools. Use short, standard names.
 - "skill_details" has one entry for every skill in "skills", using the same name. "depth" is "Expert" when the CV shows deep or sustained hands-on use (years of use, led/architected work with it), "Used" when it appears in the candidate's actual work or projects, and "Mentioned" when it is only listed (e.g. in a skills section) with no work that shows it. "years_used" and "last_used_year" come from the positions where the skill appears; use 0 if the CV doesn't show them.
 - Extract every job position, most recent first, with employer and start/end years. Use end_year 0 for a current role.
 - "years_experience" is total years of professional work, counted from the positions' dates with overlapping roles counted once (exclude education and pre-career part-time jobs unless relevant).
 - "current_title"/"current_employer" should match the candidate's most recent (or current) position.
 - Extract dates and employers.
-- Extract education, certifications (including expiry year if stated), and languages.
+- Extract education, certifications (including expiry year if stated), and languages. "certifications" includes licences, professional registrations and checks the CV states (e.g. "Full UK driving licence", "NMC registration", "CSCS card", "SIA licence", "Enhanced DBS", "Food Hygiene Level 2").
 - "willing_to_relocate" is true/false only if the CV states a relocation preference explicitly, otherwise null.
-- "experience_breakdown" is years of experience per skill area/domain the CV supports (e.g. "Backend", "Frontend", "Cloud/DevOps") - infer this only from what the positions/skills actually show.
+- "experience_breakdown" is years of experience per skill area/domain the CV supports (e.g. "B2B sales", "Team management", "Acute nursing", "Backend development") - infer this only from what the positions/skills actually show.
 - "cv_quality_issues" lists concrete problems with the CV itself as a document (e.g. "no dates on earliest role", "inconsistent formatting"), not problems with the candidate.
 
 Return JSON only.

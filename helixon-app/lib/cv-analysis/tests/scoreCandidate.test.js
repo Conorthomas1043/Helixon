@@ -91,3 +91,28 @@ describe("interview questions", () => {
     expect(result.interview_questions.some((q) => /gap/i.test(q))).toBe(false);
   });
 });
+
+describe("requirements shown by described work (any profession)", () => {
+  const careJob = { required_skills: ["Personal care", "Medication administration"], preferred_skills: [], min_years_experience: 1 };
+  const careCv = "Care Assistant 2019-2024\nSupported residents with personal care and mobility";
+
+  it("sends skills the keyword pass missed to the judgement", async () => {
+    await scoreCandidate({ skills: ["Teamwork"], years_experience: 5 }, careJob, careCv);
+    const [, , , opts] = judgeFit.mock.calls.at(-1);
+    expect(opts.unmatchedSkills).toEqual(["Personal care", "Medication administration"]);
+  });
+
+  it("credits a requirement the judgement confirmed with a verified quote", async () => {
+    judgeFit.mockImplementation(async () => ({
+      ...judgment,
+      requirements_check: [{ skill: "Personal care", evidence: "Supported residents with personal care and mobility" }],
+    }));
+    const result = await scoreCandidate({ skills: ["Teamwork"], years_experience: 5 }, careJob, careCv);
+    expect(result.matched_skills).toContain("Personal care");
+    expect(result.missing_required).toEqual(["Medication administration"]);
+    const credit = result.skill_credit.find((c) => c.skill === "Personal care");
+    expect(credit.basis).toBe("Judged");
+    expect(result.semantic_matches).toContainEqual(expect.objectContaining({ skill: "Personal care", method: "cv_evidence" }));
+    expect(result.evidence.find((e) => e.skill === "Personal care").supported).toBe(true);
+  });
+});

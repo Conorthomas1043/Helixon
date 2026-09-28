@@ -328,7 +328,7 @@ export async function POST(request) {
     try {
       salary = estimateSalary(ex, {
         relevantYears: result?.relevant_years_experience ?? null,
-        jobSalaryRange: jobParsed?.salary_range || "",
+        job: jobParsed || {},
       });
     } catch (error) {
       console.warn(

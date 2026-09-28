@@ -1,13 +1,19 @@
-// A rough salary guide from years of experience alone - no job title,
-// location, industry or specialism goes into it, so it's presented with a
-// rationale saying exactly that, and a confidence to match. (It used to
-// report 85% confidence for what is a five-band lookup on one number.)
+// A rough salary guide for this candidate in this role.
 //
-// Uses years relevant to the role when scoring produced them (see
-// fitJudgeEngine.js) - ten years in an unrelated field isn't senior pay
-// for this job - and falls back to total years otherwise.
+// Anchored on the role's own salary range - the one the job advertises,
+// or job extraction's estimate for the role, seniority and location (see
+// jobExtractionPrompt.js market_salary) - and placed within it by how the
+// candidate's relevant experience compares with what the role asks for.
+// That works for any job: a care assistant and a solicitor get their own
+// markets. It used to be one fixed set of UK tech salary bands picked by
+// years of experience, so e.g. ten years as a care worker came out at
+// £120k-£180k.
+//
+// For a job parsed before market_salary existed, the old years-based bands
+// are still used - but only for technology roles (or an unknown family),
+// since that's the only market they describe; otherwise no estimate.
 
-const bands = {
+const TECH_BANDS = {
 
   Junior: [28000, 42000],
 
@@ -22,59 +28,89 @@ const bands = {
 };
 
 
-export function estimateSalary(candidate = {}, { relevantYears = null, jobSalaryRange = "" } = {}) {
+function yearsPhrase(years, relevant) {
+  const y = Math.round(years * 10) / 10;
+  return `${y} ${relevant ? "relevant " : ""}year${y === 1 ? "" : "s"} of experience`;
+}
 
-  const totalYears = Number(candidate?.years_experience) || 0;
 
-  const useRelevant = Number.isFinite(relevantYears) && relevantYears !== null;
-
-  const years = useRelevant ? relevantYears : totalYears;
-
+function techBandEstimate(years, relevant) {
 
   let seniority = "Junior";
 
-  if (years >= 10) {
+  if (years >= 10) seniority = "Principal";
+  else if (years >= 8) seniority = "Lead";
+  else if (years >= 5) seniority = "Senior";
+  else if (years >= 2) seniority = "Mid";
 
-    seniority = "Principal";
+  const [low, high] = TECH_BANDS[seniority];
 
-  } else if (years >= 8) {
+  return {
+    seniority,
+    currency: "GBP",
+    low,
+    high,
+    confidence: years > 0 ? 40 : 20,
+    rationale: `Rough UK technology-market guide based only on ${yearsPhrase(years, relevant)} - it doesn't account for location or specialism.`,
+  };
+}
 
-    seniority = "Lead";
 
-  } else if (years >= 5) {
+export function estimateSalary(candidate = {}, { relevantYears = null, job = {} } = {}) {
 
-    seniority = "Senior";
+  const totalYears = Number(candidate?.years_experience) || 0;
 
-  } else if (years >= 2) {
+  const relevant = Number.isFinite(relevantYears) && relevantYears !== null;
 
-    seniority = "Mid";
+  const years = relevant ? relevantYears : totalYears;
 
+  const advertisedText = typeof job?.salary_range === "string" ? job.salary_range.trim() : "";
+
+  const market = job?.market_salary;
+
+
+  if (market && market.low > 0 && market.high >= market.low) {
+
+    // Where in the role's range this candidate is likely to land, from
+    // their relevant experience against what the role asks for (or 3
+    // years when it doesn't say).
+    const expected = Math.max(1, Number(job.min_years_experience) || 3);
+    const ratio = years / expected;
+    const span = market.high - market.low;
+
+    const [from, to, position] =
+      ratio < 0.75 ? [0, 0.4, "lower end"] :
+      ratio > 1.75 ? [0.6, 1, "upper end"] :
+      [0.25, 0.75, "middle"];
+
+    const round = (n) => Math.round(n / 500) * 500;
+
+    const source = advertisedText
+      ? `the role's advertised range (${advertisedText})`
+      : "the typical market range for this role (an AI estimate)";
+
+    return {
+      seniority: position === "upper end" ? "Upper range" : position === "lower end" ? "Lower range" : "Mid range",
+      currency: market.currency || "GBP",
+      low: round(market.low + span * from),
+      high: round(market.low + span * to),
+      confidence: advertisedText ? 60 : 40,
+      rationale: `The ${position} of ${source}, given ${yearsPhrase(years, relevant)} against the ${Number(job.min_years_experience) ? `${job.min_years_experience} years` : "experience"} the role asks for.`,
+    };
   }
 
 
-  const [low, high] = bands[seniority];
+  const family = job?.job_family || "";
 
-  const yearsText = `${Math.round(years * 10) / 10} ${useRelevant ? "relevant " : ""}year${years === 1 ? "" : "s"} of experience`;
+  if (family === "" || family === "technology") {
 
-  const advertised = typeof jobSalaryRange === "string" && jobSalaryRange.trim()
-    ? ` The role advertises ${jobSalaryRange.trim()}.`
-    : "";
+    const estimate = techBandEstimate(years, relevant);
+
+    if (advertisedText) estimate.rationale += ` The role advertises ${advertisedText}.`;
+
+    return estimate;
+  }
 
 
-  return {
-
-    seniority,
-
-    currency: "GBP",
-
-    low,
-
-    high,
-
-    confidence: years > 0 ? 45 : 20,
-
-    rationale: `Rough UK guide based only on ${yearsText} - it doesn't account for location, industry or specialism.${advertised}`
-
-  };
-
+  return null;
 }

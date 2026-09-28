@@ -1,30 +1,18 @@
 const METRIC_REGEX =
-/\d+(%| percent| million| billion|k\b| users| requests| revenue|£|\$|€)/ig;
+/(\d+(%| percent| million| billion|k\b| users| requests| revenue| customers| clients| accounts| patients| staff| people| students| sites| stores| orders| calls| units| beds)|[£$€]\s?\d)/ig;
 
 
 const IMPACT_WORDS = [
+  "increased", "reduced", "saved", "optimised", "optimized", "improved",
+  "cut", "grew", "boosted", "accelerated", "delivered", "exceeded",
+  "achieved", "won", "generated", "doubled", "tripled", "halved",
+  "awarded", "promoted", "ranked", "top performer", "record"
+]
 
-  "increased",
 
-  "reduced",
-
-  "saved",
-
-  "optimised",
-
-  "improved",
-
-  "cut",
-
-  "grew",
-
-  "boosted",
-
-  "accelerated",
-
-  "delivered"
-
-];
+// Whole-word - as substrings, "cut" matched "executive" and "won"
+// matched "wonderful".
+const IMPACT_RE = new RegExp(`\\b(${IMPACT_WORDS.join("|")})\\b`);
 
 
 function normaliseCV(cv = "") {
@@ -90,9 +78,7 @@ export function extractAchievements(cv = "") {
 
 
     const impact =
-      IMPACT_WORDS.some(
-        x => line.toLowerCase().includes(x)
-      );
+      IMPACT_RE.test(line.toLowerCase());
 
 
 

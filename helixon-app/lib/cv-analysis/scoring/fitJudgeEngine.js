@@ -86,15 +86,56 @@ function heuristicFallback(candidate, job) {
       rationale: "Achievement quality couldn't be assessed for this analysis.",
     },
     relevant_experience: null,
+    requirements_check: [],
     method: "heuristic_fallback",
     samples: 0,
   };
 }
 
-export async function judgeFit(candidate, job, cvText) {
+// Letters and digits only, single-spaced - so a quote still verifies
+// across line breaks, bullet characters and punctuation differences.
+function flatten(text) {
+  return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+const MIN_QUOTE_CHARS = 12;
+
+// Requirements the judgement says the CV demonstrates, kept only when the
+// quoted evidence really appears in the CV - so a requirement can't be
+// credited on a paraphrase or an invented line. With several samples a
+// skill needs a verified "yes" from a majority of them.
+function verifiedRequirements(samples, unmatchedSkills, cvText) {
+  if (!unmatchedSkills.length) return [];
+
+  const cv = flatten(cvText);
+  const wanted = new Map(unmatchedSkills.map((skill) => [skill.toLowerCase(), skill]));
+  const votes = new Map();
+
+  for (const sample of samples) {
+    const seen = new Set();
+    for (const check of Array.isArray(sample.requirements_check) ? sample.requirements_check : []) {
+      const skill = wanted.get(String(check?.skill || "").trim().toLowerCase());
+      if (!skill || seen.has(skill) || check.demonstrated !== true) continue;
+
+      const quote = flatten(check.evidence);
+      if (quote.length < MIN_QUOTE_CHARS || !cv.includes(quote)) continue;
+
+      seen.add(skill);
+      const entry = votes.get(skill) || { count: 0, evidence: String(check.evidence).trim().slice(0, 300) };
+      entry.count += 1;
+      votes.set(skill, entry);
+    }
+  }
+
+  return [...votes]
+    .filter(([, v]) => v.count > samples.length / 2)
+    .map(([skill, v]) => ({ skill, evidence: v.evidence }));
+}
+
+export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } = {}) {
   let settled;
   try {
-    const prompt = fitJudgmentPrompt({ candidate, job, cvText });
+    const prompt = fitJudgmentPrompt({ candidate, job, cvText, unmatchedSkills });
     settled = await Promise.allSettled(
       Array.from({ length: SAMPLES }, () => askClaude(prompt, { effort: JUDGMENT_EFFORT }))
     );
@@ -159,6 +200,9 @@ export async function judgeFit(candidate, job, cvText) {
           rationale: String(valid[0].relevant_experience?.rationale || "").slice(0, 500),
         }
       : null,
+    // Unmatched requirements confirmed from the CV, each with its verified
+    // quote - see verifiedRequirements.
+    requirements_check: verifiedRequirements(valid, unmatchedSkills, cvText),
     method: "llm_judged",
     samples: valid.length,
   };

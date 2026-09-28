@@ -9,26 +9,38 @@ import { normaliseSkill, containsPhrase } from "../utils/skillNormaliser.js";
 // that had drifted out of sync with the JSON file (which nothing
 // actually imported).
 //
-// The index below is built once at module load and is bidirectional:
-// each group's canonical name AND every alias map to the full set of
-// normalised terms in that group, so a required skill of "Kubernetes"
-// matches a candidate who wrote "K8s" and vice versa.
+// Each entry is either a plain list of synonyms, or
+// { "synonyms": [...], "includes": [...] }:
+//   - synonyms are interchangeable with the skill and with each other
+//     ("Kubernetes" / "K8s", "Business development" / "BD").
+//   - includes are narrower skills/tools that demonstrate the broader one
+//     ("SQL" includes "MySQL"; "CRM" includes "Salesforce"). One direction
+//     only: a required "CRM" is met by a candidate's "Salesforce", but a
+//     required "Salesforce" is not met by "CRM" or by another include
+//     ("HubSpot"). The old flat lists treated every name in a group as
+//     equal, so e.g. "Redux" counted as "Next.js" and "Django" as "Flask".
+//
+// The index is built once at module load: required term -> set of
+// candidate terms that satisfy it.
 const TAXONOMY_INDEX = buildTaxonomyIndex(taxonomy);
+
+function addAll(index, term, terms) {
+    // A term can belong to more than one group - merge, never overwrite.
+    const existing = index.get(term);
+    index.set(term, existing ? new Set([...existing, ...terms]) : new Set(terms));
+}
 
 function buildTaxonomyIndex(source) {
     const index = new Map();
 
-    for (const [canonical, aliases] of Object.entries(source)) {
-        const group = [canonical, ...aliases].map(normaliseSkill).filter(Boolean);
-        const groupSet = new Set(group);
+    for (const [canonical, entry] of Object.entries(source)) {
+        const synonymList = Array.isArray(entry) ? entry : entry?.synonyms || [];
+        const includeList = Array.isArray(entry) ? [] : entry?.includes || [];
 
-        for (const term of group) {
-            // If a term legitimately belongs to more than one group (rare,
-            // but taxonomy data can grow over time), merge rather than
-            // overwrite so no existing relationship is silently lost.
-            const existing = index.get(term);
-            index.set(term, existing ? new Set([...existing, ...groupSet]) : groupSet);
-        }
+        const core = [canonical, ...synonymList].map(normaliseSkill).filter(Boolean);
+        const includes = includeList.map(normaliseSkill).filter(Boolean);
+
+        for (const term of core) addAll(index, term, [...core, ...includes]);
     }
 
     return index;
