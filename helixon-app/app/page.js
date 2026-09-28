@@ -9,6 +9,7 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import CountUp from "@/components/dashboard/CountUp";
+import AnalysisExample from "@/components/landing/AnalysisExample";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -272,7 +273,14 @@ const DASH_STAGES = [
 const DASH_ATTENTION = [
   { name: "Priya Anand", role: "Senior Software Engineer", reason: "Strong match", tone: "good", score: 91 },
   { name: "Marcus Webb", role: "Product Designer", reason: "Stalled · Interview", tone: "warn", score: 76 },
-  { name: "Chloe Ferreira", role: "Data Analyst", reason: "Awaiting stage", tone: "neutral", score: 68 },
+  { name: "Chloe Ferreira", role: "Care Assistant", reason: "Awaiting stage", tone: "neutral", score: 68 },
+];
+
+const DASH_ROLES = [
+  { title: "Warehouse Operative", client: "Northgate Logistics", candidates: 38, top: 88, status: "Open" },
+  { title: "Senior Software Engineer", client: "Brightline", candidates: 24, top: 94, status: "Interviewing" },
+  { title: "Care Assistant", client: "Meadowview Care", candidates: 17, top: 91, status: "Open" },
+  { title: "Sales Executive", client: "Corwin Group", candidates: 12, top: 82, status: "Open" },
 ];
 
 const DASH_TONES = {
@@ -399,8 +407,71 @@ function DashboardPreview() {
             </ul>
           </div>
         </div>
+
+        {/* Open roles - the jobs list the real dashboard leads with */}
+        <div className="mt-5">
+          <p className="text-[9px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
+          <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-[9.5px] font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
+              <span>Role</span>
+              <span className="text-right">Candidates</span>
+              <span className="text-right">Top</span>
+              <span className="hidden sm:block text-right">Status</span>
+            </div>
+            {DASH_ROLES.map((r, i) => (
+              <div
+                key={r.title}
+                className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 items-center px-3 py-2"
+                style={{
+                  borderTop: "1px solid var(--border-soft)",
+                  opacity: live ? 1 : 0,
+                  transition: `opacity 0.5s ${EASE} ${600 + i * 90}ms`,
+                }}
+              >
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
+                  <span className="block text-[10px] truncate" style={{ color: "var(--ink-faint)" }}>{r.client}</span>
+                </span>
+                <span className="text-[11px] tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-soft)" }}>{r.candidates}</span>
+                <span className="text-[11px] font-semibold tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(r.top) }}>{r.top}</span>
+                <span className="hidden sm:block text-right">
+                  <span
+                    className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                    style={r.status === "Open" ? { background: "var(--mint)", color: "var(--forest)" } : { background: "#fff8e6", color: "#92620f" }}
+                  >
+                    {r.status}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+/* ── Example analysis - a full report on three very different roles ───── */
+
+function AnalysisExampleSection() {
+  return (
+    <section id="example" className="max-w-[1100px] mx-auto px-6 py-24">
+      <Reveal>
+        <div className="text-center mb-10">
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>See a real analysis</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Not just a score - the reasons behind it
+          </h2>
+          <p className="text-[15px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+            Every candidate gets a report like this: how they meet each requirement, the line in their CV that proves it,
+            what still needs checking, and what to ask at interview. Warehouse floor or boardroom.
+          </p>
+        </div>
+      </Reveal>
+      <Reveal>
+        <AnalysisExample />
+      </Reveal>
+    </section>
   );
 }
 
@@ -1254,6 +1325,9 @@ export default function LandingPage() {
 
         {/* ── Product workflow (interactive) ──────────────────────────────── */}
         <ProductWorkflowSection />
+
+        {/* ── Example analysis report ─────────────────────────────────────── */}
+        <AnalysisExampleSection />
 
         {/* ── Built for recruiters + ROI ───────────────────────────────────── */}
         <BenefitsSection />
