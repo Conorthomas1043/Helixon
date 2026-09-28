@@ -1,19 +1,11 @@
 "use client";
 
-/* ------------------------------------------------------------------------
- * ASSUMPTIONS
- * ------------------------------------------------------------------------
- * - Route: /dashboard/team. Not previously linked from DashboardNav - a
- *   "Team" tab was added there so this page is reachable; drop that tab if
- *   this project already has a different team/settings surface.
- * - "Recruiter" here means anyone in RECRUITERS in lib/mock-data.js,
- *   without a distinct permissions/role system - see that file's
- *   `role: "manager" | "recruiter"` field, which isn't used for access
- *   control anywhere yet (per the brief: don't build permissions gating
- *   that doesn't have a real auth model to hang off).
- * - "Overdue" mirrors the same rule used on the candidate profile page:
- *   nextAction.dueAt in the past and not completed.
- * ---------------------------------------------------------------------- */
+// /dashboard/team - the agency's members (profiles sharing its agency_id)
+// with their workload, plus Agency-plan seat management backed by a Clerk
+// Organization (lib/clerk-org.js). Only the workspace owner ("org:admin")
+// can invite, cancel invites or remove people - the API enforces that, and
+// this page hides those controls from everyone else. "Overdue" mirrors the
+// candidate profile page: nextAction.dueAt in the past and not completed.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -29,40 +21,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Every state is shown - it used to render nothing at all unless the seat
 // lookup succeeded, so an Individual-plan account or any server error just
 // left the page with no way to add anyone and no hint why.
-function TeamInvitePanel() {
-  const [usage, setUsage] = useState(null);
-  const [state, setState] = useState("loading"); // loading | ready | upgrade | error
-  const [loadError, setLoadError] = useState("");
+function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removingId }) {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState(null);
-
-  const load = useCallback(() => {
-    getTeamSeatUsage()
-      .then(({ status, data }) => {
-        if (status === 403) {
-          setState("upgrade");
-          return;
-        }
-        if (status !== 200 || !data) {
-          setLoadError(data?.error || "Couldn't load your team seats.");
-          setState("error");
-          return;
-        }
-        setUsage(data);
-        setState("ready");
-      })
-      .catch(() => {
-        setLoadError("Couldn't reach the server. Check your connection.");
-        setState("error");
-      });
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const load = reload;
 
   async function handleInvite(e) {
     e.preventDefault();
@@ -153,7 +118,7 @@ function TeamInvitePanel() {
         </div>
         <button
           type="button"
-          onClick={() => { setState("loading"); load(); }}
+          onClick={load}
           className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
@@ -165,14 +130,18 @@ function TeamInvitePanel() {
 
   const full = usage.remaining <= 0;
   const pct = Math.min(100, Math.round((usage.used / usage.limit) * 100));
+  const canManage = usage.canManage === true;
+  const outside = usage.outsideMembers || [];
 
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <p className="text-sm font-semibold" style={{ color: INK }}>Add a team member</p>
+          <p className="text-sm font-semibold" style={{ color: INK }}>{canManage ? "Add a team member" : "Team seats"}</p>
           <p className="text-[12.5px] mt-0.5" style={{ color: INK_MUTED }}>
-            They&apos;ll get an email with a link to join your workspace.
+            {canManage
+              ? "They'll get an email with a link to join your workspace."
+              : "Only the workspace owner can invite or remove people."}
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -185,6 +154,7 @@ function TeamInvitePanel() {
         </div>
       </div>
 
+      {canManage && (
       <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
@@ -205,8 +175,9 @@ function TeamInvitePanel() {
           {sending ? "Sending…" : "Send invite"}
         </button>
       </form>
+      )}
 
-      {full && (
+      {canManage && full && (
         <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>
           All {usage.limit} seats are in use or pending. Cancel a pending invite or remove someone to free a seat.
         </p>
@@ -230,6 +201,7 @@ function TeamInvitePanel() {
                     </span>
                   )}
                 </span>
+                {canManage && (
                 <span className="flex items-center gap-3 shrink-0">
                   <button
                     type="button"
@@ -250,6 +222,34 @@ function TeamInvitePanel() {
                     {busyId === inv.id ? "Working…" : "Cancel"}
                   </button>
                 </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {canManage && outside.length > 0 && (
+        <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+            Holding a seat elsewhere
+          </p>
+          <p className="text-[12px] mb-2" style={{ color: INK_MUTED }}>
+            These people accepted an invite but already have their own Helixon workspace, so they aren&apos;t in yours. They still use a seat.
+          </p>
+          <ul className="space-y-1">
+            {outside.map((m) => (
+              <li key={m.userId} className="flex items-center justify-between gap-3 text-[13px] py-1.5">
+                <span className="min-w-0 block truncate" style={{ color: INK }}>{m.name || m.email || "Unknown user"}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveSeat({ id: m.userId, name: m.name || m.email || "this person" })}
+                  disabled={removingId === m.userId}
+                  className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                  style={{ color: INK_FAINT }}
+                >
+                  {removingId === m.userId ? "Removing…" : "Free seat"}
+                </button>
               </li>
             ))}
           </ul>
@@ -294,7 +294,7 @@ function RecruiterCard({ recruiter, canRemove, removing, onRemove }) {
             {recruiter.name}
           </p>
           <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
-            {recruiter.role === "manager" ? "Manager" : "Recruiter"}
+            {recruiter.role === "owner" ? "Owner" : "Member"}
           </p>
         </div>
         {recruiter.overdue > 0 && (
@@ -389,6 +389,40 @@ export default function TeamPage() {
   const [removingId, setRemovingId] = useState(null);
   const [removeError, setRemoveError] = useState("");
 
+  // Seat usage lives here, not inside the invite panel, so removing someone
+  // refreshes the "x of 5 seats" counter too - it used to stay stale until
+  // a full page reload.
+  const [usage, setUsage] = useState(null);
+  const [usageState, setUsageState] = useState("loading"); // loading | ready | upgrade | error
+  const [usageError, setUsageError] = useState("");
+
+  const loadUsage = useCallback(() => {
+    getTeamSeatUsage()
+      .then(({ status, data }) => {
+        if (status === 403) {
+          setUsageState("upgrade");
+          return;
+        }
+        if (status !== 200 || !data) {
+          setUsageError(data?.error || "Couldn't load your team seats.");
+          setUsageState("error");
+          return;
+        }
+        setUsage(data);
+        setUsageState("ready");
+      })
+      .catch(() => {
+        setUsageError("Couldn't reach the server. Check your connection.");
+        setUsageState("error");
+      });
+  }, []);
+
+  useEffect(() => {
+    loadUsage();
+  }, [loadUsage]);
+
+  const canManage = usageState === "ready" && usage?.canManage === true;
+
   useEffect(() => {
     let cancelled = false;
     fetchRecruiters()
@@ -419,6 +453,7 @@ export default function TeamPage() {
     try {
       await removeTeammate(recruiter.id);
       retry();
+      loadUsage();
     } catch (err) {
       setRemoveError(err.message || "Couldn't remove that team member.");
     } finally {
@@ -457,7 +492,14 @@ export default function TeamPage() {
           </Link>
         </header>
 
-        <TeamInvitePanel />
+        <TeamInvitePanel
+          usage={usage}
+          state={usageState}
+          loadError={usageError}
+          reload={loadUsage}
+          onRemoveSeat={handleRemove}
+          removingId={removingId}
+        />
 
         {removeError && (
           <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
@@ -471,7 +513,7 @@ export default function TeamPage() {
               <RecruiterCard
                 key={r.id}
                 recruiter={r}
-                canRemove={recruiters.length > 1 && r.id !== user?.id}
+                canRemove={canManage && r.id !== user?.id && r.role !== "owner"}
                 removing={removingId === r.id}
                 onRemove={handleRemove}
               />

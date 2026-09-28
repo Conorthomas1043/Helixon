@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { listOrgMembers } from "@/lib/clerk-org";
 
-// "Team" is the set of profiles sharing an agency_id - there's no invite
-// flow or separate `recruiters` table in the live Clerk-based signup path
-// (see lib/create-profile.js), so today that's typically just the one
-// agency owner. This still generalises correctly if multi-seat accounts
-// get added later, since it's driven by agency_id rather than a fixed list.
+// "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
+// join through a Clerk Organization invite (app/api/team/invite), and the
+// Clerk webhook attaches their profile to the agency. Each member's role
+// ("owner" / "member") comes from that org.
+async function rolesFor(agencyId, profiles) {
+  const { data: agency } = await supabase.from("agencies").select("clerk_org_id").eq("id", agencyId).maybeSingle();
+  // No org yet: nobody has been invited, so a lone member is the owner.
+  if (!agency?.clerk_org_id) {
+    return new Map(profiles.length === 1 ? [[profiles[0].clerk_user_id, "owner"]] : []);
+  }
+  const members = await listOrgMembers(agency.clerk_org_id);
+  return new Map(members.map((m) => [m.userId, m.role === "org:admin" ? "owner" : "member"]));
+}
+
 export async function GET() {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
@@ -28,6 +38,15 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to load team" }, { status: 500 });
   }
 
+  // Roles are display-only here (the invite route enforces who can manage
+  // the team), so a Clerk hiccup shouldn't take the whole list down.
+  let roles = new Map();
+  try {
+    roles = await rolesFor(agencyId, members ?? []);
+  } catch (err) {
+    console.error("[team] Failed to load member roles:", err.message);
+  }
+
   const now = Date.now();
 
   return NextResponse.json(
@@ -37,6 +56,7 @@ export async function GET() {
       return {
         id: m.clerk_user_id,
         name: recruiterDisplayName(m) || "Unnamed",
+        role: roles.get(m.clerk_user_id) || null,
         activeCandidates: completed.filter((c) => c.stage !== "Placed" && c.stage !== "Rejected").length,
         awaitingReview: completed.filter((c) => c.stage === "Screened" || c.stage === null).length,
         interviewing: completed.filter((c) => c.stage === "Interview").length,

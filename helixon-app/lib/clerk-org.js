@@ -33,10 +33,15 @@ export async function ensureAgencyOrg({ agencyId, agencyName, ownerClerkUserId }
     createdBy: ownerClerkUserId,
   });
 
-  const { error: updateError } = await supabase
+  // Only link if nobody else did in the meantime: two first invites sent at
+  // once both saw clerk_org_id null and each created an org, and the last
+  // write won - leaving the other org (and any invite sent into it) orphaned.
+  const { data: linked, error: updateError } = await supabase
     .from("agencies")
     .update({ clerk_org_id: org.id })
-    .eq("id", agencyId);
+    .eq("id", agencyId)
+    .is("clerk_org_id", null)
+    .select("id");
 
   if (updateError) {
     // The org now exists in Clerk but isn't linked - better than losing
@@ -46,7 +51,36 @@ export async function ensureAgencyOrg({ agencyId, agencyName, ownerClerkUserId }
     throw new Error(`Organization created but failed to link to agency: ${updateError.message}`);
   }
 
+  if (!linked?.length) {
+    // Lost the race - use the org the other request linked, drop ours.
+    await client.organizations.deleteOrganization(org.id).catch((err) => {
+      console.error(`[clerk-org] Failed to delete duplicate org ${org.id}:`, err.message);
+    });
+    const { data: winner, error: rereadError } = await supabase
+      .from("agencies")
+      .select("clerk_org_id")
+      .eq("id", agencyId)
+      .maybeSingle();
+    if (rereadError || !winner?.clerk_org_id) {
+      throw new Error("Couldn't resolve the agency's team workspace.");
+    }
+    return winner.clerk_org_id;
+  }
+
   return org.id;
+}
+
+// Everyone in the org: Clerk user id, role, and whatever name/email Clerk
+// has for them.
+export async function listOrgMembers(orgId) {
+  const client = await clerkClient();
+  const memberships = await client.organizations.getOrganizationMembershipList({ organizationId: orgId, limit: 100 });
+  return (memberships.data ?? []).map((m) => ({
+    userId: m.publicUserData?.userId ?? null,
+    role: m.role,
+    name: [m.publicUserData?.firstName, m.publicUserData?.lastName].filter(Boolean).join(" ") || null,
+    identifier: m.publicUserData?.identifier ?? null,
+  }));
 }
 
 // Members already in the org, plus invitations still pending, both count
@@ -54,12 +88,12 @@ export async function ensureAgencyOrg({ agencyId, agencyName, ownerClerkUserId }
 // accepted yet, and still send a 6th.
 export async function getOrgSeatUsage(orgId) {
   const client = await clerkClient();
-  const [memberships, invitations] = await Promise.all([
-    client.organizations.getOrganizationMembershipList({ organizationId: orgId, limit: 100 }),
+  const [members, invitations] = await Promise.all([
+    listOrgMembers(orgId),
     client.organizations.getOrganizationInvitationList({ organizationId: orgId, status: ["pending"], limit: 100 }),
   ]);
 
-  const memberCount = memberships.totalCount ?? memberships.data?.length ?? 0;
+  const memberCount = members.length;
   const pendingInvites = (invitations.data ?? []).map((inv) => ({
     id: inv.id,
     email: inv.emailAddress,
@@ -68,6 +102,7 @@ export async function getOrgSeatUsage(orgId) {
   const used = memberCount + pendingInvites.length;
 
   return {
+    members,
     memberCount,
     pendingCount: pendingInvites.length,
     pendingInvites,
@@ -117,10 +152,8 @@ export async function revokeAgencyOrgInvitation({ orgId, invitationId, requestin
 // "org:admin" - the owner - exists per org by construction. Returns null
 // if the given user isn't a member of this org at all.
 export async function getOrgMemberRole({ orgId, userId }) {
-  const client = await clerkClient();
-  const memberships = await client.organizations.getOrganizationMembershipList({ organizationId: orgId, limit: 100 });
-  const match = (memberships.data ?? []).find((m) => m.publicUserData?.userId === userId);
-  return match?.role ?? null;
+  const members = await listOrgMembers(orgId);
+  return members.find((m) => m.userId === userId)?.role ?? null;
 }
 
 // Removes an existing (accepted) member from the org, freeing the seat

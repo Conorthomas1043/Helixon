@@ -51,8 +51,12 @@ export async function GET() {
 
   // No org yet means nobody has been invited yet - report a clean "1 used"
   // (the owner) rather than creating an org just to answer a GET request.
+  // Nobody can have joined without an org, so whoever is asking is the
+  // owner, and the first invite will make them the org's admin.
   if (!agency?.clerk_org_id) {
     return NextResponse.json({
+      canManage: true,
+      outsideMembers: [],
       memberCount: 1,
       pendingCount: 0,
       pendingInvites: [],
@@ -63,8 +67,28 @@ export async function GET() {
   }
 
   try {
-    const usage = await getOrgSeatUsage(agency.clerk_org_id);
-    return NextResponse.json(usage);
+    const [{ members, ...usage }, { data: profiles, error: profilesError }] = await Promise.all([
+      getOrgSeatUsage(agency.clerk_org_id),
+      supabase.from("profiles").select("clerk_user_id").eq("agency_id", auth.agencyId),
+    ]);
+    if (profilesError) throw new Error(profilesError.message);
+
+    // Seat-holders who aren't actually in this workspace - typically someone
+    // who already had their own paid agency when they accepted the invite
+    // (the Clerk webhook deliberately doesn't move them). They count against
+    // the seat cap but never appear on the team list, so list them here or
+    // the owner has no way to see or free those seats.
+    const inWorkspace = new Set((profiles || []).map((p) => p.clerk_user_id));
+    const outsideMembers = members
+      .filter((m) => m.userId && !inWorkspace.has(m.userId))
+      .map((m) => ({ userId: m.userId, name: m.name, email: m.identifier }));
+
+    const viewer = members.find((m) => m.userId === auth.userId);
+    return NextResponse.json({
+      ...usage,
+      canManage: viewer?.role === "org:admin",
+      outsideMembers,
+    });
   } catch (err) {
     console.error("[team/invite] Failed to read seat usage:", err.message);
     return NextResponse.json({ error: "Couldn't load team seat usage." }, { status: 500 });

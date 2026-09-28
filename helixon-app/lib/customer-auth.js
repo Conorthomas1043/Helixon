@@ -71,16 +71,63 @@ export async function getCustomerContext() {
     subscription = data;
   }
 
+  // Paid access belongs to the agency, not the individual: only the owner
+  // who went through checkout has a subscriptions row, so checking just the
+  // caller's own row locked every invited teammate out of screening and
+  // email (402 -> /pricing). Anyone whose agency has an active subscription
+  // on any member's profile counts as subscribed. `subscription` itself
+  // stays the caller's own row - billing management is still owner-only.
+  let hasActiveSubscription = ACTIVE_SUBSCRIPTION_STATUSES.has(
+    subscription?.status
+  );
+
+  if (!hasActiveSubscription && profile?.agency_id) {
+    hasActiveSubscription = await agencyHasActiveSubscription(
+      profile.agency_id
+    );
+  }
+
   return {
     user: { id: userId },
     userId,
     agencyId: profile?.agency_id || null,
     profile: profile || null,
     subscription,
-    hasActiveSubscription: ACTIVE_SUBSCRIPTION_STATUSES.has(
-      subscription?.status
-    ),
+    hasActiveSubscription,
   };
+}
+
+async function agencyHasActiveSubscription(agencyId) {
+  const { data: members, error: membersError } =
+    await supabase
+      .from("profiles")
+      .select("id")
+      .eq("agency_id", agencyId);
+
+  if (membersError) {
+    throw new Error(
+      `Could not load your agency: ${membersError.message}`
+    );
+  }
+
+  const memberIds = (members || []).map((m) => m.id);
+  if (memberIds.length === 0) return false;
+
+  const { data: subs, error: subsError } =
+    await supabase
+      .from("subscriptions")
+      .select("id")
+      .in("user_id", memberIds)
+      .in("status", [...ACTIVE_SUBSCRIPTION_STATUSES])
+      .limit(1);
+
+  if (subsError) {
+    throw new Error(
+      `Could not load subscription: ${subsError.message}`
+    );
+  }
+
+  return (subs || []).length > 0;
 }
 
 export async function requireCustomerContext({
