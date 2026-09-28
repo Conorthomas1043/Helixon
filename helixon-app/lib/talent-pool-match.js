@@ -22,13 +22,19 @@ function skillName(s) {
   return typeof s === "string" ? s : s?.name || s?.skill || "";
 }
 
+// A candidate's searchable text, prepared once - matching one person against
+// many jobs (the pool's "best open job") then doesn't redo it per job.
+export function candidateHaystack(candidate) {
+  return normalise([candidate?.cvText, (candidate?.skills || []).map(skillName).join(" "), candidate?.currentTitle].join(" "));
+}
+
 // job: { requiredSkills, preferredSkills, minYearsExperience, title }
-// candidate: { skills, cvText, yearsExperience, currentTitle }
+// candidate: { skills, cvText, yearsExperience, currentTitle, haystack? }
 // Returns { fit: 0-100 | null, matched, missing, preferredMatched, experienceOk }
 export function quickFit(job, candidate) {
   const required = (job?.requiredSkills || []).map(skillName).filter(Boolean);
   const preferred = (job?.preferredSkills || []).map(skillName).filter(Boolean);
-  const text = normalise([candidate?.cvText, (candidate?.skills || []).map(skillName).join(" "), candidate?.currentTitle].join(" "));
+  const text = candidate?.haystack ?? candidateHaystack(candidate);
 
   const matched = required.filter((s) => mentionsSkill(text, s));
   const missing = required.filter((s) => !matched.includes(s));

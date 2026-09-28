@@ -112,7 +112,7 @@ export async function POST(request) {
     if (roots.length) {
       let query = supabase
         .from("candidates")
-        .update(adding ? { talent_pool_at: now, talent_pool_by: actor } : { talent_pool_at: null, talent_pool_by: null, talent_pool_note: null })
+        .update(adding ? { talent_pool_at: now, talent_pool_by: actor } : { talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null })
         .eq("agency_id", agencyId)
         .in("id", roots);
       // Saving again mustn't reset when (or by whom) someone was first saved.

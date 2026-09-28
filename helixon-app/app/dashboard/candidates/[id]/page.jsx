@@ -23,6 +23,7 @@ import {
   addCandidateNote,
   getJobs,
   saveToTalentPool,
+  updateTalentPoolEntry,
   removeFromTalentPool,
   rescreenCandidate,
   getTags,
@@ -1340,7 +1341,7 @@ function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote 
  * against another job from the CV already on file (lib/rescreen.js).
  * ---------------------------------------------------------------------- */
 
-function TalentPoolPanel({ candidate, jobs, onSave, onRemove, onRescreen }) {
+function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescreen }) {
   const [note, setNote] = useState("");
   const [noting, setNoting] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -1385,6 +1386,32 @@ function TalentPoolPanel({ candidate, jobs, onSave, onRemove, onRescreen }) {
             {pool.savedBy ? ` by ${pool.savedBy}` : ""}
           </p>
           {pool.note && <p className="text-[12.5px] italic mt-1.5" style={{ color: INK }}>“{pool.note}”</p>}
+          <div className="grid grid-cols-2 gap-2 mt-2.5">
+            <label className="text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+              Availability
+              <select
+                value={pool.status || ""}
+                onChange={(e) => onUpdate({ status: e.target.value || null })}
+                className="mt-1 w-full text-[12px] font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              >
+                <option value="">Unknown</option>
+                <option value="available">Available</option>
+                <option value="open">Open to offers</option>
+                <option value="not_looking">Not looking</option>
+              </select>
+            </label>
+            <label className="text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+              Check in
+              <input
+                type="date"
+                value={pool.checkIn || ""}
+                onChange={(e) => onUpdate({ checkIn: e.target.value || null })}
+                className="mt-1 w-full text-[12px] font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+            </label>
+          </div>
           <button
             type="button"
             onClick={async () => {
@@ -2030,6 +2057,14 @@ export default function CandidateProfilePage({ params }) {
     [id, failed, toast, refreshActivity]
   );
 
+  const handleUpdatePool = useCallback(
+    async (fields) => {
+      const talentPool = await updateTalentPoolEntry(id, fields).catch((err) => failed(err, "Couldn't save that."));
+      if (talentPool) setCandidate((c) => (c ? { ...c, talentPool } : c));
+    },
+    [id, failed]
+  );
+
   const handleRemoveFromPool = useCallback(async () => {
     const ok = await removeFromTalentPool(id).catch((err) => failed(err, "Couldn't remove them from the pool."));
     if (!ok) return;
@@ -2134,6 +2169,7 @@ export default function CandidateProfilePage({ params }) {
                   candidate={candidate}
                   jobs={jobs}
                   onSave={handleSaveToPool}
+                  onUpdate={handleUpdatePool}
                   onRemove={handleRemoveFromPool}
                   onRescreen={handleRescreen}
                 />

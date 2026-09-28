@@ -85,7 +85,7 @@ export async function GET(request, { params }) {
   const [{ data: root }, { data: related }] = await Promise.all([
     rootId === candidate.id
       ? { data: candidate }
-      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
+      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
     supabase
       .from("candidates")
       .select("id, job_id, match_score, stage, created_at, jobs(title, client)")
@@ -150,7 +150,13 @@ export async function GET(request, { params }) {
       : null,
     tags: candidate.tags ?? [],
     talentPool: root?.talent_pool_at
-      ? { savedAt: root.talent_pool_at, savedBy: root.talent_pool_by, note: root.talent_pool_note }
+      ? {
+          savedAt: root.talent_pool_at,
+          savedBy: root.talent_pool_by,
+          note: root.talent_pool_note,
+          status: root.talent_pool_status,
+          checkIn: root.talent_pool_check_in,
+        }
       : null,
     otherRoles,
     nextAction: candidate.next_action,

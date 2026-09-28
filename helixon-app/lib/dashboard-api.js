@@ -326,11 +326,19 @@ export async function addCandidateNote(id, body) {
 }
 
 // Talent pool - see app/api/talent-pool and app/api/candidates/[id]/talent-pool.
-export async function getTalentPool({ search = "", jobId = "" } = {}) {
-  const params = new URLSearchParams();
-  if (search) params.set("search", search);
-  if (jobId) params.set("jobId", jobId);
-  return apiFetch(`/api/talent-pool?${params.toString()}`);
+export async function getTalentPool({ jobId = "" } = {}) {
+  return apiFetch(`/api/talent-pool${jobId ? `?jobId=${encodeURIComponent(jobId)}` : ""}`);
+}
+
+// fields: { note?, status?: "available" | "open" | "not_looking" | null, checkIn?: "YYYY-MM-DD" | null }
+export async function updateTalentPoolEntry(id, fields) {
+  return (
+    await apiFetch(`/api/candidates/${id}/talent-pool`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields),
+    })
+  ).talentPool;
 }
 
 export async function saveToTalentPool(id, note = "") {
