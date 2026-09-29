@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader, KpiCard, Avatar, Drawer } from "../_shared/ui";
 import { DataTable } from "../_shared/datatable";
 import { useAdminUsers } from "../_shared/hooks";
 import { confirmAction, promptText } from "../_shared/modal";
-import { formatDate, timeAgo } from "../_shared/data";
+import { toast } from "../_shared/toast";
+import { formatDate, formatDateTime, timeAgo, useAdminData } from "../_shared/data";
 import { Icon } from "../_shared/icons";
+import { downloadCsv } from "@/lib/csv";
 
 const PLAN_LABEL = { individual: "Individual", agency: "Agency", solo: "Individual" };
 
@@ -36,7 +38,87 @@ function primaryAction(user) {
   return null;
 }
 
+const DEMO_LENGTHS = [
+  [0, "No end date"],
+  [7, "7 days"],
+  [14, "14 days"],
+  [30, "30 days"],
+];
+const BAN_LENGTHS = [
+  [0, "Until unbanned"],
+  [1, "1 day"],
+  [7, "7 days"],
+  [30, "30 days"],
+];
+
+// "Banned" with its end date when it has one. Clerk bans have no end of
+// their own (a far-future marker); timed ones carry banEndsAt, and legacy
+// accounts have a real banned_until.
+function banLabel(user) {
+  if (user.banEndsAt) return `Banned until ${formatDateTime(user.banEndsAt)}`;
+  const until = Date.parse(user.bannedUntil);
+  if (Number.isFinite(until) && new Date(until).getUTCFullYear() < 2100) return `Banned until ${formatDateTime(user.bannedUntil)}`;
+  return "Banned";
+}
+
+const HISTORY_LABELS = {
+  user_ban: "Banned",
+  user_unban: "Unbanned",
+  user_reset_password: "Password reset",
+  user_update_profile: "Profile edited",
+  user_set_agency: "Agency changed",
+  user_provision_agency: "Agency set up",
+  user_grant_demo_access: "Demo access granted",
+  user_revoke_demo_access: "Demo access revoked",
+  user_revoke_sessions: "Signed out everywhere",
+  user_confirm_email: "Email confirmed",
+};
+
+function UserHistory({ userId }) {
+  const { data, loading } = useAdminData(`/api/admin/users?history=${encodeURIComponent(userId)}`);
+  const rows = data?.history || [];
+  if (loading && !data) return <div className="skeleton" style={{ height: 40 }} />;
+  if (!rows.length) return <div className="faint" style={{ fontSize: 12.5 }}>No admin changes recorded.</div>;
+  return (
+    <div className="mini-list">
+      {rows.map((h) => (
+        <div className="mini-row" key={h.id}>
+          <div style={{ minWidth: 0 }}>
+            <div>{HISTORY_LABELS[h.action] || h.action}{h.reason ? ` - ${h.reason}` : ""}</div>
+            <div className="faint" style={{ fontSize: 12 }}>by {h.admin} · {formatDateTime(h.at)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Move a user to another agency (or detach them). Loads the agency list
+// only when the drawer is open.
+function AgencyPicker({ user, busy, run }) {
+  const { data } = useAdminData("/api/admin/agencies");
+  const [value, setValue] = useState(null);
+  const agencies = data?.agencies || [];
+  const current = user.agency?.id || "";
+  const selected = value ?? current;
+  return (
+    <div className="inline-form">
+      <select className="select-input" value={selected} onChange={(e) => setValue(e.target.value)} aria-label="Agency" style={{ flex: 1, minWidth: 0 }}>
+        <option value="">No agency</option>
+        {agencies.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+        {current && !agencies.some((a) => a.id === current) && <option value={current}>{user.agency?.name || current}</option>}
+      </select>
+      <button className="btn small" disabled={busy || selected === current} onClick={() => run("set_agency", user, { agencyId: selected || null }).then(() => setValue(null))}>
+        Move
+      </button>
+    </div>
+  );
+}
+
 function UserDrawer({ user, busy, onClose, run }) {
+  const [demoPlan, setDemoPlan] = useState("agency");
+  const [demoDays, setDemoDays] = useState(14);
+  const [banDays, setBanDays] = useState(0);
   if (!user) return <Drawer open={false} onClose={onClose} />;
   const name = displayName(user);
   const clerk = user.provider === "clerk";
@@ -61,6 +143,11 @@ function UserDrawer({ user, busy, onClose, run }) {
               "None"
             )}
             {user.isTestUser && <span className="pill warn" style={{ marginLeft: 6 }}>{user.testLabel || "Test"}</span>}
+            {user.subscription?.demoExpiresAt && (
+              <div className="faint" style={{ fontSize: 12, marginTop: 4 }}>
+                Demo access {user.subscription.status === "active" ? "ends" : "ended"} {formatDateTime(user.subscription.demoExpiresAt)}
+              </div>
+            )}
           </dd>
           <dt>Signed up</dt>
           <dd>{formatDate(user.createdAt)}</dd>
@@ -68,6 +155,12 @@ function UserDrawer({ user, busy, onClose, run }) {
           <dd>{user.lastSignInAt ? timeAgo(user.lastSignInAt) : "Never"}</dd>
           <dt>Email</dt>
           <dd>{user.emailConfirmedAt ? "Verified" : <span className="pill warn">Unverified</span>}</dd>
+          {user.bannedUntil && (
+            <>
+              <dt>Banned</dt>
+              <dd><span className="pill bad">{banLabel(user)}</span>{user.banReason ? <span className="muted"> - {user.banReason}</span> : null}</dd>
+            </>
+          )}
           <dt>ID</dt>
           <dd className="mono" style={{ wordBreak: "break-all" }}>{user.id}</dd>
         </dl>
@@ -76,9 +169,22 @@ function UserDrawer({ user, busy, onClose, run }) {
       {primary && (
         <section className="drawer-section">
           <h3>Suggested</h3>
-          <button className={`btn ${primary.primary ? "primary" : ""}`} disabled={busy} onClick={() => run(primary.key, user)}>
-            {primary.label}
-          </button>
+          <div className="inline-form">
+            {primary.key === "grant_demo_access" && (
+              <>
+                <select className="select-input" value={demoPlan} onChange={(e) => setDemoPlan(e.target.value)} aria-label="Demo plan">
+                  <option value="agency">Agency plan</option>
+                  <option value="individual">Individual plan</option>
+                </select>
+                <select className="select-input" value={demoDays} onChange={(e) => setDemoDays(Number(e.target.value))} aria-label="How long">
+                  {DEMO_LENGTHS.map(([days, label]) => <option key={days} value={days}>{label}</option>)}
+                </select>
+              </>
+            )}
+            <button className={`btn ${primary.primary ? "primary" : ""}`} disabled={busy} onClick={() => run(primary.key, user, { plan: demoPlan, days: demoDays })}>
+              {primary.label}
+            </button>
+          </div>
           <p className="faint" style={{ marginTop: 8 }}>
             {primary.key === "provision"
               ? "Creates their agency workspace so the app stops showing a setup screen. Doesn't create a subscription."
@@ -101,6 +207,11 @@ function UserDrawer({ user, busy, onClose, run }) {
               Revoke demo access
             </button>
           )}
+          {clerk && (
+            <button className="btn small" disabled={busy} onClick={() => run("revoke_sessions", user)}>
+              Sign out everywhere
+            </button>
+          )}
           {!clerk && !user.emailConfirmedAt && (
             <button className="btn small" disabled={busy} onClick={() => run("confirm_email", user)}>
               Confirm email
@@ -109,12 +220,32 @@ function UserDrawer({ user, busy, onClose, run }) {
         </div>
       </section>
 
+      {clerk && user.agency !== undefined && (
+        <section className="drawer-section">
+          <h3>Agency</h3>
+          <AgencyPicker user={user} busy={busy} run={run} />
+          <p className="faint" style={{ marginTop: 8, fontSize: 12 }}>Moving someone changes which workspace, candidates and plan they see. Their own subscription (if any) moves with them.</p>
+        </section>
+      )}
+
+      <section className="drawer-section">
+        <h3>History</h3>
+        <UserHistory userId={user.id} />
+      </section>
+
       <section className="drawer-section">
         <h3>Danger zone</h3>
         <div className="actions" style={{ flexWrap: "wrap", gap: 8 }}>
-          <button className="btn small" disabled={busy} onClick={() => run(user.bannedUntil ? "unban" : "ban", user)}>
-            {user.bannedUntil ? "Unban" : "Ban"}
-          </button>
+          {user.bannedUntil ? (
+            <button className="btn small" disabled={busy} onClick={() => run("unban", user)}>Unban</button>
+          ) : (
+            <span className="inline-form">
+              <select className="select-input" value={banDays} onChange={(e) => setBanDays(Number(e.target.value))} aria-label="Ban length">
+                {BAN_LENGTHS.map(([days, label]) => <option key={days} value={days}>{label}</option>)}
+              </select>
+              <button className="btn small" disabled={busy} onClick={() => run("ban", user, { days: banDays })}>Ban</button>
+            </span>
+          )}
           <button className="btn small danger" disabled={busy} onClick={() => run("delete", user)}>
             <Icon name="trash" /> Delete user
           </button>
@@ -124,18 +255,81 @@ function UserDrawer({ user, busy, onClose, run }) {
   );
 }
 
+function exportUsers(rows) {
+  downloadCsv(
+    `helixon-users-${new Date().toISOString().slice(0, 10)}.csv`,
+    rows.map((u) => ({
+      email: u.email,
+      name: displayName(u),
+      agency: u.agency?.name || "",
+      plan: u.subscription?.plan || "",
+      subscription_status: u.subscription?.status || "",
+      demo: u.isTestUser ? "yes" : "",
+      banned: u.bannedUntil ? "yes" : "",
+      email_verified: u.emailConfirmedAt ? "yes" : "no",
+      signed_up: u.createdAt || "",
+      last_sign_in: u.lastSignInAt || "",
+      type: u.provider,
+      id: u.id,
+    })),
+  );
+}
+
 export default function UsersPage() {
-  const { users, clerkWarning, searchInput, setSearchInput, error, loading, busy, reload, action, remove, resetPassword } = useAdminUsers();
+  const { users, clerkWarning, searchInput, setSearchInput, error, loading, busy, reload, action, bulk, remove, resetPassword } = useAdminUsers();
   const [filter, setFilter] = useState("all");
   const [selectedId, setSelectedId] = useState(null);
+  // Accounts ticked for a bulk action.
+  const [picked, setPicked] = useState(() => new Set());
+
+  // ?q=... (links from an agency's member list) starts the page searched
+  // and opens that account. Read after mount so the server render matches.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (!q) return undefined;
+    const timer = setTimeout(() => {
+      setSearchInput(q);
+      setSelectedId(q);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [setSearchInput]);
 
   const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f.key, users.filter(f.test).length])), [users]);
   const rows = useMemo(() => users.filter(FILTERS.find((f) => f.key === filter).test), [users, filter]);
   const selected = users.find((u) => u.id === selectedId) || null;
+  const pickedUsers = users.filter((u) => picked.has(u.id));
+
+  function togglePick(id) {
+    setPicked((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function runBulk(key) {
+    const n = pickedUsers.length;
+    const clerkIds = pickedUsers.filter((u) => u.provider === "clerk").map((u) => u.id);
+    const ids = pickedUsers.map((u) => u.id);
+    if (key === "revoke_sessions") {
+      if (!clerkIds.length) return toast.warn("Only Clerk accounts have sessions to sign out.");
+      if (!(await confirmAction(`Sign ${clerkIds.length} account${clerkIds.length === 1 ? "" : "s"} out on every device?`, { title: "Sign out everywhere" }))) return;
+      await bulk(clerkIds, "revoke_sessions");
+    } else if (key === "ban") {
+      const reason = await promptText(`Why are you banning these ${n} accounts? They'll be signed out and unable to sign in until unbanned.`, { defaultValue: "" });
+      if (reason === null || reason === undefined) return;
+      await bulk(ids.filter((id) => !users.find((u) => u.id === id)?.bannedUntil), "ban", { reason: reason.trim() });
+    } else if (key === "unban") {
+      if (!(await confirmAction(`Unban ${n} account${n === 1 ? "" : "s"}?`, { title: "Unban" }))) return;
+      await bulk(ids.filter((id) => users.find((u) => u.id === id)?.bannedUntil), "unban");
+    }
+    setPicked(new Set());
+  }
 
   // Every user action goes through here, so confirmations are consistent
   // (ban used to fire on a single click with no confirmation).
-  async function run(key, user) {
+  async function run(key, user, extra = {}) {
     const who = user.email || displayName(user) || "this user";
     if (key === "provision") {
       const name = await promptText(`Agency name for ${who}:`, { defaultValue: user.firstName ? `${user.firstName}'s agency` : "" });
@@ -148,8 +342,19 @@ export default function UsersPage() {
     } else if (key === "reset_password") {
       await resetPassword(user.id, user.email);
     } else if (key === "ban") {
-      if (await confirmAction(`Ban ${who}? They'll be signed out and unable to sign in until unbanned.`, { title: "Ban user", danger: true })) {
-        await action(user.id, "ban");
+      const length = extra.days ? `for ${extra.days} day${extra.days === 1 ? "" : "s"}` : "until you unban them";
+      const reason = await promptText(`Why are you banning ${who}? They'll be signed out and unable to sign in ${length}.`, { defaultValue: "" });
+      if (reason !== null && reason !== undefined) await action(user.id, "ban", { reason: reason.trim(), days: extra.days || 0 });
+    } else if (key === "grant_demo_access") {
+      await action(user.id, "grant_demo_access", { plan: extra.plan, days: extra.days || 0 });
+    } else if (key === "set_agency") {
+      const target = extra.agencyId ? "another agency" : "no agency";
+      if (await confirmAction(`Move ${who} to ${target}? They'll see that workspace's candidates and plan from their next page load.`, { title: "Change agency" })) {
+        await action(user.id, "set_agency", { agencyId: extra.agencyId });
+      }
+    } else if (key === "revoke_sessions") {
+      if (await confirmAction(`Sign ${who} out on every device? They can sign straight back in.`, { title: "Sign out everywhere" })) {
+        await action(user.id, "revoke_sessions");
       }
     } else if (key === "revoke_demo_access") {
       if (await confirmAction(`Revoke demo access for ${who}? Screening will be locked until they subscribe.`, { title: "Revoke demo access" })) {
@@ -163,6 +368,19 @@ export default function UsersPage() {
   }
 
   const columns = [
+    {
+      key: "pick",
+      label: "",
+      render: (user) => (
+        <input
+          type="checkbox"
+          checked={picked.has(user.id)}
+          onChange={() => togglePick(user.id)}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Select ${user.email || displayName(user) || user.id}`}
+        />
+      ),
+    },
     {
       key: "email",
       label: "User",
@@ -252,7 +470,10 @@ export default function UsersPage() {
   return (
     <>
       <PageHeader title="Users" description="Everyone with a Helixon account. Click a row to manage it.">
-        <div className="muted">{users.length} loaded</div>
+        <div className="muted">{users.length} accounts</div>
+        <button className="btn small" onClick={() => exportUsers(rows)} disabled={!rows.length}>
+          <Icon name="external" /> Export CSV
+        </button>
         <button className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
@@ -296,6 +517,27 @@ export default function UsersPage() {
           ))}
         </div>
       </div>
+
+      {picked.size > 0 ? (
+        <div className="bulk-bar" role="region" aria-label="Bulk actions">
+          <b>{picked.size} selected</b>
+          <button className="btn small" disabled={busy} onClick={() => runBulk("revoke_sessions")}>Sign out everywhere</button>
+          <button className="btn small danger" disabled={busy} onClick={() => runBulk("ban")}>Ban</button>
+          <button className="btn small" disabled={busy} onClick={() => runBulk("unban")}>Unban</button>
+          <button className="btn small" onClick={() => exportUsers(pickedUsers)}>Export selected</button>
+          <button className="btn small ghost" onClick={() => setPicked(new Set())}>Clear</button>
+        </div>
+      ) : (
+        rows.length > 0 && (
+          <div className="faint" style={{ fontSize: 12, marginBottom: 8 }}>
+            Tick accounts for bulk actions, or{" "}
+            <button className="panel-link" style={{ marginLeft: 0 }} onClick={() => setPicked(new Set(rows.map((u) => u.id)))}>
+              select all {rows.length} shown
+            </button>
+            .
+          </div>
+        )
+      )}
 
       <DataTable
         columns={columns}

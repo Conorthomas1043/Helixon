@@ -79,8 +79,9 @@ export function useAdminTraffic(range, filters = {}) {
     load();
   }, [load]);
 
+  // `hours`: optional block length; omitted/0 = permanent.
   const block = useCallback(
-    async (ip, presetReason) => {
+    async (ip, presetReason, hours = 0) => {
       const reason = presetReason ?? (await promptText(`Reason for blocking ${ip}:`, {
         defaultValue: "Admin block",
       }));
@@ -93,7 +94,7 @@ export function useAdminTraffic(range, filters = {}) {
         const response = await fetch("/api/admin/traffic", {
           method: "POST",
           headers: csrfHeaders({ "content-type": "application/json" }),
-          body: JSON.stringify({ ip, reason }),
+          body: JSON.stringify({ ip, reason, hours }),
         });
 
         const data = await response.json();
@@ -102,7 +103,7 @@ export function useAdminTraffic(range, filters = {}) {
           throw new Error(data.error || "Failed to block IP.");
         }
 
-        toast.success(`${ip} blocked.`);
+        toast.success(hours ? `${ip} blocked for ${hours >= 24 ? `${Math.round(hours / 24)} day(s)` : `${hours} hour(s)`}.` : `${ip} blocked.`);
         await load();
         return true;
       } catch (err) {
@@ -158,6 +159,8 @@ const USER_ACTION_DONE = {
   grant_demo_access: "Demo access granted.",
   revoke_demo_access: "Demo access revoked.",
   confirm_email: "Email confirmed.",
+  revoke_sessions: "Signed out on every device.",
+  set_agency: "Agency changed.",
 };
 
 export function useAdminUsers() {
@@ -174,7 +177,9 @@ export function useAdminUsers() {
 
     try {
       const response = await fetch(
-        `/api/admin/users?perPage=100&search=${encodeURIComponent(search)}`,
+        // No page parameter: the API returns every account, so the counts
+        // and filters here cover everyone.
+        `/api/admin/users?search=${encodeURIComponent(search)}`,
         { cache: "no-store" },
       );
 
@@ -185,7 +190,9 @@ export function useAdminUsers() {
       }
 
       setUsers(data.users || []);
-      setClerkWarning(data.clerkError || "");
+      setClerkWarning(
+        data.clerkError || (data.truncated ? `Showing the newest ${data.users?.length || 0} of ${data.total} accounts - search to find anyone older.` : ""),
+      );
     } catch (err) {
       setError(err?.message || "Failed to load users.");
     } finally {
@@ -296,6 +303,37 @@ export function useAdminUsers() {
     [action],
   );
 
+  // The same action on several accounts, one request at a time (each is
+  // audited separately), with one summary toast and one reload at the end.
+  const bulk = useCallback(
+    async (userIds, actionName, extra = {}) => {
+      setBusy(true);
+      setError("");
+      let done = 0;
+      const failed = [];
+      for (const userId of userIds) {
+        try {
+          const response = await fetch("/api/admin/users", {
+            method: "PATCH",
+            headers: csrfHeaders({ "content-type": "application/json" }),
+            body: JSON.stringify({ userId, action: actionName, ...extra }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || "failed");
+          done += 1;
+        } catch (err) {
+          failed.push(err?.message || "failed");
+        }
+      }
+      if (failed.length) toast.error(`${done} done, ${failed.length} failed (${failed[0]}).`);
+      else toast.success(`${USER_ACTION_DONE[actionName] || "Done."} (${done} account${done === 1 ? "" : "s"})`);
+      await load();
+      setBusy(false);
+      return failed.length === 0;
+    },
+    [load],
+  );
+
   return {
     users,
     clerkWarning,
@@ -306,6 +344,7 @@ export function useAdminUsers() {
     loading,
     reload: load,
     action,
+    bulk,
     remove,
     resetPassword,
   };

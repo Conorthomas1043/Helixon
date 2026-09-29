@@ -17,8 +17,10 @@ function escapeHtml(str = "") {
     .replace(/'/g, "&#39;");
 }
 
-export async function sendFirewallAlert({ outcome, ip, path, method, country, city, userAgent, score, signals }) {
-  const to = process.env.SECURITY_ALERT_EMAIL;
+// `to`: the recipients set on the admin Security page (lib/site-settings.js
+// alertRecipients); falls back to SECURITY_ALERT_EMAIL.
+export async function sendFirewallAlert({ outcome, ip, path, method, country, city, userAgent, score, signals, to: recipients }) {
+  const to = recipients?.length ? recipients : process.env.SECURITY_ALERT_EMAIL;
   if (!to || !process.env.RESEND_API_KEY) return;
 
   const blocked = outcome === "blocked";
@@ -50,3 +52,20 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
     console.error("[firewall-alert] Failed to send email:", err.message);
   }
 }
+
+/**
+ * A plain admin alert (the daily health check, for now). Never throws;
+ * resolves true when the email was handed to Resend.
+ */
+export async function sendAdminAlert({ to, subject, html }) {
+  if (!to?.length || !process.env.RESEND_API_KEY) return false;
+  try {
+    await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    return true;
+  } catch (err) {
+    console.error("[admin-alert] Failed to send email:", err.message);
+    return false;
+  }
+}
+
+export { escapeHtml };

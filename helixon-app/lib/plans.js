@@ -31,3 +31,10 @@ export const PLAN_LABELS = {
 export function planLabel(planId) {
   return PLAN_LABELS[planId] || planId || null;
 }
+
+// Monthly list price per plan in GBP, for the admin Billing page's revenue
+// figures. Keep in step with the Stripe prices above (and /pricing).
+export const PLAN_MONTHLY_GBP = {
+  individual: 249,
+  agency: 349,
+};

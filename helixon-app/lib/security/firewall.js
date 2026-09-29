@@ -33,13 +33,26 @@ const ALERT_THRESHOLD = Number(process.env.FIREWALL_ALERT_THRESHOLD) || 20;
 // noisy scanner doesn't produce dozens of emails for the same source.
 const FLAG_ALERT_COOLDOWN_SECONDS = 60 * 60;
 
+// The thresholds above are the defaults; an admin can change them (and
+// switch auto-blocking or alert emails off, or make auto-blocks expire) on
+// the Security page, stored as the "firewall" site setting. `policy` is
+// that setting; without it the defaults apply.
+function resolvePolicy(policy) {
+  return {
+    blockThreshold: Number(policy?.blockThreshold) || BLOCK_THRESHOLD,
+    alertThreshold: Number(policy?.alertThreshold) || ALERT_THRESHOLD,
+    autoBlock: policy?.autoBlock !== false,
+    autoBlockHours: Number(policy?.autoBlockHours) || 0,
+    emailAlerts: policy?.emailAlerts !== false,
+  };
+}
+
 // Read by the admin Security page (via /api/admin/traffic) so the policy
 // in effect is visible, not just a silent backend behaviour change.
-export function getFirewallPolicy() {
+export function getFirewallPolicy(policy, recipients = null) {
   return {
-    blockThreshold: BLOCK_THRESHOLD,
-    alertThreshold: ALERT_THRESHOLD,
-    alertEmailConfigured: Boolean(process.env.SECURITY_ALERT_EMAIL && process.env.RESEND_API_KEY),
+    ...resolvePolicy(policy),
+    alertEmailConfigured: Boolean((recipients?.length || process.env.SECURITY_ALERT_EMAIL) && process.env.RESEND_API_KEY),
   };
 }
 
@@ -63,12 +76,15 @@ export async function enforceFirewallPolicy({
   city,
   fetchSite,
   alreadyBlocked,
+  policy,
+  alertTo,
 }) {
   if (alreadyBlocked || !ip || ip === "unknown") return Boolean(alreadyBlocked);
+  const { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts } = resolvePolicy(policy);
 
   try {
     const threat = scoreRequest({ path, user_agent: userAgent, method, blocked: false });
-    if (threat.score < ALERT_THRESHOLD) return false;
+    if (threat.score < alertThreshold) return false;
 
     // Never auto-block on a request another website made the visitor's
     // browser send. Otherwise any page (or an email with an image) could
@@ -82,24 +98,32 @@ export async function enforceFirewallPolicy({
     // but the IP isn't put on the block list.
     const inducedCrossSite = fetchSite === "cross-site" || fetchSite === "same-site";
 
-    if (threat.score >= BLOCK_THRESHOLD && !inducedCrossSite) {
+    if (autoBlock && threat.score >= blockThreshold && !inducedCrossSite) {
       // Re-check rather than trusting the caller's alreadyBlocked=false:
       // closes the narrow race of two near-simultaneous requests from the
       // same brand-new attacking IP both trying to be "the" insert, so at
-      // most one alert email goes out per newly-blocked IP.
+      // most one alert email goes out per newly-blocked IP. An expired
+      // block left in the table is replaced, not treated as a live one.
       const { data: existing } = await supabase
         .from("blocked_ips")
-        .select("ip")
+        .select("ip,expires_at")
         .eq("ip", ip)
         .maybeSingle();
 
-      if (existing) return true;
+      if (existing && (!existing.expires_at || new Date(existing.expires_at) > new Date())) return true;
 
-      const { error } = await supabase.from("blocked_ips").insert({
+      const row = {
         ip,
         reason: `Auto-blocked by firewall policy (score ${threat.score}): ${threat.signals.join(", ")}`,
         created_by: "firewall",
-      });
+        created_at: new Date().toISOString(),
+      };
+      if (autoBlockHours) row.expires_at = new Date(Date.now() + autoBlockHours * 3600e3).toISOString();
+      else if (existing) row.expires_at = null;
+
+      const { error } = existing
+        ? await supabase.from("blocked_ips").update(row).eq("ip", ip)
+        : await supabase.from("blocked_ips").insert(row);
 
       if (error) {
         // Lost the insert race to a concurrent request under the unique
@@ -108,7 +132,8 @@ export async function enforceFirewallPolicy({
         return true;
       }
 
-      sendFirewallAlert({
+      if (emailAlerts) sendFirewallAlert({
+        to: alertTo,
         outcome: "blocked",
         ip,
         path,
@@ -123,8 +148,8 @@ export async function enforceFirewallPolicy({
       return true;
     }
 
-    // Flagged but under the block threshold.
-    const redisPromise = getRedis();
+    // Flagged but under the block threshold (or auto-blocking is off).
+    const redisPromise = emailAlerts ? getRedis() : null;
     if (redisPromise) {
       const redis = await redisPromise;
       const isNew = await redis.set(`helixon:firewall-flag:${ip}`, "1", {
@@ -133,6 +158,7 @@ export async function enforceFirewallPolicy({
       });
       if (isNew === "OK") {
         sendFirewallAlert({
+          to: alertTo,
           outcome: "flagged",
           ip,
           path,
@@ -146,7 +172,7 @@ export async function enforceFirewallPolicy({
       }
     }
 
-    return inducedCrossSite && threat.score >= BLOCK_THRESHOLD;
+    return inducedCrossSite && threat.score >= blockThreshold;
   } catch (err) {
     console.error("[firewall] enforceFirewallPolicy error:", err.message);
     return Boolean(alreadyBlocked);

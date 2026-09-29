@@ -76,7 +76,7 @@ async function listLegacyUsers(supabase, { page, perPage, search }) {
     supabase.from("profiles").select("id,username,first_name,last_name,agency_id,created_at").in("id", ids),
     supabase
       .from("subscriptions")
-      .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at")
+      .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at,demo_expires_at")
       .in("user_id", ids),
   ]);
   if (profileResult.error) throw new Error(profileResult.error.message);
@@ -135,7 +135,7 @@ async function listClerkUsers(supabase, { page, perPage, search }) {
     if (profileIds.length) {
       const subscriptionResult = await supabase
         .from("subscriptions")
-        .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at")
+        .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at,demo_expires_at")
         .in("user_id", profileIds);
       if (subscriptionResult.error) throw new Error(subscriptionResult.error.message);
       subscriptions = subscriptionResult.data || [];
@@ -159,6 +159,7 @@ async function listClerkUsers(supabase, { page, perPage, search }) {
       emailConfirmedAt: email?.verification?.status === "verified" ? iso(user.createdAt) : null,
       phoneConfirmedAt: null,
       bannedUntil: user.banned ? CLERK_BANNED_MARKER : null,
+      banReason: user.banned ? user.privateMetadata?.ban_reason || null : null,
       isAnonymous: false,
       firstName: profile?.first_name || user.firstName || "",
       lastName: profile?.last_name || user.lastName || "",
@@ -173,6 +174,49 @@ async function listClerkUsers(supabase, { page, perPage, search }) {
   return { users, totalCount };
 }
 
+// Every Clerk account, a page at a time. The console filters and counts in
+// the browser, so it needs the whole list - it used to load only the first
+// 100, which hid everyone after that and made every count wrong.
+const CLERK_PAGE = 200;
+const MAX_USERS = 5000;
+
+async function listAllClerkUsers(supabase, search) {
+  const users = [];
+  let totalCount = 0;
+  for (let page = 1; users.length < MAX_USERS; page++) {
+    const result = await listClerkUsers(supabase, { page, perPage: CLERK_PAGE, search });
+    totalCount = result.totalCount;
+    users.push(...result.users);
+    if (result.users.length < CLERK_PAGE || users.length >= totalCount) break;
+  }
+  return { users, totalCount, truncated: totalCount > users.length };
+}
+
+// End dates for time-limited bans (public.timed_bans), attached to the
+// banned users in a listing.
+async function attachBanEnds(supabase, users) {
+  const banned = users.filter((u) => u.bannedUntil).map((u) => u.id);
+  if (!banned.length) return users;
+  const ends = new Map();
+  for (let i = 0; i < banned.length; i += 200) {
+    const { data, error } = await supabase.from("timed_bans").select("user_id,until").in("user_id", banned.slice(i, i + 200));
+    if (error) return users; // before migration 20260929030200
+    for (const row of data || []) ends.set(row.user_id, row.until);
+  }
+  return users.map((u) => (ends.has(u.id) ? { ...u, banEndsAt: ends.get(u.id) } : u));
+}
+
+// Admin actions on one account, newest first. Clerk ids aren't uuids, so
+// writeAdminAudit keeps them in metadata.targetRef; legacy ids are in
+// target_id.
+async function userHistory(supabase, userId) {
+  let query = supabase.from("admin_audit_logs").select("id,admin_username,action,metadata,created_at").order("created_at", { ascending: false }).limit(30);
+  query = isClerkId(userId) ? query.eq("metadata->>targetRef", userId) : query.eq("target_id", userId);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data || []).map((row) => ({ id: row.id, admin: row.admin_username, action: row.action, reason: row.metadata?.reason || null, at: row.created_at }));
+}
+
 function shapeSubscription(subscription) {
   if (!subscription) return null;
   return {
@@ -183,6 +227,7 @@ function shapeSubscription(subscription) {
     stripeSubscriptionId: subscription.stripe_subscription_id,
     createdAt: subscription.created_at,
     updatedAt: subscription.updated_at,
+    demoExpiresAt: subscription.stripe_subscription_id ? null : subscription.demo_expires_at || null,
   };
 }
 
@@ -193,6 +238,14 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
 
+    const historyFor = cleanLine(searchParams.get("history"), 128);
+    if (historyFor) {
+      if (!isClerkId(historyFor) && !cleanUuid(historyFor)) return json({ error: "A valid user id is required." }, 400);
+      return json({ ok: true, history: await userHistory(supabase, historyFor) });
+    }
+
+    // ?page=N pages through Clerk as before; without it, everyone is loaded.
+    const paged = searchParams.has("page");
     const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
     const perPage = Math.min(200, Math.max(1, Number.parseInt(searchParams.get("perPage") || "100", 10) || 100));
     const search = cleanLine(searchParams.get("search"), 100).toLowerCase();
@@ -203,10 +256,12 @@ export async function GET(request) {
     let clerkUsers = [];
     let clerkTotal = 0;
     let clerkError = null;
+    let truncated = false;
     try {
-      const result = await listClerkUsers(supabase, { page, perPage, search });
+      const result = paged ? await listClerkUsers(supabase, { page, perPage, search }) : await listAllClerkUsers(supabase, search);
       clerkUsers = result.users;
       clerkTotal = result.totalCount;
+      truncated = Boolean(result.truncated);
     } catch (err) {
       console.error("[admin/users] Could not load Clerk users:", err?.message || err);
       clerkError = "Could not load Clerk accounts. Showing legacy accounts only.";
@@ -220,8 +275,9 @@ export async function GET(request) {
       page,
       perPage,
       total: clerkTotal + legacyUsers.length,
+      truncated,
       clerkError,
-      users: [...clerkUsers, ...legacyUsers],
+      users: await attachBanEnds(supabase, [...clerkUsers, ...legacyUsers]),
     });
   } catch (error) {
     return adminErrorResponse("users", error);
@@ -351,11 +407,54 @@ export async function POST(request) {
 
 // ── Update ──────────────────────────────────────────────────────────────────
 
-async function applyClerkAction({ client, supabase, userId, action, body }) {
+// A ban can end on its own: `days` (1-365) records an end date in
+// public.timed_bans, which /api/cron/admin-daily lifts once passed. No
+// `days` (or unbanning) clears any end date.
+function banEnd(body) {
+  const days = Number(body?.days);
+  return Number.isFinite(days) && days >= 1 ? new Date(Date.now() + Math.min(days, 365) * 86400e3).toISOString() : null;
+}
+
+async function setBanEnd(supabase, userId, body, admin) {
+  const until = banEnd(body);
+  const { error } = until
+    ? await supabase.from("timed_bans").upsert({ user_id: userId, until, reason: cleanLine(body.reason, 300) || null, created_by: admin?.username || null, created_at: new Date().toISOString() }, { onConflict: "user_id" })
+    : await supabase.from("timed_bans").delete().eq("user_id", userId);
+  if (error && error.code !== "42P01" && error.code !== "PGRST205") throw new Error(error.message);
+}
+
+async function applyClerkAction({ client, supabase, userId, action, body, admin }) {
   if (action === "ban") {
     await client.users.banUser(userId);
+    // Why, and by whom - shown in the user drawer. Clerk only stores a flag.
+    await client.users.updateUserMetadata(userId, {
+      privateMetadata: { ban_reason: cleanLine(body.reason, 300) || null, banned_by: admin?.username || null, banned_at: new Date().toISOString() },
+    });
+    await setBanEnd(supabase, userId, body, admin);
   } else if (action === "unban") {
     await client.users.unbanUser(userId);
+    await client.users.updateUserMetadata(userId, { privateMetadata: { ban_reason: null, banned_by: null, banned_at: null } });
+    await setBanEnd(supabase, userId, {}, admin);
+  } else if (action === "revoke_sessions") {
+    // Signs them out on every device; they can sign straight back in.
+    // Clerk pages this list (10 by default), so ask for plenty.
+    const { data: sessions } = await client.sessions.getSessionList({ userId, status: "active", limit: 100 });
+    await Promise.all((sessions || []).map((session) => client.sessions.revokeSession(session.id)));
+  } else if (action === "set_agency") {
+    const agencyId = body.agencyId ? cleanUuid(body.agencyId) : null;
+    if (body.agencyId && !agencyId) return { status: 400, error: "agencyId is not valid." };
+    if (agencyId) {
+      const { data: agency, error } = await supabase.from("agencies").select("id").eq("id", agencyId).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!agency) return { status: 404, error: "Agency not found." };
+    }
+    const { data: updated, error: profileError } = await supabase
+      .from("profiles")
+      .update({ agency_id: agencyId })
+      .eq("clerk_user_id", userId)
+      .select("id");
+    if (profileError) throw new Error(profileError.message);
+    if (!updated?.length) return { status: 404, error: "This account has no profile yet - use “Set up agency” first." };
   } else if (action === "reset_password") {
     const password = typeof body.password === "string" ? body.password : "";
     if (!validatePassword(password)) return { status: 400, error: PASSWORD_ERROR };
@@ -392,7 +491,7 @@ async function applyClerkAction({ client, supabase, userId, action, body }) {
   } else if (action === "provision_agency") {
     return provisionAgency({ client, supabase, userId, body });
   } else if (action === "grant_demo_access") {
-    return grantDemoAccess({ client, supabase, userId });
+    return grantDemoAccess({ client, supabase, userId, plan: body.plan, days: body.days });
   } else if (action === "revoke_demo_access") {
     return revokeDemoAccess({ supabase, userId });
   } else if (action === "confirm_email") {
@@ -452,14 +551,20 @@ async function provisionAgency({ client, supabase, userId, body }) {
 // app/api/run's requireCustomerContext({ requireSubscription: true }) only
 // checks for a `subscriptions` row with status "active"; it has no idea
 // whether Stripe was ever involved. This writes exactly that row, with no
-// Stripe customer/subscription id, and tags the account in Clerk's
+// Stripe subscription id (a former customer's Stripe customer id is kept),
+// and tags the account in Clerk's
 // publicMetadata.is_test_user (the same flag the Users table's "Test" pill
 // already reads - see listClerkUsers above). Billing is completely
 // untouched: no Stripe object is created, so there's nothing to cancel or
 // refund later, only this row to revoke.
 const DEMO_PLAN = "agency"; // the fuller of the two real plans - a demo should show everything
+const DEMO_PLANS = new Set(["agency", "individual"]);
 
-async function grantDemoAccess({ client, supabase, userId }) {
+async function grantDemoAccess({ client, supabase, userId, plan, days }) {
+  const demoPlan = DEMO_PLANS.has(plan) ? plan : DEMO_PLAN;
+  // Optional end date (1-365 days); none = until revoked.
+  const length = Number(days);
+  const demoExpiresAt = Number.isFinite(length) && length >= 1 ? new Date(Date.now() + Math.min(length, 365) * 86400e3).toISOString() : null;
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, agency_id")
@@ -474,10 +579,12 @@ async function grantDemoAccess({ client, supabase, userId }) {
   const { error } = await supabase.from("subscriptions").upsert(
     {
       user_id: profile.id,
-      plan: DEMO_PLAN,
-      stripe_customer_id: null,
+      plan: demoPlan,
+      // stripe_customer_id is left as it is, so a former customer given a
+      // demo keeps their link to Stripe.
       stripe_subscription_id: null,
       status: "active",
+      demo_expires_at: demoExpiresAt,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" },
@@ -518,7 +625,10 @@ async function applyLegacyAction({ supabase, userId, action, body, currentUser }
     const { error } = await supabase.auth.admin.updateUserById(userId, { email_confirm: true });
     if (error) throw new Error(error.message);
   } else if (action === "ban") {
-    const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
+    // Supabase Auth bans take a duration directly.
+    const until = banEnd(body);
+    const hours = until ? Math.ceil((Date.parse(until) - Date.now()) / 3600e3) : 876000;
+    const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: `${hours}h` });
     if (error) throw new Error(error.message);
   } else if (action === "unban") {
     const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: "none" });
@@ -587,7 +697,7 @@ export async function PATCH(request) {
         return json({ error: "User not found." }, 404);
       }
       targetEmail = primaryEmail(user)?.emailAddress || null;
-      refused = await applyClerkAction({ client, supabase, userId, action, body });
+      refused = await applyClerkAction({ client, supabase, userId, action, body, admin });
     } else {
       const { data: currentUserData, error: getError } = await supabase.auth.admin.getUserById(userId);
       if (getError || !currentUserData?.user) {
@@ -612,7 +722,9 @@ export async function PATCH(request) {
           ? { credentialChanged: true }
           : {
               action,
-              ...(action === "update_profile" ? { agencyId: body.agencyId ? String(body.agencyId) : null } : {}),
+              ...(action === "update_profile" || action === "set_agency" ? { agencyId: body.agencyId ? String(body.agencyId) : null } : {}),
+              ...(action === "ban" ? { reason: cleanLine(body.reason, 300) || null, until: banEnd(body) } : {}),
+              ...(action === "grant_demo_access" ? { plan: DEMO_PLANS.has(body.plan) ? body.plan : DEMO_PLAN, days: Number(body.days) >= 1 ? Math.min(Number(body.days), 365) : null } : {}),
               ...(action === "provision_agency" ? { agencyName: cleanLine(body.agencyName, 100) } : {}),
             },
       request,

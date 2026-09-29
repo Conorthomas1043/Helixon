@@ -4,6 +4,7 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
@@ -145,6 +146,14 @@ export async function POST(request) {
       agencyId,
       profile,
     } = auth;
+
+    // Optional monthly cap an admin can set per agency (Admin > Agencies).
+    if (auth.screeningCap) {
+      const refused = capRefusal(await screeningsThisMonth(agencyId), auth.screeningCap);
+      if (refused) {
+        return NextResponse.json({ ok: false, capReached: true, error: refused.error }, { status: refused.status });
+      }
+    }
 
     const form = await request.formData();
 

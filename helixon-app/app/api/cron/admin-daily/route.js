@@ -1,0 +1,149 @@
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { clerkClient } from "@clerk/nextjs/server";
+import { supabase } from "@/lib/supabase";
+import { writeAdminAuditSafe } from "@/lib/admin-audit";
+import { getServicesSnapshot } from "@/lib/ops/live-services";
+import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
+import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
+import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
+import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
+
+// Once a day (vercel.json), the admin console's time-based controls:
+//   1. lift bans whose end date has passed (public.timed_bans)
+//   2. end demo access past its demo_expires_at (access already stopped at
+//      the end date - lib/subscription-status.js - this marks the row
+//      cancelled so Billing and Agencies show it correctly)
+//   3. delete IP blocks and firewall rules that expired over a week ago
+//   4. run the health checks and email the alert recipients if anything is
+//      down (Admin > Security > Who gets alerts)
+// Each step is independent: one failing doesn't stop the rest.
+//
+// Daily because that's the most a Hobby-plan Vercel cron can run. Same
+// Bearer CRON_SECRET check as app/api/cron/data-retention; fails closed.
+
+const SYSTEM = "system:admin-daily";
+const TIDY_AFTER_DAYS = 7;
+
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+async function liftExpiredBans(nowIso) {
+  const { data: due, error } = await supabase.from("timed_bans").select("user_id,until").lte("until", nowIso).limit(200);
+  if (error) throw new Error(error.message);
+  let lifted = 0;
+  const client = due?.some((b) => b.user_id.startsWith("user_")) ? await clerkClient() : null;
+  for (const ban of due || []) {
+    try {
+      // Supabase Auth (legacy) bans carry their own duration and end by
+      // themselves; Clerk bans have to be lifted.
+      if (ban.user_id.startsWith("user_")) {
+        await client.users.unbanUser(ban.user_id);
+        await client.users.updateUserMetadata(ban.user_id, { privateMetadata: { ban_reason: null, banned_by: null, banned_at: null } });
+      }
+      await supabase.from("timed_bans").delete().eq("user_id", ban.user_id);
+      lifted += 1;
+      await writeAdminAuditSafe({
+        adminUsername: SYSTEM,
+        action: "user_unban",
+        targetType: ban.user_id.startsWith("user_") ? "clerk_user" : "auth_user",
+        targetId: ban.user_id,
+        metadata: { reason: "Ban period ended", until: ban.until },
+      });
+    } catch (err) {
+      // The account was deleted since - nothing left to unban.
+      if (err?.status === 404) await supabase.from("timed_bans").delete().eq("user_id", ban.user_id);
+      else console.error("[admin-daily] Couldn't lift ban", ban.user_id, err?.message || err);
+    }
+  }
+  return lifted;
+}
+
+async function endExpiredDemos(nowIso) {
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .update({ status: "canceled", updated_at: nowIso })
+    .eq("status", "active")
+    .is("stripe_subscription_id", null)
+    .lte("demo_expires_at", nowIso)
+    .select("id,user_id");
+  if (error) throw new Error(error.message);
+  for (const row of data || []) {
+    await writeAdminAuditSafe({
+      adminUsername: SYSTEM,
+      action: "user_revoke_demo_access",
+      targetType: "subscription",
+      targetId: row.id,
+      metadata: { reason: "Demo period ended", profileId: row.user_id },
+    });
+  }
+  return (data || []).length;
+}
+
+async function tidyExpiredRules(now) {
+  const cutoff = new Date(now - TIDY_AFTER_DAYS * 86400e3).toISOString();
+  const [blocks, rules] = await Promise.all([
+    supabase.from("blocked_ips").delete().lte("expires_at", cutoff).select("ip"),
+    supabase.from("firewall_rules").delete().lte("expires_at", cutoff).select("id"),
+  ]);
+  return { blocks: blocks.data?.length || 0, rules: rules.data?.length || 0 };
+}
+
+async function dailyHealthCheck(settings) {
+  const [services, checks] = await Promise.all([getServicesSnapshot(), getFullHealthChecksSnapshot()]);
+  const grade = gradeHealth({ ...services, ...checks }, settings.health?.muted || []);
+  await supabase.from("admin_health_snapshots").insert({ overall: grade.overall, failing: grade.failing, checked_by: SYSTEM });
+
+  const to = alertRecipients(settings);
+  let emailed = false;
+  if (grade.overall !== "ok" && settings.alerts?.healthDigest !== false && to.length) {
+    const labels = grade.failing.map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k);
+    emailed = await sendAdminAlert({
+      to,
+      subject: `Helixon health: ${grade.overall} - ${labels.join(", ")}`,
+      html: `
+        <h2>${escapeHtml(OVERALL_LABEL[grade.overall])}</h2>
+        <p>The daily health check found a problem with: <strong>${escapeHtml(labels.join(", "))}</strong>.</p>
+        <p>Open System health in the admin console for details. You get this because you're listed under Security &gt; Who gets alerts.</p>
+      `,
+    });
+  }
+  return { overall: grade.overall, failing: grade.failing, emailed };
+}
+
+export async function GET(request) {
+  const expected = process.env.CRON_SECRET;
+  const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!expected) {
+    console.error("[admin-daily] CRON_SECRET is not set - refusing to run.");
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
+  if (!timingSafeEqualStr(expected, provided)) {
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  const result = {};
+  const step = async (name, fn) => {
+    try {
+      result[name] = await fn();
+    } catch (err) {
+      console.error(`[admin-daily] ${name} failed:`, err?.message || err);
+      result[name] = { error: true };
+    }
+  };
+
+  const settings = await getSiteSettings({ fresh: true });
+  await step("bansLifted", () => liftExpiredBans(nowIso));
+  await step("demosEnded", () => endExpiredDemos(nowIso));
+  await step("tidied", () => tidyExpiredRules(now));
+  await step("health", () => dailyHealthCheck(settings));
+
+  return NextResponse.json({ ok: true, ...result });
+}

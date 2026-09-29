@@ -9,11 +9,22 @@ function adminClient() {
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
-async function rows(client, table, limit = 1000, order = "created_at") {
-  const result = await client.from(table).select("*").order(order, { ascending: false }).limit(limit);
+async function rows(client, table, limit = 1000, order = "created_at", since = null) {
+  let query = client.from(table).select("*").order(order, { ascending: false }).limit(limit);
+  if (since) query = query.gte(order, since);
+  const result = await query;
   if (result.error) return [];
   return result.data || [];
 }
+
+async function countSince(client, table, column, from, to) {
+  const { count, error } = await client.from(table).select("*", { count: "exact", head: true }).gte(column, from).lt(column, to);
+  return error ? null : count || 0;
+}
+
+export const OPS_RANGE_HOURS = { "24h": 24, "7d": 24 * 7, "30d": 24 * 30, "90d": 24 * 90 };
+// Requests scored per load. A range with more than this scores the newest.
+const REQUEST_SAMPLE = 5000;
 
 function sumNumeric(rows, keys) {
   return rows.reduce((sum, row) => {
@@ -25,21 +36,31 @@ function sumNumeric(rows, keys) {
   }, 0);
 }
 
-export async function getAdminOpsData() {
+/**
+ * `range` ("24h" | "7d" | "30d" | "90d") limits requests and demo requests
+ * to that window and adds the previous window's totals for comparison.
+ * Without it, the newest rows are used as before.
+ */
+export async function getAdminOpsData({ range = null } = {}) {
   const client = adminClient();
-  const [requests, logins, authLogins, mfa, audit, demos, agencies, trials, subscriptions, users, employees, candidates, jobs, analyses] = await Promise.all([
+  const hours = OPS_RANGE_HOURS[range] || null;
+  const now = Date.now();
+  const since = hours ? new Date(now - hours * 3600e3).toISOString() : null;
+  const prevSince = hours ? new Date(now - 2 * hours * 3600e3).toISOString() : null;
+  const nowIso = new Date(now + 60e3).toISOString();
+  const [requests, logins, authLogins, mfa, audit, demos, agencies, trials, subscriptions, users, employees, candidates, jobs, analyses, dismissals, prevRequests, prevDemos, rangeRequests] = await Promise.all([
     // request_logs and login_attempts use `ts`, not `created_at` - the
     // default. Ordering by a column that doesn't exist makes Postgres
     // error, which rows() silently swallows into [] - this made
     // scoreRequest() never run on real data, zeroing out threats,
     // ipInvestigations, and the request-derived slices of seo/kpis across
     // the Pentester, Investigate and SEO pages.
-    rows(client, "request_logs", 1200, "ts"),
+    rows(client, "request_logs", hours ? REQUEST_SAMPLE : 1200, "ts", since),
     rows(client, "login_attempts", 600, "ts"),
     rows(client, "auth_login_attempts", 600),
     rows(client, "mfa_attempts", 600),
     rows(client, "admin_audit_logs", 600),
-    rows(client, "demo_requests", 600),
+    rows(client, "demo_requests", 600, "created_at", since),
     rows(client, "agencies", 1000),
     // trial_verifications has no created_at at all (only expires_at/used_at)
     // - same failure mode, silently zeroing sales.trials. expires_at is set
@@ -52,7 +73,20 @@ export async function getAdminOpsData() {
     rows(client, "candidates", 1000),
     rows(client, "jobs", 1000),
     rows(client, "analyses", 1000),
+    // IPs an admin dismissed on Pentester (migration 20260929030000).
+    rows(client, "threat_dismissals", 1000, "dismissed_at"),
+    hours ? countSince(client, "request_logs", "ts", prevSince, since) : null,
+    hours ? countSince(client, "demo_requests", "created_at", prevSince, since) : null,
+    // Exact total for the window; `requests` itself is capped at REQUEST_SAMPLE.
+    hours ? countSince(client, "request_logs", "ts", since, nowIso) : null,
   ]);
+  const dismissedAt = new Map(dismissals.map((d) => [d.ip, { at: Date.parse(d.dismissed_at), by: d.dismissed_by, reason: d.reason }]));
+  // A dismissal covers what the IP had done up to then; anything newer
+  // shows up again.
+  const isDismissed = (ip, ts) => {
+    const d = dismissedAt.get(ip);
+    return Boolean(d) && Date.parse(ts) <= d.at;
+  };
 
   const scoredRequests = requests.map((row) => ({
     ...row,
@@ -64,9 +98,12 @@ export async function getAdminOpsData() {
     threat: scoreRequest(row),
   }));
 
-  const threats = scoredRequests.filter((row) => row.threat.score >= 20).sort((a, b) => b.threat.score - a.threat.score);
+  const flagged = scoredRequests.filter((row) => row.threat.score >= 20);
+  const threats = flagged.filter((row) => !isDismissed(row.ip, row.ts)).sort((a, b) => b.threat.score - a.threat.score);
+  const dismissedThreats = flagged.length - threats.length;
   const ipMap = new Map();
   for (const row of scoredRequests) {
+    if (row.threat.score >= 20 && isDismissed(row.ip, row.ts)) continue;
     const ip = row.ip || "unknown";
     const current = ipMap.get(ip) || { ip, requests: 0, blocked: 0, maxScore: 0, signals: new Set(), countries: new Set() };
     current.requests += 1;
@@ -100,7 +137,7 @@ export async function getAdminOpsData() {
       trials: trials.length,
       subscriptions: activeSubscriptions.length,
       mrr: revenue,
-      requests: requests.length,
+      requests: rangeRequests ?? requests.length,
       blockedRequests: requests.filter((x) => !!x.blocked).length,
       threats: threats.length,
       failedLogins: [...logins, ...authLogins].filter((x) => /fail|invalid|denied|false/i.test(`${x.status || ""} ${x.success ?? ""}`)).length,
@@ -110,6 +147,14 @@ export async function getAdminOpsData() {
     requests: scoredRequests.slice(0, 250),
     threats: threats.slice(0, 100),
     ipInvestigations,
+    range,
+    since,
+    sampled: hours ? requests.length >= REQUEST_SAMPLE : true,
+    previous: hours ? { requests: prevRequests, demos: prevDemos } : null,
+    dismissed: {
+      requests: dismissedThreats,
+      ips: [...dismissedAt.entries()].map(([ip, d]) => ({ ip, dismissedAt: new Date(d.at).toISOString(), by: d.by, reason: d.reason })),
+    },
     audit: audit.slice(0, 100),
     seo: { channels, campaigns, referrers, topPaths, topCountries },
     sales: {

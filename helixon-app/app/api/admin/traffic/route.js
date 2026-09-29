@@ -8,6 +8,8 @@ import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
+import { blockIsActive } from "@/lib/security/rules";
+import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
 import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow, aggregateTrafficRows } from "@/lib/admin-traffic";
 
 function json(data, status = 200) {
@@ -131,12 +133,16 @@ export async function GET(request) {
     if (ipFilter && isValidIp(ipFilter)) logQuery = logQuery.eq("ip", ipFilter.trim());
     if (onlyBlocked) logQuery = logQuery.eq("blocked", true);
 
-    const [requestLogsResult, blockedIpsResult, geoResult, summaryResult] = await Promise.all([
+    const blockedQuery = (columns) => supabase.from("blocked_ips").select(columns).order("created_at", { ascending: false });
+    let [requestLogsResult, blockedIpsResult, geoResult, summaryResult, settings] = await Promise.all([
       logQuery,
-      supabase.from("blocked_ips").select("ip,reason,created_at,created_by").order("created_at", { ascending: false }),
+      blockedQuery("ip,reason,created_at,created_by,expires_at"),
       supabase.rpc("admin_traffic_geo", { p_since: since }),
       supabase.rpc("admin_traffic_summary", { p_since: since }),
+      getSiteSettings(),
     ]);
+    // expires_at arrives with migration 20260929030000.
+    if (blockedIpsResult.error?.code === "42703") blockedIpsResult = await blockedQuery("ip,reason,created_at,created_by");
 
     if (requestLogsResult.error) return adminDbError("traffic", requestLogsResult.error);
     if (blockedIpsResult.error) return adminDbError("traffic", blockedIpsResult.error);
@@ -176,7 +182,8 @@ export async function GET(request) {
       rows,
       logLimit: LOG_LIMIT,
       filters: { country, ip: ipFilter, blocked: onlyBlocked },
-      blockedIps: blockedIpsResult.data || [],
+      // Expired time-limited blocks no longer apply, so they aren't listed.
+      blockedIps: (blockedIpsResult.data || []).filter((row) => blockIsActive(row)),
       globe,
       summary,
       partial,
@@ -185,7 +192,7 @@ export async function GET(request) {
         resolvedIps: summary.geolocated,
         unresolvedIps: Math.max(0, summary.requests - summary.geolocated),
       },
-      firewallPolicy: getFirewallPolicy(),
+      firewallPolicy: getFirewallPolicy(settings.firewall, alertRecipients(settings)),
     });
   } catch (error) {
     return adminErrorResponse("traffic", error);
@@ -215,6 +222,13 @@ export async function POST(
     const reason =
       cleanLine(body.reason, 500) ||
       "Admin block";
+
+    // Optional duration in hours (max 90 days); none = permanent.
+    const hours = Number(body.hours);
+    const expiresAt =
+      Number.isFinite(hours) && hours > 0
+        ? new Date(Date.now() + Math.min(hours, 24 * 90) * 3600e3).toISOString()
+        : null;
 
     if (!isValidIp(ip)) {
       return json(
@@ -260,6 +274,8 @@ export async function POST(
             reason,
             created_by:
               admin.username,
+            created_at: new Date().toISOString(),
+            expires_at: expiresAt,
           },
           {
             onConflict: "ip",
@@ -279,6 +295,7 @@ export async function POST(
       metadata: {
         ip,
         reason,
+        expiresAt,
       },
       request,
     });

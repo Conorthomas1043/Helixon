@@ -173,7 +173,7 @@ export default function EmployeesPage() {
 
   const columns = [
     {
-      key: "name",
+      key: "name", sortable: true,
       label: "Person",
       sortValue: (e) => (e.full_name || e.display_name || e.username || "").toLowerCase(),
       render: (e) => (
@@ -189,10 +189,10 @@ export default function EmployeesPage() {
         </div>
       ),
     },
-    { key: "role", label: "Role", sortValue: (e) => roleLabel(e.role), render: (e) => roleLabel(e.role) },
-    { key: "access", label: "Access", sortValue: (e) => accessSummary(e.role, e.effective_permissions).changed, render: (e) => <AccessCell employee={e} /> },
+    { key: "role", sortable: true, label: "Role", sortValue: (e) => roleLabel(e.role), render: (e) => roleLabel(e.role) },
+    { key: "access", sortable: true, label: "Access", sortValue: (e) => accessSummary(e.role, e.effective_permissions).changed, render: (e) => <AccessCell employee={e} /> },
     {
-      key: "status",
+      key: "status", sortable: true,
       label: "Status",
       sortValue: (e) => (e.is_active ? (e.active_sessions ? 0 : 1) : 2),
       render: (e) =>
@@ -205,7 +205,7 @@ export default function EmployeesPage() {
         ),
     },
     {
-      key: "last_login",
+      key: "last_login", sortable: true,
       label: "Last sign-in",
       sortValue: (e) => (e.last_login ? new Date(e.last_login).getTime() : null),
       render: (e) => <span title={e.last_login ? new Date(e.last_login).toLocaleString() : ""}>{timeAgo(e.last_login)}</span>,

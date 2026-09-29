@@ -31,6 +31,30 @@ describe("cleanSetting", () => {
     expect(cleanSetting("maintenance", { enabled: "yes", message: "Back soon" })).toEqual({ enabled: false, message: "Back soon" });
   });
 
+  it("keeps firewall thresholds in range and alert at or below block", () => {
+    expect(cleanSetting("firewall", { blockThreshold: 5, alertThreshold: 90, autoBlock: false, autoBlockHours: 24 })).toEqual({
+      blockThreshold: 10,
+      alertThreshold: 10,
+      autoBlock: false,
+      autoBlockHours: 24,
+      emailAlerts: true,
+    });
+    expect(cleanSetting("firewall", {})).toEqual(DEFAULTS.firewall);
+  });
+
+  it("keeps only known health checks in the muted list", () => {
+    expect(cleanSetting("health", { muted: ["gemini", "nope", "gemini"] })).toEqual({ muted: ["gemini"] });
+    expect(cleanSetting("health", null)).toEqual({ muted: [] });
+  });
+
+  it("keeps valid, unique alert recipients", () => {
+    expect(cleanSetting("alerts", { recipients: "Ops@Helixon.co.uk, bad-address, ops@helixon.co.uk; sec@helixon.co.uk", healthDigest: false })).toEqual({
+      recipients: ["ops@helixon.co.uk", "sec@helixon.co.uk"],
+      healthDigest: false,
+    });
+    expect(cleanSetting("alerts", {})).toEqual({ recipients: [], healthDigest: true });
+  });
+
   it("rejects unknown keys", () => {
     expect(() => cleanSetting("nope", {})).toThrow();
     expect(publicSiteSettings(DEFAULTS)).toEqual({ maintenance: null, announcement: null, features: { chat_assistant: true } });

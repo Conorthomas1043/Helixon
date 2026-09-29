@@ -18,7 +18,16 @@
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { enforceFirewallPolicy } from "@/lib/security/firewall";
-import { getSiteSettings } from "@/lib/site-settings";
+import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
+import { blockIsActive, getFirewallRules, matchRequestRule } from "@/lib/security/rules";
+
+// blocked_ips.expires_at arrives with migration 20260929030000; until then
+// every block is permanent, as before.
+async function findBlock(ip) {
+  let result = await supabase.from("blocked_ips").select("ip,expires_at").eq("ip", ip).maybeSingle();
+  if (result.error?.code === "42703") result = await supabase.from("blocked_ips").select("ip").eq("ip", ip).maybeSingle();
+  return result.data || null;
+}
 
 const INTERNAL_HEADER = "x-internal-secret";
 
@@ -60,28 +69,39 @@ export async function POST(request) {
       longitude <= 180;
 
     // Check if IP is blocked (fast single-row lookup), and the site
-    // settings (in-memory cached) in parallel.
-    const [{ data: blockedRow }, settings] = await Promise.all([
-      supabase.from("blocked_ips").select("ip").eq("ip", ip).maybeSingle(),
-      getSiteSettings(),
-    ]);
+    // settings and firewall rules (both in-memory cached) in parallel.
+    const [blockedRow, settings, rules] = await Promise.all([findBlock(ip), getSiteSettings(), getFirewallRules()]);
 
-    // Strict firewall policy: scores this request against the same
-    // signature rules the admin Pentester page displays, and - unlike
-    // that page, which only lets a human block manually - auto-blocks and
-    // emails an alert when it crosses the threshold. See
+    // Order matters: the admin's allow list beats everything (so they
+    // can't lock out their own office), then country blocks, then path /
+    // user-agent blocks (this request only - the IP isn't listed), then
+    // individual IP blocks (expired ones no longer count), then the
+    // strict firewall policy, which scores this request against the same
+    // signature rules the admin Pentester page displays and auto-blocks /
+    // emails an alert when it crosses the admin-set thresholds. See
     // lib/security/firewall.js for the policy itself.
-    const isBlocked = await enforceFirewallPolicy({
-      supabase,
-      ip,
-      path,
-      method,
-      userAgent: ua,
-      country,
-      city,
-      fetchSite,
-      alreadyBlocked: !!blockedRow,
-    });
+    let isBlocked = false;
+    if (rules.allowIps.has(ip)) {
+      isBlocked = false;
+    } else if (country && rules.blockedCountries.has(String(country).toUpperCase())) {
+      isBlocked = true;
+    } else if (matchRequestRule(rules, path, ua)) {
+      isBlocked = true;
+    } else {
+      isBlocked = await enforceFirewallPolicy({
+        supabase,
+        ip,
+        path,
+        method,
+        userAgent: ua,
+        country,
+        city,
+        fetchSite,
+        alreadyBlocked: blockIsActive(blockedRow),
+        policy: settings.firewall,
+        alertTo: alertRecipients(settings),
+      });
+    }
 
     // Fire-and-forget log insert (we don't await errors; traffic logging
     // must never slow down or break real requests)

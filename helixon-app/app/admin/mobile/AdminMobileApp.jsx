@@ -5,8 +5,10 @@ import { useAdminStats, useAdminTraffic, useAdminUsers, useAdminHealth } from ".
 import { useAdminSession } from "../_shared/session";
 import { ModalHost, confirmAction } from "../_shared/modal";
 import { ToastHost, toast } from "../_shared/toast";
-import { timeAgo } from "../_shared/data";
+import { timeAgo, useAdminData } from "../_shared/data";
+import { csrfHeaders } from "../_shared/csrf";
 import { Icon } from "../_shared/icons";
+import { OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
 
 const RED = "#e0554f";
 const AMBER = "#d99a3a";
@@ -16,6 +18,7 @@ const TABS = [
   { id: "overview", label: "Overview", icon: "command" },
   { id: "health", label: "Health", icon: "activity" },
   { id: "security", label: "Security", icon: "shield" },
+  { id: "site", label: "Site", icon: "layers" },
   { id: "users", label: "Users", icon: "users" },
 ];
 
@@ -80,6 +83,7 @@ export default function AdminMobileApp({ username }) {
         {tab === "overview" && <OverviewTab />}
         {tab === "health" && <HealthTab />}
         {tab === "security" && <SecurityTab />}
+        {tab === "site" && <SiteTab />}
         {tab === "users" && <UsersTab />}
       </main>
 
@@ -270,15 +274,13 @@ function HealthTab() {
   const ai = health?.aiProviders;
   const pages = health?.pages;
 
+  // Same grading as the desktop page (lib/ops/health-grade.js), muted
+  // checks included.
   const overall = useMemo(() => {
     if (!health) return null;
-    const criticalDown = [database, ai?.anthropic, ai?.gemini].some((s) => s?.configured && (s.error || s.connected === false));
-    const degraded = [health?.stripe, health?.clerk, health?.redis, health?.resend, health?.sentry].some((s) => s?.configured && s.error);
-    const pagesFailing = (pages?.failing || 0) > 0;
-    if (criticalDown) return { tone: RED, label: "Critical - core dependency down" };
-    if (degraded || pagesFailing) return { tone: AMBER, label: "Degraded - see details" };
-    return { tone: GREEN, label: "All systems operational" };
-  }, [health, database, ai, pages]);
+    const grade = health.grade || gradeHealth(health, health.muted);
+    return { tone: { ok: GREEN, degraded: AMBER, critical: RED }[grade.overall], label: OVERALL_LABEL[grade.overall] };
+  }, [health]);
 
   return (
     <div>
@@ -410,7 +412,7 @@ function SecurityTab() {
           <div className="grid grid-cols-2 gap-2.5">
             <Kpi
               label="Blocked requests"
-              value={(traffic?.rows || []).filter((r) => r.blocked).length}
+              value={(traffic?.summary?.blocked ?? (traffic?.rows || []).filter((r) => r.blocked).length).toLocaleString()}
               tone={RED}
             />
             <Kpi label="IPs blocked" value={blockedIps.length} />
@@ -494,6 +496,104 @@ function SecurityTab() {
           </button>
         </>
       )}
+    </div>
+  );
+}
+
+// ── Site ───────────────────────────────────────────────────────────────────
+
+// A tappable on/off row for the Site tab.
+function SwitchRow({ label, sub, on, onToggle, disabled, danger }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={disabled}
+      role="switch"
+      aria-checked={on}
+      className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left border-b last:border-b-0 disabled:opacity-60"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <span className="min-w-0">
+        <span className="block text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{label}</span>
+        {sub && <span className="block text-[11px]" style={{ color: "var(--ink-faint)" }}>{sub}</span>}
+      </span>
+      <span className="shrink-0 w-10 h-6 rounded-full relative transition" style={{ background: on ? (danger ? RED : GREEN) : "#d8dedb" }} aria-hidden="true">
+        <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all" style={{ left: on ? 18 : 2 }} />
+      </span>
+    </button>
+  );
+}
+
+// The switches from /admin/site that matter in a hurry: maintenance mode
+// and the feature switches. The banner is edited on desktop.
+function SiteTab() {
+  const { data, error, loading, reload } = useAdminData("/api/admin/site");
+  const [saving, setSaving] = useState("");
+  const settings = data?.settings;
+
+  async function save(key, value, success) {
+    setSaving(key);
+    try {
+      const response = await fetch("/api/admin/site", {
+        method: "PATCH",
+        headers: csrfHeaders({ "content-type": "application/json" }),
+        body: JSON.stringify({ key, value }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "Couldn't save that change.");
+      toast.success(success);
+      reload();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSaving("");
+    }
+  }
+
+  async function toggleMaintenance() {
+    const on = !settings.maintenance.enabled;
+    if (on && !(await confirmAction("Turn on maintenance mode? Public pages go to the maintenance screen. The console and staff portal keep working.", { title: "Maintenance mode", danger: true }))) return;
+    save("maintenance", { ...settings.maintenance, enabled: on }, on ? "Maintenance mode on" : "Site is live");
+  }
+
+  async function toggleFeature(f) {
+    const on = settings.features[f.key] === false;
+    if (!on && !(await confirmAction(`Switch off ${f.label}?`, { title: "Switch off", danger: true }))) return;
+    save("features", { ...settings.features, [f.key]: on }, `${f.label} ${on ? "on" : "off"}`);
+  }
+
+  return (
+    <div>
+      <SectionTitle>Site controls</SectionTitle>
+      <ErrorNotice message={error} />
+      {loading && !settings ? (
+        <EmptyRow>Loading…</EmptyRow>
+      ) : settings ? (
+        <>
+          <Card>
+            <SwitchRow
+              label={settings.maintenance.enabled ? "Maintenance mode is ON" : "Maintenance mode"}
+              sub={settings.maintenance.enabled ? "Public pages show the maintenance screen" : "The site is live"}
+              on={settings.maintenance.enabled}
+              danger
+              disabled={Boolean(saving)}
+              onToggle={toggleMaintenance}
+            />
+          </Card>
+          <SectionTitle>Features</SectionTitle>
+          <Card>
+            {(data.features || []).map((f) => (
+              <SwitchRow key={f.key} label={f.label} sub={f.description} on={settings.features[f.key] !== false} disabled={Boolean(saving)} onToggle={() => toggleFeature(f)} />
+            ))}
+          </Card>
+          {settings.announcement?.enabled && (
+            <p className="text-[11px] mt-3" style={{ color: "var(--ink-faint)" }}>
+              Banner showing: “{settings.announcement.text}”. Edit it on desktop under Site controls.
+            </p>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }

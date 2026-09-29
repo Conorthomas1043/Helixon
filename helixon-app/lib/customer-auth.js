@@ -1,10 +1,22 @@
 import { auth } from "@clerk/nextjs/server";
 
 import { supabase } from "@/lib/supabase";
+import { getAgencyControls, SUSPENDED_MESSAGE } from "@/lib/agency-controls";
+import { grantsAccess } from "@/lib/subscription-status";
+
+const SUBSCRIPTION_COLUMNS = "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at";
 
 export const ACTIVE_SUBSCRIPTION_STATUSES = new Set([
   "active",
 ]);
+
+// demo_expires_at arrives with migration 20260929030200; before that every
+// demo is open-ended, as it always was.
+async function selectSubscriptions(build) {
+  let result = await build(`${SUBSCRIPTION_COLUMNS},demo_expires_at`);
+  if (result.error?.code === "42703") result = await build(SUBSCRIPTION_COLUMNS);
+  return result;
+}
 
 // Identity comes from Clerk (auth() reads the session Clerk's middleware
 // already validated for this request). Everything else - profile, agency,
@@ -54,13 +66,13 @@ export async function getCustomerContext() {
 
   if (profile?.id) {
     const { data, error: subscriptionError } =
-      await supabase
-        .from("subscriptions")
-        .select(
-          "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at"
-        )
-        .eq("user_id", profile.id)
-        .maybeSingle();
+      await selectSubscriptions((columns) =>
+        supabase
+          .from("subscriptions")
+          .select(columns)
+          .eq("user_id", profile.id)
+          .maybeSingle()
+      );
 
     if (subscriptionError) {
       throw new Error(
@@ -77,15 +89,17 @@ export async function getCustomerContext() {
   // email (402 -> /pricing). Anyone whose agency has an active subscription
   // on any member's profile counts as subscribed. `subscription` itself
   // stays the caller's own row - billing management is still owner-only.
-  let hasActiveSubscription = ACTIVE_SUBSCRIPTION_STATUSES.has(
-    subscription?.status
-  );
+  // Demo access (no Stripe subscription) ends at its demo_expires_at.
+  let hasActiveSubscription = grantsAccess(subscription);
 
   if (!hasActiveSubscription && profile?.agency_id) {
     hasActiveSubscription = await agencyHasActiveSubscription(
       profile.agency_id
     );
   }
+
+  // Admin controls on the workspace (suspension, monthly screening cap).
+  const controls = await getAgencyControls(profile?.agency_id);
 
   return {
     user: { id: userId },
@@ -94,6 +108,8 @@ export async function getCustomerContext() {
     profile: profile || null,
     subscription,
     hasActiveSubscription,
+    agencySuspended: controls.suspended,
+    screeningCap: controls.screeningCap,
   };
 }
 
@@ -114,12 +130,14 @@ async function agencyHasActiveSubscription(agencyId) {
   if (memberIds.length === 0) return false;
 
   const { data: subs, error: subsError } =
-    await supabase
-      .from("subscriptions")
-      .select("id")
-      .in("user_id", memberIds)
-      .in("status", [...ACTIVE_SUBSCRIPTION_STATUSES])
-      .limit(1);
+    await selectSubscriptions((columns) =>
+      supabase
+        .from("subscriptions")
+        .select(columns)
+        .in("user_id", memberIds)
+        .in("status", [...ACTIVE_SUBSCRIPTION_STATUSES])
+        .limit(20)
+    );
 
   if (subsError) {
     throw new Error(
@@ -127,7 +145,7 @@ async function agencyHasActiveSubscription(agencyId) {
     );
   }
 
-  return (subs || []).length > 0;
+  return (subs || []).some((sub) => grantsAccess(sub));
 }
 
 export async function requireCustomerContext({
@@ -149,6 +167,16 @@ export async function requireCustomerContext({
       status: 403,
       error:
         "Your account is not connected to an agency. Please contact Helixon support.",
+    };
+  }
+
+  // Suspended from Admin > Agencies: the whole workspace is locked.
+  if (context.agencySuspended) {
+    return {
+      ok: false,
+      status: 403,
+      suspended: true,
+      error: SUSPENDED_MESSAGE,
     };
   }
 

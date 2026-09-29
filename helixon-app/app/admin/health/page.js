@@ -1,31 +1,104 @@
 "use client";
 
-import { useMemo } from "react";
-import { PageHeader, Panel, ServiceStatus } from "../_shared/ui";
+import { useMemo, useState } from "react";
+import { PageHeader, Panel, ServiceStatus, Switch } from "../_shared/ui";
 import { useAdminHealth } from "../_shared/hooks";
+import { formatDateTime, timeAgo } from "../_shared/data";
+import { csrfHeaders } from "../_shared/csrf";
+import { toast } from "../_shared/toast";
+import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
 
-// Every check this page can report on, and how to grade it "critical" vs
-// "degraded" for the overall banner - core infrastructure and the AI
-// providers the product runs on are critical; third-party business
-// services and individual page checks are degraded (real problems, but the
-// site as a whole still functions without them).
-function overallStatus(health, pages) {
-  if (!health) return { tone: "var(--muted)", label: "Loading…" };
+const TONE = { ok: "var(--ok)", degraded: "var(--warn)", critical: "var(--critical)" };
 
-  const critical = [health.database, health.aiProviders?.anthropic, health.aiProviders?.gemini];
-  const criticalDown = critical.some((s) => s?.configured && (s.error || s.connected === false));
+// The overall status comes graded from the API (lib/ops/health-grade.js,
+// which also honours muted checks); graded here only as a fallback.
+function overallStatus(health) {
+  if (!health) return { tone: "var(--muted)", label: "Loading…", grade: null };
+  const grade = health.grade || gradeHealth(health, health.muted);
+  return { tone: TONE[grade.overall], label: OVERALL_LABEL[grade.overall], grade };
+}
 
-  const degradedServices = [health.stripe, health.clerk, health.redis, health.resend, health.sentry];
-  const degraded = degradedServices.some((s) => s?.configured && s.error);
-  const pagesFailing = (pages?.failing || 0) > 0;
+// One tick per recorded run, oldest on the left.
+function HistoryStrip({ history }) {
+  const runs = [...(history || [])].reverse();
+  if (!runs.length) return <div className="faint" style={{ fontSize: 12.5 }}>No runs recorded yet.</div>;
+  const incidents = (history || []).filter((h) => h.overall !== "ok").slice(0, 6);
+  return (
+    <>
+      <div className="health-strip" role="img" aria-label={`Last ${runs.length} checks: ${incidents.length ? `${incidents.length} with problems` : "all healthy"}`}>
+        {runs.map((h) => (
+          <span
+            key={h.id}
+            className={`health-tick ${h.overall}`}
+            title={`${formatDateTime(h.created_at)} - ${OVERALL_LABEL[h.overall] || h.overall}${h.failing?.length ? ` (${h.failing.join(", ")})` : ""}`}
+          />
+        ))}
+      </div>
+      <div className="faint" style={{ fontSize: 12, marginTop: 6 }}>
+        {runs.length} runs since {formatDateTime(runs[0].created_at)}. Recorded when an admin opens this page (or the mobile console), at most every 5 minutes unless something changes.
+      </div>
+      {incidents.length > 0 && (
+        <div className="mini-list" style={{ marginTop: 10 }}>
+          {incidents.map((h) => (
+            <div className="mini-row" key={h.id}>
+              <span style={{ minWidth: 0 }}>
+                <span className={`pill ${h.overall === "critical" ? "bad" : "warn"}`} style={{ marginRight: 8 }}>{h.overall}</span>
+                {(h.failing || []).map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ") || "-"}
+              </span>
+              <span className="faint" style={{ fontSize: 12 }}>{timeAgo(h.created_at)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
 
-  if (criticalDown) {
-    return { tone: "var(--critical)", label: "Critical - core dependency down" };
+// Which checks count toward the overall status. Muting keeps a check on
+// the page but stops it turning the banner amber/red.
+function MutePanel({ health, onSaved }) {
+  const [saving, setSaving] = useState(false);
+  const muted = new Set(health?.muted || []);
+
+  async function toggle(key, counts) {
+    const next = new Set(muted);
+    if (counts) next.delete(key);
+    else next.add(key);
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/health", {
+        method: "PATCH",
+        headers: csrfHeaders({ "content-type": "application/json" }),
+        body: JSON.stringify({ muted: [...next] }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "Couldn't save that.");
+      toast.success(counts ? "Check counts toward the status again" : "Check muted");
+      onSaved();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
-  if (degraded || pagesFailing) {
-    return { tone: "var(--warn)", label: "Degraded - see details below" };
-  }
-  return { tone: "var(--ok)", label: "All systems operational" };
+
+  return (
+    <Panel title="What counts toward the status" sub="Switch a check off to keep it visible without it turning the status amber or red - for a provider you've stopped using, say.">
+      <div className="switch-list">
+        {HEALTH_CHECKS.map((c) => (
+          <Switch
+            key={c.key}
+            id={`health-${c.key}`}
+            label={`${c.label}${c.critical ? " (critical)" : ""}`}
+            description={health?.grade?.mutedFailing?.includes(c.key) ? "Muted - and currently failing." : muted.has(c.key) ? "Muted." : undefined}
+            checked={!muted.has(c.key)}
+            disabled={!health || saving}
+            onChange={(on) => toggle(c.key, on)}
+          />
+        ))}
+      </div>
+    </Panel>
+  );
 }
 
 function PageCheckRow({ page }) {
@@ -54,7 +127,7 @@ export default function HealthPage() {
     return [...rows].sort((a, b) => Number(a.ok) - Number(b.ok));
   }, [pages]);
 
-  const status = overallStatus(health, pages);
+  const status = overallStatus(health);
   const ai = health?.aiProviders;
   const database = health?.database;
 
@@ -72,14 +145,32 @@ export default function HealthPage() {
       {error && <div className="notice error section">{error}</div>}
 
       <Panel className="section">
-        <div className="bar-row" style={{ alignItems: "center" }}>
-          <span
-            className="legend-dot"
-            style={{ background: status.tone, width: 10, height: 10, marginRight: 10 }}
-          />
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span className="legend-dot" style={{ background: status.tone, width: 10, height: 10 }} />
           <span style={{ fontSize: 15, fontWeight: 600, color: status.tone }}>{status.label}</span>
+          {status.grade?.failing?.length > 0 && (
+            <span className="muted">
+              {status.grade.failing.map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ")}
+            </span>
+          )}
+          {status.grade?.mutedFailing?.length > 0 && (
+            <span className="faint" style={{ fontSize: 12.5 }}>
+              Muted but failing: {status.grade.mutedFailing.map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ")}
+            </span>
+          )}
         </div>
       </Panel>
+
+      <div className="split section">
+        <Panel title="History" sub="The overall status each time the checks ran.">
+          {health?.history === null ? (
+            <div className="faint" style={{ fontSize: 12.5 }}>History needs the latest database migration (admin_granular_controls).</div>
+          ) : (
+            <HistoryStrip history={health?.history} />
+          )}
+        </Panel>
+        <MutePanel health={health} onSaved={reload} />
+      </div>
 
       <div className="grid-3 section">
         <Panel title="Core infrastructure" sub="If either of these is down, nothing else works">

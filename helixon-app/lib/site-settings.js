@@ -5,6 +5,9 @@
 //   maintenance   { enabled, message }  public pages go to /under-development
 //   announcement  { enabled, text, tone, linkLabel, linkUrl }  banner on the site
 //   features      { chat_assistant, demo_requests, checkout, employee_portal }
+//   firewall      { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts }
+//   health        { muted }  health checks that don't count toward the overall status
+//   alerts        { recipients, healthDigest }  who gets firewall and health emails
 //
 // Reads are cached in memory for CACHE_MS per server instance, so a change
 // takes up to that long to reach every instance. Everything fails open to
@@ -12,6 +15,7 @@
 // feature off.
 
 import { supabase } from "@/lib/supabase";
+import { HEALTH_CHECK_KEYS } from "@/lib/ops/health-grade";
 
 const CACHE_MS = 30_000;
 
@@ -24,11 +28,26 @@ export const FEATURES = [
   { key: "employee_portal", label: "Staff portal", description: "Employee sign-in and the /employee pages. Admins can still open it from the console." },
 ];
 
+// Firewall defaults keep the env-var thresholds lib/security/firewall.js
+// has always used, so nothing changes until an admin edits them.
+const ENV_BLOCK = Number(process.env.FIREWALL_BLOCK_THRESHOLD) || 30;
+const ENV_ALERT = Number(process.env.FIREWALL_ALERT_THRESHOLD) || 20;
+
 export const DEFAULTS = Object.freeze({
   maintenance: { enabled: false, message: "" },
   announcement: { enabled: false, text: "", tone: "info", linkLabel: "", linkUrl: "" },
   features: Object.fromEntries(FEATURES.map((f) => [f.key, true])),
+  firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 0, emailAlerts: true },
+  health: { muted: [] },
+  alerts: { recipients: [], healthDigest: true },
 });
+
+const EMAIL_RE = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
+
+function int(value, min, max, fallback) {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+}
 
 export const SETTING_KEYS = Object.keys(DEFAULTS);
 
@@ -66,6 +85,28 @@ export function cleanSetting(key, raw) {
       linkLabel: linkUrl ? str(value.linkLabel, 40) : "",
       linkUrl,
     };
+  }
+  if (key === "firewall") {
+    const d = DEFAULTS.firewall;
+    const blockThreshold = int(value.blockThreshold, 10, 200, d.blockThreshold);
+    return {
+      blockThreshold,
+      // Alerting above the block line would never fire.
+      alertThreshold: Math.min(int(value.alertThreshold, 5, 200, d.alertThreshold), blockThreshold),
+      autoBlock: value.autoBlock !== false,
+      // 0 = permanent; otherwise auto-blocks lift after this many hours.
+      autoBlockHours: int(value.autoBlockHours, 0, 24 * 90, d.autoBlockHours),
+      emailAlerts: value.emailAlerts !== false,
+    };
+  }
+  if (key === "alerts") {
+    const list = Array.isArray(value.recipients) ? value.recipients : String(value.recipients || "").split(/[\s,;]+/);
+    const recipients = [...new Set(list.map((e) => String(e).trim().toLowerCase()).filter((e) => e.length <= 254 && EMAIL_RE.test(e)))].slice(0, 10);
+    return { recipients, healthDigest: value.healthDigest !== false };
+  }
+  if (key === "health") {
+    const muted = Array.isArray(value.muted) ? value.muted : [];
+    return { muted: HEALTH_CHECK_KEYS.filter((k) => muted.includes(k)) };
   }
   if (key === "features") {
     // Missing keys stay on: only an explicit false turns something off.
@@ -138,4 +179,17 @@ export function publicSiteSettings(settings) {
 /** Standard "switched off" JSON for a feature an admin has disabled. */
 export function featureOffResponse(message) {
   return Response.json({ ok: false, error: message, code: "feature_disabled" }, { status: 503, headers: { "Cache-Control": "no-store" } });
+}
+
+/**
+ * Who gets admin alert emails: the addresses set on the Security page, or
+ * SECURITY_ALERT_EMAIL (comma-separated) when none are set.
+ */
+export function alertRecipients(settings) {
+  const set = settings?.alerts?.recipients || [];
+  if (set.length) return set;
+  return String(process.env.SECURITY_ALERT_EMAIL || "")
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
 }

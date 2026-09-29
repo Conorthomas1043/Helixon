@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
+import { FROM_EMAIL, escapeHtml, salesNotificationEmail } from "@/lib/demo-notification";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,19 +16,6 @@ const supabase = createClient(
 );
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SALES_EMAIL = "sales@helixon.co.uk";
-// Resend requires sending from a domain you've verified with them.
-// Swap this for your verified sending address/domain.
-const FROM_EMAIL = "Helixon <noreply@helixon.co.uk>";
-
-function escapeHtml(str = "") {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 function clean(val, maxLen = 300) {
   return cleanLine(val, maxLen) || null;
@@ -108,29 +96,9 @@ export async function POST(request) {
   let emailSent = false;
   if (process.env.RESEND_API_KEY) {
     try {
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: SALES_EMAIL,
-        replyTo: email,
-        subject: `New demo request - ${name}${company ? ` (${company})` : ""}`,
-        html: `
-          <h2>New demo request</h2>
-          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          <p><strong>Company:</strong> ${escapeHtml(company) || "-"}</p>
-          <p><strong>What they're hoping to solve:</strong></p>
-          <p>${escapeHtml(message) || "-"}</p>
-          ${utm_source || referrer ? `
-            <hr />
-            <p style="color:#666;font-size:12px;">
-              ${utm_source ? `Source: ${escapeHtml(utm_source)}<br/>` : ""}
-              ${utm_medium ? `Medium: ${escapeHtml(utm_medium)}<br/>` : ""}
-              ${utm_campaign ? `Campaign: ${escapeHtml(utm_campaign)}<br/>` : ""}
-              ${referrer ? `Referrer: ${escapeHtml(referrer)}<br/>` : ""}
-            </p>
-          ` : ""}
-        `,
-      });
+      await resend.emails.send(
+        salesNotificationEmail({ name, email, company, message, utm_source, utm_medium, utm_campaign, referrer }),
+      );
 
       await resend.emails.send({
         from: FROM_EMAIL,

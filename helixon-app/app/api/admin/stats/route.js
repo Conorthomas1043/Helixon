@@ -75,7 +75,7 @@ export async function GET(request) {
 
       supabase
         .from("subscriptions")
-        .select("id,status,plan"),
+        .select("id,status,plan,stripe_subscription_id"),
 
       supabase
         .from("request_logs")
@@ -179,7 +179,11 @@ export async function GET(request) {
         }));
     }
 
-    const subscriptions = subscriptionsResult.data || [];
+    // Demo access granted from the Users page is a subscriptions row with
+    // no Stripe subscription - not revenue, so not counted here.
+    const allSubscriptions = subscriptionsResult.data || [];
+    const subscriptions = allSubscriptions.filter((sub) => sub.stripe_subscription_id);
+    const demoSubscriptions = allSubscriptions.length - subscriptions.length;
 
     const subscriptionByStatus = {};
     const subscriptionByPlan = {};
@@ -235,6 +239,7 @@ export async function GET(request) {
       subscriptions: {
         byStatus: subscriptionByStatus,
         byPlan: subscriptionByPlan,
+        demo: demoSubscriptions,
       },
 
       traffic: {

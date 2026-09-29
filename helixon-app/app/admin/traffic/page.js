@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 import { PageHeader, RangeControl, Panel, BarList, KpiCard } from "../_shared/ui";
 import { RequestTable } from "../_shared/table";
@@ -24,7 +25,6 @@ export default function TrafficPage() {
   const [ipInput, setIpInput] = useState("");
   const [ipFilter, setIpFilter] = useState("");
   const [onlyBlocked, setOnlyBlocked] = useState(false);
-  const [blockForm, setBlockForm] = useState({ ip: "", reason: "" });
 
   const filters = { country: selected?.country || "", ip: ipFilter, blocked: onlyBlocked };
   const { traffic, error, busy, block, unblock, reload } = useAdminTraffic(range, filters);
@@ -38,12 +38,6 @@ export default function TrafficPage() {
 
   function selectPoint(p) {
     setSelected((cur) => (cur && pointKey(cur) === pointKey(p) ? null : p));
-  }
-
-  async function submitBlock(e) {
-    e.preventDefault();
-    const ok = await block(blockForm.ip.trim(), blockForm.reason.trim() || "Admin block");
-    if (ok) setBlockForm({ ip: "", reason: "" });
   }
 
   const blockedShare = summary?.requests ? Math.round((summary.blocked / summary.requests) * 100) : 0;
@@ -88,12 +82,11 @@ export default function TrafficPage() {
       </div>
 
       <div className="split section">
-        <Panel title="Blocked IPs" sub={`${blocked.length} blocked · every request from these goes to the rate-limited page`}>
-          <form onSubmit={submitBlock} className="inline-form" style={{ marginTop: 12 }}>
-            <input className="search-input no-icon" placeholder="IP address" value={blockForm.ip} onChange={(e) => setBlockForm((f) => ({ ...f, ip: e.target.value }))} aria-label="IP address to block" required />
-            <input className="search-input no-icon" placeholder="Reason (optional)" value={blockForm.reason} onChange={(e) => setBlockForm((f) => ({ ...f, reason: e.target.value }))} aria-label="Reason" />
-            <button className="btn danger" disabled={busy || !blockForm.ip.trim()}>Block IP</button>
-          </form>
+        <Panel
+          title="Blocked IPs"
+          sub={`${blocked.length} active · allow list, country blocks and time-limited blocks are on Security`}
+          action={<Link href="/admin/security" className="panel-link">Manage firewall</Link>}
+        >
           {blocked.length === 0 ? (
             <div className="empty" style={{ padding: "24px 0 8px" }}>No blocked IPs.</div>
           ) : (
@@ -103,7 +96,7 @@ export default function TrafficPage() {
                   <div style={{ minWidth: 0 }}>
                     <div className="mono">{b.ip}</div>
                     <div className="faint truncate" style={{ fontSize: 12 }}>
-                      {b.reason || "Admin block"}{b.created_by ? ` · by ${b.created_by}` : ""}{b.created_at ? ` · ${new Date(b.created_at).toLocaleDateString()}` : ""}
+                      {b.reason || "Admin block"}{b.created_by ? ` · by ${b.created_by}` : ""}{b.expires_at ? ` · lifts ${new Date(b.expires_at).toLocaleString()}` : " · permanent"}
                     </div>
                   </div>
                   <button className="btn small" onClick={() => unblock(b.ip)} disabled={busy}>Unblock</button>
