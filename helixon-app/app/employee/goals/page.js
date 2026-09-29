@@ -7,8 +7,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useHeartbeat } from "../_shared/useHeartbeat";
+import EmployeeShell from "../_shared/EmployeeShell";
 
 const STATUS_META = {
   not_started: { label: "Not started", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
@@ -210,34 +210,7 @@ export default function EmployeeGoalsPage() {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
-      {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
-        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <Link href="/employee/dashboard" className="flex items-center gap-3 group" aria-label="Employee dashboard">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-              </svg>
-            </div>
-            <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[9px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Employee portal</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/employee/calendar" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>Calendar</Link>
-            <Link href="/employee/cold-calls" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>Cold calls</Link>
-            <Link href="/employee/files" className="nav-link text-xs font-medium px-2" style={{ color: "var(--ink-soft)" }}>Files</Link>
-            <Link href="/employee/dashboard" className="text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:bg-white" style={{ borderColor: "var(--border)", color: "var(--ink-soft)" }}>
-              ← My dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <EmployeeShell>
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -468,6 +441,6 @@ export default function EmployeeGoalsPage() {
           </div>
         )}
       </div>
-    </main>
+    </EmployeeShell>
   );
 }

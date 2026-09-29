@@ -6,15 +6,14 @@
 // this component just doesn't render controls the API would reject).
 
 import { useEffect, useMemo, useState } from "react";
+import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee-day";
+import { Card } from "../_shared/ui";
 
-const PRIORITY_DOT = { high: "#e0554f", medium: "#d99a3a", low: "#94a3b8" };
+const PRIORITY_DOT = { high: "#c0392b", medium: "#b45309", low: "#8a9a92" };
 
-function formatDate(iso) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-export default function TeamTasksPanel({ currentEmployeeId }) {
+export default function TeamTasksPanel({ currentEmployeeId, notify }) {
+  // Errors go to the page's toasts when it has them, else a plain alert.
+  const report = (message) => (notify ? notify(message, { tone: "error" }) : alert(message));
   const [todos, setTodos] = useState([]);
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +77,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update task.");
     } catch (err) {
-      alert(err.message || "Failed to update task. Please try again.");
+      report(err.message || "Failed to update task. Please try again.");
       fetchAll();
     }
   }
@@ -95,7 +94,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete task.");
     } catch (err) {
-      alert(err.message || "Failed to delete task. Please try again.");
+      report(err.message || "Failed to delete task. Please try again.");
       fetchAll();
     }
   }
@@ -109,14 +108,14 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
   }, [todos, onlyMine, currentEmployeeId]);
 
   return (
-    <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+    <Card className="overflow-hidden" aria-labelledby="team-tasks-title">
       <div
-        className="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-        style={{ borderColor: "var(--border)" }}
+        className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        style={{ borderColor: "var(--border-soft)" }}
       >
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Team Tasks
+          <h2 id="team-tasks-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Shared with the team
           </h2>
           {loading && (
             <div className="w-3.5 h-3.5 rounded-full animate-spin" style={{ border: "2px solid var(--border)", borderTopColor: "var(--forest)" }} />
@@ -125,24 +124,28 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <button
+            type="button"
             onClick={() => setOnlyMine((v) => !v)}
-            className="text-xs px-3 py-1.5 rounded-lg font-medium transition"
-            style={onlyMine ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+            aria-pressed={onlyMine}
+            className="text-sm px-3 py-1.5 rounded-[10px] font-medium transition"
+            style={onlyMine ? { background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" } : { border: "1px solid var(--border)", color: "var(--ink-soft)" }}
           >
-            {onlyMine ? "Showing: mine" : "Showing: everyone's"}
+            {onlyMine ? "Only mine" : "Everyone's"}
           </button>
           <button
+            type="button"
             onClick={() => setShowAddForm((v) => !v)}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition hover:opacity-90"
+            aria-expanded={showAddForm}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-[10px] transition hover:opacity-90"
             style={{ background: "var(--forest)", color: "white" }}
           >
-            <span className="text-base leading-none">+</span> Add team task
+            <span className="text-base leading-none" aria-hidden="true">+</span> Add team task
           </button>
         </div>
       </div>
 
       {showAddForm && (
-        <div className="border-b px-6 py-5" style={{ borderColor: "var(--border)", background: "var(--mist)" }}>
+        <div className="border-b px-5 py-5" style={{ borderColor: "var(--border-soft)", background: "var(--mist)" }}>
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
@@ -197,7 +200,7 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
             </div>
 
             {formError && (
-              <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>
+              <p role="alert" className="text-xs rounded-lg px-3 py-2" style={{ color: "#a83226", background: "#fbefed", border: "1px solid #f2d2cd" }}>
                 {formError}
               </p>
             )}
@@ -224,13 +227,13 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
         </div>
       )}
 
-      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+      <ul className="divide-y divide-[var(--border-soft)]">
         {visible.length === 0 && (
-          <div className="px-6 py-14 text-center">
+          <li className="px-5 py-12 text-center">
             <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
               {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet - add one above."}
             </p>
-          </div>
+          </li>
         )}
 
         {visible.map((todo) => {
@@ -240,47 +243,53 @@ export default function TeamTasksPanel({ currentEmployeeId }) {
           const creatorName = todo.creator?.full_name || todo.creator?.display_name;
 
           return (
-            <div key={todo.id} className={`px-6 py-4 flex items-start gap-4 group transition ${todo.done ? "opacity-50" : ""}`}>
-              <span className="mt-2.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: PRIORITY_DOT[todo.priority] || PRIORITY_DOT.medium }} />
-
+            <li key={todo.id} className="px-5 py-3 flex items-start gap-3 group transition hover:bg-[#fafcfb]">
               <button
+                type="button"
+                role="checkbox"
+                aria-checked={!!todo.done}
                 onClick={() => canEdit && toggleDone(todo)}
                 disabled={!canEdit}
-                className="mt-0.5 w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center transition disabled:cursor-not-allowed"
-                style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: "2px solid var(--border)" }}
-                aria-label={todo.done ? "Mark incomplete" : "Mark complete"}
+                className="w-9 h-9 -m-2 mt-[-6px] flex items-center justify-center shrink-0 rounded-full disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+                aria-label={`${todo.done ? "Mark not done" : "Mark done"}: ${todo.title}`}
                 title={canEdit ? undefined : "Only the creator or assignee can update this"}
               >
-                {todo.done && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
+                <span
+                  className="w-5 h-5 rounded-full flex items-center justify-center"
+                  style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: `2px solid ${canEdit ? "#b9c7c0" : "var(--border)"}`, background: canEdit ? "white" : "var(--mist)" }}
+                >
+                  {todo.done && (
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
               </button>
 
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? "var(--ink-faint)" : "var(--ink)" }}>
+                <p className={`text-sm font-medium leading-snug ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? "var(--ink-faint)" : "var(--ink)" }}>
                   {todo.title}
                 </p>
-                {todo.notes && <p className="text-xs mt-1 truncate" style={{ color: "var(--ink-faint)" }}>{todo.notes}</p>}
-                <p className="text-xs mt-1" style={{ color: "var(--ink-faint)" }}>
-                  {assigneeName ? `Assigned to ${assigneeName}` : "Unassigned"}
-                  {creatorName ? ` · added by ${creatorName}` : ""}
-                  {todo.due_date ? ` · due ${formatDate(todo.due_date)}` : ""}
+                {todo.notes && !todo.done && <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--ink-soft)" }}>{todo.notes}</p>}
+                <p className="text-xs mt-1 flex flex-wrap items-center gap-x-1.5" style={{ color: "var(--ink-faint)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: PRIORITY_DOT[todo.priority] || PRIORITY_DOT.medium }} aria-hidden="true" />
+                  <span>{assigneeName ? (todo.assigned_to === currentEmployeeId ? "Assigned to you" : `Assigned to ${assigneeName}`) : "Unassigned"}</span>
+                  {creatorName && <span>· added by {todo.created_by === currentEmployeeId ? "you" : creatorName}</span>}
+                  {todo.due_date && <span>· {toDayKey(todo.due_date) < dayKey() && !todo.done ? "was due" : "due"} {relativeDayLabel(toDayKey(todo.due_date)).toLowerCase()}</span>}
                 </p>
               </div>
 
               {canDelete && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                  <button onClick={() => handleDelete(todo.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>
+                <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition shrink-0">
+                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-[8px] transition hover:bg-red-50" style={{ color: "#a83226" }}>
                     Delete
                   </button>
                 </div>
               )}
-            </div>
+            </li>
           );
         })}
-      </div>
-    </div>
+      </ul>
+    </Card>
   );
 }

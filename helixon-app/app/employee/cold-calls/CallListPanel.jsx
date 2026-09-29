@@ -315,7 +315,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
         ) : visible.length === 0 ? (
           <p className="py-8 text-center text-sm" style={{ color: "var(--ink-faint)" }}>No contacts match.</p>
         ) : (
-          <ul className="divide-y" style={{ borderColor: "var(--border-soft)" }}>
+          <ul className="divide-y divide-[var(--border-soft)]">
             {visible.slice(0, shown).map((row) => {
               const claimed = activeClaim(row, now);
               const mine = claimed && row.claimed_by === employee?.id;

@@ -61,11 +61,12 @@ export default function OnboardingPanel() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="w-full flex items-center justify-between rounded-[14px] px-4 py-3 mb-8 text-left transition hover:opacity-90"
+        type="button"
+        className="w-full flex items-center justify-between rounded-[14px] px-4 py-3 text-left transition hover:opacity-90"
         style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
       >
         <span className="text-xs font-medium" style={{ color: "var(--forest)" }}>
-          ✓ Onboarding complete - all {totalCount} steps done
+          ✓ Onboarding complete: all {totalCount} steps done
         </span>
         <span className="text-xs" style={{ color: "var(--forest)" }}>View</span>
       </button>
@@ -73,36 +74,40 @@ export default function OnboardingPanel() {
   }
 
   return (
-    <div className="rounded-[16px] overflow-hidden mb-8" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="px-6 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border)" }}>
+    <section className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-labelledby="onboarding-title">
+      <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border-soft)" }}>
         <div>
-          <h2 className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--forest)" }}>Getting started</p>
+          <h2 id="onboarding-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Onboarding
           </h2>
           <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{completedCount} of {totalCount} steps complete</p>
         </div>
         {done && (
-          <button onClick={() => setExpanded(false)} className="text-xs" style={{ color: "var(--ink-soft)" }}>
+          <button type="button" onClick={() => setExpanded(false)} className="text-xs" style={{ color: "var(--ink-soft)" }}>
             Collapse
           </button>
         )}
       </div>
 
-      <div className="px-6 pt-4">
+      <div className="px-5 pt-4">
         <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
           <div className="h-full transition-all" style={{ width: `${pct}%`, background: "var(--forest)" }} />
         </div>
       </div>
 
-      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+      <ul className="divide-y divide-[var(--border-soft)]">
         {tasks.map((task) => (
-          <div key={task.key} className="px-6 py-3.5 flex items-start gap-3">
+          <li key={task.key} className="px-5 py-3.5 flex items-start gap-3">
             <button
+              type="button"
+              role="checkbox"
+              aria-checked={!!task.completed}
               onClick={() => toggle(task.key, !task.completed)}
               disabled={busyKey === task.key}
               className="mt-0.5 w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center transition disabled:opacity-50"
               style={task.completed ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: "2px solid var(--border)" }}
-              aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
+              aria-label={task.label}
             >
               {task.completed && (
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -118,9 +123,9 @@ export default function OnboardingPanel() {
                 <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{task.description}</p>
               )}
             </div>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 }
