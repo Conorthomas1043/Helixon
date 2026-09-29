@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList, ServiceStatus } from "../_shared/ui";
 import TrafficMapPanel from "../_shared/TrafficMapPanel";
 import { RequestTable } from "../_shared/table";
+import { RequestInspector } from "../_shared/traffic-ui";
 import RecentPanels from "./RecentPanels";
 import { useAdminStats, useAdminTraffic, useAdminOps, useAdminHealth } from "../_shared/hooks";
 
@@ -23,6 +24,8 @@ function formatCurrency(amount, currency = "GBP") {
 export default function CommandPage() {
   const router = useRouter();
   const [range, setRange] = useState("24h");
+  const [inspecting, setInspecting] = useState(null);
+  const closeInspector = useCallback(() => setInspecting(null), []);
 
   const { stats, error: statsError, reload: reloadStats } = useAdminStats(range);
   const {
@@ -270,8 +273,10 @@ export default function CommandPage() {
           </Link>
         </div>
 
-        <RequestTable rows={trafficRows.slice(0, 20)} blockedSet={blockedSet} onBlock={block} />
+        <RequestTable rows={trafficRows.slice(0, 20)} blockedSet={blockedSet} onBlock={block} onOpen={(row) => setInspecting(row.id)} />
       </section>
+
+      <RequestInspector id={inspecting} onClose={closeInspector} onBlock={block} blocked={(ip) => blockedSet.has(ip)} />
     </>
   );
 }

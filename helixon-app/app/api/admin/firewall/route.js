@@ -1,4 +1,4 @@
-import { isIP } from "node:net";
+import { BlockList, isIP } from "node:net";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
 import { getAdminSupabase } from "@/lib/admin-supabase";
@@ -7,13 +7,14 @@ import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
-import { RULE_KINDS, clearFirewallRulesCache, isCountryCode, ruleProblem } from "@/lib/security/rules";
+import { RULE_KINDS, clearFirewallRulesCache, isCountryCode, parseCidr, ruleProblem } from "@/lib/security/rules";
 import { alertRecipients, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
 
 // The Security page's controls beyond single IP blocks:
 //   GET                          rules, the policy in force, the admin's own IP
 //   POST   { kind, value, note, hours }   add an allow-list IP, or block a country,
-//                                         a path prefix or a user-agent fragment
+//                                         an IP range (CIDR), a path prefix or a
+//                                         user-agent fragment
 //   DELETE { id }                         remove a rule
 //   PATCH  { policy }                     thresholds / auto-block / alert emails on-off
 //   PATCH  { alerts }                     who gets alert emails (firewall + daily health)
@@ -70,6 +71,19 @@ export async function POST(request) {
     const problem = ruleProblem(kind, value);
     if (problem) return json({ error: problem }, 400);
     if (kind === "block_ua") value = value.toLowerCase();
+    if (kind === "block_cidr") {
+      // Blocking a range you're in would lock you out of this console.
+      const cidr = parseCidr(value);
+      const mine = getClientIp(request);
+      const family = isIP(mine);
+      if (family === cidr.family) {
+        const list = new BlockList();
+        list.addSubnet(cidr.address, cidr.prefix, family === 4 ? "ipv4" : "ipv6");
+        if (list.check(mine, family === 4 ? "ipv4" : "ipv6")) {
+          return json({ error: `That range includes your own IP (${mine}). Allow-list your IP first if you really mean it.` }, 400);
+        }
+      }
+    }
 
     const hours = Number(body.hours);
     const expiresAt = Number.isFinite(hours) && hours > 0 ? new Date(Date.now() + Math.min(hours, 24 * 365) * 3600e3).toISOString() : null;
@@ -87,7 +101,7 @@ export async function POST(request) {
 
     await writeAdminAudit({
       adminUsername: admin.username,
-      action: { allow_ip: "firewall_allow_ip", block_country: "firewall_block_country", block_path: "firewall_block_path", block_ua: "firewall_block_ua" }[kind],
+      action: { allow_ip: "firewall_allow_ip", block_country: "firewall_block_country", block_path: "firewall_block_path", block_ua: "firewall_block_ua", block_cidr: "firewall_block_cidr" }[kind],
       targetType: "firewall_rule",
       targetId: data.id,
       metadata: { value, note, expiresAt },

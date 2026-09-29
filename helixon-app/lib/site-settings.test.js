@@ -38,6 +38,7 @@ describe("cleanSetting", () => {
       autoBlock: false,
       autoBlockHours: 24,
       emailAlerts: true,
+      blockOnQuery: false,
     });
     expect(cleanSetting("firewall", {})).toEqual(DEFAULTS.firewall);
   });
@@ -53,6 +54,11 @@ describe("cleanSetting", () => {
       healthDigest: false,
     });
     expect(cleanSetting("alerts", {})).toEqual({ recipients: [], healthDigest: true });
+  });
+
+  it("keeps request capture settings to known values", () => {
+    expect(cleanSetting("traffic", { captureHeaders: false, detailDays: 99 })).toEqual({ captureHeaders: false, capturePayloads: true, detailDays: 14 });
+    expect(cleanSetting("traffic", { detailDays: 3 }).detailDays).toBe(3);
   });
 
   it("rejects unknown keys", () => {

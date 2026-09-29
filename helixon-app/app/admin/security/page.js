@@ -79,6 +79,14 @@ function PolicyPanel({ policy, onSaved }) {
             </div>
           </div>
           <Switch id="fw-auto" label="Block automatically" description="Off: suspicious IPs are only flagged, and a person decides." checked={value.autoBlock} onChange={(on) => set({ autoBlock: on })} />
+          <Switch
+            id="fw-query"
+            label="Also block on attacks in query strings"
+            description="Query strings are always scored and flagged. Off by default because searches (yours included) can look like SQL - allow-list your IP before turning this on."
+            checked={value.blockOnQuery}
+            disabled={!value.autoBlock}
+            onChange={(on) => set({ blockOnQuery: on })}
+          />
           <div className="field">
             <label htmlFor="fw-hours">Automatic blocks last</label>
             <select id="fw-hours" value={value.autoBlockHours} onChange={(e) => set({ autoBlockHours: Number(e.target.value) })} disabled={!value.autoBlock}>
@@ -176,7 +184,7 @@ export default function SecurityPage() {
   const rules = firewall.data?.rules || [];
   const allowList = rules.filter((r) => r.kind === "allow_ip" && !r.expired);
   const countryBlocks = rules.filter((r) => r.kind === "block_country" && !r.expired);
-  const requestBlocks = rules.filter((r) => (r.kind === "block_path" || r.kind === "block_ua") && !r.expired);
+  const requestBlocks = rules.filter((r) => ["block_path", "block_ua", "block_cidr"].includes(r.kind) && !r.expired);
   const blockedCountrySet = new Set(countryBlocks.map((r) => r.value));
   const myIp = firewall.data?.myIp;
   const myIpAllowed = allowList.some((r) => r.value === myIp);
@@ -238,7 +246,8 @@ export default function SecurityPage() {
 
   async function submitRequestBlock(e) {
     e.preventDefault();
-    const label = requestForm.kind === "block_path" ? `Requests to ${requestForm.value.trim()} are blocked` : `User agents containing “${requestForm.value.trim()}” are blocked`;
+    const v = requestForm.value.trim();
+    const label = { block_path: `Requests to ${v} are blocked`, block_ua: `User agents containing “${v}” are blocked`, block_cidr: `Range ${v} is blocked` }[requestForm.kind];
     if (await addRule(requestForm.kind, requestForm.value.trim(), requestForm.note.trim(), requestForm.hours, label)) {
       setRequestForm((f) => ({ ...f, value: "", note: "" }));
     }
@@ -405,18 +414,19 @@ export default function SecurityPage() {
       </div>
 
       <div className="split section">
-        <Panel title="Path and user-agent blocks" sub="Refuse matching requests from anyone (the IP isn't blocked). For probes like /wp-admin or tools like sqlmap.">
+        <Panel title="Range, path and user-agent blocks" sub="Refuse a whole IP range, or matching requests from anyone. For scans spread across a /24, probes like /wp-admin, or tools like sqlmap.">
           <form onSubmit={submitRequestBlock} className="inline-form" style={{ marginTop: 12 }}>
             <select className="select-input" value={requestForm.kind} onChange={(e) => setRequestForm((f) => ({ ...f, kind: e.target.value }))} aria-label="Rule type">
               <option value="block_path">Path starts with</option>
               <option value="block_ua">User agent contains</option>
+              <option value="block_cidr">IP range (CIDR)</option>
             </select>
             <input
               className="search-input no-icon"
-              placeholder={requestForm.kind === "block_path" ? "/wp-admin" : "sqlmap"}
+              placeholder={{ block_path: "/wp-admin", block_ua: "sqlmap", block_cidr: "45.9.1.0/24" }[requestForm.kind]}
               value={requestForm.value}
               onChange={(e) => setRequestForm((f) => ({ ...f, value: e.target.value }))}
-              aria-label={requestForm.kind === "block_path" ? "Path prefix" : "User-agent fragment"}
+              aria-label={{ block_path: "Path prefix", block_ua: "User-agent fragment", block_cidr: "IP range" }[requestForm.kind]}
               required
               maxLength={64}
             />
@@ -426,14 +436,14 @@ export default function SecurityPage() {
             <button className="btn small danger" disabled={working || requestForm.value.trim().length < 2}>Block</button>
           </form>
           {requestBlocks.length === 0 ? (
-            <div className="empty" style={{ padding: "20px 0 6px" }}>No path or user-agent blocks.</div>
+            <div className="empty" style={{ padding: "20px 0 6px" }}>No range, path or user-agent blocks.</div>
           ) : (
             <div className="mini-list" style={{ marginTop: 10 }}>
               {requestBlocks.map((r) => (
                 <div className="mini-row" key={r.id}>
                   <div style={{ minWidth: 0 }}>
                     <div>
-                      <span className="faint" style={{ fontSize: 12 }}>{r.kind === "block_path" ? "Path " : "User agent "}</span>
+                      <span className="faint" style={{ fontSize: 12 }}>{{ block_path: "Path ", block_ua: "User agent ", block_cidr: "Range " }[r.kind]}</span>
                       <b className="mono">{r.value}</b>
                       <span className="faint" style={{ fontSize: 12 }}> · <Expiry at={r.expires_at} /></span>
                     </div>
@@ -450,7 +460,7 @@ export default function SecurityPage() {
       </div>
 
       <div className="footer-note section">
-        Order of rules: the allow list wins, then country blocks, then path and user-agent blocks, then IP blocks, then the automatic policy. Locations come from Vercel edge headers - no third-party lookup.
+        Order of rules: the allow list wins, then country blocks, then IP ranges, then path and user-agent blocks, then single IP blocks, then the automatic policy. Locations come from Vercel edge headers - no third-party lookup.
       </div>
     </>
   );

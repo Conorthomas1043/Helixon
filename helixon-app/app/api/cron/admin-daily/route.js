@@ -17,6 +17,9 @@ import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 //   3. delete IP blocks and firewall rules that expired over a week ago
 //   4. run the health checks and email the alert recipients if anything is
 //      down (Admin > Security > Who gets alerts)
+//   5. clear full request detail older than the retention set on the
+//      Traffic page: headers always; query strings and blocked-request
+//      bodies too, unless the request was flagged as an attack
 // Each step is independent: one failing doesn't stop the rest.
 //
 // Daily because that's the most a Hobby-plan Vercel cron can run. Same
@@ -94,6 +97,23 @@ async function tidyExpiredRules(now) {
   return { blocks: blocks.data?.length || 0, rules: rules.data?.length || 0 };
 }
 
+async function pruneRequestDetail(settings, now) {
+  const days = settings.traffic?.detailDays || 14;
+  const cutoff = new Date(now - days * 86400e3).toISOString();
+  const [headers, rest] = await Promise.all([
+    supabase.from("request_logs").update({ headers: null }, { count: "exact" }).lt("ts", cutoff).not("headers", "is", null),
+    supabase
+      .from("request_logs")
+      .update({ query: null, payload: null }, { count: "exact" })
+      .lt("ts", cutoff)
+      .lt("threat_score", 20)
+      .or("query.not.is.null,payload.not.is.null"),
+  ]);
+  if (headers.error) throw new Error(headers.error.message);
+  if (rest.error) throw new Error(rest.error.message);
+  return { days, headersCleared: headers.count || 0, detailCleared: rest.count || 0 };
+}
+
 async function dailyHealthCheck(settings) {
   const [services, checks] = await Promise.all([getServicesSnapshot(), getFullHealthChecksSnapshot()]);
   const grade = gradeHealth({ ...services, ...checks }, settings.health?.muted || []);
@@ -144,6 +164,7 @@ export async function GET(request) {
   await step("demosEnded", () => endExpiredDemos(nowIso));
   await step("tidied", () => tidyExpiredRules(now));
   await step("health", () => dailyHealthCheck(settings));
+  await step("requestDetail", () => pruneRequestDetail(settings, now));
 
   return NextResponse.json({ ok: true, ...result });
 }

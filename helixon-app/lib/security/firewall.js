@@ -44,6 +44,10 @@ function resolvePolicy(policy) {
     autoBlock: policy?.autoBlock !== false,
     autoBlockHours: Number(policy?.autoBlockHours) || 0,
     emailAlerts: policy?.emailAlerts !== false,
+    // Query strings carry free-text searches (admins' included), so by
+    // default attacks found there are recorded and flagged but don't
+    // auto-block; an admin can opt in on the Security page.
+    blockOnQuery: policy?.blockOnQuery === true,
   };
 }
 
@@ -78,12 +82,13 @@ export async function enforceFirewallPolicy({
   alreadyBlocked,
   policy,
   alertTo,
+  query = "",
 }) {
   if (alreadyBlocked || !ip || ip === "unknown") return Boolean(alreadyBlocked);
-  const { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts } = resolvePolicy(policy);
+  const { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts, blockOnQuery } = resolvePolicy(policy);
 
   try {
-    const threat = scoreRequest({ path, user_agent: userAgent, method, blocked: false });
+    const threat = scoreRequest({ path, query: blockOnQuery ? query : "", user_agent: userAgent, method, blocked: false });
     if (threat.score < alertThreshold) return false;
 
     // Never auto-block on a request another website made the visitor's

@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { isTextualBody, stripSecretHeaders } from "@/lib/request-capture";
 import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/site-gate";
 import {
   ADMIN_SESSION_COOKIE,
@@ -121,7 +122,7 @@ export const config = {
 // has a request context to read from. Clerk manages its own session
 // cookies internally - there's no more manual cookie-copying dance like
 // the old Supabase refresh-token flow required.
-export default clerkMiddleware(async (auth, request: NextRequest) => {
+export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   const { pathname } = request.nextUrl;
 
   // ── 0. Maintenance gate - checked first, before anything else ────────────
@@ -172,6 +173,32 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   // ── 2. Check blocked IPs (and the maintenance switch) ───────────────────
   let blocked = false;
   let maintenance = false;
+  let capturePayload = false;
+  let logged = false;
+  // Ties this request's log line to anything reported about it later.
+  const uid = crypto.randomUUID();
+  // Requests this proxy may still redirect or 404 after logging - the log
+  // line is written before the answer, so it can be updated.
+  const mayFollowUp =
+    SIGNED_IN_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/api/admin/") ||
+    (HIDE_ADMIN && pathname === `/${ADMIN_LOGIN_SLUG}`);
+  // Background update to this request's log line (the request inspector
+  // on Admin > Traffic shows it). Never delays the response.
+  const report = (update: Record<string, unknown>) => {
+    if (!logged) return;
+    event.waitUntil(
+      fetch(new URL("/api/internal/edge-log", request.url), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-secret": process.env.INTERNAL_EDGE_LOG_SECRET || "",
+        },
+        body: JSON.stringify({ uid, ...update }),
+      }).catch(() => {})
+    );
+  };
   try {
     const logRes = await fetch(
       new URL("/api/internal/edge-log", request.url),
@@ -199,19 +226,46 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
           // from one another site made their browser send (an <img>, a
           // link) - see lib/security/firewall.js.
           fetchSite: request.headers.get("sec-fetch-site") || "",
+          // For the request inspector. Cookies, tokens and other secrets
+          // never leave this function (lib/request-capture.js); edge-log
+          // redacts again before anything is stored.
+          uid,
+          mayFollowUp,
+          query: request.nextUrl.search,
+          host: request.headers.get("host") || "",
+          protocol: request.headers.get("x-forwarded-proto") || request.nextUrl.protocol.replace(":", ""),
+          headers: stripSecretHeaders(Object.fromEntries(request.headers.entries())),
+          region: request.headers.get("x-vercel-ip-country-region") || "",
+          postal: request.headers.get("x-vercel-ip-postal-code") || "",
+          timezone: request.headers.get("x-vercel-ip-timezone") || "",
+          edgeId: request.headers.get("x-vercel-id") || "",
         }),
       }
     );
     if (logRes.ok) {
-      const { isBlocked, maintenance: underMaintenance } = await logRes.json();
+      const { isBlocked, maintenance: underMaintenance, capturePayload: keepBody } = await logRes.json();
       blocked = !!isBlocked;
       maintenance = !!underMaintenance;
+      capturePayload = !!keepBody;
+      logged = true;
     }
   } catch {
     // fail open
   }
 
   if (blocked) {
+    // Keep what a blocked request tried to send (text bodies only, small
+    // ones, redacted by edge-log) - it's refused anyway, so reading it
+    // costs nothing, and it shows what the attack was.
+    const contentType = request.headers.get("content-type") || "";
+    const length = Number(request.headers.get("content-length") || 0);
+    if (capturePayload && MUTATING_METHODS.has(method) && isTextualBody(contentType) && length > 0 && length <= 65536) {
+      try {
+        report({ payload: (await request.text()).slice(0, 20000), contentType });
+      } catch {
+        // unreadable body - nothing to keep
+      }
+    }
     // API callers need a JSON error they can parse; browser page
     // navigations need an actual page - previously this returned raw JSON
     // for both, so a blocked visitor hitting any page saw unstyled JSON
@@ -237,6 +291,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     !(await verifyGateCookie(request.cookies.get(GATE_COOKIE_NAME)?.value)) &&
     !(await verifyAdminSessionToken(request.cookies.get(ADMIN_SESSION_COOKIE)?.value))
   ) {
+    report({ outcome: "redirected", statusCode: 307, location: "/under-development", rule: "maintenance" });
     return NextResponse.redirect(new URL("/under-development", request.url));
   }
 
@@ -261,6 +316,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
       // user to /dashboard regardless of what they were trying to reach.
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect_url", pathname + request.nextUrl.search);
+      report({ outcome: "redirected", statusCode: 307, location: "/login", rule: "sign_in" });
       return NextResponse.redirect(loginUrl);
     }
   }
@@ -281,6 +337,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     }
     // The default URL no longer exists.
     if (pathname === ADMIN_LOGIN_PATH) {
+      report({ outcome: "not_found", statusCode: 404, rule: "admin" });
       return notFoundResponse(request);
     }
   }
@@ -294,10 +351,14 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     const adminSession = await verifyAdminSessionToken(adminToken);
 
     if (!adminSession) {
-      if (HIDE_ADMIN) return notFoundResponse(request);
+      if (HIDE_ADMIN) {
+        report({ outcome: "not_found", statusCode: 404, rule: "admin" });
+        return notFoundResponse(request);
+      }
       // Default behaviour: pages go to the login page; API routes do their own
       // 401 handling below (unchanged).
       if (isAdminPage) {
+        report({ outcome: "redirected", statusCode: 307, location: ADMIN_LOGIN_PATH, rule: "admin" });
         return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
       }
     }

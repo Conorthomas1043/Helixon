@@ -9,6 +9,7 @@ import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
 import { blockIsActive } from "@/lib/security/rules";
+import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
 import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow, aggregateTrafficRows } from "@/lib/admin-traffic";
 
@@ -107,6 +108,12 @@ function isPrivateOrReservedIp(ip) {
 // Rows returned for the request log table. The map and totals don't come
 // from these - they're aggregated over the whole range in the database.
 const LOG_LIMIT = 2000;
+// The log list: everything but the heavy detail (headers, bodies), which
+// the inspector fetches per request.
+const LOG_COLUMNS = "id,ip,user_agent,method,path,query,host,country,city,lat,lon,referer,blocked,ts,outcome,status_code,location,rule,threat_score,signals";
+const LOG_COLUMNS_BASIC = "id,ip,user_agent,method,path,country,city,lat,lon,referer,blocked,ts";
+const OUTCOMES = new Set(["allowed", "blocked", "redirected", "not_found"]);
+const METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
 
 export async function GET(request) {
   try {
@@ -118,36 +125,73 @@ export async function GET(request) {
     const since = new Date(Date.now() - rangeHours(range) * 60 * 60 * 1000).toISOString();
 
     // Optional request-log filters (the map's "show requests from here",
-    // and the log's own filter controls).
+    // and the log's own filter controls). All values go in as data (eq /
+    // ilike with LIKE wildcards escaped), never as filter syntax.
     const country = cleanLine(url.searchParams.get("country"), 8)?.toUpperCase() || null;
     const ipFilter = cleanLine(url.searchParams.get("ip"), 64) || null;
     const onlyBlocked = url.searchParams.get("blocked") === "1";
+    const outcome = OUTCOMES.has(url.searchParams.get("outcome")) ? url.searchParams.get("outcome") : null;
+    const flagged = url.searchParams.get("flagged") === "1";
+    const methodFilter = METHODS.has(String(url.searchParams.get("method") || "").toUpperCase()) ? url.searchParams.get("method").toUpperCase() : null;
+    const pathFilter = cleanLine(url.searchParams.get("path"), 200) || null;
+    const uaFilter = cleanLine(url.searchParams.get("ua"), 120) || null;
+    const time = (name) => (Number.isFinite(Date.parse(url.searchParams.get(name) || "")) ? new Date(url.searchParams.get(name)).toISOString() : null);
+    // Keyset paging for "load older": everything strictly before this time.
+    const before = time("before");
+    // A slice of the range (a bar clicked on the timeline): from <= ts < to.
+    const from = time("from");
+    const to = time("to");
+    const lower = from && from > since ? from : since;
+    const upper = [before, to].filter(Boolean).sort()[0] || null;
+    const like = (value) => `%${value.replace(/[\\%_]/g, "\\$&")}%`;
 
-    let logQuery = supabase
-      .from("request_logs")
-      .select("id,ip,user_agent,method,path,country,city,lat,lon,referer,blocked,ts")
-      .gte("ts", since)
-      .order("ts", { ascending: false })
-      .limit(LOG_LIMIT);
-    if (country) logQuery = logQuery.eq("country", country);
-    if (ipFilter && isValidIp(ipFilter)) logQuery = logQuery.eq("ip", ipFilter.trim());
-    if (onlyBlocked) logQuery = logQuery.eq("blocked", true);
+    const buildLog = (columns) => {
+      let query = supabase.from("request_logs").select(columns).gte("ts", lower).order("ts", { ascending: false }).limit(LOG_LIMIT);
+      if (upper) query = query.lt("ts", upper);
+      if (country) query = query.eq("country", country);
+      if (ipFilter && isValidIp(ipFilter)) query = query.eq("ip", ipFilter.trim());
+      if (onlyBlocked) query = query.eq("blocked", true);
+      if (methodFilter) query = query.eq("method", methodFilter);
+      if (pathFilter) query = query.ilike("path", like(pathFilter));
+      if (uaFilter) query = query.ilike("user_agent", like(uaFilter));
+      // Rows logged before outcomes were recorded only know blocked or not.
+      if (outcome === "blocked") query = query.eq("blocked", true);
+      else if (outcome === "allowed") query = query.or("outcome.eq.allowed,and(outcome.is.null,blocked.is.false)");
+      else if (outcome) query = query.eq("outcome", outcome);
+      if (flagged) query = query.gte("threat_score", 20);
+      return query;
+    };
+    let logQuery = buildLog(LOG_COLUMNS);
 
     const blockedQuery = (columns) => supabase.from("blocked_ips").select(columns).order("created_at", { ascending: false });
-    let [requestLogsResult, blockedIpsResult, geoResult, summaryResult, settings] = await Promise.all([
+    let [requestLogsResult, blockedIpsResult, geoResult, summaryResult, settings, timelineResult, topIpsResult] = await Promise.all([
       logQuery,
       blockedQuery("ip,reason,created_at,created_by,expires_at"),
       supabase.rpc("admin_traffic_geo", { p_since: since }),
       supabase.rpc("admin_traffic_summary", { p_since: since }),
       getSiteSettings(),
+      // Hourly up to a week, daily beyond.
+      supabase.rpc("admin_traffic_timeline", { p_since: since, p_bucket: rangeHours(range) > 24 * 7 ? "day" : "hour" }),
+      supabase.rpc("admin_top_ips", { p_since: since, p_limit: 15 }),
     ]);
     // expires_at arrives with migration 20260929030000.
     if (blockedIpsResult.error?.code === "42703") blockedIpsResult = await blockedQuery("ip,reason,created_at,created_by");
+    // The inspector columns arrive with migration 20260929040000.
+    if (requestLogsResult.error?.code === "42703") requestLogsResult = await buildLog(LOG_COLUMNS_BASIC);
 
     if (requestLogsResult.error) return adminDbError("traffic", requestLogsResult.error);
     if (blockedIpsResult.error) return adminDbError("traffic", blockedIpsResult.error);
 
-    const rows = (requestLogsResult.data || []).map((row) => ({ ...row, city: decodePlace(row.city) }));
+    const rows = (requestLogsResult.data || []).map((row) => {
+      const out = { ...row, city: decodePlace(row.city) };
+      // Rows logged before scores were stored are scored the same way now.
+      if (row.threat_score === null || row.threat_score === undefined) {
+        const threat = scoreRequest(row);
+        out.threat_score = threat.score;
+        out.signals = threat.signals;
+      }
+      return out;
+    });
 
     // Whole-range aggregates from the database. If the functions aren't
     // there (migration 20260929020000 not applied yet), fall back to
@@ -181,9 +225,18 @@ export async function GET(request) {
       since,
       rows,
       logLimit: LOG_LIMIT,
-      filters: { country, ip: ipFilter, blocked: onlyBlocked },
+      filters: { country, ip: ipFilter, blocked: onlyBlocked, outcome, flagged, method: methodFilter, path: pathFilter, ua: uaFilter, before, from, to },
       // Expired time-limited blocks no longer apply, so they aren't listed.
       blockedIps: (blockedIpsResult.data || []).filter((row) => blockIsActive(row)),
+      cursor: rows.length === LOG_LIMIT ? rows[rows.length - 1].ts : null,
+      timeline: timelineResult.error
+        ? null
+        : {
+            bucket: rangeHours(range) > 24 * 7 ? "day" : "hour",
+            points: (timelineResult.data || []).map((p) => ({ at: p.bucket, requests: Number(p.requests), blocked: Number(p.blocked), flagged: Number(p.flagged) })),
+          },
+      topIps: topIpsResult.error ? null : topIpsResult.data || [],
+      capture: settings.traffic,
       globe,
       summary,
       partial,

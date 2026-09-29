@@ -8,6 +8,7 @@
 //   firewall      { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts }
 //   health        { muted }  health checks that don't count toward the overall status
 //   alerts        { recipients, healthDigest }  who gets firewall and health emails
+//   traffic       { captureHeaders, capturePayloads, detailDays }  request inspector capture
 //
 // Reads are cached in memory for CACHE_MS per server instance, so a change
 // takes up to that long to reach every instance. Everything fails open to
@@ -37,10 +38,15 @@ export const DEFAULTS = Object.freeze({
   maintenance: { enabled: false, message: "" },
   announcement: { enabled: false, text: "", tone: "info", linkLabel: "", linkUrl: "" },
   features: Object.fromEntries(FEATURES.map((f) => [f.key, true])),
-  firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 0, emailAlerts: true },
+  firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 0, emailAlerts: true, blockOnQuery: false },
   health: { muted: [] },
   alerts: { recipients: [], healthDigest: true },
+  traffic: { captureHeaders: true, capturePayloads: true, detailDays: 14 },
 });
+
+// How long full request detail (headers, query, blocked payloads) is kept
+// before the daily cron clears it; the basic log line stays.
+export const DETAIL_DAYS = [3, 7, 14, 30];
 
 const EMAIL_RE = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
 
@@ -97,6 +103,15 @@ export function cleanSetting(key, raw) {
       // 0 = permanent; otherwise auto-blocks lift after this many hours.
       autoBlockHours: int(value.autoBlockHours, 0, 24 * 90, d.autoBlockHours),
       emailAlerts: value.emailAlerts !== false,
+      blockOnQuery: value.blockOnQuery === true,
+    };
+  }
+  if (key === "traffic") {
+    const days = Number(value.detailDays);
+    return {
+      captureHeaders: value.captureHeaders !== false,
+      capturePayloads: value.capturePayloads !== false,
+      detailDays: DETAIL_DAYS.includes(days) ? days : 14,
     };
   }
   if (key === "alerts") {

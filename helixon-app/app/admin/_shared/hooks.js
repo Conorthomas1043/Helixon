@@ -48,7 +48,17 @@ export function useAdminTraffic(range, filters = {}) {
     filters.country ? `country=${encodeURIComponent(filters.country)}` : "",
     filters.ip ? `ip=${encodeURIComponent(filters.ip)}` : "",
     filters.blocked ? "blocked=1" : "",
+    filters.outcome ? `outcome=${encodeURIComponent(filters.outcome)}` : "",
+    filters.flagged ? "flagged=1" : "",
+    filters.method ? `method=${encodeURIComponent(filters.method)}` : "",
+    filters.path ? `path=${encodeURIComponent(filters.path)}` : "",
+    filters.ua ? `ua=${encodeURIComponent(filters.ua)}` : "",
+    filters.from ? `from=${encodeURIComponent(filters.from)}` : "",
+    filters.to ? `to=${encodeURIComponent(filters.to)}` : "",
   ].filter(Boolean).join("&");
+  // Older pages of the log, appended by loadOlder(); cleared whenever the
+  // filters (qs) change or the log reloads.
+  const [older, setOlder] = useState({ qs: "", rows: [], cursor: null });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -68,12 +78,35 @@ export function useAdminTraffic(range, filters = {}) {
       }
 
       setTraffic(data);
+      setOlder({ qs, rows: [], cursor: null });
     } catch (err) {
       setError(err?.message || "Failed to load traffic.");
     } finally {
       setLoading(false);
     }
   }, [qs]);
+
+  // Next page of older requests (keyset: everything before the oldest row
+  // shown so far).
+  const loadOlder = useCallback(async () => {
+    const current = older.qs === qs ? older : { qs, rows: [], cursor: null };
+    const cursor = current.cursor || traffic?.cursor;
+    if (!cursor) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/admin/traffic?${qs}&before=${encodeURIComponent(cursor)}`, { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || "Failed to load older requests.");
+      setOlder({ qs, rows: [...current.rows, ...(data.rows || [])], cursor: data.cursor || null, done: !data.cursor });
+    } catch (err) {
+      toast.error(err?.message || "Failed to load older requests.");
+    } finally {
+      setBusy(false);
+    }
+  }, [qs, older, traffic]);
+
+  const olderRows = older.qs === qs ? older.rows : [];
+  const hasOlder = older.qs === qs && older.rows.length ? !older.done : Boolean(traffic?.cursor);
 
   useEffect(() => {
     load();
@@ -147,7 +180,7 @@ export function useAdminTraffic(range, filters = {}) {
     [load],
   );
 
-  return { traffic, error, busy, loading, reload: load, block, unblock };
+  return { traffic, error, busy, loading, reload: load, block, unblock, olderRows, hasOlder, loadOlder };
 }
 
 const USER_ACTION_DONE = {

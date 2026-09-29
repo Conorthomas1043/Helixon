@@ -6,16 +6,31 @@ const RULES = [
   { name: "scanner-ua", score: 20, re: /(?:sqlmap|nikto|nmap|masscan|zgrab|nuclei|dirbuster|gobuster|burpsuite|wpscan|ffuf)/i },
 ];
 
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value.replace(/\+/g, " "));
+  } catch {
+    return value;
+  }
+}
+
+// `query` (the part after "?") is scored with the path, both as sent and
+// percent-decoded: injection and XSS probes usually arrive as encoded
+// query parameters (?id=1%27%20OR%201%3D1), which a path-only check never
+// saw.
 export function scoreRequest(input = {}) {
   const path = String(input.path || "");
+  const query = String(input.query || "").replace(/^\?/, "");
+  const target = query ? `${path}?${query}` : path;
+  const url = `${target}\n${safeDecode(target)}`;
   const ua = String(input.user_agent || "");
   const method = String(input.method || "GET");
   let score = 0;
   const signals = [];
 
   for (const rule of RULES) {
-    const target = rule.name === "scanner-ua" ? ua : path;
-    if (rule.re.test(target)) {
+    const subject = rule.name === "scanner-ua" ? ua : rule.name === "sensitive-path-probe" ? path : url;
+    if (rule.re.test(subject)) {
       score += rule.score;
       signals.push(rule.name);
     }

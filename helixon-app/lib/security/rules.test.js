@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 
-const { blockIsActive, indexRules, isCountryCode, matchRequestRule, ruleProblem } = await import("./rules");
+const { blockIsActive, indexRules, isCountryCode, matchRange, matchRequestRule, parseCidr, ruleProblem } = await import("./rules");
 
 describe("indexRules", () => {
   it("indexes active allow-list IPs and upper-cased countries", () => {
@@ -59,5 +59,28 @@ describe("path and user-agent rules", () => {
     expect(ruleProblem("block_ua", "sqlmap")).toBe(null);
     expect(ruleProblem("block_ua", "Chrome")).toMatch(/almost everyone/);
     expect(ruleProblem("block_ua", "ab")).toMatch(/3-64/);
+  });
+});
+
+describe("IP range rules", () => {
+  const rules = indexRules([
+    { kind: "block_cidr", value: "45.9.1.0/24" },
+    { kind: "block_cidr", value: "2001:db8::/48" },
+  ]);
+
+  it("matches addresses inside a blocked range, IPv4 and IPv6", () => {
+    expect(matchRange(rules, "45.9.1.200")).toBe("45.9.1.0/24");
+    expect(matchRange(rules, "45.9.2.1")).toBe(null);
+    expect(matchRange(rules, "2001:db8:0:1::5")).toBe("2001:db8::/48");
+    expect(matchRange(rules, "unknown")).toBe(null);
+  });
+
+  it("parses and limits ranges", () => {
+    expect(parseCidr("10.0.0.0/8")).toEqual({ address: "10.0.0.0", prefix: 8, family: 4 });
+    expect(parseCidr("10.0.0.0/33")).toBe(null);
+    expect(ruleProblem("block_cidr", "45.9.1.0/24")).toBe(null);
+    expect(ruleProblem("block_cidr", "0.0.0.0/0")).toMatch(/too wide/);
+    expect(ruleProblem("block_cidr", "2001:db8::/16")).toMatch(/too wide/);
+    expect(ruleProblem("block_cidr", "banana")).toMatch(/like 45.9.1.0/);
   });
 });

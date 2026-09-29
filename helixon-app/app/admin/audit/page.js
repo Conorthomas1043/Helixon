@@ -49,6 +49,8 @@ const ACTIONS = {
   firewall_rule_removed: { label: "Removed a firewall rule", icon: "shield", tone: "info" },
   firewall_block_path: { label: "Blocked a request path", icon: "shield", tone: "warn" },
   firewall_block_ua: { label: "Blocked a user agent", icon: "shield", tone: "warn" },
+  firewall_block_cidr: { label: "Blocked an IP range", icon: "shield", tone: "warn" },
+  site_traffic_update: { label: "Changed request capture settings", icon: "traffic", tone: "info" },
   alert_recipients_update: { label: "Changed who gets alerts", icon: "mail", tone: "info" },
   health_checks_muted: { label: "Changed which health checks count", icon: "activity", tone: "info" },
   lead_invited: { label: "Invited a lead to sign up", icon: "userPlus", tone: "good" },
