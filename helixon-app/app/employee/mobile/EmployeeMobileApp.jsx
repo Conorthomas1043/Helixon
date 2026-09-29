@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useHeartbeat } from "../_shared/useHeartbeat";
+import { can } from "@/lib/employee-permissions";
 
 const RED = "#e0554f";
 const AMBER = "#d99a3a";
@@ -82,12 +83,14 @@ const ICONS = {
   ),
 };
 
+// `section` is the permission key (lib/employee-permissions.js); tabs the
+// employee can't view aren't shown.
 const TABS = [
-  { id: "todos", label: "To-dos", icon: "todo" },
-  { id: "calendar", label: "Calendar", icon: "calendar" },
-  { id: "calls", label: "Calls", icon: "phone" },
-  { id: "files", label: "Files", icon: "folder" },
-  { id: "stats", label: "Stats", icon: "chart" },
+  { id: "todos", label: "To-dos", icon: "todo", section: "tasks" },
+  { id: "calendar", label: "Calendar", icon: "calendar", section: "calendar" },
+  { id: "calls", label: "Calls", icon: "phone", section: "cold_calls" },
+  { id: "files", label: "Files", icon: "folder", section: "files" },
+  { id: "stats", label: "Stats", icon: "chart", section: "platform" },
 ];
 
 function formatDayHeading(iso) {
@@ -111,7 +114,8 @@ function toLocalInputValue(date) {
 }
 
 export default function EmployeeMobileApp({ employee }) {
-  const [tab, setTab] = useState("todos");
+  const tabs = TABS.filter((t) => can(employee, t.section, "view"));
+  const [tab, setTab] = useState(() => tabs[0]?.id || null);
   useHeartbeat();
 
   async function signOut() {
@@ -177,6 +181,7 @@ export default function EmployeeMobileApp({ employee }) {
         {tab === "calls" && <CallsTab employee={employee} />}
         {tab === "files" && <FilesTab employee={employee} />}
         {tab === "stats" && <StatsTab />}
+        {!tab && <p className="text-sm text-center py-16" style={{ color: "var(--ink-soft)" }}>Your account doesn&rsquo;t have access to any of these sections. Ask an admin if you need it.</p>}
       </main>
 
       <nav
@@ -193,7 +198,7 @@ export default function EmployeeMobileApp({ employee }) {
         }}
         aria-label="Sections"
       >
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const active = tab === t.id;
           return (
             <button

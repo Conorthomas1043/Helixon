@@ -3,12 +3,13 @@
 // app/api/employee/files/route.js since that one takes JSON bodies.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { uploadFile, MAX_FILE_BYTES } from "@/lib/employee-files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("files", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

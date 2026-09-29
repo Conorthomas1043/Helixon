@@ -4,11 +4,12 @@
 // lib/employee-goals.js's canWrite(), not here.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { addGoalItem, toggleGoalItem, deleteGoalItem } from "@/lib/employee-goals";
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("goals", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

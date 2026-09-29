@@ -7,11 +7,11 @@
 // lib/employee-auth.js's own username/password + cookie-session system
 // (see lib/session.js). That mismatch meant this route could never
 // actually be called by the employee dashboard: it 403'd unconditionally.
-// Rewritten to use the same getCurrentEmployeeId() session check every
+// Rewritten to use the same employeeAccess() session check every
 // other /api/employee/* route uses.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import {
   getSharedTodos,
   addSharedTodo,
@@ -20,7 +20,8 @@ import {
 } from "@/lib/employee-shared-todos";
 
 export async function GET() {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("team_tasks", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -28,7 +29,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("team_tasks", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

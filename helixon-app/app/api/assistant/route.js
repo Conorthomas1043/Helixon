@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { neutralizeUntrusted, shouldBlockChatMessage } from "@/lib/prompt-safety";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 
 // Keep this on the server only - never expose GEMINI_API_KEY to the client.
 let genAI = null;
@@ -86,6 +87,9 @@ function sanitizeMessages(rawMessages) {
 
 export async function POST(req) {
   try {
+    if (!(await isFeatureEnabled("chat_assistant"))) {
+      return featureOffResponse("The assistant is switched off right now. The contact form reaches the team directly.");
+    }
     // Public, unauthenticated, and every call bills against the Gemini key -
     // cap it per visitor IP so it can't be scripted into a cost problem.
     if (!(await rateLimit(`assistant:${getClientIp(req)}`, MAX_REQUESTS_PER_HOUR))) {

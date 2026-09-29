@@ -5,13 +5,14 @@
 // app/api/employee/goals/items/route.js.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { getGoals, addGoal, updateGoal, deleteGoal } from "@/lib/employee-goals";
 
 const VALID_STATUSES = new Set(["not_started", "in_progress", "blocked", "done"]);
 
 export async function GET() {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("goals", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -19,7 +20,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("goals", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

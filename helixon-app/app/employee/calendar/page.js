@@ -273,7 +273,7 @@ function CalendarPageContent() {
   }
 
   return (
-    <EmployeeShell>
+    <EmployeeShell section="calendar">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

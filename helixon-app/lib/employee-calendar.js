@@ -9,6 +9,7 @@
 
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
+import { can } from "@/lib/employee-permissions";
 
 const EVENT_SELECT = "*, creator:created_by(id,display_name,full_name,username)";
 
@@ -116,13 +117,16 @@ export async function regenerateFeedToken(employeeId) {
 
 export async function findEmployeeByFeedToken(token) {
   if (!token) return null;
-  const { data, error } = await supabase
-    .from("employees")
-    .select("id, is_active")
-    .eq("calendar_feed_token", token)
-    .maybeSingle();
+  const lookup = (columns) =>
+    supabase.from("employees").select(columns).eq("calendar_feed_token", token).maybeSingle();
+
+  let { data, error } = await lookup("id, is_active, role, permissions");
+  // Before the admin_controls migration there is no permissions column.
+  if (error?.code === "42703") ({ data, error } = await lookup("id, is_active, role"));
 
   if (error || !data || data.is_active === false) return null;
+  // An employee whose calendar access was removed loses the feed too.
+  if (!can(data, "calendar", "view")) return null;
   return data;
 }
 

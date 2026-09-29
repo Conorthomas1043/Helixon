@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 const SUGGESTIONS = ["How does scoring work?", "What's included in the individual plan?", "Is my data secure?"];
 
@@ -38,6 +39,8 @@ export default function ChatWidget() {
   const inputRef = useRef(null);
   const launcherRef = useRef(null);
   const showLauncher = open || scrolledPastHero;
+  // Admins can switch the assistant off on /admin/site.
+  const siteSettings = useSiteSettings();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -123,6 +126,8 @@ export default function ChatWidget() {
     e.preventDefault();
     sendMessage(input);
   }
+
+  if (siteSettings?.features?.chat_assistant === false) return null;
 
   return (
     <>

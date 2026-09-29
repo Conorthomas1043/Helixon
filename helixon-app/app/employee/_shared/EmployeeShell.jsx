@@ -9,15 +9,24 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { can } from "@/lib/employee-permissions";
 
+// `section` is the permission key (lib/employee-permissions.js) that
+// decides whether the link shows. Today has none: it adapts its cards.
 export const EMPLOYEE_SECTIONS = [
-  { href: "/employee/dashboard", label: "Today" },
-  { href: "/employee/calendar", label: "Calendar" },
-  { href: "/employee/goals", label: "Goals" },
-  { href: "/employee/cold-calls", label: "Cold calls" },
-  { href: "/employee/files", label: "Files" },
-  { href: "/employee/ops", label: "Platform" },
+  { href: "/employee/dashboard", label: "Today", section: null },
+  { href: "/employee/calendar", label: "Calendar", section: "calendar" },
+  { href: "/employee/goals", label: "Goals", section: "goals" },
+  { href: "/employee/cold-calls", label: "Cold calls", section: "cold_calls" },
+  { href: "/employee/files", label: "Files", section: "files" },
+  { href: "/employee/ops", label: "Platform", section: "platform" },
 ];
+
+/** Sections this employee can open (all of them until /me has loaded). */
+export function visibleSections(employee) {
+  if (!employee) return EMPLOYEE_SECTIONS;
+  return EMPLOYEE_SECTIONS.filter((s) => !s.section || can(employee, s.section, "view"));
+}
 
 function initialsOf(name) {
   return (
@@ -43,8 +52,9 @@ function LogoMark() {
   );
 }
 
-// The nav fetches the signed-in employee itself so pages don't all have to
-// pass it down; a page that already has it can pass `employee` to skip that.
+// The shell fetches the signed-in employee itself so pages don't all have
+// to pass it down; a page that already has it can pass `employee` to skip
+// that.
 function useEmployee(initial) {
   const [employee, setEmployee] = useState(initial || null);
   useEffect(() => {
@@ -59,10 +69,9 @@ function useEmployee(initial) {
   return initial || employee;
 }
 
-export function EmployeeNav({ employee: employeeProp }) {
+function EmployeeNav({ employee }) {
   const pathname = usePathname();
   const router = useRouter();
-  const employee = useEmployee(employeeProp);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef(null);
@@ -99,6 +108,7 @@ export function EmployeeNav({ employee: employeeProp }) {
 
   const isActive = (href) => pathname === href || pathname?.startsWith(`${href}/`);
   const name = employee?.fullName || employee?.username || "";
+  const sections = visibleSections(employee);
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Employee portal">
@@ -114,7 +124,7 @@ export function EmployeeNav({ employee: employeeProp }) {
         </Link>
 
         <ul className="hidden lg:flex items-center gap-0.5">
-          {EMPLOYEE_SECTIONS.map((s) => (
+          {sections.map((s) => (
             <li key={s.href}>
               <Link
                 href={s.href}
@@ -192,7 +202,7 @@ export function EmployeeNav({ employee: employeeProp }) {
 
       {mobileOpen && (
         <ul id="employee-mobile-nav" className="lg:hidden border-t px-4 py-2 grid grid-cols-2 gap-1 bg-white" style={{ borderColor: "var(--border)" }}>
-          {EMPLOYEE_SECTIONS.map((s) => (
+          {sections.map((s) => (
             <li key={s.href}>
               <Link
                 href={s.href}
@@ -211,12 +221,81 @@ export function EmployeeNav({ employee: employeeProp }) {
   );
 }
 
-export default function EmployeeShell({ employee, children }) {
+// Shown while an admin is using the portal: either "as" an employee
+// (impersonation, from Admin > Employees) or with their own linked
+// portal account. Exiting ends this portal session only.
+function AdminBanner({ employee }) {
+  const [leaving, setLeaving] = useState(false);
+  if (!employee?.impersonatedBy && !employee?.adminUsername) return null;
+
+  async function exit() {
+    setLeaving(true);
+    await fetch("/api/employee/logout", { method: "POST" }).catch(() => {});
+    window.location.assign(employee.impersonatedBy ? "/admin/employees" : "/admin");
+  }
+
+  const who = employee.fullName || employee.username;
+  return (
+    <div role="status" className="w-full text-[13px]" style={{ background: employee.impersonatedBy ? "#fff4d6" : "var(--mint)", borderBottom: "1px solid var(--border)", color: "var(--ink)" }}>
+      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
+        <span>
+          {employee.impersonatedBy ? (
+            <>Viewing the portal as <b>{who}</b>. Signed in by admin <b>{employee.impersonatedBy}</b>. Changes you make are saved under their name.</>
+          ) : (
+            <>Signed in from the admin console as <b>{employee.adminUsername}</b>.</>
+          )}
+        </span>
+        <button type="button" onClick={exit} disabled={leaving} className="font-semibold underline disabled:opacity-60">
+          {leaving ? "Leaving…" : employee.impersonatedBy ? "Exit to admin" : "Back to admin"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NoAccess({ label }) {
+  return (
+    <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-20 text-center">
+      <h1 className="text-2xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        {label} isn&rsquo;t available to you
+      </h1>
+      <p className="text-[15px] mt-2" style={{ color: "var(--ink-soft)" }}>
+        Your account doesn&rsquo;t have access to this part of the portal. If you need it, ask an admin to change your permissions.
+      </p>
+      <Link href="/employee/dashboard" className="inline-flex mt-6 text-sm font-semibold px-4 py-2.5 rounded-full text-white" style={{ background: "var(--forest)" }}>
+        Back to Today
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * `section` (optional) is the page's permission key. Without "view" access
+ * the page body is replaced by a short explanation; with "view" but not
+ * "edit" a read-only notice sits above it (the API refuses changes either
+ * way - this just says so up front).
+ */
+export default function EmployeeShell({ employee: employeeProp, section, children }) {
+  const employee = useEmployee(employeeProp);
+  const meta = section ? EMPLOYEE_SECTIONS.find((s) => s.section === section) : null;
+  const blocked = section && employee && !can(employee, section, "view");
+  const readOnly = section && employee && !blocked && !can(employee, section, "edit") && section !== "platform";
+
   return (
     <div className="min-h-screen" style={{ background: "var(--mist)" }}>
       <a href="#main-content" className="skip-link">Skip to content</a>
+      <AdminBanner employee={employee} />
       <EmployeeNav employee={employee} />
-      <main id="main-content">{children}</main>
+      <main id="main-content">
+        {readOnly && (
+          <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-5">
+            <p className="text-[13px] rounded-[10px] px-3.5 py-2.5" style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+              <b style={{ color: "var(--ink)" }}>View only.</b> You can look around {meta?.label ? `in ${meta.label}` : "here"}, but changes are turned off for your account.
+            </p>
+          </div>
+        )}
+        {blocked ? <NoAccess label={meta?.label || "This page"} /> : children}
+      </main>
     </div>
   );
 }

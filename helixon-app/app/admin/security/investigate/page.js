@@ -12,7 +12,10 @@ function SeverityPill({ score }) {
 
 export default function SecurityInvestigatePage() {
   const [data, setData] = useState(null);
-  const [query, setQuery] = useState("");
+  // Pre-filled from ?q= (the traffic log's "Investigate" link).
+  const [query, setQuery] = useState(() =>
+    typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("q") || "",
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 

@@ -183,14 +183,7 @@ export function Drawer({ open, onClose, title, subtitle, children }) {
 // caller's own judgement of "healthy" for whatever that service's shape
 // means (e.g. Redis: connected; Resend: every domain verified).
 export function ServiceStatus({ label, snapshot, ok, note }) {
-  const tone = !snapshot?.configured
-    ? "var(--muted)"
-    : snapshot?.error
-      ? "var(--critical)"
-      : ok
-        ? "var(--ok)"
-        : "var(--warn)";
-
+  const state = !snapshot?.configured ? "off" : snapshot?.error ? "bad" : ok ? "good" : "warn";
   const text = !snapshot?.configured
     ? "Not configured"
     : snapshot?.error
@@ -198,15 +191,37 @@ export function ServiceStatus({ label, snapshot, ok, note }) {
       : note || "Connected";
 
   return (
-    <div className="bar-row" style={{ alignItems: "center" }}>
-      <span className="bar-row-label" style={{ minWidth: 90 }}>
-        {label}
-      </span>
-      <span className="mono" style={{ color: tone, fontSize: 13 }}>
-        <span className="legend-dot" style={{ background: tone, marginRight: 6 }} />
-        {text}
+    <div className={`service service-${state}`}>
+      <span className="service-dot" aria-hidden="true" />
+      <span className="service-text">
+        <span className="service-label">{label}</span>
+        <span className="service-note" title={text}>{text}</span>
       </span>
     </div>
+  );
+}
+
+// Accessible on/off switch (a checkbox styled as a toggle). `description`
+// sits under the label; `disabled` greys it out and blocks changes.
+export function Switch({ checked, onChange, label, description, disabled, id }) {
+  const inputId = id || `sw-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return (
+    <label className={`switch-row ${disabled ? "is-disabled" : ""}`} htmlFor={inputId}>
+      <span className="switch-text">
+        <span className="switch-label">{label}</span>
+        {description && <span className="switch-desc">{description}</span>}
+      </span>
+      <input
+        id={inputId}
+        type="checkbox"
+        role="switch"
+        className="switch-input"
+        checked={!!checked}
+        disabled={disabled}
+        onChange={(e) => onChange?.(e.target.checked)}
+      />
+      <span className="switch-track" aria-hidden="true"><span className="switch-thumb" /></span>
+    </label>
   );
 }
 

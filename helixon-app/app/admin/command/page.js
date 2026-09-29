@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { PageHeader, RangeControl, KpiCard, Panel, BarList, StatList, ServiceStatus } from "../_shared/ui";
-import { Globe, useGlobePoints } from "../_shared/globe";
+import TrafficMapPanel from "../_shared/TrafficMapPanel";
 import { RequestTable } from "../_shared/table";
 import RecentPanels from "./RecentPanels";
 import { useAdminStats, useAdminTraffic, useAdminOps, useAdminHealth } from "../_shared/hooks";
@@ -20,6 +21,7 @@ function formatCurrency(amount, currency = "GBP") {
 }
 
 export default function CommandPage() {
+  const router = useRouter();
   const [range, setRange] = useState("24h");
 
   const { stats, error: statsError, reload: reloadStats } = useAdminStats(range);
@@ -60,12 +62,7 @@ export default function CommandPage() {
   const userCountIsLive = clerk?.configured && !clerk.error;
 
   const blockedSet = useMemo(() => new Set(blocked.map((entry) => entry.ip)), [blocked]);
-  const globePoints = useGlobePoints(traffic?.globe);
-
-  const geolocatedEvents = (traffic?.globe || []).reduce(
-    (sum, item) => sum + Number(item.count || 0),
-    0,
-  );
+  const summary = traffic?.summary;
 
   const error = statsError || trafficError;
 
@@ -108,7 +105,7 @@ export default function CommandPage() {
           </Link>
         }
       >
-        <div className="grid-3">
+        <div className="service-grid" style={{ marginTop: 10 }}>
           <ServiceStatus label="Stripe" snapshot={stripe} ok note={stripe?.configured ? `${stripe.totalSubscriptions ?? 0} subscriptions seen` : undefined} />
           <ServiceStatus label="Clerk" snapshot={clerk} ok note={clerk?.configured ? `${clerk.totalUsers ?? 0} users` : undefined} />
           <ServiceStatus label="Redis" snapshot={redis} ok={redis?.connected} note={redis?.connected ? `${redis.latencyMs}ms ping` : redis?.configured ? "Configured, unreachable" : undefined} />
@@ -124,12 +121,12 @@ export default function CommandPage() {
       </Panel>
 
       <div className="kpi-grid">
-        <KpiCard label="Requests" icon="traffic" value={totals.requests ?? trafficRows.length} />
+        <KpiCard label="Requests" icon="traffic" value={(summary?.requests ?? totals.requests ?? trafficRows.length).toLocaleString()} foot={summary ? `${summary.uniqueIps.toLocaleString()} unique IPs` : undefined} />
 
         <KpiCard
           label="Blocked"
           icon="ban"
-          value={totals.blockedRequests ?? trafficRows.filter((row) => row.blocked).length}
+          value={(summary?.blocked ?? totals.blockedRequests ?? trafficRows.filter((row) => row.blocked).length).toLocaleString()}
           tone="var(--critical)"
         />
 
@@ -205,32 +202,20 @@ export default function CommandPage() {
         </Panel>
       </div>
 
-      <div className="split section">
-        <div className="panel globe-panel">
-          <div className="globe-overlay">
-            <div className="panel-title">Live geo traffic</div>
-            <div className="panel-sub">Drag to rotate, scroll to zoom.</div>
-            <div className="panel-sub">{geolocatedEvents} geolocated events plotted.</div>
-          </div>
-
-          <div className="globe-legend">
-            <span className="legend-item">
-              <span className="legend-dot legend-ok" /> Traffic
-            </span>
-
-            <span className="legend-item">
-              <span className="legend-dot legend-critical" /> Hotspot
-            </span>
-          </div>
-
-          <Globe points={globePoints} />
-        </div>
+      <div className="stack section">
+        <TrafficMapPanel
+          points={traffic?.globe || []}
+          summary={summary}
+          partial={traffic?.partial}
+          onSelect={(p) => p.country && router.push(`/admin/traffic?country=${encodeURIComponent(p.country)}`)}
+          sub={summary ? `Last ${range} · click a place to see its requests` : undefined}
+        />
 
         <div className="panel">
           <div className="section">
             <div className="section-head">
               <div className="panel-title">Blocked IPs</div>
-              <Link className="panel-link" href="/admin/security">
+              <Link className="panel-link" href="/admin/traffic">
                 Manage
               </Link>
             </div>
@@ -260,25 +245,6 @@ export default function CommandPage() {
             )}
           </div>
 
-          <div className="section">
-            <div className="section-head">
-              <div className="panel-title">Jump to a section</div>
-            </div>
-            <div className="bar-list">
-              {[
-                ["/admin/traffic", "Traffic log"],
-                ["/admin/pentester", "Pentester"],
-                ["/admin/security/investigate", "Investigate"],
-                ["/admin/users", "Users"],
-                ["/admin/employees", "Employees"],
-                ["/admin/billing", "Billing"],
-              ].map(([href, label]) => (
-                <Link key={href} className="panel-link" href={href} style={{ display: "block", padding: "6px 0" }}>
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 

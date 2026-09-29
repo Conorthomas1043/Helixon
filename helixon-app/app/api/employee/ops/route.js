@@ -7,12 +7,12 @@
 // app/api/employee/shared-todos/route.js). Its frontend read a token from
 // window.__HELIXON_ACCESS_TOKEN__, which nothing in the app ever sets -
 // confirming the whole path was orphaned. Rewritten to use the same
-// getCurrentEmployeeId() session check every other /api/employee/* route
+// employeeAccess() session check every other /api/employee/* route
 // uses.
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { groupBy, classifyAcquisition } from "@/lib/ops/attribution";
 
 function client() {
@@ -24,7 +24,8 @@ function client() {
 
 export async function GET() {
   try {
-    const employeeId = await getCurrentEmployeeId();
+    const { employeeId, forbidden } = await employeeAccess("platform", "view");
+    if (forbidden) return forbidden;
     if (!employeeId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const supabase = client();

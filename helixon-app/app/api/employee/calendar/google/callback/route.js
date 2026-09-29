@@ -6,13 +6,14 @@
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { exchangeCodeForTokens, saveConnection } from "@/lib/google-calendar";
 
 const STATE_COOKIE = "google_oauth_state";
 
 export async function GET(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("calendar", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.redirect(new URL("/employee/login", request.url));
   }

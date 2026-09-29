@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { isConfigured, getConnection } from "@/lib/google-calendar";
 
 export async function GET() {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("calendar", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -33,6 +34,9 @@ function clean(val, maxLen = 300) {
 }
 
 export async function POST(request) {
+  if (!(await isFeatureEnabled("demo_requests"))) {
+    return featureOffResponse("Demo bookings are paused for the moment. Please email hello@helixon.co.uk and we'll set one up.");
+  }
   if (!(await rateLimit(`demo:${getClientIp(request)}`, 10))) {
     return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
   }

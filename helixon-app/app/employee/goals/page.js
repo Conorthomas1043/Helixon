@@ -210,7 +210,7 @@ export default function EmployeeGoalsPage() {
   }
 
   return (
-    <EmployeeShell>
+    <EmployeeShell section="goals">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

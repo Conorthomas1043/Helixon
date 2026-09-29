@@ -1,7 +1,9 @@
 // app/api/internal/edge-log/route.js
 // Called by proxy.ts on every request.
 // - Inserts a row into request_logs
-// - Returns { isBlocked: bool } so proxy.ts can gate the request
+// - Returns { isBlocked: bool, maintenance: bool } so proxy.ts can gate the
+//   request (maintenance is the admin's switch on /admin/site, cached in
+//   lib/site-settings.js)
 //
 // Guarded by a shared-secret header (INTERNAL_EDGE_LOG_SECRET) that only
 // proxy.ts knows, checked with a timing-safe comparison. Previously this
@@ -16,6 +18,7 @@
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { enforceFirewallPolicy } from "@/lib/security/firewall";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const INTERNAL_HEADER = "x-internal-secret";
 
@@ -56,12 +59,12 @@ export async function POST(request) {
       longitude >= -180 &&
       longitude <= 180;
 
-    // Check if IP is blocked (fast single-row lookup)
-    const { data: blockedRow } = await supabase
-      .from("blocked_ips")
-      .select("ip")
-      .eq("ip", ip)
-      .maybeSingle();
+    // Check if IP is blocked (fast single-row lookup), and the site
+    // settings (in-memory cached) in parallel.
+    const [{ data: blockedRow }, settings] = await Promise.all([
+      supabase.from("blocked_ips").select("ip").eq("ip", ip).maybeSingle(),
+      getSiteSettings(),
+    ]);
 
     // Strict firewall policy: scores this request against the same
     // signature rules the admin Pentester page displays, and - unlike
@@ -100,7 +103,7 @@ export async function POST(request) {
       .then(() => {})
       .catch(() => {});
 
-    return Response.json({ ok: true, isBlocked });
+    return Response.json({ ok: true, isBlocked, maintenance: settings.maintenance?.enabled === true });
   } catch (err) {
     // Never let logging errors surface to callers
     return Response.json({ ok: true, isBlocked: false });

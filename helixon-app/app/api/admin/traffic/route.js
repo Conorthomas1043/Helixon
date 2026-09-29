@@ -8,6 +8,7 @@ import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
+import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow, aggregateTrafficRows } from "@/lib/admin-traffic";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -101,203 +102,89 @@ function isPrivateOrReservedIp(ip) {
   return false;
 }
 
+// Rows returned for the request log table. The map and totals don't come
+// from these - they're aggregated over the whole range in the database.
+const LOG_LIMIT = 2000;
+
 export async function GET(request) {
   try {
-    const admin =
-      await requireAdminSession();
+    const admin = await requireAdminSession();
+    const supabase = getAdminSupabase();
+    const url = new URL(request.url);
 
-    const supabase =
-      getAdminSupabase();
+    const range = RANGE_HOURS[url.searchParams.get("range")] ? url.searchParams.get("range") : "24h";
+    const since = new Date(Date.now() - rangeHours(range) * 60 * 60 * 1000).toISOString();
 
-    const url =
-      new URL(request.url);
+    // Optional request-log filters (the map's "show requests from here",
+    // and the log's own filter controls).
+    const country = cleanLine(url.searchParams.get("country"), 8)?.toUpperCase() || null;
+    const ipFilter = cleanLine(url.searchParams.get("ip"), 64) || null;
+    const onlyBlocked = url.searchParams.get("blocked") === "1";
 
-    const range =
-      url.searchParams.get("range") ||
-      "24h";
+    let logQuery = supabase
+      .from("request_logs")
+      .select("id,ip,user_agent,method,path,country,city,lat,lon,referer,blocked,ts")
+      .gte("ts", since)
+      .order("ts", { ascending: false })
+      .limit(LOG_LIMIT);
+    if (country) logQuery = logQuery.eq("country", country);
+    if (ipFilter && isValidIp(ipFilter)) logQuery = logQuery.eq("ip", ipFilter.trim());
+    if (onlyBlocked) logQuery = logQuery.eq("blocked", true);
 
-    const hours =
-      range === "30d"
-        ? 720
-        : range === "7d"
-          ? 168
-          : 24;
-
-    const since = new Date(
-      Date.now() -
-        hours * 60 * 60 * 1000,
-    ).toISOString();
-
-    const [
-      requestLogsResult,
-      blockedIpsResult,
-    ] = await Promise.all([
-      supabase
-        .from("request_logs")
-        .select(
-          [
-            "id",
-            "ip",
-            "user_agent",
-            "method",
-            "path",
-            "country",
-            "city",
-            "lat",
-            "lon",
-            "referer",
-            "blocked",
-            "ts",
-          ].join(","),
-        )
-        .gte("ts", since)
-        .order("ts", {
-          ascending: false,
-        })
-        .limit(5000),
-
-      supabase
-        .from("blocked_ips")
-        .select(
-          "ip,reason,created_at,created_by",
-        )
-        .order("created_at", {
-          ascending: false,
-        }),
+    const [requestLogsResult, blockedIpsResult, geoResult, summaryResult] = await Promise.all([
+      logQuery,
+      supabase.from("blocked_ips").select("ip,reason,created_at,created_by").order("created_at", { ascending: false }),
+      supabase.rpc("admin_traffic_geo", { p_since: since }),
+      supabase.rpc("admin_traffic_summary", { p_since: since }),
     ]);
 
-    if (requestLogsResult.error) {
-      return json(
-        {
-          error:
-            requestLogsResult.error
-              .message,
-        },
-        500,
-      );
+    if (requestLogsResult.error) return adminDbError("traffic", requestLogsResult.error);
+    if (blockedIpsResult.error) return adminDbError("traffic", blockedIpsResult.error);
+
+    const rows = (requestLogsResult.data || []).map((row) => ({ ...row, city: decodePlace(row.city) }));
+
+    // Whole-range aggregates from the database. If the functions aren't
+    // there (migration 20260929020000 not applied yet), fall back to
+    // aggregating the rows we have - accurate for short ranges only, and
+    // flagged as partial so the page can say so.
+    let globe;
+    let summary;
+    let partial = false;
+    if (!geoResult.error && !summaryResult.error) {
+      globe = (geoResult.data || []).map(geoPointFromRow);
+      const s = (summaryResult.data || [])[0] || {};
+      summary = {
+        requests: Number(s.requests || 0),
+        blocked: Number(s.blocked || 0),
+        uniqueIps: Number(s.unique_ips || 0),
+        geolocated: Number(s.geolocated || 0),
+        countries: Number(s.countries || 0),
+      };
+    } else {
+      console.error("[admin/traffic] Aggregate functions unavailable, falling back:", geoResult.error?.message || summaryResult.error?.message);
+      const agg = aggregateTrafficRows(rows);
+      globe = agg.points;
+      summary = agg.summary;
+      partial = rows.length >= LOG_LIMIT;
     }
-
-    if (blockedIpsResult.error) {
-      return json(
-        {
-          error:
-            blockedIpsResult.error
-              .message,
-        },
-        500,
-      );
-    }
-
-    const rows =
-      requestLogsResult.data || [];
-
-    const blockedIps =
-      blockedIpsResult.data || [];
-
-    /*
-     * Build geographic points from lat/lon captured at request time
-     * (proxy.ts reads Vercel's x-vercel-ip-latitude/-longitude headers -
-     * see app/api/internal/edge-log/route.js). No external geolocation
-     * call, no rate limit, no added latency on this page load.
-     *
-     * Aggregate traffic at each geographic coordinate so the globe
-     * doesn't render hundreds of duplicate points for the same source.
-     * Coordinates are rounded to ~1km so IPs in the same city collapse
-     * into one point instead of scattering into a cluster of near-
-     * identical dots.
-     */
-    const globeMap = new Map();
-    let resolvedCount = 0;
-    let unresolvedCount = 0;
-
-    for (const row of rows) {
-      if (!row.ip) {
-        continue;
-      }
-
-      const lat = Number(row.lat);
-      const lon = Number(row.lon);
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        unresolvedCount += 1;
-        continue;
-      }
-
-      resolvedCount += 1;
-
-      const roundedLat = Math.round(lat * 100) / 100;
-      const roundedLon = Math.round(lon * 100) / 100;
-
-      const key = [
-        row.country || "",
-        row.city || "",
-        roundedLat,
-        roundedLon,
-      ].join("|");
-
-      const existing =
-        globeMap.get(key) || {
-          city: row.city || null,
-          country: row.country || null,
-          lat: roundedLat,
-          lon: roundedLon,
-          count: 0,
-          blocked: 0,
-          uniqueIps: new Set(),
-        };
-
-      existing.count += 1;
-      existing.uniqueIps.add(row.ip);
-
-      if (row.blocked) {
-        existing.blocked += 1;
-      }
-
-      globeMap.set(key, existing);
-    }
-
-    const globe =
-      Array.from(
-        globeMap.values(),
-      )
-        .map((point) => ({
-          ...point,
-          uniqueIps:
-            point.uniqueIps.size,
-        }))
-        .sort(
-          (a, b) =>
-            b.count - a.count,
-        )
-        .slice(0, 200);
 
     return json({
       ok: true,
-
-      admin: {
-        username:
-          admin.username,
-      },
-
+      admin: { username: admin.username },
       range,
       since,
-
       rows,
-
-      blockedIps,
-
-      /*
-       * Real coordinates for the source IPs, captured for free by
-       * Vercel at request time.
-       */
+      logLimit: LOG_LIMIT,
+      filters: { country, ip: ipFilter, blocked: onlyBlocked },
+      blockedIps: blockedIpsResult.data || [],
       globe,
-
+      summary,
+      partial,
       geolocation: {
         source: "vercel-edge-headers",
-        resolvedIps: resolvedCount,
-        unresolvedIps: unresolvedCount,
+        resolvedIps: summary.geolocated,
+        unresolvedIps: Math.max(0, summary.requests - summary.geolocated),
       },
-
       firewallPolicy: getFirewallPolicy(),
     });
   } catch (error) {

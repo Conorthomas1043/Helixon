@@ -39,8 +39,16 @@ export function useAdminStats(range) {
   return { stats, error, loading, reload: load };
 }
 
-export function useAdminTraffic(range) {
+// `filters` narrows the request log (the map and totals always cover the
+// whole range): { country: "GB", ip: "1.2.3.4", blocked: true }.
+export function useAdminTraffic(range, filters = {}) {
   const [traffic, setTraffic] = useState(null);
+  const qs = [
+    `range=${encodeURIComponent(range)}`,
+    filters.country ? `country=${encodeURIComponent(filters.country)}` : "",
+    filters.ip ? `ip=${encodeURIComponent(filters.ip)}` : "",
+    filters.blocked ? "blocked=1" : "",
+  ].filter(Boolean).join("&");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,7 +57,7 @@ export function useAdminTraffic(range) {
     setError("");
 
     try {
-      const response = await fetch(`/api/admin/traffic?range=${range}`, {
+      const response = await fetch(`/api/admin/traffic?${qs}`, {
         cache: "no-store",
       });
 
@@ -65,18 +73,18 @@ export function useAdminTraffic(range) {
     } finally {
       setLoading(false);
     }
-  }, [range]);
+  }, [qs]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const block = useCallback(
-    async (ip) => {
-      const reason = await promptText("Reason for blocking this IP:", {
+    async (ip, presetReason) => {
+      const reason = presetReason ?? (await promptText(`Reason for blocking ${ip}:`, {
         defaultValue: "Admin block",
-      });
-      if (reason === null) return;
+      }));
+      if (reason === null) return false;
 
       setBusy(true);
       setError("");
@@ -94,9 +102,13 @@ export function useAdminTraffic(range) {
           throw new Error(data.error || "Failed to block IP.");
         }
 
+        toast.success(`${ip} blocked.`);
         await load();
+        return true;
       } catch (err) {
         setError(err?.message || "Failed to block IP.");
+        toast.error(err?.message || "Failed to block IP.");
+        return false;
       } finally {
         setBusy(false);
       }
@@ -122,9 +134,11 @@ export function useAdminTraffic(range) {
           throw new Error(data.error || "Failed to unblock IP.");
         }
 
+        toast.success(`${ip} unblocked.`);
         await load();
       } catch (err) {
         setError(err?.message || "Failed to unblock IP.");
+        toast.error(err?.message || "Failed to unblock IP.");
       } finally {
         setBusy(false);
       }
@@ -297,31 +311,23 @@ export function useAdminUsers() {
   };
 }
 
+// Staff accounts for /admin/employees. `patch` and `create` return the
+// API's JSON on success (it may carry a one-time `temporaryPassword`) and
+// null on failure, after showing the error as a toast.
 export function useAdminEmployees() {
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-    fullName: "",
-    role: "employee",
-  });
-
   const load = useCallback(async () => {
-    setError("");
-
     try {
       const response = await fetch(`/api/admin/employees`, { cache: "no-store" });
+      if (response.status === 401) throw new Error("Your admin session has ended. Sign in again to continue.");
       const data = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || "Failed to load employees.");
-      }
-
+      if (!response.ok || data.error) throw new Error(data.error || "Failed to load employees.");
       setEmployees(data.employees || []);
+      setError("");
     } catch (err) {
       setError(err?.message || "Failed to load employees.");
     } finally {
@@ -333,27 +339,22 @@ export function useAdminEmployees() {
     load();
   }, [load]);
 
-  const action = useCallback(
-    async (employeeId, actionName, extra = {}) => {
+  const send = useCallback(
+    async (method, url, body, fallback) => {
       setBusy(true);
-      setError("");
-
       try {
-        const response = await fetch("/api/admin/employees", {
-          method: "PATCH",
+        const response = await fetch(url, {
+          method,
           headers: csrfHeaders({ "content-type": "application/json" }),
-          body: JSON.stringify({ employeeId, action: actionName, ...extra }),
+          body: JSON.stringify(body),
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Employee action failed.");
-        }
-
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || fallback);
         await load();
+        return data;
       } catch (err) {
-        setError(err?.message || "Employee action failed.");
+        toast.error(err?.message || fallback);
+        return null;
       } finally {
         setBusy(false);
       }
@@ -361,70 +362,25 @@ export function useAdminEmployees() {
     [load],
   );
 
-  const create = useCallback(
-    async (event) => {
-      event.preventDefault();
-      setBusy(true);
-      setError("");
-
-      try {
-        const response = await fetch("/api/admin/employees", {
-          method: "POST",
-          headers: csrfHeaders({ "content-type": "application/json" }),
-          body: JSON.stringify(form),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Employee creation failed.");
-        }
-
-        setForm({ username: "", password: "", fullName: "", role: "employee" });
-        await load();
-      } catch (err) {
-        setError(err?.message || "Employee creation failed.");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [form, load],
+  const patch = useCallback(
+    (employeeId, action, extra = {}) =>
+      send("PATCH", "/api/admin/employees", { employeeId, action, ...extra }, "Employee action failed."),
+    [send],
   );
 
-  const resetPassword = useCallback(
-    async (employeeId, username) => {
-      const password = await promptNewPassword(
-        `New password for ${username || "this employee"}:`,
-        { minLength: 12 },
-      );
-      if (password === null) return;
+  const create = useCallback((payload) => send("POST", "/api/admin/employees", payload, "Couldn't create the employee."), [send]);
 
-      if (password.length < 12) {
-        setError("Password must be at least 12 characters.");
-        return;
-      }
-
-      await action(employeeId, "reset_password", { password });
+  // Signs this browser into the staff portal (own account, or as someone)
+  // and goes there.
+  const openPortal = useCallback(
+    async (employeeId = null) => {
+      const data = await send("POST", "/api/admin/employees/portal", employeeId ? { employeeId } : {}, "Couldn't open the portal.");
+      if (data?.redirect) window.location.assign(data.redirect);
     },
-    [action],
+    [send],
   );
 
-  const updateName = useCallback(
-    async (employeeId, currentName) => {
-      const fullName = await promptText("Full name:", { defaultValue: currentName || "" });
-      if (fullName === null) return;
-
-      if (!fullName.trim()) {
-        setError("A valid full name is required.");
-        return;
-      }
-
-      await action(employeeId, "update_name", { fullName: fullName.trim() });
-    },
-    [action],
-  );
-
-  return { employees, form, setForm, error, busy, loading, reload: load, action, create, resetPassword, updateName };
+  return { employees, error, busy, loading, reload: load, patch, create, openPortal };
 }
 
 // Aggregated cross-package data (sales, SEO, security, revenue) - the same

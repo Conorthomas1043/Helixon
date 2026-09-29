@@ -31,9 +31,13 @@ export const NAV_GROUPS = [
     items: [{ href: "/admin/seo", label: "SEO", icon: "trending", hint: "Acquisition channels" }],
   },
   {
+    label: "Site",
+    items: [{ href: "/admin/site", label: "Site controls", icon: "layers", hint: "Maintenance mode, banner and feature switches" }],
+  },
+  {
     label: "Team",
     items: [
-      { href: "/admin/employees", label: "Employees", icon: "briefcase", hint: "Internal staff accounts" },
+      { href: "/admin/employees", label: "Employees", icon: "briefcase", hint: "Staff accounts, permissions and portal access" },
       { href: "/admin/audit", label: "Audit log", icon: "scroll", hint: "Every admin action, with who and when" },
     ],
   },

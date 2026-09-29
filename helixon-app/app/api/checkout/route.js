@@ -4,6 +4,7 @@ import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { PRICE_IDS } from "@/lib/plans";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 
 // Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
 // shared with the webhook's reverse lookup (planForPriceId) so an upgrade/
@@ -12,6 +13,9 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 export async function POST(request) {
   try {
+    if (!(await isFeatureEnabled("checkout"))) {
+      return featureOffResponse("New subscriptions are paused for a short while. Please try again later, or contact us and we'll get you set up.");
+    }
     if (!(await rateLimit(getClientIp(request), 15))) {
       return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
     }

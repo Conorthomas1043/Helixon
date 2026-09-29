@@ -5,12 +5,13 @@
 // separate multipart route at app/api/employee/files/upload/route.js.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { listFolder, createFolder, deleteFolder, deleteFile } from "@/lib/employee-files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function GET(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("files", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -27,7 +28,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("files", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
+import SiteAnnouncement from "@/components/SiteAnnouncement";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -90,6 +91,8 @@ export default function RootLayout({ children }) {
         </head>
 
         <body className="min-h-full flex flex-col antialiased">
+          {/* Admin-set banner (/admin/site); renders nothing unless one is on. */}
+          <SiteAnnouncement />
           {children}
           {/* Site-wide, not just the marketing homepage - see
               CookieConsentBanner.jsx for why. */}

@@ -4,14 +4,15 @@
 // logged it can edit or delete it).
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee-cold-calls";
 import { finishRow } from "@/lib/employee-call-list";
 
 const VALID_OUTCOMES = new Set(OUTCOMES);
 
 export async function GET(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("cold_calls", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
@@ -30,7 +31,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("cold_calls", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

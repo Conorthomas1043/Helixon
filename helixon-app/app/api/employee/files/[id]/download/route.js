@@ -4,12 +4,13 @@
 // long-lived URL to a private bucket object.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { getSignedDownloadUrl } from "@/lib/employee-files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function GET(request, { params }) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("files", "view");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }

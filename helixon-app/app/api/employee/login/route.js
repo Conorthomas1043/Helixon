@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { loginEmployee } from "@/lib/employee-auth";
+import { isFeatureEnabled } from "@/lib/site-settings";
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{1,64}$/;
 
 export async function POST(request) {
+  if (!(await isFeatureEnabled("employee_portal"))) {
+    return NextResponse.json({ ok: false, error: "The staff portal is closed for the moment. Check with an admin." }, { status: 503 });
+  }
   const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
 
   let body;

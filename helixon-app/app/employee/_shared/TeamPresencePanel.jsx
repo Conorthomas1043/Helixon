@@ -38,7 +38,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
     try {
       const res = await fetch("/api/employee/presence", { cache: "no-store" });
       const data = await res.json();
-      if (data.ok) setTeam(data.team);
+      if (data.ok) setTeam(Array.isArray(data.team) ? data.team : []);
     } finally {
       setLoading(false);
     }

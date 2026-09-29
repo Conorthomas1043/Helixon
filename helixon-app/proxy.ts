@@ -8,7 +8,13 @@ import {
 
 // Flip to false to go live again - routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
+// For a temporary closure use the "Maintenance mode" switch on
+// /admin/site instead: no deploy, and admins can still use the site.
 const DEV_MODE = false;
+
+// Stay reachable while the admin's maintenance switch is on: the console,
+// the staff portal, the maintenance page itself and the gate behind it.
+const MAINTENANCE_EXEMPT_PREFIXES = ["/admin", "/employee", "/under-development", "/api", "/_next"];
 
 // Path admins are sent to when they hit /admin* without a valid session.
 // NOTE: adjust this if your real admin login page lives somewhere else -
@@ -163,8 +169,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     return NextResponse.next();
   }
 
-  // ── 2. Check blocked IPs ────────────────────────────────────────────────
+  // ── 2. Check blocked IPs (and the maintenance switch) ───────────────────
   let blocked = false;
+  let maintenance = false;
   try {
     const logRes = await fetch(
       new URL("/api/internal/edge-log", request.url),
@@ -196,8 +203,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
       }
     );
     if (logRes.ok) {
-      const { isBlocked } = await logRes.json();
+      const { isBlocked, maintenance: underMaintenance } = await logRes.json();
       blocked = !!isBlocked;
+      maintenance = !!underMaintenance;
     }
   } catch {
     // fail open
@@ -217,6 +225,19 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
       );
     }
     return NextResponse.redirect(new URL("/rate-limited", request.url));
+  }
+
+  // ── 2b. Maintenance mode (admin switch) ──────────────────────────────────
+  // Public pages go to /under-development. Visitors who know the gate
+  // password (signed cookie) and signed-in admins carry on as normal.
+  if (
+    maintenance &&
+    !MAINTENANCE_EXEMPT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) &&
+    !(HIDE_ADMIN && pathname === `/${ADMIN_LOGIN_SLUG}`) &&
+    !(await verifyGateCookie(request.cookies.get(GATE_COOKIE_NAME)?.value)) &&
+    !(await verifyAdminSessionToken(request.cookies.get(ADMIN_SESSION_COOKIE)?.value))
+  ) {
+    return NextResponse.redirect(new URL("/under-development", request.url));
   }
 
   // ── 3. Gate /analyse behind authentication ────────────────────────────────

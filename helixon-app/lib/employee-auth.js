@@ -22,6 +22,7 @@ import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { isFeatureEnabled } from "@/lib/site-settings";
 
 const COOKIE_NAME = "employee_session";
 const SESSION_HOURS = 12;
@@ -67,6 +68,50 @@ function verifyEmployeePassword(employee, password) {
 
 function generateToken() {
   return crypto.randomBytes(32).toString("hex");
+}
+
+// Readable but strong: 4 groups of 5 from an alphabet without look-alikes
+// (no 0/O, 1/l/I), ~115 bits. Shown to the admin once when they create an
+// account or reset a password with "Generate".
+const PASSWORD_ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+export function generateEmployeePassword() {
+  const groups = [];
+  for (let g = 0; g < 4; g++) {
+    let part = "";
+    for (let i = 0; i < 5; i++) part += PASSWORD_ALPHABET[crypto.randomInt(PASSWORD_ALPHABET.length)];
+    groups.push(part);
+  }
+  return groups.join("-");
+}
+
+// Sessions an admin opens "as" an employee are capped much shorter than a
+// normal login, whatever the activity.
+const IMPERSONATION_TIMEOUT_MS = 60 * 60 * 1000;
+
+/**
+ * Starts a portal session for an employee without a password and sets the
+ * session cookie on this response. Only for the admin console (which has
+ * already checked the admin's own session): `impersonatedBy` is the admin's
+ * username when they're viewing the portal as someone else.
+ */
+export async function startEmployeeSession(employeeId, { impersonatedBy = null } = {}) {
+  const token = generateToken();
+  const lifetime = impersonatedBy ? IMPERSONATION_TIMEOUT_MS : IDLE_TIMEOUT_MS;
+  const row = { employee_id: employeeId, token, expires_at: new Date(Date.now() + lifetime).toISOString() };
+  if (impersonatedBy) row.impersonated_by = impersonatedBy;
+
+  const { data, error } = await supabase.from("employee_sessions").insert(row).select("id").single();
+  if (error) throw new Error(`Failed to create employee session: ${error.message}`);
+
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(Date.now() + (impersonatedBy ? IMPERSONATION_TIMEOUT_MS : ABSOLUTE_TIMEOUT_MS)),
+  });
+  return { sessionId: data.id };
 }
 
 // ── Rate limiting (shared login_attempts table, login_type = 'employee') ──
@@ -190,6 +235,11 @@ export async function loginEmployee({ username, password, ip }) {
 }
 
 // ── Get current session ──────────────────────────────────────────────────
+const SESSION_SELECT =
+  "id, employee_id, created_at, expires_at, impersonated_by, employees(id, username, role, full_name, display_name, is_active, last_login, permissions, admin_username)";
+const LEGACY_SESSION_SELECT =
+  "id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active, last_login)";
+
 // Re-checks is_active on every call (not just at login), so deactivating an
 // employee immediately invalidates any session they're still holding.
 //
@@ -206,21 +256,36 @@ export async function getEmployeeSession({ refresh = true } = {}) {
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return null;
 
-    const { data: session } = await supabase
+    let { data: session, error } = await supabase
       .from("employee_sessions")
-      .select(
-        "id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active, last_login)",
-      )
+      .select(SESSION_SELECT)
       .eq("token", token)
       .maybeSingle();
+
+    // Before migration 20260929020000 (permissions, admin access) is
+    // applied those columns don't exist; fall back rather than signing
+    // everyone out.
+    if (error && error.code === "42703") {
+      ({ data: session } = await supabase
+        .from("employee_sessions")
+        .select(LEGACY_SESSION_SELECT)
+        .eq("token", token)
+        .maybeSingle());
+    }
 
     if (!session) return null;
     if (new Date(session.expires_at) < new Date()) return null;
     if (!session.employees || session.employees.is_active === false) return null;
+    // Staff portal switched off on /admin/site: only sessions an admin
+    // opened (their own linked account, or "view as") keep working.
+    if (!session.impersonated_by && !session.employees.admin_username && !(await isFeatureEnabled("employee_portal"))) {
+      return null;
+    }
 
     if (refresh) {
       const now = Date.now();
-      const absoluteCap = new Date(session.created_at).getTime() + ABSOLUTE_TIMEOUT_MS;
+      const absoluteCap =
+        new Date(session.created_at).getTime() + (session.impersonated_by ? IMPERSONATION_TIMEOUT_MS : ABSOLUTE_TIMEOUT_MS);
       const slid = Math.min(now + IDLE_TIMEOUT_MS, absoluteCap);
       // Only re-issue when it buys at least a few minutes, so a burst of API
       // calls doesn't write to the DB on every single one.
@@ -235,7 +300,9 @@ export async function getEmployeeSession({ refresh = true } = {}) {
       }
     }
 
-    return session.employees;
+    // impersonatedBy: the admin who opened this session from the console
+    // ("view as"), so the portal can say so and actions can be attributed.
+    return { ...session.employees, impersonatedBy: session.impersonated_by || null, sessionId: session.id };
   } catch {
     return null;
   }

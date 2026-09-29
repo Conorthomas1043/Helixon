@@ -54,7 +54,7 @@ export default function EmployeeOpsPage() {
   }, [router]);
 
   return (
-    <EmployeeShell>
+    <EmployeeShell section="platform">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8">
           <h1

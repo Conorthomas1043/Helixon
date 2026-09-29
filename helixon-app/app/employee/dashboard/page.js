@@ -29,6 +29,7 @@ import {
   myOpenGoals,
   startOfWeekKey,
 } from "@/lib/employee-day";
+import { can } from "@/lib/employee-permissions";
 
 // Follow-ups are read from the calls you've logged in this window.
 const CALL_HISTORY_DAYS = 120;
@@ -97,6 +98,21 @@ export default function EmployeeDashboard() {
 
   const todayKey = dayKey();
 
+  // What this employee can see (admin-set, lib/employee-permissions.js).
+  // Sections they can't open aren't fetched or shown; before /me loads
+  // everything counts as visible.
+  const access = useMemo(() => {
+    const has = (section, level = "view") => !employee || can(employee, section, level);
+    return {
+      tasks: has("tasks"), tasksEdit: has("tasks", "edit"),
+      team: has("team_tasks"),
+      calendar: has("calendar"), calendarEdit: has("calendar", "edit"),
+      goals: has("goals"),
+      calls: has("cold_calls"), callsEdit: has("cold_calls", "edit"),
+      platform: has("platform"),
+    };
+  }, [employee]);
+
   // ── Session ──────────────────────────────────────────────────────────────
   useEffect(() => {
     getJson("/api/employee/me")
@@ -123,23 +139,30 @@ export default function EmployeeDashboard() {
     const to = fromDayKey(addDays(today, 8)).toISOString();
     const callsFrom = fromDayKey(addDays(today, -CALL_HISTORY_DAYS)).toISOString();
 
+    const skip = (markLoaded) => { markLoaded(true); return Promise.resolve(); };
     const results = await Promise.allSettled([
-      loadTodos(),
-      getJson(`/api/employee/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then((d) => setEvents(d.events || []))
-        .finally(() => setEventsLoaded(true)),
-      getJson("/api/employee/goals").then((d) => setGoals(d.goals || [])).finally(() => setGoalsLoaded(true)),
-      getJson(`/api/employee/cold-calls?mine=1&stats=1&from=${encodeURIComponent(callsFrom)}`)
-        .then((d) => { setCalls(d.calls || []); setCallStats(d.stats || null); })
-        .finally(() => setCallsLoaded(true)),
-      getJson("/api/employee/stats").then((d) => setStats(d.stats || null)),
+      access.tasks ? loadTodos() : skip(setTodosLoaded),
+      access.calendar
+        ? getJson(`/api/employee/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+            .then((d) => setEvents(d.events || []))
+            .finally(() => setEventsLoaded(true))
+        : skip(setEventsLoaded),
+      access.goals
+        ? getJson("/api/employee/goals").then((d) => setGoals(d.goals || [])).finally(() => setGoalsLoaded(true))
+        : skip(setGoalsLoaded),
+      access.calls
+        ? getJson(`/api/employee/cold-calls?mine=1&stats=1&from=${encodeURIComponent(callsFrom)}`)
+            .then((d) => { setCalls(d.calls || []); setCallStats(d.stats || null); })
+            .finally(() => setCallsLoaded(true))
+        : skip(setCallsLoaded),
+      access.platform ? getJson("/api/employee/stats").then((d) => setStats(d.stats || null)) : Promise.resolve(),
     ]);
     if (results.some((r) => r.status === "rejected" && r.reason?.status === 401)) {
       router.replace("/employee/login");
       return;
     }
     setLoadError(results.some((r) => r.status === "rejected"));
-  }, [loadTodos, router]);
+  }, [loadTodos, router, access]);
 
   useEffect(() => {
     if (checking) return undefined;
@@ -193,6 +216,31 @@ export default function EmployeeDashboard() {
 
   const blocked = goalsMine.filter((g) => g.status === "blocked").length;
 
+  const kpis = [
+    access.tasks && {
+      label: "Due today",
+      value: todosLoaded ? groups.today.length + groups.overdue.length : null,
+      tone: groups.overdue.length ? "#c0392b" : undefined,
+      sub: todosLoaded ? (groups.overdue.length ? `${groups.overdue.length} overdue` : "Nothing overdue") : " ",
+    },
+    access.tasks && { label: "Open tasks", value: todosLoaded ? openCount : null, sub: todosLoaded ? `${doneThisWeek} done this week` : " " },
+    access.calls && {
+      label: "Calls today",
+      value: callsLoaded ? myCallStats?.today ?? 0 : null,
+      sub: callsLoaded ? `${myCallStats?.thisWeek ?? 0} this week` : " ",
+      href: "/employee/cold-calls",
+    },
+    access.goals && {
+      label: "Your goals",
+      value: goalsLoaded ? goalsMine.length : null,
+      tone: blocked ? "#c0392b" : undefined,
+      sub: goalsLoaded ? (blocked ? `${blocked} blocked` : "None blocked") : " ",
+      href: "/employee/goals",
+    },
+  ].filter(Boolean);
+  const taskViews = [access.tasks && { key: "mine", label: "Mine" }, access.team && { key: "team", label: "Team" }].filter(Boolean);
+  const shownTaskView = taskViews.some((t) => t.key === taskView) ? taskView : taskViews[0]?.key;
+
   return (
     <EmployeeShell employee={employee}>
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -228,6 +276,7 @@ export default function EmployeeDashboard() {
             </div>
           </div>
           <div className="relative flex flex-wrap gap-2 shrink-0">
+            {access.tasksEdit && (
             <button
               type="button"
               onClick={() => { setTaskView("mine"); setTimeout(() => quickAddRef.current?.focus(), 0); }}
@@ -236,61 +285,44 @@ export default function EmployeeDashboard() {
             >
               <span aria-hidden="true">+</span> New task
             </button>
+            )}
+            {access.callsEdit && (
             <Link href="/employee/cold-calls" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-white" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
               Log a call
             </Link>
+            )}
+            {access.calendarEdit && (
             <Link href="/employee/calendar" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-white" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
               Add an event
             </Link>
+            )}
           </div>
         </header>
 
         {/* ── KPIs ────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Kpi
-            index={0}
-            label="Due today"
-            value={todosLoaded ? groups.today.length + groups.overdue.length : null}
-            tone={groups.overdue.length ? "#c0392b" : undefined}
-            sub={todosLoaded ? (groups.overdue.length ? `${groups.overdue.length} overdue` : "Nothing overdue") : " "}
-          />
-          <Kpi index={1} label="Open tasks" value={todosLoaded ? openCount : null} sub={todosLoaded ? `${doneThisWeek} done this week` : " "} />
-          <Kpi
-            index={2}
-            label="Calls today"
-            value={callsLoaded ? myCallStats?.today ?? 0 : null}
-            sub={callsLoaded ? `${myCallStats?.thisWeek ?? 0} this week` : " "}
-            href="/employee/cold-calls"
-          />
-          <Kpi
-            index={3}
-            label="Your goals"
-            value={goalsLoaded ? goalsMine.length : null}
-            tone={blocked ? "#c0392b" : undefined}
-            sub={goalsLoaded ? (blocked ? `${blocked} blocked` : "None blocked") : " "}
-            href="/employee/goals"
-          />
-        </div>
+        {kpis.length > 0 && (
+          <div className={`grid grid-cols-2 ${kpis.length >= 4 ? "lg:grid-cols-4" : kpis.length === 3 ? "lg:grid-cols-3" : ""} gap-3 sm:gap-4 mb-6`}>
+            {kpis.map((k, i) => <Kpi key={k.label} index={i} {...k} />)}
+          </div>
+        )}
 
         {/* ── Main + side columns ─────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
           <div className="space-y-4 min-w-0">
             <OnboardingPanel />
 
+            {shownTaskView && (
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Tasks</h2>
               <div className="flex rounded-[10px] p-0.5 gap-0.5 bg-white" style={{ border: "1px solid var(--border)" }} role="group" aria-label="Which tasks">
-                {[
-                  { key: "mine", label: "Mine" },
-                  { key: "team", label: "Team" },
-                ].map((t) => (
+                {taskViews.map((t) => (
                   <button
                     key={t.key}
                     type="button"
                     onClick={() => setTaskView(t.key)}
-                    aria-pressed={taskView === t.key}
+                    aria-pressed={shownTaskView === t.key}
                     className="text-sm px-3.5 py-1.5 rounded-[8px] font-medium transition"
-                    style={taskView === t.key ? { background: "var(--forest)", color: "white" } : { color: "var(--ink-soft)" }}
+                    style={shownTaskView === t.key ? { background: "var(--forest)", color: "white" } : { color: "var(--ink-soft)" }}
                   >
                     {t.label}
                   </button>
@@ -298,7 +330,9 @@ export default function EmployeeDashboard() {
               </div>
             </div>
 
-            {taskView === "mine" ? (
+            )}
+
+            {shownTaskView === "mine" ? (
               <MyTasksPanel
                 todos={todos}
                 setTodos={setTodos}
@@ -307,23 +341,25 @@ export default function EmployeeDashboard() {
                 notify={notify}
                 quickAddRef={quickAddRef}
               />
-            ) : (
+            ) : shownTaskView === "team" ? (
               <TeamTasksPanel currentEmployeeId={employee?.id} notify={notify} />
-            )}
+            ) : null}
           </div>
 
           <aside className="space-y-4 min-w-0" aria-label="Your day">
-            <AgendaCard events={events} loaded={eventsLoaded} todayKey={todayKey} />
-            <CallsCard stats={callStats} follow={follow} loaded={callsLoaded} employeeId={employee?.id} todayKey={todayKey} />
-            <GoalsCard goals={goalsMine} loaded={goalsLoaded} todayKey={todayKey} />
+            {access.calendar && <AgendaCard events={events} loaded={eventsLoaded} todayKey={todayKey} />}
+            {access.calls && <CallsCard stats={callStats} follow={follow} loaded={callsLoaded} employeeId={employee?.id} todayKey={todayKey} />}
+            {access.goals && <GoalsCard goals={goalsMine} loaded={goalsLoaded} todayKey={todayKey} />}
             <TeamPresencePanel currentEmployeeId={employee?.id} />
-            <PlatformCard stats={stats} />
+            {access.platform && <PlatformCard stats={stats} />}
           </aside>
         </div>
 
-        <p className="text-xs text-center mt-10" style={{ color: "var(--ink-faint)" }}>
-          Shortcuts: <kbd className="font-semibold">N</kbd> new task · <kbd className="font-semibold">/</kbd> search tasks
-        </p>
+        {access.tasks && (
+          <p className="text-xs text-center mt-10" style={{ color: "var(--ink-faint)" }}>
+            Shortcuts: <kbd className="font-semibold">N</kbd> new task · <kbd className="font-semibold">/</kbd> search tasks
+          </p>
+        )}
       </div>
       <Toaster toasts={toasts} onDismiss={dismiss} />
     </EmployeeShell>

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 // The password itself lives ONLY server-side now (SITE_GATE_PASSWORD env
 // var, checked in app/api/site-gate/route.ts). This component just POSTs
@@ -78,6 +79,8 @@ function GateForm() {
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  // The admin's maintenance message (/admin/site), when there is one.
+  const siteSettings = useSiteSettings();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -215,7 +218,7 @@ function GateForm() {
               </h1>
 
               <p className="text-[13.5px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
-                We're making some changes behind the scenes. If you have the password, you can get through now.
+                {siteSettings?.maintenance?.message || "We're making some changes behind the scenes."} If you have the password, you can get through now.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>

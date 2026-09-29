@@ -11,6 +11,58 @@ import { Avatar } from "./ui";
 import { NAV_GROUPS, titleFor } from "./nav";
 import { CommandPalette } from "./palette";
 import { useAdminSession, formatCountdown } from "./session";
+import { useAdminData } from "./data";
+import { csrfHeaders } from "./csrf";
+import { toast } from "./toast";
+
+// The sidebar's status pill: the public site's state from Site controls
+// (/admin/site), refreshed every minute. Links there.
+// The Site controls page fires "admin:site-updated" after a save so this
+// updates straight away instead of on the next poll.
+export const SITE_UPDATED_EVENT = "admin:site-updated";
+
+function SiteStatus({ onNavigate }) {
+  const { data, error, reload } = useAdminData("/api/admin/site", { every: 60_000 });
+  useEffect(() => {
+    window.addEventListener(SITE_UPDATED_EVENT, reload);
+    return () => window.removeEventListener(SITE_UPDATED_EVENT, reload);
+  }, [reload]);
+  const s = data?.settings;
+  const off = s ? Object.values(s.features || {}).filter((v) => v === false).length : 0;
+  const [tone, label] = error
+    ? ["warn", "Site status unavailable"]
+    : !s
+      ? ["idle", "Checking site…"]
+      : s.maintenance?.enabled
+        ? ["bad", "Maintenance mode on"]
+        : off
+          ? ["warn", `Site live · ${off} feature${off === 1 ? "" : "s"} off`]
+          : ["good", "Site live"];
+  return (
+    <Link href="/admin/site" className={`status-row status-${tone}`} onClick={onNavigate} title="Open site controls">
+      <span className={`status-dot ${tone === "good" ? "pulse" : ""}`} aria-hidden="true" />
+      <span className="truncate">{label}</span>
+      {s?.announcement?.enabled && <span className="status-tag">Banner</span>}
+    </Link>
+  );
+}
+
+// Signs this browser into the staff portal with the admin's linked account
+// (created on first use) - see /api/admin/employees/portal.
+async function openStaffPortal() {
+  try {
+    const response = await fetch("/api/admin/employees/portal", {
+      method: "POST",
+      headers: csrfHeaders({ "content-type": "application/json" }),
+      body: "{}",
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || "Couldn't open the staff portal.");
+    window.location.assign(body.redirect || "/employee/dashboard");
+  } catch (err) {
+    toast.error(err.message);
+  }
+}
 
 // The signed-in console chrome: sidebar, top bar, command palette, session
 // countdown and toasts. It is rendered only for a signed-in admin (see
@@ -91,10 +143,7 @@ export default function AdminShell({ children, initialUsername }) {
             </div>
           </div>
 
-          <div className="status-row">
-            <span className="status-dot pulse" />
-            <span>All systems connected</span>
-          </div>
+          <SiteStatus onNavigate={closeMenu} />
 
           <nav className="side-nav">
             {NAV_GROUPS.map((navGroup) => (
@@ -135,10 +184,16 @@ export default function AdminShell({ children, initialUsername }) {
                 )}
               </div>
             </div>
-            <Link href="/admin/mobile" className="side-link" style={{ fontSize: 12 }}>
-              <Icon name="command" />
-              Mobile view
-            </Link>
+            <div className="footer-links">
+              <button type="button" className="side-link" onClick={openStaffPortal} title="Open the staff portal signed in as you">
+                <Icon name="briefcase" />
+                Staff portal
+              </button>
+              <Link href="/admin/mobile" className="side-link">
+                <Icon name="command" />
+                Mobile view
+              </Link>
+            </div>
             <button className="logout" onClick={signOut}>
               <Icon name="logout" />
               Log out
@@ -151,10 +206,17 @@ export default function AdminShell({ children, initialUsername }) {
             <button className="icon-btn menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
               <Icon name="menu" />
             </button>
-            <div>
-              <div className="topbar-title">{title}</div>
-              {group && <div className="topbar-crumb">{group}</div>}
-            </div>
+            {/* The page's own header carries the big title; this is just
+                where you are. */}
+            <nav className="topbar-crumb" aria-label="Breadcrumb">
+              {group && (
+                <>
+                  <span>{group}</span>
+                  <Icon name="chevronRight" size={13} aria-hidden="true" />
+                </>
+              )}
+              <span className="topbar-title" aria-current="page">{title}</span>
+            </nav>
 
             <button className="search-trigger" onClick={() => setPaletteOpen(true)} aria-label="Jump to a page">
               <Icon name="search" />

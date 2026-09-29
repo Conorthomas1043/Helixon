@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { employeeAccess } from "@/lib/session";
 import { isConfigured, getAuthUrl } from "@/lib/google-calendar";
 
 // Short-lived, httpOnly - a CSRF guard for the callback (the state value
@@ -14,7 +14,8 @@ import { isConfigured, getAuthUrl } from "@/lib/google-calendar";
 const STATE_COOKIE = "google_oauth_state";
 
 export async function GET(request) {
-  const employeeId = await getCurrentEmployeeId();
+  const { employeeId, forbidden } = await employeeAccess("calendar", "edit");
+  if (forbidden) return forbidden;
   if (!employeeId) {
     return NextResponse.redirect(new URL("/employee/login", request.url));
   }
