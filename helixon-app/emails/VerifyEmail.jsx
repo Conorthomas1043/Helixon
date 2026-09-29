@@ -7,8 +7,8 @@ const COLORS = {
   gold: "#c08a2d",
   signal: "#ff6b4a",
   ink: "#13201b",
-  inkSoft: "#5a7a6a",
-  inkFaint: "#8aaa9a",
+  inkSoft: "#4a6658",
+  inkFaint: "#587364",
   inkMute: "#b0c4ba",
   mist: "#f3f6f4",
   border: "#e3e8e5",
@@ -115,7 +115,7 @@ export default function VerifyEmail({ email = "there", verifyUrl }) {
 
           <Section style={{ padding: "20px 32px 28px", borderTop: `1px solid ${COLORS.border}` }}>
             <Text style={{ fontSize: "11px", color: COLORS.inkFaint, lineHeight: 1.6, margin: 0 }}>
-              Helixon · Screen candidates in seconds · GDPR-ready, EU-hosted
+              Helixon · AI CV screening for recruitment agencies · GDPR-ready, Swiss-hosted
               <br />
               Didn&apos;t request this? You can safely ignore this email - your address won&apos;t be added to anything.
             </Text>

@@ -90,10 +90,10 @@ function ToggleRow({ category }) {
           />
         </button>
       </div>
-      <p className="text-[12px] leading-relaxed mb-3" style={{ color: "#5a7a6a" }}>{category.purpose}</p>
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px]" style={{ color: "#8aaa9a" }}>
-        <span><strong style={{ color: "#5a7a6a" }}>Examples:</strong> {category.examples}</span>
-        <span><strong style={{ color: "#5a7a6a" }}>Duration:</strong> {category.duration}</span>
+      <p className="text-[12px] leading-relaxed mb-3" style={{ color: "var(--ink-soft)" }}>{category.purpose}</p>
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px]" style={{ color: "var(--ink-faint)" }}>
+        <span><strong style={{ color: "var(--ink-soft)" }}>Examples:</strong> {category.examples}</span>
+        <span><strong style={{ color: "var(--ink-soft)" }}>Duration:</strong> {category.duration}</span>
       </div>
     </div>
   );
@@ -103,7 +103,7 @@ export default function CookiePolicyPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <main
+    <div
       className="min-h-screen"
       style={{
         background: "var(--mist)",
@@ -118,6 +118,7 @@ export default function CookiePolicyPage() {
       }}
     >
       {/* ── Nav (shared shell) ──────────────────────────────────────────── */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
@@ -130,11 +131,11 @@ export default function CookiePolicyPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
             <a href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</a>
             <a href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</a>
             <a href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</a>
@@ -156,26 +157,27 @@ export default function CookiePolicyPage() {
         {mobileNavOpen && (
           <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
             {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["Login", "/login"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
+              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "var(--ink-soft)" }}>{label}</a>
             ))}
           </div>
         )}
       </nav>
+      <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-[11px] font-medium mb-3" style={{ color: "#8aaa9a" }}>
+          <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <a href="/" className="hover:underline">Helixon</a> <span className="mx-1">/</span> Legal
           </p>
           <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
             Cookie Policy
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "#5a7a6a" }}>
+          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
             This explains what cookies Helixon sets, why, and how to control them. It applies to helixon.io and
             the Helixon app.
           </p>
-          <p className="text-[11px] mt-5" style={{ color: "#5a7a6a" }}>
+          <p className="text-[11px] mt-5" style={{ color: "var(--ink-soft)" }}>
             <strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026
           </p>
         </div>
@@ -204,7 +206,7 @@ export default function CookiePolicyPage() {
               <ToggleRow key={c.name} category={c} />
             ))}
           </div>
-          <p className="text-xs mt-3" style={{ color: "#5a7a6a" }}>
+          <p className="text-xs mt-3" style={{ color: "var(--ink-soft)" }}>
             These switches are your live cookie settings. Preferences and Analytics are off until you turn them on, and
             they switch together because you give (or withdraw) consent for optional cookies as one choice. Change it at
             any time here.
@@ -247,16 +249,17 @@ export default function CookiePolicyPage() {
           </p>
         </section>
 
-        <div className="pt-6 mt-6 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "#8aaa9a" }}>
+        <div className="pt-6 mt-6 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
           Questions about cookies? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
         </div>
       </div>
 
+      </main>
       {/* ── Footer (shared shell) ───────────────────────────────────────── */}
       <footer className="border-t bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-          <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
+          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
+          <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
             <a href="/dpa">DPA</a>
@@ -265,6 +268,6 @@ export default function CookiePolicyPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

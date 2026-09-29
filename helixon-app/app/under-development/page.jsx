@@ -283,8 +283,8 @@ function GateForm() {
           )}
         </div>
 
-        <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-mute)" }}>
-          © {new Date().getFullYear()} Helixon. Screen candidates in seconds.
+        <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-faint)" }}>
+          © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
         </p>
       </div>
 

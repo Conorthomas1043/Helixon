@@ -16,7 +16,7 @@ const TONE = {
   red: { bg: "#fef2f2", fg: "#b91c1c" },
   amber: { bg: "#fff8e6", fg: "#92620f" },
   green: { bg: "#eef7f1", fg: "var(--forest)" },
-  neutral: { bg: "var(--mist)", fg: "#5a7a6a" },
+  neutral: { bg: "var(--mist)", fg: "#4a6658" },
 };
 
 export function computeCandidateStats(candidates, now = Date.now()) {

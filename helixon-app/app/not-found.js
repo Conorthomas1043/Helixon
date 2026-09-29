@@ -12,7 +12,7 @@ export default function NotFound() {
         <h1 className="text-2xl font-semibold tracking-tight mb-2" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
           Page not found
         </h1>
-        <p className="text-xs mb-8 leading-relaxed" style={{ color: "#5a7a6a" }}>
+        <p className="text-xs mb-8 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
           We scored a lot of CVs, but not whatever page you were looking for. It may have moved, or the link's out of date.
         </p>
         <div className="flex flex-col sm:flex-row gap-2.5 justify-center">

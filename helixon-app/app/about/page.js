@@ -176,11 +176,13 @@ function PileToScore() {
 
 export default function AboutPage() {
   return (
-    <main
+    <div
       className="min-h-screen"
       style={{ background: "var(--mist)" }}
     >
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="about" showTagline={false} />
+      <main id="main-content">
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
 
@@ -417,7 +419,8 @@ export default function AboutPage() {
         ctaLabel="Explore Helixon"
       />
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

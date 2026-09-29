@@ -4,7 +4,7 @@ export default function manifest() {
   return {
     name: "Helixon",
     short_name: "Helixon",
-    description: "Screen candidates in seconds. Built for recruitment agencies.",
+    description: "AI CV screening built for recruitment agencies.",
     start_url: "/",
     display: "standalone",
     background_color: "#f4f8f6",

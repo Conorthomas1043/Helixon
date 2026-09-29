@@ -43,8 +43,10 @@ const SECTIONS = [
 
 export default function ComplaintsPolicyPage() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="complaints" />
+      <main id="main-content">
 
       <section className="max-w-[720px] mx-auto px-6 pt-16 pb-10">
         <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
@@ -87,7 +89,8 @@ export default function ComplaintsPolicyPage() {
         </div>
       </section>
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

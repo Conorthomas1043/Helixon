@@ -46,8 +46,10 @@ const SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="terms" />
+      <main id="main-content">
 
       <section className="max-w-[900px] mx-auto px-6 pt-16 pb-14">
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -76,7 +78,8 @@ export default function TermsPage() {
         </div>
       </section>
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

@@ -32,8 +32,10 @@ const ROLES = [
 
 export default function CareersPage() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="careers" />
+      <main id="main-content">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-16 text-center">
@@ -122,7 +124,8 @@ export default function CareersPage() {
         </p>
       </section>
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

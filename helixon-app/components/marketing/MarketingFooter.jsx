@@ -75,7 +75,7 @@ export default function MarketingFooter() {
       <div className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-xs" style={{ color: "var(--ink-faint)" }}>
-            © {new Date().getFullYear()} Helixon. Screen candidates in seconds.
+            © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
           </span>
           <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex items-center min-h-[36px] text-xs hover:underline" style={{ color: "var(--ink-faint)" }}>
             {signedIn ? "Dashboard" : "Login"}

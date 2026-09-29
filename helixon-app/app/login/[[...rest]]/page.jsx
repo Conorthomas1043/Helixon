@@ -50,7 +50,7 @@ function LoginContent() {
               Match the right<br />candidate, faster.
             </h1>
             <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
-              Helixon analyses CVs against job requirements in seconds, giving your team an objective match score and recommendation.
+              Helixon analyses CVs against job requirements in under a minute, giving your team an objective match score and recommendation.
             </p>
           </div>
 
@@ -122,7 +122,7 @@ function LoginContent() {
               variables: {
                 colorPrimary: "#0b3a2a",
                 colorText: "#13201b",
-                colorTextSecondary: "#5a7a6a",
+                colorTextSecondary: "#4a6658",
                 colorInputBackground: "rgba(255,255,255,0.6)",
                 colorInputText: "#13201b",
                 borderRadius: "12px",

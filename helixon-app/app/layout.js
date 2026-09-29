@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-const TITLE = "Helixon - screen candidates in seconds";
+const TITLE = "Helixon - AI CV screening for recruitment agencies";
 const DESCRIPTION =
   "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under a minute. Built for recruiters who screen at volume.";
 
@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
         variables: {
           colorPrimary: "#0b6e4f",
           colorText: "#13201b",
-          colorTextSecondary: "#5a7a6a",
+          colorTextSecondary: "#4a6658",
           colorBackground: "#ffffff",
           borderRadius: "12px",
           fontFamily: "var(--font-geist-mono), monospace",

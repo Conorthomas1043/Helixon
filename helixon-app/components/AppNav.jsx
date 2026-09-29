@@ -126,7 +126,7 @@ export default function AppNav({ active }) {
             <span className="w-7 h-7 rounded-full text-white text-xs font-semibold flex items-center justify-center" style={{ background: "var(--forest)" }} aria-hidden="true">
               {initials}
             </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8aaa9a" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </button>

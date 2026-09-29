@@ -55,7 +55,7 @@ export default function BillingPage() {
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
           Billing
         </h1>
-        <p className="text-sm mt-3 max-w-md" style={{ color: "#5a7a6a" }}>
+        <p className="text-sm mt-3 max-w-md" style={{ color: "var(--ink-soft)" }}>
           Your plan and subscription details.
         </p>
       </section>

@@ -56,8 +56,9 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
   }
 
   return (
-    <main className="min-h-screen flex flex-col" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--mist)" }}>
       {/* ── Nav (matches landing page) ─────────────────────────────────── */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
@@ -70,12 +71,13 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
             </span>
           </Link>
           <Link href="/login" className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Login</Link>
         </div>
       </nav>
+      <main id="main-content" className="flex-1 flex flex-col">
 
       {/* ── Content ─────────────────────────────────────────────────────── */}
       <div className="flex-1 flex items-center justify-center px-4 py-16 relative overflow-hidden">
@@ -144,7 +146,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
             </div>
           </div>
 
-          <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-mute)" }}>
+          <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-faint)" }}>
             Still stuck?{" "}
             <a href="/contact" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>
               Contact support
@@ -153,10 +155,11 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
         </div>
       </div>
 
+      </main>
       {/* ── Footer (matches landing page) ──────────────────────────────── */}
       <footer className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
+          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
           <a href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</a>
         </div>
       </footer>
@@ -183,6 +186,6 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
           .sand-top, .sand-bottom, .sand-stream { animation: none; }
         }
       `}</style>
-    </main>
+    </div>
   );
 }

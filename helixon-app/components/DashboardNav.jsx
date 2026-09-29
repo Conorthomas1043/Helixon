@@ -173,7 +173,7 @@ function DashboardNavContent() {
   const firstName = me?.firstName || (userName ? userName.split(" ")[0] : null);
   const workspaceLabel = showWelcome
     ? (firstName ? `Welcome back, ${firstName}.` : "Welcome back.")
-    : me?.agencyName || "Screen candidates in seconds";
+    : me?.agencyName || "Built for recruitment agencies";
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
@@ -194,7 +194,7 @@ function DashboardNavContent() {
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
           {TABS.map((t) => {
             const active = t.href === activeHref;
             return (
@@ -284,7 +284,7 @@ function DashboardNavContent() {
       </div>
 
       {/* Mobile tab row */}
-      <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+      <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
         {TABS.map((t) => {
           const active = t.href === activeHref;
           return (

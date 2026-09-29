@@ -79,11 +79,13 @@ export default function BlogPage() {
 
   return (
     <>
-      <main
+      <div
         className="min-h-screen"
         style={{ background: "var(--mist)" }}
       >
+        <a href="#main-content" className="skip-link">Skip to content</a>
         <MarketingNav active="blog" />
+        <main id="main-content">
 
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-10 text-center">
           <span
@@ -253,8 +255,9 @@ export default function BlogPage() {
           </div>
         </section>
 
+        </main>
         <MarketingFooter />
-      </main>
+      </div>
       <ChatWidget />
     </>
   );

@@ -96,7 +96,7 @@ export const TextInput = forwardRef(function TextInput(
       ref={ref}
       id={id}
       aria-invalid={error ? "true" : undefined}
-      className={`w-full rounded-[10px] border px-3.5 py-2.5 text-sm outline-none transition-shadow focus:border-[var(--focus-border)] focus:shadow-[0_0_0_3px_var(--ring-color)] disabled:bg-[var(--mist)] disabled:text-[#8aaa9a] disabled:cursor-not-allowed ${className}`}
+      className={`w-full rounded-[10px] border px-3.5 py-2.5 text-sm outline-none transition-shadow focus:border-[var(--focus-border)] focus:shadow-[0_0_0_3px_var(--ring-color)] disabled:bg-[var(--mist)] disabled:text-[#587364] disabled:cursor-not-allowed ${className}`}
       style={{
         borderColor: isDanger ? COLORS.dangerBorder : "var(--border)",
         color: COLORS.ink,

@@ -199,13 +199,14 @@ export default function DemoRequestPage() {
   }
 
   return (
-    <main
+    <div
       className="min-h-screen flex flex-col"
       style={{
         background: "var(--mist)",
       }}
     >
       {/* Navigation */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav
         className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b"
         style={{
@@ -280,7 +281,7 @@ export default function DemoRequestPage() {
                     "var(--ink-faint)",
                 }}
               >
-                Screen candidates in seconds
+                Built for recruitment agencies
               </span>
             </span>
           </Link>
@@ -296,6 +297,7 @@ export default function DemoRequestPage() {
           </Link>
         </div>
       </nav>
+      <main id="main-content" className="flex-1 flex flex-col">
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center px-4 py-16 relative overflow-hidden">
@@ -608,7 +610,7 @@ export default function DemoRequestPage() {
           <p
             className="text-center text-[11px] mt-6"
             style={{
-              color: "var(--ink-mute)",
+              color: "var(--ink-faint)",
             }}
           >
             Ready to use Helixon?{" "}
@@ -625,6 +627,7 @@ export default function DemoRequestPage() {
         </div>
       </div>
 
+      </main>
       {/* Footer */}
       <footer
         className="border-t"
@@ -642,8 +645,8 @@ export default function DemoRequestPage() {
             }}
           >
             © {new Date().getFullYear()}{" "}
-            Helixon. Screen candidates in
-            seconds.
+            Helixon. AI CV screening for
+            recruitment agencies.
           </span>
 
           <Link
@@ -658,6 +661,6 @@ export default function DemoRequestPage() {
           </Link>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

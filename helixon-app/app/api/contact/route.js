@@ -85,8 +85,8 @@ const COLORS = {
   mint: "#e3f3ec",
   mist: "#f5f8f6",
   ink: "#13201b",
-  inkSoft: "#5a7a6a",
-  inkFaint: "#8aaa9a",
+  inkSoft: "#4a6658",
+  inkFaint: "#587364",
   border: "#e1e8e3",
 };
 
@@ -113,7 +113,7 @@ function emailShell({ preheader, bodyHtml }) {
                     </td>
                     <td style="padding-left:10px;">
                       <span style="font-size:14px;font-weight:600;color:${COLORS.ink};">Helixon</span><br/>
-                      <span style="font-size:9px;color:${COLORS.inkFaint};">Screen candidates in seconds</span>
+                      <span style="font-size:9px;color:${COLORS.inkFaint};">Built for recruitment agencies</span>
                     </td>
                   </tr>
                 </table>
@@ -126,7 +126,7 @@ function emailShell({ preheader, bodyHtml }) {
             </tr>
             <tr>
               <td style="padding:20px 32px;border-top:1px solid ${COLORS.border};background:${COLORS.mist};">
-                <p style="margin:0;font-size:11px;color:${COLORS.inkFaint};">© ${new Date().getFullYear()} Helixon. Screen candidates in seconds.</p>
+                <p style="margin:0;font-size:11px;color:${COLORS.inkFaint};">© ${new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</p>
               </td>
             </tr>
           </table>

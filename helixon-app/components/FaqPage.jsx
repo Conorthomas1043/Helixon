@@ -75,8 +75,10 @@ export default function FaqPage() {
   const [openKey, setOpenKey] = useState("Getting started-0");
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="faq" />
+      <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
@@ -124,7 +126,8 @@ export default function FaqPage() {
         ctaHref="/contact"
       />
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

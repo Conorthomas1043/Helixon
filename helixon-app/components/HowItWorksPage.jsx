@@ -51,8 +51,10 @@ const DETAILS = [
 
 export default function HowItWorksPage() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="how" />
+      <main id="main-content">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-14 text-center">
@@ -120,7 +122,8 @@ export default function HowItWorksPage() {
         ctaHref="/demo"
       />
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

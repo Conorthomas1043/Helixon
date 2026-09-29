@@ -12,7 +12,7 @@ import { useMemo, useState } from "react";
 const TYPES = {
   new: { label: "New", color: "var(--forest)", bg: "var(--mint)" },
   improved: { label: "Improved", color: "#b45309", bg: "#fdf3e0" },
-  fixed: { label: "Fixed", color: "#5a7a6a", bg: "var(--mist)" },
+  fixed: { label: "Fixed", color: "var(--ink-soft)", bg: "var(--mist)" },
 };
 
 const UPDATES = [
@@ -87,7 +87,7 @@ export default function AppUpdatesPage() {
   const groupedMonths = useMemo(() => [...new Set(filtered.map((u) => u.month))], [filtered]);
 
   return (
-    <main
+    <div
       className="min-h-screen"
       style={{
         background: "var(--mist)",
@@ -102,6 +102,7 @@ export default function AppUpdatesPage() {
       }}
     >
       {/* ── Nav (shared shell) ──────────────────────────────────────────── */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
@@ -114,11 +115,11 @@ export default function AppUpdatesPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
             <a href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</a>
             <a href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</a>
             <a href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</a>
@@ -140,22 +141,23 @@ export default function AppUpdatesPage() {
         {mobileNavOpen && (
           <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
             {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["Login", "/login"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
+              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "var(--ink-soft)" }}>{label}</a>
             ))}
           </div>
         )}
       </nav>
+      <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-8">
-          <p className="text-[11px] font-medium mb-3" style={{ color: "#8aaa9a" }}>
+          <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <a href="/" className="hover:underline">Helixon</a> <span className="mx-1">/</span> What&apos;s new
           </p>
           <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
             What&apos;s new in Helixon
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "#5a7a6a" }}>
+          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
             Every scoring improvement, new feature, and fix - in one place. Shipped continuously, logged here weekly.
           </p>
         </div>
@@ -169,7 +171,7 @@ export default function AppUpdatesPage() {
             className="text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
             style={{
               background: filter === "all" ? "#13201b" : "transparent",
-              color: filter === "all" ? "white" : "#5a7a6a",
+              color: filter === "all" ? "white" : "var(--ink-soft)",
               border: filter === "all" ? "none" : "1px solid var(--border)",
             }}
           >
@@ -195,12 +197,12 @@ export default function AppUpdatesPage() {
       {/* ── Timeline ────────────────────────────────────────────────────── */}
       <div className="max-w-[760px] mx-auto px-6 py-14">
         {groupedMonths.length === 0 && (
-          <p className="text-sm text-center py-16" style={{ color: "#8aaa9a" }}>No updates in this category yet.</p>
+          <p className="text-sm text-center py-16" style={{ color: "var(--ink-faint)" }}>No updates in this category yet.</p>
         )}
 
         {groupedMonths.map((month) => (
           <div key={month} className="mb-12 last:mb-0">
-            <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-5 sticky top-[104px]" style={{ color: "#8aaa9a" }}>
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-5 sticky top-[104px]" style={{ color: "var(--ink-faint)" }}>
               {month}
             </h2>
 
@@ -220,11 +222,11 @@ export default function AppUpdatesPage() {
                       >
                         {t.label}
                       </span>
-                      <span className="text-[11px]" style={{ color: "#8aaa9a" }}>{u.date}</span>
-                      <span className="text-[11px] ml-auto" style={{ fontFamily: "var(--font-mono)", color: "#b0c4ba" }}>v{u.version}</span>
+                      <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>{u.date}</span>
+                      <span className="text-[11px] ml-auto" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-faint)" }}>v{u.version}</span>
                     </div>
                     <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#13201b" }}>{u.title}</h3>
-                    <p className="text-[13px] leading-relaxed" style={{ color: "#5a7a6a" }}>{u.body}</p>
+                    <p className="text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{u.body}</p>
                   </article>
                 );
               })}
@@ -233,7 +235,7 @@ export default function AppUpdatesPage() {
         ))}
 
         <div className="mt-14 pt-8 border-t text-center" style={{ borderColor: "var(--border)" }}>
-          <p className="text-xs mb-3" style={{ color: "#8aaa9a" }}>Have a feature request?</p>
+          <p className="text-xs mb-3" style={{ color: "var(--ink-faint)" }}>Have a feature request?</p>
           <a
             href="mailto:hello@helixon.co.uk"
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[10px]"
@@ -244,11 +246,12 @@ export default function AppUpdatesPage() {
         </div>
       </div>
 
+      </main>
       {/* ── Footer (shared shell) ───────────────────────────────────────── */}
       <footer className="border-t bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-          <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
+          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
+          <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
             <a href="/dpa">DPA</a>
@@ -256,6 +259,6 @@ export default function AppUpdatesPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Helixon - screen candidates in seconds";
+export const alt = "Helixon - AI CV screening for recruitment agencies";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

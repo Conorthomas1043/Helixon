@@ -65,8 +65,10 @@ export default function PricingPage() {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="pricing" />
+      <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-20">
         <div className="text-center mb-12">
@@ -170,7 +172,8 @@ export default function PricingPage() {
         </p>
       </section>
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }

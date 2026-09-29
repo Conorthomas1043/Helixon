@@ -81,7 +81,7 @@ export default function DpaPage() {
   const [tocOpenMobile, setTocOpenMobile] = useState(false);
 
   return (
-    <main
+    <div
       className="min-h-screen"
       style={{
         background: "var(--mist)",
@@ -96,6 +96,7 @@ export default function DpaPage() {
       }}
     >
       {/* ── Nav (shared shell) ──────────────────────────────────────────── */}
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
@@ -108,11 +109,11 @@ export default function DpaPage() {
             </div>
             <span className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "#8aaa9a" }}>Screen candidates in seconds</span>
+              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "#5a7a6a" }}>
+          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
             <a href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</a>
             <a href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</a>
             <a href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</a>
@@ -134,26 +135,27 @@ export default function DpaPage() {
         {mobileNavOpen && (
           <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
             {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["Login", "/login"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "#5a7a6a" }}>{label}</a>
+              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "var(--ink-soft)" }}>{label}</a>
             ))}
           </div>
         )}
       </nav>
+      <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-[11px] font-medium mb-3" style={{ color: "#8aaa9a" }}>
+          <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <a href="/" className="hover:underline">Helixon</a> <span className="mx-1">/</span> Legal
           </p>
           <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
             Data Processing Agreement
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl mb-6" style={{ color: "#5a7a6a" }}>
+          <p className="text-sm leading-relaxed max-w-xl mb-6" style={{ color: "var(--ink-soft)" }}>
             This DPA forms part of the agreement between Helixon and any organisation using Helixon to process
             personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
             <span><strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
             <span><strong style={{ color: "#13201b" }}>Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
@@ -187,7 +189,7 @@ export default function DpaPage() {
         {tocOpenMobile && (
           <div className="px-6 pb-3 flex flex-col gap-0.5 max-h-64 overflow-y-auto">
             {SECTIONS.map((s) => (
-              <a key={s.id} href={`#${s.id}`} onClick={() => setTocOpenMobile(false)} className="text-xs py-1.5" style={{ color: active === s.id ? "var(--forest)" : "#5a7a6a", fontWeight: active === s.id ? 600 : 400 }}>
+              <a key={s.id} href={`#${s.id}`} onClick={() => setTocOpenMobile(false)} className="text-xs py-1.5" style={{ color: active === s.id ? "var(--forest)" : "var(--ink-soft)", fontWeight: active === s.id ? 600 : 400 }}>
                 {s.label}
               </a>
             ))}
@@ -200,7 +202,7 @@ export default function DpaPage() {
         {/* Sticky TOC */}
         <aside className="hidden lg:block">
           <nav className="sticky top-[80px] space-y-0.5 pr-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#8aaa9a" }}>On this page</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>On this page</p>
             {SECTIONS.map((s) => (
               <a
                 key={s.id}
@@ -208,7 +210,7 @@ export default function DpaPage() {
                 className="block text-[12px] py-1.5 pl-3 border-l-2 transition-colors leading-snug"
                 style={{
                   borderColor: active === s.id ? "var(--forest)" : "transparent",
-                  color: active === s.id ? "var(--forest)" : "#5a7a6a",
+                  color: active === s.id ? "var(--forest)" : "var(--ink-soft)",
                   fontWeight: active === s.id ? 600 : 400,
                 }}
               >
@@ -354,7 +356,7 @@ export default function DpaPage() {
               ].map(([k, v], i) => (
                 <div key={k} className="grid grid-cols-[130px_1fr] text-[12px]" style={{ background: i % 2 === 0 ? "var(--mist)" : "white" }}>
                   <div className="px-4 py-3 font-semibold" style={{ color: "#13201b" }}>{k}</div>
-                  <div className="px-4 py-3 border-l" style={{ color: "#5a7a6a", borderColor: "var(--border)" }}>{v}</div>
+                  <div className="px-4 py-3 border-l" style={{ color: "var(--ink-soft)", borderColor: "var(--border)" }}>{v}</div>
                 </div>
               ))}
             </div>
@@ -366,7 +368,7 @@ export default function DpaPage() {
                 <span>Sub-processor</span><span>Purpose</span><span>Location</span>
               </div>
               {SUBPROCESSORS.map((sp, i) => (
-                <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-[12px] px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "#5a7a6a" }}>
+                <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-[12px] px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "var(--ink-soft)" }}>
                   <span style={{ color: "#13201b", fontWeight: 500 }}>{sp.name}</span>
                   <span>{sp.purpose}</span>
                   <span>{sp.location}</span>
@@ -391,17 +393,18 @@ export default function DpaPage() {
             </ul>
           </Section>
 
-          <div className="pt-4 mt-2 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "#8aaa9a" }}>
+          <div className="pt-4 mt-2 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
             Questions about this DPA? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
           </div>
         </article>
       </div>
 
+      </main>
       {/* ── Footer (shared shell) ───────────────────────────────────────── */}
       <footer className="border-t bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "#8aaa9a" }}>© {new Date().getFullYear()} Helixon. Screen candidates in seconds.</span>
-          <div className="flex gap-4 text-[11px]" style={{ color: "#8aaa9a" }}>
+          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
+          <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
             <a href="/dpa" style={{ color: "var(--forest)", fontWeight: 600 }}>DPA</a>
@@ -409,6 +412,6 @@ export default function DpaPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

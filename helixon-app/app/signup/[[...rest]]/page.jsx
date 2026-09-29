@@ -251,7 +251,7 @@ export default function SignupPage() {
               variables: {
                 colorPrimary: "#0b3a2a",
                 colorText: "#13201b",
-                colorTextSecondary: "#5a7a6a",
+                colorTextSecondary: "#4a6658",
                 colorInputBackground: "rgba(255,255,255,0.6)",
                 colorInputText: "#13201b",
                 borderRadius: "12px",
@@ -443,7 +443,7 @@ export default function SignupPage() {
                     variables: {
                       colorPrimary: "#0b3a2a",
                       colorText: "#13201b",
-                      colorTextSecondary: "#5a7a6a",
+                      colorTextSecondary: "#4a6658",
                       colorInputBackground: "rgba(255,255,255,0.6)",
                       colorInputText: "#13201b",
                       borderRadius: "12px",

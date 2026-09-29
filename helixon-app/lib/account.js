@@ -16,8 +16,8 @@ export function useAgencyId() {
 // to dashboard/page.js and analyse/page.js's error/delete states.
 export const COLORS = {
   ink: "#13201b",
-  muted: "#5a7a6a",
-  faint: "#8aaa9a",
+  muted: "#4a6658",
+  faint: "#587364",
   dangerText: "var(--score-low, #c0392b)",
   dangerTextDark: "#9a2e23",
   dangerBg: "rgba(192,57,43,0.08)",

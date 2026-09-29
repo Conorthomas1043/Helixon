@@ -207,8 +207,10 @@ const US_ONLY = (where) => /United States/.test(where) && !/EU/.test(where);
 
 export default function Privacy() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="privacy" />
+      <main id="main-content">
 
       <header className="bg-white border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1120px] mx-auto px-6 pt-14 pb-12">
@@ -475,7 +477,8 @@ export default function Privacy() {
         </article>
       </div>
 
+      </main>
       <MarketingFooter />
-    </main>
+    </div>
   );
 }
