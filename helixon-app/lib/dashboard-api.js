@@ -264,6 +264,16 @@ export async function removeTeammate(userId, reassignTo) {
   });
 }
 
+// Your own presence on the Team page: status "busy" | "away" | null
+// (automatic), with an optional message and end time (ISO).
+export async function setMyPresence({ status = null, message = "", until = null } = {}) {
+  return apiFetch("/api/team/presence", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, message, until }),
+  });
+}
+
 // role: "admin" (can manage the team) or "member".
 export async function setTeammateRole(userId, role) {
   return apiFetch("/api/team/role", {

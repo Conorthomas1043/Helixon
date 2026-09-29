@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
+import { computePresence } from "@/lib/presence";
 
 // "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
 // join through a Clerk Organization invite (app/api/team/invite), and the
@@ -35,10 +36,13 @@ export async function GET() {
   const { agencyId } = auth;
 
   const [{ data: members, error: membersError }, { data: candidates, error: candidatesError }] = await Promise.all([
-    supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", agencyId),
+    supabase
+      .from("profiles")
+      .select("clerk_user_id, first_name, last_name, username, last_seen_at, last_active_at, presence_status, presence_message, presence_until")
+      .eq("agency_id", agencyId),
     supabase
       .from("candidates")
-      .select("recruiter_id, processing_status, stage, next_action")
+      .select("recruiter_id, processing_status, stage, next_action, created_at, last_activity_at")
       .eq("agency_id", agencyId)
       .not("recruiter_id", "is", null),
   ]);
@@ -57,15 +61,36 @@ export async function GET() {
   }
 
   const now = Date.now();
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
 
   return NextResponse.json(
     (members ?? []).map((m) => {
       const owned = (candidates ?? []).filter((c) => c.recruiter_id === m.clerk_user_id);
       const completed = owned.filter((c) => c.processing_status === "completed");
+      // Presence (lib/presence.js): raw values so the page can keep it
+      // current between refreshes, plus the state worked out now.
+      const presenceRaw = {
+        lastSeenAt: m.last_seen_at,
+        lastActiveAt: m.last_active_at,
+        status: m.presence_status,
+        message: m.presence_message,
+        until: m.presence_until,
+      };
+      const lastWorkedAt = owned.reduce((latest, c) => {
+        const t = c.last_activity_at || c.created_at;
+        return t && (!latest || t > latest) ? t : latest;
+      }, null);
       return {
         id: m.clerk_user_id,
         name: recruiterDisplayName(m) || "Unnamed",
         role: roles.get(m.clerk_user_id) || null,
+        presenceRaw,
+        presence: computePresence(presenceRaw, now),
+        // Most recent change to any candidate they own - "what they were
+        // last working on", for anyone offline.
+        lastWorkedAt,
+        screenedToday: owned.filter((c) => c.created_at && new Date(c.created_at) >= startOfDay).length,
         totalCandidates: owned.length,
         activeCandidates: completed.filter((c) => c.stage !== "Placed" && c.stage !== "Rejected").length,
         awaitingReview: completed.filter((c) => c.stage === "Screened" || c.stage === null).length,

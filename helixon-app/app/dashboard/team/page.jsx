@@ -6,6 +6,10 @@
 // can invite, cancel invites or remove people - the API enforces that, and
 // this page hides those controls from everyone else. "Overdue" mirrors the
 // candidate profile page: nextAction.dueAt in the past and not completed.
+//
+// Presence (lib/presence.js): who's active, idle, busy, away or offline -
+// and when anyone offline was last active - from each person's heartbeat
+// (DashboardNav) and the status they set here.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -19,7 +23,10 @@ import {
   removeTeammate,
   setTeammateRole,
   assignUnassignedCandidates,
+  setMyPresence,
 } from "@/lib/dashboard-api";
+import PresenceDot from "@/components/PresenceDot";
+import { PRESENCE_ORDER, computePresence, presenceLine, timeAgo } from "@/lib/presence";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -163,7 +170,7 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
       </div>
 
       {canManage && (
-      <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-2">
+      <form onSubmit={handleInvite} className="flex flex-col sm:flex-row lg:flex-col gap-2">
         <input
           type="email"
           value={email}
@@ -398,15 +405,32 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
   );
 }
 
-function Avatar({ name }) {
+// Presence colours and wording come from lib/presence.js via PresenceDot.
+const PRESENCE_TEXT = {
+  active: "var(--score-strong)",
+  idle: "#9a6b12",
+  busy: "var(--score-low)",
+  away: INK_MUTED,
+  offline: INK_FAINT,
+};
+
+function Avatar({ name, state, size = 46 }) {
   return (
-    <div
-      className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold"
-      style={{ background: "var(--mist)", color: "var(--forest)" }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </div>
+    <span className="relative shrink-0" style={{ width: size, height: size }}>
+      <span
+        className="w-full h-full rounded-full flex items-center justify-center font-semibold"
+        style={{
+          background: state && state !== "offline" ? "var(--mint)" : "var(--mist)",
+          color: "var(--forest)",
+          fontSize: Math.round(size * 0.3),
+          opacity: state === "offline" ? 0.75 : 1,
+        }}
+        aria-hidden="true"
+      >
+        {initials(name)}
+      </span>
+      {state && <PresenceDot state={state} size={Math.round(size * 0.27)} className="absolute bottom-0 right-0" />}
+    </span>
   );
 }
 
@@ -423,77 +447,263 @@ function Metric({ label, value, accent }) {
   );
 }
 
+function SummaryTile({ label, value, sub, dot, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className="text-left rounded-[14px] p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
+      style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
+    >
+      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+        {dot && <PresenceDot state={dot} size={8} />}
+        {label}
+      </p>
+      <p className="text-[24px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
+        {value}
+      </p>
+      {sub && <p className="text-[11.5px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
+    </button>
+  );
+}
+
 const ROLE_LABELS = { owner: "Owner", admin: "Admin", member: "Member" };
 
-function RecruiterCard({ recruiter, canRemove, canChangeRole, changingRole, onChangeRole, removing, onRemove }) {
+function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, changingRole, onChangeRole, removing, onRemove }) {
+  const state = presence.state;
+  const line = presenceLine(presence, now);
   return (
-    <div className="rounded-[14px] p-5" style={CARD}>
-      <div className="flex items-center gap-3 mb-4">
-        <Avatar name={recruiter.name} />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: INK }}>
-            {recruiter.name}
+    <div className="rounded-[14px] p-5 flex flex-col" style={{ ...CARD, opacity: state === "offline" ? 0.92 : 1 }}>
+      <div className="flex items-start gap-3">
+        <Avatar name={member.name} state={state} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="text-[15px] font-semibold truncate" style={{ color: INK }}>
+              {member.name}
+              {isYou && <span className="font-normal" style={{ color: INK_FAINT }}> (you)</span>}
+            </p>
+            <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+              {ROLE_LABELS[member.role] || "Member"}
+            </span>
+          </div>
+          <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] }}>
+            {state !== "offline" && <PresenceDot state={state} size={7} ring="transparent" />}
+            {line}
           </p>
-          <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
-            {ROLE_LABELS[recruiter.role] || "Member"}
-          </p>
+          {presence.message && (
+            <p className="text-[12.5px] mt-1 italic" style={{ color: INK }}>
+              “{presence.message}”
+            </p>
+          )}
         </div>
-        {recruiter.overdue > 0 && (
-          <span
-            className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-            style={{ background: RED_BG, color: RED_STRONG }}
-          >
-            {recruiter.overdue} overdue
+        {member.overdue > 0 && (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
+            {member.overdue} overdue
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-2 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-        <Metric label="Active" value={recruiter.activeCandidates} />
-        <Metric label="To review" value={recruiter.awaitingReview} />
-        <Metric label="Interview" value={recruiter.interviewing} />
-        <Metric label="Placed" value={recruiter.placed} accent="var(--forest)" />
+      <p className="text-[11.5px] mt-3" style={{ color: INK_FAINT }}>
+        {member.lastWorkedAt ? `Last worked on a candidate ${timeAgo(member.lastWorkedAt, now)}` : "No candidate activity yet"}
+        {member.screenedToday > 0 ? ` · ${member.screenedToday} screened today` : ""}
+      </p>
+
+      <div className="grid grid-cols-4 gap-2 pt-4 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
+        <Metric label="Active" value={member.activeCandidates} />
+        <Metric label="To review" value={member.awaitingReview} />
+        <Metric label="Interview" value={member.interviewing} />
+        <Metric label="Placed" value={member.placed} accent="var(--forest)" />
       </div>
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between mt-4 pt-1">
         <Link
-          href={`/dashboard/candidates?recruiterId=${recruiter.id}`}
+          href={`/dashboard/candidates?recruiterId=${encodeURIComponent(member.id)}`}
           className="inline-flex items-center text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
           style={{ color: "var(--forest)" }}
         >
-          View {recruiter.name.split(" ")[0]}&apos;s candidates →
+          {isYou ? "Your candidates →" : `${member.name.split(" ")[0]}'s candidates →`}
         </Link>
-
-        {/* Understated on purpose - removing someone from the team is a
-            rare, deliberate action and shouldn't sit visually level with
-            "View candidates". Not shown on your own card (see canRemove)
-            or when you're the only person on the team. */}
+        {/* Understated on purpose - rare, deliberate actions. */}
         <span className="flex items-center gap-3 shrink-0">
-        {canChangeRole && (
-          <button
-            type="button"
-            onClick={() => onChangeRole(recruiter, recruiter.role === "admin" ? "member" : "admin")}
-            disabled={changingRole}
-            title={recruiter.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
-            className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-            style={{ color: INK_MUTED }}
-          >
-            {changingRole ? "Saving…" : recruiter.role === "admin" ? "Make member" : "Make admin"}
-          </button>
-        )}
-        {canRemove && (
-          <button
-            type="button"
-            onClick={() => onRemove(recruiter)}
-            disabled={removing}
-            className="text-[12px] font-medium shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-            style={{ color: INK_FAINT }}
-          >
-            {removing ? "Removing…" : "Remove"}
-          </button>
-        )}
+          {canChangeRole && (
+            <button
+              type="button"
+              onClick={() => onChangeRole(member, member.role === "admin" ? "member" : "admin")}
+              disabled={changingRole}
+              title={member.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
+              className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              style={{ color: INK_MUTED }}
+            >
+              {changingRole ? "Saving…" : member.role === "admin" ? "Make member" : "Make admin"}
+            </button>
+          )}
+          {canRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(member)}
+              disabled={removing}
+              className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              style={{ color: INK_FAINT }}
+            >
+              {removing ? "Removing…" : "Remove"}
+            </button>
+          )}
         </span>
       </div>
+    </div>
+  );
+}
+
+const STATUS_CHOICES = [
+  { value: null, dot: "active", label: "Automatic", hint: "Active or idle, from what you're doing" },
+  { value: "busy", dot: "busy", label: "Busy", hint: "Heads down" },
+  { value: "away", dot: "away", label: "Away", hint: "Stepped out" },
+];
+const MESSAGE_SUGGESTIONS = ["In interviews", "On a call", "Client meeting", "Lunch", "Out of office"];
+const CLEAR_AFTER = [
+  { value: "", label: "Don't clear" },
+  { value: "30", label: "In 30 minutes" },
+  { value: "60", label: "In 1 hour" },
+  { value: "120", label: "In 2 hours" },
+  { value: "240", label: "In 4 hours" },
+  { value: "eod", label: "End of today" },
+];
+
+function clearAfterToIso(value) {
+  if (!value) return null;
+  if (value === "eod") {
+    const d = new Date();
+    d.setHours(23, 59, 0, 0);
+    return d.toISOString();
+  }
+  return new Date(Date.now() + Number(value) * 60_000).toISOString();
+}
+
+// Set yourself busy or away, with what you're doing and when it clears.
+function MyStatusCard({ me, presence, onSaved }) {
+  const raw = me?.presenceRaw || {};
+  const currentStatus = presence?.state === "busy" || presence?.state === "away" ? presence.state : null;
+  const [status, setStatus] = useState(currentStatus);
+  const [message, setMessage] = useState(currentStatus ? raw.message || "" : "");
+  const [clearAfter, setClearAfter] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  async function save(next = status) {
+    setSaving(true);
+    setError("");
+    try {
+      const updated = await setMyPresence({ status: next, message: next ? message : "", until: next ? clearAfterToIso(clearAfter) : null });
+      onSaved(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      if (!next) {
+        setMessage("");
+        setClearAfter("");
+      }
+    } catch (err) {
+      setError(err.message || "Couldn't update your status.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        Your status
+      </p>
+      <p className="flex items-center gap-2 text-[14px] font-semibold" style={{ color: INK }}>
+        <PresenceDot state={presence?.state === "offline" ? "active" : presence?.state || "active"} size={9} ring="transparent" />
+        {presence ? (presence.state === "offline" ? "Active now" : presenceLine(presence)) : "Active now"}
+      </p>
+      {presence?.message && <p className="text-[12.5px] italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
+
+      <div className="grid grid-cols-3 gap-1.5 mt-4" role="radiogroup" aria-label="Status">
+        {STATUS_CHOICES.map((c) => {
+          const on = status === c.value;
+          return (
+            <button
+              key={c.label}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              title={c.hint}
+              onClick={() => {
+                setStatus(c.value);
+                if (!c.value) save(null);
+              }}
+              className="flex items-center justify-center gap-1.5 text-[12.5px] font-semibold px-2 py-2 rounded-[10px] border transition-colors"
+              style={{
+                borderColor: on ? "var(--forest)" : "var(--border)",
+                background: on ? "var(--mint)" : "white",
+                color: on ? "var(--forest-deep)" : INK_MUTED,
+              }}
+            >
+              <PresenceDot state={c.dot} size={8} ring="transparent" />
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {status && (
+        <div className="mt-3 space-y-2.5">
+          <input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            maxLength={80}
+            placeholder={status === "busy" ? "What are you busy with? (optional)" : "Where are you? (optional)"}
+            aria-label="Status message"
+            className="w-full text-[13px] px-3.5 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            {MESSAGE_SUGGESTIONS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMessage(m)}
+                className="text-[11.5px] px-2.5 py-1 rounded-full hover:bg-[var(--mint)]"
+                style={{ background: message === m ? "var(--mint)" : "var(--mist)", color: INK_MUTED }}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={clearAfter}
+              onChange={(e) => setClearAfter(e.target.value)}
+              aria-label="Clear status"
+              className="flex-1 text-[12.5px] font-semibold px-3 py-2 rounded-full bg-white"
+              style={{ border: "1px solid var(--border)", color: INK }}
+            >
+              {CLEAR_AFTER.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.value ? `Clear ${o.label.toLowerCase()}` : o.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => save()}
+              disabled={saving}
+              className="text-[12.5px] font-semibold px-4 py-2 rounded-full disabled:opacity-50"
+              style={{ background: "var(--forest)", color: "white" }}
+            >
+              {saving ? "Saving…" : saved ? "Saved ✓" : "Set status"}
+            </button>
+          </div>
+        </div>
+      )}
+      {!status && saved && <p className="text-[12px] mt-2" style={{ color: "var(--forest)" }}>Back to automatic ✓</p>}
+      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      <p className="text-[11.5px] mt-3" style={{ color: INK_FAINT }}>
+        Teammates see you as active while you&apos;re using Helixon, idle after 5 minutes without touching it, and offline once it&apos;s closed.
+      </p>
     </div>
   );
 }
@@ -504,7 +714,7 @@ function Block({ className = "" }) {
 
 function TeamSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-busy="true" aria-label="Loading team">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" aria-busy="true" aria-label="Loading team">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="rounded-[14px] p-5" style={CARD}>
           <Block className="h-11 w-11 rounded-full mb-4" />
@@ -594,6 +804,24 @@ export default function TeamPage() {
     };
   }, [reloadKey]);
 
+  // Presence stays live: re-read the team every 30 seconds (quietly - no
+  // skeleton), and re-work "3 min ago" / idle from the raw times every 15.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const poll = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      fetchRecruiters()
+        .then(setRecruiters)
+        .catch(() => {});
+    }, 30_000);
+    const tick = setInterval(() => setNow(Date.now()), 15_000);
+    return () => {
+      clearInterval(poll);
+      clearInterval(tick);
+    };
+  }, []);
+  const [filter, setFilter] = useState("all"); // all | online | busy | offline
+
   const retry = useCallback(() => {
     setStatus("loading");
     setReloadKey((k) => k + 1);
@@ -641,14 +869,37 @@ export default function TeamPage() {
     }
   }
 
-  const totalOverdue = recruiters?.reduce((sum, r) => sum + r.overdue, 0) ?? 0;
-  const totalActive = recruiters?.reduce((sum, r) => sum + r.activeCandidates, 0) ?? 0;
+  const members = (recruiters || []).map((r) => ({ ...r, livePresence: computePresence(r.presenceRaw || {}, now) }));
+  // You're here, whatever the last heartbeat said.
+  const withYou = members.map((m) =>
+    m.id === user?.id && m.livePresence.state === "offline" ? { ...m, livePresence: { ...m.livePresence, state: "active", online: true } } : m
+  );
+  const sorted = [...withYou].sort(
+    (a, b) =>
+      PRESENCE_ORDER.indexOf(a.livePresence.state) - PRESENCE_ORDER.indexOf(b.livePresence.state) ||
+      (b.livePresence.lastActiveAt || "").localeCompare(a.livePresence.lastActiveAt || "")
+  );
+  const groups = {
+    online: sorted.filter((m) => m.livePresence.state === "active" || m.livePresence.state === "idle"),
+    busy: sorted.filter((m) => m.livePresence.state === "busy" || m.livePresence.state === "away"),
+    offline: sorted.filter((m) => m.livePresence.state === "offline"),
+  };
+  const shown = filter === "all" ? sorted : groups[filter];
+  const me = withYou.find((m) => m.id === user?.id) || null;
+  const totalOverdue = members.reduce((sum, r) => sum + r.overdue, 0);
+  const totalActive = members.reduce((sum, r) => sum + r.activeCandidates, 0);
+  const screenedToday = members.reduce((sum, r) => sum + (r.screenedToday || 0), 0);
+  const lastOnline = groups.offline.find((m) => m.livePresence.lastActiveAt);
+
+  function onMyStatusSaved(updated) {
+    setRecruiters((list) => list?.map((r) => (r.id === user?.id ? { ...r, presenceRaw: updated, presence: updated.presence } : r)));
+  }
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
-        <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Team workspace
@@ -657,54 +908,120 @@ export default function TeamPage() {
               Team
             </h1>
             {status === "ready" && (
-              <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>
-                {totalActive} active candidates across the team
-                {totalOverdue > 0 ? ` · ${totalOverdue} overdue follow-up${totalOverdue === 1 ? "" : "s"}` : ""}
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] mt-1" style={{ color: INK_MUTED }}>
+                <span className="inline-flex items-center gap-1.5">
+                  <PresenceDot state="active" size={8} ring="transparent" />
+                  {groups.online.length} online
+                </span>
+                {groups.busy.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <PresenceDot state="busy" size={8} ring="transparent" />
+                    {groups.busy.length} busy or away
+                  </span>
+                )}
+                <span>
+                  {totalActive} active candidates{totalOverdue > 0 ? ` · ${totalOverdue} overdue follow-up${totalOverdue === 1 ? "" : "s"}` : ""}
+                </span>
               </p>
             )}
           </div>
           <Link
             href="/dashboard"
             className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
           >
             ← Dashboard
           </Link>
         </header>
 
-        <TeamInvitePanel
-          usage={usage}
-          state={usageState}
-          loadError={usageError}
-          reload={loadUsage}
-          onRemoveSeat={handleRemove}
-          removingId={removingId}
-          members={recruiters || []}
-          onAssigned={() => { retry(); loadUsage(); }}
-        />
+        {status === "ready" && members.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <SummaryTile label="Online now" dot="active" value={groups.online.length} sub={groups.online.length ? groups.online.map((m) => m.name.split(" ")[0]).join(", ") : "Nobody right now"} active={filter === "online"} onClick={() => setFilter((f) => (f === "online" ? "all" : "online"))} />
+            <SummaryTile label="Busy or away" dot="busy" value={groups.busy.length} sub={groups.busy[0]?.livePresence.message || (groups.busy.length ? "Heads down" : "No one")} active={filter === "busy"} onClick={() => setFilter((f) => (f === "busy" ? "all" : "busy"))} />
+            <SummaryTile label="Offline" dot="offline" value={groups.offline.length} sub={lastOnline ? `${lastOnline.name.split(" ")[0]} was on ${timeAgo(lastOnline.livePresence.lastActiveAt, now)}` : "Everyone's here"} active={filter === "offline"} onClick={() => setFilter((f) => (f === "offline" ? "all" : "offline"))} />
+            <SummaryTile label="Screened today" value={screenedToday} sub={totalOverdue ? `${totalOverdue} follow-up${totalOverdue === 1 ? "" : "s"} overdue` : "No overdue follow-ups"} active={false} onClick={() => setFilter("all")} />
+          </div>
+        )}
 
         {removeError && (
           <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
         )}
 
-        {status === "loading" && <TeamSkeleton />}
-        {status === "error" && <ErrorState onRetry={retry} />}
-        {status === "ready" && recruiters && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {recruiters.map((r) => (
-              <RecruiterCard
-                key={r.id}
-                recruiter={r}
-                canRemove={canManage && r.id !== user?.id && r.role === "member"}
-                canChangeRole={canManage && r.id !== user?.id && (r.role === "member" || r.role === "admin")}
-                changingRole={changingRoleId === r.id}
-                onChangeRole={handleChangeRole}
-                removing={removingId === r.id}
-                onRemove={handleRemove}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+          <section aria-label="Team members" className="space-y-4 min-w-0">
+            {status === "ready" && members.length > 1 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  ["all", "Everyone", sorted.length],
+                  ["online", "Online", groups.online.length],
+                  ["busy", "Busy or away", groups.busy.length],
+                  ["offline", "Offline", groups.offline.length],
+                ].map(([k, label, count]) => {
+                  const on = filter === k;
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setFilter(k)}
+                      aria-pressed={on}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
+                    >
+                      {label}
+                      <span className="text-[10px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+                <span className="ml-auto text-[11.5px]" style={{ color: INK_FAINT }}>
+                  Updates live
+                </span>
+              </div>
+            )}
+
+            {status === "loading" && <TeamSkeleton />}
+            {status === "error" && <ErrorState onRetry={retry} />}
+            {status === "ready" && shown.length === 0 && (
+              <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+                No one is {filter === "online" ? "online" : filter === "busy" ? "busy or away" : "offline"} right now.
+              </div>
+            )}
+            {status === "ready" && shown.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {shown.map((r) => (
+                  <MemberCard
+                    key={r.id}
+                    member={r}
+                    isYou={r.id === user?.id}
+                    presence={r.livePresence}
+                    now={now}
+                    canRemove={canManage && r.id !== user?.id && r.role === "member"}
+                    canChangeRole={canManage && r.id !== user?.id && (r.role === "member" || r.role === "admin")}
+                    changingRole={changingRoleId === r.id}
+                    onChangeRole={handleChangeRole}
+                    removing={removingId === r.id}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <aside className="space-y-4 lg:sticky lg:top-[76px]">
+            {status === "ready" && me && <MyStatusCard key={me.presenceRaw?.status || "auto"} me={me} presence={me.livePresence} onSaved={onMyStatusSaved} />}
+            <TeamInvitePanel
+              usage={usage}
+              state={usageState}
+              loadError={usageError}
+              reload={loadUsage}
+              onRemoveSeat={handleRemove}
+              removingId={removingId}
+              members={recruiters || []}
+              onAssigned={() => { retry(); loadUsage(); }}
+            />
+          </aside>
+        </div>
       </div>
 
       {removeTarget && (

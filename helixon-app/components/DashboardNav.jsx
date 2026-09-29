@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import posthog from "posthog-js";
+import PresenceDot from "@/components/PresenceDot";
+import { usePresenceHeartbeat } from "@/lib/hooks/usePresenceHeartbeat";
+import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
+import { setMyPresence } from "@/lib/dashboard-api";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
@@ -41,22 +45,25 @@ function initials(name) {
 // Pulls from the same GET /api/team the Team page itself uses.
 function TeammateStack({ teammates }) {
   if (!teammates || teammates.length < 2) return null;
-  const shown = teammates.slice(0, 4);
+  const order = { active: 0, busy: 1, idle: 2, away: 3, offline: 4 };
+  const shown = [...teammates].sort((a, b) => (order[a.presence?.state] ?? 4) - (order[b.presence?.state] ?? 4)).slice(0, 4);
   const overflow = teammates.length - shown.length;
   return (
     <Link
       href="/dashboard/team"
       className="hidden lg:flex items-center -space-x-1.5 mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] rounded-full"
       aria-label={`${teammates.length} people on your team`}
-      title={teammates.map((t) => t.name).join(", ")}
+      title={teammates.map((t) => `${t.name} - ${PRESENCE_LABELS[t.presence?.state] || "Offline"}`).join("\n")}
     >
       {shown.map((t) => (
-        <span
-          key={t.id}
-          className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ring-2 ring-white"
-          style={{ background: "var(--forest)" }}
-        >
-          {initials(t.name)}
+        <span key={t.id} className="relative">
+          <span
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ring-2 ring-white"
+            style={{ background: "var(--forest)", opacity: t.presence?.online ? 1 : 0.55 }}
+          >
+            {initials(t.name)}
+          </span>
+          {t.presence && <PresenceDot state={t.presence.state} size={7} className="absolute -bottom-0.5 -right-0.5" />}
         </span>
       ))}
       {overflow > 0 && (
@@ -105,15 +112,36 @@ function DashboardNavContent() {
       .catch(() => {});
   }, []);
 
+  // Every signed-in page reports that this person is here (Team page presence).
+  usePresenceHeartbeat(Boolean(isSignedIn));
+
+  // Teammates (with their presence), refreshed every minute so the dots stay
+  // current on a page left open.
   useEffect(() => {
     if (me?.plan !== "agency") return;
-    fetch("/api/team", { credentials: "include" })
-      .then((r) => r.json())
-      .then((rows) => {
-        if (Array.isArray(rows)) setTeammates(rows);
-      })
-      .catch(() => {});
+    const load = () =>
+      fetch("/api/team", { credentials: "include" })
+        .then((r) => r.json())
+        .then((rows) => {
+          if (Array.isArray(rows)) setTeammates(rows);
+        })
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 60_000);
+    return () => clearInterval(t);
   }, [me?.plan]);
+
+  const mine = teammates?.find((t) => t.id === userId) || null;
+  const myPresence = mine ? computePresence(mine.presenceRaw || {}) : null;
+  async function setStatus(status) {
+    setMenuOpen(false);
+    try {
+      const updated = await setMyPresence({ status });
+      setTeammates((list) => list?.map((t) => (t.id === userId ? { ...t, presenceRaw: updated, presence: updated.presence } : t)));
+    } catch {
+      // The Team page shows the real state; nothing else to do here.
+    }
+  }
 
   // Shows a one-time post-login greeting in the workspace-name slot rather
   // than a separate banner taking up page space. Clerk's <SignIn/>
@@ -190,13 +218,45 @@ function DashboardNavContent() {
             className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
             style={{ border: "1px solid var(--border)" }}
           >
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
-              {initialsLabel}
-            </div>
+            <span className="relative">
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
+                {initialsLabel}
+              </span>
+              {myPresence && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
+            </span>
             <span className="text-[11px] font-medium hidden sm:block" style={{ color: "var(--ink)" }}>{userName || userEmail}</span>
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-[calc(100%+8px)] w-48 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+            <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+              {myPresence && (
+                <div className="pb-1.5 mb-1.5" style={{ borderBottom: "1px solid var(--border)" }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
+                  {[
+                    [null, "active", "Automatic", "Active or idle, from what you're doing"],
+                    ["busy", "busy", "Busy", "Heads down - teammates see you're busy"],
+                    ["away", "away", "Away", "Stepped out"],
+                  ].map(([value, dot, label, hint]) => {
+                    const current = (mine?.presenceRaw?.status ?? null) === value && (value === null || myPresence.state === value);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setStatus(value)}
+                        title={hint}
+                        className="w-full flex items-center gap-2 text-left text-xs px-3 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+                        style={{ color: "var(--ink)", fontWeight: current ? 600 : 400 }}
+                      >
+                        <PresenceDot state={dot} size={8} />
+                        {label}
+                        {current && <span className="ml-auto" style={{ color: "var(--forest)" }}>✓</span>}
+                      </button>
+                    );
+                  })}
+                  <Link href="/dashboard/team#my-status" className="block text-[11px] px-3 pt-1 hover:underline" style={{ color: "var(--forest)" }} onClick={() => setMenuOpen(false)}>
+                    Add a message or end time →
+                  </Link>
+                </div>
+              )}
               <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
               <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Billing</Link>
               {me?.plan === "agency" && (
