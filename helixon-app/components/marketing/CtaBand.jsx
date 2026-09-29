@@ -19,7 +19,7 @@ export default function CtaBand({
           {heading}
         </h2>
         {body && (
-          <p className="text-xs mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.75)" }}>
+          <p className="text-[15px] leading-relaxed mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
             {body}
           </p>
         )}
@@ -27,7 +27,7 @@ export default function CtaBand({
           <Button as="a" href={ctaHref} variant="onForest" className="motion-safe-scale hover:scale-[1.02] min-h-[48px] w-full sm:w-auto">
             {ctaLabel}
             {showArrow && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             )}

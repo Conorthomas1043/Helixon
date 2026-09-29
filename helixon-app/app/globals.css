@@ -1,6 +1,6 @@
-/* ── Google Fonts must come first, before @import "tailwindcss" ── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
-
+/* Web fonts are loaded by one <link> in app/layout.js - an @import here was
+   render-blocking, loaded only after this stylesheet, and duplicated Inter
+   and Geist Mono already requested there. */
 @import "tailwindcss";
 
 /* ── Design tokens ────────────────────────────────────────────────────────── */
@@ -21,8 +21,10 @@
      These were previously hardcoded as literal hex in page.jsx (#5a7a6a,
      #8aaa9a, #b0c4ba) in dozens of places - pulled out here so there's a
      single source of truth, same pattern as --ink itself. */
-  --ink-soft:  #5a7a6a;  /* secondary body text */
-  --ink-faint: #8aaa9a;  /* captions, meta labels, placeholder-ish text */
+  /* Both pass WCAG AA (4.5:1) as text on --bg, --mist and --mint. They were
+     #5a7a6a (4.4:1 on --mist) and #8aaa9a (2.5:1 on white). */
+  --ink-soft:  #4a6658;  /* secondary body text */
+  --ink-faint: #587364;  /* captions, meta labels, placeholder-ish text */
   --ink-mute:  #b0c4ba;  /* disabled states, very low-emphasis text */
 
   /* NEW - the one accent, reserved for score/verdict/live moments only.
@@ -211,29 +213,25 @@ body {
 }
 
 /* ── Landing: scroll reveals & cookie banner ─────────────────────────────── */
-/* The hidden starting state is scoped to `.js` (set on <html> by an inline
-   script in app/layout.js before first paint). Unscoped, this rule left
-   every revealed section of the marketing pages permanently invisible for
-   any visitor whose JavaScript doesn't run - which, on the landing page,
-   is nearly everything below the hero. Default is visible; the animation
-   is the enhancement. */
+/* Visible by default. `.reveal--armed` (the hidden starting frame) is only
+   added by lib/hooks/useScrollEntrance, after hydration and only to blocks
+   that are off screen - so a page whose JS never boots, or boots late,
+   still shows everything. It used to hide every revealed section from
+   first paint via a `.js` class, which blanked the page below the hero
+   whenever the app bundle failed to load. Removing the class plays the
+   transition; the armed state itself switches without one. */
 .reveal {
-  opacity: 1;
-  transform: none;
-}
-.js .reveal {
-  opacity: 0;
-  transform: translateY(18px);
   transition:
     opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.js .reveal--visible {
-  opacity: 1;
-  transform: translateY(0);
+.reveal--armed {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal, .reveal--armed { opacity: 1; transform: none; transition: none; }
 }
 
 .cookie-banner[data-visible="true"] > div {

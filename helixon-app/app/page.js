@@ -10,103 +10,24 @@ import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import CountUp from "@/components/dashboard/CountUp";
 import AnalysisExample from "@/components/landing/AnalysisExample";
+import useScrollEntrance from "@/lib/hooks/useScrollEntrance";
+import useRovingTabs from "@/lib/hooks/useRovingTabs";
+import { PLAN_FEATURES } from "@/lib/plan-features";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/* ── Shared hooks ─────────────────────────────────────────────────────── */
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
-}
-
-function usePageVisible() {
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    const onChange = () => setVisible(!document.hidden);
-    document.addEventListener("visibilitychange", onChange);
-    return () => document.removeEventListener("visibilitychange", onChange);
-  }, []);
-  return visible;
-}
-
-function useInView(ref, options = {}) {
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: options.threshold ?? 0.15, rootMargin: options.rootMargin ?? "0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [ref, options.threshold, options.rootMargin]);
-  return inView;
-}
-
-/**
- * Decides whether a scroll-animated block should render its FINAL state.
- *
- * The rule is progressive enhancement: the finished content is what gets
- * server-rendered, and the "empty" starting frame only ever exists once we
- * know the browser is actually running the animation. Without this, the
- * pre-hydration and no-JS render is the zero frame - which on this page
- * meant a hero card of blank grey bars and a headline metric reading
- * "0 CVs per bulk upload" to anything that doesn't execute JS, crawlers
- * and social-preview bots included.
- *
- * Returns true when: not yet mounted (SSR/pre-hydration), the visitor has
- * asked for reduced motion, or the element has been scrolled into view.
- */
-function useRevealedValue(ref, options) {
-  const reducedMotion = usePrefersReducedMotion();
-  const inView = useInView(ref, options);
-  const [mounted, setMounted] = useState(false);
-  const [seen, setSeen] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-  useEffect(() => {
-    if (inView) setSeen(true);
-  }, [inView]);
-
-  return !mounted || reducedMotion || seen;
-}
+/* ── Scroll reveal ────────────────────────────────────────────────────────
+   Content is visible by default; see lib/hooks/useScrollEntrance for when
+   (and why only then) it is switched to its hidden starting frame. */
 
 function Reveal({ children, className = "", delay = 0 }) {
   const ref = useRef(null);
-  const reducedMotion = usePrefersReducedMotion();
-  const [visible, setVisible] = useState(reducedMotion);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -32px 0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [reducedMotion]);
+  const phase = useScrollEntrance(ref, { offset: "32px" });
 
   return (
     <div
       ref={ref}
-      className={`reveal ${visible ? "reveal--visible" : ""} ${className}`}
+      className={`reveal ${phase === "armed" ? "reveal--armed" : ""} ${className}`}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
     >
       {children}
@@ -147,33 +68,24 @@ const WORKSPACE_TOP_BREAKDOWN = {
 
 function RecruiterWorkspaceDemo() {
   const containerRef = useRef(null);
-  const reducedMotion = usePrefersReducedMotion();
-  const pageVisible = usePageVisible();
-  const inView = useInView(containerRef);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const animate = mounted && pageVisible && inView && !reducedMotion;
-
-  // Both start fully revealed so the server render, a no-JS visitor and a
-  // reduced-motion visitor all get the finished card. Previously these were
-  // seeded from `reducedMotion`, which is always false on first render, so
-  // the card painted empty and only filled in once the reveal timers ran -
-  // leaving it permanently blank for anyone the animation never ran for.
-  const [revealedCount, setRevealedCount] = useState(WORKSPACE_CANDIDATES.length);
-  const [breakdownVisible, setBreakdownVisible] = useState(true);
+  // "static" (server render, no JS, reduced motion, or already on screen at
+  // load) shows the finished card. Only a card that starts off screen - the
+  // hero on a phone - is blanked, and it fills in once, when scrolled to.
+  // Previously it blanked and replayed in front of desktop visitors on load
+  // and again every time it came back into view.
+  const phase = useScrollEntrance(containerRef);
+  const [stepCount, setStepCount] = useState(0);
+  const [breakdownShown, setBreakdownShown] = useState(false);
 
   useEffect(() => {
-    if (!animate) return undefined;
-    setRevealedCount(0);
-    setBreakdownVisible(false);
-    const timeouts = [];
-    WORKSPACE_CANDIDATES.forEach((_, i) => {
-      timeouts.push(setTimeout(() => setRevealedCount((c) => Math.max(c, i + 1)), 260 * (i + 1)));
-    });
-    timeouts.push(setTimeout(() => setBreakdownVisible(true), 260 * WORKSPACE_CANDIDATES.length + 350));
+    if (phase !== "entered") return undefined;
+    const timeouts = WORKSPACE_CANDIDATES.map((_, i) => setTimeout(() => setStepCount(i + 1), 260 * (i + 1)));
+    timeouts.push(setTimeout(() => setBreakdownShown(true), 260 * WORKSPACE_CANDIDATES.length + 350));
     return () => timeouts.forEach(clearTimeout);
-  }, [animate]);
+  }, [phase]);
 
+  const revealedCount = phase === "static" ? WORKSPACE_CANDIDATES.length : stepCount;
+  const breakdownVisible = phase === "static" || breakdownShown;
   const topCandidate = WORKSPACE_CANDIDATES[0];
 
   return (
@@ -199,10 +111,6 @@ function RecruiterWorkspaceDemo() {
               style={{
                 borderTop: i === 0 ? "none" : "1px solid var(--border)",
                 background: i % 2 === 0 ? "white" : "var(--mist)",
-                // Rows used to be fully transparent until the reveal animation
-                // ran, so the card first painted as an empty white box. They now
-                // paint immediately as grey placeholders and fill in.
-                transform: shown ? "translateY(0)" : "translateY(0)",
               }}
             >
               <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>
@@ -238,8 +146,8 @@ function RecruiterWorkspaceDemo() {
             </li>
           ))}
           {WORKSPACE_TOP_BREAKDOWN.watch.map((w) => (
-            <li key={w} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-faint)" }}>
-              <span style={{ color: "var(--signal, #c9922e)" }}>△</span>{w}
+            <li key={w} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
+              <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{w}
             </li>
           ))}
         </ul>
@@ -291,9 +199,9 @@ const DASH_TONES = {
 
 function DashboardPreview() {
   const containerRef = useRef(null);
-  // Latched by useRevealedValue: once played it stays at its final state,
-  // so the counters never rewind when the card scrolls back out of view.
-  const live = useRevealedValue(containerRef, { threshold: 0.25 });
+  // Latched: once played it stays at its final state, so the counters never
+  // rewind when the card scrolls back out of view.
+  const live = useScrollEntrance(containerRef, { offset: "20%" }) !== "armed";
 
   const maxStage = Math.max(...DASH_STAGES.map((s) => s.count));
 
@@ -321,7 +229,7 @@ function DashboardPreview() {
               className="rounded-[10px] p-3"
               style={{ border: "1px solid var(--border)", background: "white" }}
             >
-              <p className="text-[9px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{k.label}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{k.label}</p>
               <p
                 className="text-xl font-semibold tabular-nums leading-none"
                 style={{ fontFamily: "var(--font-mono)", color: k.accent ? "var(--forest)" : "var(--ink)" }}
@@ -348,7 +256,7 @@ function DashboardPreview() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-5">
           {/* Pipeline snapshot */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Where candidates stand</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Where candidates stand</p>
             <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
               {DASH_STAGES.map((s, i) => (
                 <div key={s.label} className="flex flex-col items-center min-w-0">
@@ -376,7 +284,7 @@ function DashboardPreview() {
 
           {/* Needs attention */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Needs your attention</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Needs your attention</p>
             <ul className="space-y-1.5">
               {DASH_ATTENTION.map((a, i) => (
                 <li
@@ -394,7 +302,7 @@ function DashboardPreview() {
                     <span className="block text-[10px] truncate" style={{ color: "var(--ink-faint)" }}>{a.role}</span>
                   </span>
                   <span
-                    className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
                     style={{ background: DASH_TONES[a.tone].bg, color: DASH_TONES[a.tone].fg }}
                   >
                     {a.reason}
@@ -410,9 +318,9 @@ function DashboardPreview() {
 
         {/* Open roles - the jobs list the real dashboard leads with */}
         <div className="mt-5">
-          <p className="text-[9px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
           <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-[9.5px] font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
+            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
               <span>Role</span>
               <span className="text-right">Candidates</span>
               <span className="text-right">Top</span>
@@ -436,7 +344,7 @@ function DashboardPreview() {
                 <span className="text-[11px] font-semibold tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(r.top) }}>{r.top}</span>
                 <span className="hidden sm:block text-right">
                   <span
-                    className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                     style={r.status === "Open" ? { background: "var(--mint)", color: "var(--forest)" } : { background: "#fff8e6", color: "#92620f" }}
                   >
                     {r.status}
@@ -460,11 +368,12 @@ function AnalysisExampleSection() {
         <div className="text-center mb-10">
           <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>See a real analysis</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Not just a score - the reasons behind it
+            Not just a score — the reasons behind it
           </h2>
           <p className="text-[15px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
             Every candidate gets a report like this: how they meet each requirement, the line in their CV that proves it,
             what still needs checking, and what to ask at interview. Warehouse floor or boardroom.
+            Helixon helps you decide &mdash; the final call is always yours.
           </p>
         </div>
       </Reveal>
@@ -515,7 +424,7 @@ function BuyPlanButton({ plan, label, highlight }) {
         onClick={handleClick}
         disabled={loading}
         aria-busy={loading}
-        className="text-center text-xs font-semibold py-3 rounded-[10px] transition-all w-full min-h-[44px]"
+        className="text-center text-sm font-semibold py-3 rounded-[10px] transition-all w-full min-h-[44px]"
         style={{
           background: loading ? "var(--ink-mute)" : highlight ? "white" : "var(--forest)",
           color: highlight ? "var(--forest)" : "white",
@@ -536,12 +445,12 @@ function BuyPlanButton({ plan, label, highlight }) {
 /* ── Reusable CTA pair - label/target vary by context, never more than two ──
    When signed in, the primary CTA takes the visitor straight to their
    dashboard instead of pitching a demo they've already bought. */
-function CtaButtons({ secondaryLabel = "See how it works", secondaryHref = "#how", align = "left", signedIn = false }) {
+function CtaButtons({ secondaryLabel, secondaryHref, align = "left", signedIn = false }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 w-full sm:w-auto ${align === "center" ? "justify-center items-center" : ""}`}>
       <Button as="a" href={signedIn ? "/dashboard" : "/demo"} variant="primary" className="w-full sm:w-auto min-h-[48px]">
         {signedIn ? "Go to dashboard" : "Get a demo"}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </Button>
@@ -562,7 +471,7 @@ const HELIXON_STEPS = ["Upload the CVs", "Helixon analyses each one", "Candidate
 function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
-    <div className="rounded-[16px] p-7 h-full lift-on-hover" style={{ background: "white", border: "1px solid var(--border)" }}>
+    <div className="rounded-[16px] p-7 h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
       <p className="text-[11px] font-semibold uppercase tracking-widest mb-6" style={{ color: tone === "forest" ? "var(--forest)" : "var(--ink-faint)" }}>{label}</p>
       <ol className="relative pl-5">
         <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
@@ -643,7 +552,7 @@ function AnalyseTabContent() {
       </ul>
       <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
       <ul className="space-y-1">
-        <li className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--signal, #c9922e)" }}>△</span>2-month notice period</li>
+        <li className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>2-month notice period</li>
       </ul>
     </div>
   );
@@ -681,6 +590,12 @@ const WORKFLOW_TAB_CONTENT = [UploadTabContent, AnalyseTabContent, CompareTabCon
 function ProductWorkflowSection() {
   const [activeTab, setActiveTab] = useState(0);
   const TabContent = WORKFLOW_TAB_CONTENT[activeTab];
+  const { tabProps, panelProps } = useRovingTabs({
+    idPrefix: "workflow",
+    count: WORKFLOW_TABS.length,
+    active: activeTab,
+    onChange: setActiveTab,
+  });
 
   return (
     <section id="how" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)", borderBottom: "1px solid var(--border-soft)" }}>
@@ -708,13 +623,10 @@ function ProductWorkflowSection() {
             {WORKFLOW_TABS.map((tab, i) => (
               <button
                 key={tab}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === i}
-                onClick={() => setActiveTab(i)}
-                className="text-[11px] font-semibold px-3 py-2 rounded-t-[8px] whitespace-nowrap transition-colors min-h-[36px]"
+                {...tabProps(i)}
+                className="text-xs font-semibold px-3.5 py-2 rounded-t-[8px] whitespace-nowrap transition-colors min-h-[40px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
                 style={{
-                  color: activeTab === i ? "var(--forest)" : "var(--ink-faint)",
+                  color: activeTab === i ? "var(--forest)" : "var(--ink-soft)",
                   background: activeTab === i ? "var(--mist)" : "transparent",
                 }}
               >
@@ -722,62 +634,12 @@ function ProductWorkflowSection() {
               </button>
             ))}
           </div>
-          <div key={activeTab} className="p-6 fade-up-in" style={{ background: "var(--mist)", minHeight: "260px" }}>
+          <div key={activeTab} {...panelProps} className="p-6 fade-up-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]" style={{ background: "var(--mist)", minHeight: "260px" }}>
             <TabContent />
           </div>
         </div>
       </Reveal>
       </div>
-    </section>
-  );
-}
-
-/* ── Built for recruiters - outcome pillars + the commercial "why" ───────── */
-
-const BENEFIT_PILLARS = [
-  { title: "Screen faster", body: "See the fit before you open the file, instead of reading every CV top to bottom.", icon: (<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />) },
-  { title: "Prioritise instantly", body: "The strongest candidates rise to the top of every role automatically.", icon: (<path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8z" />) },
-  { title: "Decide consistently", body: "Every candidate is compared against the same role criteria, every time.", icon: (<><rect x="3" y="10" width="4" height="10" /><rect x="10" y="6" width="4" height="14" /><rect x="17" y="3" width="4" height="17" /></>) },
-  { title: "Work as a team", body: "Notes, tags and shortlists stay in one place instead of scattered across email.", icon: (<><circle cx="9" cy="7" r="3" /><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" /><circle cx="19" cy="8" r="2.5" /></>) },
-];
-
-function BenefitsSection() {
-  return (
-    <section id="benefits" className="max-w-[1100px] mx-auto px-6 py-24">
-      <Reveal>
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Helixon helps you decide. It doesn&rsquo;t decide for you.
-          </h2>
-          <p className="text-[15px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
-            Every score comes with the reasoning behind it — the matched skills, the
-            gaps and the flags — so you can check the call rather than take it on faith.
-          </p>
-        </div>
-      </Reveal>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        {BENEFIT_PILLARS.map((b, i) => (
-          <Reveal key={b.title} delay={i * 60}>
-            <div className="rounded-[14px] p-6 h-full lift-on-hover" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <span className="w-10 h-10 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
-              </span>
-              <h3 className="text-base font-semibold mb-2" style={{ color: "var(--ink)" }}>{b.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>{b.body}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal>
-        <div className="rounded-[16px] p-8 text-center" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
-          <p className="text-base sm:text-lg font-medium leading-relaxed max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
-            Less time screening, more candidates reviewed, faster shortlists
-            <br className="hidden sm:block" /> — and more hours left for calls, sourcing and placements.
-          </p>
-        </div>
-      </Reveal>
     </section>
   );
 }
@@ -801,20 +663,19 @@ const BULK_PREVIEW_ROWS = [
 
 function BulkPreviewCard() {
   const containerRef = useRef(null);
-  const pageVisible = usePageVisible();
-  const revealed = useRevealedValue(containerRef);
-  const animate = pageVisible && revealed;
+  const phase = useScrollEntrance(containerRef);
 
   const total = BULK_PREVIEW_ROWS.length;
   // Starts at the settled state so the server render (and any no-JS
-  // visitor) sees a populated queue rather than five "Queued" rows.
+  // visitor) sees a populated queue rather than five "Queued" rows; one
+  // more row completes once the card is scrolled to.
   const [doneCount, setDoneCount] = useState(2);
 
   useEffect(() => {
-    if (!animate) return undefined;
+    if (phase !== "entered") return undefined;
     const t = setTimeout(() => setDoneCount(3), 1400);
     return () => clearTimeout(t);
-  }, [animate]);
+  }, [phase]);
 
   const statusFor = (row, i) => (i < doneCount ? "done" : i === doneCount ? "processing" : "queued");
 
@@ -884,7 +745,7 @@ function BulkScreeningSection() {
   const nodes = stages.flatMap((s, i) => {
     const items = [
       <Reveal key={`stage-${i}`} delay={i * 80}>
-        <div className="rounded-[14px] p-6 text-center h-full lift-on-hover" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-[14px] p-6 text-center h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
           <span className="inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold mb-3" style={{ background: "var(--mint)", color: "var(--forest)" }}>{i + 1}</span>
           <p className="text-[15px] font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.label}</p>
           <p className="text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.detail}</p>
@@ -999,7 +860,7 @@ function AgencyWorkflowSection() {
               <span key={chip} className="text-[13px] font-medium px-3 py-1.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>{chip}</span>
             ))}
           </div>
-          <Button as="a" href="/demo" variant="outline" className="min-h-[44px]">Book a demo</Button>
+          <Button as="a" href="/demo" variant="outline" className="min-h-[44px]">Get a demo</Button>
         </Reveal>
 
         <Reveal delay={80}>
@@ -1029,17 +890,12 @@ const FEATURE_GROUPS = [
   {
     title: "Screen faster",
     body: "Get through a full pile of CVs in the time it used to take to read three.",
-    items: ["Bulk CV upload, up to 50 at once", "PDF, Word, scanned and photographed CVs", "Fast, consistent parsing"],
+    items: ["Bulk CV upload against one role", "PDF, Word, scanned and photographed CVs", "Fast, consistent parsing"],
   },
   {
     title: "Make better screening decisions",
     body: "See more than a score \u2014 see the reasoning behind it.",
     items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Bias-aware scoring"],
-  },
-  {
-    title: "Work as a team",
-    body: "Keep every recruiter on the same shortlist.",
-    items: ["Shared shortlists", "Tags & notes", "Full candidate history"],
   },
   {
     title: "Stay compliant",
@@ -1050,9 +906,9 @@ const FEATURE_GROUPS = [
 
 function FeatureGroups() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {FEATURE_GROUPS.map((g) => (
-        <div key={g.title} className="rounded-[14px] p-7 lift-on-hover" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div key={g.title} className="rounded-[14px] p-7" style={{ background: "white", border: "1px solid var(--border)" }}>
           <h3 className="text-base font-semibold mb-2" style={{ color: "var(--ink)" }}>{g.title}</h3>
           <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>{g.body}</p>
           <ul className="space-y-2.5">
@@ -1066,44 +922,6 @@ function FeatureGroups() {
             ))}
           </ul>
         </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Testimonials - structured so real quotes can drop straight in ───────── */
-/* TODO before launch: replace with verified customer quotes. Kept generic  */
-/* by role/company-type (no fabricated names, logos or stats) until then.  */
-const TESTIMONIALS = [
-  {
-    quote: "We used to spend a full afternoon triaging CVs for one role. Now it's the first ten minutes of the morning, and the shortlist is more consistent than when we did it by eye.",
-    name: "Founder, 6-person recruitment agency",
-  },
-  {
-    quote: "The red-flag summary caught an employment gap our team had missed twice. It doesn't replace judgement, but it stops things slipping through.",
-    name: "Talent Acquisition Lead, mid-size agency",
-  },
-  {
-    quote: "Bulk upload alone changed how we work. We screen against three or four roles a day and it just keeps up.",
-    name: "Operations Manager, contract staffing firm",
-  },
-];
-
-function Testimonials() {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-      {TESTIMONIALS.map((t, i) => (
-        <Reveal key={t.name} delay={i * 70}>
-          <figure className="rounded-[14px] p-7 flex flex-col h-full lift-on-hover" style={{ background: "white", border: "1px solid var(--border)" }}>
-            <svg width="22" height="18" viewBox="0 0 20 16" fill="var(--mint)" className="mb-4" aria-hidden="true">
-              <path d="M0 16V9.6C0 3.2 3.6 0 8.4 0v3.2c-2.4 0-4 1.6-4 4h4V16H0zm10.4 0V9.6c0-6.4 3.6-9.6 8.4-9.6v3.2c-2.4 0-4 1.6-4 4h4V16h-8.4z" />
-            </svg>
-            <blockquote className="text-sm leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>
-              &ldquo;{t.quote}&rdquo;
-            </blockquote>
-            <figcaption className="text-[13px] font-medium mt-5" style={{ color: "var(--ink-faint)" }}>{t.name}</figcaption>
-          </figure>
-        </Reveal>
       ))}
     </div>
   );
@@ -1124,7 +942,7 @@ function TrustSection() {
       <div className="max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.65)" }}>Trust & compliance</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>Trust & compliance</p>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white" style={{ fontFamily: "var(--font-display)" }}>
               Candidate data, handled properly
             </h2>
@@ -1135,21 +953,21 @@ function TrustSection() {
             <Reveal key={p.title} delay={i * 60}>
               <div className="rounded-[14px] p-6 h-full" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
                 <h3 className="text-[15px] font-semibold mb-2 text-white">{p.title}</h3>
-                <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.72)" }}>{p.body}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>{p.body}</p>
               </div>
             </Reveal>
           ))}
         </div>
         <div className="text-center">
-          <a href="/dpa" className="text-sm font-medium hover:underline" style={{ color: "rgba(255,255,255,0.8)" }}>Read our Data Processing Agreement →</a>
+          <a href="/dpa" className="inline-flex items-center min-h-[44px] text-sm font-medium hover:underline" style={{ color: "rgba(255,255,255,0.9)" }}>Read our Data Processing Agreement →</a>
         </div>
       </div>
     </section>
   );
 }
 
-/* ── Pricing plans - Trial tile replaced with a "get a quote" tile; paid
-   plans/prices unchanged ── */
+/* ── Pricing plans - a "get a demo" tile plus the two paid plans. What each
+   plan includes comes from lib/plan-features, shared with /pricing. ── */
 
 const PLANS = [
   {
@@ -1159,12 +977,12 @@ const PLANS = [
   },
   {
     name: "Individual", price: "£249", period: "/ month",
-    features: ["Unlimited analyses", "Bulk upload", "Shortlists & history", "Priority support"],
+    features: PLAN_FEATURES.individual,
     cta: "Buy Individual", highlight: false, plan: "individual",
   },
   {
     name: "Agency", price: "£349", period: "/ month",
-    features: ["Everything in Individual", "Multi-seat access", "Shared templates", "Dedicated onboarding"],
+    features: PLAN_FEATURES.agency,
     cta: "Buy Agency", highlight: true, plan: "agency",
   },
 ];
@@ -1175,24 +993,27 @@ const FAQS = [
   { q: "How does Helixon score candidates?", a: "Each CV is compared against the job description you provide \u2014 skills, experience, seniority and role fit \u2014 to produce a single match score, alongside the standout factors and possible red flags behind it." },
   { q: "Does Helixon replace recruiter judgement?", a: "No. Helixon surfaces the score, standout factors and possible red flags so you can review candidates faster. The final call on who to interview or hire is always yours." },
   { q: "Can I upload multiple CVs for one role?", a: "Yes. Drop in up to 50 CVs against a single role at once and come back to a ranked, sortable shortlist instead of dozens of separate files." },
-  { q: "What happens to candidate data?", a: "It's hosted on EU infrastructure, encrypted at rest and in transit, and never used to train any model. See our Data Processing Agreement for full detail." },
+  { q: "What happens to candidate data?", a: "It's stored in Switzerland, which the UK and EU recognise as adequate, encrypted at rest and in transit, and never used to train any model. See our Data Processing Agreement for full detail." },
   { q: "Can my recruiting team collaborate?", a: "Yes, on the Agency plan. Shortlists, notes and tags are shared across your team, with a full audit trail of who screened what." },
-  { q: "How do I get pricing for my team?", a: "Book a demo and we'll walk through pricing tailored to your team size and hiring volume." },
+  { q: "How much does Helixon cost?", a: "Individual is \u00a3249 a month and Agency is \u00a3349 a month, both with unlimited screening. If you're not sure which fits your team, book a demo and we'll walk you through it." },
   { q: "Can I cancel anytime?", a: "Yes. Individual and Agency plans are billed monthly with no long-term contract. Cancel from your account settings and you'll keep access until the end of the billing period." },
 ];
 
-function FaqItem({ q, a, open, onToggle }) {
+function FaqItem({ id, q, a, open, onToggle }) {
   return (
     <div className="border-b" style={{ borderColor: "var(--border)" }}>
       <button
         type="button"
+        id={`${id}-q`}
         onClick={onToggle}
         aria-expanded={open}
+        aria-controls={`${id}-a`}
         className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
       >
         <span className="text-[15px] font-medium" style={{ color: "var(--ink)" }}>{q}</span>
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round"
+          aria-hidden="true"
           className="shrink-0 transition-transform duration-200"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         >
@@ -1200,8 +1021,12 @@ function FaqItem({ q, a, open, onToggle }) {
         </svg>
       </button>
       <div
+        id={`${id}-a`}
+        role="region"
+        aria-labelledby={`${id}-q`}
+        inert={!open}
         className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: open ? "260px" : "0px", opacity: open ? 1 : 0 }}
+        style={{ maxHeight: open ? "400px" : "0px", opacity: open ? 1 : 0 }}
       >
         <p className="text-sm leading-relaxed pb-5 pr-8" style={{ color: "var(--ink-soft)" }}>{a}</p>
       </div>
@@ -1216,6 +1041,7 @@ function FAQSection() {
       {FAQS.map((f, i) => (
         <FaqItem
           key={f.q}
+          id={`faq-${i}`}
           q={f.q}
           a={f.a}
           open={openIndex === i}
@@ -1241,7 +1067,7 @@ const TRUST_METRICS = [
 
 function TrustStrip() {
   const ref = useRef(null);
-  const played = useRevealedValue(ref, { threshold: 0.4 });
+  const played = useScrollEntrance(ref, { offset: "20%" }) !== "armed";
 
   return (
     <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
@@ -1267,10 +1093,11 @@ export default function LandingPage() {
   const firstName = user?.firstName;
 
   return (
-    <>
-      <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <MarketingNav active="home" />
 
-        <MarketingNav active="home" />
+      <main id="main-content">
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
@@ -1280,7 +1107,7 @@ export default function LandingPage() {
                 className="fade-up-in inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6"
                 style={{ background: "var(--mint)", color: "var(--forest)", "--stagger-delay": "0ms" }}
               >
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                 {signedIn ? `Welcome back${firstName ? `, ${firstName}` : ""}` : "AI screening built for agency recruiters"}
               </span>
 
@@ -1301,12 +1128,12 @@ export default function LandingPage() {
               </p>
 
               <div className="fade-up-in" style={{ "--stagger-delay": "210ms" }}>
-                <CtaButtons secondaryLabel="See how it works" secondaryHref="#how" signedIn={signedIn} />
+                <CtaButtons secondaryLabel="See an example analysis" secondaryHref="#example" signedIn={signedIn} />
               </div>
 
               {!signedIn && (
                 <p className="fade-up-in text-[13px] mt-4" style={{ color: "var(--ink-faint)", "--stagger-delay": "280ms" }}>
-                  No card required for a demo. Cancel a paid plan anytime.
+                  Plans from &pound;249 a month. Billed monthly, cancel anytime.
                 </p>
               )}
             </div>
@@ -1329,9 +1156,6 @@ export default function LandingPage() {
         {/* ── Example analysis report ─────────────────────────────────────── */}
         <AnalysisExampleSection />
 
-        {/* ── Built for recruiters + ROI ───────────────────────────────────── */}
-        <BenefitsSection />
-
         {/* ── Bulk screening ───────────────────────────────────────────────── */}
         <BulkScreeningSection />
 
@@ -1340,6 +1164,9 @@ export default function LandingPage() {
 
         {/* ── Agency workflow ──────────────────────────────────────────────── */}
         <AgencyWorkflowSection />
+
+        {/* ── Trust / GDPR ─────────────────────────────────────────────────── */}
+        <TrustSection />
 
         {/* ── Features, grouped by outcome ─────────────────────────────────── */}
         <section id="features" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)", borderBottom: "1px solid var(--border-soft)" }}>
@@ -1360,21 +1187,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Testimonials ─────────────────────────────────────────────────── */}
-        <section className="max-w-[1100px] mx-auto px-6 py-24">
-          <Reveal>
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-                Fewer hours screening. More time interviewing.
-              </h2>
-            </div>
-          </Reveal>
-          <Testimonials />
-        </section>
-
-        {/* ── Trust / GDPR ─────────────────────────────────────────────────── */}
-        <TrustSection />
-
         {/* ── Pricing / buy ───────────────────────────────────────────────── */}
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-24">
           <Reveal>
@@ -1390,7 +1202,7 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[900px] mx-auto items-stretch">
             {PLANS.map((plan) => (
               <Reveal key={plan.name}>
                 <div
@@ -1404,17 +1216,17 @@ export default function LandingPage() {
                   {plan.highlight && (
                     <span
                       className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
-                      style={{ background: "var(--signal, #f5a623)", color: "var(--forest)" }}
+                      style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
                     >
                       Recommended for agencies
                     </span>
                   )}
-                  <h3 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--ink-faint)" }}>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-6">
                     <span className="text-[2.25rem] font-semibold leading-none" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
-                    <span className="text-[13px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>{plan.period}</span>
+                    <span className="text-[13px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.period}</span>
                   </div>
                   <ul className="space-y-3 mb-7 flex-1">
                     {plan.features.map((f) => (
@@ -1468,9 +1280,10 @@ export default function LandingPage() {
           />
         </Reveal>
 
-        <MarketingFooter />
       </main>
+
+      <MarketingFooter />
       <ChatWidget />
-    </>
+    </div>
   );
 }

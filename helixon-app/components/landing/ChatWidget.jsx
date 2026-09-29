@@ -7,6 +7,11 @@ const SUGGESTIONS = ["How does scoring work?", "What's included in the individua
 // Tuned to clear the footer's bottom-right "Login" link at common widths.
 const FOOTER_CLEARANCE_PX = 88;
 
+// The launcher stays out of the way until the visitor has scrolled this far:
+// in the first screen it sat on top of the hero's example card on phones
+// and over the headline stats on tablets.
+const SHOW_AFTER_SCROLL_PX = 480;
+
 function TypingDots() {
   return (
     <span className="inline-flex items-center gap-1 px-3 py-2.5">
@@ -28,8 +33,11 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [footerOffset, setFooterOffset] = useState(0);
+  const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const launcherRef = useRef(null);
+  const showLauncher = open || scrolledPastHero;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -39,6 +47,28 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 200);
+  }, [open]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolledPastHero(window.scrollY > SHOW_AFTER_SCROLL_PX);
+    const frame = requestAnimationFrame(onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  // Escape closes the panel and hands focus back to the launcher.
+  useEffect(() => {
+    if (!open) return undefined;
+    function onKey(e) {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      launcherRef.current?.focus();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   // Fix #3 - the launcher/panel are position:fixed to the bottom-right
@@ -98,14 +128,20 @@ export default function ChatWidget() {
     <>
       {/* ── Launcher ─────────────────────────────────────────────────────── */}
       <button
+        ref={launcherRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close chat" : "Open chat with Helixon assistant"}
         aria-expanded={open}
-        className="fixed right-5 z-40 w-14 h-14 rounded-full bg-forest text-white shadow-raise flex items-center justify-center hover:bg-forest-deep transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2"
+        aria-hidden={!showLauncher}
+        tabIndex={showLauncher ? 0 : -1}
+        className="fixed right-4 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-forest text-white shadow-raise flex items-center justify-center hover:bg-forest-deep transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2"
         style={{
           bottom: `calc(1.25rem + ${footerOffset}px)`,
-          transition: "bottom 0.25s ease, background-color 0.15s ease",
+          opacity: showLauncher ? 1 : 0,
+          transform: showLauncher ? "none" : "translateY(12px)",
+          pointerEvents: showLauncher ? "auto" : "none",
+          transition: "bottom 0.25s ease, background-color 0.15s ease, opacity 0.2s ease, transform 0.2s ease",
         }}
       >
         {open ? (
@@ -134,15 +170,15 @@ export default function ChatWidget() {
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border bg-mist shrink-0">
             <div className="w-8 h-8 rounded-btn flex items-center justify-center bg-forest shrink-0">
-              <svg width="16" height="16" viewBox="0 0 28 28" fill="none">
+              <svg width="16" height="16" viewBox="0 0 28 28" fill="none" aria-hidden="true">
                 <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
                 <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" className="fill-gold" />
+                <circle cx="22.5" cy="10.5" r="1.8" className="fill-signal" />
               </svg>
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-ink font-display leading-tight">Helixon Assistant</p>
-              <p className="text-2xs text-ink/45">Ask about pricing, scoring, or how it works</p>
+              <p className="text-2xs text-ink-soft">Ask about pricing, scoring, or how it works</p>
             </div>
           </div>
 
@@ -150,8 +186,8 @@ export default function ChatWidget() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.length === 0 && (
               <div>
-                <p className="text-xs leading-relaxed text-ink/60 mb-3">
-                  Hi - I can answer questions about Helixon while you look around. What would you like to know?
+                <p className="text-xs leading-relaxed text-ink-soft mb-3">
+                  Hi — I can answer questions about Helixon while you look around. What would you like to know?
                 </p>
                 <div className="flex flex-col gap-1.5">
                   {SUGGESTIONS.map((s) => (

@@ -10,6 +10,7 @@
 // interview question.
 
 import { useState } from "react";
+import useRovingTabs from "@/lib/hooks/useRovingTabs";
 
 const EXAMPLES = [
   {
@@ -43,7 +44,7 @@ const EXAMPLES = [
     payNote: "Middle of the advertised range, for 4 years' relevant experience",
     strengths: ["4 years in a busy distribution centre", "Employee of the month, twice", "Trained new starters on the scanners"],
     concerns: ["No forklift licence mentioned"],
-    question: "Your CV doesn't mention a forklift licence - have you driven a counterbalance before?",
+    question: "Your CV doesn't mention a forklift licence — have you driven a counterbalance before?",
   },
   {
     id: "sales",
@@ -77,7 +78,7 @@ const EXAMPLES = [
     payNote: "Upper half of the advertised range, for 5 years in B2B sales",
     strengths: ["Hit 118% of quota two years running", "Promoted from SDR to Account Executive", "Owns deals end to end"],
     concerns: ["Cold calling is listed, but no outbound work is described"],
-    question: "Talk me through your outbound routine - how many calls a day, and what's your connect rate?",
+    question: "Talk me through your outbound routine — how many calls a day, and what's your connect rate?",
   },
   {
     id: "care",
@@ -110,7 +111,7 @@ const EXAMPLES = [
     payNote: "Middle of the typical range for the role and area",
     strengths: ["3 years on a dementia unit", "Trusted with medication rounds", "Care Certificate and NVQ Level 2"],
     concerns: ["Weekend availability isn't stated"],
-    question: "The role includes alternate weekends - does that work for you?",
+    question: "The role includes alternate weekends — does that work for you?",
   },
 ];
 
@@ -139,7 +140,7 @@ function Pill({ status }) {
 
 function Label({ children }) {
   return (
-    <p className="text-[9.5px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
+    <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
       {children}
     </p>
   );
@@ -170,7 +171,7 @@ function ScoreRing({ score }) {
         <span className="text-[24px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
           {score}
         </span>
-        <span className="text-[9px] mt-0.5" style={{ color: "var(--ink-faint)" }}>/ 100</span>
+        <span className="text-[10px] mt-0.5" style={{ color: "var(--ink-faint)" }}>/ 100</span>
       </span>
     </div>
   );
@@ -229,7 +230,7 @@ function Report({ ex }) {
                   <span className="text-[12.5px] min-w-0" style={{ color: "var(--ink)" }}>
                     {r.skill}
                     {r.importance && (
-                      <span className="ml-1.5 text-[9.5px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>{r.importance}</span>
+                      <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>{r.importance}</span>
                     )}
                   </span>
                   <Pill status={r.status} />
@@ -275,7 +276,7 @@ function Report({ ex }) {
             <ul className="space-y-1">
               {ex.concerns.map((s) => (
                 <li key={s} className="text-[11.5px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
-                  <span style={{ color: "var(--signal, #c9922e)" }}>△</span>{s}
+                  <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{s}
                 </li>
               ))}
             </ul>
@@ -294,6 +295,12 @@ function Report({ ex }) {
 export default function AnalysisExample() {
   const [active, setActive] = useState(0);
   const ex = EXAMPLES[active];
+  const { tabProps, panelProps } = useRovingTabs({
+    idPrefix: "example-role",
+    count: EXAMPLES.length,
+    active,
+    onChange: setActive,
+  });
 
   return (
     <div>
@@ -301,10 +308,7 @@ export default function AnalysisExample() {
         {EXAMPLES.map((e, i) => (
           <button
             key={e.id}
-            type="button"
-            role="tab"
-            aria-selected={active === i}
-            onClick={() => setActive(i)}
+            {...tabProps(i)}
             className="text-left px-4 py-2.5 rounded-[12px] transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
               background: active === i ? "var(--forest)" : "white",
@@ -313,7 +317,7 @@ export default function AnalysisExample() {
             }}
           >
             <span className="block text-[13px] font-semibold leading-tight">{e.tab}</span>
-            <span className="block text-[11px] leading-tight mt-0.5" style={{ color: active === i ? "rgba(255,255,255,0.75)" : "var(--ink-faint)" }}>
+            <span className="block text-[11px] leading-tight mt-0.5" style={{ color: active === i ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
               {e.kind}
             </span>
           </button>
@@ -321,9 +325,9 @@ export default function AnalysisExample() {
       </div>
 
       <div
-        className="rounded-[18px] overflow-hidden"
+        {...panelProps}
+        className="rounded-[18px] overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
-        aria-label={`Example Helixon analysis of a candidate for a ${ex.role} role`}
       >
         <div className="flex items-center gap-1.5 px-4 py-3" style={{ borderBottom: "1px solid var(--border-soft)", background: "var(--mist)" }}>
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} aria-hidden="true" />

@@ -81,7 +81,7 @@ export default function CookieConsentBanner({ embedded = false }) {
           boxShadow: "0 20px 50px -20px rgba(11,26,20,0.35)",
         }}
       >
-        <p className="text-xs leading-relaxed flex-1" style={{ color: "#5a7a6a" }}>
+        <p className="text-xs leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>
           Essential cookies keep Helixon running. Optional analytics help us improve the product for
           recruiters like you. Analytics are EU-hosted and never used to train AI.{" "}
           <Link href="/cookie-policy" className="underline font-medium" style={{ color: "var(--forest)" }}>

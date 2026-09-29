@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 const TITLE = "Helixon - screen candidates in seconds";
 const DESCRIPTION =
-  "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under 30 seconds. Built for recruiters who screen at volume.";
+  "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under a minute. Built for recruiters who screen at volume.";
 
 export const metadata = {
   metadataBase: new URL("https://www.helixon.co.uk"),
@@ -74,27 +74,17 @@ export default function RootLayout({ children }) {
     >
       <html lang="en" className={`${geistMono.variable} h-full`}>
         <head>
-          {/* Marks the document as script-capable before first paint, so the
-              scroll-reveal animations can hide their starting state ONLY for
-              visitors who will actually get the animation. Without this the
-              `.reveal` rule applies unconditionally and every revealed
-              section of the marketing pages stays at opacity:0 forever for
-              anyone whose JS never runs - which is most of the landing page.
-              Inline and synchronous on purpose: it must win the race against
-              first paint, or the fix reintroduces a flash of visible content. */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: "document.documentElement.classList.add('js')",
-            }}
-          />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link
             rel="preconnect"
             href="https://fonts.gstatic.com"
             crossOrigin="anonymous"
           />
+          {/* Every Google font the site uses, in one request: Outfit
+              (--font-display), Inter (--font-body), Geist Mono
+              (--font-mono) and Fraunces (the legal pages' display face). */}
           <link
-            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap"
             rel="stylesheet"
           />
         </head>

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-// Shared with app/page.js's own local copy of this exact hook - that one
-// is left as-is (lower risk than touching the landing page for this pass),
-// but every dashboard/analyse animation added from here on imports this
-// one instead of re-implementing it a third time.
+// Every dashboard/analyse animation imports this one instead of
+// re-implementing it. (The landing page's scroll entrances check the media
+// query once, inside lib/hooks/useScrollEntrance.)
 export default function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {

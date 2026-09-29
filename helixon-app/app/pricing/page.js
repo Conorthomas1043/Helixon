@@ -4,6 +4,7 @@ import { useState } from "react";
 import posthog from "posthog-js";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
+import { PLAN_FEATURES } from "@/lib/plan-features";
 
 const PLANS = [
   {
@@ -11,13 +12,7 @@ const PLANS = [
     name: "Individual",
     price: 249,
     description: "For recruiters screening candidates independently.",
-    features: [
-      "Unlimited candidate screening",
-      "AI match scoring",
-      "Red-flag detection",
-      "Candidate history",
-      "AI email drafting",
-    ],
+    features: PLAN_FEATURES.individual,
   },
   {
     id: "agency",
@@ -25,13 +20,7 @@ const PLANS = [
     price: 349,
     description: "For agencies running recruitment across a team.",
     highlight: true,
-    features: [
-      "Everything in Individual",
-      "Team access",
-      "Shared jobs and candidates",
-      "Agency workflows",
-      "Team analytics",
-    ],
+    features: PLAN_FEATURES.agency,
   },
 ];
 
@@ -120,7 +109,7 @@ export default function PricingPage() {
                 {plan.highlight && (
                   <span
                     className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
-                    style={{ background: "var(--signal)", color: "var(--forest)" }}
+                    style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
                   >
                     Most popular
                   </span>
@@ -128,7 +117,7 @@ export default function PricingPage() {
 
                 <p
                   className="text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: plan.highlight ? "rgba(255,255,255,0.75)" : "var(--ink-faint)" }}
+                  style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}
                 >
                   {plan.name}
                 </p>
@@ -137,7 +126,7 @@ export default function PricingPage() {
                   <span className="text-4xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>
                     £{plan.price}
                   </span>
-                  <span className="text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--ink-faint)" }}>
+                  <span className="text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
                     / month
                   </span>
                 </div>

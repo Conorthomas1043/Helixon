@@ -40,7 +40,7 @@ Facts you can rely on:
 - Upload a CV and a job description and Helixon scores the match.
 - Helixon can flag red flags and other concerns in a candidate's CV.
 - Helixon can draft follow-up recruitment emails.
-- Screening is designed to be fast, typically completing in under 30 seconds.
+- Screening is designed to be fast, typically completing in under a minute per CV.
 - Individual costs £249/month.
 - Agency costs £349/month.
 - There is no free trial or free three-analysis plan.

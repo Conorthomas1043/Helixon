@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
@@ -34,6 +34,7 @@ function initialsFor(user) {
 export default function MarketingNav({ active, showTagline = true }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef(null);
   const { isLoaded, isSignedIn, user } = useUser();
 
   useEffect(() => {
@@ -61,6 +62,24 @@ export default function MarketingNav({ active, showTagline = true }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen]);
 
+  // The account menu used to close only on mouse-leave, which a keyboard or
+  // touch user can't do. Escape and a click/tap outside now close it too.
+  useEffect(() => {
+    if (!accountOpen) return undefined;
+    function onPointerDown(e) {
+      if (!accountRef.current?.contains(e.target)) setAccountOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") setAccountOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [accountOpen]);
+
   const signedIn = isLoaded && isSignedIn;
   const initials = signedIn ? initialsFor(user) : "";
 
@@ -84,7 +103,7 @@ export default function MarketingNav({ active, showTagline = true }) {
 
         <div className="flex items-center gap-2">
           {signedIn ? (
-            <div className="hidden md:flex items-center gap-2 relative">
+            <div ref={accountRef} className="hidden md:flex items-center gap-2 relative">
               <Button as="a" href="/dashboard" variant="primary" size="sm" className="min-h-[36px]">
                 Dashboard
               </Button>
