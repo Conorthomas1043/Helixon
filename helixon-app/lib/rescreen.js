@@ -126,7 +126,9 @@ export async function rescreenCandidate(supabase, { agencyId, userId, actor, sou
       user_id: userId,
       match_score: result?.match_score ?? 0,
       recommendation: result?.recommendation || "Review",
-      result: { ...(result || {}), salary_estimate: salary, blind_mode: false },
+      // Screened from the CV already on file; the lawful basis confirmed
+      // when it was first screened is carried over.
+      result: { ...(result || {}), salary_estimate: salary, blind_mode: false, lawful_basis: { confirmed: true, by: actor, at: new Date().toISOString(), from_candidate_id: source.id } },
       source: "talent_pool",
       // scores.stage uses its own legacy vocabulary - see app/api/run.
       stage: "new",

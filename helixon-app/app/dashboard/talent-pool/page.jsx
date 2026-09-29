@@ -55,6 +55,10 @@ function fitTone(fit) {
   return { fg: "var(--score-low)", ring: "var(--score-low)", label: "Unlikely fit" };
 }
 
+function daysUntil(iso) {
+  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+}
+
 function shortDate(iso) {
   return new Date(`${iso}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
@@ -255,6 +259,31 @@ function NoteEditor({ note, onSave }) {
   );
 }
 
+// Entries lapse after the agency's retention period (GDPR storage
+// limitation - lib/data-retention.js); within a month of that, offer to
+// extend.
+function PoolExpiry({ expiresAt, onExtend, disabled }) {
+  if (!expiresAt) return null;
+  const days = daysUntil(expiresAt);
+  const date = new Date(expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  if (days > 30) {
+    return (
+      <span className="text-[11px] text-[var(--ink-faint)]" title="Taken out of the pool on this date unless extended - your retention policy">
+        · kept until {date}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
+      <Icon name="clock" size={11} />
+      Leaves the pool {days <= 0 ? "today" : `in ${days} day${days === 1 ? "" : "s"}`}
+      <button type="button" onClick={onExtend} disabled={disabled} className="underline underline-offset-2 disabled:opacity-50">
+        Extend
+      </button>
+    </span>
+  );
+}
+
 function RoleLink({ role }) {
   const tone = scoreTone(role.score);
   return (
@@ -384,6 +413,7 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
               Saved {formatRelativeTime(item.savedAt)}
               {item.savedBy ? ` by ${item.savedBy}` : ""}
             </span>
+            <PoolExpiry expiresAt={item.expiresAt} disabled={busy} onExtend={() => onUpdate(item, { extend: true })} />
           </div>
 
           {/* Fit and status under the name on phones - the side column is too tight there. */}
@@ -557,12 +587,13 @@ function TalentPoolContent() {
 
   // Availability, check-in and note, saved as they're changed.
   async function updateEntry(item, fields) {
-    const before = { status: item.status, checkIn: item.checkIn, note: item.note };
-    patchItem(item.id, fields);
+    const before = { status: item.status, checkIn: item.checkIn, note: item.note, expiresAt: item.expiresAt };
+    if (!fields.extend) patchItem(item.id, fields);
     setBusyIds((s) => new Set(s).add(item.id));
     try {
       const saved = await updateTalentPoolEntry(item.id, fields);
-      patchItem(item.id, { status: saved.status, checkIn: saved.checkIn, note: saved.note });
+      patchItem(item.id, { status: saved.status, checkIn: saved.checkIn, note: saved.note, expiresAt: saved.expiresAt });
+      if (fields.extend) toast(`Kept in the pool until ${new Date(saved.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`);
       return true;
     } catch (err) {
       patchItem(item.id, before);

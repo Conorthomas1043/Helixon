@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser, SignOutButton } from "@clerk/nextjs";
+import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import Button from "@/components/landing/Button";
 import Logo from "@/components/marketing/Logo";
 
@@ -113,7 +114,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                   </Link>
                   <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
                     <SignOutButton redirectUrl="/login">
-                      <button type="button" role="menuitem" className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: "var(--score-low)" }}>
+                      <button type="button" role="menuitem" onClick={clearLocalCandidateData} className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: "var(--score-low)" }}>
                         Log out
                       </button>
                     </SignOutButton>

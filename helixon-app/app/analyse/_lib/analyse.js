@@ -113,13 +113,23 @@ export function lsSet(key, value) {
 
 // The same file name analysed before on this browser - usually a re-upload
 // rather than a new candidate.
+//
+// Kept in this browser only, for 30 days at most (file names are often the
+// candidate's name) and cleared on log out (lib/clear-local-data.js).
+const HISTORY_MAX_AGE_MS = 30 * 86400000;
+
+function recentHistory() {
+  const cutoff = Date.now() - HISTORY_MAX_AGE_MS;
+  return ls("analysisHistory", []).filter((h) => h?.timestamp && new Date(h.timestamp).getTime() >= cutoff);
+}
+
 export function findPreviousAnalysis(file) {
   if (!file) return null;
-  return ls("analysisHistory", []).find((h) => h.cvName === file.name) || null;
+  return recentHistory().find((h) => h.cvName === file.name) || null;
 }
 
 export function recordAnalysis(entry) {
-  const history = ls("analysisHistory", []);
+  const history = recentHistory();
   history.unshift(entry);
   lsSet("analysisHistory", history.slice(0, 50));
 }

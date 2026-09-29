@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import posthog from "posthog-js";
+import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { COLORS } from "@/lib/account";
 
 // Shared across Dashboard, Billing, and Account settings - import this
@@ -161,6 +162,7 @@ export default function AppNav({ active }) {
                     role="menuitem"
                     onClick={() => {
                       if (posthog.__loaded) posthog.reset();
+                      clearLocalCandidateData();
                     }}
                     className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50"
                     style={{ color: COLORS.dangerText }}

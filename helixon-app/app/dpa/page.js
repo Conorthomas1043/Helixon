@@ -30,14 +30,15 @@ const SECTIONS = [
 
 const SUBPROCESSORS = [
   { name: "Vercel Inc.", purpose: "Application hosting", location: "United States (SCC-covered)" },
-  { name: "Supabase Inc.", purpose: "Database hosting & storage (EU region)", location: "European Union" },
+  { name: "Supabase Inc.", purpose: "Database hosting & file storage", location: "Switzerland (Zurich) - adequacy decision" },
   { name: "Anthropic PBC", purpose: "CV & job description analysis (AI scoring)", location: "United States (SCC-covered)" },
   { name: "Voyage AI, Inc.", purpose: "Skill-matching embeddings (CV analysis)", location: "United States (SCC-covered)" },
   { name: "Google LLC (Gemini API)", purpose: "Website chat assistant", location: "United States (SCC-covered)" },
   { name: "Clerk Inc.", purpose: "Account authentication", location: "United States (SCC-covered)" },
   { name: "Stripe Inc.", purpose: "Billing & payment processing", location: "European Union / United States (SCC-covered)" },
   { name: "Resend", purpose: "Transactional email delivery", location: "European Union / United States (SCC-covered)" },
-  { name: "Sentry (Functional Software, Inc.)", purpose: "Error monitoring", location: "United States (SCC-covered)" },
+  { name: "Sentry (Functional Software, Inc.)", purpose: "Error monitoring (session replay only with consent)", location: "European Union (Germany)" },
+  { name: "Upstash, Inc. (via Vercel)", purpose: "Rate limiting - IP addresses and account ids, kept up to 1 hour", location: "United States (SCC-covered)" },
   { name: "PostHog Inc.", purpose: "Product analytics (only where cookie consent is given)", location: "European Union" },
 ];
 
@@ -153,7 +154,7 @@ export default function DpaPage() {
             personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "#5a7a6a" }}>
-            <span><strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026</span>
+            <span><strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
             <span><strong style={{ color: "#13201b" }}>Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
                 page and choosing "Save as PDF" produces the same document. */}
@@ -263,7 +264,13 @@ export default function DpaPage() {
             <p><strong style={{ color: "#13201b" }}>Categories of data:</strong> name, contact details, employment
               and education history, skills, and any other information a candidate has chosen to include on their
               CV. Helixon does not knowingly process special category data and asks Customer not to upload CVs
-              containing it beyond what a candidate has voluntarily disclosed within their own document.</p>
+              containing it beyond what a candidate has voluntarily disclosed within their own document. Where a
+              CV contains it, it is processed only because it is in the document: the AI is instructed never to
+              base any score or judgement on a protected characteristic, and Customer can screen blind.</p>
+            <p><strong style={{ color: "#13201b" }}>Customer personnel:</strong> account details, activity history
+              within the workspace, and - only while Customer has team presence switched on - when each person has
+              Helixon open and last used it, plus any status they set. Individuals can hide their presence and
+              Customer can switch the feature off, which deletes what was recorded.</p>
           </Section>
 
           <Section id="processor-obligations" title="6. Processor obligations">
@@ -273,8 +280,11 @@ export default function DpaPage() {
                 international transfers, unless required to do otherwise by law;</li>
               <li>ensure persons authorised to process the data are bound by confidentiality;</li>
               <li>implement the technical and organisational measures set out in Annex C;</li>
-              <li>assist Customer, at Customer’s cost, in responding to data subject requests and regulatory
-                inquiries;</li>
+              <li>assist Customer in responding to data subject requests and regulatory inquiries, including by
+                providing in-product tools to export, correct and erase all data held about a candidate;</li>
+              <li>record, with each analysis, Customer’s confirmation that it has a lawful basis to screen the CV;</li>
+              <li>delete candidate data automatically once it has been inactive for the retention period Customer
+                sets (6, 12, 24 or 36 months; 12 by default), unless Customer chooses to keep it;</li>
               <li>delete or return all personal data at the end of the engagement, at Customer’s election, subject
                 to any legal retention requirement.</li>
             </ul>
@@ -291,6 +301,14 @@ export default function DpaPage() {
             <p>Where Helixon receives a request from a data subject relating to Customer’s data (access, erasure,
               rectification, or otherwise), Helixon will not respond directly and will instead forward the request
               to Customer without undue delay, providing reasonable assistance to help Customer fulfil it.</p>
+            <p>Customer can fulfil most requests itself in Helixon: <em>Export data</em> on a candidate’s profile
+              produces a machine-readable file of everything held about them across every job they were screened
+              for (access and portability); <em>Delete candidate</em> can erase every one of those records, their
+              files included (erasure); and their details can be edited (rectification).</p>
+            <p><strong style={{ color: "#13201b" }}>Automated processing.</strong> Helixon’s match scores and
+              summaries are decision support. Helixon does not make decisions producing legal or similarly
+              significant effects on candidates; Customer agrees that a person will review an assessment before any
+              such decision, and will meet any request from a candidate for human review or an explanation.</p>
           </Section>
 
           <Section id="security" title="9. Security measures">
@@ -306,7 +324,7 @@ export default function DpaPage() {
           </Section>
 
           <Section id="transfers" title="11. International transfers">
-            <p>Personal data is hosted within the European Union. Where processing by a sub-processor involves a
+            <p>Personal data is hosted in Switzerland (Zurich), which has UK and EU adequacy decisions. Where processing by a sub-processor involves a
               transfer outside the UK or EEA, Helixon relies on the UK International Data Transfer Addendum or EU
               Standard Contractual Clauses, as applicable, to ensure an adequate level of protection.</p>
           </Section>
@@ -361,8 +379,13 @@ export default function DpaPage() {
             <ul className="list-disc pl-5 space-y-1.5">
               <li>Encryption of personal data in transit (TLS 1.2+) and at rest (AES-256)</li>
               <li>Role-based access control and single sign-on for internal systems</li>
-              <li>Isolated, EU-region-only database storage with no cross-region replication</li>
-              <li>Automatic deletion of candidate and CV data 90 days after an agency's subscription is cancelled</li>
+              <li>Database and file storage in Zurich, Switzerland, with every agency’s data kept separate and only reachable through checks on the person asking</li>
+              <li>Original CV files held privately and opened only through links that expire after one minute</li>
+              <li>Automatic deletion of candidate data after Customer’s chosen period of inactivity, and of all candidate and CV data 90 days after an agency’s subscription is cancelled</li>
+              <li>Talent pool entries that lapse after the retention period unless renewed</li>
+              <li>A recorded lawful-basis confirmation with every analysis</li>
+              <li>Anonymisation of a user’s name, presence and authored history when they delete their account</li>
+              <li>Logged, limited access by Helixon staff</li>
               <li>Continuous dependency vulnerability scanning</li>
               <li>Documented incident response process with defined notification timelines</li>
             </ul>

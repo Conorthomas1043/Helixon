@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin-audit";
 import { removeCandidateCvs } from "@/lib/candidate-files";
+import { sweepAllAgencies } from "@/lib/data-retention";
 
 // Fulfils the DPA's Annex C promise ("automatic deletion of candidate and
 // CV data 90 days after an agency's subscription is cancelled") - until
@@ -66,6 +67,25 @@ export async function GET(request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
+  // 1. Every agency: erase candidates inactive past the agency's retention
+  //    period, and lapse expired talent pool entries (lib/data-retention.js).
+  let inactivity = null;
+  try {
+    inactivity = await sweepAllAgencies(supabase);
+    if (inactivity.erased || inactivity.expired) {
+      await writeAdminAuditSafe({
+        adminUsername: "system:data-retention-cron",
+        action: "retention_inactivity_sweep",
+        targetType: "system",
+        targetId: "all",
+        metadata: inactivity,
+      });
+    }
+  } catch (err) {
+    console.error("[data-retention] Inactivity sweep failed:", err.message);
+  }
+
+  // 2. Agencies cancelled 90+ days ago: erase everything (DPA Annex C).
   const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   // subscriptions has no dedicated cancelled_at column (verified against the
@@ -85,7 +105,7 @@ export async function GET(request) {
   }
 
   if (!cancelled || cancelled.length === 0) {
-    return NextResponse.json({ ok: true, agenciesPurged: 0, candidatesPurged: 0 });
+    return NextResponse.json({ ok: true, agenciesPurged: 0, candidatesPurged: 0, inactivity });
   }
 
   // subscriptions.user_id points at profiles.id (see lib/customer-auth.js
@@ -148,5 +168,5 @@ export async function GET(request) {
     });
   }
 
-  return NextResponse.json({ ok: true, agenciesPurged, candidatesPurged });
+  return NextResponse.json({ ok: true, agenciesPurged, candidatesPurged, inactivity });
 }

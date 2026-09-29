@@ -6,6 +6,7 @@ import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { eraseCandidates } from "@/lib/candidate-erasure";
+import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 
 // POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
@@ -112,7 +113,11 @@ export async function POST(request) {
     if (roots.length) {
       let query = supabase
         .from("candidates")
-        .update(adding ? { talent_pool_at: now, talent_pool_by: actor } : { talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null })
+        .update(
+          adding
+            ? { talent_pool_at: now, talent_pool_by: actor, talent_pool_expires_at: addMonths(new Date(), (await getAgencyPrivacy(supabase, agencyId)).retentionMonths).toISOString() }
+            : { talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null, talent_pool_expires_at: null }
+        )
         .eq("agency_id", agencyId)
         .in("id", roots);
       // Saving again mustn't reset when (or by whom) someone was first saved.

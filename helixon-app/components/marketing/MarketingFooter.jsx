@@ -48,7 +48,7 @@ export default function MarketingFooter() {
             <Logo size="footer" />
           </div>
           <p className="text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
-            Candidate screening built for recruitment agencies. GDPR-ready, EU-hosted.
+            Candidate screening built for recruitment agencies. GDPR-ready, Swiss-hosted.
           </p>
         </div>
 

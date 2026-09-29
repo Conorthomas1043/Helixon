@@ -8,6 +8,7 @@ import PresenceDot from "@/components/PresenceDot";
 import { usePresenceHeartbeat } from "@/lib/hooks/usePresenceHeartbeat";
 import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
 import { setMyPresence } from "@/lib/dashboard-api";
+import { clearLocalCandidateData } from "@/lib/clear-local-data";
 
 const TABS = [
   { href: "/dashboard", label: "Overview" },
@@ -132,7 +133,8 @@ function DashboardNavContent() {
   }, [me?.plan]);
 
   const mine = teammates?.find((t) => t.id === userId) || null;
-  const myPresence = mine ? computePresence(mine.presenceRaw || {}) : null;
+  // null when the workspace has presence switched off (/dashboard/privacy).
+  const myPresence = mine?.presenceRaw ? computePresence(mine.presenceRaw) : null;
   async function setStatus(status) {
     setMenuOpen(false);
     try {
@@ -222,7 +224,7 @@ function DashboardNavContent() {
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
                 {initialsLabel}
               </span>
-              {myPresence && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
+              {myPresence && myPresence.state !== "hidden" && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
             </span>
             <span className="text-[11px] font-medium hidden sm:block" style={{ color: "var(--ink)" }}>{userName || userEmail}</span>
           </button>
@@ -259,6 +261,7 @@ function DashboardNavContent() {
               )}
               <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
               <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Billing</Link>
+              <Link href="/dashboard/privacy" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Data &amp; privacy</Link>
               {me?.plan === "agency" && (
                 <Link href="/dashboard/team" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Invite teammate</Link>
               )}
@@ -267,6 +270,7 @@ function DashboardNavContent() {
                   type="button"
                   onClick={() => {
                     if (posthog.__loaded) posthog.reset();
+                    clearLocalCandidateData();
                   }}
                   className="w-full text-left block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
                   style={{ color: "var(--score-low)" }}

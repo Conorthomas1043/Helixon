@@ -274,6 +274,37 @@ export async function setMyPresence({ status = null, message = "", until = null 
   });
 }
 
+// Data & privacy (/dashboard/privacy, app/api/privacy).
+export async function getPrivacyOverview() {
+  return apiFetch("/api/privacy");
+}
+
+export async function updatePrivacySettings(fields) {
+  return apiFetch("/api/privacy", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function keepCandidates(ids) {
+  return apiFetch("/api/privacy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "keep", ids }),
+  });
+}
+
+// Stop (true) or start (false) sharing your presence; stopping deletes
+// what's been recorded.
+export async function setPresenceHidden(hidden) {
+  return apiFetch("/api/team/presence", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hidden }),
+  });
+}
+
 // role: "admin" (can manage the team) or "member".
 export async function setTeammateRole(userId, role) {
   return apiFetch("/api/team/role", {
@@ -315,8 +346,10 @@ export async function updateCandidateStage(id, newStage) {
 // notes, artifacts, shortlist entries, feedback) - see app/api/candidates/
 // [id]/route.js's DELETE handler. This is the tool an agency needs to
 // fulfil a candidate's right-to-erasure request.
-export async function deleteCandidate(id) {
-  return apiFetch(`/api/candidates/${id}`, { method: "DELETE" });
+// everyRecord: also erase the other records for this person (one per job
+// they were screened for) - what a GDPR erasure request needs.
+export async function deleteCandidate(id, { everyRecord = false } = {}) {
+  return apiFetch(`/api/candidates/${id}${everyRecord ? "?all=1" : ""}`, { method: "DELETE" });
 }
 
 export async function assignCandidate(id, recruiterId) {

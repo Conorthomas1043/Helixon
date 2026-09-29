@@ -24,6 +24,7 @@ import {
   setTeammateRole,
   assignUnassignedCandidates,
   setMyPresence,
+  setPresenceHidden,
 } from "@/lib/dashboard-api";
 import PresenceDot from "@/components/PresenceDot";
 import { PRESENCE_ORDER, computePresence, presenceLine, timeAgo } from "@/lib/presence";
@@ -408,6 +409,7 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
 // Presence colours and wording come from lib/presence.js via PresenceDot.
 const PRESENCE_TEXT = {
   active: "var(--score-strong)",
+  hidden: INK_FAINT,
   idle: "#9a6b12",
   busy: "var(--score-low)",
   away: INK_MUTED,
@@ -423,7 +425,7 @@ function Avatar({ name, state, size = 46 }) {
           background: state && state !== "offline" ? "var(--mint)" : "var(--mist)",
           color: "var(--forest)",
           fontSize: Math.round(size * 0.3),
-          opacity: state === "offline" ? 0.75 : 1,
+          opacity: state === "offline" || state === "hidden" ? 0.75 : 1,
         }}
         aria-hidden="true"
       >
@@ -471,10 +473,10 @@ function SummaryTile({ label, value, sub, dot, active, onClick }) {
 const ROLE_LABELS = { owner: "Owner", admin: "Admin", member: "Member" };
 
 function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, changingRole, onChangeRole, removing, onRemove }) {
-  const state = presence.state;
-  const line = presenceLine(presence, now);
+  const state = presence?.state;
+  const line = presence ? presenceLine(presence, now) : null;
   return (
-    <div className="rounded-[14px] p-5 flex flex-col" style={{ ...CARD, opacity: state === "offline" ? 0.92 : 1 }}>
+    <div className="rounded-[14px] p-5 flex flex-col" style={{ ...CARD, opacity: state === "offline" || state === "hidden" ? 0.92 : 1 }}>
       <div className="flex items-start gap-3">
         <Avatar name={member.name} state={state} />
         <div className="min-w-0 flex-1">
@@ -487,11 +489,13 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
               {ROLE_LABELS[member.role] || "Member"}
             </span>
           </div>
-          <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] }}>
-            {state !== "offline" && <PresenceDot state={state} size={7} ring="transparent" />}
-            {line}
-          </p>
-          {presence.message && (
+          {presence && (
+            <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
+              {state !== "offline" && state !== "hidden" && <PresenceDot state={state} size={7} ring="transparent" />}
+              {line}
+            </p>
+          )}
+          {presence?.message && (
             <p className="text-[12.5px] mt-1 italic" style={{ color: INK }}>
               “{presence.message}”
             </p>
@@ -581,7 +585,26 @@ function clearAfterToIso(value) {
 }
 
 // Set yourself busy or away, with what you're doing and when it clears.
-function MyStatusCard({ me, presence, onSaved }) {
+function MyStatusCard({ me, presence, enabled, onSaved }) {
+  if (!enabled) {
+    return (
+      <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          Presence
+        </p>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          Showing who&apos;s online is switched off for this workspace, so nothing about when people use Helixon is recorded.{" "}
+          <Link href="/dashboard/privacy" className="font-semibold underline" style={{ color: "var(--forest)" }}>
+            Data &amp; privacy settings
+          </Link>
+        </p>
+      </div>
+    );
+  }
+  return <MyStatusEditor me={me} presence={presence} onSaved={onSaved} />;
+}
+
+function MyStatusEditor({ me, presence, onSaved }) {
   const raw = me?.presenceRaw || {};
   const currentStatus = presence?.state === "busy" || presence?.state === "away" ? presence.state : null;
   const [status, setStatus] = useState(currentStatus);
@@ -590,6 +613,19 @@ function MyStatusCard({ me, presence, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const hidden = Boolean(me?.presenceRaw?.hidden);
+  async function toggleHidden(next) {
+    setSaving(true);
+    setError("");
+    try {
+      onSaved(await setPresenceHidden(next));
+    } catch (err) {
+      setError(err.message || "Couldn't change that.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function save(next = status) {
     setSaving(true);
@@ -703,7 +739,23 @@ function MyStatusCard({ me, presence, onSaved }) {
       {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
       <p className="text-[11.5px] mt-3" style={{ color: INK_FAINT }}>
         Teammates see you as active while you&apos;re using Helixon, idle after 5 minutes without touching it, and offline once it&apos;s closed.
+        Only those times are kept - not what you click or type.
       </p>
+      <label className="flex items-start gap-2 mt-3 pt-3 cursor-pointer" style={{ borderTop: "1px solid var(--border)" }}>
+        <input
+          type="checkbox"
+          checked={!hidden}
+          disabled={saving}
+          onChange={(e) => toggleHidden(!e.target.checked)}
+          className="mt-0.5 w-4 h-4 accent-[var(--forest)]"
+        />
+        <span className="text-[12.5px]" style={{ color: INK }}>
+          Share my presence with the team
+          <span className="block text-[11.5px]" style={{ color: INK_FAINT }}>
+            {hidden ? "Hidden - nothing about when you use Helixon is being recorded." : "Untick to hide it and delete what's been recorded."}
+          </span>
+        </span>
+      </label>
     </div>
   );
 }
@@ -869,10 +921,14 @@ export default function TeamPage() {
     }
   }
 
-  const members = (recruiters || []).map((r) => ({ ...r, livePresence: computePresence(r.presenceRaw || {}, now) }));
-  // You're here, whatever the last heartbeat said.
+  // The agency can switch presence off (/dashboard/privacy) - then the API
+  // sends none and the page shows workload only.
+  const presenceOn = (recruiters || []).some((r) => r.presenceRaw);
+  const OFF = { state: "offline", online: false, lastActiveAt: null, message: null, until: null };
+  const members = (recruiters || []).map((r) => ({ ...r, livePresence: r.presenceRaw ? computePresence(r.presenceRaw, now) : OFF }));
+  // You're here, whatever the last heartbeat said (unless you've hidden it).
   const withYou = members.map((m) =>
-    m.id === user?.id && m.livePresence.state === "offline" ? { ...m, livePresence: { ...m.livePresence, state: "active", online: true } } : m
+    presenceOn && m.id === user?.id && m.livePresence.state === "offline" ? { ...m, livePresence: { ...m.livePresence, state: "active", online: true } } : m
   );
   const sorted = [...withYou].sort(
     (a, b) =>
@@ -882,7 +938,7 @@ export default function TeamPage() {
   const groups = {
     online: sorted.filter((m) => m.livePresence.state === "active" || m.livePresence.state === "idle"),
     busy: sorted.filter((m) => m.livePresence.state === "busy" || m.livePresence.state === "away"),
-    offline: sorted.filter((m) => m.livePresence.state === "offline"),
+    offline: sorted.filter((m) => m.livePresence.state === "offline" || m.livePresence.state === "hidden"),
   };
   const shown = filter === "all" ? sorted : groups[filter];
   const me = withYou.find((m) => m.id === user?.id) || null;
@@ -909,11 +965,13 @@ export default function TeamPage() {
             </h1>
             {status === "ready" && (
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] mt-1" style={{ color: INK_MUTED }}>
+                {presenceOn && (
                 <span className="inline-flex items-center gap-1.5">
                   <PresenceDot state="active" size={8} ring="transparent" />
                   {groups.online.length} online
                 </span>
-                {groups.busy.length > 0 && (
+                )}
+                {presenceOn && groups.busy.length > 0 && (
                   <span className="inline-flex items-center gap-1.5">
                     <PresenceDot state="busy" size={8} ring="transparent" />
                     {groups.busy.length} busy or away
@@ -934,7 +992,7 @@ export default function TeamPage() {
           </Link>
         </header>
 
-        {status === "ready" && members.length > 0 && (
+        {status === "ready" && members.length > 0 && presenceOn && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <SummaryTile label="Online now" dot="active" value={groups.online.length} sub={groups.online.length ? groups.online.map((m) => m.name.split(" ")[0]).join(", ") : "Nobody right now"} active={filter === "online"} onClick={() => setFilter((f) => (f === "online" ? "all" : "online"))} />
             <SummaryTile label="Busy or away" dot="busy" value={groups.busy.length} sub={groups.busy[0]?.livePresence.message || (groups.busy.length ? "Heads down" : "No one")} active={filter === "busy"} onClick={() => setFilter((f) => (f === "busy" ? "all" : "busy"))} />
@@ -949,7 +1007,7 @@ export default function TeamPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
           <section aria-label="Team members" className="space-y-4 min-w-0">
-            {status === "ready" && members.length > 1 && (
+            {status === "ready" && members.length > 1 && presenceOn && (
               <div className="flex flex-wrap items-center gap-2">
                 {[
                   ["all", "Everyone", sorted.length],
@@ -994,7 +1052,7 @@ export default function TeamPage() {
                     key={r.id}
                     member={r}
                     isYou={r.id === user?.id}
-                    presence={r.livePresence}
+                    presence={presenceOn ? r.livePresence : null}
                     now={now}
                     canRemove={canManage && r.id !== user?.id && r.role === "member"}
                     canChangeRole={canManage && r.id !== user?.id && (r.role === "member" || r.role === "admin")}
@@ -1009,7 +1067,9 @@ export default function TeamPage() {
           </section>
 
           <aside className="space-y-4 lg:sticky lg:top-[76px]">
-            {status === "ready" && me && <MyStatusCard key={me.presenceRaw?.status || "auto"} me={me} presence={me.livePresence} onSaved={onMyStatusSaved} />}
+            {status === "ready" && me && (
+              <MyStatusCard key={`${me.presenceRaw?.status || "auto"}-${me.presenceRaw?.hidden ? "h" : "s"}`} me={me} presence={me.livePresence} enabled={presenceOn} onSaved={onMyStatusSaved} />
+            )}
             <TeamInvitePanel
               usage={usage}
               state={usageState}

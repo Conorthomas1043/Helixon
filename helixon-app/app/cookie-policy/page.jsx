@@ -13,22 +13,24 @@ const COOKIE_CATEGORIES = [
   {
     name: "Strictly necessary",
     required: true,
-    purpose: "Keep you signed in, remember your session, and protect against cross-site request forgery.",
-    examples: "session_id, csrf_token",
-    duration: "Session / 30 days",
+    purpose: "Keep you signed in securely (set by Clerk, our sign-in provider) and remember your cookie choice.",
+    examples: "__session, __client_uat, __clerk_db_jwt (Clerk); helixon_cookie_consent",
+    duration: "Session / up to 1 year",
   },
   {
-    name: "Preferences",
-    required: false,
-    purpose: "Remember display settings, such as which columns you last showed in your analysis history.",
-    examples: "ui_prefs",
-    duration: "1 year",
+    name: "Functional (stored in your browser)",
+    required: true,
+    purpose:
+      "Only set when you use the feature they support: job templates you save, candidates you viewed recently, your recent analyses (kept 30 days) and that you confirmed a lawful basis to screen CVs. Kept in your browser's local storage, never sent to anyone, and the candidate-related ones are cleared when you log out.",
+    examples: "jobTemplates, analysisHistory, helixon:recently-viewed-candidates, analyseConsent",
+    duration: "Until you log out or clear them (analyses: 30 days)",
   },
   {
     name: "Analytics",
     required: false,
-    purpose: "Understand how the product is used, in aggregate, so we can improve it. No data is sold or shared for advertising.",
-    examples: "_ph_id (PostHog, EU-hosted)",
+    purpose:
+      "Understand how the product is used, in aggregate, so we can improve it, and - for a sample of visits - record a replay of the page with all text and inputs masked, to help us fix errors. No data is sold or shared for advertising.",
+    examples: "ph_*_posthog (PostHog, EU-hosted); Sentry session replay (EU-hosted, no cookie)",
     duration: "1 year",
   },
 ];
@@ -174,7 +176,7 @@ export default function CookiePolicyPage() {
             the Helixon app.
           </p>
           <p className="text-[11px] mt-5" style={{ color: "#5a7a6a" }}>
-            <strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026
+            <strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026
           </p>
         </div>
       </header>

@@ -173,6 +173,16 @@ export async function POST(request) {
 
     const blind = form.get("blind") === "true";
 
+    // The recruiter must confirm a lawful basis for screening this CV (the
+    // checkbox on /analyse). It's recorded with the analysis, so there's
+    // evidence of who confirmed it and when (GDPR accountability).
+    if (form.get("lawfulBasisConfirmed") !== "true") {
+      return NextResponse.json(
+        { ok: false, error: "Confirm you have a lawful basis to screen this CV before analysing it." },
+        { status: 400 }
+      );
+    }
+
     const existingJobId =
       form.get("jobId") || null;
 
@@ -472,6 +482,7 @@ export async function POST(request) {
           // Read by the candidate page to warn before opening the original
           // CV of someone screened blind.
           blind_mode: blind,
+          lawful_basis: { confirmed: true, by: recruiterDisplayName(profile) || userId, at: new Date().toISOString() },
         },
         source: "single",
         // scores.stage has its OWN check constraint - a separate, legacy
@@ -565,6 +576,7 @@ export async function POST(request) {
           score_id: score.id,
           match_score:
             result?.match_score ?? 0,
+          lawful_basis_confirmed: true,
         },
       });
 

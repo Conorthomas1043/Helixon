@@ -8,7 +8,7 @@ export const PRESENCE_COLORS = {
 };
 
 export default function PresenceDot({ state = "offline", size = 10, ring = "white", className = "" }) {
-  const offline = state === "offline";
+  const offline = state === "offline" || state === "hidden";
   return (
     <span
       className={`inline-block rounded-full shrink-0 ${className}`}

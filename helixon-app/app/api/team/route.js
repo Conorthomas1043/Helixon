@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
 import { computePresence } from "@/lib/presence";
+import { getAgencyPrivacy } from "@/lib/privacy-settings";
 
 // "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
 // join through a Clerk Organization invite (app/api/team/invite), and the
@@ -38,7 +39,7 @@ export async function GET() {
   const [{ data: members, error: membersError }, { data: candidates, error: candidatesError }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("clerk_user_id, first_name, last_name, username, last_seen_at, last_active_at, presence_status, presence_message, presence_until")
+      .select("clerk_user_id, first_name, last_name, username, last_seen_at, last_active_at, presence_status, presence_message, presence_until, presence_hidden")
       .eq("agency_id", agencyId),
     supabase
       .from("candidates")
@@ -60,6 +61,10 @@ export async function GET() {
     console.error("[team] Failed to load member roles:", err.message);
   }
 
+  // Presence is left out entirely when the agency has switched it off
+  // (/dashboard/privacy); hidden people show as hidden with nothing else.
+  const { presenceEnabled } = await getAgencyPrivacy(supabase, agencyId).catch(() => ({ presenceEnabled: false }));
+
   const now = Date.now();
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -70,13 +75,17 @@ export async function GET() {
       const completed = owned.filter((c) => c.processing_status === "completed");
       // Presence (lib/presence.js): raw values so the page can keep it
       // current between refreshes, plus the state worked out now.
-      const presenceRaw = {
-        lastSeenAt: m.last_seen_at,
-        lastActiveAt: m.last_active_at,
-        status: m.presence_status,
-        message: m.presence_message,
-        until: m.presence_until,
-      };
+      const presenceRaw = !presenceEnabled
+        ? null
+        : m.presence_hidden
+          ? { hidden: true }
+          : {
+              lastSeenAt: m.last_seen_at,
+              lastActiveAt: m.last_active_at,
+              status: m.presence_status,
+              message: m.presence_message,
+              until: m.presence_until,
+            };
       const lastWorkedAt = owned.reduce((latest, c) => {
         const t = c.last_activity_at || c.created_at;
         return t && (!latest || t > latest) ? t : latest;
@@ -86,7 +95,7 @@ export async function GET() {
         name: recruiterDisplayName(m) || "Unnamed",
         role: roles.get(m.clerk_user_id) || null,
         presenceRaw,
-        presence: computePresence(presenceRaw, now),
+        presence: presenceRaw ? computePresence(presenceRaw, now) : null,
         // Most recent change to any candidate they own - "what they were
         // last working on", for anyone offline.
         lastWorkedAt,

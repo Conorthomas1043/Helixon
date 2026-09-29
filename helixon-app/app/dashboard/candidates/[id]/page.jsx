@@ -109,6 +109,8 @@ function activityDescription(entry) {
     case "meeting_logged":
     case "cv_sent_logged":
     case "details_updated":
+    case "data_exported":
+    case "retention_extended":
     case "talent_pool_added":
       return entry.meta?.note ?? "";
     case "rescreened":
@@ -139,6 +141,9 @@ const EVENT_LABELS = {
   talent_pool_added: "Saved to talent pool",
   talent_pool_removed: "Removed from talent pool",
   rescreened: "Screened for another job",
+  data_exported: "Data exported",
+  talent_pool_expired: "Left the talent pool (retention policy)",
+  retention_extended: "Kept past the retention period",
 };
 
 const OUTREACH_ACTIONS = [
@@ -446,6 +451,16 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         >
           Edit details
         </button>
+        {/* A plain link download: the export route answers with a JSON file. */}
+        <a
+          href={`/api/candidates/${candidate.id}/export`}
+          download
+          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: INK_MUTED }}
+          title="Download everything held about this person (every job they've been screened for) - for a subject access or data portability request"
+        >
+          Export data
+        </a>
         <button
           type="button"
           onClick={onDelete}
@@ -1931,15 +1946,20 @@ export default function CandidateProfilePage({ params }) {
   );
 
   const handleDeleteCandidate = useCallback(async () => {
-    if (
-      !confirm(
-        `Permanently delete ${candidate?.fullName || "this candidate"}? This erases their CV, scores, notes and activity history, and cannot be undone.`
-      )
-    ) {
+    const name = candidate?.fullName || "this candidate";
+    const others = candidate?.otherRoles?.length || 0;
+    if (!confirm(`Permanently delete ${name}? This erases their CV, scores, notes and activity history, and cannot be undone.`)) {
       return;
     }
+    // They're also on file for other jobs - an erasure request has to
+    // cover those records too.
+    const everyRecord =
+      others > 0 &&
+      confirm(
+        `${name} also has ${others} other record${others === 1 ? "" : "s"} (screened for ${candidate.otherRoles.map((r) => r.jobTitle).join(", ")}).\n\nOK = erase every record (use this for a GDPR erasure request)\nCancel = only remove them from ${candidate.jobTitle}`
+      );
     try {
-      await deleteCandidate(id);
+      await deleteCandidate(id, { everyRecord });
       router.push("/dashboard/candidates");
     } catch (err) {
       failed(err, "Couldn't delete this candidate. Please try again.");

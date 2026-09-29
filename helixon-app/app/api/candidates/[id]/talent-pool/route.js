@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { poolRootId } from "@/lib/rescreen";
+import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 
 // Save someone to the agency's talent pool for future roles, or take them
 // out. The pool holds one entry per person: the flag goes on their first
@@ -12,12 +13,23 @@ import { poolRootId } from "@/lib/rescreen";
 // whichever of their rows it's set from.
 //
 // POST { note? }                       save (or update the note)
-// PATCH { note?, status?, checkIn? }   edit an entry: why they're kept,
-//                                      availability, date to check in
+// PATCH { note?, status?, checkIn?, extend? }
+//                                      edit an entry: why they're kept,
+//                                      availability, date to check in;
+//                                      extend renews it for the agency's
+//                                      retention period
+//
+// Entries lapse at talent_pool_expires_at (the agency's retention period
+// after saving - lib/privacy-settings.js) unless extended.
 // DELETE                               remove
 
 const POOL_STATUSES = ["available", "open", "not_looking"];
-const POOL_COLUMNS = "talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in";
+const POOL_COLUMNS = "talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, talent_pool_expires_at";
+
+async function expiryFor(agencyId) {
+  const { retentionMonths } = await getAgencyPrivacy(supabase, agencyId);
+  return addMonths(new Date(), retentionMonths).toISOString();
+}
 
 function toPool(row) {
   return {
@@ -26,6 +38,7 @@ function toPool(row) {
     note: row.talent_pool_note,
     status: row.talent_pool_status,
     checkIn: row.talent_pool_check_in,
+    expiresAt: row.talent_pool_expires_at,
   };
 }
 
@@ -53,7 +66,7 @@ export async function POST(request, { params }) {
 
   const { data, error } = await supabase
     .from("candidates")
-    .update({ talent_pool_at: new Date().toISOString(), talent_pool_by: actor, talent_pool_note: note })
+    .update({ talent_pool_at: new Date().toISOString(), talent_pool_by: actor, talent_pool_note: note, talent_pool_expires_at: await expiryFor(auth.agencyId) })
     .eq("id", rootId)
     .eq("agency_id", auth.agencyId)
     .select(POOL_COLUMNS)
@@ -88,6 +101,7 @@ export async function PATCH(request, { params }) {
     }
     update.talent_pool_check_in = body.checkIn;
   }
+  if (body.extend === true) update.talent_pool_expires_at = await expiryFor(auth.agencyId);
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
@@ -116,7 +130,7 @@ export async function DELETE(request, { params }) {
 
   const { error } = await supabase
     .from("candidates")
-    .update({ talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null })
+    .update({ talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null, talent_pool_expires_at: null })
     .eq("id", rootId)
     .eq("agency_id", auth.agencyId);
   if (error) {

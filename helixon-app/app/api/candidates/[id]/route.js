@@ -6,6 +6,7 @@ import { eraseCandidates } from "@/lib/candidate-erasure";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
+import { personCandidateIds } from "@/lib/candidate-person";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -85,7 +86,7 @@ export async function GET(request, { params }) {
   const [{ data: root }, { data: related }] = await Promise.all([
     rootId === candidate.id
       ? { data: candidate }
-      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
+      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, talent_pool_expires_at, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
     supabase
       .from("candidates")
       .select("id, job_id, match_score, stage, created_at, jobs(title, client)")
@@ -156,6 +157,7 @@ export async function GET(request, { params }) {
           note: root.talent_pool_note,
           status: root.talent_pool_status,
           checkIn: root.talent_pool_check_in,
+          expiresAt: root.talent_pool_expires_at,
         }
       : null,
     otherRoles,
@@ -288,13 +290,19 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { erased, failedStep } = await eraseCandidates(supabase, agencyId, [id]);
-  if (failedStep || erased !== 1) {
+  // ?all=1 erases every record for this person - each job they were
+  // screened for is a separate row (lib/candidate-person.js). An erasure
+  // request needs all of them; plain removal from one job doesn't.
+  const everyRecord = new URL(request.url).searchParams.get("all") === "1";
+  const ids = everyRecord ? await personCandidateIds(supabase, agencyId, id).catch(() => [id]) : [id];
+
+  const { erased, failedStep } = await eraseCandidates(supabase, agencyId, ids);
+  if (failedStep || erased !== ids.length) {
     return NextResponse.json(
       { error: `Failed to erase candidate data (${failedStep || "candidates"}). Safe to retry.` },
       { status: 500 }
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, erased });
 }

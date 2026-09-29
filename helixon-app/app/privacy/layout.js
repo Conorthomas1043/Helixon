@@ -3,7 +3,7 @@
 // title is shown as "Privacy policy | Helixon" (template set in app/layout.js).
 export const metadata = {
   title: "Privacy policy",
-  description: "How Helixon collects, uses and protects personal data. UK GDPR-ready and EU-hosted.",
+  description: "How Helixon collects, uses and protects personal data. UK GDPR-ready, with data stored in Switzerland.",
 };
 
 export default function Layout({ children }) {

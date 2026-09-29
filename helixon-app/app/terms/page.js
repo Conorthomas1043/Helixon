@@ -28,7 +28,7 @@ const SECTIONS = [
   },
   {
     id: "data", title: "6. Data handling",
-    body: ["How we handle candidate and account data is covered in full in our Privacy Policy. In short: EU-hosted, never used to train models, deletable on request."],
+    body: ["How we handle candidate and account data is covered in full in our Privacy Policy. In short: stored in Switzerland, never used to train models, deletable on request."],
   },
   {
     id: "liability", title: "7. Limitation of liability",

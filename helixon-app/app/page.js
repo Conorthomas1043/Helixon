@@ -1044,7 +1044,7 @@ const FEATURE_GROUPS = [
   {
     title: "Stay compliant",
     body: "Built for candidate data from the ground up.",
-    items: ["EU-hosted infrastructure", "Encryption at rest & in transit", "Full audit trail", "GDPR-ready workflow"],
+    items: ["Data stored in Switzerland", "Encryption at rest & in transit", "Full audit trail", "GDPR-ready workflow"],
   },
 ];
 
@@ -1112,7 +1112,7 @@ function Testimonials() {
 /* ── Trust / GDPR - a dedicated, weightier section since candidates' data is involved ── */
 
 const TRUST_PILLARS = [
-  { title: "EU-hosted infrastructure", body: "Candidate data stays on servers within the EU." },
+  { title: "European data storage", body: "Candidate data is stored in Switzerland, which the UK and EU recognise as adequate. AI analysis uses providers bound by UK and EU transfer safeguards." },
   { title: "Encrypted throughout", body: "Encrypted at rest and in transit, end to end." },
   { title: "Never used to train models", body: "Candidate data is never used to train Helixon or anyone else's models." },
   { title: "Full audit trail", body: "Every score, note and status change is timestamped and attributed." },
@@ -1236,7 +1236,7 @@ function FAQSection() {
 const TRUST_METRICS = [
   { val: 50, suffix: "", label: "CVs per bulk upload, against one role" },
   { val: null, display: "Under a minute", label: "To score a CV against a full job spec" },
-  { val: null, display: "EU-hosted", label: "Encrypted, GDPR-ready, never used for training" },
+  { val: null, display: "Swiss-hosted", label: "Encrypted, GDPR-ready, never used for training" },
 ];
 
 function TrustStrip() {

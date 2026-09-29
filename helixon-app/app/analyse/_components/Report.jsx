@@ -479,6 +479,18 @@ export default function Report({ result, roleLabel }) {
           )}
         </Section>
       )}
+      {/* Shown on every report, on screen and in print: the score informs a
+          recruiter's decision, it never makes it (UK GDPR Art. 22). */}
+      <p className="flex items-start gap-2 px-5 sm:px-7 py-4 border-t border-[var(--border-soft)] text-[12px] leading-relaxed text-[var(--ink-soft)]">
+        <span className="mt-0.5 shrink-0 text-[var(--ink-faint)]">
+          <Icon name="info" size={13} />
+        </span>
+        <span>
+          This assessment is produced by AI from the CV and the role&apos;s requirements. It can be wrong or miss context, so a recruiter
+          should review it before any decision - it isn&apos;t a decision in itself. Candidates can ask for a person to review how they
+          were assessed.
+        </span>
+      </p>
     </Card>
   );
 }

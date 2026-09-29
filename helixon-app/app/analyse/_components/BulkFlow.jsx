@@ -155,6 +155,8 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     const fd = new FormData();
     fd.append("cv", item.file);
     fd.append("blind", bulkBlind ? "true" : "false");
+    // Recorded with the analysis (the lawful-basis checkbox above is required to start).
+    fd.append("lawfulBasisConfirmed", consent ? "true" : "false");
     fd.append("requirements", "[]");
     fd.append("jobText", jobTextForRequest || "");
     if (jobFileForRequest) fd.append("jobFile", jobFileForRequest);

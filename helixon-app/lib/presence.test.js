@@ -37,6 +37,12 @@ describe("computePresence", () => {
     expect(computePresence({ lastSeenAt: ago(60 * MIN), status: "busy" }, NOW).state).toBe("offline");
   });
 
+  it("shows nothing for someone who has hidden their presence", () => {
+    const p = computePresence({ hidden: true, lastSeenAt: ago(10_000), status: "busy" }, NOW);
+    expect(p.state).toBe("hidden");
+    expect(presenceLine(p, NOW)).toBe("Presence hidden");
+  });
+
   it("has never been seen", () => {
     const p = computePresence({}, NOW);
     expect(p.state).toBe("offline");

@@ -1,6 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { anonymiseDeletedUser } from "@/lib/anonymise-user";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
 import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/create-profile";
 import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/clerk-org";
@@ -63,12 +64,10 @@ export async function POST(request) {
     if (event.type === "user.created") {
       await handleUserCreated(event.data);
     } else if (event.type === "user.deleted") {
-      // Soft-disconnect rather than delete - keeps candidates/subscriptions
-      // history intact for the agency even if a user account is removed.
-      await supabase
-        .from("profiles")
-        .update({ clerk_user_id: null })
-        .eq("clerk_user_id", event.data.id);
+      // Keep the profile row (the agency's candidates and history still
+      // reference it) but erase what identifies the person - name,
+      // presence, and their name in notes and history (lib/anonymise-user.js).
+      await anonymiseDeletedUser(supabase, event.data.id);
     } else if (event.type === "organizationMembership.created") {
       await handleOrganizationMembershipCreated(event.data);
     } else if (event.type === "organizationMembership.deleted") {

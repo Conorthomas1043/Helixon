@@ -254,6 +254,8 @@ export default function AnalyseWorkspace() {
     if (jobFile && !jobId) form.append("jobFile", jobFile);
     if (clientEmail.trim()) form.append("clientEmail", clientEmail.trim());
     form.append("blind", blind ? "true" : "false");
+    // Recorded with the analysis - the lawful-basis checkbox is required to get here.
+    form.append("lawfulBasisConfirmed", consent ? "true" : "false");
     form.append("requirements", JSON.stringify(requirements));
     // Re-runs and comparisons reuse the job the first analysis created, so
     // they don't each add another copy of the same role.

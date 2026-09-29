@@ -74,7 +74,7 @@ export async function GET(request) {
       .from("candidates")
       .select(
         "id, full_name, name, current_title, current_company, location, years_experience, job_id, match_score, stage, cv_text, " +
-          "talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, " +
+          "talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, talent_pool_expires_at, " +
           "skills:extracted->skills, extracted_years:extracted->years_experience"
       )
       .eq("agency_id", agencyId)
@@ -152,6 +152,7 @@ export async function GET(request) {
       note: r.talent_pool_note,
       status: r.talent_pool_status,
       checkIn: r.talent_pool_check_in,
+      expiresAt: r.talent_pool_expires_at,
       hasCv,
       roles,
       bestMatch,

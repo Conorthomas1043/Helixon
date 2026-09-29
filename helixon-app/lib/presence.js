@@ -6,6 +6,8 @@
 //   busy     they set themselves busy (until a time, or until they change it)
 //   away     they set themselves away
 //   offline  no open tab - shown with when they were last active
+//   hidden   they've chosen not to share their presence (nothing is
+//            recorded - app/api/team/presence)
 //
 // Open tabs send a heartbeat every minute, so "online" allows a little over
 // two missed beats before someone counts as gone.
@@ -20,10 +22,11 @@ export const PRESENCE_LABELS = {
   busy: "Busy",
   away: "Away",
   offline: "Offline",
+  hidden: "Hidden",
 };
 
 // Order for sorting a team list: who can respond now first.
-export const PRESENCE_ORDER = ["active", "busy", "idle", "away", "offline"];
+export const PRESENCE_ORDER = ["active", "busy", "idle", "away", "offline", "hidden"];
 
 function time(value) {
   const t = value ? new Date(value).getTime() : NaN;
@@ -33,6 +36,7 @@ function time(value) {
 // p: { lastSeenAt, lastActiveAt, status: "busy" | "away" | null, message, until }
 // Returns { state, online, lastActiveAt, idleSince, message, until }
 export function computePresence(p = {}, now = Date.now()) {
+  if (p.hidden) return { state: "hidden", online: false, lastActiveAt: null, message: null, until: null };
   const seen = time(p.lastSeenAt);
   const active = time(p.lastActiveAt);
   const until = time(p.until);
@@ -86,6 +90,8 @@ export function presenceLine(p, now = Date.now()) {
         : "";
       return `${label}${untilText}${!p.online && p.lastActiveAt ? ` · last active ${timeAgo(p.lastActiveAt, now)}` : ""}`;
     }
+    case "hidden":
+      return "Presence hidden";
     default:
       return p.lastActiveAt ? `Last active ${timeAgo(p.lastActiveAt, now)}` : "Not seen yet";
   }
