@@ -1,0 +1,8 @@
+[
+  { "id": "de-strong", "cv": "cvs/strong-data-engineer.txt", "job": "jobs/data-engineer.txt", "expected_recommendation": "Strong match" },
+  { "id": "de-borderline", "cv": "cvs/borderline-analyst.txt", "job": "jobs/data-engineer.txt", "expected_recommendation": "Worth reviewing" },
+  { "id": "de-weak", "cv": "cvs/weak-marketing.txt", "job": "jobs/data-engineer.txt", "expected_recommendation": "Not suitable" },
+  { "id": "wh-strong", "cv": "cvs/warehouse-experienced.txt", "job": "jobs/warehouse-operative.txt", "expected_recommendation": "Strong match" },
+  { "id": "wh-undated", "cv": "cvs/warehouse-undated.txt", "job": "jobs/warehouse-operative.txt", "expected_recommendation": "Worth reviewing" },
+  { "id": "wh-weak", "cv": "cvs/weak-warehouse-office.txt", "job": "jobs/warehouse-operative.txt", "expected_recommendation": "Not suitable" }
+]

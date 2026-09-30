@@ -388,7 +388,7 @@ export default function AnalyseWorkspace() {
     }
   }
 
-  async function submitFeedback(rating, reason = null) {
+  async function submitFeedback(rating, reason = null, expectedBand = null) {
     setFeedback({ sent: true, rating, reason });
     lsSet("feedbackCount", ls("feedbackCount", 0) + 1);
     if (posthog.__loaded) posthog.capture("analysis_feedback_submitted", { rating, reason });
@@ -396,7 +396,7 @@ export default function AnalyseWorkspace() {
       await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, reason, scoreId }),
+        body: JSON.stringify({ rating, reason, scoreId, expectedBand }),
       });
     } catch {
       // Feedback is best-effort.

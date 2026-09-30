@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "eval:cv": "node scripts/eval-cv-scoring.mjs"
+    "eval:cv": "node scripts/eval-cv-scoring.mjs",
+    "eval:labelled": "node scripts/eval-labelled.mjs",
+    "calibrate": "node scripts/fit-score-weights.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

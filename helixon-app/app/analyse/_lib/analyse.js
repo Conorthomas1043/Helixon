@@ -23,6 +23,10 @@ export const RUN_STEPS = [
   { label: "Writing the assessment", detail: "Score, rationale and questions" },
 ];
 
+// The recruiter's own call after a thumbs down - same labels as the score
+// bands (lib/scoreBands.js), saved as feedback.expected_band.
+export const FEEDBACK_BANDS = ["Strong match", "Worth reviewing", "Not suitable"];
+
 export const FEEDBACK_DOWN_REASONS = [
   "Missed a key skill",
   "Got seniority wrong",

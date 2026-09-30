@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { PageHeader, Panel, ServiceStatus, Switch } from "../_shared/ui";
 import { useAdminHealth } from "../_shared/hooks";
-import { formatDateTime, timeAgo } from "../_shared/data";
+import { formatDateTime, timeAgo, useAdminData } from "../_shared/data";
 import { csrfHeaders } from "../_shared/csrf";
 import { toast } from "../_shared/toast";
 import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
@@ -97,6 +97,64 @@ function MutePanel({ health, onSaved }) {
           />
         ))}
       </div>
+    </Panel>
+  );
+}
+
+const ROLE_LABEL = { professional: "Professional roles", executive: "Executive roles", frontline: "Frontline roles" };
+
+// Scoring calibration: labels from recruiters' feedback bands and pipeline
+// outcomes, checked against the score weights (see /api/admin/scoring).
+function ScoringPanel() {
+  const { data, error } = useAdminData("/api/admin/scoring");
+  const t = data?.totals;
+  return (
+    <Panel
+      title="Scoring calibration"
+      sub="How the CV score weights hold up against recruiters' own calls - the band they pick after a thumbs down, and candidates who reached interview or were rejected for a skills gap."
+      className="section"
+    >
+      {error ? (
+        <div className="notice error" style={{ marginTop: 12 }}>{error}</div>
+      ) : !data ? (
+        <div className="skeleton" style={{ height: 120, marginTop: 12 }} />
+      ) : (
+        <>
+          <div className="stat-list" style={{ marginTop: 10 }}>
+            <div className="stat-list-row"><span className="muted">Analyses</span><b>{t.scores.toLocaleString()}</b></div>
+            <div className="stat-list-row"><span className="muted">Labelled by recruiters or outcomes</span><b>{t.labelled.toLocaleString()} of {data.minLabels} needed per role type</b></div>
+            <div className="stat-list-row"><span className="muted">Scored with the current rules (v{data.rubricVersion})</span><b>{t.currentRubric.toLocaleString()}</b></div>
+            <div className="stat-list-row">
+              <span className="muted">Run-to-run spread of the AI judgement</span>
+              <b>{data.variance.meanJudgementSpread === null ? "Not measured - needs CV_FIT_JUDGE_SAMPLES above 1, or npm run eval:cv -- --repeat 3" : `${data.variance.meanJudgementSpread} points (${data.variance.samples} analyses)`}</b>
+            </div>
+          </div>
+          <div className="table-wrap" style={{ marginTop: 14 }}>
+            <table className="table compact">
+              <thead>
+                <tr><th>Role type</th><th className="num">Labels</th><th>Ranking quality (AUC)</th><th>Suggested weights</th></tr>
+              </thead>
+              <tbody>
+                {data.roles.map((r) => (
+                  <tr key={r.roleType}>
+                    <td>{ROLE_LABEL[r.roleType] || r.roleType}</td>
+                    <td className="num">{r.labels} <span className="faint">({r.positives} / {r.negatives})</span></td>
+                    <td>{r.currentAuc === null ? <span className="faint">-</span> : `now ${r.currentAuc.toFixed(2)}${r.fittedAuc !== null ? ` · fitted ${r.fittedAuc.toFixed(2)}` : ""}`}</td>
+                    <td>
+                      {r.ready ? (
+                        <span className="mono" style={{ fontSize: 12 }}>{Object.entries(r.suggested).map(([k, v]) => `${k} ${v}`).join(" · ")}</span>
+                      ) : (
+                        <span className="faint" style={{ fontSize: 12 }}>{r.reason}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="footer-note">Suggestions never apply themselves. Copy ready weights into lib/cv-analysis/config.js, raise the rubric version, and check with npm run eval:labelled.</p>
+        </>
+      )}
     </Panel>
   );
 }
@@ -270,6 +328,8 @@ export default function HealthPage() {
           </div>
         </Panel>
       )}
+
+      <ScoringPanel />
 
       <Panel
         title="Public page checks"

@@ -9,7 +9,7 @@ import { useState } from "react";
 import { updateCandidateStage, addCandidateNote, saveToTalentPool, removeFromTalentPool } from "@/lib/dashboard-api";
 import { FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { Card, Button, Icon, Textarea, Input, Select, Label, cx } from "./ui";
-import { EMAIL_PURPOSES, FEEDBACK_DOWN_REASONS } from "../_lib/analyse";
+import { EMAIL_PURPOSES, FEEDBACK_BANDS, FEEDBACK_DOWN_REASONS } from "../_lib/analyse";
 
 function RailCard({ title, children, action }) {
   return (
@@ -244,6 +244,9 @@ export function EmailCard({ email }) {
 export function FeedbackCard({ feedback }) {
   const { sent, rating, reason, submit } = feedback;
   const [picking, setPicking] = useState(false);
+  // Thumbs down is two quick steps: what was off, then where the candidate
+  // should sit. The band is the label scoring calibration learns from.
+  const [downReason, setDownReason] = useState(null);
 
   if (sent) {
     return (
@@ -275,13 +278,28 @@ export function FeedbackCard({ feedback }) {
           </button>
         </div>
       </div>
-      {picking && (
+      {picking && !downReason && (
         <div className="flex flex-wrap gap-1.5 mt-3">
           {FEEDBACK_DOWN_REASONS.map((r) => (
-            <button key={r} type="button" onClick={() => submit("down", r)} className="h-7 px-2.5 rounded-[7px] border border-[var(--border)] text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]">
+            <button key={r} type="button" onClick={() => setDownReason(r)} className="h-7 px-2.5 rounded-[7px] border border-[var(--border)] text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]">
               {r}
             </button>
           ))}
+        </div>
+      )}
+      {picking && downReason && (
+        <div className="mt-3">
+          <p className="text-[12.5px] text-[var(--ink-soft)] mb-1.5">Where should this candidate sit?</p>
+          <div className="flex flex-wrap gap-1.5">
+            {FEEDBACK_BANDS.map((band) => (
+              <button key={band} type="button" onClick={() => submit("down", downReason, band)} className="h-7 px-2.5 rounded-[7px] border border-[var(--border)] text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]">
+                {band}
+              </button>
+            ))}
+            <button type="button" onClick={() => submit("down", downReason)} className="h-7 px-2.5 rounded-[7px] text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink)]">
+              Skip
+            </button>
+          </div>
         </div>
       )}
       <p className="text-[11.5px] text-[var(--ink-faint)] mt-2">Used to tune scoring. It never changes this candidate&apos;s score.</p>

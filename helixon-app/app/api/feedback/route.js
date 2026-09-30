@@ -13,7 +13,12 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 //
 // The client sends the free-text explanation as `reason`; older callers sent
 // `comment`. Both are accepted.
+//
+// expectedBand is the recruiter's own call on the candidate (a label for
+// scoring calibration - see lib/cv-analysis/calibration). A thumbs up with
+// a score records the band Helixon gave, since the recruiter agreed with it.
 const MAX_FEEDBACK_PER_HOUR = 60;
+const BANDS = new Set(["Strong match", "Worth reviewing", "Not suitable"]);
 
 export async function POST(request) {
   const auth = await requireCustomerContext();
@@ -37,14 +42,16 @@ export async function POST(request) {
   // Optional link to the score being rated - only kept if it really belongs to
   // this agency, so feedback can't be pinned to someone else's record.
   let scoreId = cleanUuid(body?.scoreId);
+  let expectedBand = BANDS.has(body?.expectedBand) ? body.expectedBand : null;
   if (scoreId) {
     const { data: score } = await supabase
       .from("scores")
-      .select("id")
+      .select("id, recommendation")
       .eq("id", scoreId)
       .eq("agency_id", auth.agencyId)
       .maybeSingle();
     if (!score) scoreId = null;
+    else if (rating === "up" && !expectedBand && BANDS.has(score.recommendation)) expectedBand = score.recommendation;
   }
 
   // The feedback table's columns are score_id / agency_id / user_id. This route
@@ -59,6 +66,7 @@ export async function POST(request) {
     score_id: scoreId,
     rating,
     comment,
+    expected_band: expectedBand,
   });
 
   if (error) {

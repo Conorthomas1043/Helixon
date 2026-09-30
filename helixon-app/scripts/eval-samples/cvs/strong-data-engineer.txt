@@ -1,0 +1,16 @@
+Priya Sharma
+Leeds | priya.sharma@example.com
+
+Data Engineer, Northwind Freight (2021 - present)
+- Built Airflow pipelines in Python loading 40 million shipment events a day from S3 into Redshift
+- Designed dbt models for pricing and route analytics, cutting dashboard query times by 60%
+- Moved nightly batch jobs to AWS Lambda and Glue, reducing infrastructure cost by £30k a year
+- Introduced data tests and documentation for 120 warehouse tables
+
+Junior Data Engineer, Brightside Retail (2019 - 2021)
+- Wrote SQL transformations and Python ETL jobs for sales reporting
+- Maintained Kafka consumers streaming till data into the data lake
+
+Skills: Python, SQL, AWS, Airflow, dbt, Kafka, Terraform
+Education: BSc Computer Science, University of Leeds (2019)
+Full UK right to work.

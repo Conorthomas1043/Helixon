@@ -7,7 +7,7 @@
 //   [
 //     {
 //       "id": "backend-jane",
-//       "cv": "cvs/jane.pdf",                  // PDF or DOCX, relative to cases.json
+//       "cv": "cvs/jane.pdf",                  // PDF, DOCX or plain .txt, relative to cases.json
 //       "job": "jobs/backend.txt",             // job description text file
 //       "expected_score": 78,                  // recruiter's 0-100 score (optional)
 //       "expected_recommendation": "Strong match"  // "Strong match" | "Worth reviewing" | "Not suitable" (optional)
@@ -23,11 +23,16 @@
 // of git: they're personal data.
 //
 // Makes real Claude calls (2-3 per case), so it costs money.
+//
+// --repeat N scores every case N times and reports how much scores move
+// between identical runs (standard deviation, range, and how often the
+// recommendation flips) - the run-to-run variance. N times the cost.
 
 import { readFile } from "node:fs/promises";
 import { dirname, resolve, extname, basename } from "node:path";
 import { register } from "node:module";
 import { pathToFileURL, fileURLToPath } from "node:url";
+import { spread, varianceSummary } from "./lib/variance.mjs";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -79,9 +84,12 @@ function spearman(xs, ys) {
 }
 
 async function main() {
-  const casesPath = process.argv[2];
+  const args = process.argv.slice(2);
+  const repeatAt = args.indexOf("--repeat");
+  const repeat = repeatAt >= 0 ? Math.max(1, Math.min(10, Number(args[repeatAt + 1]) || 1)) : 1;
+  const casesPath = args.find((a, i) => !a.startsWith("--") && i !== repeatAt + 1);
   if (!casesPath) {
-    console.error("Usage: npm run eval:cv -- path/to/cases.json");
+    console.error("Usage: npm run eval:cv -- path/to/cases.json [--repeat N]");
     process.exit(1);
   }
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -98,17 +106,31 @@ async function main() {
   for (const c of cases) {
     const cvPath = resolve(baseDir, c.cv);
     const jobText = (await readFile(resolve(baseDir, c.job), "utf8")).trim();
-    const file = new File([await readFile(cvPath)], basename(cvPath), {
-      type: MIME[extname(cvPath).toLowerCase()] || "",
-    });
+    // .txt CVs (like the fictional ones in scripts/eval-samples) go straight
+    // in as text; PDF and DOCX go through the normal file extraction.
+    const isText = extname(cvPath).toLowerCase() === ".txt";
+    const file = isText
+      ? null
+      : new File([await readFile(cvPath)], basename(cvPath), { type: MIME[extname(cvPath).toLowerCase()] || "" });
+    const cvText = isText ? await readFile(cvPath, "utf8") : null;
 
     const started = Date.now();
     try {
-      const { result } = await analyseCV(file, jobText);
-      const seconds = (Date.now() - started) / 1000;
-      rows.push({ ...c, score: result.match_score, recommendation: result.recommendation, seconds });
+      const runs = [];
+      for (let r = 0; r < repeat; r++) {
+        const { result } = await analyseCV(file, jobText, cvText ? { cvText } : {});
+        runs.push(result);
+      }
+      const seconds = (Date.now() - started) / 1000 / repeat;
+      const scores = runs.map((r) => r.match_score);
+      // With repeats, the case is judged on its mean score and most common recommendation.
+      const score = Math.round(spread(scores).mean);
+      const recommendations = runs.map((r) => r.recommendation);
+      const recommendation = recommendations.sort((a, b) => recommendations.filter((x) => x === b).length - recommendations.filter((x) => x === a).length)[0];
+      rows.push({ ...c, score, recommendation, seconds, scores, recommendations: runs.map((r) => r.recommendation) });
       console.log(
-        `${c.id}: ${result.match_score} (${result.recommendation})` +
+        `${c.id}: ${score} (${recommendation})` +
+          (repeat > 1 ? ` runs [${scores.join(", ")}]` : "") +
           (c.expected_score != null ? ` vs ${c.expected_score}` : "") +
           (c.expected_recommendation ? ` / ${c.expected_recommendation}` : "") +
           `  ${seconds.toFixed(1)}s`
@@ -140,6 +162,7 @@ async function main() {
     const agree = labelled.filter((r) => r.recommendation === r.expected_recommendation).length;
     console.log(`recommendation agreement: ${agree}/${labelled.length} (${Math.round((agree / labelled.length) * 100)}%)`);
   }
+  for (const line of varianceSummary(ok)) console.log(line);
 }
 
 main().catch((err) => {

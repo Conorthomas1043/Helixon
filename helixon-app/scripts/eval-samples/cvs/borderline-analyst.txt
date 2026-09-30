@@ -1,0 +1,13 @@
+Tom Hughes
+Wakefield | tom.hughes@example.com
+
+Data Analyst, Pennine Insurance (2022 - present)
+- Wrote SQL queries and built Power BI dashboards for the claims team
+- Automated weekly reports with Python scripts, saving the team a day a week
+- Worked with the data engineering team to define new tables
+
+Reporting Assistant, Pennine Insurance (2020 - 2022)
+- Maintained Excel reports and cleaned data for monthly board packs
+
+Skills: SQL, Python, Power BI, Excel, AWS (basic)
+Education: BA Economics, University of Sheffield (2020)

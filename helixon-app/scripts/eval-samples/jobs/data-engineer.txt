@@ -1,0 +1,20 @@
+Data Engineer - Leeds (hybrid)
+
+We're a mid-sized logistics software company looking for a Data Engineer to build and run our data platform.
+
+What you'll do
+- Build and maintain batch and streaming pipelines that feed our analytics and pricing models
+- Model data in our warehouse and keep it tested, documented and fast
+- Work with analysts and product teams to turn questions into reliable datasets
+
+What we need
+- At least 3 years' experience in data engineering or a closely related role
+- Strong Python and SQL
+- Experience with a cloud data stack, ideally AWS (S3, Glue or Lambda)
+- Orchestration with Airflow or similar
+- Right to work in the UK
+
+Nice to have
+- dbt
+- Kafka or another streaming platform
+- Terraform

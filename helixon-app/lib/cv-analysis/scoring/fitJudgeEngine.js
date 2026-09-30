@@ -207,5 +207,14 @@ export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } 
     requirements_check: verifiedRequirements(valid, unmatchedSkills, cvText),
     method: "llm_judged",
     samples: valid.length,
+    // How far apart the samples were (max - min, 0-100) for each judged
+    // score - a direct measure of run-to-run variance. Only when more than
+    // one sample ran (CV_FIT_JUDGE_SAMPLES > 1).
+    spread: valid.length > 1
+      ? Object.fromEntries(["industry_relevance", "career_trajectory", "achievement_quality"].map((key) => {
+          const values = valid.map((v) => clamp(v[key].score));
+          return [key, Math.max(...values) - Math.min(...values)];
+        }))
+      : null,
   };
 }

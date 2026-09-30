@@ -1,4 +1,4 @@
-import { scoreWeightsFor, effectiveWeights, FULL_CREDIT_YEARS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
+import { scoreWeightsFor, effectiveWeights, FULL_CREDIT_YEARS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR, RUBRIC_VERSION } from "../config.js";
 
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
@@ -598,6 +598,13 @@ export default async function scoreCandidate(
         // to heuristic_fallback is visible to whoever's looking, not silent.
         fit_judgment: judgment,
         warnings,
+        // Which rules and weights produced this score, so scores from
+        // different rubric versions aren't compared as if they were the
+        // same, and calibration (lib/cv-analysis/calibration) can turn each
+        // part back into a 0-1 share.
+        rubric_version: RUBRIC_VERSION,
+        role_type: job.role_type || "professional",
+        score_weights: SCORE_WEIGHTS,
         risk,
 
     };
