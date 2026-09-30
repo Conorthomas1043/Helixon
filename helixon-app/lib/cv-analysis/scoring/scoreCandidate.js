@@ -1,4 +1,4 @@
-import { scoreWeightsFor, FULL_CREDIT_YEARS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
+import { scoreWeightsFor, effectiveWeights, FULL_CREDIT_YEARS, IMPORTANCE_MULTIPLIER, DEPTH_CREDIT, CURRENT_YEAR } from "../config.js";
 
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
@@ -28,6 +28,7 @@ import { applyKnockouts } from "./knockoutEngine.js";
 import { analyseCertifications } from "./certificationEngine.js";
 
 import validateScore from "../validators/validateScore.js";
+import { MAX_CV_CHARS } from "../prompts/fitJudgmentPrompt.js";
 
 
 // Match a list of job-required skill names against what the candidate has.
@@ -251,21 +252,31 @@ export default async function scoreCandidate(
 
     // --- component scores, weighted per the role type's profile (out of 100) ---
 
-    const SCORE_WEIGHTS = scoreWeightsFor(job);
+    // A component the job gives nothing to score (no required or preferred
+    // skills extracted) is dropped and its points shared out - see
+    // effectiveWeights.
+    const SCORE_WEIGHTS = effectiveWeights(scoreWeightsFor(job), {
+        hasRequired: requiredSkills.length > 0,
+        hasPreferred: preferredSkills.length > 0,
+    });
+
+    // Each component is kept unrounded (points, not whole numbers) until
+    // the total, so rounding six parts separately can't push a candidate
+    // across the 60 or 80 band line. The breakdown shows them rounded.
 
     // Each required skill counts by its importance to the role (Critical 3x
     // ... Low 0.5x, from job extraction) times how well the CV shows it.
     // Missing skills contribute their weight to "possible" and nothing to
-    // "earned". Used to be matched/total with every skill equal.
+    // "earned".
     const requiredEarned = weightedShare(requiredCredits, importanceWeight).earned;
     const requiredPossible = requiredSkills.reduce((sum, skill) => sum + importanceWeight(skill), 0);
-    const requiredScore = requiredSkills.length
-        ? Math.round((requiredEarned / requiredPossible) * SCORE_WEIGHTS.required)
-        : SCORE_WEIGHTS.required;
+    const requiredRaw = requiredSkills.length ? (requiredEarned / requiredPossible) * SCORE_WEIGHTS.required : 0;
 
-    const preferredScore = preferredSkills.length
-        ? Math.round((weightedShare(preferredCredits, () => 1).earned / preferredSkills.length) * SCORE_WEIGHTS.preferred)
-        : SCORE_WEIGHTS.preferred; // nothing preferred was asked for - don't penalise for it
+    // Preferred skills are weighted by importance too, when the job
+    // extraction gave one (most don't - then every preferred skill counts 1).
+    const preferredEarned = weightedShare(preferredCredits, importanceWeight).earned;
+    const preferredPossible = preferredSkills.reduce((sum, skill) => sum + importanceWeight(skill), 0);
+    const preferredRaw = preferredSkills.length ? (preferredEarned / preferredPossible) * SCORE_WEIGHTS.preferred : 0;
 
     const minYears = Number(job.min_years_experience) || 0;
     const yearsExperience = Number(candidate.years_experience) || 0;
@@ -277,29 +288,30 @@ export default async function scoreCandidate(
         ? Math.min(yearsExperience || Infinity, judgment.relevant_experience.years)
         : yearsExperience;
 
-    const experienceScore = minYears > 0
-        ? Math.round(Math.min(1, relevantYears / minYears) * SCORE_WEIGHTS.experience)
+    const experienceRaw = minYears > 0
+        ? Math.min(1, relevantYears / minYears) * SCORE_WEIGHTS.experience
         // no minimum stated - full credit at a baseline for the kind of role
-        : Math.round(Math.min(1, relevantYears / (FULL_CREDIT_YEARS[job.role_type] || FULL_CREDIT_YEARS.professional)) * SCORE_WEIGHTS.experience);
+        : Math.min(1, relevantYears / (FULL_CREDIT_YEARS[job.role_type] || FULL_CREDIT_YEARS.professional)) * SCORE_WEIGHTS.experience;
 
     // Industry relevance, career trajectory and achievement quality are
-    // judgement calls, not checklist items - see fitJudgeEngine.js for why
-    // these replaced industryEngine.js/progressionEngine.js's keyword
-    // heuristics (exact-string industry match; a 10-word English title
-    // ladder that scored anything else, e.g. "Consultant"/"VP"/"Partner",
-    // as level 0). Falls back to those same heuristics if Claude judgement
-    // is unavailable - see judgeFit's heuristicFallback.
+    // judgement calls, not checklist items - see fitJudgeEngine.js. When
+    // Claude's judgement is unavailable all three come back as a neutral 50
+    // (see heuristicFallback), and the result carries a warning.
     const progression = { progression: judgment.career_trajectory.label, score: judgment.career_trajectory.score };
-    const careerScore = Math.round((judgment.career_trajectory.score / 100) * SCORE_WEIGHTS.career);
+    const careerRaw = (judgment.career_trajectory.score / 100) * SCORE_WEIGHTS.career;
 
     const industryRaw = judgment.industry_relevance.score; // 0-100
-    const industryScore = Math.round((industryRaw / 100) * SCORE_WEIGHTS.industry);
+    const industryPoints = (industryRaw / 100) * SCORE_WEIGHTS.industry;
 
-    // The heuristic fallback can't judge achievements at all (it reports
-    // 0) - score that as neutral rather than docking every candidate 10
-    // points for a Claude outage.
     const achievementsForScore = judgment.method === "llm_judged" ? judgment.achievement_quality.score : 50;
-    const achievementPoints = Math.round((achievementsForScore / 100) * SCORE_WEIGHTS.achievements);
+    const achievementRaw = (achievementsForScore / 100) * SCORE_WEIGHTS.achievements;
+
+    const requiredScore = Math.round(requiredRaw);
+    const preferredScore = Math.round(preferredRaw);
+    const experienceScore = Math.round(experienceRaw);
+    const careerScore = Math.round(careerRaw);
+    const industryScore = Math.round(industryPoints);
+    const achievementPoints = Math.round(achievementRaw);
 
     const breakdown = buildBreakdown({
         required: requiredScore,
@@ -308,9 +320,10 @@ export default async function scoreCandidate(
         career: careerScore,
         industry: industryScore,
         achievements: achievementPoints,
+        total: Math.min(100, Math.round(requiredRaw + preferredRaw + experienceRaw + careerRaw + industryPoints + achievementRaw)),
     });
 
-    const knockout = applyKnockouts(candidate, job, breakdown.Total);
+    const knockout = applyKnockouts(candidate, job, breakdown.Total, { relevantYears: judgment.relevant_experience ? relevantYears : null });
 
 
     // --- supporting analysis ---
@@ -467,6 +480,30 @@ export default async function scoreCandidate(
     });
 
 
+    // Required certificates, licences and the like that the CV doesn't show:
+    // "can't confirm" rather than a fail (see knockoutEngine.js), but worth
+    // the recruiter asking about.
+    for (const rule of knockout.unverified) {
+        if (["certification", "license", "licence", "qualification"].includes(String(rule.field).toLowerCase())) {
+            weaknesses.push(`The CV doesn't show the required ${String(rule.field).toLowerCase()}: ${rule.value}`);
+        }
+    }
+
+    // Anything that makes this score less reliable than usual, in plain
+    // words for the recruiter (shown on the report).
+    const warnings = [];
+    if (!requiredSkills.length && !preferredSkills.length) {
+        warnings.push("The job description doesn't name specific skills, so skills weren't scored and the other parts carry the full 100 points. Add the must-have skills to the job for a sharper ranking.");
+    } else if (!requiredSkills.length) {
+        warnings.push("The job description doesn't name any required skills, so only its preferred skills were scored.");
+    }
+    if (judgment.method !== "llm_judged") {
+        warnings.push("The AI assessment of industry fit, career and achievements wasn't available, so those count as neutral. Re-screen this candidate for a full score.");
+    }
+    if (rawCV.length > MAX_CV_CHARS) {
+        warnings.push(`This CV is unusually long, so only the first ${MAX_CV_CHARS.toLocaleString("en-GB")} characters (about ${Math.round(MAX_CV_CHARS / 3000)} pages) were read.`);
+    }
+
     const recommendation =
         knockout.failed.length > 0 ? "Not suitable" :
         knockout.score >= STRONG_MATCH_MIN ? "Strong match" :
@@ -511,8 +548,11 @@ export default async function scoreCandidate(
         overall: knockout.score,
 
         match_score: knockout.score,
-        skill_score: Math.round(((requiredScore + preferredScore) / (SCORE_WEIGHTS.required + SCORE_WEIGHTS.preferred)) * 100),
-        experience_score: Math.round(((experienceScore + careerScore) / (SCORE_WEIGHTS.experience + SCORE_WEIGHTS.career)) * 100),
+        // null when the job named no skills at all - there's nothing to match.
+        skill_score: SCORE_WEIGHTS.required + SCORE_WEIGHTS.preferred
+            ? Math.round(((requiredRaw + preferredRaw) / (SCORE_WEIGHTS.required + SCORE_WEIGHTS.preferred)) * 100)
+            : null,
+        experience_score: Math.round(((experienceRaw + careerRaw) / (SCORE_WEIGHTS.experience + SCORE_WEIGHTS.career)) * 100),
         culture_score: industryRaw,
 
         recommendation,
@@ -557,6 +597,7 @@ export default async function scoreCandidate(
         // Claude or the heuristic fallback (judgment.method) - so a drop
         // to heuristic_fallback is visible to whoever's looking, not silent.
         fit_judgment: judgment,
+        warnings,
         risk,
 
     };

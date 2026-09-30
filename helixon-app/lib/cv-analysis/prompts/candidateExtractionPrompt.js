@@ -5,7 +5,7 @@ import { wrapUntrusted } from "../../prompt-safety.js";
 // the rules below, it's never the closing tag and rules that get cut off.
 // (Was 15,500 against an 18,000 limit, which silently dropped the end of a
 // long CV - usually the earliest roles, education and certifications.)
-const MAX_CV_CHARS = 34000;
+export const MAX_CV_CHARS = 34000;
 
 export function candidateExtractionPrompt(cvText){
 

@@ -36,6 +36,10 @@ score={
 
 .forEach(key=>{
 
+// null means "nothing to score" (skill_score for a job that named no
+// skills) and stays null rather than showing as 0.
+if(score[key]===null)return;
+
 score[key]=Math.max(0,
 
 Math.min(100,

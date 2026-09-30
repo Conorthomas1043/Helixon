@@ -79,11 +79,33 @@ describe("applyKnockouts", () => {
     expect(out.failed).toHaveLength(0);
   });
 
-  it("still fails a certification the candidate clearly doesn't hold", () => {
-    const candidate = { certifications: [{ name: "PRINCE2 Foundation" }] };
-    const out = applyKnockouts(candidate, job("certification", "CISSP"), 80);
+  it("treats a certification the CV doesn't show as unconfirmed, whether or not others are listed", () => {
+    // Listing other certificates used to turn this into a fail, so a
+    // candidate who listed more was treated worse than one who listed none.
+    for (const candidate of [{ certifications: [{ name: "PRINCE2 Foundation" }] }, { certifications: [] }]) {
+      const out = applyKnockouts(candidate, job("certification", "CISSP"), 80);
+      expect(out.failed).toHaveLength(0);
+      expect(out.unverified).toHaveLength(1);
+      expect(out.score).toBe(80);
+    }
+  });
+
+  it("can't confirm minimum years from a CV with no dates, rather than failing it", () => {
+    const out = applyKnockouts({ years_experience: 0, positions: [{ title: "Picker" }] }, job("min_years_experience", "2"), 75);
+    expect(out.failed).toHaveLength(0);
+    expect(out.unverified).toHaveLength(1);
+    expect(out.score).toBe(75);
+  });
+
+  it("still fails minimum years when the dates show too few", () => {
+    const out = applyKnockouts({ years_experience: 1, positions: [{ start_year: 2025 }] }, job("min_years_experience", "3"), 75);
     expect(out.failed).toHaveLength(1);
     expect(out.score).toBe(40);
+  });
+
+  it("uses relevant years for minimum experience when the judgement gave them", () => {
+    const out = applyKnockouts({ years_experience: 12 }, job("min_years_experience", "5"), 75, { relevantYears: 2 });
+    expect(out.failed).toHaveLength(1);
   });
 });
 

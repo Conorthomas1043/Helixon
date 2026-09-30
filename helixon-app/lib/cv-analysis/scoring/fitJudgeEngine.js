@@ -11,9 +11,9 @@
 //     as level 0 (intern-equivalent).
 //   - achievementEngine.js scored achievement quality by counting lines
 //     that contained a number or one of 10 impact verbs.
-// Those heuristics are kept, not deleted - they're the fallback here if
-// Claude is unavailable or every sample fails to parse, so a Claude outage
-// degrades scoring rather than breaking it.
+// If Claude is unavailable or every sample fails to parse, the three score
+// as a neutral 50 (see heuristicFallback), so an outage degrades scoring
+// rather than breaking it, and the result says so.
 //
 // One sample by default, anchored by explicit score bands in the prompt
 // (fitJudgmentPrompt.js). This used to take the median of 3 samples to
@@ -26,8 +26,6 @@
 import askClaude from "../anthropic/askClaude.js";
 import { JUDGMENT_EFFORT } from "../config.js";
 import { fitJudgmentPrompt } from "../prompts/fitJudgmentPrompt.js";
-import { scoreIndustry } from "./industryEngine.js";
-import { analyseProgression } from "./progressionEngine.js";
 
 const SAMPLES = Math.min(5, Math.max(1, Math.round(Number(process.env.CV_FIT_JUDGE_SAMPLES) || 1)));
 const VALID_LABELS = new Set(["Positive", "Static", "Regression", "Unknown"]);
@@ -67,23 +65,27 @@ function isValidJudgment(j) {
 // score_rationale.culture on the candidate profile), so it reads like a
 // normal, honest product explanation rather than an engineering log line -
 // no "Claude", no internal reason codes.
-function heuristicFallback(candidate, job) {
-  const industryScore = scoreIndustry(candidate, job);
-  const progression = analyseProgression(candidate.positions || []);
-
+// When Claude's judgement is unavailable, the three judged components score
+// a neutral 50 ("unknown") rather than the old keyword heuristics: an
+// exact industry-name match (100 or 50) and a 10-title seniority ladder
+// were so much cruder than the judgement that candidates scored during an
+// outage weren't comparable with the rest of the same job. The result is
+// marked method "heuristic_fallback" and scoreCandidate adds a warning
+// telling the recruiter to re-screen.
+function heuristicFallback() {
   return {
     industry_relevance: {
-      score: industryScore,
-      rationale: "Industry relevance estimated by name match only - AI assessment wasn't available for this analysis.",
+      score: 50,
+      rationale: "Industry relevance couldn't be assessed for this analysis, so it counts as neutral. Re-screen for a full assessment.",
     },
     career_trajectory: {
-      score: progression.score,
-      label: progression.progression,
-      rationale: "Career trajectory estimated from job titles only - AI assessment wasn't available for this analysis.",
+      score: 50,
+      label: "Unknown",
+      rationale: "Career trajectory couldn't be assessed for this analysis, so it counts as neutral. Re-screen for a full assessment.",
     },
     achievement_quality: {
-      score: 0,
-      rationale: "Achievement quality couldn't be assessed for this analysis.",
+      score: 50,
+      rationale: "Achievement quality couldn't be assessed for this analysis, so it counts as neutral.",
     },
     relevant_experience: null,
     requirements_check: [],
@@ -145,7 +147,7 @@ export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } 
     // malformed candidate/job object could throw uncaught here and crash
     // the whole analysis instead of degrading to the fallback below.
     console.error("[fitJudgeEngine] judgeFit failed before/during sampling:", err.message);
-    return heuristicFallback(candidate, job);
+    return heuristicFallback();
   }
 
   const valid = settled
@@ -153,7 +155,7 @@ export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } 
     .map((s) => s.value);
 
   if (valid.length === 0) {
-    return heuristicFallback(candidate, job);
+    return heuristicFallback();
   }
 
   // Rationale text comes from the sample whose scores sit closest to the

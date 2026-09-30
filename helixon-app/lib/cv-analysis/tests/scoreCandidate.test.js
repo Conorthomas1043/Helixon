@@ -56,17 +56,20 @@ describe("scoreCandidate", () => {
     const result = await scoreCandidate(
       candidate([{ skill: "Python", depth: "Expert" }], { years_experience: 12 }), job, cv);
     expect(result.relevant_years_experience).toBe(1);
-    expect(result.breakdown.Experience).toBe(4); // 1/5 of 20
+    // 1/5 of the experience weight. The job lists no preferred skills, so
+    // their 15 points are shared out and experience is worth 20/85 x 100.
+    expect(result.breakdown.Experience).toBe(5);
   });
 
   it("includes achievements in the total, neutral when the judgement fell back", async () => {
     const judged = await scoreCandidate(candidate([]), job, cv);
-    expect(judged.breakdown.Achievements).toBe(6); // 60% of 10
+    expect(judged.breakdown.Achievements).toBe(7); // 60% of 11.8 (10 scaled up - no preferred skills)
 
     judgeFit.mockImplementation(async () => ({ ...judgment, method: "heuristic_fallback", relevant_experience: null,
       achievement_quality: { score: 0, rationale: "" } }));
     const fallback = await scoreCandidate(candidate([]), job, cv);
-    expect(fallback.breakdown.Achievements).toBe(5);
+    expect(fallback.breakdown.Achievements).toBe(6); // neutral 50%
+    expect(fallback.warnings.some((w) => /Re-screen/.test(w))).toBe(true);
   });
 
   it("keeps the total within 0-100 for a perfect candidate", async () => {
@@ -132,7 +135,7 @@ describe("frontline scoring", () => {
       { skills: ["Order picking"], years_experience: 2, skill_details: [{ skill: "Order picking", depth: "Used" }] },
       warehouseJob, warehouseCv);
     expect(result.breakdown.Achievements).toBe(0);
-    expect(result.breakdown.Experience).toBe(25); // 2 years = full credit for frontline
+    expect(result.breakdown.Experience).toBe(29); // 2 years = full credit for frontline (25, scaled up - no preferred skills)
     expect(result.match_score).toBeGreaterThanOrEqual(80);
   });
 
@@ -144,5 +147,39 @@ describe("frontline scoring", () => {
       warehouseJob, warehouseCv);
     expect(result.risk.level).toBe("Low");
     expect(result.red_flags).not.toContain("Overall hiring risk assessed as High");
+  });
+});
+
+describe("scoring rule fixes", () => {
+  it("shares out the skill points when the job names no skills, and says so", async () => {
+    const vague = { required_skills: [], preferred_skills: [], min_years_experience: 0 };
+    const result = await scoreCandidate(candidate([]), vague, cv);
+    expect(result.breakdown.RequiredSkills).toBe(0);
+    expect(result.breakdown.PreferredSkills).toBe(0);
+    expect(result.skill_score).toBeNull();
+    // Everyone used to get the free 50 skill points; now the rest carry 100.
+    expect(result.breakdown.Experience).toBe(40); // 6 years = full credit, 20/50 x 100
+    expect(result.warnings.some((w) => /doesn't name specific skills/.test(w))).toBe(true);
+  });
+
+  it("works the total out before rounding, so the parts can't drift across a band line", async () => {
+    const result = await scoreCandidate(candidate([{ skill: "Python", depth: "Expert" }, { skill: "SQL", depth: "Used" }]), job, cv);
+    const parts = ["RequiredSkills", "PreferredSkills", "Experience", "Career", "Industry", "Achievements"]
+      .reduce((sum, k) => sum + result.breakdown[k], 0);
+    expect(Math.abs(result.breakdown.Total - parts)).toBeLessThanOrEqual(3);
+    expect(result.match_score).toBe(result.breakdown.Total);
+  });
+
+  it("passes a minimum-years requirement on relevant years, not total career", async () => {
+    judgeFit.mockImplementation(async () => ({ ...judgment, relevant_experience: { years: 1, rationale: "" } }));
+    const withRule = { ...job, knockout_requirements: [{ field: "min_years_experience", value: "5", required: true }] };
+    const result = await scoreCandidate(candidate([{ skill: "Python", depth: "Expert" }], { years_experience: 12 }), withRule, cv);
+    expect(result.requirements_met[0].status).toBe("not_met");
+    expect(result.match_score).toBeLessThanOrEqual(40);
+  });
+
+  it("warns when the CV was too long to read in full", async () => {
+    const result = await scoreCandidate(candidate([]), job, `${cv}\n${"x".repeat(40000)}`);
+    expect(result.warnings.some((w) => /unusually long/.test(w))).toBe(true);
   });
 });

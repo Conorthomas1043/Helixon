@@ -55,6 +55,9 @@ export function buildReport(result = {}, extracted = {}, { salary = null, blind 
     standout_factors: r.standout_factors || [],
     interview_questions: r.interview_questions || [],
     requirements_met: r.requirements_met || [],
+    // Why this score may be less reliable than usual (vague job, AI
+    // assessment unavailable, CV cut short) - see scoreCandidate.
+    warnings: r.warnings || [],
 
     experience_breakdown: ex.experience_breakdown || [],
     cv_quality_issues: ex.cv_quality_issues || [],

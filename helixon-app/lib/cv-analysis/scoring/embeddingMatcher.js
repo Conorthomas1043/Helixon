@@ -136,6 +136,34 @@ export async function embedSkills(skills) {
 // embeddings map (from embedSkills, covering both sides), returns the best
 // match at or above SEMANTIC_MATCH_THRESHOLD, or null. Pure/synchronous -
 // all the async work already happened in embedSkills.
+// Skills whose names sit close together as embeddings but aren't
+// substitutes - a candidate with one doesn't have the other. Checked both
+// ways round. Extend as false matches turn up in skill_credit/
+// semantic_matches (every embedding match is recorded there).
+const DISTINCT_SKILLS = [
+  ["java", "javascript"],
+  ["react", "react native"],
+  ["angular", "angularjs"],
+  ["c", "c++"], ["c", "c#"], ["c++", "c#"],
+  ["sql", "nosql"],
+  ["aws", "azure"], ["aws", "gcp"], ["azure", "gcp"], ["aws", "google cloud"], ["azure", "google cloud"],
+  ["python", "pytorch"],
+  ["excel", "access"],
+  ["photoshop", "illustrator"],
+  ["ios", "android"], ["swift", "kotlin"],
+  ["sap", "sage"],
+  ["xero", "quickbooks"], ["xero", "sage"], ["quickbooks", "sage"],
+  ["salesforce", "hubspot"],
+  ["mysql", "postgresql"], ["oracle", "mysql"], ["oracle", "postgresql"],
+  ["hgv", "lgv"],
+  ["rgn", "rmn"],
+];
+const DISTINCT = new Set(DISTINCT_SKILLS.flatMap(([a, b]) => [`${a}|${b}`, `${b}|${a}`]));
+
+export function isDistinctPair(a, b) {
+  return DISTINCT.has(`${normaliseSkill(a)}|${normaliseSkill(b)}`);
+}
+
 export function findSemanticMatch(requiredSkill, candidateSkills, embeddings) {
   const requiredVector = embeddings.get(normaliseSkill(requiredSkill));
   if (!requiredVector) return null;
@@ -144,6 +172,7 @@ export function findSemanticMatch(requiredSkill, candidateSkills, embeddings) {
   let bestScore = 0;
 
   for (const candidateSkill of candidateSkills) {
+    if (isDistinctPair(requiredSkill, candidateSkill)) continue;
     const vector = embeddings.get(normaliseSkill(candidateSkill));
     if (!vector) continue;
 

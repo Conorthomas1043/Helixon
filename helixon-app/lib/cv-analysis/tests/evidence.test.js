@@ -45,3 +45,25 @@ describe("evidenceCount", () => {
     expect(evidenceCount("Kubernetes", evidence)).toBe(0);
   });
 });
+
+describe("what counts as evidence", () => {
+  it("doesn't count a skills list or a one-word line as evidence", () => {
+    const listed = "Skills: Python, SQL, AWS, Docker\nKafka\nExperience with Kubernetes, Terraform, Helm and more";
+    const [sql, kafka, k8s] = collectEvidence(listed, ["SQL", "Kafka", "Kubernetes"]);
+    expect(sql.supported).toBe(false);
+    expect(kafka.supported).toBe(false);
+    expect(k8s.supported).toBe(false);
+    expect(sql.evidence[0].listing).toBe(true); // still shown, just not counted
+  });
+
+  it("counts a line describing work, even a short one", () => {
+    const [go] = collectEvidence("Wrote services in Go", ["Go"]);
+    expect(go.supported).toBe(true);
+  });
+
+  it("matches one- and two-letter skills by case, and needs an impact verb for one letter", () => {
+    expect(collectEvidence("Led our go to market plan for 2024", ["Go"])[0].supported).toBe(false);
+    expect(collectEvidence("Grade C in maths", ["C"])[0].supported).toBe(false);
+    expect(collectEvidence("Wrote firmware in C for embedded boards", ["C"])[0].supported).toBe(true);
+  });
+});

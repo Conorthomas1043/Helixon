@@ -46,6 +46,15 @@ function buildTaxonomyIndex(source) {
     return index;
 }
 
+// Words too broad to stand as a requirement on their own: a job asking for
+// "Management" isn't met by any "... management" skill.
+const GENERIC_SINGLE_WORDS = new Set([
+    "management", "development", "analysis", "support", "operations", "engineering",
+    "administration", "planning", "strategy", "services", "systems", "design",
+    "testing", "research", "reporting", "sales", "marketing", "finance", "security",
+]);
+
+
 // Whole-word fallback: catches cases the taxonomy doesn't (yet) list,
 // e.g. a candidate skill of "AWS Lambda" satisfying a required skill of
 // "AWS". One direction only - the whole required skill has to appear in
@@ -53,7 +62,12 @@ function buildTaxonomyIndex(source) {
 // requirement) let a candidate's "Management" satisfy "Project Management"
 // and "Learning" satisfy "Machine Learning". Word-boundary based rather
 // than raw substring so "Java" never matches "JavaScript".
+// Not for one- or two-letter skills, where it matched "C" to "Objective-C"
+// and "Go" to "Go-to-market strategy", nor for a generic single word. What
+// this skips still gets the embedding and CV-evidence checks.
 function coversRequirement(requiredNorm, candidateNorm) {
+    if (requiredNorm.length < 3) return false;
+    if (!requiredNorm.includes(" ") && GENERIC_SINGLE_WORDS.has(requiredNorm)) return false;
     return containsPhrase(candidateNorm, requiredNorm);
 }
 

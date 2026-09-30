@@ -1,6 +1,6 @@
 export const MODEL = "claude-sonnet-5";
 
-export const RUBRIC_VERSION = "3.0.0";
+export const RUBRIC_VERSION = "3.1.0";
 
 export const MAX_FILE_BYTES = 15 * 1024 * 1024;
 
@@ -55,6 +55,28 @@ export const SCORE_WEIGHTS = SCORE_WEIGHT_PROFILES.professional;
 
 export function scoreWeightsFor(job = {}) {
     return SCORE_WEIGHT_PROFILES[job.role_type] || SCORE_WEIGHTS;
+}
+
+// Weights for this job once components it gives nothing to score are taken
+// out: no required skills extracted, or no preferred ones. Their points are
+// shared across the remaining components in proportion, so the total still
+// runs to 100. Handing everyone the missing component's full points instead
+// (the old behaviour) gave every candidate the same 35-50 points on a vague
+// job description, which squashed the ranking.
+export function effectiveWeights(base, { hasRequired = true, hasPreferred = true } = {}) {
+    const dropped = new Set([
+        ...(hasRequired ? [] : ["required"]),
+        ...(hasPreferred ? [] : ["preferred"]),
+    ]);
+    if (!dropped.size) return { ...base };
+    const kept = Object.entries(base).filter(([key]) => !dropped.has(key));
+    const keptTotal = kept.reduce((sum, [, weight]) => sum + weight, 0);
+    const total = Object.values(base).reduce((sum, weight) => sum + weight, 0);
+    const out = {};
+    for (const key of Object.keys(base)) {
+        out[key] = dropped.has(key) || !keptTotal ? 0 : (base[key] / keptTotal) * total;
+    }
+    return out;
 }
 
 // Years of relevant experience that earn full experience points when a

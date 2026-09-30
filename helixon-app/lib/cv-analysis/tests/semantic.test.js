@@ -17,3 +17,16 @@ describe("semanticMatch", () => {
     expect(semanticMatch("React", ["Cobol"]).matched).toBe(false);
   });
 });
+
+describe("whole-word fallback limits", () => {
+  it("doesn't match one- or two-letter skills inside longer ones", () => {
+    expect(semanticMatch("C", ["Objective-C"]).matched).toBe(false);
+    expect(semanticMatch("Go", ["Go-to-market strategy"]).matched).toBe(false);
+    expect(semanticMatch("Go", ["Go"]).matched).toBe(true);
+  });
+
+  it("doesn't let a generic single word match any specialism", () => {
+    expect(semanticMatch("Management", ["Project Management"]).matched).toBe(false);
+    expect(semanticMatch("Excel", ["Microsoft Excel"]).matched).toBe(true);
+  });
+});

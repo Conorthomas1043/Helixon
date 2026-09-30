@@ -218,7 +218,7 @@ export default function Report({ result, roleLabel }) {
           </div>
         </div>
 
-        {(capped || result.confidence === "Low" || result.duplicate_of) && (
+        {(capped || result.confidence === "Low" || result.duplicate_of || result.warnings?.length > 0) && (
           <div className="mt-5 space-y-2">
             {capped && (
               <Notice tone="warn">
@@ -227,6 +227,9 @@ export default function Report({ result, roleLabel }) {
             )}
             {result.confidence === "Low" && <Notice tone="warn">Low confidence - the CV was sparse or ambiguous, so treat the score as a rough guide.</Notice>}
             {result.duplicate_of && <Notice tone="warn">Possible duplicate of {result.duplicate_of} - same contact details.</Notice>}
+            {(result.warnings || []).map((w) => (
+              <Notice key={w} tone="warn">{w}</Notice>
+            ))}
           </div>
         )}
       </header>

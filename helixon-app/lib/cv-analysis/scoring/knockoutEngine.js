@@ -107,14 +107,21 @@ function normaliseField(field) {
 
 const DEGREE_WORDS = /\b(degree|bachelor|bachelors|bsc|ba|beng|llb|master|masters|msc|ma|mba|meng|phd|doctorate)\b/;
 
-function evaluateRule(rule, candidate) {
+function evaluateRule(rule, candidate, context = {}) {
   const value = rule.value.toLowerCase();
 
   switch (normaliseField(rule.field)) {
     case "min_years_experience": {
       const required = parseFloat(rule.value);
       if (!Number.isFinite(required)) return "unverifiable";
-      const actual = Number(candidate.years_experience) || 0;
+      // A CV without dates (common for hourly and hands-on work) gives no
+      // way to count years - that's unknown, not zero. It used to read as 0
+      // and fail the requirement, capping the candidate at 40.
+      if (!yearsKnown(candidate)) return "unverifiable";
+      // The same years the experience points use: relevant to this role
+      // when the judgement gave a figure, total career otherwise. Ten years
+      // in an unrelated field no longer passes "5 years' experience".
+      const actual = Number.isFinite(context.relevantYears) ? context.relevantYears : Number(candidate.years_experience) || 0;
       return actual >= required ? "pass" : "fail";
     }
 
@@ -146,8 +153,10 @@ function evaluateRule(rule, candidate) {
       // isn't among them. A CV listing none at all is common in many
       // fields (care, retail, hospitality, trades) and says nothing either
       // way - it used to hard-fail, capping the candidate at 40.
-      const listsCertifications = Array.isArray(candidate.certifications) && candidate.certifications.length > 0;
-      return listsCertifications ? "fail" : "unverifiable";
+      // Not shown on the CV is "can't confirm", not "doesn't hold it" -
+      // whether or not the candidate lists other certificates. It used to
+      // fail only candidates who listed some, so listing more was punished.
+      return "unverifiable";
     }
 
     case "license":
@@ -228,14 +237,23 @@ function evaluateRule(rule, candidate) {
   }
 }
 
-export function applyKnockouts(candidate, job, score) {
+// Whether the CV says anything about how long the candidate has worked:
+// a total from extraction, or at least one dated position.
+function yearsKnown(candidate) {
+  if (Number(candidate.years_experience) > 0) return true;
+  return (Array.isArray(candidate.positions) ? candidate.positions : []).some((p) => Number(p?.start_year) > 1950);
+}
+
+// context.relevantYears: years relevant to this role from the fit
+// judgement, or null when it gave none.
+export function applyKnockouts(candidate, job, score, context = {}) {
   const failed = [];
   const unverified = [];
 
   for (const rule of job.knockout_requirements || []) {
     if (!rule.required) continue;
 
-    const outcome = evaluateRule(rule, candidate);
+    const outcome = evaluateRule(rule, candidate, context);
     if (outcome === "fail") {
       failed.push(rule);
     } else if (outcome === "unverifiable") {
