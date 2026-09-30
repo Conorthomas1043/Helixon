@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { isStage } from "@/lib/stage-labels";
 import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
@@ -56,7 +56,7 @@ export async function POST(request) {
 
   if (body.action === "stage") {
     const stage = body.stage;
-    if (!STAGE_LABELS[stage]) {
+    if (!isStage(stage)) {
       return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
     }
     const moving = (rows || []).filter((r) => r.stage !== stage);

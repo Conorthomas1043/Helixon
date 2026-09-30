@@ -12,6 +12,13 @@ export const STAGE_LABELS = {
   Rejected: "Rejected",
 };
 
+// Whether a value from a request is a real pipeline stage. Use this, not
+// STAGE_LABELS[value]: that's also truthy for inherited keys like
+// "constructor" or "toString", which then got written to candidates.stage.
+export function isStage(value) {
+  return typeof value === "string" && Object.hasOwn(STAGE_LABELS, value);
+}
+
 // The linear funnel, for pipeline-snapshot bars and "stalled in stage X"
 // logic. Rejected is deliberately excluded - it's a terminal exit, not a
 // funnel step, so it shouldn't be "last stage" for isPlaced/inPipeline math.

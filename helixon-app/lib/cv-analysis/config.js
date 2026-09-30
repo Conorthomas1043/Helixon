@@ -128,7 +128,8 @@ export const PROTECTED_ATTRIBUTE_PATTERNS = [
     /\b(date of birth|dob|birth ?date|born)\b/i,
     /\b(sex|gender)\b/i,
     /\b(race|racial|ethnic|ethnicity)\b/i,
-    /\b(national origin|nationality|native (speaker|language))\b/i,
+    // "native speaker", and also "native English speaker", "mother tongue".
+    /\b(national origin|nationality|native(\s+\w+)?\s+(speaker|language|tongue)|mother tongue)\b/i,
     /\b(religion|religious|creed|faith)\b/i,
     /\b(disability|disabled|able-?bodied)\b/i,
     /\b(pregnan\w*|maternity|paternity)\b/i,

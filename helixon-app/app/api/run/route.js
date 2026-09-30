@@ -2,7 +2,9 @@ import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
-import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
+import extractCvText, { CV_READ_ERRORS } from "@/lib/cv-analysis/extraction/cvTextExtractor";
+import { detectFileFormat } from "@/lib/document/fileSignature";
+import { cleanText, cleanLine, cleanEmail, cleanUuid, cleanList } from "@/lib/sanitize";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -38,17 +40,47 @@ const ACCEPTED_CV_EXTENSIONS = [
   ".docx",
 ];
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+// Recruiter must-haves are appended after the description, and the job
+// extraction prompt reads MAX_JOB_CHARS (prompts/jobExtractionPrompt.js) of
+// the result - a longer description used to push them past that cut-off,
+// so they were silently never read. This leaves room for all of them.
+const MAX_JOB_TEXT_CHARS = 28000;
+
+// Must-haves typed on /analyse: a short line each, a handful per role.
+const MAX_REQUIREMENTS = 20;
+const MAX_REQUIREMENT_CHARS = 200;
+
+// Recruiter-facing messages for a CV or job spec that couldn't be read -
+// answered as a 422 rather than "something went wrong".
+const READ_ERROR_MESSAGES = {
+  [CV_READ_ERRORS.pdf]: "We couldn't read this PDF. Try re-saving the CV as PDF or upload a DOCX version.",
+  [CV_READ_ERRORS.docx]: "We couldn't read this Word document. Try re-saving it as .docx or upload a PDF version.",
+  [CV_READ_ERRORS.doc]: "Old .doc files aren't supported. Save the CV as PDF or .docx and try again.",
+  [CV_READ_ERRORS.unsupported]: "That file doesn't look like a PDF or Word (.docx) document.",
+};
+
 // Job-spec upload additionally accepts .txt, which extractCvText() has no
 // branch for (it's CV-focused) - read those directly instead.
 async function extractJobSpecText(file) {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("The job spec file is too large. Maximum size is 10 MB.");
+  }
   const type = file.type || "";
   const name = (file.name || "").toLowerCase();
+  let text;
   if (type === "text/plain" || name.endsWith(".txt")) {
-    const text = await file.text();
-    if (!text || !text.trim()) throw new Error("The job spec file appears to be empty.");
-    return text.trim();
+    text = cleanText(await file.text(), { max: MAX_JOB_TEXT_CHARS });
+  } else {
+    try {
+      text = cleanText(await extractCvText(file), { max: MAX_JOB_TEXT_CHARS });
+    } catch {
+      throw new Error("Could not read the job spec file. Upload a PDF, Word (.docx) or .txt file, or paste the description.");
+    }
   }
-  return extractCvText(file);
+  if (!text) throw new Error("The job spec file appears to be empty.");
+  return text;
 }
 
 // jobs.role_tier has a check constraint allowing only 'entry_level',
@@ -155,26 +187,55 @@ export async function POST(request) {
       }
     }
 
-    const form = await request.formData();
+    let form;
+    try {
+      form = await request.formData();
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "Send the CV and job description as a form upload." },
+        { status: 400 }
+      );
+    }
 
     const file = form.get("cv");
-    let jobText = String(
-      form.get("jobText") || ""
-    ).trim();
+
+    // A pasted description. Checked before cleaning (which would quietly
+    // cut it), so an over-long paste is refused instead of half-read.
+    const rawJobText = form.get("jobText");
+    if (typeof rawJobText === "string" && rawJobText.trim().length > MAX_JOB_TEXT_CHARS) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `The job description is too long. Keep it under ${MAX_JOB_TEXT_CHARS.toLocaleString("en-GB")} characters.`,
+        },
+        { status: 400 }
+      );
+    }
+    let jobText = cleanText(rawJobText, { max: MAX_JOB_TEXT_CHARS });
 
     const jobFile = form.get("jobFile");
-    const clientEmail = String(
-      form.get("clientEmail") || ""
-    ).trim();
+
+    // Stored on the job and later used to email the client, so it has to
+    // be a real address - an invalid one is refused, not saved.
+    const rawClientEmail = cleanLine(form.get("clientEmail"), 254);
+    const clientEmail = rawClientEmail ? cleanEmail(rawClientEmail) : "";
+    if (rawClientEmail && !clientEmail) {
+      return NextResponse.json(
+        { ok: false, error: "The client email doesn't look like a valid email address." },
+        { status: 400 }
+      );
+    }
 
     let requirements = [];
     try {
-      const parsedRequirements = JSON.parse(form.get("requirements") || "[]");
-      if (Array.isArray(parsedRequirements)) {
-        requirements = parsedRequirements
-          .map((r) => (typeof r === "string" ? r.trim() : ""))
-          .filter(Boolean);
-      }
+      const rawRequirements = form.get("requirements");
+      const parsedRequirements = JSON.parse(typeof rawRequirements === "string" && rawRequirements ? rawRequirements : "[]");
+      // Cleaned like any other free text that ends up in a prompt, and
+      // capped - they're appended to the job description below.
+      requirements = cleanList(parsedRequirements, {
+        maxItems: MAX_REQUIREMENTS,
+        maxLength: MAX_REQUIREMENT_CHARS,
+      });
     } catch {
       // Malformed requirements payload - treat as none rather than failing
       // the whole analysis over an optional field.
@@ -192,8 +253,14 @@ export async function POST(request) {
       );
     }
 
-    const existingJobId =
-      form.get("jobId") || null;
+    const rawJobId = form.get("jobId") || null;
+    const existingJobId = rawJobId ? cleanUuid(rawJobId) : null;
+    if (rawJobId && !existingJobId) {
+      return NextResponse.json(
+        { ok: false, error: "That saved job could not be found." },
+        { status: 404 }
+      );
+    }
 
     const saveJob =
       form.get("saveJob") === "true";
@@ -204,7 +271,7 @@ export async function POST(request) {
     // file to extract one from.
     if (!jobText && jobFile && typeof jobFile === "object" && jobFile.size > 0) {
       try {
-        jobText = (await extractJobSpecText(jobFile)).trim();
+        jobText = await extractJobSpecText(jobFile);
       } catch (err) {
         return NextResponse.json(
           {
@@ -227,7 +294,7 @@ export async function POST(request) {
         .join("\n")}`;
     }
 
-    if (!file || !jobText) {
+    if (!file || typeof file !== "object" || !file.size || !jobText) {
       return NextResponse.json(
         {
           ok: false,
@@ -249,7 +316,7 @@ export async function POST(request) {
       );
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json(
         {
           ok: false,
@@ -267,6 +334,17 @@ export async function POST(request) {
           error:
             "The job description must contain at least 50 characters.",
         },
+        { status: 400 }
+      );
+    }
+
+    // What the file actually is, from its bytes - a renamed or corrupt
+    // file is refused here, before it costs an analysis, rather than
+    // failing part-way through or being stored under the wrong type.
+    const cvFormat = await detectFileFormat(file);
+    if (!cvFormat) {
+      return NextResponse.json(
+        { ok: false, error: READ_ERROR_MESSAGES[CV_READ_ERRORS.unsupported] },
         { status: 400 }
       );
     }
@@ -315,9 +393,11 @@ export async function POST(request) {
     // does (BulkFlow passes the job created by the first CV). Only when the
     // text is unchanged and no extra must-haves were added; otherwise the
     // role has changed and is re-read.
+    // Compared as cleaned text: jobText was cleaned above, and jobs saved
+    // before that was done hold the raw paste (CRLFs, trailing spaces...).
     const sameJobText =
-      existingJob?.job_text &&
-      existingJob.job_text.trim() === jobText.trim();
+      typeof existingJob?.job_text === "string" &&
+      cleanText(existingJob.job_text, { max: MAX_JOB_TEXT_CHARS * 2 }) === jobText;
     const knownJobParsed =
       requirements.length === 0 &&
       sameJobText &&
@@ -351,6 +431,20 @@ export async function POST(request) {
 
     const ex = extracted || {};
 
+    // Everything below comes out of the model's reading of the CV - bounded
+    // and cleaned like any other untrusted text before it becomes the
+    // candidate's contact details (an email that isn't one is dropped
+    // rather than offered to recruiters as a mailto: link).
+    const candidateName = cleanLine(ex.name, 120) || "Candidate";
+    const contact = {
+      email: cleanEmail(ex.email) || null,
+      phone: cleanLine(ex.phone, 40) || null,
+      linkedin: cleanLine(ex.linkedin, 200) || null,
+      current_title: cleanLine(ex.current_title, 160) || null,
+      current_company: cleanLine(ex.current_employer, 160) || null,
+      location: cleanLine(ex.location, 120) || null,
+    };
+
     let salary = null;
 
     try {
@@ -378,17 +472,9 @@ export async function POST(request) {
         agency_id: agencyId,
         user_id: userId,
         recruiter_id: userId,
-        name: ex.name || "Candidate",
-        full_name:
-          ex.name || "Candidate",
-        email: ex.email || null,
-        phone: ex.phone || null,
-        linkedin: ex.linkedin || null,
-        current_title:
-          ex.current_title || null,
-        current_company:
-          ex.current_employer || null,
-        location: ex.location || null,
+        name: candidateName,
+        full_name: candidateName,
+        ...contact,
         cv_text: cvText || "",
         extracted: ex,
         processing_status: "completed",
@@ -405,7 +491,9 @@ export async function POST(request) {
     // Anything created from here on is removed again if a later step
     // fails, so a half-finished analysis never shows up in the pipeline.
     let createdJobId = null;
+    let createdScoreId = null;
     const cleanup = async () => {
+      if (createdScoreId) await supabase.from("scores").delete().eq("id", createdScoreId);
       await supabase.from("candidates").delete().eq("id", candidate.id);
       if (createdJobId) await supabase.from("jobs").delete().eq("id", createdJobId);
     };
@@ -515,6 +603,7 @@ export async function POST(request) {
       await cleanup();
       throw new Error(scoreError.message);
     }
+    createdScoreId = score.id;
 
     /*
      * Denormalise the score's stage/match/recommendation and the job
@@ -541,7 +630,7 @@ export async function POST(request) {
     // never costs the analysis itself: the candidate just has no file.
     let storedCv = null;
     try {
-      storedCv = await storeCandidateCv({ agencyId, candidateId: candidate.id, file });
+      storedCv = await storeCandidateCv({ agencyId, candidateId: candidate.id, file, format: cvFormat });
     } catch (err) {
       console.error("[run] Failed to store CV file:", err?.message);
     }
@@ -562,10 +651,15 @@ export async function POST(request) {
       .eq("id", candidate.id);
 
     if (candidateUpdateError) {
-      console.error("[run] Failed to update candidate with analysis result:", candidateUpdateError.message);
+      // Without this update the candidate has no stage, job or score on
+      // its own row, so it never shows in the pipeline, job or candidate
+      // lists - it used to be kept anyway and reported as a success.
+      // Undo the whole analysis so the recruiter can simply retry.
       // The file isn't linked to the candidate, so nothing could ever
       // reach or delete it - remove it rather than orphan a CV.
       if (storedCv) await removeCandidateCvs([storedCv.path]);
+      await cleanup();
+      throw new Error(`Failed to update candidate with analysis result: ${candidateUpdateError.message}`);
     }
 
     /*
@@ -615,26 +709,20 @@ export async function POST(request) {
       error
     );
 
-    const message =
-      error?.message || "";
-
-    const pdfError =
-      message.includes(
-        "Unable to extract text from PDF"
-      ) ||
-      message.includes(
-        "PDF contained"
-      );
+    // Only messages extractCvText() is known to throw are shown - anything
+    // else (database errors etc.) stays in the log, not the response.
+    const readError =
+      typeof error?.message === "string" && Object.hasOwn(READ_ERROR_MESSAGES, error.message)
+        ? READ_ERROR_MESSAGES[error.message]
+        : null;
 
     return NextResponse.json(
       {
         ok: false,
-        error: pdfError
-          ? "We couldn't read this PDF. Try re-saving the CV as PDF or upload a DOCX version."
-          : "Something went wrong analysing this candidate.",
+        error: readError || "Something went wrong analysing this candidate.",
       },
       {
-        status: pdfError
+        status: readError
           ? 422
           : 500,
       }

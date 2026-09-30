@@ -1,8 +1,11 @@
 import { wrapUntrusted } from "../../prompt-safety.js";
 
 // Keeps the whole prompt under askClaude()'s 40,000-character truncation
-// (see utils/sanitise.js).
-const MAX_JOB_CHARS = 30000;
+// (see utils/sanitise.js) - the instructions after the job block are cut
+// first if it isn't. app/api/run accepts descriptions up to 28,000
+// characters and then appends up to 20 recruiter must-haves (~4,200
+// characters), so those must-haves always fall inside what the model reads.
+export const MAX_JOB_CHARS = 34000;
 
 export function jobExtractionPrompt(job){
 

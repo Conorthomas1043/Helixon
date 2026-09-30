@@ -27,27 +27,39 @@ function toStringOrDefault(value, fallback) {
     return fallback;
 }
 
+// Skill lists come from model output over a pasted job spec, so they're
+// bounded like any other untrusted input: a skill is a short phrase (a
+// longer "skill" is a sentence the model passed through, not something a
+// CV can be matched against), and a real role names a few dozen at most.
+// Exact duplicates are dropped - they'd otherwise count twice in scoring.
+const MAX_SKILLS = 60;
+const MAX_SKILL_CHARS = 150;
+
 function toStringArray(value) {
+    let items = [];
+
     if (Array.isArray(value)) {
-        return value
-            .map((item) => {
-                if (typeof item === "string") return item.trim();
-                if (item && typeof item === "object") {
-                    return String(item.name || item.skill || "").trim();
-                }
-                return String(item ?? "").trim();
-            })
-            .filter(Boolean);
+        items = value.map((item) => {
+            if (typeof item === "string") return item.trim();
+            if (item && typeof item === "object") {
+                return String(item.name || item.skill || "").trim();
+            }
+            return String(item ?? "").trim();
+        });
+    } else if (typeof value === "string" && value.trim()) {
+        items = value.split(/,|\n/).map((s) => s.trim());
     }
 
-    if (typeof value === "string" && value.trim()) {
-        return value
-            .split(/,|\n/)
-            .map((s) => s.trim())
-            .filter(Boolean);
+    const seen = new Set();
+    const out = [];
+    for (const item of items) {
+        const key = item.toLowerCase();
+        if (!item || item.length > MAX_SKILL_CHARS || seen.has(key)) continue;
+        seen.add(key);
+        out.push(item);
+        if (out.length >= MAX_SKILLS) break;
     }
-
-    return [];
+    return out;
 }
 
 function toNonNegativeInt(value, fallback = 0) {

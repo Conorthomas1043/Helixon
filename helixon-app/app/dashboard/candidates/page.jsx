@@ -23,7 +23,8 @@ import {
   deleteTag,
 } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS, isStage } from "@/lib/stage-labels";
+import { cleanUuid } from "@/lib/sanitize";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
   INK,
@@ -103,6 +104,10 @@ function filtersFromParams(params) {
     const v = params?.get(key);
     if (v) f[key] = v;
   }
+  // The API refuses an unknown stage or a malformed job id - a mangled or
+  // stale link falls back to "all" here instead of showing an error.
+  if (!isStage(f.stage)) f.stage = DEFAULT_FILTERS.stage;
+  if (!cleanUuid(f.jobId)) f.jobId = DEFAULT_FILTERS.jobId;
   const tags = params?.get("tags");
   if (tags) f.tagIds = tags.split(",").filter(Boolean);
   if (params?.get("pool") === "1") f.pool = true;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
+import { SUSPENDED_MESSAGE } from "@/lib/agency-controls";
 import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { planLabel } from "@/lib/plans";
@@ -49,10 +50,17 @@ async function fetchAllScoreRows(agencyId) {
 }
 
 export async function GET() {
-  const { user, agencyId, profile } = await getCustomerContext();
+  const { user, agencyId, profile, agencySuspended } = await getCustomerContext();
 
   if (!user) {
     return NextResponse.json({ error: "Please sign in to continue." }, { status: 401 });
+  }
+  // Every other dashboard route goes through requireCustomerContext(),
+  // which locks a workspace suspended from Admin > Agencies. This one reads
+  // the context directly (for the no-agency case below) and skipped that
+  // check, so a suspended agency could still load its whole overview.
+  if (agencySuspended) {
+    return NextResponse.json({ error: SUSPENDED_MESSAGE, suspended: true }, { status: 403 });
   }
   if (!agencyId) {
     // Same "logged in, no agency yet" case api/checkout and api/billing

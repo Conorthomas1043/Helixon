@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { syncParsedRequirements } from "@/lib/job-requirements";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -144,6 +145,30 @@ export async function PATCH(request, { params }) {
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+  }
+
+  // Screening scores against jobs.parsed (the requirements read from the
+  // spec - see api/run's knownJobParsed), not these columns. Editing the
+  // skills or minimum years here used to change what the Jobs page showed
+  // and nothing else: every later CV was still scored against the old list.
+  // Carry the edit into parsed so the next screening uses it.
+  const editsRequirements =
+    "required_skills" in update || "preferred_skills" in update || "min_years_experience" in update;
+  if (editsRequirements) {
+    const { data: current, error: currentError } = await supabase
+      .from("jobs")
+      .select("parsed")
+      .eq("id", id)
+      .eq("agency_id", agencyId)
+      .maybeSingle();
+    if (currentError) {
+      return NextResponse.json({ error: "Failed to update job." }, { status: 500 });
+    }
+    if (!current) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const parsed = syncParsedRequirements(current.parsed, update);
+    if (parsed) update.parsed = parsed;
   }
 
   const { data: job, error } = await supabase

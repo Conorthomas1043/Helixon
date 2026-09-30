@@ -29,6 +29,14 @@ export function redactExtracted(ex = {}) {
   };
 }
 
+// Matches interviewQuestions.js's MAX_QUESTIONS, for results stored before
+// that cap existed.
+const MAX_INTERVIEW_QUESTIONS = 8;
+
+function displayList(items, max = 20) {
+  return Array.isArray(items) ? textList(items, max, 1000) : [];
+}
+
 export function buildReport(result = {}, extracted = {}, { salary = null, blind = false } = {}) {
   const r = result || {};
   const ex = blind ? redactExtracted(extracted || {}) : extracted || {};
@@ -49,11 +57,15 @@ export function buildReport(result = {}, extracted = {}, { salary = null, blind 
     missing_required: r.missing_required || [],
     missing_preferred: r.missing_preferred || [],
     other_skills: r.other_skills || [],
-    strengths: r.strengths || [],
-    weaknesses: r.weaknesses || [],
-    red_flags: r.red_flags || [],
-    standout_factors: r.standout_factors || [],
-    interview_questions: r.interview_questions || [],
+    // Rendered as plain text on the report (app/analyse/_components/Report),
+    // which the candidate profile also shows for analyses stored long ago -
+    // one object or non-array in a stored result used to take the whole
+    // profile page down, so each list is reduced to clean strings here.
+    strengths: displayList(r.strengths),
+    weaknesses: displayList(r.weaknesses),
+    red_flags: displayList(r.red_flags),
+    standout_factors: displayList(r.standout_factors),
+    interview_questions: displayList(r.interview_questions, MAX_INTERVIEW_QUESTIONS),
     requirements_met: r.requirements_met || [],
     // Why this score may be less reliable than usual (vague job, AI
     // assessment unavailable, CV cut short) - see scoreCandidate.
@@ -88,14 +100,14 @@ function asText(item) {
   return String(item.flag || item.title || item.description || item.detail || item.text || item.reason || "").trim();
 }
 
-function textList(items, max = 8) {
+function textList(items, max = 8, maxChars = 300) {
   const seen = new Set();
   const out = [];
   for (const item of items || []) {
     const text = asText(item);
     if (!text || seen.has(text.toLowerCase())) continue;
     seen.add(text.toLowerCase());
-    out.push(text.slice(0, 300));
+    out.push(text.slice(0, maxChars));
     if (out.length >= max) break;
   }
   return out;

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { isStage } from "@/lib/stage-labels";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 export async function PATCH(request, { params }) {
@@ -13,8 +13,9 @@ export async function PATCH(request, { params }) {
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const { stage } = await request.json();
-  if (!STAGE_LABELS[stage]) {
+  const body = await request.json().catch(() => null);
+  const stage = body?.stage;
+  if (!isStage(stage)) {
     return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
   }
 

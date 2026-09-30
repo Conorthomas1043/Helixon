@@ -12,7 +12,15 @@ export async function PATCH(request, { params }) {
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const { recruiterId } = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+  // A Clerk user id, or null/"" to unassign.
+  const recruiterId = body.recruiterId || null;
+  if (recruiterId !== null && (typeof recruiterId !== "string" || recruiterId.length > 64)) {
+    return NextResponse.json({ error: "That team member could not be found." }, { status: 400 });
+  }
 
   const { data: before } = await supabase
     .from("candidates")
@@ -41,7 +49,7 @@ export async function PATCH(request, { params }) {
 
   const { data, error } = await supabase
     .from("candidates")
-    .update({ recruiter_id: recruiterId ?? null })
+    .update({ recruiter_id: recruiterId })
     .eq("id", id)
     .eq("agency_id", agencyId)
     .select()

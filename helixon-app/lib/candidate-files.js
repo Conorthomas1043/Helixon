@@ -37,9 +37,13 @@ export function cvMimeType(fileName = "") {
 // Uploads the CV and returns { path, fileName }. Throws on failure - the
 // caller decides whether that blocks anything (in /api/run it doesn't: the
 // analysis is still worth saving without the file).
-export async function storeCandidateCv({ agencyId, candidateId, file }) {
+//
+// format is what the file's bytes say it is (lib/document/fileSignature.js).
+// When given it decides the stored extension and content type, so a file
+// only named ".pdf" is never served back to recruiters as a PDF.
+export async function storeCandidateCv({ agencyId, candidateId, file, format = null }) {
   const fileName = String(file?.name || "cv").slice(0, 200);
-  const ext = extensionOf(fileName) || (file?.type === MIME_BY_EXT.pdf ? "pdf" : "docx");
+  const ext = MIME_BY_EXT[format] ? format : extensionOf(fileName) || (file?.type === MIME_BY_EXT.pdf ? "pdf" : "docx");
   const path = `${agencyId}/${candidateId}/${crypto.randomUUID()}.${ext}`;
 
   const buffer = Buffer.from(await file.arrayBuffer());
