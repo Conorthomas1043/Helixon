@@ -18,7 +18,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 
-const ACTIVITY_TYPES = new Set(["call_logged", "email_logged", "meeting_logged", "cv_sent_logged"]);
+const ACTIVITY_TYPES = new Set(["call_logged", "email_logged", "meeting_logged", "cv_sent_logged", "sms_logged", "whatsapp_logged"]);
 
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();

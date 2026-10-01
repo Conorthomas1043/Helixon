@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -62,6 +63,7 @@ export async function PATCH(request, { params }) {
     await logActivity(supabase, data.candidate_id, "placement_recorded", actor, { note: PLACEMENT_STATUSES[fields.status] });
   }
   await syncCandidate(data, actor);
+  after(() => emitWebhook(auth.agencyId, "placement.updated", { ...toPlacement(data), previousStatus: p.status }));
   return NextResponse.json({ placement: toPlacement(data) });
 }
 

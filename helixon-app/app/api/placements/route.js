@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
@@ -82,5 +83,6 @@ export async function POST(request) {
   await logActivity(supabase, candidate.id, "placement_recorded", actor, { note: `${PLACEMENT_STATUSES[data.status]}${data.kind === "contract" ? " (contract)" : ""}` });
   if (data.client_id) await logClientActivity(auth.agencyId, data.client_id, "placement_made", actor, { note: `${data.candidate_name}: ${PLACEMENT_STATUSES[data.status]}` });
   await syncCandidate(data, actor);
+  after(() => emitWebhook(auth.agencyId, "placement.created", toPlacement(data)));
   return NextResponse.json({ placement: { ...toPlacement(data), invoices: [] } }, { status: 201 });
 }

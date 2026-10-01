@@ -1120,3 +1120,34 @@ export async function getPerformanceSettings() {
 export async function savePerformanceSettings(fields) {
   return apiFetch("/api/performance/settings", jsonBody("PUT", fields));
 }
+
+// API keys and webhooks - see app/api/integrations.
+export async function getApiKeys() {
+  const res = await apiFetch("/api/integrations/keys");
+  return res.keys;
+}
+
+export async function createApiKey(name) {
+  return apiFetch("/api/integrations/keys", jsonBody("POST", { name }));
+}
+
+export async function revokeApiKey(id) {
+  return apiFetch(`/api/integrations/keys?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function getWebhooks() {
+  return apiFetch("/api/integrations/webhooks");
+}
+
+export async function addWebhook(fields) {
+  const res = await apiFetch("/api/integrations/webhooks", jsonBody("POST", fields));
+  return res.endpoint;
+}
+
+export async function updateWebhook(id, fields) {
+  return apiFetch("/api/integrations/webhooks", jsonBody("PATCH", { id, ...fields }));
+}
+
+export async function deleteWebhook(id) {
+  return apiFetch(`/api/integrations/webhooks?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+}

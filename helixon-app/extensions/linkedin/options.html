@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Helixon extension settings</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="options">
+    <h1>Helixon extension</h1>
+    <p class="muted">Create an API key in Helixon under Settings → Integrations, then paste it here. It's kept on this computer only.</p>
+    <form id="form">
+      <label><span>Helixon address</span><input id="baseUrl" type="url" required /></label>
+      <label><span>API key</span><input id="apiKey" type="password" required placeholder="hx_..." /></label>
+      <button type="submit">Save and test</button>
+      <p id="status" class="muted"></p>
+    </form>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

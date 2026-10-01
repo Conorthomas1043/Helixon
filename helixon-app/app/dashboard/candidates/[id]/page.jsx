@@ -20,6 +20,7 @@ import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import PlacementPanel from "@/components/dashboard/PlacementPanel";
 import CompliancePanel from "@/components/dashboard/CompliancePanel";
+import PhoneActions from "@/components/dashboard/PhoneActions";
 import { CustomFieldsCard, SubStagePicker } from "@/components/dashboard/custom-fields";
 import {
   getCandidateById,
@@ -112,6 +113,8 @@ function activityDescription(entry) {
     case "next_action_completed":
       return entry.meta?.label ?? "";
     case "call_logged":
+    case "sms_logged":
+    case "whatsapp_logged":
     case "email_logged":
     case "meeting_logged":
     case "cv_sent_logged":
@@ -165,6 +168,8 @@ const EVENT_LABELS = {
   next_action_set: "Next action set",
   next_action_completed: "Next action completed",
   call_logged: "Call logged",
+  sms_logged: "Text sent",
+  whatsapp_logged: "WhatsApp sent",
   email_logged: "Email logged",
   meeting_logged: "Meeting logged",
   cv_sent_logged: "CV sent",
@@ -340,7 +345,7 @@ function ShortcutsHint() {
  * Header
  * ---------------------------------------------------------------------- */
 
-function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete, onEdit }) {
+function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete, onEdit, onActivityLogged }) {
   const score = candidate.score;
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
   const upcomingStage = candidate.status === "completed" ? nextStageAfter(candidate.stage) : null;
@@ -398,7 +403,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
                   {candidate.email}
                 </a>
               )}
-              {candidate.phone && <span>{candidate.phone}</span>}
+              {candidate.phone && <PhoneActions candidateId={candidate.id} phone={candidate.phone} firstName={(candidate.fullName || "").split(" ")[0]} onLogged={onActivityLogged} />}
               {candidate.linkedin && <span>{candidate.linkedin}</span>}
             </div>
           </div>
@@ -2384,6 +2389,7 @@ export default function CandidateProfilePage({ params }) {
               onFocusNote={focusNoteField}
               onDelete={handleDeleteCandidate}
               onEdit={() => setEditingDetails(true)}
+              onActivityLogged={refreshActivity}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">

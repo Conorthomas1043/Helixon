@@ -61,8 +61,11 @@ function notFoundResponse(request: NextRequest) {
 // still subject to each route's own authentication.
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 // Called by other servers (Stripe, Clerk) or by this proxy itself: they carry
-// their own signature/secret and never have a browser Origin.
-const CSRF_EXEMPT_PREFIXES = ["/api/webhooks/", "/api/internal/", "/api/csp-report"];
+// their own signature/secret and never have a browser Origin. /api/v1 is the
+// agency REST API: it authenticates only by API key header, never by
+// cookie, so there's no ambient credential for a cross-site request to
+// ride on (and the LinkedIn extension calls it from its own origin).
+const CSRF_EXEMPT_PREFIXES = ["/api/webhooks/", "/api/internal/", "/api/csp-report", "/api/v1/"];
 
 function addHostWithVariants(hosts: Set<string>, host?: string | null) {
   if (!host) return;

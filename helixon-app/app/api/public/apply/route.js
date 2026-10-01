@@ -1,3 +1,4 @@
+import { emitWebhook } from "@/lib/webhooks";
 import { NextResponse, after } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
@@ -60,6 +61,15 @@ export async function POST(request) {
 
   if (!result.duplicate) {
     after(() => screenApplication({ agency: found.agency, job: found.job, candidateId: result.candidateId }));
+    after(() =>
+      emitWebhook(found.agency.id, "application.received", {
+        candidateId: result.candidateId,
+        name,
+        email,
+        jobId: found.job.id,
+        jobTitle: found.job.public_title || found.job.title,
+      })
+    );
   }
   return NextResponse.json({ ok: true }, { status: 201 });
 }

@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Helixon - save from LinkedIn",
+  "short_name": "Helixon",
+  "version": "1.0.0",
+  "description": "Save the LinkedIn profile you're viewing to your Helixon candidates in one click.",
+  "action": {
+    "default_title": "Save to Helixon",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://www.helixon.co.uk/*", "https://helixon.co.uk/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*"]
+}

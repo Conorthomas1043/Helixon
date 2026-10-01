@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
@@ -62,6 +63,7 @@ export async function PATCH(request, { params }) {
   const actor = recruiterDisplayName(profile) || userId;
   if (stage !== before.stage) {
     await logActivity(supabase, id, "stage_changed", actor, { from: before.stage, to: stage, ...(subStage ? { sub: subStage.label } : {}) });
+    after(() => emitWebhook(agencyId, "candidate.stage_changed", { candidateId: id, name: data.full_name || data.name || null, jobId: data.job_id ?? null, from: before.stage, to: stage, subStage: subStage?.label ?? null, by: actor }));
   } else if (wantsSubStage) {
     await logActivity(supabase, id, "sub_stage_changed", actor, { note: subStage ? subStage.label : `Back to ${STAGE_LABELS[stage]}` });
   }

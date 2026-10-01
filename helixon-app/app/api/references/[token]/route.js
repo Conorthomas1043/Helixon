@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidate-activity";
@@ -14,7 +15,7 @@ async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
   const { data } = await supabase
     .from("candidate_references")
-    .select("id, candidate_id, referee_name, status, expires_at, candidates(full_name, name), agencies(name)")
+    .select("id, agency_id, candidate_id, referee_name, status, expires_at, candidates(full_name, name), agencies(name)")
     .eq("token", token)
     .maybeSingle();
   return data;
@@ -60,5 +61,8 @@ export async function POST(request, { params }) {
   await logActivity(supabase, row.candidate_id, "reference_received", update.answers?.completedBy || row.referee_name, {
     note: update.status === "declined" ? `${row.referee_name} declined to give a reference` : `From ${row.referee_name}`,
   });
+  after(() =>
+    emitWebhook(row.agency_id, "reference.received", { referenceId: row.id, candidateId: row.candidate_id, referee: row.referee_name, status: update.status, answers: update.answers ?? null })
+  );
   return NextResponse.json({ ok: true });
 }

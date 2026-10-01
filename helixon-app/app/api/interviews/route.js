@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
@@ -116,5 +117,7 @@ export async function POST(request) {
   }
 
   const fresh = await supabase.from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
-  return NextResponse.json({ interview: shapeInterview(fresh.data), invites }, { status: 201 });
+  const shaped = shapeInterview(fresh.data);
+  after(() => emitWebhook(auth.agencyId, "interview.scheduled", shaped));
+  return NextResponse.json({ interview: shaped, invites }, { status: 201 });
 }

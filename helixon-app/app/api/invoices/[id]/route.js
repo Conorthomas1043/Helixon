@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
@@ -34,10 +35,11 @@ export async function PATCH(request, { params }) {
     .update({ status: body.status, paid_on: paidOn })
     .eq("id", id)
     .eq("agency_id", auth.agencyId)
-    .select("id, status, paid_on")
+    .select("id, number, status, paid_on, total, currency, client_id, placement_id")
     .maybeSingle();
   if (error) return NextResponse.json({ error: "Failed to update." }, { status: 500 });
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (body.status === "paid") after(() => emitWebhook(auth.agencyId, "invoice.paid", data));
   if (body.status === "void") {
     await supabase.from("timesheets").update({ status: "approved", invoice_id: null }).eq("invoice_id", id).eq("agency_id", auth.agencyId);
   }

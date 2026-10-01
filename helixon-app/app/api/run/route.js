@@ -11,7 +11,8 @@ import { ensureClient } from "@/lib/clients";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { candidatePayload, emitWebhook } from "@/lib/webhooks";
 
 // A single analysis makes 2-3 Claude calls (candidate + job extraction in
 // parallel - the job one skipped for a saved job - then the fit judgement),
@@ -599,6 +600,10 @@ export async function POST(request) {
           ...(existingPerson ? { linked_to: existingPerson.rootId, matched_on: existingPerson.matchedOn } : {}),
         },
       });
+
+    after(() =>
+      emitWebhook(agencyId, "candidate.created", candidatePayload({ ...candidate, match_score: result?.match_score ?? null, job_id: job.id }, { jobTitle: job.title ?? null, via: "screening" }))
+    );
 
     // Tell the recruiter they're already on file - and whether this is a
     // second record for the very same job.

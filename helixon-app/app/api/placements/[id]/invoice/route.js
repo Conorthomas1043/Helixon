@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -78,7 +79,7 @@ export async function POST(request, { params }) {
       notes: cleanText(body.notes, { max: 2000 }) || null,
       created_by: auth.userId,
     })
-    .select("id, number, total")
+    .select("id, number, total, subtotal, vat_amount, currency, issued_on, due_on, client_id, placement_id, bill_to")
     .single();
   if (error) return NextResponse.json({ error: error.code === "23505" ? "Another invoice took that number - try again." : "Failed to raise the invoice." }, { status: 500 });
 
@@ -86,5 +87,6 @@ export async function POST(request, { params }) {
   if (p.client_id) {
     await logClientActivity(auth.agencyId, p.client_id, "invoice_sent", recruiterDisplayName(auth.profile) || auth.userId, { note: `${invoice.number}: ${invoice.total}` });
   }
-  return NextResponse.json({ invoice }, { status: 201 });
+  after(() => emitWebhook(auth.agencyId, "invoice.created", invoice));
+  return NextResponse.json({ invoice: { id: invoice.id, number: invoice.number, total: invoice.total } }, { status: 201 });
 }
