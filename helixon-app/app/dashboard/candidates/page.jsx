@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import ComposeEmail from "@/components/dashboard/ComposeEmail";
+import SavedSearches from "@/components/dashboard/SavedSearches";
 import { getEmailSequences, enrollInSequence } from "@/lib/dashboard-api";
 import {
   getCandidates,
@@ -53,6 +54,8 @@ async function fetchCandidates(query) {
 
 const DEFAULT_FILTERS = {
   search: "",
+  near: "",
+  radius: "25",
   stage: "all",
   scoreBand: "all",
   status: "all",
@@ -98,7 +101,7 @@ const DATE_RANGES = [
 
 // Filters <-> query string. Only values that differ from the defaults are
 // written, so a plain list stays at /dashboard/candidates.
-const LIST_KEYS = ["search", "stage", "scoreBand", "status", "recruiterId", "jobId", "dateRange", "sortBy"];
+const LIST_KEYS = ["search", "near", "radius", "stage", "scoreBand", "status", "recruiterId", "jobId", "dateRange", "sortBy"];
 
 function filtersFromParams(params) {
   const f = { ...DEFAULT_FILTERS };
@@ -117,6 +120,7 @@ function filtersFromParams(params) {
 function paramsFromFilters(f) {
   const q = new URLSearchParams();
   for (const key of LIST_KEYS) {
+    if (key === "radius" && !f.near) continue;
     if (f[key] && f[key] !== DEFAULT_FILTERS[key]) q.set(key, f[key]);
   }
   if (f.tagIds.length) q.set("tags", f.tagIds.join(","));
@@ -300,6 +304,8 @@ function CandidateRow({ candidate, selected, onToggleSelect }) {
             <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
               {candidate.jobTitle}
               {candidate.company ? ` · ${candidate.company}` : ""}
+              {candidate.location ? ` · ${candidate.location}` : ""}
+              {candidate.distanceMiles != null ? ` (~${candidate.distanceMiles} mi)` : ""}
             </p>
           </div>
 
@@ -424,6 +430,8 @@ function CandidateDatabaseContent() {
 
   const [filters, setFilters] = useState(initialFilters);
   const [searchInput, setSearchInput] = useState(initialFilters.search);
+  const [nearInput, setNearInput] = useState(initialFilters.near);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const qs = paramsFromFilters(filters);
@@ -436,7 +444,8 @@ function CandidateDatabaseContent() {
   const [filtersOpen, setFiltersOpen] = useState(
     () =>
       initialFilters.recruiterId !== "all" ||
-      initialFilters.jobId !== "all"
+      initialFilters.jobId !== "all" ||
+      Boolean(initialFilters.near)
   );
   const [data, setData] = useState(null); // { result, stageCounts }
   const [status, setStatus] = useState("loading");
@@ -505,8 +514,10 @@ function CandidateDatabaseContent() {
         setStatus("ready");
         setSelectedIds(new Set());
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
+      .catch((err) => {
+        if (cancelled) return;
+        setErrorMessage(err?.message || "");
+        setStatus("error");
       });
     return () => {
       cancelled = true;
@@ -528,6 +539,7 @@ function CandidateDatabaseContent() {
 
   const clearFilters = useCallback(() => {
     setSearchInput("");
+    setNearInput("");
     setFilters(DEFAULT_FILTERS);
   }, []);
 
@@ -618,6 +630,7 @@ function CandidateDatabaseContent() {
     if (filters.dateRange !== "all") n += 1;
     if (filters.tagIds.length > 0) n += 1;
     if (filters.pool) n += 1;
+    if (filters.near) n += 1;
     return n;
   }, [filters]);
 
@@ -711,6 +724,12 @@ function CandidateDatabaseContent() {
               style={{ border: "1px solid var(--border)", color: INK }}
               aria-label="Search candidates, jobs or recruiters"
             />
+            <p className="text-[11px] mt-1.5 px-2" style={{ color: INK_FAINT }}>
+              {result?.searchMode === "boolean" ? (
+                <span style={{ color: "var(--forest)" }}>Boolean search across CVs and profiles. </span>
+              ) : null}
+              Tip: <code>(java OR kotlin) AND &quot;spring boot&quot; NOT junior</code>, or <code>develop*</code>, searches every CV.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -754,6 +773,16 @@ function CandidateDatabaseContent() {
               </svg>
             </button>
 
+            <SavedSearches
+              currentQuery={paramsFromFilters({ ...filters, page: 1 })}
+              onApply={(qs) => {
+                const next = filtersFromParams(new URLSearchParams(qs));
+                setSearchInput(next.search);
+                setNearInput(next.near);
+                setFilters(next);
+              }}
+            />
+
             <button
               type="button"
               onClick={handleExport}
@@ -788,6 +817,30 @@ function CandidateDatabaseContent() {
                 options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
               />
               <Select ariaLabel="Filter by status" value={filters.status} onChange={(v) => updateFilter({ status: v })} options={STATUS_OPTIONS} />
+              <form
+                className="flex items-center gap-1"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  updateFilter({ near: nearInput.trim() });
+                }}
+              >
+                <input
+                  value={nearInput}
+                  onChange={(e) => setNearInput(e.target.value)}
+                  onBlur={() => nearInput.trim() !== filters.near && updateFilter({ near: nearInput.trim() })}
+                  placeholder="Near town or postcode"
+                  aria-label="Near a town or postcode"
+                  maxLength={100}
+                  className="text-[12px] px-3 py-1.5 rounded-full w-44 bg-white"
+                  style={{ border: "1px solid var(--border)", color: INK }}
+                />
+                <Select
+                  ariaLabel="Distance"
+                  value={filters.radius}
+                  onChange={(v) => updateFilter({ radius: v })}
+                  options={["5", "10", "25", "50", "100"].map((m) => ({ value: m, label: `within ${m} mi` }))}
+                />
+              </form>
               <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
 
               <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
@@ -944,7 +997,11 @@ function CandidateDatabaseContent() {
           </div>
 
           {status === "loading" && <ListSkeleton />}
-          {status === "error" && <ErrorState onRetry={retry} />}
+          {status === "error" && errorMessage && errorMessage !== "Failed to load candidates" && errorMessage !== "Request failed" ? (
+            <p role="alert" className="text-[13px] py-6 text-center" style={{ color: RED }}>{errorMessage}</p>
+          ) : status === "error" ? (
+            <ErrorState onRetry={retry} />
+          ) : null}
           {status === "ready" && result && result.items.length === 0 && <EmptyState hasFilters={hasAnyFilter} onClear={clearFilters} />}
           {status === "ready" && result && result.items.length > 0 && (
             <ul className="divide-y" style={{ borderColor: "var(--border)" }}>

@@ -20,6 +20,10 @@ async function apiFetch(url, options) {
 function buildCandidatesQuery(query = {}) {
   const params = new URLSearchParams();
   if (query.search) params.set("search", query.search);
+  if (query.near) {
+    params.set("near", query.near);
+    params.set("radius", String(query.radius || 25));
+  }
   if (query.stage && query.stage !== "all") params.set("stage", query.stage);
   if (query.status && query.status !== "all") params.set("status", query.status);
   if (query.recruiterId && query.recruiterId !== "all") params.set("recruiterId", query.recruiterId);
@@ -913,4 +917,32 @@ export async function createShortlistShare(shortlistId, options) {
 
 export async function revokeShortlistShare(shortlistId, shareId) {
   return apiFetch(`/api/shortlists/${shortlistId}/shares?shareId=${encodeURIComponent(shareId)}`, { method: "DELETE" });
+}
+
+// Saved Candidates searches - see app/api/saved-searches.
+export async function getSavedSearches({ counts = false } = {}) {
+  const res = await apiFetch(`/api/saved-searches${counts ? "?counts=1" : ""}`);
+  return res.searches;
+}
+
+export async function saveSearch(fields) {
+  const res = await apiFetch("/api/saved-searches", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.search;
+}
+
+export async function updateSavedSearch(id, fields) {
+  const res = await apiFetch(`/api/saved-searches/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.search;
+}
+
+export async function deleteSavedSearch(id) {
+  return apiFetch(`/api/saved-searches/${id}`, { method: "DELETE" });
 }

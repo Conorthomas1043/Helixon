@@ -175,7 +175,8 @@ export async function jobClientColumns(agencyId, { clientId, clientName, contact
       client = await ensureClient(agencyId, clientName);
     }
     update.client_id = client?.id ?? null;
-    update.client = client?.name ?? null;
+    // If the client record couldn't be made, still keep the name typed.
+    update.client = client?.name ?? (clientName ? String(clientName).trim().slice(0, 200) || null : null);
     if (contactId === undefined) update.contact_id = null;
   }
 

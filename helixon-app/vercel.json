@@ -15,6 +15,14 @@
     {
       "path": "/api/cron/sequences",
       "schedule": "20 8 * * *"
+    },
+    {
+      "path": "/api/cron/geocode",
+      "schedule": "40 2 * * *"
+    },
+    {
+      "path": "/api/cron/saved-searches",
+      "schedule": "35 6 * * 1-5"
     }
   ]
 }
