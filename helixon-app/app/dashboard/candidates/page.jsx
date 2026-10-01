@@ -13,6 +13,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
+import ComposeEmail from "@/components/dashboard/ComposeEmail";
+import { getEmailSequences, enrollInSequence } from "@/lib/dashboard-api";
 import {
   getCandidates,
   getStageCounts,
@@ -439,6 +441,29 @@ function CandidateDatabaseContent() {
   const [data, setData] = useState(null); // { result, stageCounts }
   const [status, setStatus] = useState("loading");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [composing, setComposing] = useState(false);
+  const [sequences, setSequences] = useState([]);
+  const [bulkNotice, setBulkNotice] = useState("");
+
+  useEffect(() => {
+    getEmailSequences()
+      .then((list) => setSequences(list.filter((s) => s.active)))
+      .catch(() => {});
+  }, []);
+
+  const bulkEnroll = useCallback(
+    async (sequenceId) => {
+      if (!sequenceId) return;
+      setBulkNotice("");
+      try {
+        const res = await enrollInSequence(sequenceId, [...selectedIds]);
+        setBulkNotice(`Added ${res.enrolled} to the sequence${res.skipped?.length ? ` · ${res.skipped.length} skipped (no email, already on it, or rejected/placed)` : ""}.`);
+      } catch (err) {
+        setBulkNotice(err.message || "Couldn't add them to the sequence.");
+      }
+    },
+    [selectedIds]
+  );
   const [reloadKey, setReloadKey] = useState(0);
 
   const [jobs, setJobs] = useState([]);
@@ -829,6 +854,22 @@ function CandidateDatabaseContent() {
                 Remove from pool
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setComposing(true)}
+              className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ border: "1px solid var(--border)", color: INK }}
+            >
+              Email…
+            </button>
+            {sequences.length > 0 && (
+              <Select
+                ariaLabel="Add to a sequence"
+                value=""
+                onChange={bulkEnroll}
+                options={[{ value: "", label: "Add to sequence…" }, ...sequences.map((s) => ({ value: s.id, label: s.name }))]}
+              />
+            )}
             <AddToShortlist
               candidateIds={[...selectedIds]}
               jobId={filters.jobId !== "all" ? filters.jobId : null}
@@ -862,6 +903,18 @@ function CandidateDatabaseContent() {
             >
               Clear selection
             </button>
+            {bulkNotice && (
+              <p role="status" className="w-full text-[12px]" style={{ color: INK_MUTED }}>
+                {bulkNotice}
+              </p>
+            )}
+            {composing && (
+              <ComposeEmail
+                candidateIds={[...selectedIds]}
+                onClose={() => setComposing(false)}
+                onSent={(res) => setBulkNotice(`Sent ${res.sent} email${res.sent === 1 ? "" : "s"}.`)}
+              />
+            )}
             {bulkError && (
               <p role="alert" className="w-full text-[12px]" style={{ color: RED }}>{bulkError}</p>
             )}

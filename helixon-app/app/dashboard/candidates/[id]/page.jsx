@@ -17,6 +17,7 @@ import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
+import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import {
   getCandidateById,
   getRecruiters,
@@ -125,6 +126,9 @@ function activityDescription(entry) {
     case "interview_outcome":
     case "scorecard_submitted":
     case "scorecard_requested":
+    case "email_received":
+    case "sequence_enrolled":
+    case "sequence_stopped":
     case "client_profile_printed":
       return entry.meta?.note ?? "";
     case "rescreened":
@@ -168,6 +172,9 @@ const EVENT_LABELS = {
   interview_outcome: "Interview outcome",
   scorecard_submitted: "Scorecard received",
   scorecard_requested: "Scorecard requested",
+  email_received: "Email received",
+  sequence_enrolled: "Added to sequence",
+  sequence_stopped: "Sequence stopped",
   client_profile_printed: "Client profile printed",
 };
 
@@ -2379,6 +2386,7 @@ export default function CandidateProfilePage({ params }) {
                   clientEmail={candidate.job?.client_email}
                 />
                 <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
+                <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />
               </div>
             </div>
