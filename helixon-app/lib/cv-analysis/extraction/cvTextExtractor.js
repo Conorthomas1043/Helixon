@@ -113,8 +113,27 @@ export default async function extractCvText(file){
     ){
 
 
-        const text =
-            await parseDocx(buffer);
+        let text;
+
+        try {
+
+            text =
+                await parseDocx(buffer);
+
+        }
+        catch(err){
+
+            // Not a real .docx (renamed .doc, corrupt or password-protected).
+            error(
+                "[CV extractor] DOCX error:",
+                err.message
+            );
+
+            throw new Error(
+                "Unable to extract text from DOCX"
+            );
+
+        }
 
 
 

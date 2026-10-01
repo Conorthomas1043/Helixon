@@ -663,15 +663,21 @@ export async function POST(request) {
         "PDF contained"
       );
 
+    const docxError =
+      message.includes("Unable to extract text from DOCX") ||
+      message.includes("DOCX contained");
+
     return NextResponse.json(
       {
         ok: false,
         error: pdfError
           ? "We couldn't read this PDF. Try re-saving the CV as PDF or upload a DOCX version."
-          : "Something went wrong analysing this candidate.",
+          : docxError
+            ? "We couldn't read this Word file. If it's an old .doc renamed to .docx, password-protected, or only contains images, open it in Word and save it again as .docx or PDF."
+            : "Something went wrong analysing this candidate.",
       },
       {
-        status: pdfError
+        status: pdfError || docxError
           ? 422
           : 500,
       }
