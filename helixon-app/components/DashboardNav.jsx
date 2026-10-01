@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignOutButton, useUser } from "@clerk/nextjs";
@@ -10,31 +10,120 @@ import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
 import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 
+// The everyday screens are tabs; everything else sits under "More",
+// grouped, so the bar fits without scrolling on a laptop.
 const TABS = [
   { href: "/dashboard", label: "Overview" },
   { href: "/analyse", label: "Analyse" },
-  { href: "/analyse/compare", label: "Compare" },
   { href: "/dashboard/candidates", label: "Candidates" },
-  { href: "/dashboard/talent-pool", label: "Talent pool" },
-  { href: "/dashboard/shortlists", label: "Shortlists" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
-  { href: "/dashboard/interviews", label: "Interviews" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/clients", label: "Clients" },
-  { href: "/dashboard/placements", label: "Placements" },
-  { href: "/dashboard/compliance", label: "Compliance" },
-  { href: "/dashboard/team", label: "Team" },
-  { href: "/dashboard/performance", label: "Performance" },
-  { href: "/dashboard/analytics", label: "Analytics" },
+  { href: "/dashboard/interviews", label: "Interviews" },
 ];
 
-// The tab for the current page: the most specific match, so /analyse/compare
-// lights up "Compare" rather than both it and "Analyse".
+const MORE = [
+  {
+    group: "Sourcing",
+    links: [
+      { href: "/dashboard/talent-pool", label: "Talent pool" },
+      { href: "/dashboard/shortlists", label: "Shortlists" },
+      { href: "/analyse/compare", label: "Compare" },
+      { href: "/dashboard/email", label: "Email" },
+      { href: "/dashboard/import", label: "Import" },
+    ],
+  },
+  {
+    group: "Revenue",
+    links: [
+      { href: "/dashboard/placements", label: "Placements & invoices" },
+      { href: "/dashboard/performance", label: "Performance" },
+      { href: "/dashboard/analytics", label: "Analytics" },
+    ],
+  },
+  {
+    group: "Workspace",
+    links: [
+      { href: "/dashboard/team", label: "Team" },
+      { href: "/dashboard/compliance", label: "Compliance" },
+      { href: "/dashboard/settings", label: "Settings" },
+    ],
+  },
+];
+
+const MORE_LINKS = MORE.flatMap((g) => g.links);
+
+// The link for the current page: the most specific match, so
+// /analyse/compare lights up "Compare" rather than both it and "Analyse".
 function activeTabHref(pathname) {
-  const matches = TABS.filter((t) =>
+  const matches = [...TABS, ...MORE_LINKS].filter((t) =>
     t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname?.startsWith(`${t.href}/`)
   );
   return matches.sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null;
+}
+
+// "More" - the rest of the dashboard, grouped. Closes on a pick, Escape or
+// a click outside.
+function MoreMenu({ activeHref, compact = false }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = MORE_LINKS.find((l) => l.href === activeHref);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      if (!ref.current?.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        onClick={() => setOpen((v) => !v)}
+        className={`${compact ? "px-3" : "px-2 xl:px-3"} py-1.5 rounded-[8px] whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--forest)]`}
+        style={current ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
+      >
+        {current ? current.label : "More"} ▾
+      </button>
+      {open && (
+        <div
+          className={`absolute right-0 top-[calc(100%+6px)] z-50 w-[min(92vw,420px)] rounded-[12px] p-3 bg-white grid grid-cols-2 sm:grid-cols-3 gap-3`}
+          style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}
+        >
+          {MORE.map((g) => (
+            <div key={g.group}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
+                {g.group}
+              </p>
+              {g.links.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block text-xs px-2 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+                  style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)" }}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function initials(name) {
@@ -200,9 +289,7 @@ function DashboardNavContent() {
           </span>
         </Link>
 
-        {/* Ten tabs don't all fit between md and xl - the row scrolls rather
-            than pushing the account controls off the edge. */}
-        <div className="hidden md:flex items-center gap-0.5 xl:gap-1 min-w-0 mx-3 overflow-x-auto text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+        <div className="hidden md:flex items-center gap-0.5 xl:gap-1 min-w-0 mx-3 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
           {TABS.map((t) => {
             const active = t.href === activeHref;
             return (
@@ -216,6 +303,7 @@ function DashboardNavContent() {
               </Link>
             );
           })}
+          <MoreMenu activeHref={activeHref} />
         </div>
 
         <div className="relative flex items-center gap-2 shrink-0">
@@ -269,6 +357,7 @@ function DashboardNavContent() {
               )}
               <Link href="/account" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Account settings</Link>
               <Link href="/billing" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Billing</Link>
+              <Link href="/dashboard/settings" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Workspace settings</Link>
               <Link href="/dashboard/privacy" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Data &amp; privacy</Link>
               {me?.plan === "agency" && (
                 <Link href="/dashboard/team" className="block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]" style={{ color: "var(--ink)" }} onClick={() => setMenuOpen(false)}>Invite teammate</Link>
@@ -291,8 +380,9 @@ function DashboardNavContent() {
         </div>
       </div>
 
-      {/* Mobile tab row */}
-      <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+      {/* Mobile tab row: the tabs scroll; "More" stays put at the end. */}
+      <div className="md:hidden flex items-center gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+        <div className="flex overflow-x-auto gap-1 min-w-0">
         {TABS.map((t) => {
           const active = t.href === activeHref;
           return (
@@ -306,6 +396,8 @@ function DashboardNavContent() {
             </Link>
           );
         })}
+        </div>
+        <MoreMenu activeHref={activeHref} compact />
       </div>
     </nav>
   );
