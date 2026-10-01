@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
   const { data: members, error } = await supabase
     .from("shortlist_candidates")
     .select(
-      "candidate_id, note, created_at, candidates!inner(id, agency_id, full_name, name, email, current_title, current_company, location, match_score, stage, recruiter_id, processing_status, jobs(id, title, client))"
+      "candidate_id, note, created_at, client_decision, client_comment, client_decided_at, client_decided_by, candidates!inner(id, agency_id, full_name, name, email, current_title, current_company, location, match_score, stage, recruiter_id, processing_status, jobs(id, title, client))"
     )
     .eq("shortlist_id", loaded.shortlist.id)
     .eq("candidates.agency_id", auth.agencyId);
@@ -45,6 +45,10 @@ export async function GET(request, { params }) {
       recruiterName: recruiterNames.get(m.candidates.recruiter_id) ?? null,
       note: m.note,
       addedAt: m.created_at,
+      clientDecision: m.client_decision,
+      clientComment: m.client_comment,
+      clientDecidedAt: m.client_decided_at,
+      clientDecidedBy: m.client_decided_by,
     }))
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
 

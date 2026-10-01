@@ -18,6 +18,8 @@ import {
   getJobs,
 } from "@/lib/dashboard-api";
 import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stage-labels";
+import ShareShortlist from "@/components/dashboard/ShareShortlist";
+import { CLIENT_DECISIONS } from "@/lib/client-decisions";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
 
 function Avatar({ name }) {
@@ -112,6 +114,7 @@ export default function ShortlistDetailPage({ params }) {
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [error, setError] = useState("");
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -273,7 +276,10 @@ export default function ShortlistDetailPage({ params }) {
                 </select>
                 {candidates.length > 0 && (
                   <>
-                    <Link href={`/dashboard/shortlists/${id}/client-pack`} className={pill} style={{ background: "var(--forest)", color: "white" }}>
+                    <button type="button" onClick={() => setSharing(true)} className={pill} style={{ background: "var(--forest)", color: "white" }}>
+                      Share with client
+                    </button>
+                    <Link href={`/dashboard/shortlists/${id}/client-pack`} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
                       Client pack (PDF)
                     </Link>
                     <a href={clientEmailHref(shortlist, candidates)} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
@@ -322,6 +328,12 @@ export default function ShortlistDetailPage({ params }) {
                           <p className="text-[11px]" style={{ color: INK_FAINT }}>Screened for {c.jobTitle}</p>
                         )}
                         <NoteEditor value={c.note} onSave={(note) => saveNote(c.id, note)} />
+                        {c.clientDecision && (
+                          <p className="text-[12px] mt-1.5 rounded-[8px] px-2.5 py-1.5" style={{ background: c.clientDecision === "reject" ? "#fef2f2" : c.clientDecision === "interview" ? "var(--mint)" : "#fdf6e9", color: INK }}>
+                            <strong>{c.clientDecidedBy || "Client"}: {CLIENT_DECISIONS[c.clientDecision]}</strong>
+                            {c.clientComment ? ` - "${c.clientComment}"` : ""}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
@@ -345,6 +357,7 @@ export default function ShortlistDetailPage({ params }) {
           </>
         )}
       </div>
+      {sharing && shortlist && <ShareShortlist shortlist={shortlist} onClose={() => setSharing(false)} />}
     </main>
   );
 }

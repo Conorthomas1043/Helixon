@@ -29,7 +29,7 @@ export async function loadShortlist(agencyId, rawId) {
   if (!id) return { response: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   const { data, error } = await supabase
     .from("shortlists")
-    .select("id, name, job_id, created_at, jobs(id, title, client, client_email)")
+    .select("id, name, job_id, created_at, jobs(id, title, client, client_email, client_id)")
     .eq("id", id)
     .eq("agency_id", agencyId)
     .maybeSingle();

@@ -896,3 +896,21 @@ export async function saveCareersSettings(fields) {
     body: JSON.stringify(fields),
   });
 }
+
+// Client review links for a shortlist - see app/api/shortlists/[id]/shares.
+export async function getShortlistShares(shortlistId) {
+  const res = await apiFetch(`/api/shortlists/${shortlistId}/shares`);
+  return res.shares;
+}
+
+export async function createShortlistShare(shortlistId, options) {
+  return apiFetch(`/api/shortlists/${shortlistId}/shares`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  });
+}
+
+export async function revokeShortlistShare(shortlistId, shareId) {
+  return apiFetch(`/api/shortlists/${shortlistId}/shares?shareId=${encodeURIComponent(shareId)}`, { method: "DELETE" });
+}
