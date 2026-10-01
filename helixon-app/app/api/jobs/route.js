@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
+import { jobClientColumns, logClientActivity } from "@/lib/clients";
+import { recruiterDisplayName } from "@/lib/recruiter-directory";
 
 // See app/api/candidates/route.js for why this was rewritten - Clerk auth
 // instead of the dead Supabase-Auth bearer-token check, and agency_id
@@ -62,14 +64,24 @@ export async function POST(request) {
     );
   }
 
+  // The client: picked from the agency's clients (clientId, contactId) or
+  // typed (company) - a typed name is matched to, or becomes, a client.
+  const clientCols = await jobClientColumns(agencyId, {
+    clientId: body.clientId || undefined,
+    clientName: body.clientId ? undefined : cleanLine(body.company, 160) || undefined,
+    contactId: body.contactId || undefined,
+  });
+  if (clientCols.error) return NextResponse.json({ error: clientCols.error }, { status: 400 });
+
   const { data, error } = await supabase
     .from("jobs")
     .insert({
       agency_id: agencyId,
       user_id: userId,
       title,
-      client: cleanLine(body.company, 160) || null,
+      client: null,
       client_email: cleanEmail(body.clientEmail) || null,
+      ...clientCols.update,
       location: cleanLine(body.location, 160) || null,
       employment_type: cleanLine(body.employmentType, 60) || null,
       seniority: cleanLine(body.seniority, 60) || null,
@@ -85,6 +97,9 @@ export async function POST(request) {
 
   if (error) {
     return NextResponse.json({ error: "Failed to create job" }, { status: 500 });
+  }
+  if (data.client_id) {
+    await logClientActivity(agencyId, data.client_id, "job_created", recruiterDisplayName(auth.profile) || userId, { note: data.title, job_id: data.id });
   }
   return NextResponse.json(data, { status: 201 });
 }

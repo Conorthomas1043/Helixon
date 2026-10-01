@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
+import ClientPicker from "@/components/dashboard/ClientPicker";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
@@ -263,9 +264,14 @@ function TextField({ label, ...props }) {
 // analysis against this job re-parses fresh rather than reading back from
 // here (see api/jobs/[id]'s PATCH handler comment).
 function EditJobForm({ job, onCancel, onSave }) {
+  const [client, setClient] = useState({
+    clientId: job.clientId ?? null,
+    clientName: job.company || "",
+    contactId: job.contactId ?? null,
+    contactEmail: null,
+  });
   const [form, setForm] = useState({
     title: job.title || "",
-    client: job.company || "",
     clientEmail: job.clientEmail || "",
     location: job.location || "",
     salaryRange: job.salaryRange || "",
@@ -297,8 +303,10 @@ function EditJobForm({ job, onCancel, onSave }) {
     try {
       await onSave({
         title: form.title.trim(),
-        client: form.client.trim() || null,
-        clientEmail: form.clientEmail.trim() || null,
+        clientId: client.clientId,
+        client: client.clientId ? undefined : client.clientName.trim() || null,
+        contactId: client.contactId,
+        ...(client.contactId ? {} : { clientEmail: form.clientEmail.trim() || null }),
         location: form.location.trim() || null,
         salaryRange: form.salaryRange.trim() || null,
         employmentType: form.employmentType.trim() || null,
@@ -317,16 +325,18 @@ function EditJobForm({ job, onCancel, onSave }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <TextField label="Title" value={form.title} onChange={(e) => set("title", e.target.value)} required maxLength={200} />
       <div className="grid sm:grid-cols-2 gap-4">
-        <TextField label="Client" value={form.client} onChange={(e) => set("client", e.target.value)} maxLength={200} />
+        <ClientPicker value={client} onChange={setClient} />
         <TextField label="Location" value={form.location} onChange={(e) => set("location", e.target.value)} maxLength={200} />
-        <TextField
-          label="Client contact email"
-          type="email"
-          value={form.clientEmail}
-          onChange={(e) => set("clientEmail", e.target.value)}
-          maxLength={254}
-          placeholder="hiring.manager@client.com"
-        />
+        {!client.contactId && (
+          <TextField
+            label="Client contact email"
+            type="email"
+            value={form.clientEmail}
+            onChange={(e) => set("clientEmail", e.target.value)}
+            maxLength={254}
+            placeholder="hiring.manager@client.com"
+          />
+        )}
         <TextField label="Salary range" value={form.salaryRange} onChange={(e) => set("salaryRange", e.target.value)} maxLength={80} placeholder="£40k–£50k" />
       </div>
       <div className="grid sm:grid-cols-3 gap-4">
@@ -517,7 +527,15 @@ export default function JobDetailPage({ params }) {
                     {job.title}
                   </h1>
                   <p className="text-sm mt-1" style={{ color: INK_MUTED }}>
-                    {job.company} · {job.location}
+                    {job.clientId ? (
+                      <Link href={`/dashboard/clients/${job.clientId}`} className="underline">
+                        {job.company}
+                      </Link>
+                    ) : (
+                      job.company
+                    )}
+                    {job.company && job.location ? " · " : ""}
+                    {job.location}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">

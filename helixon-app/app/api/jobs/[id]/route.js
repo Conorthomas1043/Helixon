@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanEmail } from "@/lib/sanitize";
+import { jobClientColumns } from "@/lib/clients";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -109,9 +110,20 @@ export async function PATCH(request, { params }) {
     update.title = title;
   }
 
+  // The client, picked (clientId / contactId) or typed (client) - a typed
+  // name is matched to, or becomes, one of the agency's clients
+  // (lib/clients.js), which also keeps jobs.client / client_email in step.
   const client = cleanString(body.client, MAX_CLIENT_LEN);
   if (client?.error) return NextResponse.json({ error: `Client must be ${MAX_CLIENT_LEN} characters or fewer.` }, { status: 400 });
-  if (client !== undefined) update.client = client;
+  if (client !== undefined || body.clientId !== undefined || body.contactId !== undefined) {
+    const cols = await jobClientColumns(agencyId, {
+      clientId: body.clientId,
+      clientName: body.clientId ? undefined : client === undefined ? undefined : client || "",
+      contactId: body.contactId,
+    });
+    if (cols.error) return NextResponse.json({ error: cols.error }, { status: 400 });
+    Object.assign(update, cols.update);
+  }
 
   const location = cleanString(body.location, MAX_LOCATION_LEN);
   if (location?.error) return NextResponse.json({ error: `Location must be ${MAX_LOCATION_LEN} characters or fewer.` }, { status: 400 });
@@ -170,7 +182,7 @@ export async function PATCH(request, { params }) {
     .update(update)
     .eq("id", id)
     .eq("agency_id", agencyId)
-    .select("id, status, title, client, client_email, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills")
+    .select("id, status, title, client, client_email, client_id, contact_id, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills")
     .maybeSingle();
 
   if (error) {

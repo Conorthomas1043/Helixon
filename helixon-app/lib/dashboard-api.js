@@ -155,6 +155,8 @@ function adaptJob(j) {
     ...j,
     company: j.client,
     clientEmail: j.client_email ?? null,
+    clientId: j.client_id ?? null,
+    contactId: j.contact_id ?? null,
     employmentType: j.employment_type,
     salaryRange: j.salary_range,
     requiredSkills: j.required_skills ?? [],
@@ -703,4 +705,66 @@ export async function recordClientProfilePrinted(candidateId, { blind = false } 
 export async function getFollowUps(scope = "mine") {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
   return apiFetch(`/api/follow-ups?scope=${scope}&tz=${encodeURIComponent(tz)}`);
+}
+
+// Clients and contacts - see app/api/clients.
+export async function getClients() {
+  const res = await apiFetch("/api/clients");
+  return res.clients;
+}
+
+export async function getClient(id) {
+  return apiFetch(`/api/clients/${id}`);
+}
+
+export async function createClient(fields) {
+  const res = await apiFetch("/api/clients", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.client;
+}
+
+export async function updateClient(id, fields) {
+  const res = await apiFetch(`/api/clients/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.client;
+}
+
+export async function deleteClient(id) {
+  return apiFetch(`/api/clients/${id}`, { method: "DELETE" });
+}
+
+export async function addClientContact(clientId, fields) {
+  const res = await apiFetch(`/api/clients/${clientId}/contacts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.contact;
+}
+
+export async function updateClientContact(clientId, contactId, fields) {
+  const res = await apiFetch(`/api/clients/${clientId}/contacts`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contactId, ...fields }),
+  });
+  return res.contact;
+}
+
+export async function removeClientContact(clientId, contactId) {
+  return apiFetch(`/api/clients/${clientId}/contacts?contactId=${encodeURIComponent(contactId)}`, { method: "DELETE" });
+}
+
+export async function logClientActivity(clientId, type, note) {
+  return apiFetch(`/api/clients/${clientId}/activity`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, note }),
+  });
 }

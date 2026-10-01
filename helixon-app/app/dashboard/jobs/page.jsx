@@ -4,9 +4,10 @@
 // counts (app/api/jobs). Jobs are created here directly, or as a side effect
 // of screening a CV against a new job description on /analyse.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import ClientPicker from "@/components/dashboard/ClientPicker";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
@@ -167,10 +168,15 @@ function Field({ label, children, hint }) {
 }
 
 // Adds a role directly, instead of only as a side effect of screening a CV.
-function NewJobDialog({ onCancel, onCreated }) {
+function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
+  const [client, setClient] = useState({
+    clientId: initialClient?.id ?? null,
+    clientName: initialClient?.name ?? "",
+    contactId: null,
+    contactEmail: null,
+  });
   const [f, setF] = useState({
     title: "",
-    company: "",
     clientEmail: "",
     location: "",
     employmentType: "",
@@ -204,8 +210,10 @@ function NewJobDialog({ onCancel, onCreated }) {
     try {
       const job = await createJob({
         title: f.title.trim(),
-        company: f.company.trim(),
-        clientEmail: f.clientEmail.trim(),
+        clientId: client.clientId,
+        company: client.clientId ? undefined : client.clientName.trim(),
+        contactId: client.contactId,
+        clientEmail: client.contactId ? undefined : f.clientEmail.trim(),
         location: f.location.trim(),
         employmentType: f.employmentType.trim(),
         seniority: f.seniority.trim(),
@@ -241,8 +249,12 @@ function NewJobDialog({ onCancel, onCreated }) {
               <input ref={firstRef} required maxLength={160} value={f.title} onChange={set("title")} className={input} style={inputStyle} />
             </Field>
           </div>
-          <Field label="Client"><input maxLength={160} value={f.company} onChange={set("company")} className={input} style={inputStyle} /></Field>
-          <Field label="Client contact email"><input type="email" maxLength={254} placeholder="hiring.manager@client.com" value={f.clientEmail} onChange={set("clientEmail")} className={input} style={inputStyle} /></Field>
+          <ClientPicker value={client} onChange={setClient} />
+          {!client.contactId && (
+            <Field label="Client contact email" hint="If they aren't saved as a contact yet.">
+              <input type="email" maxLength={254} placeholder="hiring.manager@client.com" value={f.clientEmail} onChange={set("clientEmail")} className={input} style={inputStyle} />
+            </Field>
+          )}
           <Field label="Location"><input maxLength={160} value={f.location} onChange={set("location")} className={input} style={inputStyle} /></Field>
           <Field label="Employment type"><input maxLength={60} placeholder="Permanent, contract…" value={f.employmentType} onChange={set("employmentType")} className={input} style={inputStyle} /></Field>
           <Field label="Seniority"><input maxLength={60} placeholder="Junior, mid, senior…" value={f.seniority} onChange={set("seniority")} className={input} style={inputStyle} /></Field>
@@ -289,7 +301,7 @@ function NewJobDialog({ onCancel, onCreated }) {
   );
 }
 
-export default function JobsPage() {
+function JobsContent() {
   const [jobs, setJobs] = useState(null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
@@ -313,7 +325,10 @@ export default function JobsPage() {
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
   const router = useRouter();
-  const [creating, setCreating] = useState(false);
+  // ?new=1&clientId= (from a client's page) opens "New job" for that client.
+  const searchParams = useSearchParams();
+  const [creating, setCreating] = useState(searchParams.get("new") === "1");
+  const presetClientId = searchParams.get("clientId");
   const closeNew = useCallback(() => setCreating(false), []);
 
   const [search, setSearch] = useState("");
@@ -447,8 +462,20 @@ export default function JobsPage() {
       </div>
 
       {creating && (
-        <NewJobDialog onCancel={closeNew} onCreated={(job) => router.push(`/dashboard/jobs/${job.id}`)} />
+        <NewJobDialog
+          onCancel={closeNew}
+          onCreated={(job) => router.push(`/dashboard/jobs/${job.id}`)}
+          initialClient={presetClientId ? { id: presetClientId, name: "" } : null}
+        />
       )}
     </main>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={null}>
+      <JobsContent />
+    </Suspense>
   );
 }

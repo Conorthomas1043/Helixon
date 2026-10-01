@@ -7,6 +7,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { findExistingPerson } from "@/lib/candidate-duplicates";
+import { ensureClient } from "@/lib/clients";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
@@ -432,9 +433,11 @@ export async function POST(request) {
           title:
             jobParsed?.title ||
             "Untitled Role",
-          client:
-            jobParsed?.client ||
-            null,
+          // The client named in the job description becomes (or is
+          // matched to) one of the agency's clients - lib/clients.js.
+          ...(await ensureClient(agencyId, jobParsed?.client)
+            .then((c) => (c ? { client: c.name, client_id: c.id } : { client: jobParsed?.client || null }))
+            .catch(() => ({ client: jobParsed?.client || null }))),
           client_email:
             clientEmail ||
             jobParsed?.client_email ||
