@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { DEFAULT_TIME_ZONE, followUpItems } from "@/lib/follow-ups";
+import { DEFAULT_TIME_ZONE, followUpItems, interviewFollowUpItems } from "@/lib/follow-ups";
 import { buildReminderEmail, remindersEnabled } from "@/lib/reminder-email";
 
 // Weekday-morning follow-up reminders: each recruiter gets one email
@@ -58,14 +58,25 @@ export async function GET(request) {
 
   const now = new Date();
   let rows;
+  let interviewRows;
   let suspended;
   try {
-    const [candidateRows, { data: suspendedRows, error }] = await Promise.all([
+    const [candidateRows, { data: suspendedRows, error }, { data: ivs, error: ivError }] = await Promise.all([
       fetchFollowUpRows(),
       supabase.from("agencies").select("id").not("suspended_at", "is", null),
+      // Today's interviews and ones that happened without an outcome.
+      supabase
+        .from("interviews")
+        .select("id, agency_id, candidate_id, round, status, starts_at, duration_minutes, candidates(full_name, name, recruiter_id), jobs(title)")
+        .eq("status", "scheduled")
+        .lte("starts_at", new Date(now.getTime() + 86400000).toISOString())
+        .gte("starts_at", new Date(now.getTime() - 30 * 86400000).toISOString())
+        .limit(ROW_CAP),
     ]);
     if (error) throw new Error(error.message);
+    if (ivError) throw new Error(ivError.message);
     rows = candidateRows;
+    interviewRows = (ivs ?? []).map((r) => ({ ...r, recruiter_id: r.candidates?.recruiter_id ?? null })).filter((r) => r.recruiter_id);
     suspended = new Set((suspendedRows ?? []).map((a) => a.id));
   } catch (err) {
     console.error("[cron/reminders] Query failed:", err.message);
@@ -76,7 +87,7 @@ export async function GET(request) {
   // recruiter_id outlives someone leaving (or being moved to another
   // workspace), and their old agency's candidates must not follow them.
   const memberAgency = new Map();
-  const assigned = [...new Set(rows.map((r) => r.recruiter_id))];
+  const assigned = [...new Set([...rows, ...interviewRows].map((r) => r.recruiter_id))];
   for (let i = 0; i < assigned.length; i += CLERK_BATCH) {
     const { data: profiles, error } = await supabase
       .from("profiles")
@@ -88,11 +99,15 @@ export async function GET(request) {
     }
     for (const p of profiles ?? []) memberAgency.set(p.clerk_user_id, p.agency_id);
   }
-  const eligible = rows.filter((r) => !suspended.has(r.agency_id) && memberAgency.get(r.recruiter_id) === r.agency_id);
+  const isEligible = (r) => !suspended.has(r.agency_id) && memberAgency.get(r.recruiter_id) === r.agency_id;
 
   // Due items, grouped by the recruiter they're assigned to.
   const byRecruiter = new Map();
-  for (const item of followUpItems(eligible, now, DEFAULT_TIME_ZONE)) {
+  const due = [
+    ...followUpItems(rows.filter(isEligible), now, DEFAULT_TIME_ZONE),
+    ...interviewFollowUpItems(interviewRows.filter(isEligible), now, DEFAULT_TIME_ZONE),
+  ];
+  for (const item of due) {
     if (item.when !== "overdue" && item.when !== "today") continue;
     if (!byRecruiter.has(item.recruiterId)) byRecruiter.set(item.recruiterId, []);
     byRecruiter.get(item.recruiterId).push(item);

@@ -70,8 +70,41 @@ export function followUpItems(rows, now = new Date(), timeZone) {
       });
     }
   }
-  const rank = { overdue: 0, today: 1, upcoming: 2, undated: 3 };
-  return items.sort((a, b) => rank[a.when] - rank[b.when] || String(a.dueAt ?? "").localeCompare(String(b.dueAt ?? "")));
+  return sortFollowUps(items);
+}
+
+// Interviews as follow-ups: ones in the next week ("today"/"upcoming"),
+// and ones that have happened but are still marked scheduled ("overdue" -
+// record how it went). Rows: interviews with candidates(full_name, name,
+// recruiter_id) and jobs(title).
+export function interviewFollowUpItems(rows, now = new Date(), timeZone) {
+  const weekAhead = now.getTime() + 7 * 86400000;
+  const items = [];
+  for (const r of rows || []) {
+    if (r.status !== "scheduled") continue;
+    const start = new Date(r.starts_at).getTime();
+    if (Number.isNaN(start) || start > weekAhead) continue;
+    const past = start + (r.duration_minutes || 60) * 60000 < now.getTime();
+    items.push({
+      id: `${r.id}-interview`,
+      kind: "interview",
+      candidateId: r.candidate_id,
+      candidateName: r.candidates?.full_name || r.candidates?.name || "Unnamed candidate",
+      jobTitle: r.jobs?.title ?? null,
+      recruiterId: r.candidates?.recruiter_id ?? null,
+      label: past ? `Record interview outcome (round ${r.round})` : `Interview, round ${r.round}`,
+      dueAt: r.starts_at,
+      when: past ? "overdue" : followUpWhen(r.starts_at, now, timeZone) === "today" ? "today" : "upcoming",
+    });
+  }
+  return items;
+}
+
+const WHEN_RANK = { overdue: 0, today: 1, upcoming: 2, undated: 3 };
+
+// Merges follow-up lists, most urgent first.
+export function sortFollowUps(items) {
+  return [...items].sort((a, b) => WHEN_RANK[a.when] - WHEN_RANK[b.when] || String(a.dueAt ?? "").localeCompare(String(b.dueAt ?? "")));
 }
 
 export function groupFollowUps(items) {

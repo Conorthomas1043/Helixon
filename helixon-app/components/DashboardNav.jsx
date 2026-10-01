@@ -18,6 +18,7 @@ const TABS = [
   { href: "/dashboard/talent-pool", label: "Talent pool" },
   { href: "/dashboard/shortlists", label: "Shortlists" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
+  { href: "/dashboard/interviews", label: "Interviews" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/clients", label: "Clients" },
   { href: "/dashboard/team", label: "Team" },

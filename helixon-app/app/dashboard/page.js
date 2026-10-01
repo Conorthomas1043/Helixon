@@ -656,7 +656,7 @@ function FollowUpsPanel() {
             return (
               <li key={item.id} style={{ borderTop: `1px solid ${BORDER}`, display: "flex", alignItems: "center", gap: 10, padding: "10px 4px" }}>
                 <Link
-                  href={item.kind === "check_in" ? "/dashboard/talent-pool?due=1" : `/dashboard/candidates/${item.candidateId}`}
+                  href={item.kind === "check_in" ? "/dashboard/talent-pool?due=1" : item.kind === "interview" ? "/dashboard/interviews" : `/dashboard/candidates/${item.candidateId}`}
                   style={{ minWidth: 0, flex: 1, textDecoration: "none" }}
                   className="hover:underline"
                 >

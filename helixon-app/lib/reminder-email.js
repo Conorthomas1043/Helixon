@@ -30,7 +30,9 @@ function dueText(item, timeZone) {
 }
 
 function itemUrl(item, siteUrl) {
-  return item.kind === "check_in" ? `${siteUrl}/dashboard/talent-pool?due=1` : `${siteUrl}/dashboard/candidates/${item.candidateId}`;
+  if (item.kind === "check_in") return `${siteUrl}/dashboard/talent-pool?due=1`;
+  if (item.kind === "interview") return `${siteUrl}/dashboard/interviews`;
+  return `${siteUrl}/dashboard/candidates/${item.candidateId}`;
 }
 
 // `items`: this recruiter's overdue + due-today follow-ups. Returns null

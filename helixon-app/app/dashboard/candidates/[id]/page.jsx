@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
+import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import {
   getCandidateById,
   getRecruiters,
@@ -117,6 +118,13 @@ function activityDescription(entry) {
     case "shortlist_added":
     case "shortlist_removed":
     case "feedback_request_sent":
+    case "interview_scheduled":
+    case "interview_rescheduled":
+    case "interview_invite_sent":
+    case "interview_status":
+    case "interview_outcome":
+    case "scorecard_submitted":
+    case "scorecard_requested":
     case "client_profile_printed":
       return entry.meta?.note ?? "";
     case "rescreened":
@@ -153,6 +161,13 @@ const EVENT_LABELS = {
   shortlist_added: "Added to shortlist",
   shortlist_removed: "Removed from shortlist",
   feedback_request_sent: "Feedback request emailed",
+  interview_scheduled: "Interview scheduled",
+  interview_rescheduled: "Interview rescheduled",
+  interview_invite_sent: "Interview invite sent",
+  interview_status: "Interview updated",
+  interview_outcome: "Interview outcome",
+  scorecard_submitted: "Scorecard received",
+  scorecard_requested: "Scorecard requested",
   client_profile_printed: "Client profile printed",
 };
 
@@ -2006,6 +2021,15 @@ export default function CandidateProfilePage({ params }) {
       .catch(() => {});
   }, [id]);
 
+  // After scheduling or updating an interview: the stage may have moved too.
+  const refreshCandidate = useCallback(() => {
+    getCandidateById(id)
+      .then((c) => {
+        if (c) setCandidate((prev) => (prev ? { ...prev, stage: c.stage, activity: c.activity } : prev));
+      })
+      .catch(() => {});
+  }, [id]);
+
   // Each resolves true when done, so the panel can close its form.
   const handleCreateFeedbackRequest = useCallback(
     async (kind, sendTo) => {
@@ -2316,6 +2340,7 @@ export default function CandidateProfilePage({ params }) {
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               <div className="space-y-4 lg:space-y-6">
                 <MatchOverview candidate={candidate} />
+                {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} />
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />

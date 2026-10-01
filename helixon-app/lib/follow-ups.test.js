@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayKey, followUpItems, followUpWhen, groupFollowUps, isOverdue } from "./follow-ups";
+import { dayKey, followUpItems, followUpWhen, groupFollowUps, interviewFollowUpItems, isOverdue } from "./follow-ups";
 
 const TZ = "Europe/London";
 const now = new Date("2026-10-01T10:00:00Z"); // 11:00 in London
@@ -46,5 +46,22 @@ describe("followUpItems", () => {
       ["Ana", "action", "upcoming"],
     ]);
     expect(groupFollowUps(items).overdue).toHaveLength(1);
+  });
+});
+
+describe("interviewFollowUpItems", () => {
+  it("lists this week's interviews and past ones still scheduled", () => {
+    const rows = [
+      { id: "1", status: "scheduled", candidate_id: "a", round: 1, starts_at: "2026-10-01T14:00:00Z", duration_minutes: 60, candidates: { full_name: "Ana" } },
+      { id: "2", status: "scheduled", candidate_id: "b", round: 2, starts_at: "2026-09-30T09:00:00Z", duration_minutes: 60, candidates: { full_name: "Ben" } },
+      { id: "3", status: "scheduled", candidate_id: "c", round: 1, starts_at: "2026-10-20T09:00:00Z", duration_minutes: 60 },
+      { id: "4", status: "completed", candidate_id: "d", round: 1, starts_at: "2026-09-30T09:00:00Z", duration_minutes: 60 },
+    ];
+    const items = interviewFollowUpItems(rows, now, TZ);
+    expect(items.map((i) => [i.candidateName, i.when])).toEqual([
+      ["Ana", "today"],
+      ["Ben", "overdue"],
+    ]);
+    expect(items[1].label).toMatch(/Record interview outcome/);
   });
 });
