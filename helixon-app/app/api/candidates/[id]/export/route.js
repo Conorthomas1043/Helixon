@@ -12,7 +12,8 @@ import { getAgencyTags } from "@/lib/agency-tags";
 // Covers every candidate row for the person (they get one per job they're
 // screened for - lib/candidate-person.js) and everything hanging off them:
 // analyses, notes, activity, emails drafted or sent, feedback requests,
-// shortlists. The original CV file is listed by name; the agency can
+// shortlists and clients' responses, interviews and scorecards, email
+// threads and sequences, offers, compliance checks and references. The original CV file is listed by name; the agency can
 // download it from the profile and send it with this file.
 //
 // Internal-only values are left out: storage paths, the feedback-request
@@ -53,6 +54,50 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Couldn't gather their data. Please try again." }, { status: 500 });
   }
 
+  // Data from later features. Each is optional: before its migration is
+  // applied the table or column isn't there, and the export still works.
+  const optional = async (q) => {
+    const { data, error } = await q;
+    if (error) console.warn("[candidate export] Optional data skipped:", error.message);
+    return data ?? [];
+  };
+  const [extra, interviews, emails, enrollments, placements, checks, references, clientDecisions] = await Promise.all([
+    optional(
+      supabase
+        .from("candidates")
+        .select("id, sub_stage, custom_fields, consent_given_at, consent_source, privacy_notice_sent_at, applied_at, source_detail")
+        .eq("agency_id", auth.agencyId)
+        .in("id", ids)
+    ),
+    optional(
+      supabase
+        .from("interviews")
+        .select("candidate_id, round, kind, starts_at, duration_minutes, location, interviewers, notes, status, outcome, jobs(title), interview_feedback(reviewer_name, overall_rating, recommendation, criteria, strengths, concerns, comments, submitted_at)")
+        .eq("agency_id", auth.agencyId)
+        .in("candidate_id", ids)
+    ),
+    optional(supabase.from("email_messages").select("candidate_id, created_at, direction, from_email, to_email, subject, body_text").eq("agency_id", auth.agencyId).in("candidate_id", ids).order("created_at")),
+    optional(supabase.from("sequence_enrollments").select("candidate_id, created_at, status, stopped_reason, email_sequences(name)").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional(
+      supabase
+        .from("placements")
+        .select("candidate_id, kind, status, job_title, client_name, offer_date, start_date, end_date, salary, rate_unit, pay_rate, currency, notes")
+        .eq("agency_id", auth.agencyId)
+        .in("candidate_id", ids)
+    ),
+    optional(supabase.from("compliance_checks").select("candidate_id, kind, label, status, document_type, checked_on, expires_on, follow_up_on, notes, document_name, checked_by").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional(
+      supabase
+        .from("candidate_references")
+        .select("candidate_id, referee_name, referee_company, referee_title, relationship, status, answers, requested_at, received_at")
+        .eq("agency_id", auth.agencyId)
+        .in("candidate_id", ids)
+    ),
+    optional(supabase.from("shortlist_candidates").select("candidate_id, client_decision, client_comment, client_decided_at, client_decided_by").in("candidate_id", ids).not("client_decided_at", "is", null)),
+  ]);
+  const extraById = new Map(extra.map((e) => [e.id, e]));
+  const forCandidate = (list, id) => list.filter((x) => x.candidate_id === id);
+
   const tagLabel = new Map(tags.map((t) => [t.id, t.label]));
   const person = candidates.data[0] || {};
   const exportedAt = new Date().toISOString();
@@ -64,7 +109,7 @@ export async function GET(request, { params }) {
       name: person.full_name || person.name || null,
       records: ids.length,
       note:
-        "Each record is this person's application or screening for one job. The original CV file is listed under cvFile and can be downloaded from their profile.",
+        "Each record is this person's application or screening for one job. The original CV file is listed under cvFile, and copies of compliance documents under complianceChecks[].documentKept; both can be downloaded from their profile.",
     },
     records: candidates.data.map((c) => ({
       job: c.jobs ? { title: c.jobs.title, client: c.jobs.client } : null,
@@ -91,6 +136,71 @@ export async function GET(request, { params }) {
         .map((f) => ({ at: f.created_at, kind: f.kind, recipient: f.recipient_label, rating: f.rating, comment: f.comment, tags: f.tags, respondedAt: f.responded_at })),
       shortlists: shortlists.data.filter((x) => x.candidate_id === c.id).map((x) => ({ at: x.created_at, note: x.note })),
       history: activity.data.filter((a) => a.candidate_id === c.id).map((a) => ({ at: a.created_at, type: a.type, by: a.actor, details: a.meta })),
+      yourDetails: extraById.get(c.id)?.custom_fields || {},
+      subStage: extraById.get(c.id)?.sub_stage ?? null,
+      consent: extraById.has(c.id)
+        ? {
+            givenAt: extraById.get(c.id).consent_given_at,
+            how: extraById.get(c.id).consent_source,
+            privacyNoticeSentAt: extraById.get(c.id).privacy_notice_sent_at,
+            appliedAt: extraById.get(c.id).applied_at,
+            sourceDetail: extraById.get(c.id).source_detail,
+          }
+        : null,
+      interviews: forCandidate(interviews, c.id).map((i) => ({
+        job: i.jobs?.title ?? null,
+        round: i.round,
+        kind: i.kind,
+        at: i.starts_at,
+        durationMinutes: i.duration_minutes,
+        location: i.location,
+        interviewers: i.interviewers,
+        notes: i.notes,
+        status: i.status,
+        outcome: i.outcome,
+        scorecards: (i.interview_feedback || [])
+          .filter((f) => f.submitted_at)
+          .map((f) => ({ by: f.reviewer_name, rating: f.overall_rating, recommendation: f.recommendation, criteria: f.criteria, strengths: f.strengths, concerns: f.concerns, comments: f.comments, at: f.submitted_at })),
+      })),
+      emails: forCandidate(emails, c.id).map((e) => ({ at: e.created_at, direction: e.direction === "in" ? "received" : "sent", from: e.from_email, to: e.to_email, subject: e.subject, body: e.body_text })),
+      emailSequences: forCandidate(enrollments, c.id).map((e) => ({ sequence: e.email_sequences?.name ?? null, addedAt: e.created_at, status: e.status, stoppedBecause: e.stopped_reason })),
+      offersAndPlacements: forCandidate(placements, c.id).map((p) => ({
+        type: p.kind,
+        status: p.status,
+        job: p.job_title,
+        client: p.client_name,
+        offeredOn: p.offer_date,
+        startsOn: p.start_date,
+        endsOn: p.end_date,
+        salary: p.salary,
+        payRate: p.pay_rate,
+        rateUnit: p.rate_unit,
+        currency: p.currency,
+        notes: p.notes,
+      })),
+      complianceChecks: forCandidate(checks, c.id).map((k) => ({
+        kind: k.kind,
+        label: k.label,
+        status: k.status,
+        evidence: k.document_type,
+        checkedOn: k.checked_on,
+        checkedBy: k.checked_by,
+        expiresOn: k.expires_on,
+        followUpOn: k.follow_up_on,
+        notes: k.notes,
+        documentKept: k.document_name || null,
+      })),
+      references: forCandidate(references, c.id).map((r) => ({
+        referee: r.referee_name,
+        company: r.referee_company,
+        title: r.referee_title,
+        relationship: r.relationship,
+        status: r.status,
+        requestedAt: r.requested_at,
+        receivedAt: r.received_at,
+        reference: r.answers,
+      })),
+      clientFeedbackOnShortlists: forCandidate(clientDecisions, c.id).map((d) => ({ decision: d.client_decision, comment: d.client_comment, at: d.client_decided_at, by: d.client_decided_by })),
     })),
   };
 

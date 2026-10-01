@@ -12,6 +12,7 @@
 // rather than reported as done.
 
 import { removeCandidateCvs } from "@/lib/candidate-files";
+import { removeComplianceDocuments } from "@/lib/compliance-files";
 
 const BATCH = 200;
 
@@ -63,6 +64,11 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
       }
     }
 
+    // Compliance checks go with the candidate (cascade); their stored
+    // documents are collected first so they can be removed too. Before the
+    // compliance migration the table doesn't exist - nothing to collect.
+    const { data: docs } = await supabase.from("compliance_checks").select("document_path").in("candidate_id", ids).not("document_path", "is", null);
+
     const { error: deleteError } = await supabase.from("candidates").delete().eq("agency_id", agencyId).in("id", ids);
     if (deleteError) {
       console.error("[candidate-erasure] Failed deleting candidates:", deleteError.message);
@@ -72,7 +78,8 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
 
     // Files go after the records, so a storage hiccup can't leave a
     // half-deleted candidate; a failure is logged for manual follow-up.
-    const storageError = await removeCandidateCvs((owned || []).map((c) => c.cv_file_url));
+    const storageError =
+      (await removeCandidateCvs((owned || []).map((c) => c.cv_file_url))) || (await removeComplianceDocuments((docs || []).map((d) => d.document_path)));
     if (storageError) {
       console.error("[candidate-erasure] Candidates erased but CV file removal failed:", storageError.message);
     }
