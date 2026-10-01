@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
+import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import {
   getCandidates,
   getStageCounts,
@@ -680,7 +681,7 @@ function CandidateDatabaseContent() {
               type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search candidates, jobs or recruiters…"
+              placeholder="Search name, skill, company, job or recruiter…"
               className="w-full text-sm px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
               aria-label="Search candidates, jobs or recruiters"
@@ -828,6 +829,11 @@ function CandidateDatabaseContent() {
                 Remove from pool
               </button>
             )}
+            <AddToShortlist
+              candidateIds={[...selectedIds]}
+              jobId={filters.jobId !== "all" ? filters.jobId : null}
+              label="Add to shortlist…"
+            />
             {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}

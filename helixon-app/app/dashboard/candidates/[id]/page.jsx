@@ -15,6 +15,7 @@ import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
+import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import {
   getCandidateById,
   getRecruiters,
@@ -39,6 +40,7 @@ import {
   logCandidateActivity,
   getFeedbackRequests,
   createFeedbackRequest,
+  emailFeedbackRequest,
   updateCandidateContact,
 } from "@/lib/dashboard-api";
 import Report from "@/app/analyse/_components/Report";
@@ -112,6 +114,10 @@ function activityDescription(entry) {
     case "data_exported":
     case "retention_extended":
     case "talent_pool_added":
+    case "shortlist_added":
+    case "shortlist_removed":
+    case "feedback_request_sent":
+    case "client_profile_printed":
       return entry.meta?.note ?? "";
     case "rescreened":
       return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
@@ -144,6 +150,10 @@ const EVENT_LABELS = {
   data_exported: "Data exported",
   talent_pool_expired: "Left the talent pool (retention policy)",
   retention_extended: "Kept past the retention period",
+  shortlist_added: "Added to shortlist",
+  shortlist_removed: "Removed from shortlist",
+  feedback_request_sent: "Feedback request emailed",
+  client_profile_printed: "Client profile printed",
 };
 
 const OUTREACH_ACTIONS = [
@@ -422,6 +432,24 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Compare with others
+          </Link>
+        )}
+        {candidate.status === "completed" && (
+          <AddToShortlist
+            candidateIds={[candidate.id]}
+            jobId={candidate.jobId}
+            defaultName={candidate.jobId ? `${candidate.jobTitle}${candidate.company ? ` - ${candidate.company}` : ""}` : ""}
+            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          />
+        )}
+        {candidate.status === "completed" && (
+          <Link
+            href={`/dashboard/candidates/${candidate.id}/client-profile`}
+            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK }}
+            title="A client-ready profile you can print or save as PDF - optionally anonymised"
+          >
+            Client profile
           </Link>
         )}
         {candidate.email && (
@@ -1161,8 +1189,59 @@ function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
  * Feedback requests (candidate NPS + hiring-manager/client feedback)
  * ---------------------------------------------------------------------- */
 
-function FeedbackRequestsPanel({ requests, onCreate, creating }) {
+const FEEDBACK_KINDS = {
+  candidate_nps: { button: "Request candidate feedback", title: "Candidate feedback" },
+  client_feedback: { button: "Request client feedback", title: "Client feedback" },
+};
+
+// "Send to" form for a feedback link - pre-filled with the candidate's email
+// or the job's client contact. Sending is optional: "Just create link" makes
+// the link to copy and send yourself.
+function FeedbackSendForm({ defaultTo, busy, onSend, onLinkOnly, onCancel }) {
+  const [to, setTo] = useState(defaultTo || "");
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (to.trim()) onSend(to.trim());
+      }}
+      className="flex flex-wrap items-center gap-2 p-3 rounded-[10px]"
+      style={{ background: "var(--mist)" }}
+    >
+      <input
+        type="email"
+        value={to}
+        onChange={(e) => setTo(e.target.value)}
+        placeholder="name@example.com"
+        aria-label="Send the link to"
+        autoFocus
+        className="flex-1 min-w-[180px] text-[12px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2"
+        style={{ border: "1px solid var(--border)", color: INK }}
+      />
+      <button
+        type="submit"
+        disabled={busy || !to.trim()}
+        className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ background: "var(--forest)", color: "white" }}
+      >
+        {busy ? "Sending…" : "Send email"}
+      </button>
+      {onLinkOnly && (
+        <button type="button" onClick={onLinkOnly} disabled={busy} className="text-[12px] font-semibold disabled:opacity-50" style={{ color: INK }}>
+          Just create link
+        </button>
+      )}
+      <button type="button" onClick={onCancel} disabled={busy} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
+        Cancel
+      </button>
+    </form>
+  );
+}
+
+function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidateEmail, clientEmail }) {
   const [copiedId, setCopiedId] = useState(null);
+  // Which form is open: a kind (new request) or a request id (email an existing one).
+  const [open, setOpen] = useState(null);
 
   function copy(req) {
     navigator.clipboard?.writeText(req.url).then(() => {
@@ -1171,58 +1250,89 @@ function FeedbackRequestsPanel({ requests, onCreate, creating }) {
     });
   }
 
+  const defaultTo = (kind) => (kind === "candidate_nps" ? candidateEmail : clientEmail) || "";
+
+  async function run(fn) {
+    if (await fn()) setOpen(null);
+  }
+
   return (
     <div className="rounded-[14px] p-5 sm:p-6 space-y-4" style={CARD}>
       <SectionHeading eyebrow="Feedback" title="Request feedback" />
       <p className="text-[12px] -mt-2" style={{ color: INK_FAINT }}>
-        Generates a link to an unauthenticated page - no account needed on their end. Feeds candidate NPS / client
+        Emails them a link to a one-question page - no account needed on their end. Feeds candidate NPS / client
         satisfaction figures in Analytics.
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => onCreate("candidate_nps")}
-          disabled={creating === "candidate_nps"}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
-        >
-          {creating === "candidate_nps" ? "Creating…" : "Request candidate feedback"}
-        </button>
-        <button
-          type="button"
-          onClick={() => onCreate("client_feedback")}
-          disabled={creating === "client_feedback"}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
-        >
-          {creating === "client_feedback" ? "Creating…" : "Request client feedback"}
-        </button>
+        {Object.entries(FEEDBACK_KINDS).map(([kind, k]) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => setOpen(open === kind ? null : kind)}
+            aria-expanded={open === kind}
+            className="text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: `1px solid ${open === kind ? "var(--forest)" : "var(--border)"}`, color: INK, background: "white" }}
+          >
+            {k.button}
+          </button>
+        ))}
       </div>
+      {FEEDBACK_KINDS[open] && (
+        <FeedbackSendForm
+          key={open}
+          defaultTo={defaultTo(open)}
+          busy={creating === open}
+          onSend={(to) => run(() => onCreate(open, to))}
+          onLinkOnly={() => run(() => onCreate(open, null))}
+          onCancel={() => setOpen(null)}
+        />
+      )}
 
       {requests.length > 0 && (
         <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
           {requests.map((req) => (
-            <li key={req.id} className="py-3 flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold" style={{ color: INK }}>
-                  {req.kind === "candidate_nps" ? "Candidate feedback" : "Client feedback"}
-                </p>
-                <p className="text-[11px]" style={{ color: INK_MUTED }}>
-                  {req.respondedAt
-                    ? `Responded · rated ${req.rating}${req.kind === "candidate_nps" ? "/10" : "/5"}${req.comment ? ` · "${req.comment}"` : ""}`
-                    : "Awaiting response"}
-                </p>
+            <li key={req.id} className="py-3 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold" style={{ color: INK }}>
+                    {FEEDBACK_KINDS[req.kind]?.title ?? "Feedback"}
+                    {req.recipientLabel && <span className="font-normal" style={{ color: INK_MUTED }}> · {req.recipientLabel}</span>}
+                  </p>
+                  <p className="text-[11px]" style={{ color: INK_MUTED }}>
+                    {req.respondedAt
+                      ? `Responded · rated ${req.rating}${req.kind === "candidate_nps" ? "/10" : "/5"}${req.comment ? ` · "${req.comment}"` : ""}`
+                      : "Awaiting response"}
+                  </p>
+                </div>
+                {!req.respondedAt && req.url && (
+                  <div className="flex gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setOpen(open === req.id ? null : req.id)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                    >
+                      Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copy(req)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                    >
+                      {copiedId === req.id ? "Copied" : "Copy link"}
+                    </button>
+                  </div>
+                )}
               </div>
-              {!req.respondedAt && req.url && (
-                <button
-                  type="button"
-                  onClick={() => copy(req)}
-                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
-                >
-                  {copiedId === req.id ? "Copied" : "Copy link"}
-                </button>
+              {open === req.id && (
+                <FeedbackSendForm
+                  defaultTo={req.recipientLabel?.includes("@") ? req.recipientLabel : defaultTo(req.kind)}
+                  busy={creating === req.id}
+                  onSend={(to) => run(() => onEmail(req.id, to))}
+                  onCancel={() => setOpen(null)}
+                />
               )}
             </li>
           ))}
@@ -1861,21 +1971,6 @@ export default function CandidateProfilePage({ params }) {
     getFeedbackRequests(id).then(setFeedbackRequests).catch(() => {});
   }, [id]);
 
-  const handleCreateFeedbackRequest = useCallback(
-    async (kind) => {
-      setCreatingFeedbackRequest(kind);
-      try {
-        const req = await createFeedbackRequest(id, { kind });
-        if (req) setFeedbackRequests((list) => [req, ...list]);
-      } catch (err) {
-        failed(err, "Couldn't create the feedback request.");
-      } finally {
-        setCreatingFeedbackRequest(null);
-      }
-    },
-    [id, failed]
-  );
-
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
@@ -1910,6 +2005,48 @@ export default function CandidateProfilePage({ params }) {
       })
       .catch(() => {});
   }, [id]);
+
+  // Each resolves true when done, so the panel can close its form.
+  const handleCreateFeedbackRequest = useCallback(
+    async (kind, sendTo) => {
+      setCreatingFeedbackRequest(kind);
+      try {
+        const res = await createFeedbackRequest(id, { kind, sendTo });
+        if (res.request) setFeedbackRequests((list) => [res.request, ...list]);
+        if (res.sendError) {
+          toast(`Link created, but ${res.sendError.charAt(0).toLowerCase()}${res.sendError.slice(1)}`, "error");
+        } else {
+          toast(res.emailedTo ? `Feedback request sent to ${res.emailedTo}` : "Feedback link created - copy it below");
+        }
+        if (res.emailedTo) refreshActivity();
+        return true;
+      } catch (err) {
+        failed(err, "Couldn't create the feedback request.");
+        return false;
+      } finally {
+        setCreatingFeedbackRequest(null);
+      }
+    },
+    [id, failed, toast, refreshActivity]
+  );
+
+  const handleEmailFeedbackRequest = useCallback(
+    async (requestId, sendTo) => {
+      setCreatingFeedbackRequest(requestId);
+      try {
+        await emailFeedbackRequest(id, requestId, sendTo);
+        toast(`Feedback request sent to ${sendTo}`);
+        refreshActivity();
+        return true;
+      } catch (err) {
+        failed(err, "Couldn't send the email.");
+        return false;
+      } finally {
+        setCreatingFeedbackRequest(null);
+      }
+    },
+    [id, failed, toast, refreshActivity]
+  );
 
   const [editingDetails, setEditingDetails] = useState(false);
   const closeEditDetails = useCallback(() => setEditingDetails(false), []);
@@ -2211,7 +2348,10 @@ export default function CandidateProfilePage({ params }) {
                 <FeedbackRequestsPanel
                   requests={feedbackRequests}
                   onCreate={handleCreateFeedbackRequest}
+                  onEmail={handleEmailFeedbackRequest}
                   creating={creatingFeedbackRequest}
+                  candidateEmail={candidate.email}
+                  clientEmail={candidate.job?.client_email}
                 />
                 <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />

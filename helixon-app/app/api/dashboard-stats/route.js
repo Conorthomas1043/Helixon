@@ -35,7 +35,7 @@ async function fetchAllScoreRows(agencyId) {
     const { data, error } = await supabase
       .from("scores")
       .select(
-        "id, match_score, created_at, job_id, candidates(id, full_name, name, processing_status, recruiter_id, stage), jobs(title, client)"
+        "id, match_score, created_at, job_id, candidates(id, full_name, name, processing_status, recruiter_id, stage, next_action), jobs(title, client)"
       )
       .eq("agency_id", agencyId)
       .order("created_at", { ascending: false })
@@ -111,6 +111,7 @@ export async function GET() {
     stage: s.candidates?.stage || null,
     score: typeof s.match_score === "number" ? s.match_score : null,
     createdAt: s.created_at,
+    nextAction: s.candidates?.next_action?.label ? s.candidates.next_action : null,
   }));
 
   // getAgencyPlan (subscriptions.plan) is the only source kept in sync on

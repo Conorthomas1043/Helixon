@@ -6,6 +6,7 @@ import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { findExistingPerson } from "@/lib/candidate-duplicates";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
@@ -365,6 +366,11 @@ export async function POST(request) {
       );
     }
 
+    // Someone already on file (same email or LinkedIn) is linked to their
+    // existing record rather than becoming a second, unconnected person -
+    // see lib/candidate-duplicates.js.
+    const existingPerson = await findExistingPerson(supabase, agencyId, ex);
+
     /*
      * Candidate belongs to the authenticated user's
      * agency, never to an agency supplied by the client.
@@ -392,6 +398,7 @@ export async function POST(request) {
         cv_text: cvText || "",
         extracted: ex,
         processing_status: "completed",
+        pooled_from_id: existingPerson?.rootId ?? null,
       })
       .select()
       .single();
@@ -586,8 +593,29 @@ export async function POST(request) {
           match_score:
             result?.match_score ?? 0,
           lawful_basis_confirmed: true,
+          ...(existingPerson ? { linked_to: existingPerson.rootId, matched_on: existingPerson.matchedOn } : {}),
         },
       });
+
+    // Tell the recruiter they're already on file - and whether this is a
+    // second record for the very same job.
+    let duplicate = null;
+    if (existingPerson) {
+      const { data: sameJobRow } = await supabase
+        .from("candidates")
+        .select("id")
+        .eq("agency_id", agencyId)
+        .eq("job_id", job.id)
+        .neq("id", candidate.id)
+        .or(`id.eq.${existingPerson.rootId},pooled_from_id.eq.${existingPerson.rootId}`)
+        .limit(1)
+        .maybeSingle();
+      duplicate = {
+        candidateId: existingPerson.rootId,
+        matchedOn: existingPerson.matchedOn,
+        sameJobCandidateId: sameJobRow?.id ?? null,
+      };
+    }
 
     return NextResponse.json({
       ok: true,
@@ -597,6 +625,7 @@ export async function POST(request) {
       candidateId: candidate.id,
       jobId: job.id,
       scoreId: score.id,
+      duplicate,
 
       job: {
         id: job.id,

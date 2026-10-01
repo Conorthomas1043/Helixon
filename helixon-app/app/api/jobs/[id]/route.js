@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { cleanEmail } from "@/lib/sanitize";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -41,6 +42,7 @@ const VALID_STATUSES = new Set(["open", "closed"]);
 const MAX_TITLE_LEN = 200;
 const MAX_CLIENT_LEN = 200;
 const MAX_LOCATION_LEN = 200;
+const MAX_SALARY_LEN = 80;
 const MAX_SKILL_LEN = 100;
 const MAX_SKILLS = 40;
 
@@ -115,6 +117,23 @@ export async function PATCH(request, { params }) {
   if (location?.error) return NextResponse.json({ error: `Location must be ${MAX_LOCATION_LEN} characters or fewer.` }, { status: 400 });
   if (location !== undefined) update.location = location;
 
+  const salaryRange = cleanString(body.salaryRange, MAX_SALARY_LEN);
+  if (salaryRange?.error) return NextResponse.json({ error: `Salary range must be ${MAX_SALARY_LEN} characters or fewer.` }, { status: 400 });
+  if (salaryRange !== undefined) update.salary_range = salaryRange;
+
+  // The client contact the "present to client" / "chase feedback" emails and
+  // client feedback requests go to. Until now only the AI's read of the job
+  // spec ever set it.
+  if (body.clientEmail !== undefined) {
+    if (body.clientEmail === null || body.clientEmail === "") {
+      update.client_email = null;
+    } else {
+      const email = typeof body.clientEmail === "string" ? cleanEmail(body.clientEmail) : "";
+      if (!email) return NextResponse.json({ error: "Client email doesn't look like a valid email address." }, { status: 400 });
+      update.client_email = email;
+    }
+  }
+
   const employmentType = cleanString(body.employmentType, 50);
   if (employmentType?.error) return NextResponse.json({ error: "Employment type is too long." }, { status: 400 });
   if (employmentType !== undefined) update.employment_type = employmentType;
@@ -151,7 +170,7 @@ export async function PATCH(request, { params }) {
     .update(update)
     .eq("id", id)
     .eq("agency_id", agencyId)
-    .select("id, status, title, client, location, employment_type, seniority, min_years_experience, required_skills, preferred_skills")
+    .select("id, status, title, client, client_email, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills")
     .maybeSingle();
 
   if (error) {

@@ -178,7 +178,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
         return { outcome: "rate_limited" };
       }
       if (data?.ok) {
-        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null });
+        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null, duplicate: data.duplicate || null });
         return { outcome: "ok", jobId: data.jobId };
       }
       updateItem(item.id, { status: "failed", errorMessage: data?.error || "Analysis failed." });
@@ -482,6 +482,11 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                       <p className={cx("text-[12px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
                         {item.status === "failed" || item.status === "rate_limited" ? item.errorMessage : item.name ? item.file.name : formatBytes(item.file.size)}
                       </p>
+                      {item.duplicate && (
+                        <p className="text-[11.5px] truncate" style={{ color: item.duplicate.sameJobCandidateId ? "var(--score-mid)" : "var(--forest)" }}>
+                          {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}
+                        </p>
+                      )}
                     </div>
                     {item.status === "done" ? (
                       <a href={`/dashboard/candidates/${item.candidateId}`} className="flex items-center gap-2 group" aria-label={`Open ${item.name || item.file.name}, score ${item.score}`}>

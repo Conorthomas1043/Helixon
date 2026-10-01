@@ -1,6 +1,7 @@
 // A "person" in Helixon can be several candidate rows: the one first
-// screened, plus a row per job they were later screened for from the CV on
-// file (lib/rescreen.js, linked by pooled_from_id). Subject access requests
+// screened, plus a row per job they were later screened for - from the CV on
+// file (lib/rescreen.js) or a new upload recognised as them
+// (lib/candidate-duplicates.js) - linked by pooled_from_id. Subject access requests
 // and erasure have to cover all of them, not just the row being viewed.
 
 import { poolRootId } from "@/lib/rescreen";

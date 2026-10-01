@@ -128,13 +128,23 @@ export async function getFeedbackRequests(candidateId) {
   return res.requests;
 }
 
-export async function createFeedbackRequest(candidateId, { kind, recipientLabel }) {
-  const res = await apiFetch(`/api/candidates/${candidateId}/feedback-requests`, {
+// With sendTo the link is also emailed; the result says whether it went
+// ({ request, emailedTo, sendError }) - the link exists either way.
+export async function createFeedbackRequest(candidateId, { kind, recipientLabel, sendTo }) {
+  return apiFetch(`/api/candidates/${candidateId}/feedback-requests`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ kind, recipientLabel }),
+    body: JSON.stringify({ kind, recipientLabel, sendTo: sendTo || undefined }),
   });
-  return res.request;
+}
+
+// Emails an existing, unanswered feedback link.
+export async function emailFeedbackRequest(candidateId, requestId, sendTo) {
+  return apiFetch(`/api/candidates/${candidateId}/feedback-requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requestId, sendTo }),
+  });
 }
 
 // Job rows come back from the API in their raw (snake_case) DB column
@@ -144,6 +154,7 @@ function adaptJob(j) {
   return {
     ...j,
     company: j.client,
+    clientEmail: j.client_email ?? null,
     employmentType: j.employment_type,
     salaryRange: j.salary_range,
     requiredSkills: j.required_skills ?? [],
@@ -612,4 +623,84 @@ function computeScoreCalibration(completed) {
     minSample: CALIBRATION_MIN_SAMPLE,
     bands,
   };
+}
+
+// Shortlists - see app/api/shortlists. `candidateId` marks which lists
+// already have that person on them (containsCandidate).
+export async function getShortlists({ jobId, candidateId } = {}) {
+  const params = new URLSearchParams();
+  if (jobId) params.set("jobId", jobId);
+  if (candidateId) params.set("candidateId", candidateId);
+  const res = await apiFetch(`/api/shortlists?${params.toString()}`);
+  return res.shortlists;
+}
+
+export async function createShortlist({ name, jobId = null, candidateIds = [] }) {
+  const res = await apiFetch("/api/shortlists", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, jobId, candidateIds }),
+  });
+  return res.shortlist;
+}
+
+export async function getShortlist(id) {
+  return apiFetch(`/api/shortlists/${id}`);
+}
+
+export async function updateShortlist(id, fields) {
+  const res = await apiFetch(`/api/shortlists/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.shortlist;
+}
+
+export async function deleteShortlist(id) {
+  return apiFetch(`/api/shortlists/${id}`, { method: "DELETE" });
+}
+
+export async function addToShortlist(id, candidateIds, note = null) {
+  return apiFetch(`/api/shortlists/${id}/candidates`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ candidateIds, note }),
+  });
+}
+
+export async function setShortlistNote(id, candidateId, note) {
+  return apiFetch(`/api/shortlists/${id}/candidates`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ candidateId, note }),
+  });
+}
+
+export async function removeFromShortlist(id, candidateId) {
+  return apiFetch(`/api/shortlists/${id}/candidates?candidateId=${encodeURIComponent(candidateId)}`, { method: "DELETE" });
+}
+
+// Client-ready profile - see app/api/candidates/[id]/client-profile.
+export async function getClientProfile(candidateId, { blind = false, includeConcerns = false, label } = {}) {
+  const params = new URLSearchParams();
+  if (blind) params.set("blind", "1");
+  if (includeConcerns) params.set("concerns", "1");
+  if (label) params.set("label", label);
+  return apiFetch(`/api/candidates/${candidateId}/client-profile?${params.toString()}`);
+}
+
+export async function recordClientProfilePrinted(candidateId, { blind = false } = {}) {
+  return apiFetch(`/api/candidates/${candidateId}/client-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ blind }),
+  });
+}
+
+// Open follow-ups (next actions + talent-pool check-ins) - see
+// app/api/follow-ups. scope: "mine" (assigned to me) or "all".
+export async function getFollowUps(scope = "mine") {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  return apiFetch(`/api/follow-ups?scope=${scope}&tz=${encodeURIComponent(tz)}`);
 }

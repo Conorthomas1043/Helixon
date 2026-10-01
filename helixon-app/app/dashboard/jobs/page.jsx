@@ -171,6 +171,7 @@ function NewJobDialog({ onCancel, onCreated }) {
   const [f, setF] = useState({
     title: "",
     company: "",
+    clientEmail: "",
     location: "",
     employmentType: "",
     seniority: "",
@@ -204,6 +205,7 @@ function NewJobDialog({ onCancel, onCreated }) {
       const job = await createJob({
         title: f.title.trim(),
         company: f.company.trim(),
+        clientEmail: f.clientEmail.trim(),
         location: f.location.trim(),
         employmentType: f.employmentType.trim(),
         seniority: f.seniority.trim(),
@@ -240,6 +242,7 @@ function NewJobDialog({ onCancel, onCreated }) {
             </Field>
           </div>
           <Field label="Client"><input maxLength={160} value={f.company} onChange={set("company")} className={input} style={inputStyle} /></Field>
+          <Field label="Client contact email"><input type="email" maxLength={254} placeholder="hiring.manager@client.com" value={f.clientEmail} onChange={set("clientEmail")} className={input} style={inputStyle} /></Field>
           <Field label="Location"><input maxLength={160} value={f.location} onChange={set("location")} className={input} style={inputStyle} /></Field>
           <Field label="Employment type"><input maxLength={60} placeholder="Permanent, contract…" value={f.employmentType} onChange={set("employmentType")} className={input} style={inputStyle} /></Field>
           <Field label="Seniority"><input maxLength={60} placeholder="Junior, mid, senior…" value={f.seniority} onChange={set("seniority")} className={input} style={inputStyle} /></Field>

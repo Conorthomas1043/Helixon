@@ -5,10 +5,11 @@
 //
 // `candidates` - normalized rows, one per candidate:
 //   { id, candidateName, jobTitle, company, recruiterName, status,
-//     stage, score, createdAt (Date) }
+//     stage, score, createdAt (Date), nextAction ({ label, dueAt } | null) }
 
 import { STAGE_LABELS, FUNNEL_ORDER } from "./stage-labels";
 import { STRONG_MATCH_MIN } from "./scoreBands";
+import { isOverdue } from "./follow-ups";
 
 const DAY = 86400000;
 
@@ -72,6 +73,29 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       priority: 0,
     });
   });
+
+  // Overdue follow-ups - the next action set on the candidate is past its
+  // due date. One per candidate (a candidate can have several analyses).
+  const overdueSeen = new Set();
+  completed
+    .filter((a) => isOverdue(a.nextAction, new Date(now)))
+    .forEach((a) => {
+      const key = a.candidateId ?? a.id;
+      if (overdueSeen.has(key)) return;
+      overdueSeen.add(key);
+      attentionItems.push({
+        id: `${a.id}-overdue`,
+        candidateName: a.candidateName,
+        jobTitle: a.jobTitle,
+        score: a.score,
+        createdAt: a.nextAction.dueAt ? new Date(a.nextAction.dueAt) : a.createdAt,
+        reasonLabel: `Overdue · ${a.nextAction.label.length > 32 ? `${a.nextAction.label.slice(0, 31)}…` : a.nextAction.label}`,
+        tone: TONE.red,
+        actionLabel: "Open candidate",
+        actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        priority: 0.5,
+      });
+    });
 
   processing
     .filter((a) => a.createdAt && now - a.createdAt.getTime() > 12 * 60 * 60 * 1000)

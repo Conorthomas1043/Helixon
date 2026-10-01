@@ -9,7 +9,8 @@
 // which jobs the pool could fill, and each person shows their best open
 // job. Picking a job ranks everyone by fit; the best can then be screened
 // properly in one go from the CVs already on file (app/api/candidates/[id]/
-// rescreen) - no re-uploading. ?jobId= deep-links straight to a job.
+// rescreen) - no re-uploading. ?jobId= deep-links straight to a job;
+// ?due=1 opens on the check-ins that are due.
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -497,9 +498,11 @@ function TalentPoolContent() {
   const [reloadKey, setReloadKey] = useState(0);
 
   const [search, setSearch] = useState("");
-  const [availability, setAvailability] = useState("all"); // all | available | open | not_looking | due
+  // ?due=1 (from the Overview's Follow-ups) opens on check-ins that are due.
+  const dueOnly = params.get("due") === "1";
+  const [availability, setAvailability] = useState(dueOnly ? "due" : "all"); // all | available | open | not_looking | due
   const [skill, setSkill] = useState("");
-  const [sortBy, setSortBy] = useState(jobId ? "fit" : "recent");
+  const [sortBy, setSortBy] = useState(jobId ? "fit" : dueOnly ? "checkIn" : "recent");
 
   const [selected, setSelected] = useState([]);
   const [screening, setScreening] = useState({}); // id -> { status, error }

@@ -23,8 +23,8 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 // under whichever tab's heading was selected - a real, user-visible bug:
 // the nav showed "Notifications" as active while the content was Profile
 // again). DangerZone does real account deletion via /api/account/delete;
-// NotificationsInfo is a deliberate, honest "nothing to configure yet"
-// panel, not a stub.
+// NotificationsInfo holds the follow-up reminder switch (the one optional
+// email) and says plainly that everything else is transactional.
 const TAB_COPY = {
   "/account": {
     eyebrow: "Account",

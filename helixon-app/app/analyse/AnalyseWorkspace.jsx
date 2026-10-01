@@ -83,6 +83,8 @@ export default function AnalyseWorkspace() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [candidateId, setCandidateId] = useState(null);
+  // Set when this CV belongs to someone already on file (api/run links them).
+  const [duplicate, setDuplicate] = useState(null);
   const [jobId, setJobId] = useState(null);
   const [jobTitle, setJobTitle] = useState(null);
   const [comparing, setComparing] = useState(false);
@@ -282,6 +284,7 @@ export default function AnalyseWorkspace() {
       } else {
         setResult(data.result);
         setCandidateId(data.candidateId);
+        setDuplicate(data.duplicate || null);
         setJobId(data.jobId);
         setScoreId(data.scoreId || null);
         setJobTitle(data.job?.title || null);
@@ -344,6 +347,7 @@ export default function AnalyseWorkspace() {
   function startNew() {
     setResult(null);
     setCandidateId(null);
+    setDuplicate(null);
     setJobId(null);
     setJobTitle(null);
     setFile(null);
@@ -561,6 +565,30 @@ export default function AnalyseWorkspace() {
         ) : (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
             <div id="analysis-report" className="space-y-5 min-w-0">
+              {duplicate && (
+                <div
+                  role="status"
+                  className="print-hide rounded-[12px] px-4 py-3 text-[13px] border"
+                  style={duplicate.sameJobCandidateId
+                    ? { background: "#fff8e6", borderColor: "#f1dfb5", color: "#7a4f0a" }
+                    : { background: "var(--mint)", borderColor: "var(--border)", color: "var(--ink)" }}
+                >
+                  {duplicate.sameJobCandidateId ? (
+                    <>
+                      <strong>Already screened for this job.</strong> This CV matches someone on file (by {duplicate.matchedOn}) who is
+                      already in this job&apos;s pipeline, so there are now two records for them here.{" "}
+                      <a href={`/dashboard/candidates/${duplicate.sameJobCandidateId}`} className="underline font-semibold">Open the earlier one</a>
+                      {" "}- you may want to delete one.
+                    </>
+                  ) : (
+                    <>
+                      <strong>Already on file.</strong> This CV matches someone you&apos;ve screened before (by {duplicate.matchedOn}), so
+                      it&apos;s been linked to their record - their profile lists every role they&apos;ve been considered for.{" "}
+                      <a href={`/dashboard/candidates/${duplicate.candidateId}`} className="underline font-semibold">See their earlier record</a>
+                    </>
+                  )}
+                </div>
+              )}
               <Report result={result} roleLabel={roleLabel} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">

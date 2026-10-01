@@ -410,6 +410,17 @@ body {
   body.printing-section .print-target .print-hide {
     display: none !important;
   }
+  /* Client profiles (components/dashboard/ClientProfileDocument): one per
+     page in a shortlist's client pack, printed flat. */
+  body.printing-section .print-target .client-profile-page {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    break-after: page;
+  }
+  body.printing-section .print-target .client-profile-page:last-child {
+    break-after: auto;
+  }
   /* Take everything else out of the flow too, or its (invisible) height
      prints as blank trailing pages. Ancestors of the section are kept. */
   body.printing-section *:not(:has(.print-target)):not(.print-target):not(.print-target *) {

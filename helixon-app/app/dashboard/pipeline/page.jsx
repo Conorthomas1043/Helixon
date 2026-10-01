@@ -291,7 +291,7 @@ function PipelineContent() {
     const map = {};
     BOARD_STAGES.forEach((k) => (map[k] = []));
     (candidates ?? []).forEach((c) => {
-      if (q && !`${c.fullName} ${c.jobTitle}`.toLowerCase().includes(q)) return;
+      if (q && !`${c.fullName} ${c.jobTitle} ${c.company ?? ""} ${c.recruiterName ?? ""} ${c.currentTitle ?? ""} ${c.currentCompany ?? ""}`.toLowerCase().includes(q)) return;
       if (map[c.stage]) map[c.stage].push(c);
     });
     return map;

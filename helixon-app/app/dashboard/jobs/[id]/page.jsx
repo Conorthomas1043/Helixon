@@ -258,15 +258,17 @@ function TextField({ label, ...props }) {
 }
 
 // Edits the structured fields a recruiter would actually want to fix
-// (title, client, location, seniority, employment type, minimum
-// experience, skills) - not the raw job spec text, which every future
+// (title, client and their contact email, location, salary range,
+// seniority, employment type, minimum experience, skills) - not the raw job spec text, which every future
 // analysis against this job re-parses fresh rather than reading back from
 // here (see api/jobs/[id]'s PATCH handler comment).
 function EditJobForm({ job, onCancel, onSave }) {
   const [form, setForm] = useState({
     title: job.title || "",
     client: job.company || "",
+    clientEmail: job.clientEmail || "",
     location: job.location || "",
+    salaryRange: job.salaryRange || "",
     employmentType: job.employmentType || "",
     seniority: job.seniority || "",
     minYearsExperience: job.minYearsExperience ?? "",
@@ -296,7 +298,9 @@ function EditJobForm({ job, onCancel, onSave }) {
       await onSave({
         title: form.title.trim(),
         client: form.client.trim() || null,
+        clientEmail: form.clientEmail.trim() || null,
         location: form.location.trim() || null,
+        salaryRange: form.salaryRange.trim() || null,
         employmentType: form.employmentType.trim() || null,
         seniority: form.seniority.trim() || null,
         minYearsExperience: form.minYearsExperience === "" ? null : Number(form.minYearsExperience),
@@ -315,6 +319,15 @@ function EditJobForm({ job, onCancel, onSave }) {
       <div className="grid sm:grid-cols-2 gap-4">
         <TextField label="Client" value={form.client} onChange={(e) => set("client", e.target.value)} maxLength={200} />
         <TextField label="Location" value={form.location} onChange={(e) => set("location", e.target.value)} maxLength={200} />
+        <TextField
+          label="Client contact email"
+          type="email"
+          value={form.clientEmail}
+          onChange={(e) => set("clientEmail", e.target.value)}
+          maxLength={254}
+          placeholder="hiring.manager@client.com"
+        />
+        <TextField label="Salary range" value={form.salaryRange} onChange={(e) => set("salaryRange", e.target.value)} maxLength={80} placeholder="£40k–£50k" />
       </div>
       <div className="grid sm:grid-cols-3 gap-4">
         <TextField label="Seniority" value={form.seniority} onChange={(e) => set("seniority", e.target.value)} maxLength={50} />
@@ -568,9 +581,16 @@ export default function JobDetailPage({ params }) {
                   <div>
                     <FieldLabel>Role details</FieldLabel>
                     <ul className="text-[13px] space-y-1" style={{ color: INK }}>
-                      <li>{job.seniority} · {job.employmentType}</li>
-                      <li>{job.salaryRange}</li>
-                      <li>{job.minYearsExperience}+ years&apos; experience</li>
+                      {(job.seniority || job.employmentType) && <li>{[job.seniority, job.employmentType].filter(Boolean).join(" · ")}</li>}
+                      {job.salaryRange && <li>{job.salaryRange}</li>}
+                      {job.minYearsExperience != null && <li>{job.minYearsExperience}+ years&apos; experience</li>}
+                      <li style={{ color: job.clientEmail ? INK : INK_FAINT }}>
+                        {job.clientEmail ? (
+                          <>Client contact: <a href={`mailto:${job.clientEmail}`} className="underline">{job.clientEmail}</a></>
+                        ) : (
+                          <>No client contact email - <button type="button" onClick={() => setEditing(true)} className="underline font-semibold" style={{ color: "var(--forest)" }}>add one</button> so client emails and feedback requests can be sent</>
+                        )}
+                      </li>
                     </ul>
                   </div>
                   <div>

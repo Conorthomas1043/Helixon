@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { cleanText, cleanLine, cleanList, cleanNumber } from "@/lib/sanitize";
+import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
 
 // See app/api/candidates/route.js for why this was rewritten - Clerk auth
 // instead of the dead Supabase-Auth bearer-token check, and agency_id
@@ -69,6 +69,7 @@ export async function POST(request) {
       user_id: userId,
       title,
       client: cleanLine(body.company, 160) || null,
+      client_email: cleanEmail(body.clientEmail) || null,
       location: cleanLine(body.location, 160) || null,
       employment_type: cleanLine(body.employmentType, 60) || null,
       seniority: cleanLine(body.seniority, 60) || null,

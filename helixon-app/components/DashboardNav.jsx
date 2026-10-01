@@ -16,6 +16,7 @@ const TABS = [
   { href: "/analyse/compare", label: "Compare" },
   { href: "/dashboard/candidates", label: "Candidates" },
   { href: "/dashboard/talent-pool", label: "Talent pool" },
+  { href: "/dashboard/shortlists", label: "Shortlists" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/team", label: "Team" },
@@ -194,14 +195,16 @@ function DashboardNavContent() {
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+        {/* Ten tabs don't all fit between md and xl - the row scrolls rather
+            than pushing the account controls off the edge. */}
+        <div className="hidden md:flex items-center gap-0.5 xl:gap-1 min-w-0 mx-3 overflow-x-auto text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
           {TABS.map((t) => {
             const active = t.href === activeHref;
             return (
               <Link
                 key={t.href}
                 href={t.href}
-                className="px-3 py-1.5 rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+                className="px-2 xl:px-3 py-1.5 rounded-[8px] whitespace-nowrap shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--forest)]"
                 style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
               >
                 {t.label}
@@ -210,7 +213,7 @@ function DashboardNavContent() {
           })}
         </div>
 
-        <div className="relative flex items-center gap-2">
+        <div className="relative flex items-center gap-2 shrink-0">
           <TeammateStack teammates={teammates} />
           <button
             type="button"
