@@ -1107,3 +1107,16 @@ export async function getComplianceOverview() {
 export async function sendPrivacyNoticesTo(candidateIds) {
   return apiFetch("/api/compliance", jsonBody("POST", { candidateIds }));
 }
+
+// Performance, targets and commission - see app/api/performance.
+export async function getPerformance(period) {
+  return apiFetch(`/api/performance?period=${encodeURIComponent(period || "this_month")}`);
+}
+
+export async function getPerformanceSettings() {
+  return apiFetch("/api/performance/settings");
+}
+
+export async function savePerformanceSettings(fields) {
+  return apiFetch("/api/performance/settings", jsonBody("PUT", fields));
+}
