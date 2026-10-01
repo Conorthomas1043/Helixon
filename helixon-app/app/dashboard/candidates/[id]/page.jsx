@@ -128,6 +128,7 @@ function activityDescription(entry) {
     case "scorecard_requested":
     case "email_received":
     case "applied":
+    case "imported":
     case "sequence_enrolled":
     case "sequence_stopped":
     case "client_profile_printed":
@@ -175,6 +176,7 @@ const EVENT_LABELS = {
   scorecard_requested: "Scorecard requested",
   email_received: "Email received",
   applied: "Applied",
+  imported: "Imported",
   sequence_enrolled: "Added to sequence",
   sequence_stopped: "Sequence stopped",
   client_profile_printed: "Client profile printed",
