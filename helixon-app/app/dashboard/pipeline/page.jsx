@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "rea
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
+import { subStageLabel, useCustomisation } from "@/components/dashboard/custom-fields";
 import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidate-format";
@@ -52,7 +53,7 @@ function Select({ value, onChange, options, ariaLabel }) {
   );
 }
 
-function PipelineCard({ candidate, onMove, pending }) {
+function PipelineCard({ candidate, subStage, onMove, pending }) {
   const stageIdx = FUNNEL_ORDER.indexOf(candidate.stage);
   const canGoBack = stageIdx > 0;
   const canGoForward = stageIdx >= 0 && stageIdx < FUNNEL_ORDER.length - 1;
@@ -79,6 +80,11 @@ function PipelineCard({ candidate, onMove, pending }) {
           <p className="text-[11px] truncate mt-0.5" style={{ color: INK_MUTED }}>
             {candidate.jobTitle}
           </p>
+          {subStage && (
+            <span className="inline-block text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+              {subStage}
+            </span>
+          )}
         </div>
         <span
           className="text-[12px] font-semibold tabular-nums shrink-0 px-1.5 py-0.5 rounded-md"
@@ -207,6 +213,7 @@ function FunnelStrip({ byStage }) {
 
 function PipelineContent() {
   const searchParams = useSearchParams();
+  const customisation = useCustomisation();
   const rawStage = searchParams?.get("stage") || "";
   // Accept "shortlisted" as well as "Shortlisted" in the deep link.
   const highlightStage = BOARD_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) || null;
@@ -416,7 +423,9 @@ function PipelineContent() {
                             {over ? "Drop here" : "No candidates"}
                           </p>
                         ) : (
-                          items.map((c) => <PipelineCard key={c.id} candidate={c} onMove={handleMove} pending={pendingIds.has(c.id)} />)
+                          items.map((c) => (
+                            <PipelineCard key={c.id} candidate={c} subStage={subStageLabel(customisation, c.stage, c.subStage)} onMove={handleMove} pending={pendingIds.has(c.id)} />
+                          ))
                         )}
                       </div>
                     </section>

@@ -124,6 +124,8 @@ export async function GET(request, { params }) {
     recruiterName: recruiterNames.get(candidate.recruiter_id) ?? null,
     status: candidate.processing_status,
     stage: candidate.stage,
+    subStage: candidate.sub_stage ?? null,
+    customFields: candidate.custom_fields ?? {},
     score: candidate.match_score,
     matchSummary,
     strengths,

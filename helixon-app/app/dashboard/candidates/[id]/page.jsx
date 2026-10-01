@@ -19,6 +19,7 @@ import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import PlacementPanel from "@/components/dashboard/PlacementPanel";
+import { CustomFieldsCard, SubStagePicker } from "@/components/dashboard/custom-fields";
 import {
   getCandidateById,
   getRecruiters,
@@ -100,7 +101,7 @@ function activityDescription(entry) {
     case "analysis_completed":
       return entry.meta?.score != null ? `Match score ${entry.meta.score}` : entry.meta?.note ?? "";
     case "stage_changed":
-      return `${STAGE_LABELS[entry.meta?.from] ?? "Unassigned"} → ${STAGE_LABELS[entry.meta?.to] ?? "Unknown"}`;
+      return `${STAGE_LABELS[entry.meta?.from] ?? "Unassigned"} → ${STAGE_LABELS[entry.meta?.to] ?? "Unknown"}${entry.meta?.sub ? ` (${entry.meta.sub})` : ""}`;
     case "assigned":
       return entry.meta?.from ? `${entry.meta.from} → ${entry.meta.to}` : `Assigned to ${entry.meta?.to ?? "someone"}`;
     case "tag_added":
@@ -134,6 +135,7 @@ function activityDescription(entry) {
     case "sequence_stopped":
     case "client_profile_printed":
     case "placement_recorded":
+    case "sub_stage_changed":
       return entry.meta?.note ?? "";
     case "rescreened":
       return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
@@ -183,6 +185,7 @@ const EVENT_LABELS = {
   sequence_stopped: "Sequence stopped",
   client_profile_printed: "Client profile printed",
   placement_recorded: "Offer / placement",
+  sub_stage_changed: "Sub-stage changed",
 };
 
 const OUTREACH_ACTIONS = [
@@ -890,7 +893,7 @@ function ActivityTimeline({ activity }) {
  * Recruiter workspace (stage / recruiter / tags / next action)
  * ---------------------------------------------------------------------- */
 
-function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssign, onAddTag, onRemoveTag, onCreateTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
+function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubStageChange, onAssign, onAddTag, onRemoveTag, onCreateTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
   const [nextActionLabel, setNextActionLabel] = useState("");
   const [nextActionDue, setNextActionDue] = useState("");
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
@@ -933,6 +936,13 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onAssi
               ? STAGE_ORDER.map((k) => ({ value: k, label: STAGE_LABELS[k] }))
               : [{ value: "", label: "Not yet analysed" }]
           }
+        />
+        <SubStagePicker
+          className="mt-2"
+          stage={candidate.stage}
+          subStage={candidate.subStage}
+          disabled={candidate.status !== "completed"}
+          onChange={onSubStageChange}
         />
       </div>
 
@@ -2106,11 +2116,22 @@ export default function CandidateProfilePage({ params }) {
             to_stage: stage,
           });
         }
-        setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage } : c));
+        setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage, subStage: updated.sub_stage ?? null } : c));
         toast(`Moved to ${STAGE_LABELS[updated.stage ?? stage] || stage}`);
       }
     },
     [id, candidate, failed, toast]
+  );
+
+  const handleSubStageChange = useCallback(
+    async (subStage) => {
+      const updated = await updateCandidateStage(id, undefined, subStage).catch((err) => failed(err, "Couldn't update the sub-stage."));
+      if (updated) {
+        setCandidate((c) => (c ? { ...c, stage: updated.stage ?? c.stage, subStage: updated.sub_stage ?? null } : c));
+        refreshActivity();
+      }
+    },
+    [id, failed, refreshActivity]
   );
 
   const handleAssign = useCallback(
@@ -2357,6 +2378,7 @@ export default function CandidateProfilePage({ params }) {
                 <MatchOverview candidate={candidate} />
                 {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} />
+                <CustomFieldsCard key={candidate.id} entity="candidate" recordId={candidate.id} values={candidate.customFields} onSaved={refreshActivity} />
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
                 <ActivityTimeline activity={candidate.activity} />
@@ -2375,6 +2397,7 @@ export default function CandidateProfilePage({ params }) {
                   recruiters={recruiters}
                   tags={tags}
                   onStageChange={handleStageChange}
+                  onSubStageChange={handleSubStageChange}
                   onAssign={handleAssign}
                   onAddTag={handleAddTag}
                   onRemoveTag={handleRemoveTag}

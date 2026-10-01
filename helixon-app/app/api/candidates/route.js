@@ -47,13 +47,14 @@ export async function GET(request) {
   // parsed-CV `extracted` JSON per row made every list/board load heavy.
   const COLUMNS =
     "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, source, skills:extracted->skills, jobs(id, title, client)";
-  // lat/lng arrive with the search migration; until it's applied the list
-  // still loads (42703 = undefined column), just without distances.
+  // lat/lng (search migration) and sub_stage (custom stages migration):
+  // until those are applied the list still loads (42703 = undefined
+  // column), just without distances and sub-stages.
   let withGeo = true;
   const build = (broadSearch) => {
     let query = supabase
       .from("candidates")
-      .select(withGeo ? `${COLUMNS}, lat, lng` : COLUMNS, { count: "exact" })
+      .select(withGeo ? `${COLUMNS}, lat, lng, sub_stage` : COLUMNS, { count: "exact" })
       .eq("agency_id", agencyId);
     query = applyFilters(query, resolved, { broadSearch });
 
@@ -106,6 +107,7 @@ export async function GET(request) {
       recruiterName: recruiterNames.get(c.recruiter_id) ?? null,
       status: c.processing_status,
       stage: c.stage,
+      subStage: c.sub_stage ?? null,
       score: c.match_score,
       skills: Array.isArray(c.skills) ? c.skills : [],
       tags: c.tags ?? [],

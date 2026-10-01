@@ -357,11 +357,13 @@ export async function bulkUpdateCandidates(ids, payload) {
   });
 }
 
-export async function updateCandidateStage(id, newStage) {
+// subStage (optional): one of the agency's sub-stages (lib/custom-fields.js),
+// or null to clear it.
+export async function updateCandidateStage(id, newStage, subStage) {
   return apiFetch(`/api/candidates/${id}/stage`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ stage: newStage }),
+    body: JSON.stringify(subStage === undefined ? { stage: newStage } : { stage: newStage || undefined, subStage }),
   });
 }
 
@@ -1013,4 +1015,29 @@ export async function getInvoicingSettings() {
 
 export async function saveInvoicingSettings(fields) {
   return apiFetch("/api/invoicing-settings", jsonBody("PATCH", fields));
+}
+
+// The agency's sub-stages and custom fields - see app/api/customisation.
+// Read by many cards on one page, so fetched once per page load (and
+// refreshed after saving).
+let customisationPromise = null;
+export function getCustomisation({ fresh = false } = {}) {
+  if (fresh || !customisationPromise) {
+    customisationPromise = apiFetch("/api/customisation").catch((err) => {
+      customisationPromise = null;
+      throw err;
+    });
+  }
+  return customisationPromise;
+}
+
+export async function saveCustomisation(fields) {
+  const res = await apiFetch("/api/customisation", jsonBody("PUT", fields));
+  customisationPromise = Promise.resolve(res);
+  return res;
+}
+
+export async function setCustomFieldValues(entity, id, values) {
+  const res = await apiFetch("/api/custom-fields", jsonBody("PATCH", { entity, id, values }));
+  return res.values;
 }

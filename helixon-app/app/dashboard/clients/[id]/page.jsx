@@ -36,6 +36,8 @@ import {
   INK_FAINT,
 } from "@/components/dashboard/ui";
 import { formatDateOnly, formatRelativeTime } from "@/lib/candidate-format";
+import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
+import { InvoiceStatusPill } from "@/components/dashboard/placements";
 
 const ACTIVITY_LABELS = {
   client_created: "Client added",
@@ -310,7 +312,9 @@ export default function ClientDetailPage({ params }) {
   }
 
   const { client, contacts, jobs, placements, activity } = data;
+  const invoices = data.invoices ?? [];
   const fees = placements.reduce((s, p) => s + (p.fee || 0), 0);
+  const outstanding = invoices.filter((i) => i.status === "sent").reduce((s, i) => s + Number(i.total || 0), 0);
   const openJobs = jobs.filter((j) => j.status === "open");
 
   return (
@@ -405,6 +409,27 @@ export default function ClientDetailPage({ params }) {
             )}
           </Card>
 
+          {invoices.length > 0 && (
+            <Card title="Invoices" eyebrow={outstanding ? `${formatMoney(outstanding)} outstanding` : "All paid"}>
+              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                {invoices.map((i) => (
+                  <li key={i.id} className="py-2.5 flex items-center gap-3 text-[13px]">
+                    <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
+                      {i.number}
+                    </Link>
+                    <span className="flex-1" style={{ color: INK_MUTED }}>
+                      {i.issued_on}
+                    </span>
+                    <InvoiceStatusPill invoice={i} />
+                    <span className="tabular-nums font-semibold" style={{ color: INK }}>
+                      {formatMoney(i.total, i.currency)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
           <Card title="Timeline">
             <LogActivity clientId={id} onLogged={reload} />
             {activity.length === 0 ? (
@@ -478,6 +503,8 @@ export default function ClientDetailPage({ params }) {
               </ul>
             )}
           </Card>
+
+          <CustomFieldsCard key={client.id} entity="client" recordId={client.id} values={client.customFields} />
 
           <Card title="Terms" action={<Button size="sm" onClick={() => setEditing(true)}>Edit</Button>}>
             <dl className="text-[13px] space-y-2">

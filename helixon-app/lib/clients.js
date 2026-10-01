@@ -98,6 +98,7 @@ export function toClient(row) {
     rebateDays: row.rebate_days,
     termsNotes: row.terms_notes,
     ownerId: row.owner_id,
+    customFields: row.custom_fields ?? {},
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

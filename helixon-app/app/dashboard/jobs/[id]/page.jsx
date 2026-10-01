@@ -12,6 +12,7 @@ import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, ge
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import ClientPicker from "@/components/dashboard/ClientPicker";
 import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
+import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
@@ -705,6 +706,8 @@ export default function JobDetailPage({ params }) {
                 </ul>
               )}
             </div>
+
+            <CustomFieldsCard key={job.id} entity="job" recordId={job.id} values={job.custom_fields} />
 
             <AdvertisePanel job={job} onSaved={(updated) => setData((d) => ({ ...d, job: { ...d.job, ...updated } }))} />
 

@@ -6,7 +6,7 @@ import { cleanClientFields, loadClient, logClientActivity, toClient, toContact }
 
 // One client (lib/clients.js).
 //
-// GET     the client, its contacts, jobs, placements and timeline
+// GET     the client, its contacts, jobs, placements, invoices and timeline
 // PATCH   edit details and terms (a rename updates its jobs' client name)
 // DELETE  only when no jobs are attached - otherwise mark it inactive
 
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const [{ data: contacts }, { data: jobs }, { data: activity }] = await Promise.all([
+  const [{ data: contacts }, { data: jobs }, { data: activity }, { data: invoices }] = await Promise.all([
     supabase.from("client_contacts").select("*").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("is_primary", { ascending: false }).order("name"),
     supabase
       .from("jobs")
@@ -26,6 +26,13 @@ export async function GET(request, { params }) {
       .eq("client_id", client.id)
       .order("created_at", { ascending: false }),
     supabase.from("client_activity").select("id, type, actor, meta, created_at").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100),
+    supabase
+      .from("invoices")
+      .select("id, number, status, total, currency, issued_on, due_on, paid_on")
+      .eq("client_id", client.id)
+      .eq("agency_id", auth.agencyId)
+      .order("issued_on", { ascending: false })
+      .limit(200),
   ]);
 
   const placements = [];
@@ -56,6 +63,7 @@ export async function GET(request, { params }) {
     contacts: (contacts ?? []).map(toContact),
     jobs: jobRows,
     placements: placements.sort((a, b) => String(b.at ?? "").localeCompare(String(a.at ?? ""))),
+    invoices: invoices ?? [],
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, createdAt: a.created_at })),
   });
 }
