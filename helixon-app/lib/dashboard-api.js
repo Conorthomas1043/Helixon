@@ -157,6 +157,12 @@ function adaptJob(j) {
     clientEmail: j.client_email ?? null,
     clientId: j.client_id ?? null,
     contactId: j.contact_id ?? null,
+    published: Boolean(j.published),
+    publishedAt: j.published_at ?? null,
+    publicTitle: j.public_title ?? null,
+    publicDescription: j.public_description ?? null,
+    hideClient: j.hide_client ?? true,
+    showSalary: j.show_salary ?? true,
     employmentType: j.employment_type,
     salaryRange: j.salary_range,
     requiredSkills: j.required_skills ?? [],
@@ -876,4 +882,17 @@ export async function enrollInSequence(sequenceId, candidateIds) {
 
 export async function stopEnrollment(enrollmentId) {
   return apiFetch(`/api/sequence-enrollments/${enrollmentId}`, { method: "DELETE" });
+}
+
+// The agency's public jobs page settings - see app/api/careers.
+export async function getCareersSettings() {
+  return apiFetch("/api/careers");
+}
+
+export async function saveCareersSettings(fields) {
+  return apiFetch("/api/careers", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
 }

@@ -127,6 +127,7 @@ function activityDescription(entry) {
     case "scorecard_submitted":
     case "scorecard_requested":
     case "email_received":
+    case "applied":
     case "sequence_enrolled":
     case "sequence_stopped":
     case "client_profile_printed":
@@ -173,6 +174,7 @@ const EVENT_LABELS = {
   scorecard_submitted: "Scorecard received",
   scorecard_requested: "Scorecard requested",
   email_received: "Email received",
+  applied: "Applied",
   sequence_enrolled: "Added to sequence",
   sequence_stopped: "Sequence stopped",
   client_profile_printed: "Client profile printed",
@@ -1067,6 +1069,7 @@ const SOURCE_OPTIONS = [
   { value: "linkedin", label: "LinkedIn" },
   { value: "direct_sourcing", label: "Direct sourcing" },
   { value: "agency_database", label: "Agency database" },
+  { value: "careers_page", label: "Your jobs page" },
   { value: "other", label: "Other" },
 ];
 

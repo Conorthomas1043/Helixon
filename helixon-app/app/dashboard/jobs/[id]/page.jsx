@@ -11,6 +11,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel } from "@/lib/dashboard-api";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import ClientPicker from "@/components/dashboard/ClientPicker";
+import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
@@ -29,6 +30,7 @@ const CHANNEL_LABELS = {
   linkedin: "LinkedIn",
   direct_sourcing: "Direct sourcing",
   agency_database: "Agency database",
+  careers_page: "Your jobs page",
   other: "Other",
 };
 const CHANNEL_KEYS = Object.keys(CHANNEL_LABELS);
@@ -703,6 +705,8 @@ export default function JobDetailPage({ params }) {
                 </ul>
               )}
             </div>
+
+            <AdvertisePanel job={job} onSaved={(updated) => setData((d) => ({ ...d, job: { ...d.job, ...updated } }))} />
 
             <SourcingChannelsPanel channels={data?.channels} onSaveChannel={handleSaveChannel} />
           </>

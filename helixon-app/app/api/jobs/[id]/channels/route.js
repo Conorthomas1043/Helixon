@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 
-const CHANNEL_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "other"]);
+const CHANNEL_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 
 async function assertOwnsJob(agencyId, jobId) {
   const { data } = await supabase.from("jobs").select("id").eq("id", jobId).eq("agency_id", agencyId).maybeSingle();

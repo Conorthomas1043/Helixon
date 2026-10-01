@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Toggle } from "@/components/account/ui";
 
-// The "Notifications" tab. The one optional email is the weekday follow-up
-// reminder (app/api/cron/reminders) - everything else Helixon sends is
+// The "Notifications" tab: the optional emails - the weekday follow-up
+// reminder (app/api/cron/reminders) and new-application alerts from the
+// jobs page (lib/applications.js). Everything else Helixon sends is
 // transactional (sign-in and verification, team invitations, billing
 // receipts, and emails a recruiter sends from inside the app) and can't be
 // turned off because the account needs it.
 export default function NotificationsInfo() {
-  const [reminders, setReminders] = useState(null);
+  const [prefs, setPrefs] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,14 +19,20 @@ export default function NotificationsInfo() {
     let cancelled = false;
     fetch("/api/account/notifications", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => { if (!cancelled) setReminders(d.followUpReminders); })
-      .catch(() => { if (!cancelled) setError("Couldn't load your preferences."); });
-    return () => { cancelled = true; };
+      .then((d) => {
+        if (!cancelled) setPrefs(d);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Couldn't load your preferences.");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  async function change(next) {
-    const previous = reminders;
-    setReminders(next);
+  async function change(key, value) {
+    const previous = prefs;
+    setPrefs({ ...prefs, [key]: value });
     setSaving(true);
     setError("");
     try {
@@ -33,11 +40,11 @@ export default function NotificationsInfo() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ followUpReminders: next }),
+        body: JSON.stringify({ [key]: value }),
       });
       if (!res.ok) throw new Error();
     } catch {
-      setReminders(previous);
+      setPrefs(previous);
       setError("Couldn't save that - please try again.");
     } finally {
       setSaving(false);
@@ -46,18 +53,26 @@ export default function NotificationsInfo() {
 
   return (
     <div className="px-6 py-8 sm:px-10 sm:py-10">
-      <h3 className="text-[17px] font-semibold text-[#10221d]">Reminders</h3>
-      <div className="mt-4 max-w-[560px]" aria-busy={reminders === null || saving}>
-        {reminders === null && !error ? (
-          <p className="text-[14px] text-[#638279]">Loading…</p>
-        ) : (
-          <Toggle
-            id="follow-up-reminders"
-            checked={Boolean(reminders)}
-            onChange={change}
-            label="Follow-up reminders"
-            description="A short email on weekday mornings listing the follow-ups and talent-pool check-ins that are overdue or due today on candidates assigned to you. Nothing is sent when nothing is due."
-          />
+      <h3 className="text-[17px] font-semibold text-[#10221d]">Emails you can switch off</h3>
+      <div className="mt-4 max-w-[560px] space-y-4" aria-busy={prefs === null || saving}>
+        {prefs === null && !error && <p className="text-[14px] text-[#638279]">Loading…</p>}
+        {prefs && (
+          <>
+            <Toggle
+              id="follow-up-reminders"
+              checked={prefs.followUpReminders}
+              onChange={(v) => change("followUpReminders", v)}
+              label="Follow-up reminders"
+              description="A short email on weekday mornings listing the follow-ups, talent-pool check-ins and interviews due on candidates assigned to you. Nothing is sent when nothing is due."
+            />
+            <Toggle
+              id="application-alerts"
+              checked={prefs.applicationAlerts}
+              onChange={(v) => change("applicationAlerts", v)}
+              label="New applications"
+              description="An email when someone applies through your jobs page for a job you own, with their match score."
+            />
+          </>
         )}
         {error && <p className="mt-2 text-[13px] text-[#b42318]">{error}</p>}
       </div>

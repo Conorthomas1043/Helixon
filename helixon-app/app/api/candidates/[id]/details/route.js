@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 
-const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "other"]);
+const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 const REJECTION_REASON_VALUES = new Set([
   "unrealistic_requirements",
   "compensation",

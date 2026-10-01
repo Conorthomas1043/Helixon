@@ -38,6 +38,7 @@ const SOURCE_LABELS = {
   linkedin: "LinkedIn",
   direct_sourcing: "Direct sourcing",
   agency_database: "Agency database",
+  careers_page: "Your jobs page",
   other: "Other",
 };
 

@@ -173,6 +173,34 @@ export async function PATCH(request, { params }) {
   if (preferredSkills?.error) return NextResponse.json({ error: `Preferred skills: up to ${MAX_SKILLS}, each under ${MAX_SKILL_LEN} characters.` }, { status: 400 });
   if (preferredSkills !== undefined) update.preferred_skills = preferredSkills;
 
+  // Advertising on the agency's public jobs page (lib/careers.js).
+  if (body.published !== undefined) {
+    update.published = body.published === true;
+    if (update.published) update.published_at = new Date().toISOString();
+  }
+  if (body.publicTitle !== undefined) {
+    const v = cleanString(body.publicTitle, MAX_TITLE_LEN);
+    if (v?.error) return NextResponse.json({ error: "Advert title is too long." }, { status: 400 });
+    update.public_title = v;
+  }
+  if (body.publicDescription !== undefined) {
+    if (body.publicDescription !== null && (typeof body.publicDescription !== "string" || body.publicDescription.length > 20000)) {
+      return NextResponse.json({ error: "Advert description is too long." }, { status: 400 });
+    }
+    update.public_description = body.publicDescription ? body.publicDescription.trim() : null;
+  }
+  if (body.hideClient !== undefined) update.hide_client = body.hideClient === true;
+  if (body.showSalary !== undefined) update.show_salary = body.showSalary === true;
+  // A job can't go live without an advert to show.
+  if (update.published) {
+    let description = update.public_description;
+    if (description === undefined) {
+      const { data: current } = await supabase.from("jobs").select("public_description").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+      description = current?.public_description;
+    }
+    if (!description) return NextResponse.json({ error: "Write the advert before publishing." }, { status: 400 });
+  }
+
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
@@ -182,7 +210,7 @@ export async function PATCH(request, { params }) {
     .update(update)
     .eq("id", id)
     .eq("agency_id", agencyId)
-    .select("id, status, title, client, client_email, client_id, contact_id, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills")
+    .select("id, status, title, client, client_email, client_id, contact_id, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills, published, published_at, public_title, public_description, hide_client, show_salary")
     .maybeSingle();
 
   if (error) {

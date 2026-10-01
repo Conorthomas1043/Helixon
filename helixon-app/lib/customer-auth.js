@@ -113,7 +113,7 @@ export async function getCustomerContext() {
   };
 }
 
-async function agencyHasActiveSubscription(agencyId) {
+export async function agencyHasActiveSubscription(agencyId) {
   const { data: members, error: membersError } =
     await supabase
       .from("profiles")
