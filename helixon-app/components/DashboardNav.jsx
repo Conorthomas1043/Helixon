@@ -21,6 +21,7 @@ const TABS = [
   { href: "/dashboard/interviews", label: "Interviews" },
   { href: "/dashboard/jobs", label: "Jobs" },
   { href: "/dashboard/clients", label: "Clients" },
+  { href: "/dashboard/placements", label: "Placements" },
   { href: "/dashboard/team", label: "Team" },
   { href: "/dashboard/analytics", label: "Analytics" },
 ];

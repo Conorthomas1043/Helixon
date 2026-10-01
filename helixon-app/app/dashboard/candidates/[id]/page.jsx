@@ -18,6 +18,7 @@ import DashboardNav from "@/components/DashboardNav";
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
+import PlacementPanel from "@/components/dashboard/PlacementPanel";
 import {
   getCandidateById,
   getRecruiters,
@@ -132,6 +133,7 @@ function activityDescription(entry) {
     case "sequence_enrolled":
     case "sequence_stopped":
     case "client_profile_printed":
+    case "placement_recorded":
       return entry.meta?.note ?? "";
     case "rescreened":
       return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
@@ -180,6 +182,7 @@ const EVENT_LABELS = {
   sequence_enrolled: "Added to sequence",
   sequence_stopped: "Sequence stopped",
   client_profile_printed: "Client profile printed",
+  placement_recorded: "Offer / placement",
 };
 
 const OUTREACH_ACTIONS = [
@@ -1195,7 +1198,7 @@ function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
             </div>
           </div>
           <p className="text-[11px] -mt-3" style={{ color: INK_FAINT }}>
-            Self-reported - feeds fee income/margin figures in Analytics. Helixon has no way to verify these.
+            Feeds fee income/margin figures in Analytics. Recording the offer above fills in the fee for you.
           </p>
 
           <div>
@@ -2381,6 +2384,7 @@ export default function CandidateProfilePage({ params }) {
                   onLogActivity={handleLogActivity}
                   loggingActivity={loggingActivity}
                 />
+                {candidate.status === "completed" && <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
                 <FeedbackRequestsPanel
                   requests={feedbackRequests}
