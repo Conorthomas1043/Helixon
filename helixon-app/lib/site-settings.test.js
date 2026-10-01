@@ -57,8 +57,25 @@ describe("cleanSetting", () => {
   });
 
   it("keeps request capture settings to known values", () => {
-    expect(cleanSetting("traffic", { captureHeaders: false, detailDays: 99 })).toEqual({ captureHeaders: false, capturePayloads: true, detailDays: 14 });
+    expect(cleanSetting("traffic", { captureHeaders: false, detailDays: 99 })).toEqual({
+      captureHeaders: false,
+      capturePayloads: true,
+      detailDays: 14,
+      retentionDays: 90,
+      logMonitors: false,
+      spikeAlerts: true,
+      spikeMultiplier: 5,
+      spikeMinRequests: 300,
+      floodRequests: 300,
+    });
     expect(cleanSetting("traffic", { detailDays: 3 }).detailDays).toBe(3);
+  });
+
+  it("keeps log retention within what the privacy policy promises, and alert thresholds sane", () => {
+    expect(cleanSetting("traffic", { retentionDays: 365 }).retentionDays).toBe(90);
+    expect(cleanSetting("traffic", { retentionDays: 30 }).retentionDays).toBe(30);
+    const t = cleanSetting("traffic", { spikeMultiplier: 1, spikeMinRequests: 1, floodRequests: "500", logMonitors: true, spikeAlerts: false });
+    expect(t).toMatchObject({ spikeMultiplier: 2, spikeMinRequests: 20, floodRequests: 500, logMonitors: true, spikeAlerts: false });
   });
 
   it("rejects unknown keys", () => {

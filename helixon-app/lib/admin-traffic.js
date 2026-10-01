@@ -2,7 +2,7 @@
 // Pure helpers for the admin traffic API and map (tested in
 // lib/admin-traffic.test.js).
 
-export const RANGE_HOURS = { "24h": 24, "7d": 168, "30d": 720 };
+export const RANGE_HOURS = { "24h": 24, "7d": 168, "30d": 720, "90d": 2160 };
 
 export function rangeHours(range) {
   return RANGE_HOURS[range] || 24;

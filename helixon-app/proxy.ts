@@ -22,6 +22,8 @@ const MAINTENANCE_EXEMPT_PREFIXES = ["/admin", "/employee", "/under-development"
 // this is the one place that needs to change.
 const ADMIN_LOGIN_PATH = "/admin/login";
 
+const LOG_UID_HEADER = "x-helixon-log-uid";
+
 const SKIP_LOG = ["/api/internal/", "/api/csp-report", "/_next/", "/favicon", "/robots", "/sitemap"];
 
 // Pages that need a Clerk session just to load.
@@ -376,6 +378,11 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   // browser.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+  // Lets the not-found page and error reporting mark this request's log
+  // line with a real 404 / 500 (lib/request-status.js). Only ever set
+  // here - a value the client sent is dropped.
+  requestHeaders.delete(LOG_UID_HEADER);
+  if (logged) requestHeaders.set(LOG_UID_HEADER, uid);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("x-client-ip", ip);
   return response;

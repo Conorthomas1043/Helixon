@@ -1,4 +1,12 @@
-export default function NotFound() {
+import { headers } from "next/headers";
+import { after } from "next/server";
+import { LOG_UID_HEADER, markRequestStatus } from "@/lib/request-status";
+
+// Rendering this means the app answered 404 - recorded against the
+// request's log line so admin Traffic can list broken links.
+export default async function NotFound() {
+  const uid = (await headers()).get(LOG_UID_HEADER);
+  if (uid) after(() => markRequestStatus(uid, 404));
   return (
     <main className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--mist)" }}>
       <div className="text-center max-w-sm">

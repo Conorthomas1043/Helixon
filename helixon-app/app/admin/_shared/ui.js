@@ -248,7 +248,10 @@ export function Panel({ title, sub, action, children, className = "" }) {
  * largest count in the set, capped so lists longer than `limit` still
  * feel readable.
  */
-export function BarList({ items = [], limit = 8, emptyLabel = "No data yet." }) {
+// `onSelect(item)` makes each row a button (e.g. filter the log to it);
+// `active` highlights the row whose name matches; `note(item)` adds a
+// short muted note after the count.
+export function BarList({ items = [], limit = 8, emptyLabel = "No data yet.", onSelect, active, note }) {
   const rows = items.slice(0, limit);
   const max = rows.reduce((m, item) => Math.max(m, item.count || 0), 0) || 1;
 
@@ -258,20 +261,39 @@ export function BarList({ items = [], limit = 8, emptyLabel = "No data yet." }) 
 
   return (
     <div className="bar-list">
-      {rows.map((item) => (
-        <div className="bar-row" key={item.name}>
-          <span className="bar-row-label mono" title={item.name}>
-            {item.name}
-          </span>
-          <span className="bar-value">{item.count.toLocaleString()}</span>
-          <div className="bar-track">
-            <div
-              className="bar-fill"
-              style={{ width: `${Math.max(4, (item.count / max) * 100)}%` }}
-            />
+      {rows.map((item) => {
+        const inner = (
+          <>
+            <span className="bar-row-label mono" title={item.name}>
+              {item.label || item.name}
+            </span>
+            <span className="bar-value">
+              {item.count.toLocaleString()}
+              {note?.(item) ? <span className="faint" style={{ marginLeft: 6, fontSize: 11 }}>{note(item)}</span> : null}
+            </span>
+            <div className="bar-track">
+              <div className="bar-fill" style={{ width: `${Math.max(4, (item.count / max) * 100)}%` }} />
+            </div>
+          </>
+        );
+        return onSelect ? (
+          <button
+            type="button"
+            className="bar-row"
+            key={item.name}
+            onClick={() => onSelect(item)}
+            aria-pressed={active === item.name}
+            title={`Filter the log to ${item.name}`}
+            style={{ width: "100%", textAlign: "left", background: active === item.name ? "var(--surface-2, rgba(127,127,127,0.12))" : "transparent", border: 0, padding: 0, cursor: "pointer", font: "inherit", color: "inherit" }}
+          >
+            {inner}
+          </button>
+        ) : (
+          <div className="bar-row" key={item.name}>
+            {inner}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

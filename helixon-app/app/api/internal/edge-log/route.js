@@ -30,6 +30,8 @@ import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
 import { blockIsActive, getFirewallRules, matchRange, matchRequestRule } from "@/lib/security/rules";
 import { redactHeaders, redactPayload, redactQuery } from "@/lib/request-capture";
+import { classifyUserAgent } from "@/lib/traffic-class";
+import { maybeCheckTraffic } from "@/lib/traffic-alerts";
 
 // blocked_ips.expires_at arrives with migration 20260929030000; until then
 // every block is permanent, as before.
@@ -77,17 +79,25 @@ function decode(value) {
   }
 }
 
-// Inserts the log line. If the detail columns don't exist yet (migration
-// not applied), retries with the original columns rather than losing it.
+const missingColumn = (error) => error && (error.code === "42703" || error.code === "PGRST204");
+
+// Inserts the log line. If newer columns don't exist yet (a migration not
+// applied), retries without them rather than losing the line: first
+// without traffic_class (20261001100000), then without the inspector's
+// detail columns (20260929040000).
 async function insertLog(row) {
-  const { error } = await supabase.from("request_logs").insert(row);
-  if (error && (error.code === "42703" || error.code === "PGRST204")) {
-    const basic = { ...row };
-    for (const column of DETAIL_COLUMNS) delete basic[column];
-    await supabase.from("request_logs").insert(basic);
-  } else if (error) {
-    console.error("[edge-log] insert failed:", error.message);
+  let { error } = await supabase.from("request_logs").insert(row);
+  if (missingColumn(error)) {
+    const withoutClass = { ...row };
+    delete withoutClass.traffic_class;
+    ({ error } = await supabase.from("request_logs").insert(withoutClass));
+    if (missingColumn(error)) {
+      const basic = { ...withoutClass };
+      for (const column of DETAIL_COLUMNS) delete basic[column];
+      ({ error } = await supabase.from("request_logs").insert(basic));
+    }
   }
+  if (error) console.error("[edge-log] insert failed:", error.message);
 }
 
 export async function POST(request) {
@@ -160,6 +170,7 @@ export async function POST(request) {
     const threat = scoreRequest({ path, query: rawQuery, user_agent: ua, method });
     const capture = settings.traffic || {};
     const api = String(path || "").startsWith("/api");
+    const trafficClass = classifyUserAgent(ua);
 
     const row = {
       ip,
@@ -188,6 +199,7 @@ export async function POST(request) {
       postal: short(body.postal, 20),
       timezone: short(decode(body.timezone || ""), 60),
       edge_id: short(body.edgeId, 120),
+      traffic_class: trafficClass,
     };
 
     // proxy.ts may report what happened next (a redirect, or a blocked
@@ -195,8 +207,17 @@ export async function POST(request) {
     // wait for it. Everything else is written after the response is sent,
     // so logging never slows a page down.
     const mayFollowUp = isBlocked || settings.maintenance?.enabled === true || body.mayFollowUp === true;
-    if (mayFollowUp) await insertLog(row);
+    // Uptime monitors ping every minute or so - most of all traffic - so
+    // their routine checks aren't kept unless the admin asks. Anything
+    // blocked, suspicious or not a plain page fetch is logged regardless,
+    // since a user agent is only what the client claims to be.
+    const routinePing = trafficClass === "monitor" && !isBlocked && threat.score === 0 && (method === "GET" || method === "HEAD");
+    if (routinePing && capture.logMonitors !== true) {
+      // Nothing to record.
+    } else if (mayFollowUp) await insertLog(row);
     else after(() => insertLog(row));
+    // Site-wide spike check, at most every few minutes (lib/traffic-alerts.js).
+    after(() => maybeCheckTraffic(settings));
 
     return Response.json({
       ok: true,

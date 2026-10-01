@@ -211,6 +211,36 @@ export async function GET(request) {
       hourly[key] = (hourly[key] || 0) + 1;
     }
 
+    // Whole-range numbers from the database (migration 20261001100000);
+    // the newest-5,000-rows sample above is only the fallback. Lists are
+    // about people - uptime checks and bots would otherwise top them - and
+    // leave out the admin area.
+    let series = Object.entries(hourly)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([timestamp, count]) => ({ timestamp, count }));
+    let lists = {
+      topPaths: topEntries(pathCounts),
+      countries: topEntries(countryCounts),
+      referrers: topEntries(referrerCounts),
+      userAgents: topEntries(userAgentCounts),
+    };
+    let sampled = trafficRows.length >= 5000;
+    const people = { audience: "people" };
+    const [sumRes, lineRes, ...topRes] = await Promise.all([
+      supabase.rpc("admin_traffic_summary_f", { p_since: since, p_until: null, p_filters: {} }),
+      supabase.rpc("admin_traffic_timeline_f", { p_since: since, p_until: null, p_filters: {}, p_bucket: range === "24h" ? "hour" : "day" }),
+      ...["path", "country", "referrer", "user_agent"].map((d) =>
+        supabase.rpc("admin_traffic_top", { p_since: since, p_until: null, p_filters: people, p_dimension: d, p_limit: 10 })
+      ),
+    ]);
+    if (!sumRes.error && !lineRes.error && topRes.every((r) => !r.error)) {
+      blocked = Number(sumRes.data?.[0]?.blocked || 0);
+      series = (lineRes.data || []).map((p) => ({ timestamp: new Date(p.bucket).toISOString(), count: Number(p.requests) }));
+      const top = (r) => (r.data || []).map((x) => ({ name: x.name, count: Number(x.requests) }));
+      lists = { topPaths: top(topRes[0]), countries: top(topRes[1]), referrers: top(topRes[2]), userAgents: top(topRes[3]) };
+      sampled = false;
+    }
+
     return json({
       admin: {
         username: admin.username,
@@ -243,17 +273,9 @@ export async function GET(request) {
       },
 
       traffic: {
-        series: Object.entries(hourly)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([timestamp, count]) => ({
-            timestamp,
-            count,
-          })),
-
-        topPaths: topEntries(pathCounts),
-        countries: topEntries(countryCounts),
-        referrers: topEntries(referrerCounts),
-        userAgents: topEntries(userAgentCounts),
+        series,
+        ...lists,
+        listsAbout: sampled ? "sample" : "people",
       },
     });
   } catch (error) {

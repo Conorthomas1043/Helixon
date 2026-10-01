@@ -8,7 +8,9 @@
 //   firewall      { blockThreshold, alertThreshold, autoBlock, autoBlockHours, emailAlerts }
 //   health        { muted }  health checks that don't count toward the overall status
 //   alerts        { recipients, healthDigest }  who gets firewall and health emails
-//   traffic       { captureHeaders, capturePayloads, detailDays }  request inspector capture
+//   traffic       { captureHeaders, capturePayloads, detailDays }  request inspector capture,
+//                 { retentionDays, logMonitors }  how long log lines are kept, uptime pings
+//                 { spikeAlerts, spikeMultiplier, spikeMinRequests, floodRequests }  lib/traffic-alerts.js
 //
 // Reads are cached in memory for CACHE_MS per server instance, so a change
 // takes up to that long to reach every instance. Everything fails open to
@@ -41,12 +43,26 @@ export const DEFAULTS = Object.freeze({
   firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 0, emailAlerts: true, blockOnQuery: false },
   health: { muted: [] },
   alerts: { recipients: [], healthDigest: true },
-  traffic: { captureHeaders: true, capturePayloads: true, detailDays: 14 },
+  traffic: {
+    captureHeaders: true,
+    capturePayloads: true,
+    detailDays: 14,
+    retentionDays: 90,
+    logMonitors: false,
+    spikeAlerts: true,
+    spikeMultiplier: 5,
+    spikeMinRequests: 300,
+    floodRequests: 300,
+  },
 });
 
 // How long full request detail (headers, query, blocked payloads) is kept
 // before the daily cron clears it; the basic log line stays.
 export const DETAIL_DAYS = [3, 7, 14, 30];
+
+// How long a request log line (IP, browser, location, path) is kept at all
+// before the daily cron deletes it. The privacy policy promises at most 90.
+export const RETENTION_DAYS = [30, 60, 90];
 
 const EMAIL_RE = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
 
@@ -108,10 +124,18 @@ export function cleanSetting(key, raw) {
   }
   if (key === "traffic") {
     const days = Number(value.detailDays);
+    const keep = Number(value.retentionDays);
+    const d = DEFAULTS.traffic;
     return {
       captureHeaders: value.captureHeaders !== false,
       capturePayloads: value.capturePayloads !== false,
       detailDays: DETAIL_DAYS.includes(days) ? days : 14,
+      retentionDays: RETENTION_DAYS.includes(keep) ? keep : d.retentionDays,
+      logMonitors: value.logMonitors === true,
+      spikeAlerts: value.spikeAlerts !== false,
+      spikeMultiplier: int(value.spikeMultiplier, 2, 50, d.spikeMultiplier),
+      spikeMinRequests: int(value.spikeMinRequests, 20, 1_000_000, d.spikeMinRequests),
+      floodRequests: int(value.floodRequests, 20, 1_000_000, d.floodRequests),
     };
   }
   if (key === "alerts") {

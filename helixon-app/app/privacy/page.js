@@ -10,7 +10,7 @@ import PrivacyToc, { PrintButton } from "./PrivacyToc";
 //     and for visitors to this website.
 
 const CONTACT = "hello@helixon.co.uk";
-const UPDATED = "29 September 2026";
+const UPDATED = "1 October 2026";
 
 const SECTIONS = [
   { id: "who", title: "Who we are" },
@@ -97,6 +97,7 @@ const RETENTION = [
   ["Your account", "While it's open. If you delete it, your name and presence details are removed from the agency's workspace, and notes or history you wrote show as \"Former team member\"."],
   ["Billing records", "Six years, as UK tax law requires."],
   ["Team presence", "Overwritten as you use Helixon; deleted straight away if you hide it or the agency switches it off."],
+  ["Website request logs", "Each request to the site (IP address, browser, approximate location, the page asked for and what our firewall did) is deleted after 90 days at most. Request headers and other detail are cleared within 30 days. We use these logs to keep the service secure and working, not for advertising."],
   ["Rate-limiting records", "Up to one hour."],
   ["Error reports", "Up to 90 days."],
   ["Website enquiries", "Up to two years after our last contact. Chat assistant messages are not stored by Helixon."],

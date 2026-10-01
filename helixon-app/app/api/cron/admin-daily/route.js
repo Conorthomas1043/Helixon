@@ -114,6 +114,27 @@ async function pruneRequestDetail(settings, now) {
   return { days, headersCleared: headers.count || 0, detailCleared: rest.count || 0 };
 }
 
+// Deletes request log lines older than the retention the admin chose on
+// Traffic (30-90 days, as the privacy policy says), a batch at a time so
+// one run never holds a long lock. Anything left over goes tomorrow.
+const PRUNE_BATCH = 5000;
+const PRUNE_MAX_BATCHES = 40;
+
+async function pruneRequestLogs(settings, now) {
+  const days = settings.traffic?.retentionDays || 90;
+  const cutoff = new Date(now - days * 86400e3).toISOString();
+  let deleted = 0;
+  for (let i = 0; i < PRUNE_MAX_BATCHES; i++) {
+    const { data, error } = await supabase.rpc("prune_request_logs", { p_before: cutoff, p_batch: PRUNE_BATCH });
+    if (error) throw new Error(error.message);
+    deleted += Number(data) || 0;
+    if ((Number(data) || 0) < PRUNE_BATCH) break;
+  }
+  // Raised alerts go with the logs they describe.
+  await supabase.from("traffic_alerts").delete().lt("created_at", cutoff);
+  return { days, deleted };
+}
+
 async function dailyHealthCheck(settings) {
   const [services, checks] = await Promise.all([getServicesSnapshot(), getFullHealthChecksSnapshot()]);
   const grade = gradeHealth({ ...services, ...checks }, settings.health?.muted || []);
@@ -165,6 +186,7 @@ export async function GET(request) {
   await step("tidied", () => tidyExpiredRules(now));
   await step("health", () => dailyHealthCheck(settings));
   await step("requestDetail", () => pruneRequestDetail(settings, now));
+  await step("requestLogs", () => pruneRequestLogs(settings, now));
 
   return NextResponse.json({ ok: true, ...result });
 }

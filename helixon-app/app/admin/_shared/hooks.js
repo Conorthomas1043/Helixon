@@ -5,12 +5,14 @@ import { confirmAction, promptNewPassword, promptText } from "./modal";
 import { csrfHeaders } from "./csrf"; // echoes the CSRF cookie back as a header on mutating requests
 import { toast } from "./toast";
 
+// range null = don't fetch (a page that only needs stats sometimes).
 export function useAdminStats(range) {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!range) return;
     setError("");
 
     try {
@@ -53,6 +55,8 @@ export function useAdminTraffic(range, filters = {}) {
     filters.method ? `method=${encodeURIComponent(filters.method)}` : "",
     filters.path ? `path=${encodeURIComponent(filters.path)}` : "",
     filters.ua ? `ua=${encodeURIComponent(filters.ua)}` : "",
+    filters.referrer ? `referrer=${encodeURIComponent(filters.referrer)}` : "",
+    filters.audience ? `audience=${encodeURIComponent(filters.audience)}` : "",
     filters.from ? `from=${encodeURIComponent(filters.from)}` : "",
     filters.to ? `to=${encodeURIComponent(filters.to)}` : "",
   ].filter(Boolean).join("&");
