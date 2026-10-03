@@ -21,6 +21,7 @@ import {
   reassignCandidates,
   unassignedCandidateIds,
 } from "@/lib/team-reassign";
+import { logAudit } from "@/lib/agency-audit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -214,6 +215,7 @@ export async function POST(request) {
     );
   }
 
+  await logAudit({ auth, request, action: "team.invited", targetType: "invitation", summary: "Invited a teammate" });
   return NextResponse.json({ ok: true });
 }
 
@@ -352,6 +354,7 @@ export async function DELETE(request) {
     }
   }
 
+  await logAudit({ auth, request, action: "team.removed", targetType: "user", summary: `Removed a teammate${reassigned ? ` (${reassigned} candidates reassigned)` : ""}` });
   return NextResponse.json({ ok: true, reassigned });
 }
 

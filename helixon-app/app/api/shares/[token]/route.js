@@ -8,6 +8,7 @@ import { agencyDisplayName } from "@/lib/agency-display";
 import { CLIENT_DECISIONS, SHARE_TOKEN_RE, shareActive, sharedProfiles } from "@/lib/shortlist-shares";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { clerkClient } from "@clerk/nextjs/server";
+import { notify } from "@/lib/notifications";
 
 // Public: a client's view of a shared shortlist (app/share/[token]). The
 // token is the only credential, and the link stops working when revoked or
@@ -74,6 +75,15 @@ export async function POST(request, { params }) {
     const name = updated[0].candidates?.full_name || updated[0].candidates?.name || "a candidate";
     await logClientActivity(share.agency_id, clientId, "shortlist_feedback", by, { note: `${name}: ${decisionLabel}` });
   }
+
+  await notify({
+    agencyId: share.agency_id,
+    userId: share.created_by || null,
+    kind: "client_feedback",
+    title: `${by}: ${decisionLabel} - ${updated[0].candidates?.full_name || updated[0].candidates?.name || "a candidate"}`,
+    body: comment,
+    href: `/dashboard/candidates/${candidateId}`,
+  });
 
   // Let the recruiter who shared it know.
   if (share.created_by) {

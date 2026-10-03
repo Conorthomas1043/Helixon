@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { getOrgCreatorId, getOrgMemberRole, setOrgMemberRole } from "@/lib/clerk-org";
+import { logAudit } from "@/lib/agency-audit";
 
 // POST { userId, role: "admin" | "member" } - make a teammate an admin (can
 // invite, remove and reassign, like the owner) or back to a member. Only the
@@ -49,6 +50,7 @@ export async function POST(request) {
     if (targetRole !== role) {
       await setOrgMemberRole({ orgId, userId: target, role });
     }
+    await logAudit({ auth, request, action: "team.role_changed", targetType: "user", targetId: body?.userId ?? null, summary: `Made a teammate ${role === "org:admin" ? "an admin" : "a member"}` });
     return NextResponse.json({ ok: true, role: role === "org:admin" ? "admin" : "member" });
   } catch (err) {
     const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";

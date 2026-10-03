@@ -8,6 +8,7 @@ import { logClientActivity } from "@/lib/clients";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
+import { getAccess, redactPlacement } from "@/lib/permissions";
 
 // Offers and placements (lib/placements.js).
 //
@@ -30,8 +31,12 @@ export async function GET(request) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: "Failed to load placements." }, { status: 500 });
   const names = await resolveRecruiterNames(supabase, (data ?? []).map((p) => p.recruiter_id));
+  const access = await getAccess(auth);
+  // "Own candidates only" hides other people's placements too.
+  const visible = (data ?? []).filter((p) => access.seesAllCandidates || p.recruiter_id === auth.userId || (Array.isArray(p.splits) && p.splits.some((s) => s.recruiterId === auth.userId)));
   return NextResponse.json({
-    placements: (data ?? []).map((p) => ({ ...toPlacement(p), recruiterName: names.get(p.recruiter_id) ?? null, invoices: p.invoices ?? [] })),
+    placements: visible.map((p) => redactPlacement({ ...toPlacement(p), recruiterName: names.get(p.recruiter_id) ?? null, invoices: p.invoices ?? [] }, access)),
+    financialsHidden: !access.canSeeFinancials,
   });
 }
 
@@ -101,5 +106,5 @@ export async function POST(request) {
   if (data.client_id) await logClientActivity(auth.agencyId, data.client_id, "placement_made", actor, { note: `${data.candidate_name}: ${PLACEMENT_STATUSES[data.status]}` });
   await syncCandidate(data, actor);
   after(() => emitWebhook(auth.agencyId, "placement.created", toPlacement(data)));
-  return NextResponse.json({ placement: { ...toPlacement(data), invoices: [] } }, { status: 201 });
+  return NextResponse.json({ placement: redactPlacement({ ...toPlacement(data), invoices: [] }, await getAccess(auth)) }, { status: 201 });
 }

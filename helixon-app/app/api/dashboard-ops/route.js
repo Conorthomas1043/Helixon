@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { buildOps } from "@/lib/dashboard-ops";
+import { getAccess } from "@/lib/permissions";
 
 // GET /api/dashboard-ops?scope=mine|team - the Overview's business view
 // (lib/dashboard-ops.js): open jobs, interviews this week, offers out,
@@ -88,10 +89,25 @@ export async function GET(request) {
     : { data: [] };
   const renewed = new Set((renewals ?? []).map((r) => `${r.candidate_id}:${r.kind}`));
 
-  return NextResponse.json(
-    buildOps(
-      { jobs, interviews, placements, invoices, timesheets, checks: checks.filter((c) => !renewed.has(`${c.candidate_id}:${c.kind}`)), clients },
-      { now, myId: userId, mine }
-    )
+  const access = await getAccess(auth);
+  const visibleCandidate = (recruiterId) => access.seesAllCandidates || !recruiterId || recruiterId === userId;
+  const ops = buildOps(
+    {
+      jobs,
+      interviews: interviews.filter((i) => visibleCandidate(i.candidates?.recruiter_id)),
+      placements: placements.filter((p) => access.seesAllCandidates || p.recruiter_id === userId || (Array.isArray(p.splits) && p.splits.some((x) => x.recruiterId === userId))),
+      invoices: access.canSeeFinancials ? invoices : [],
+      timesheets,
+      checks: checks.filter((c) => !renewed.has(`${c.candidate_id}:${c.kind}`)),
+      clients,
+    },
+    { now, myId: userId, mine }
   );
+  if (!access.canSeeFinancials) {
+    ops.kpis.feesThisMonth = null;
+    ops.kpis.outstanding = null;
+    ops.kpis.overdueCount = null;
+    ops.kpis.overdueTotal = null;
+  }
+  return NextResponse.json({ ...ops, financialsHidden: !access.canSeeFinancials });
 }

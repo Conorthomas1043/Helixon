@@ -3,12 +3,15 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { candidateHidden } from "@/lib/permissions";
 
 export async function PATCH(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 

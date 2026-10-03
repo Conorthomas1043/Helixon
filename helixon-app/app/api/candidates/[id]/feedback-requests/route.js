@@ -22,6 +22,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { feedbackRequestEmail } from "@/lib/feedback-request-email";
+import { candidateHidden } from "@/lib/permissions";
 
 const MAX_EMAILS_PER_HOUR = 40;
 
@@ -51,6 +52,8 @@ export async function GET(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -114,6 +117,8 @@ export async function POST(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId, userId } = auth;
   const { id } = await params;
 

@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { canManageWorkspace } from "@/lib/workspace-admin";
 import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRange, placementInPeriod, scaleTargets } from "@/lib/performance";
+import { getAccess } from "@/lib/permissions";
 
 // GET ?period=this_month|last_month|this_quarter|... - each recruiter's
 // activity and revenue for the period against their targets
@@ -94,8 +95,22 @@ export async function GET(request) {
     };
   });
 
+  // Money admin-only (lib/permissions.js): members see activity, not fees,
+  // cash or commission.
+  const { canSeeFinancials } = await getAccess(auth);
+  if (!canSeeFinancials) {
+    const strip = (o) => (o ? { ...o, fees: null, cash: null } : o);
+    for (const r of result) {
+      r.metrics = strip(r.metrics);
+      r.targets = strip(r.targets);
+      r.commission = undefined;
+    }
+    team.fees = null;
+    team.cash = null;
+  }
   return NextResponse.json({
     period,
+    financialsHidden: !canSeeFinancials,
     people: result,
     team: { metrics: team, targets: scaleTargets(settings.targets.team, period.months) },
     commission: plan.enabled ? { basis: plan.basis } : null,

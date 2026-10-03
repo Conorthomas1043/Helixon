@@ -8,6 +8,7 @@ import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { newToken } from "@/lib/signatures";
 import { cleanBookingRequest, openSlots } from "@/lib/interview-booking";
 import { formatInterviewTime } from "@/lib/interviews";
+import { candidateHidden } from "@/lib/permissions";
 
 // Interview booking links for one candidate (lib/interview-booking.js).
 // GET                    the candidate's open and recent links
@@ -40,6 +41,8 @@ const toLink = (row) => ({
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { data, error } = await supabase.from("interview_booking_links").select("*").eq("candidate_id", c.id).order("created_at", { ascending: false }).limit(10);
@@ -50,6 +53,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = (await request.json().catch(() => null)) ?? {};
@@ -113,6 +118,8 @@ export async function POST(request, { params }) {
 export async function DELETE(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const linkId = cleanUuid(new URL(request.url).searchParams.get("linkId"));

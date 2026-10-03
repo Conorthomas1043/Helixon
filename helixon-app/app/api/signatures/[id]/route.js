@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { siteUrl } from "@/lib/mailer";
 import { toSignatureRequest } from "@/lib/signatures";
+import { logAudit } from "@/lib/agency-audit";
 
 // GET              one request, with the full text and audit trail
 // PATCH { void }   withdraw one that hasn't been signed yet
@@ -39,5 +40,6 @@ export async function PATCH(request, { params }) {
   if (row.status !== "sent") return NextResponse.json({ error: "Only a document that hasn't been signed can be withdrawn." }, { status: 409 });
   const { data, error } = await supabase.from("signature_requests").update({ status: "void" }).eq("id", row.id).eq("status", "sent").select("*").maybeSingle();
   if (error || !data) return NextResponse.json({ error: "Couldn't withdraw it." }, { status: 500 });
+  await logAudit({ auth, request, action: "signature.withdrawn", targetType: "signature", targetId: data.id, summary: `Withdrew "${data.title}"` });
   return NextResponse.json({ request: toSignatureRequest(data) });
 }

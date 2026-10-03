@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { candidateHaystack, quickFit } from "@/lib/talent-pool-match";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // GET ?jobId= - the agency's talent pool: everyone saved for future roles
 // (app/api/candidates/[id]/talent-pool), with their availability, check-in
@@ -68,9 +69,10 @@ export async function GET(request) {
     return NextResponse.json({ error: "That job could not be found." }, { status: 404 });
   }
 
+  const access = await getAccess(auth);
   const rows = [];
   for (let from = 0; from < MAX_POOL; from += PAGE) {
-    const { data, error } = await supabase
+    const { data, error } = await scopeCandidateQuery(supabase
       .from("candidates")
       .select(
         "id, full_name, name, current_title, current_company, location, years_experience, job_id, match_score, stage, cv_text, " +
@@ -80,7 +82,7 @@ export async function GET(request) {
       .eq("agency_id", agencyId)
       .not("talent_pool_at", "is", null)
       .order("talent_pool_at", { ascending: false })
-      .range(from, from + PAGE - 1);
+      .range(from, from + PAGE - 1), access, auth);
     if (error) {
       console.error("[talent-pool] Load failed:", error.message);
       return NextResponse.json({ error: "Couldn't load the talent pool." }, { status: 500 });

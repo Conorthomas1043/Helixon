@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidate-activity";
 import { REFERENCE_QUESTIONS, cleanReferenceAnswers } from "@/lib/compliance";
+import { notify } from "@/lib/notifications";
 
 // Public: a referee's reference form (app/reference/[token]). The token is
 // the only credential, so this answers with only what the form needs - the
@@ -60,6 +61,15 @@ export async function POST(request, { params }) {
   if (!data?.length) return NextResponse.json({ error: "This reference has already been answered." }, { status: 409 });
   await logActivity(supabase, row.candidate_id, "reference_received", update.answers?.completedBy || row.referee_name, {
     note: update.status === "declined" ? `${row.referee_name} declined to give a reference` : `From ${row.referee_name}`,
+  });
+  const { data: owner } = await supabase.from("candidates").select("recruiter_id").eq("id", row.candidate_id).maybeSingle();
+  await notify({
+    agencyId: row.agency_id,
+    userId: owner?.recruiter_id || null,
+    kind: "reference",
+    title: update.status === "declined" ? `${row.referee_name} declined a reference` : `Reference received from ${row.referee_name}`,
+    body: row.candidates?.full_name || row.candidates?.name || null,
+    href: `/dashboard/candidates/${row.candidate_id}`,
   });
   after(() =>
     emitWebhook(row.agency_id, "reference.received", { referenceId: row.id, candidateId: row.candidate_id, referee: row.referee_name, status: update.status, answers: update.answers ?? null })

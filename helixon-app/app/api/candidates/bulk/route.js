@@ -7,6 +7,8 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { eraseCandidates } from "@/lib/candidate-erasure";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { logAudit } from "@/lib/agency-audit";
 
 // POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
@@ -34,7 +36,17 @@ export async function POST(request) {
   }
 
   if (body.action === "delete") {
-    const { erased, failedStep } = await eraseCandidates(supabase, agencyId, ids);
+    // Only candidates this member can see ("own candidates only").
+    const access = await getAccess(auth);
+    let deletable = ids;
+    if (!access.seesAllCandidates) {
+      const { data: visible } = await scopeCandidateQuery(supabase.from("candidates").select("id").eq("agency_id", agencyId).in("id", ids), access, auth);
+      deletable = (visible || []).map((r) => r.id);
+    }
+    const { erased, failedStep } = await eraseCandidates(supabase, agencyId, deletable);
+    if (erased) {
+      await logAudit({ auth, request, action: "candidate.deleted", targetType: "candidate", summary: `Deleted ${erased} candidate${erased === 1 ? "" : "s"} (bulk)`, meta: { ids: deletable.slice(0, 50) } });
+    }
     if (failedStep) {
       return NextResponse.json(
         { error: `Erased ${erased}, then failed (${failedStep}). Safe to retry.`, erased },
@@ -44,11 +56,11 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, updated: erased });
   }
 
-  const { data: rows, error: lookupError } = await supabase
-    .from("candidates")
-    .select("id, stage, tags, pooled_from_id")
-    .eq("agency_id", agencyId)
-    .in("id", ids);
+  const { data: rows, error: lookupError } = await scopeCandidateQuery(
+    supabase.from("candidates").select("id, stage, tags, pooled_from_id").eq("agency_id", agencyId).in("id", ids),
+    await getAccess(auth),
+    auth
+  );
   if (lookupError) {
     return NextResponse.json({ error: "Failed to load those candidates." }, { status: 500 });
   }

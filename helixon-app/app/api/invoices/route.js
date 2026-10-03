@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { INVOICE_STATUSES } from "@/lib/placements";
+import { getAccess } from "@/lib/permissions";
 
 // GET ?status= - the agency's invoices, newest first.
 export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const status = new URL(request.url).searchParams.get("status");
   let q = supabase
     .from("invoices")

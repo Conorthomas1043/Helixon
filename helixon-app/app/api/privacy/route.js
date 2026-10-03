@@ -6,6 +6,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { getOrgMemberRole } from "@/lib/clerk-org";
 import { RETENTION_CHOICES, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { upcomingRetention } from "@/lib/data-retention";
+import { logAudit } from "@/lib/agency-audit";
 
 // The workspace's Data & privacy settings (/dashboard/privacy).
 //
@@ -79,6 +80,7 @@ export async function PATCH(request) {
       .update({ last_seen_at: null, last_active_at: null, presence_status: null, presence_message: null, presence_until: null })
       .eq("agency_id", auth.agencyId);
   }
+  await logAudit({ auth, request, action: "settings.privacy", summary: "Changed privacy settings", meta: body && typeof body === "object" ? Object.keys(body) : null });
   return NextResponse.json({ ok: true });
 }
 

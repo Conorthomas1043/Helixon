@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { candidateCvUrl } from "@/lib/candidate-files";
+import { candidateHidden } from "@/lib/permissions";
 
 // GET /api/candidates/[id]/cv
 //   ?format=text        -> { text } - the extracted CV text (every analysed
@@ -22,6 +23,8 @@ export async function GET(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
   const url = new URL(request.url);

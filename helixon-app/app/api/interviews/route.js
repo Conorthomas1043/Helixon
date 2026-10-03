@@ -10,6 +10,7 @@ import { cleanInterviewFields, formatInterviewTime } from "@/lib/interviews";
 import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
 import { sendInterviewInvites } from "@/lib/interview-invites";
 import { FUNNEL_ORDER } from "@/lib/stage-labels";
+import { getAccess } from "@/lib/permissions";
 
 // Interviews (lib/interviews.js).
 //
@@ -45,7 +46,8 @@ export async function GET(request) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: "Failed to load interviews." }, { status: 500 });
 
-  let rows = data ?? [];
+  const access = await getAccess(auth);
+  let rows = (data ?? []).filter((r) => access.seesAllCandidates || !r.candidates?.recruiter_id || r.candidates.recruiter_id === auth.userId);
   if (params.get("scope") === "mine") rows = rows.filter((r) => r.candidates?.recruiter_id === auth.userId || r.created_by === auth.userId);
   const names = await resolveRecruiterNames(supabase, rows.map((r) => r.candidates?.recruiter_id));
   return NextResponse.json({ interviews: rows.map((r) => shapeInterview(r, names)) });

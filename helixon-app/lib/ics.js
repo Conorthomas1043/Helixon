@@ -75,3 +75,41 @@ export function buildInvite(ev) {
   lines.push("END:VEVENT", "END:VCALENDAR");
   return lines.map(foldLine).join(CRLF) + CRLF;
 }
+
+// A subscribable calendar feed (VCALENDAR with many VEVENTs, no METHOD) -
+// the interview feed people add to Google Calendar, Outlook or Apple
+// Calendar by URL (app/api/calendar/[token]).
+//   events: [{ uid, start, durationMinutes, summary, description, location, url, cancelled, sequence }]
+export function buildFeed({ name, events }) {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Helixon//Interviews//EN",
+    "CALSCALE:GREGORIAN",
+    `X-WR-CALNAME:${icsEscape(name || "Helixon interviews")}`,
+    "X-PUBLISHED-TTL:PT1H",
+    "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
+  ];
+  const now = icsDateTime(new Date());
+  for (const ev of events || []) {
+    const start = new Date(ev.start);
+    if (Number.isNaN(start.getTime())) continue;
+    const end = new Date(start.getTime() + (Number(ev.durationMinutes) || 60) * 60000);
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${ev.uid}`,
+      `DTSTAMP:${now}`,
+      `SEQUENCE:${Number(ev.sequence) || 0}`,
+      `DTSTART:${icsDateTime(start)}`,
+      `DTEND:${icsDateTime(end)}`,
+      `SUMMARY:${icsEscape(ev.summary)}`,
+      ...(ev.description ? [`DESCRIPTION:${icsEscape(ev.description)}`] : []),
+      ...(ev.location ? [`LOCATION:${icsEscape(ev.location)}`] : []),
+      ...(ev.url ? [`URL:${icsEscape(ev.url)}`] : []),
+      `STATUS:${ev.cancelled ? "CANCELLED" : "CONFIRMED"}`,
+      "END:VEVENT"
+    );
+  }
+  lines.push("END:VCALENDAR");
+  return lines.map(foldLine).join(CRLF) + CRLF;
+}

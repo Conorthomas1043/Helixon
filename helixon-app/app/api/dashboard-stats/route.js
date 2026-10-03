@@ -5,6 +5,7 @@ import { agencyDisplayName } from "@/lib/agency-display";
 import { planLabel } from "@/lib/plans";
 import { getAgencyPlan } from "@/lib/plan";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, `analyses` and `truncated` from this
@@ -25,14 +26,11 @@ const ROW_CAP = 20000;
 const COLUMNS =
   "id, full_name, name, processing_status, recruiter_id, stage, next_action, match_score, created_at, last_activity_at, job_id, jobs(title, client)";
 
-async function fetchPipelineRows(agencyId) {
+async function fetchPipelineRows(agencyId, access, auth) {
   let all = [];
   let from = 0;
   while (from < ROW_CAP) {
-    const { data, error } = await supabase
-      .from("candidates")
-      .select(COLUMNS)
-      .eq("agency_id", agencyId)
+    const { data, error } = await scopeCandidateQuery(supabase.from("candidates").select(COLUMNS).eq("agency_id", agencyId), access, auth)
       // Analysed rows only: a CSV import or API-created record that was
       // never screened has no score and isn't an analysis.
       .or("match_score.not.is.null,processing_status.neq.completed")
@@ -59,9 +57,12 @@ export async function GET() {
     return NextResponse.json({ agencyName: agencyDisplayName(null, profile), plan: null, analyses: [], truncated: false });
   }
 
+  // "Own candidates only" (lib/permissions.js) applies to the Overview too.
+  const auth = { agencyId, userId: user.id, profile };
+  const access = await getAccess(auth);
   const [{ data: agency, error: agencyError }, { data: rows, error: rowError, truncated }] = await Promise.all([
     supabase.from("agencies").select("name, plan_name, analyses_used, analyses_limit, settings").eq("id", agencyId).maybeSingle(),
-    fetchPipelineRows(agencyId),
+    fetchPipelineRows(agencyId, access, auth),
   ]);
 
   if (agencyError || rowError) {

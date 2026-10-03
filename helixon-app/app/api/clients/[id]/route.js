@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients";
+import { getAccess } from "@/lib/permissions";
 
 // One client (lib/clients.js).
 //
@@ -58,12 +59,15 @@ export async function GET(request, { params }) {
   });
 
   const owner = await resolveRecruiterNames(supabase, [client.owner_id]);
+  const { canSeeFinancials } = await getAccess(auth);
+  const shaped = toClient(client);
   return NextResponse.json({
-    client: { ...toClient(client), ownerName: owner.get(client.owner_id) ?? null },
+    client: { ...shaped, ...(canSeeFinancials ? {} : { feePercent: null }), ownerName: owner.get(client.owner_id) ?? null },
     contacts: (contacts ?? []).map(toContact),
     jobs: jobRows,
-    placements: placements.sort((a, b) => String(b.at ?? "").localeCompare(String(a.at ?? ""))),
-    invoices: invoices ?? [],
+    placements: placements.sort((a, b) => String(b.at ?? "").localeCompare(String(a.at ?? ""))).map((p) => (canSeeFinancials ? p : { ...p, fee: null })),
+    invoices: canSeeFinancials ? invoices ?? [] : [],
+    financialsHidden: !canSeeFinancials,
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, createdAt: a.created_at })),
   });
 }

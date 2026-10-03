@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { followUpItems, interviewFollowUpItems, sortFollowUps } from "@/lib/follow-ups";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // GET ?scope=mine|all&tz= - open follow-ups (lib/follow-ups.js): candidates'
 // next actions, talent-pool check-ins and this week's interviews, most
@@ -37,6 +38,8 @@ export async function GET(request) {
     .or("next_action.not.is.null,talent_pool_check_in.not.is.null")
     .limit(LIMIT);
   if (mine) query = query.eq("recruiter_id", auth.userId);
+  const access = await getAccess(auth);
+  query = scopeCandidateQuery(query, access, auth);
 
   const now = new Date();
   const [{ data, error }, { data: interviews }] = await Promise.all([
@@ -51,7 +54,8 @@ export async function GET(request) {
   ]);
   if (error) return NextResponse.json({ error: "Failed to load follow-ups." }, { status: 500 });
 
-  const interviewRows = (interviews ?? []).filter((r) => !mine || r.candidates?.recruiter_id === auth.userId || r.created_by === auth.userId);
+  const visible = (r) => access.seesAllCandidates || !r.candidates?.recruiter_id || r.candidates.recruiter_id === auth.userId;
+  const interviewRows = (interviews ?? []).filter((r) => visible(r) && (!mine || r.candidates?.recruiter_id === auth.userId || r.created_by === auth.userId));
   const items = sortFollowUps([...followUpItems(data, now, timeZone), ...interviewFollowUpItems(interviewRows, now, timeZone)]);
   const names = await resolveRecruiterNames(supabase, items.map((i) => i.recruiterId));
   return NextResponse.json({

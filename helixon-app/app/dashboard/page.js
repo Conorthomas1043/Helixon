@@ -1100,15 +1100,16 @@ function BusinessKpis({ kpis }) {
     { label: "Open jobs", value: kpis.openJobs, sub: kpis.openings > kpis.openJobs ? `${formatNumber(kpis.openings)} openings` : "Roles you're filling", href: "/dashboard/jobs" },
     { label: "Interviews", value: kpis.interviewsThisWeek, sub: kpis.interviewsToday ? `${kpis.interviewsToday} today` : "Next 7 days", href: "/dashboard/interviews" },
     { label: "Offers out", value: kpis.offersOut, sub: "Waiting on an answer", href: "/dashboard/placements" },
-    { label: "Placed this month", value: kpis.placementsThisMonth, sub: `${formatMoneyShort(kpis.feesThisMonth)} in fees`, href: "/dashboard/placements" },
-    {
+    { label: "Placed this month", value: kpis.placementsThisMonth, sub: kpis.feesThisMonth == null ? "This month" : `${formatMoneyShort(kpis.feesThisMonth)} in fees`, href: "/dashboard/placements" },
+    // Hidden from members when money is admin-only (lib/permissions.js).
+    kpis.outstanding != null && {
       label: "Owed to you",
       value: formatMoneyShort(kpis.outstanding),
       sub: kpis.overdueCount ? `${formatMoneyShort(kpis.overdueTotal)} overdue` : "Nothing overdue",
       tone: kpis.overdueCount ? RED : null,
       href: "/dashboard/placements?tab=invoices",
     },
-  ];
+  ].filter(Boolean);
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
       {items.map((it, i) => (

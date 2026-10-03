@@ -7,6 +7,8 @@ import { buildReport, matchHighlights } from "@/lib/analysis-report";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
 import { personCandidateIds } from "@/lib/candidate-person";
+import { candidateHidden, getAccess } from "@/lib/permissions";
+import { logAudit } from "@/lib/agency-audit";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -39,6 +41,8 @@ export async function GET(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -166,8 +170,8 @@ export async function GET(request, { params }) {
     nextAction: candidate.next_action,
     source: candidate.source,
     rejectionReason: candidate.rejection_reason,
-    placementFee: candidate.placement_fee,
-    placementCost: candidate.placement_cost,
+    placementFee: (await getAccess(auth)).canSeeFinancials ? candidate.placement_fee : null,
+    placementCost: (await getAccess(auth)).canSeeFinancials ? candidate.placement_cost : null,
     retention30d: candidate.retention_30d,
     retention90d: candidate.retention_90d,
     createdAt: candidate.created_at,
@@ -196,6 +200,8 @@ export async function PATCH(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
@@ -275,6 +281,8 @@ export async function DELETE(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -299,6 +307,7 @@ export async function DELETE(request, { params }) {
   const ids = everyRecord ? await personCandidateIds(supabase, agencyId, id).catch(() => [id]) : [id];
 
   const { erased, failedStep } = await eraseCandidates(supabase, agencyId, ids);
+  if (erased) await logAudit({ auth, request, action: "candidate.deleted", targetType: "candidate", targetId: id, summary: everyRecord ? `Erased every record for a person (${erased})` : "Deleted a candidate" });
   if (failedStep || erased !== ids.length) {
     return NextResponse.json(
       { error: `Failed to erase candidate data (${failedStep || "candidates"}). Safe to retry.` },

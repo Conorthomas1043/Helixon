@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanInvoicing, normaliseInvoicing } from "@/lib/invoicing-settings";
+import { logAudit } from "@/lib/agency-audit";
 
 // GET / PATCH the agency's invoice details (lib/invoicing-settings.js).
 // Changing them is for the owner or an admin.
@@ -27,5 +28,6 @@ export async function PATCH(request) {
   const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
   const { error } = await supabase.from("agencies").update({ settings: { ...(data?.settings || {}), invoicing: fields } }).eq("id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  await logAudit({ auth, request, action: "settings.invoicing", summary: "Changed invoicing settings" });
   return NextResponse.json({ ...fields, canManage: true });
 }

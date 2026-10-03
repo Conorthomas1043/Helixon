@@ -872,7 +872,10 @@ export async function getPlacements(query = {}) {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(query)) if (v) params.set(k, v);
   const res = await apiFetch(`/api/placements?${params.toString()}`);
-  return res.placements;
+  // Carried on the array so callers keep using it as a list.
+  const list = res.placements;
+  list.financialsHidden = Boolean(res.financialsHidden);
+  return list;
 }
 
 export async function getPlacement(id) {
@@ -1174,5 +1177,23 @@ export async function mergeCandidate(candidateId, otherId) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ otherId }),
+  });
+}
+
+// Invoices for Xero / QuickBooks, or a payroll sheet - app/api/exports/accounting.
+export async function getAccountingExport(format, { from, to } = {}) {
+  const q = new URLSearchParams({ format });
+  if (from) q.set("from", from);
+  if (to) q.set("to", to);
+  const res = await apiFetch(`/api/exports/accounting?${q.toString()}`);
+  return res.rows;
+}
+
+// AI call notes - app/api/candidates/[id]/call-notes. Resolves { result, saved }.
+export async function summariseCallNotes(candidateId, { notes, kind = "call", save = false }) {
+  return apiFetch(`/api/candidates/${candidateId}/call-notes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ notes, kind, save }),
   });
 }

@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics-data";
+import { getAccess } from "@/lib/permissions";
 
 // Everything the main funnel/quality/conversion numbers in
 // getAnalyticsSnapshot() (lib/dashboard-api.js) don't cover: speed
@@ -96,6 +97,10 @@ export async function GET(request) {
   }
   const { agencyId } = auth;
   const filters = readAnalyticsFilters(new URL(request.url).searchParams);
+  // Permissions (lib/permissions.js): members limited to their own
+  // candidates get their own numbers; money can be admin-only.
+  const access = await getAccess(auth);
+  if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
   const { jobIds: clientJobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId);
   if (clientError) {
     console.error("[analytics/timing] Client lookup failed:", clientError.message);
@@ -379,8 +384,15 @@ export async function GET(request) {
       .map(([reason, count]) => ({ reason, count })),
   };
 
+  if (!access.canSeeFinancials) {
+    for (const a of advertising) {
+      a.spend = null;
+      a.costPerApplicant = null;
+    }
+  }
   return NextResponse.json({
     ok: true,
+    financialsHidden: !access.canSeeFinancials,
     recruiterVerdicts,
     timeToHireDays: median(timeToHireSamples),
     timeToHireSampleSize: timeToHireSamples.length,
@@ -406,7 +418,7 @@ export async function GET(request) {
       reused: reusedCount,
       rate: withEmail.length ? Math.round((reusedCount / withEmail.length) * 100) : null,
     },
-    financial: {
+    financial: !access.canSeeFinancials ? null : {
       totalFee: Math.round(totalFee * 100) / 100,
       totalCost: Math.round(totalCost * 100) / 100,
       margin: placedWithBoth.length > 0 ? Math.round((matchedFee - matchedCost) * 100) / 100 : null,

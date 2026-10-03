@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
+import { candidateHidden } from "@/lib/permissions";
 
 // Team notes on a candidate. The text lives in candidate_notes.note - this
 // route used to write a `body` column that doesn't exist (and no
@@ -20,6 +21,8 @@ function toNote(row) {
 async function context(params) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return { response: NextResponse.json({ error: auth.error }, { status: auth.status }) };
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return { response: hidden };
   const { id } = await params;
   const { data: candidate } = await supabase
     .from("candidates")

@@ -27,6 +27,9 @@ const SECTIONS = [
     title: "Data & connections",
     items: [
       { href: "/dashboard/privacy", label: "Data & privacy", body: "Retention, the talent pool, blind screening and what teammates can see." },
+      { href: "/dashboard/settings/permissions", label: "Permissions", body: "Keep fees and invoices to admins, and limit members to their own candidates." },
+      { href: "/dashboard/settings/audit", label: "Audit log", body: "Who deleted, exported or changed what, and when." },
+      { href: "/dashboard/settings/connections", label: "Calendar & email", body: "Subscribe to your interviews in Google, Outlook or Apple, and log emails by BCC." },
       { href: "/dashboard/settings/integrations", label: "Integrations", body: "API keys, webhooks for Zapier and Make, and the LinkedIn extension." },
       { href: "/dashboard/import", label: "Import", body: "Bring candidates, clients and jobs over from a spreadsheet or your old system." },
     ],

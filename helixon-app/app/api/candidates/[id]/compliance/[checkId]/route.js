@@ -7,6 +7,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, toCheck } from "@/lib/compliance";
 import { complianceDocumentUrl, removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance-files";
 import { readCheckBody } from "@/lib/compliance-server";
+import { candidateHidden } from "@/lib/permissions";
 
 // One compliance check.
 // GET     a one-minute download link for its document: { url }
@@ -26,6 +27,8 @@ async function load(auth, params) {
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const check = await load(auth, params);
   if (!check?.document_path) return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
@@ -38,6 +41,8 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const check = await load(auth, params);
   if (!check) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { body, file } = await readCheckBody(request);
@@ -76,6 +81,8 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const check = await load(auth, params);
   if (!check) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { error } = await supabase.from("compliance_checks").delete().eq("id", check.id).eq("agency_id", auth.agencyId);

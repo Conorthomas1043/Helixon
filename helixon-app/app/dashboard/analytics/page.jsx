@@ -439,7 +439,7 @@ function AdvertisingTable({ advertising }) {
             <tr key={row.key}>
               <td className="py-2 font-medium" style={{ color: INK }}>{row.label}</td>
               <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.clicks}</td>
-              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>£{row.spend.toLocaleString()}</td>
+              <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.spend == null ? "—" : `£${row.spend.toLocaleString()}`}</td>
               <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.applicants}</td>
               <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.applyRate !== null ? `${row.applyRate}%` : "—"}</td>
               <td className="py-2 text-right tabular-nums" style={{ color: INK_MUTED }}>{row.costPerApplicant !== null ? `£${row.costPerApplicant.toLocaleString()}` : "—"}</td>
@@ -972,7 +972,11 @@ export default function AnalyticsPage() {
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Commercial" title="Financials" />
-              {snapshot.timing?.financial && <FinancialRow financial={snapshot.timing.financial} />}
+              {snapshot.timing?.financial ? (
+                <FinancialRow financial={snapshot.timing.financial} />
+              ) : snapshot.timing?.financialsHidden ? (
+                <p className="text-[13px]" style={{ color: INK_MUTED }}>Fee income and margins are only visible to the owner and admins.</p>
+              ) : null}
             </div>
 
             <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>

@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { poolRootId } from "@/lib/rescreen";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
+import { candidateHidden } from "@/lib/permissions";
 
 // Save someone to the agency's talent pool for future roles, or take them
 // out. The pool holds one entry per person: the flag goes on their first
@@ -45,6 +46,8 @@ function toPool(row) {
 async function load(params) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return { response: NextResponse.json({ error: auth.error }, { status: auth.status }) };
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return { response: hidden };
   const { id } = await params;
   const { data: candidate } = await supabase
     .from("candidates")

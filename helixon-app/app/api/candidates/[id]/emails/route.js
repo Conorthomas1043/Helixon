@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
+import { candidateHidden } from "@/lib/permissions";
 
 // GET - the emails sent to and received from this candidate through
 // Helixon (email_messages), oldest first, and any sequences they're in.
@@ -9,6 +10,8 @@ import { cleanUuid } from "@/lib/sanitize";
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { data: candidate } = await supabase.from("candidates").select("id").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();

@@ -7,6 +7,7 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { toReference } from "@/lib/compliance";
 import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
+import { candidateHidden } from "@/lib/permissions";
 
 // One reference.
 // GET     { reference, link } - the link, to copy and send yourself
@@ -33,6 +34,8 @@ async function load(auth, params) {
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ reference: toReference(ref), link: referenceUrl(ref.token) });
@@ -41,6 +44,8 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json().catch(() => ({}));
@@ -85,6 +90,8 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await supabase.from("candidate_references").delete().eq("id", ref.id).eq("agency_id", auth.agencyId);

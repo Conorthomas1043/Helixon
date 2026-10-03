@@ -7,6 +7,7 @@ import { logClientActivity } from "@/lib/clients";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { addDays, invoiceTotals, nextInvoiceNumber } from "@/lib/placements";
 import { normaliseInvoicing } from "@/lib/invoicing-settings";
+import { getAccess } from "@/lib/permissions";
 
 // POST { timesheetIds?, notes? } - raise an invoice for a placement.
 // Permanent: one line, the placement fee. Contract: a line per approved
@@ -17,6 +18,7 @@ import { normaliseInvoicing } from "@/lib/invoicing-settings";
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const { data: p } = id
     ? await supabase.from("placements").select("*, clients(name, address, payment_terms_days)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()

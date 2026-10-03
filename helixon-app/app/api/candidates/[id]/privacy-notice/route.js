@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { cleanLine } from "@/lib/sanitize";
 import { loadCandidate } from "@/lib/compliance-server";
 import { sendPrivacyNotices } from "@/lib/compliance-email";
+import { candidateHidden } from "@/lib/permissions";
 
 // POST { action: "send" }   email them the agency's privacy notice
 // POST { action: "consent", source }   record consent given another way
@@ -15,6 +16,8 @@ import { sendPrivacyNotices } from "@/lib/compliance-email";
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, full_name, name, email");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json().catch(() => ({}));

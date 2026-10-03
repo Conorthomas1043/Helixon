@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { normaliseCustomisation } from "@/lib/custom-fields";
+import { candidateHidden } from "@/lib/permissions";
 
 // PATCH { stage?, subStage? } - move a candidate to a core stage and/or one
 // of the agency's sub-stages (lib/custom-fields.js). A sub-stage on its own
@@ -16,6 +17,8 @@ export async function PATCH(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 

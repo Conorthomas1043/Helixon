@@ -50,3 +50,24 @@ describe("helpers", () => {
     expect(foldLine(line).replace(/\r\n /g, "")).toBe(line);
   });
 });
+
+describe("buildFeed", () => {
+  it("lists every interview as an event", async () => {
+    const { buildFeed } = await import("./ics");
+    const feed = buildFeed({
+      name: "Ana's interviews",
+      events: [
+        { uid: "a@helixon", start: "2026-10-06T09:00:00Z", durationMinutes: 45, summary: "Interview: Ben, Dev", location: "Zoom", url: "https://x/c/1" },
+        { uid: "b@helixon", start: "2026-10-07T09:00:00Z", summary: "Interview: Cat", cancelled: true },
+        { uid: "c@helixon", start: "not a date", summary: "skip" },
+      ],
+    });
+    expect(feed.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
+    expect(feed.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+    expect(feed).toContain("DTSTART:20261006T090000Z\r\nDTEND:20261006T094500Z");
+    expect(feed).toContain("SUMMARY:Interview: Ben\\, Dev");
+    expect(feed).toContain("STATUS:CANCELLED");
+    expect(feed).toContain("X-WR-CALNAME:Ana's interviews");
+    expect(feed).not.toContain("METHOD:");
+  });
+});

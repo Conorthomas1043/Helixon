@@ -5,6 +5,8 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { INVOICE_STATUSES } from "@/lib/placements";
 import { normaliseInvoicing } from "@/lib/invoicing-settings";
+import { logAudit } from "@/lib/agency-audit";
+import { getAccess } from "@/lib/permissions";
 
 // GET   one invoice with the agency's invoice details (for printing)
 // PATCH { status, paidOn? }   mark paid / sent / void. Voiding a contract
@@ -13,6 +15,7 @@ import { normaliseInvoicing } from "@/lib/invoicing-settings";
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const [{ data: invoice }, { data: agency }] = await Promise.all([
     id ? supabase.from("invoices").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null },
@@ -26,6 +29,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const body = await request.json().catch(() => ({}));
   if (!id || !INVOICE_STATUSES[body.status] || body.status === "draft") return NextResponse.json({ error: "Mark it sent, paid or void." }, { status: 400 });
@@ -43,5 +47,6 @@ export async function PATCH(request, { params }) {
   if (body.status === "void") {
     await supabase.from("timesheets").update({ status: "approved", invoice_id: null }).eq("invoice_id", id).eq("agency_id", auth.agencyId);
   }
+  await logAudit({ auth, request, action: "invoice.status", targetType: "invoice", targetId: data.id, summary: `Invoice ${data.number || ""} marked ${body.status}` });
   return NextResponse.json({ invoice: data });
 }

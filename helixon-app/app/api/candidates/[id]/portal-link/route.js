@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { newToken } from "@/lib/signatures";
 import { PORTAL_LINK_DAYS } from "@/lib/candidate-portal";
+import { candidateHidden } from "@/lib/permissions";
 
 // A candidate's private self-service link (lib/candidate-portal.js).
 // GET               the current link, if there is one
@@ -40,6 +41,8 @@ async function activeLink(candidateId) {
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { data, error } = await activeLink(c.id);
@@ -50,6 +53,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = (await request.json().catch(() => null)) ?? {};
@@ -99,6 +104,8 @@ export async function POST(request, { params }) {
 export async function DELETE(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await supabase.from("candidate_portal_links").update({ revoked_at: new Date().toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);

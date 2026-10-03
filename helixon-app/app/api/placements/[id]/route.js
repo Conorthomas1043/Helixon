@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
+import { getAccess, redactPlacement } from "@/lib/permissions";
 
 // One placement: GET (with invoices and timesheets), PATCH, DELETE (only
 // while nothing has been invoiced).
@@ -27,9 +28,10 @@ export async function GET(request, { params }) {
     supabase.from("invoices").select("id, number, status, total, currency, issued_on, due_on, paid_on").eq("placement_id", p.id).eq("agency_id", auth.agencyId).order("issued_on", { ascending: false }),
     supabase.from("timesheets").select("*").eq("placement_id", p.id).eq("agency_id", auth.agencyId).order("week_starting", { ascending: false }),
   ]);
+  const access = await getAccess(auth);
   return NextResponse.json({
-    placement: { ...toPlacement(p), margin: contractMargin(p.pay_rate, p.charge_rate) },
-    invoices: invoices ?? [],
+    placement: redactPlacement({ ...toPlacement(p), margin: access.canSeeFinancials ? contractMargin(p.pay_rate, p.charge_rate) : null }, access),
+    invoices: access.canSeeFinancials ? invoices ?? [] : [],
     timesheets: (timesheets ?? []).map((t) => ({
       id: t.id,
       weekStarting: t.week_starting,
@@ -67,7 +69,7 @@ export async function PATCH(request, { params }) {
   }
   await syncCandidate(data, actor);
   after(() => emitWebhook(auth.agencyId, "placement.updated", { ...toPlacement(data), previousStatus: p.status }));
-  return NextResponse.json({ placement: toPlacement(data) });
+  return NextResponse.json({ placement: redactPlacement(toPlacement(data), await getAccess(auth)) });
 }
 
 export async function DELETE(request, { params }) {

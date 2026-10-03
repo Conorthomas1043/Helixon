@@ -141,6 +141,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
   const [error, setError] = useState(null);
   const set = (k) => (e) => setF((prev) => ({ ...prev, [k]: e.target.value }));
   const contract = f.kind === "contract";
+  const moneyHidden = Boolean(placement?.financialsHidden);
   const suggestedFee = computeFee(f.salary === "" ? null : f.salary, f.feePercent === "" ? null : f.feePercent);
   const margin = contractMargin(f.payRate === "" ? null : f.payRate, f.chargeRate === "" ? null : f.chargeRate);
 
@@ -156,6 +157,9 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
       Object.assign(body, { salary: f.salary, feePercent: f.feePercent, rebateDays: f.rebateDays });
       if (feeTyped) body.feeAmount = f.feeAmount;
     }
+    // Members who can't see money (lib/permissions.js) get blanks back -
+    // never send those blanks, or saving would wipe the real figures.
+    if (moneyHidden) for (const k of ["salary", "feePercent", "feeAmount", "payRate", "chargeRate", "splits"]) delete body[k];
     // On a new offer, blanks are left out so the client's terms fill them.
     if (!placement) for (const k of Object.keys(body)) if (body[k] === "") delete body[k];
     if (body.splits?.some((s) => !s.recruiterId)) {
@@ -197,7 +201,9 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
           </Field>
         </div>
 
-        {contract ? (
+        {moneyHidden ? (
+          <p className="text-[12px]" style={{ color: INK_MUTED }}>Fees, salary and rates are only visible to the owner and admins.</p>
+        ) : contract ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Field label="Rate per">
               <Select
@@ -253,7 +259,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
           </div>
         )}
 
-        <SplitEditor splits={f.splits} onChange={(splits) => setF((prev) => ({ ...prev, splits }))} />
+        {!moneyHidden && <SplitEditor splits={f.splits} onChange={(splits) => setF((prev) => ({ ...prev, splits }))} />}
         <Field label="Currency">
           <Select
             value={f.currency}

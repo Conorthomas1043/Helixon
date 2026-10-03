@@ -6,7 +6,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getInvoices, getPlacements, updateInvoice } from "@/lib/dashboard-api";
+import { getAccountingExport, getInvoices, getPlacements, updateInvoice } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
 import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements";
 import { Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placements";
@@ -44,13 +45,16 @@ export default function PlacementsPage() {
   const [kind, setKind] = useState(() => (query?.get("kind") === "contract" ? "contract" : "all"));
   const [invoiceFilter, setInvoiceFilter] = useState("unpaid");
   const [invoiceError, setInvoiceError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportNote, setExportNote] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getPlacements(), getInvoices()])
+    // Invoices are refused (403) for members when money is admin-only.
+    Promise.all([getPlacements(), getInvoices().catch(() => [])])
       .then(([placements, invoices]) => {
         if (!cancelled) {
-          setData({ placements, invoices, today: new Date().toISOString().slice(0, 10) });
+          setData({ placements, invoices, today: new Date().toISOString().slice(0, 10), financialsHidden: Boolean(placements?.financialsHidden) });
           setError(false);
         }
       })
@@ -117,6 +121,21 @@ export default function PlacementsPage() {
     }
   }
 
+  async function exportFor(format) {
+    if (!format) return;
+    setExporting(true);
+    setExportNote("");
+    try {
+      const rows = await getAccountingExport(format);
+      if (!rows.length) setExportNote(format === "payroll" ? "No approved timesheets to export yet." : "No sent or paid invoices to export yet.");
+      else downloadCsv(`${format === "payroll" ? "payroll" : `invoices-${format}`}-${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    } catch (err) {
+      setExportNote(err.message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <Page>
       <PageHeader
@@ -124,11 +143,29 @@ export default function PlacementsPage() {
         title="Placements & invoices"
         subtitle="Offers, starts, fees and contractors - and the invoices raised from them. Record an offer from a candidate's profile."
         actions={
-          <Button href="/dashboard/settings/invoicing" size="sm">
-            Invoice settings
-          </Button>
+          <>
+            {!data?.financialsHidden && (
+              <Select
+                aria-label="Export for your accounts"
+                value=""
+                onChange={(e) => exportFor(e.target.value)}
+                options={[
+                  { value: "", label: exporting ? "Exporting…" : "Export…" },
+                  { value: "xero", label: "Invoices for Xero (CSV)" },
+                  { value: "quickbooks", label: "Invoices for QuickBooks (CSV)" },
+                  { value: "payroll", label: "Contractor payroll (CSV)" },
+                ]}
+                disabled={exporting}
+                style={{ width: "auto" }}
+              />
+            )}
+            <Button href="/dashboard/settings/invoicing" size="sm">
+              Invoice settings
+            </Button>
+          </>
         }
       />
+      {exportNote && <p className="text-[12px]" style={{ color: INK_MUTED }}>{exportNote}</p>}
 
       {error ? (
         <ErrorState body="Placements couldn't be loaded." onRetry={reload} />

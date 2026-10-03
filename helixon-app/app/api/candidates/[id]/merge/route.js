@@ -5,6 +5,8 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
 import { removeCandidateCvs } from "@/lib/candidate-files";
+import { candidateHidden } from "@/lib/permissions";
+import { logAudit } from "@/lib/agency-audit";
 
 // POST { otherId } - the same person recorded twice.
 //
@@ -26,6 +28,8 @@ const poolRootId = (c) => c.pooled_from_id || c.id;
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const keepId = cleanUuid((await params).id);
   const body = (await request.json().catch(() => null)) ?? {};
   const otherId = cleanUuid(body.otherId);
@@ -47,6 +51,7 @@ export async function POST(request, { params }) {
     }
     if (data?.orphaned_cv) await removeCandidateCvs([data.orphaned_cv]).catch(() => {});
     await logActivity(supabase, keep.id, "candidate_merged", actor, { note: `Merged the duplicate record for ${otherName} into this one` });
+    await logAudit({ auth, request, action: "candidate.merged", targetType: "candidate", targetId: keep.id, summary: `Merged a duplicate of ${otherName}`, meta: { removed: other.id } });
     return NextResponse.json({ ok: true, mode: "merged", moved: data });
   }
 

@@ -4,6 +4,9 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidate-activity";
 import { tokenFromAddress } from "@/lib/tracked-email";
+import { bccTokenFromAddress, memberForToken } from "@/lib/member-tokens";
+import { logClientActivity } from "@/lib/clients";
+import { notify } from "@/lib/notifications";
 
 // Replies to emails sent through Helixon (lib/tracked-email.js). Resend
 // receives mail for RESEND_INBOUND_DOMAIN and posts an "email.received"
@@ -16,6 +19,10 @@ import { tokenFromAddress } from "@/lib/tracked-email";
 //     still reaches their own inbox.
 // Unknown or unsigned requests are refused; events for other addresses are
 // acknowledged and ignored.
+//
+// Mail to someone's log+<token>@ address (lib/member-tokens.js) is an email
+// they sent from their own inbox with that address in BCC: it's filed on
+// the timeline of every candidate and client contact it went to.
 
 const MAX_BODY = 50000;
 
@@ -43,6 +50,8 @@ export async function POST(request) {
 
   const data = event.data || {};
   const addresses = [...(data.received_for || []), ...(data.to || [])];
+  const bccToken = [...addresses, ...(data.cc || []), ...(data.bcc || [])].map((a) => bccTokenFromAddress(a)).find(Boolean);
+  if (bccToken) return logBccEmail({ data, token: bccToken, resend });
   const token = addresses.map((a) => tokenFromAddress(a)).find(Boolean);
   if (!token) return NextResponse.json({ ok: true, ignored: true });
 
@@ -88,6 +97,15 @@ export async function POST(request) {
     }
   }
 
+  await notify({
+    agencyId: original.agency_id,
+    userId: original.sent_by || null,
+    kind: "email_reply",
+    title: `Reply from ${String(data.from || "someone").slice(0, 120)}`,
+    body: data.subject || original.subject || null,
+    href: original.candidate_id ? `/dashboard/candidates/${original.candidate_id}` : original.client_id ? `/dashboard/clients/${original.client_id}` : null,
+  });
+
   // Forward the reply to the recruiter who sent the original.
   if (original.sent_by && process.env.RESEND_FROM_EMAIL) {
     try {
@@ -101,4 +119,59 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
+const emailsIn = (list) => [...new Set((list || []).flatMap((a) => String(a || "").toLowerCase().match(EMAIL_RE) || []))];
+
+// An email BCC'd to a member's log+<token>@ address.
+async function logBccEmail({ data, token, resend }) {
+  const member = await memberForToken(token, "bcc");
+  if (!member) return NextResponse.json({ ok: true, ignored: true });
+
+  const { data: seen } = await supabase.from("email_messages").select("id").eq("provider_id", data.email_id).limit(1);
+  if (seen?.length) return NextResponse.json({ ok: true, duplicate: true });
+
+  const from = emailsIn([data.from])[0] || null;
+  const people = emailsIn([...(data.to || []), ...(data.cc || []), data.from]).filter((e) => !/^log\+|^reply\+/.test(e));
+  if (!people.length) return NextResponse.json({ ok: true, ignored: true });
+
+  const [{ data: candidates }, { data: contacts }] = await Promise.all([
+    supabase.from("candidates").select("id, email, created_at").eq("agency_id", member.agency_id).in("email", people).order("created_at", { ascending: false }).limit(200),
+    supabase.from("client_contacts").select("id, client_id, email").eq("agency_id", member.agency_id).in("email", people).limit(100),
+  ]);
+  // One pipeline row per person: their most recent.
+  const latestByEmail = new Map();
+  for (const c of candidates ?? []) {
+    const key = String(c.email || "").toLowerCase();
+    if (!latestByEmail.has(key)) latestByEmail.set(key, c);
+  }
+  const clientIds = [...new Set((contacts ?? []).map((c) => c.client_id))];
+
+  if (!latestByEmail.size && !clientIds.length) {
+    await notify({ agencyId: member.agency_id, userId: member.user_id, kind: "bcc_unmatched", title: "A BCC'd email didn't match anyone", body: `"${String(data.subject || "").slice(0, 120)}" - no candidate or client contact has those addresses.` });
+    return NextResponse.json({ ok: true, unmatched: true });
+  }
+
+  const { data: full } = await resend.emails.receiving.get(data.email_id).catch(() => ({ data: null }));
+  const text = (full?.text || (full?.html ? full.html.replace(/<[^>]+>/g, " ") : "") || "").slice(0, MAX_BODY);
+  const base = {
+    agency_id: member.agency_id,
+    from_email: String(data.from || "").slice(0, 320),
+    to_email: [...(data.to || []), ...(data.cc || [])].join(", ").slice(0, 2000),
+    subject: String(data.subject || "").slice(0, 500),
+    body_text: text,
+    provider_id: data.email_id,
+    sent_by: member.user_id,
+  };
+  const subject = data.subject || "(no subject)";
+  for (const [email, c] of latestByEmail) {
+    await supabase.from("email_messages").insert({ ...base, candidate_id: c.id, direction: email === from ? "in" : "out" });
+    await logActivity(supabase, c.id, "email_logged", String(data.from || "Email").slice(0, 200), { note: `${subject} (logged by BCC)` });
+  }
+  for (const clientId of clientIds) {
+    await supabase.from("email_messages").insert({ ...base, client_id: clientId, direction: "out" });
+    await logClientActivity(member.agency_id, clientId, "email_logged", String(data.from || "Email").slice(0, 200), { note: `${subject} (logged by BCC)` });
+  }
+  return NextResponse.json({ ok: true, candidates: latestByEmail.size, clients: clientIds.length });
 }

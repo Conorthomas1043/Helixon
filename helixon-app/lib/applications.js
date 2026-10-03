@@ -23,6 +23,7 @@ import { agencyHasActiveSubscription } from "@/lib/customer-auth";
 import { jobTextFor } from "@/lib/rescreen";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { clerkClient } from "@clerk/nextjs/server";
+import { notify } from "@/lib/notifications";
 
 export const MAX_CV_BYTES = 10 * 1024 * 1024;
 const CV_TYPES = new Set(["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
@@ -173,6 +174,14 @@ export async function screenApplication({ agency, job, candidateId }) {
       await logActivity(supabase, candidateId, "screened", "Helixon", { job_id: job.id, score_id: scoreRow?.id, match_score: score });
     }
 
+    await notify({
+      agencyId: agency.id,
+      userId: job.owner_id || job.user_id || null,
+      kind: "application",
+      title: `New application: ${candidate.full_name}`,
+      body: `${job.title}${score != null ? ` · match ${score}` : ""}`,
+      href: `/dashboard/candidates/${candidate.id}`,
+    });
     await notifyRecruiter({ agency, job, candidate, score });
   } catch (err) {
     console.error("[applications] Screening failed:", err?.message);

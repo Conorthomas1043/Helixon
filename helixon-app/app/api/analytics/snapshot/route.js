@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { groupTransitions, inRange, jobIdsForClient, loadActivity, loadCandidates, loadPlacements, readAnalyticsFilters } from "@/lib/analytics-data";
 import { computeCore, computeDeltas, computeTeam, computeTrends, furthestStageIndex } from "@/lib/analytics-snapshot";
+import { getAccess } from "@/lib/permissions";
 
 // GET /api/analytics/snapshot - the Analytics page's headline numbers
 // (totals, funnel, quality, pipeline, conversion, score calibration, team),
@@ -23,6 +24,8 @@ export async function GET(request) {
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   const { agencyId } = auth;
   const filters = readAnalyticsFilters(new URL(request.url).searchParams);
+  const access = await getAccess(auth);
+  if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
 
   const { jobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId);
   if (clientError) return fail(clientError);
@@ -66,7 +69,8 @@ export async function GET(request) {
     previous: previousCore ? { totals: previousCore.totals, quality: previousCore.quality, conversion: previousCore.conversion } : null,
     deltas: computeDeltas(core, previousCore),
     placedInPeriod: placements.data.filter((p) => inRange(p.at, filters.range)).length,
-    trends: computeTrends(current.data, placements.data, filters.range),
+    trends: computeTrends(current.data, access.canSeeFinancials ? placements.data : placements.data.map((p) => ({ ...p, fee: null })), filters.range),
+    financialsHidden: !access.canSeeFinancials,
     truncated: Boolean(current.truncated || previous.truncated || placements.truncated),
   });
 }

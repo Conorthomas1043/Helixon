@@ -6,6 +6,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { buildClientProfile } from "@/lib/client-profile";
 import { cleanLine } from "@/lib/sanitize";
+import { candidateHidden } from "@/lib/permissions";
 
 // The client-ready profile for one candidate (lib/client-profile.js).
 //
@@ -29,6 +30,8 @@ async function loadCandidate(agencyId, id) {
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { id } = await params;
 
   const candidate = await loadCandidate(auth.agencyId, id);
@@ -59,6 +62,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { id } = await params;
 
   const candidate = await loadCandidate(auth.agencyId, id);

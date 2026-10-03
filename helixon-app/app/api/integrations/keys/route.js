@@ -5,6 +5,7 @@ import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { generateApiKey } from "@/lib/api-keys";
+import { logAudit } from "@/lib/agency-audit";
 
 // The agency's API keys (lib/api-keys.js). Owner and admins only.
 // GET                 the keys (never the keys themselves - only prefixes)
@@ -46,6 +47,7 @@ export async function POST(request) {
     .select("id, name, prefix, created_at")
     .single();
   if (error) return NextResponse.json({ error: "Failed to make the key." }, { status: 500 });
+  await logAudit({ auth, request, action: "api_key.created", targetType: "api_key", targetId: data.id, summary: `Created API key "${data.name}" (${data.prefix}…)` });
   return NextResponse.json({ key: k.key, record: { id: data.id, name: data.name, prefix: data.prefix, createdAt: data.created_at } }, { status: 201, headers: { "Cache-Control": "no-store" } });
 }
 
@@ -55,5 +57,6 @@ export async function DELETE(request) {
   const id = cleanUuid(new URL(request.url).searchParams.get("id"));
   if (!id) return NextResponse.json({ error: "Which key?" }, { status: 400 });
   await supabase.from("api_keys").update({ revoked_at: new Date().toISOString() }).eq("id", id).eq("agency_id", auth.agencyId).is("revoked_at", null);
+  await logAudit({ auth, request, action: "api_key.revoked", targetType: "api_key", targetId: id, summary: "Revoked an API key" });
   return NextResponse.json({ ok: true });
 }

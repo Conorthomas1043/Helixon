@@ -8,6 +8,7 @@ import { cleanReferee, toReference } from "@/lib/compliance";
 import { loadCandidate } from "@/lib/compliance-server";
 import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
+import { candidateHidden } from "@/lib/permissions";
 
 // POST { refereeName, refereeEmail?, refereeCompany?, refereeTitle?,
 //        refereePhone?, relationship?, send? } - add a referee and, when
@@ -19,6 +20,8 @@ const LINK_DAYS = 30;
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, full_name, name");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json().catch(() => ({}));

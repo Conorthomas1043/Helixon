@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
 import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance";
 import { storeComplianceDocument } from "@/lib/compliance-files";
+import { candidateHidden } from "@/lib/permissions";
 
 // A candidate's compliance record (lib/compliance.js).
 //
@@ -16,6 +17,8 @@ import { storeComplianceDocument } from "@/lib/compliance-files";
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, created_at, source, consent_given_at, consent_source, privacy_notice_sent_at");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const [{ data: checks }, { data: refs }] = await Promise.all([
@@ -37,6 +40,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { body, file } = await readCheckBody(request);

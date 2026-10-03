@@ -20,7 +20,7 @@ import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import PlacementPanel from "@/components/dashboard/PlacementPanel";
 import CompliancePanel from "@/components/dashboard/CompliancePanel";
-import { BookingLinksCard, CandidateDocumentsCard, MergeDuplicateCard, SelfServiceCard } from "@/components/dashboard/candidate-extras";
+import { BookingLinksCard, CallNotesCard, CandidateDocumentsCard, MergeDuplicateCard, SelfServiceCard } from "@/components/dashboard/candidate-extras";
 import PhoneActions from "@/components/dashboard/PhoneActions";
 import { CustomFieldsCard, SubStagePicker } from "@/components/dashboard/custom-fields";
 import {
@@ -2461,6 +2461,7 @@ export default function CandidateProfilePage({ params }) {
                   candidateEmail={candidate.email}
                   clientEmail={candidate.job?.client_email}
                 />
+                <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
                 <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
                 <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />

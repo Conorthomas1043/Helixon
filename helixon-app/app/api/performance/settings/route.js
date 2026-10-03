@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanCommission, cleanTargets, normalisePerformance } from "@/lib/performance";
+import { logAudit } from "@/lib/agency-audit";
 
 // GET / PUT the agency's monthly targets and commission plan
 // (lib/performance.js). Owner and admins only - commission is private.
@@ -33,5 +34,6 @@ export async function PUT(request) {
   const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
   const { error } = await supabase.from("agencies").update({ settings: { ...(data?.settings || {}), performance } }).eq("id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  await logAudit({ auth, request, action: "settings.performance", summary: "Changed targets or commission" });
   return NextResponse.json(performance);
 }

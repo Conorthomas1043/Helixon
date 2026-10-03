@@ -16,6 +16,8 @@ import {
   getPortalLink,
   mergeCandidate,
   revokePortalLink,
+  setCandidateNextAction,
+  summariseCallNotes,
 } from "@/lib/dashboard-api";
 import { offerLetterText } from "@/lib/signatures-shared";
 import SignaturesCard from "@/components/dashboard/SignaturesCard";
@@ -354,6 +356,114 @@ export function MergeDuplicateCard({ candidate }) {
             ))}
           </ul>
           <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <ErrorText>{error}</ErrorText>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// Paste rough call notes or a transcript; get a summary, key points and a
+// follow-up (app/api/candidates/[id]/call-notes).
+export function CallNotesCard({ candidate, onSaved }) {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [kind, setKind] = useState("call");
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState("");
+
+  async function run(save) {
+    setBusy(save ? "save" : "summarise");
+    setError("");
+    try {
+      const res = await summariseCallNotes(candidate.id, { notes, kind, save });
+      setResult(res.result);
+      if (save) {
+        setDone("Saved to notes and the timeline.");
+        onSaved?.();
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function addFollowUp() {
+    if (!result?.followUp) return;
+    setBusy("follow");
+    try {
+      const due = new Date(Date.now() + result.followUp.inDays * 86400000);
+      due.setHours(9, 0, 0, 0);
+      await setCandidateNextAction(candidate.id, { label: result.followUp.label, dueAt: due.toISOString() });
+      setDone("Follow-up set.");
+      onSaved?.();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <Card title="Call notes (AI)" action={!open && <Button size="sm" onClick={() => setOpen(true)}>Summarise a call</Button>}>
+      {!open ? (
+        <p className="text-[12px]" style={{ color: INK_MUTED }}>Paste rough notes or a transcript - get a clean summary, next steps and a follow-up.</p>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex gap-2 text-[12px]">
+            {["call", "meeting"].map((k) => (
+              <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className="px-2.5 py-1 rounded-full font-semibold" style={kind === k ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK_MUTED }}>
+                {k === "call" ? "Call" : "Meeting"}
+              </button>
+            ))}
+          </div>
+          <textarea
+            rows={6}
+            maxLength={20000}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            aria-label="Call notes"
+            placeholder="e.g. spoke to her re the Acme role - keen, 1 month notice, wants 55k+, 2nd stage at another firm next week, call back Thu"
+            className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white"
+            style={{ border: "1px solid var(--border)", color: INK }}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" variant="primary" disabled={busy || notes.trim().length < 20} onClick={() => run(false)}>
+              {busy === "summarise" ? "Summarising…" : "Summarise"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => { setOpen(false); setResult(null); setDone(""); }}>Close</Button>
+          </div>
+          {result && (
+            <div className="rounded-[10px] p-3 text-[13px] space-y-2" style={{ background: "var(--mist)", color: INK }}>
+              <p>{result.summary}</p>
+              {result.keyPoints.length > 0 && (
+                <ul className="list-disc pl-5 text-[12px]" style={{ color: INK_MUTED }}>
+                  {result.keyPoints.map((p) => <li key={p}>{p}</li>)}
+                </ul>
+              )}
+              {result.nextSteps.length > 0 && (
+                <>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>Next steps</p>
+                  <ul className="list-disc pl-5 text-[12px]" style={{ color: INK_MUTED }}>
+                    {result.nextSteps.map((p) => <li key={p}>{p}</li>)}
+                  </ul>
+                </>
+              )}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button size="sm" variant="primary" disabled={Boolean(busy)} onClick={() => run(true)}>{busy === "save" ? "Saving…" : "Save to notes"}</Button>
+                {result.followUp && (
+                  <Button size="sm" disabled={Boolean(busy)} onClick={addFollowUp}>
+                    Follow-up: {result.followUp.label} ({result.followUp.inDays === 0 ? "today" : `in ${result.followUp.inDays}d`})
+                  </Button>
+                )}
+              </div>
+              <p className="text-[11px]" style={{ color: INK_FAINT }}>Written by AI from your notes - check it before relying on it.</p>
+            </div>
+          )}
+          {done && <p className="text-[12px]" style={{ color: "var(--forest)" }}>{done}</p>}
           <ErrorText>{error}</ErrorText>
         </div>
       )}

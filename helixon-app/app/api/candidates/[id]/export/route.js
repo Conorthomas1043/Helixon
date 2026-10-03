@@ -6,6 +6,8 @@ import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
 import { personCandidateIds } from "@/lib/candidate-person";
 import { getAgencyTags } from "@/lib/agency-tags";
+import { candidateHidden } from "@/lib/permissions";
+import { logAudit } from "@/lib/agency-audit";
 
 // GET - everything the agency holds about one person, as a JSON file, for
 // a subject access or data portability request (UK GDPR Arts. 15 and 20).
@@ -23,6 +25,8 @@ export async function GET(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { id } = await params;
   const candidateId = cleanUuid(id);
   const ids = candidateId ? await personCandidateIds(supabase, auth.agencyId, candidateId).catch(() => []) : [];
@@ -223,6 +227,7 @@ export async function GET(request, { params }) {
     })),
   };
 
+  await logAudit({ auth, request, action: "candidate.exported", targetType: "candidate", targetId: candidateId, summary: `Subject access export: ${body.about.name || "candidate"}` });
   await logActivity(supabase, candidateId, "data_exported", recruiterDisplayName(auth.profile) || auth.userId, {
     note: `Subject access export (${ids.length} record${ids.length === 1 ? "" : "s"})`,
   });

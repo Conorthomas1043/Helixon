@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidate-query";
 import { distanceMiles } from "@/lib/geocode";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // Rebuilt against Clerk auth and scoped to the caller's agency_id - the
 // previous version authenticated via a Supabase-Auth bearer token nothing
@@ -41,6 +42,8 @@ export async function GET(request) {
   const pageSize = Math.min(200, Math.max(1, Number(params.get("pageSize")) || 8));
 
   const { resolved, error: filterError } = await resolveFilters(agencyId, filters);
+  // "Own candidates only" (lib/permissions.js) narrows every list.
+  const access = await getAccess(auth);
   if (filterError) return NextResponse.json({ error: filterError }, { status: 400 });
 
   // skills:extracted->skills pulls just that key - selecting the whole
@@ -57,6 +60,7 @@ export async function GET(request) {
       .select(withGeo ? `${COLUMNS}, lat, lng, sub_stage` : COLUMNS, { count: "exact" })
       .eq("agency_id", agencyId);
     query = applyFilters(query, resolved, { broadSearch });
+    query = scopeCandidateQuery(query, access, auth);
 
     const sort = SORTS[sortBy] ?? SORTS.score_desc;
     query = query.order(sort.column, { ascending: sort.ascending, nullsFirst: false });

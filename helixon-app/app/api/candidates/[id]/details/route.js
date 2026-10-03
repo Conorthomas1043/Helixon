@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { candidateHidden, getAccess } from "@/lib/permissions";
 
 const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 const REJECTION_REASON_VALUES = new Set([
@@ -35,12 +36,21 @@ export async function PATCH(request, { params }) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const hidden = await candidateHidden(auth, (await params).id);
+  if (hidden) return hidden;
   const { agencyId } = auth;
   const { id } = await params;
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  // Members who can't see money (lib/permissions.js) can't change it either.
+  const { canSeeFinancials } = await getAccess(auth);
+  if (!canSeeFinancials) {
+    delete body.placementFee;
+    delete body.placementCost;
   }
 
   const update = {};
@@ -109,8 +119,8 @@ export async function PATCH(request, { params }) {
     id: data.id,
     source: data.source,
     rejectionReason: data.rejection_reason,
-    placementFee: data.placement_fee,
-    placementCost: data.placement_cost,
+    placementFee: canSeeFinancials ? data.placement_fee : null,
+    placementCost: canSeeFinancials ? data.placement_cost : null,
     retention30d: data.retention_30d,
     retention90d: data.retention_90d,
   });

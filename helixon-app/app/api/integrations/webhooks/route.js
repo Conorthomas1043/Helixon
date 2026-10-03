@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { WEBHOOK_EVENTS, checkWebhookUrl, deliver, webhookSecret } from "@/lib/webhooks";
+import { logAudit } from "@/lib/agency-audit";
 
 // The agency's webhook endpoints (lib/webhooks.js). Owner and admins only.
 // GET                                   endpoints, with their signing secrets
@@ -61,6 +62,7 @@ export async function POST(request) {
     .select("*")
     .single();
   if (error) return NextResponse.json({ error: "Failed to add the webhook." }, { status: 500 });
+  await logAudit({ auth, request, action: "webhook.created", targetType: "webhook", targetId: data.id, summary: `Added a webhook to ${new URL(data.url).host}` });
   return NextResponse.json({ endpoint: toEndpoint(data) }, { status: 201 });
 }
 
@@ -99,5 +101,6 @@ export async function DELETE(request) {
   const id = cleanUuid(new URL(request.url).searchParams.get("id"));
   if (!id) return NextResponse.json({ error: "Which webhook?" }, { status: 400 });
   await supabase.from("webhook_endpoints").delete().eq("id", id).eq("agency_id", auth.agencyId);
+  await logAudit({ auth, request, action: "webhook.deleted", targetType: "webhook", targetId: id, summary: "Removed a webhook" });
   return NextResponse.json({ ok: true });
 }

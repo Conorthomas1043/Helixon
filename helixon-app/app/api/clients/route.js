@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients";
+import { getAccess } from "@/lib/permissions";
 
 // The agency's clients (lib/clients.js).
 //
@@ -44,12 +45,17 @@ export async function GET() {
   }
 
   const owners = await resolveRecruiterNames(supabase, (clients ?? []).map((c) => c.owner_id));
+  const { canSeeFinancials } = await getAccess(auth);
   return NextResponse.json({
-    clients: (clients ?? []).map((c) => ({
-      ...toClient(c),
-      ownerName: owners.get(c.owner_id) ?? null,
-      ...(stats.get(c.id) ?? { contacts: 0, openJobs: 0, jobs: 0, placements: 0, fees: 0 }),
-    })),
+    clients: (clients ?? []).map((c) => {
+      const stat = stats.get(c.id) ?? { contacts: 0, openJobs: 0, jobs: 0, placements: 0, fees: 0 };
+      return {
+        ...toClient(c),
+        ownerName: owners.get(c.owner_id) ?? null,
+        ...stat,
+        ...(canSeeFinancials ? {} : { fees: null, feePercent: null }),
+      };
+    }),
   });
 }
 
