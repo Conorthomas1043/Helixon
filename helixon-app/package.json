@@ -14,7 +14,7 @@
     "calibrate": "node scripts/fit-score-weights.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.105.0",
+    "@anthropic-ai/sdk": "^0.128.0",
     "@clerk/nextjs": "^7.9.1",
     "@google/genai": "^1.0.0",
     "@react-email/components": "^1.0.12",
