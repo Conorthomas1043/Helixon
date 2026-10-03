@@ -11,6 +11,7 @@ import { useUser } from "@clerk/nextjs";
 import ClientPicker from "@/components/dashboard/ClientPicker";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
 import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
 
@@ -463,6 +464,33 @@ function JobsContent() {
                 style={{ background: mineOnly ? "var(--forest)" : "white", color: mineOnly ? "white" : INK_MUTED, border: `1px solid ${mineOnly ? "var(--forest)" : "var(--border)"}` }}
               >
                 My jobs
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  downloadCsv(
+                    `jobs-${new Date().toISOString().slice(0, 10)}.csv`,
+                    visibleJobs.map((j) => ({
+                      Title: j.title,
+                      Client: j.company || "",
+                      Status: j.status,
+                      Priority: j.priority || "normal",
+                      Openings: j.openings ?? "",
+                      "Fill by": j.targetDate || "",
+                      Location: j.location || "",
+                      Salary: j.salaryRange || "",
+                      Candidates: j.candidateCount,
+                      Strong: j.strongMatches,
+                      Interviewing: j.interviewing,
+                      Placed: j.placed,
+                      Created: String(j.created_at || "").slice(0, 10),
+                    }))
+                  )
+                }
+                className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+              >
+                Export CSV
               </button>
               <select
                 aria-label="Sort jobs"

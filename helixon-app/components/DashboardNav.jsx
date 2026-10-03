@@ -9,7 +9,7 @@ import { usePresenceHeartbeat } from "@/lib/hooks/usePresenceHeartbeat";
 import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
 import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
-import { NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
+import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 
 // The everyday screens are tabs; everything else sits under "More",
 // grouped, so the bar fits without scrolling on a laptop.
@@ -311,6 +311,7 @@ function DashboardNavContent() {
         <div className="relative flex items-center gap-2 shrink-0">
           <SearchPalette />
           <NotificationsBell />
+          <KeyboardShortcuts />
           <TeammateStack teammates={teammates} />
           <button
             type="button"

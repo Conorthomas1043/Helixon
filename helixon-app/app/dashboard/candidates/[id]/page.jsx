@@ -20,6 +20,7 @@ import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import PlacementPanel from "@/components/dashboard/PlacementPanel";
 import CompliancePanel from "@/components/dashboard/CompliancePanel";
+import { agoLabel, daysInStage, lastContact, linkedinUrl } from "@/lib/candidate-insights";
 import { BookingLinksCard, CallNotesCard, CandidateDocumentsCard, MergeDuplicateCard, SelfServiceCard } from "@/components/dashboard/candidate-extras";
 import PhoneActions from "@/components/dashboard/PhoneActions";
 import { CustomFieldsCard, SubStagePicker } from "@/components/dashboard/custom-fields";
@@ -366,6 +367,45 @@ function ShortcutsHint() {
  * Header
  * ---------------------------------------------------------------------- */
 
+// A small "copy" button next to contact details.
+function CopyButton({ text, label }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={() =>
+        navigator.clipboard?.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        })
+      }
+      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+      style={{ background: "var(--mist)", color: copied ? "var(--forest)" : INK_FAINT }}
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+// "Last contacted 12 days ago · In Interview for 7 days" from the timeline.
+function CandidateFacts({ candidate }) {
+  const [now] = useState(() => Date.now());
+  const contact = lastContact(candidate.activity || []);
+  const inStage = daysInStage(candidate, now);
+  const stale = !contact || now - contact.at > 14 * 86400000;
+  if (!contact && inStage == null) return null;
+  return (
+    <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>
+      <span style={{ color: stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "var(--score-mid)" : INK_FAINT }}>
+        {contact ? `Last contacted ${agoLabel(contact.at, now)}` : "No contact logged yet"}
+      </span>
+      {inStage != null && candidate.stage && ` · In ${candidate.stage} for ${inStage} day${inStage === 1 ? "" : "s"}`}
+    </p>
+  );
+}
+
 function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete, onEdit, onActivityLogged }) {
   const score = candidate.score;
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
@@ -420,13 +460,24 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[12px]" style={{ color: INK_MUTED }}>
               {candidate.location && <span>{candidate.location}</span>}
               {candidate.email && (
-                <a href={`mailto:${candidate.email}`} className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
-                  {candidate.email}
-                </a>
+                <span className="inline-flex items-center gap-1">
+                  <a href={`mailto:${candidate.email}`} className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
+                    {candidate.email}
+                  </a>
+                  <CopyButton text={candidate.email} label="Copy email" />
+                </span>
               )}
               {candidate.phone && <PhoneActions candidateId={candidate.id} phone={candidate.phone} firstName={(candidate.fullName || "").split(" ")[0]} onLogged={onActivityLogged} />}
-              {candidate.linkedin && <span>{candidate.linkedin}</span>}
+              {candidate.linkedin &&
+                (linkedinUrl(candidate.linkedin) ? (
+                  <a href={linkedinUrl(candidate.linkedin)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    LinkedIn ↗
+                  </a>
+                ) : (
+                  <span>{candidate.linkedin}</span>
+                ))}
             </div>
+            <CandidateFacts candidate={candidate} />
           </div>
         </div>
 
@@ -1508,7 +1559,7 @@ function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote 
           id="candidate-note-input"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Add a note for the team…"
+          placeholder="Add a note for the team… (type @name to notify someone)"
           rows={3}
           className="w-full text-sm p-3 rounded-[10px] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}

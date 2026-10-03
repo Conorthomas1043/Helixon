@@ -5,6 +5,7 @@
 // an outcome or scorecard; and recent ones (app/api/interviews).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { getInterviews } from "@/lib/dashboard-api";
 import { Page, PageHeader, Card, EmptyState, ErrorState, LoadingCard, INK, INK_MUTED } from "@/components/dashboard/ui";
 import { InterviewItem } from "@/components/dashboard/interviews";
@@ -84,7 +85,13 @@ export default function InterviewsPage() {
         eyebrow="Schedule"
         title="Interviews"
         subtitle={loading ? null : `${groups.upcomingCount} upcoming · ${groups.needsOutcome.length} need an outcome or scorecard`}
-        actions={[tab("mine", "Mine"), tab("all", "Everyone")]}
+        actions={[
+          tab("mine", "Mine"),
+          tab("all", "Everyone"),
+          <Link key="cal" href="/dashboard/settings/connections" className="text-[12px] font-semibold px-2" style={{ color: "var(--forest)" }}>
+            Add to my calendar →
+          </Link>,
+        ]}
       />
       {loading && <LoadingCard rows={5} />}
       {!loading && state.error && <ErrorState title="Unable to load interviews" onRetry={reload} />}

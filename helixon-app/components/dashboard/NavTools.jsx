@@ -5,9 +5,120 @@
 // (app/api/notifications).
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const KIND_LABEL = { candidate: "Candidate", job: "Job", client: "Client", contact: "Contact" };
+
+// Recently opened candidates, jobs and clients - per browser, shown in the
+// search box before anything's typed.
+const RECENT_KEY = "helixon.recent";
+const RECENT_MAX = 8;
+const RECENT_PATHS = [
+  [/^\/dashboard\/candidates\/([0-9a-f-]{36})$/, "candidate"],
+  [/^\/dashboard\/jobs\/([0-9a-f-]{36})$/, "job"],
+  [/^\/dashboard\/clients\/([0-9a-f-]{36})$/, "client"],
+];
+
+function readRecent() {
+  try {
+    const list = JSON.parse(window.localStorage.getItem(RECENT_KEY) || "[]");
+    return Array.isArray(list) ? list.slice(0, RECENT_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+
+function remember(entry) {
+  try {
+    const list = readRecent().filter((r) => r.href !== entry.href);
+    window.localStorage.setItem(RECENT_KEY, JSON.stringify([entry, ...list].slice(0, RECENT_MAX)));
+  } catch {
+    // Private mode or storage full - just don't remember.
+  }
+}
+
+// Records the page being viewed once its heading has rendered.
+function useRememberPage() {
+  const pathname = usePathname();
+  useEffect(() => {
+    const match = RECENT_PATHS.find(([re]) => re.test(pathname || ""));
+    if (!match) return undefined;
+    const t = setTimeout(() => {
+      const title = document.querySelector("main h1")?.textContent?.trim();
+      if (title && title.length < 200) remember({ href: pathname, kind: match[1], id: pathname.split("/").pop(), title });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [pathname]);
+}
+
+// "g" then a letter jumps to a page.
+const GO_KEYS = {
+  o: "/dashboard",
+  a: "/analyse",
+  c: "/dashboard/candidates",
+  p: "/dashboard/pipeline",
+  j: "/dashboard/jobs",
+  l: "/dashboard/clients",
+  i: "/dashboard/interviews",
+  b: "/dashboard/business-development",
+  t: "/dashboard/talent-pool",
+  n: "/dashboard/analytics",
+};
+const GO_LABELS = { o: "Overview", a: "Analyse", c: "Candidates", p: "Pipeline", j: "Jobs", l: "Clients", i: "Interviews", b: "Business development", t: "Talent pool", n: "Analytics" };
+
+export function KeyboardShortcuts() {
+  const router = useRouter();
+  const [help, setHelp] = useState(false);
+  useRememberPage();
+
+  useEffect(() => {
+    let pendingG = 0;
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || isTyping(document.activeElement)) return;
+      if (e.key === "?") {
+        e.preventDefault();
+        setHelp((v) => !v);
+        return;
+      }
+      if (e.key === "Escape") setHelp(false);
+      if (e.key === "g") {
+        pendingG = Date.now();
+        return;
+      }
+      if (pendingG && Date.now() - pendingG < 1200 && GO_KEYS[e.key]) {
+        e.preventDefault();
+        pendingG = 0;
+        router.push(GO_KEYS[e.key]);
+      } else {
+        pendingG = 0;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
+
+  if (!help) return null;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && setHelp(false)}>
+      <div role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" className="w-full max-w-[420px] rounded-[16px] bg-white shadow-xl p-6">
+        <h2 className="text-base font-semibold mb-4" style={{ color: "var(--ink)" }}>Keyboard shortcuts</h2>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[13px]" style={{ color: "var(--ink-soft)" }}>
+          <dt><kbd>Ctrl/⌘ K</kbd> or <kbd>/</kbd></dt>
+          <dd>Search</dd>
+          {Object.entries(GO_LABELS).map(([k, label]) => (
+            <div key={k} className="contents">
+              <dt><kbd>g</kbd> then <kbd>{k}</kbd></dt>
+              <dd>{label}</dd>
+            </div>
+          ))}
+          <dt><kbd>?</kbd></dt>
+          <dd>This list</dd>
+        </dl>
+        <button type="button" className="mt-5 text-[12px] font-semibold" style={{ color: "var(--forest)" }} onClick={() => setHelp(false)}>Close</button>
+      </div>
+    </div>
+  );
+}
 
 function isTyping(el) {
   return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
@@ -43,8 +154,14 @@ export function SearchPalette() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const [recent, setRecent] = useState([]);
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 0);
+    if (!open) return undefined;
+    const t = setTimeout(() => {
+      inputRef.current?.focus();
+      setRecent(readRecent());
+    }, 0);
+    return () => clearTimeout(t);
   }, [open]);
 
   useEffect(() => {
@@ -76,7 +193,7 @@ export function SearchPalette() {
     router.push(r.href);
   }
 
-  const shown = q.trim().length >= 2 ? results : [];
+  const shown = q.trim().length >= 2 ? results : recent.map((r) => ({ ...r, subtitle: "Recently viewed" }));
 
   return (
     <>
@@ -122,7 +239,7 @@ export function SearchPalette() {
               style={{ borderBottom: "1px solid var(--border)", color: "var(--ink)" }}
             />
             <ul id="search-results" role="listbox" className="max-h-[50vh] overflow-y-auto py-1">
-              {q.trim().length < 2 && <li className="px-5 py-4 text-[13px]" style={{ color: "var(--ink-faint)" }}>Type at least two letters. ↑↓ to move, Enter to open.</li>}
+              {q.trim().length < 2 && shown.length === 0 && <li className="px-5 py-4 text-[13px]" style={{ color: "var(--ink-faint)" }}>Type at least two letters. ↑↓ to move, Enter to open. Press ? for shortcuts.</li>}
               {q.trim().length >= 2 && !loading && shown.length === 0 && <li className="px-5 py-4 text-[13px]" style={{ color: "var(--ink-faint)" }}>Nothing found for “{q.trim()}”.</li>}
               {shown.map((r, i) => (
                 <li

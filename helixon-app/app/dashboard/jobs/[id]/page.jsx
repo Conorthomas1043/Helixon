@@ -8,7 +8,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel, getRecruiters } from "@/lib/dashboard-api";
+import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel, getRecruiters, createJob } from "@/lib/dashboard-api";
 import { JOB_PRIORITIES, daysToTarget } from "@/lib/job-details";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import ClientPicker from "@/components/dashboard/ClientPicker";
@@ -497,6 +497,37 @@ export default function JobDetailPage({ params }) {
     [id]
   );
 
+  // A new job with the same details - for a client hiring the same role
+  // again, or a near-identical one.
+  const [duplicating, setDuplicating] = useState(false);
+  const handleDuplicate = useCallback(async () => {
+    const j = data?.job;
+    if (!j) return;
+    setDuplicating(true);
+    setDeleteError(null);
+    try {
+      const copy = await createJob({
+        title: `${j.title} (copy)`.slice(0, 160),
+        clientId: j.clientId || undefined,
+        company: j.clientId ? undefined : j.company || undefined,
+        contactId: j.contactId || undefined,
+        clientEmail: j.contactId ? undefined : j.clientEmail || undefined,
+        location: j.location,
+        employmentType: j.employmentType,
+        seniority: j.seniority,
+        salaryRange: j.salaryRange,
+        requiredSkills: j.requiredSkills,
+        preferredSkills: j.preferredSkills,
+        minYearsExperience: j.minYearsExperience,
+        jobText: j.job_text || [j.title, j.requiredSkills?.join(", "), j.preferredSkills?.join(", ")].filter(Boolean).join("\n"),
+      });
+      router.push(`/dashboard/jobs/${copy.id}`);
+    } catch (err) {
+      setDeleteError(err?.message || "Couldn't duplicate this job.");
+      setDuplicating(false);
+    }
+  }, [data, router]);
+
   const handleDelete = useCallback(async () => {
     if (!data?.job) return;
     if (data.job.candidateCount > 0) return;
@@ -612,6 +643,15 @@ export default function JobDetailPage({ params }) {
                       Edit
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleDuplicate}
+                    disabled={duplicating}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
+                    style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                  >
+                    {duplicating ? "Duplicating…" : "Duplicate"}
+                  </button>
                   <button
                     type="button"
                     onClick={handleDelete}

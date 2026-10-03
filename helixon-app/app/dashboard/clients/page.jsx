@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getClients, createClient } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
 import {
   Page,
   PageHeader,
@@ -147,11 +148,42 @@ export default function ClientsPage() {
       <PageHeader
         eyebrow="Client relationships"
         title="Clients"
-        subtitle={status === "ready" ? `${clients.length} clients · ${totals.open} open jobs · ${formatMoney(totals.fees)} billed` : null}
+        subtitle={
+          status === "ready"
+            ? `${clients.length} clients · ${totals.open} open jobs${clients.some((c) => c.fees === null) ? "" : ` · ${formatMoney(totals.fees)} billed`}`
+            : null
+        }
         actions={
-          <Button variant="primary" onClick={() => setCreating(true)}>
-            New client
-          </Button>
+          <>
+            {status === "ready" && clients.length > 0 && (
+              <Button
+                onClick={() =>
+                  downloadCsv(
+                    `clients-${new Date().toISOString().slice(0, 10)}.csv`,
+                    visible.map((c) => ({
+                      Name: c.name,
+                      Status: c.status,
+                      Industry: c.industry || "",
+                      Website: c.website || "",
+                      Owner: c.ownerName || "",
+                      "Open jobs": c.openJobs,
+                      Contacts: c.contacts,
+                      Placements: c.placements,
+                      Fees: c.fees ?? "",
+                      "Fee %": c.feePercent ?? "",
+                      "Next follow-up": c.nextAction?.label || "",
+                      "Follow-up due": c.nextAction?.dueAt ? c.nextAction.dueAt.slice(0, 10) : "",
+                    }))
+                  )
+                }
+              >
+                Export CSV
+              </Button>
+            )}
+            <Button variant="primary" onClick={() => setCreating(true)}>
+              New client
+            </Button>
+          </>
         }
       />
 
@@ -236,12 +268,18 @@ export default function ClientsPage() {
                           </Link>{" "}
                           {c.status !== "active" && <Pill color={st.color} background={st.background}>{st.label}</Pill>}
                           {c.industry && <p className="text-[12px]" style={{ color: INK_MUTED }}>{c.industry}</p>}
+                          {c.nextAction && (
+                            <p className="text-[11.5px]" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
+                              Follow-up: {c.nextAction.label}
+                              {c.nextAction.dueAt ? ` · ${new Date(c.nextAction.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""}
+                            </p>
+                          )}
                         </td>
                         <td className="px-3 py-3 hidden md:table-cell" style={{ color: INK_MUTED }}>{c.ownerName ?? "-"}</td>
                         <td className="px-3 py-3 text-right tabular-nums" style={{ color: INK }}>{c.openJobs}</td>
                         <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell" style={{ color: INK_MUTED }}>{c.contacts}</td>
                         <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell" style={{ color: INK_MUTED }}>{c.placements}</td>
-                        <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: INK }}>{c.fees ? formatMoney(c.fees) : "-"}</td>
+                        <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: INK }}>{c.fees == null ? "Hidden" : c.fees ? formatMoney(c.fees) : "-"}</td>
                       </tr>
                     );
                   })}
