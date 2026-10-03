@@ -101,7 +101,7 @@ export async function GET(request) {
   // candidates get their own numbers; money can be admin-only.
   const access = await getAccess(auth);
   if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
-  const { jobIds: clientJobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId);
+  const { jobIds: clientJobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId, filters.officeId);
   if (clientError) {
     console.error("[analytics/timing] Client lookup failed:", clientError.message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });

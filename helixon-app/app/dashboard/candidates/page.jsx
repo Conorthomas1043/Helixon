@@ -27,6 +27,7 @@ import {
   deleteTag,
 } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
+import { CANDIDATE_COLUMNS, readColumns, writeColumns } from "@/lib/list-columns";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
 import {
@@ -274,8 +275,15 @@ function Avatar({ name }) {
  * Candidate row
  * ---------------------------------------------------------------------- */
 
-function CandidateRow({ candidate, selected, onToggleSelect }) {
+const COLUMNS_KEY = "helixon:candidate-columns";
+
+function shortDate(iso) {
+  return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
+}
+
+function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
   const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
+  const show = (key) => columns.has(key);
   return (
     <li>
       <div
@@ -309,30 +317,102 @@ function CandidateRow({ candidate, selected, onToggleSelect }) {
             </p>
           </div>
 
-          <div className="hidden lg:flex flex-wrap gap-1 w-40 shrink-0">
-            {candidate.skills.slice(0, 3).map((s) => (
-              <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
-                {s}
-              </span>
-            ))}
-          </div>
+          {show("currentRole") && (
+            <div className="hidden lg:block w-40 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+              {[candidate.currentTitle, candidate.currentCompany].filter(Boolean).join(" at ") || "-"}
+            </div>
+          )}
 
-          <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
-            {candidate.recruiterName ?? "Unassigned"}
-          </div>
+          {show("skills") && (
+            <div className="hidden lg:flex flex-wrap gap-1 w-40 shrink-0">
+              {candidate.skills.slice(0, 3).map((s) => (
+                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
 
-          <div className="hidden sm:block w-24 shrink-0">
-            <StageBadge stage={candidate.stage} status={candidate.status} />
-          </div>
+          {show("recruiter") && (
+            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+              {candidate.recruiterName ?? "Unassigned"}
+            </div>
+          )}
 
-          <div className="hidden xl:block w-40 shrink-0 text-[11px] truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
-            {candidate.nextAction ? `${overdue ? "Overdue: " : "Next: "}${candidate.nextAction.label}` : ""}
-          </div>
+          {show("source") && (
+            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+              {candidate.source || "-"}
+            </div>
+          )}
 
-          <ScorePill score={candidate.score} />
+          {show("stage") && (
+            <div className="hidden sm:block w-24 shrink-0">
+              <StageBadge stage={candidate.stage} status={candidate.status} />
+            </div>
+          )}
+
+          {show("lastActivity") && (
+            <div className="hidden md:block w-24 shrink-0 text-[11px] truncate" style={{ color: INK_FAINT }} title="Last activity">
+              {candidate.lastActivityAt ? formatRelativeTime(candidate.lastActivityAt) : "-"}
+            </div>
+          )}
+
+          {show("added") && (
+            <div className="hidden md:block w-16 shrink-0 text-[11px]" style={{ color: INK_FAINT }} title="Added">
+              {shortDate(candidate.createdAt)}
+            </div>
+          )}
+
+          {show("nextAction") && (
+            <div className="hidden xl:block w-40 shrink-0 text-[11px] truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
+              {candidate.nextAction ? `${overdue ? "Overdue: " : "Next: "}${candidate.nextAction.label}` : ""}
+            </div>
+          )}
+
+          {show("score") && <ScorePill score={candidate.score} />}
         </Link>
       </div>
     </li>
+  );
+}
+
+// "Columns" - pick which columns the list shows; remembered in this browser.
+function ColumnsMenu({ columns, onChange }) {
+  return (
+    <details className="relative">
+      <summary
+        className="list-none cursor-pointer text-[12px] font-semibold px-3 py-1.5 rounded-full select-none"
+        style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+      >
+        Columns
+      </summary>
+      <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-[10px] bg-white p-2 shadow-lg" style={{ border: "1px solid var(--border)" }}>
+        {CANDIDATE_COLUMNS.map((c) => (
+          <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-[12px] rounded hover:bg-[var(--mist)]" style={{ color: INK }}>
+            <input
+              type="checkbox"
+              className="w-3.5 h-3.5 accent-[var(--forest)]"
+              checked={columns.has(c.key)}
+              onChange={() => {
+                const next = new Set(columns);
+                if (next.has(c.key)) next.delete(c.key);
+                else next.add(c.key);
+                onChange(next);
+              }}
+            />
+            {c.label}
+          </label>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange(new Set(CANDIDATE_COLUMNS.filter((c) => c.default).map((c) => c.key)))}
+          className="w-full text-left px-1.5 pt-1.5 mt-1 text-[11px] font-semibold"
+          style={{ color: INK_MUTED, borderTop: "1px solid var(--border)" }}
+        >
+          Reset to default
+        </button>
+      </div>
+    </details>
   );
 }
 
@@ -450,6 +530,11 @@ function CandidateDatabaseContent() {
   const [data, setData] = useState(null); // { result, stageCounts }
   const [status, setStatus] = useState("loading");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [columns, setColumnsState] = useState(() => new Set(readColumns(COLUMNS_KEY, CANDIDATE_COLUMNS)));
+  const setColumns = useCallback((next) => {
+    setColumnsState(next);
+    writeColumns(COLUMNS_KEY, [...next]);
+  }, []);
   const [composing, setComposing] = useState(false);
   const [sequences, setSequences] = useState([]);
   const [bulkNotice, setBulkNotice] = useState("");
@@ -992,6 +1077,7 @@ function CandidateDatabaseContent() {
                   Select page
                 </label>
               )}
+              <ColumnsMenu columns={columns} onChange={setColumns} />
               <Select ariaLabel="Sort by" value={filters.sortBy} onChange={(v) => updateFilter({ sortBy: v })} options={SORT_OPTIONS} />
             </div>
           </div>
@@ -1006,7 +1092,7 @@ function CandidateDatabaseContent() {
           {status === "ready" && result && result.items.length > 0 && (
             <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
               {result.items.map((c) => (
-                <CandidateRow key={c.id} candidate={c} selected={selectedIds.has(c.id)} onToggleSelect={toggleSelect} />
+                <CandidateRow key={c.id} candidate={c} selected={selectedIds.has(c.id)} onToggleSelect={toggleSelect} columns={columns} />
               ))}
             </ul>
           )}

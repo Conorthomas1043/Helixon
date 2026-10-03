@@ -179,6 +179,7 @@ function adaptJob(j) {
     feeAmount: j.fee_amount == null ? null : Number(j.fee_amount),
     priority: j.priority ?? null,
     targetDate: j.target_date ?? null,
+    officeId: j.office_id ?? null,
   };
 }
 
@@ -427,7 +428,8 @@ export async function saveToTalentPool(id, note = "") {
 }
 
 export async function removeFromTalentPool(id) {
-  return apiFetch(`/api/candidates/${id}/talent-pool`, { method: "DELETE" });
+  // keepalive: an undoable removal may be sent as the page closes.
+  return apiFetch(`/api/candidates/${id}/talent-pool`, { method: "DELETE", keepalive: true });
 }
 
 // Screens someone already on file against another job, reusing their CV.
@@ -476,8 +478,17 @@ export async function editCandidateNote(id, noteId, body) {
   });
 }
 
+// keepalive: an undoable delete may be sent as the page closes.
 export async function deleteCandidateNote(id, noteId) {
-  return apiFetch(`/api/candidates/${id}/notes?noteId=${encodeURIComponent(noteId)}`, { method: "DELETE" });
+  return apiFetch(`/api/candidates/${id}/notes?noteId=${encodeURIComponent(noteId)}`, { method: "DELETE", keepalive: true });
+}
+
+export async function pinCandidateNote(id, noteId, pinned) {
+  return apiFetch(`/api/candidates/${id}/notes`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ noteId, pinned }),
+  });
 }
 
 export async function addCandidateTag(id, tagId) {
@@ -518,7 +529,7 @@ export function analyticsQuery(filters = {}) {
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
   }
-  for (const key of ["jobId", "recruiterId", "clientId"]) {
+  for (const key of ["jobId", "recruiterId", "clientId", "officeId"]) {
     if (filters[key] && filters[key] !== "all") params.set(key, filters[key]);
   }
   return params.toString();
@@ -1196,4 +1207,45 @@ export async function summariseCallNotes(candidateId, { notes, kind = "call", sa
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ notes, kind, save }),
   });
+}
+
+// Texts with a candidate - app/api/candidates/[id]/sms (Twilio).
+// Resolves { configured, phone, messages }.
+export async function getCandidateSms(id) {
+  return apiFetch(`/api/candidates/${id}/sms`);
+}
+
+export async function sendCandidateSms(id, body) {
+  return (
+    await apiFetch(`/api/candidates/${id}/sms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body }),
+    })
+  ).message;
+}
+
+// Connected services - app/api/integrations/connections (Xero, QuickBooks,
+// your Gmail / Outlook). Connecting is a full-page visit to
+// /api/integrations/oauth/<provider>/connect.
+export async function getConnections() {
+  return apiFetch("/api/integrations/connections");
+}
+
+export async function disconnectIntegration(provider) {
+  return apiFetch(`/api/integrations/connections?provider=${encodeURIComponent(provider)}`, { method: "DELETE" });
+}
+
+export async function syncIntegration(provider) {
+  return apiFetch("/api/integrations/connections", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "sync", provider }),
+  });
+}
+
+// Sends an invoice to the connected Xero / QuickBooks, or checks whether
+// it's been paid there. Resolves { provider, externalId, status, pushed, label }.
+export async function syncInvoiceToAccounts(id) {
+  return apiFetch(`/api/invoices/${id}/accounting`, { method: "POST" });
 }

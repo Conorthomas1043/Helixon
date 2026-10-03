@@ -27,6 +27,10 @@
     {
       "path": "/api/cron/analytics-digest",
       "schedule": "10 7 * * 1"
+    },
+    {
+      "path": "/api/cron/integrations",
+      "schedule": "25 4 * * *"
     }
   ]
 }

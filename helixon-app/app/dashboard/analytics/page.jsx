@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import DashboardNav from "@/components/DashboardNav";
 import { getAnalyticsSnapshot as fetchAnalytics, getClients, getJobs, getRecruiters } from "@/lib/dashboard-api";
+import { useOffices } from "@/components/dashboard/use-offices";
 import { downloadCsv } from "@/lib/csv";
 import { analyticsCsvRows } from "@/lib/analytics-csv";
 import { printSection } from "@/lib/print";
@@ -636,6 +637,8 @@ export default function AnalyticsPage() {
   const [jobId, setJobId] = useState("all");
   const [recruiterId, setRecruiterId] = useState("all");
   const [clientId, setClientId] = useState("all");
+  const [officeId, setOfficeId] = useState("all");
+  const offices = useOffices();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [jobs, setJobs] = useState([]);
@@ -659,9 +662,10 @@ export default function AnalyticsPage() {
           ? `since ${fmtDay(from)}`
           : `until ${fmtDay(to)}`
       : effectivePeriod !== "all" && PERIODS.find((p) => p.value === effectivePeriod)?.label.toLowerCase();
-  const filtered = effectivePeriod !== "all" || jobId !== "all" || recruiterId !== "all" || clientId !== "all";
+  const filtered = effectivePeriod !== "all" || jobId !== "all" || recruiterId !== "all" || clientId !== "all" || officeId !== "all";
   const filterLabel = [
     periodLabel,
+    officeId !== "all" && (offices.find((o) => o.id === officeId)?.name || "One office"),
     clientId !== "all" && (clients.find((c) => c.id === clientId)?.name || "One client"),
     jobId !== "all" && (jobs.find((j) => j.id === jobId)?.title || "One job"),
     recruiterId !== "all" && (recruiters.find((r) => r.id === recruiterId)?.name || "One recruiter"),
@@ -672,7 +676,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    fetchAnalytics({ period: effectivePeriod, from, to, jobId, recruiterId, clientId })
+    fetchAnalytics({ period: effectivePeriod, from, to, jobId, recruiterId, clientId, officeId })
       .then((s) => {
         if (cancelled) return;
         setSnapshot(s);
@@ -684,7 +688,7 @@ export default function AnalyticsPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, effectivePeriod, from, to, jobId, recruiterId, clientId]);
+  }, [reloadKey, effectivePeriod, from, to, jobId, recruiterId, clientId, officeId]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -726,6 +730,17 @@ export default function AnalyticsPage() {
               <input type="date" aria-label="To" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
             </>
           )}
+          {offices.length > 0 && (
+            <FilterSelect
+              ariaLabel="Office"
+              value={officeId}
+              onChange={(next) => {
+                setOfficeId(next);
+                setJobId("all");
+              }}
+              options={[{ value: "all", label: "All offices" }, ...offices.map((o) => ({ value: o.id, label: o.name }))]}
+            />
+          )}
           {clients.length > 0 && (
             <FilterSelect
               ariaLabel="Client"
@@ -741,7 +756,7 @@ export default function AnalyticsPage() {
             ariaLabel="Job"
             value={jobId}
             onChange={setJobId}
-            options={[{ value: "all", label: "All jobs" }, ...jobs.filter((j) => clientId === "all" || j.client_id === clientId).map((j) => ({ value: j.id, label: j.title }))]}
+            options={[{ value: "all", label: "All jobs" }, ...jobs.filter((j) => (clientId === "all" || j.client_id === clientId) && (officeId === "all" || j.officeId === officeId)).map((j) => ({ value: j.id, label: j.title }))]}
           />
           <FilterSelect
             ariaLabel="Recruiter"
@@ -759,6 +774,7 @@ export default function AnalyticsPage() {
                 setJobId("all");
                 setRecruiterId("all");
                 setClientId("all");
+                setOfficeId("all");
               }}
               className="text-[12.5px] font-semibold px-2"
               style={{ color: "var(--forest)" }}

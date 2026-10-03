@@ -249,17 +249,24 @@ export function Spinner({ size = 16 }) {
 }
 
 // ── Toasts ──────────────────────────────────────────────────────────────────
+// toast(message, tone?, { action?: { label, onClick }, duration? }) - an
+// action (e.g. Undo) shows as a button and keeps the toast up longer.
 export function useToasts() {
   const [toasts, setToasts] = useState([]);
-  const toast = useCallback((message, tone = "ok") => {
-    const id = Date.now() + Math.random();
-    setToasts((list) => [...list.slice(-2), { id, message, tone }]);
-    setTimeout(() => setToasts((list) => list.filter((t) => t.id !== id)), 3200);
-  }, []);
-  return { toasts, toast };
+  const dismiss = useCallback((id) => setToasts((list) => list.filter((t) => t.id !== id)), []);
+  const toast = useCallback(
+    (message, tone = "ok", { action, duration } = {}) => {
+      const id = Date.now() + Math.random();
+      setToasts((list) => [...list.slice(-2), { id, message, tone, action }]);
+      setTimeout(() => dismiss(id), duration ?? (action ? 6000 : 3200));
+      return id;
+    },
+    [dismiss]
+  );
+  return { toasts, toast, dismiss };
 }
 
-export function Toasts({ toasts }) {
+export function Toasts({ toasts, onDismiss }) {
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none" role="status" aria-live="polite">
       {toasts.map((t) => (
@@ -270,6 +277,18 @@ export function Toasts({ toasts }) {
         >
           <Icon name={t.tone === "error" ? "alert" : "check"} size={14} />
           {t.message}
+          {t.action && (
+            <button
+              type="button"
+              onClick={() => {
+                t.action.onClick();
+                onDismiss?.(t.id);
+              }}
+              className="pointer-events-auto ml-1.5 font-semibold underline underline-offset-2"
+            >
+              {t.action.label}
+            </button>
+          )}
         </div>
       ))}
     </div>

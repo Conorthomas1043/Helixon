@@ -1,8 +1,8 @@
 "use client";
 
 // The nav's search (⌘K / Ctrl+K, or "/") across candidates, jobs, clients
-// and contacts (app/api/search), and the notifications bell
-// (app/api/notifications).
+// and contacts (app/api/search), the notifications bell
+// (app/api/notifications), and the background mailbox sync.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -297,6 +297,21 @@ export function NotificationsBell() {
     const t = setInterval(load, 60_000);
     return () => clearInterval(t);
   }, [load]);
+
+  // A connected Gmail / Outlook syncs in the background while the dashboard
+  // is open (the server skips it if it synced in the last 15 minutes).
+  useEffect(() => {
+    const sync = () =>
+      fetch("/api/integrations/connections", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "auto" }),
+      }).catch(() => {});
+    sync();
+    const t = setInterval(sync, 15 * 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;

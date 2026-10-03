@@ -14,6 +14,7 @@ import { getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
 import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
+import { useOffices } from "@/components/dashboard/use-offices";
 
 function Stat({ label, value, accent }) {
   return (
@@ -351,6 +352,8 @@ function JobsContent() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("open");
   const [mineOnly, setMineOnly] = useState(false);
+  const offices = useOffices();
+  const [officeFilter, setOfficeFilter] = useState("");
   const { user } = useUser();
   const myId = user?.id ?? null;
   const [sortBy, setSortBy] = useState("newest");
@@ -363,6 +366,7 @@ function JobsContent() {
       (j) =>
         (statusFilter === "all" || (statusFilter === "open" ? j.status === "open" : j.status !== "open")) &&
         (!mineOnly || j.ownerId === myId) &&
+        (!officeFilter || (officeFilter === "none" ? !j.officeId : j.officeId === officeFilter)) &&
         (!q || [j.title, j.company, j.location].filter(Boolean).join(" ").toLowerCase().includes(q))
     );
     const by = {
@@ -376,7 +380,7 @@ function JobsContent() {
       target: (a, b) => (a.targetDate || "9999").localeCompare(b.targetDate || "9999"),
     }[sortBy];
     return [...list].sort(by);
-  }, [jobs, search, statusFilter, sortBy, mineOnly, myId]);
+  }, [jobs, search, statusFilter, sortBy, mineOnly, myId, officeFilter]);
 
   const totalOpen = jobs?.filter((j) => j.status === "open").length ?? 0;
   const totalCandidates = jobs?.reduce((sum, j) => sum + j.candidateCount, 0) ?? 0;
@@ -465,6 +469,21 @@ function JobsContent() {
               >
                 My jobs
               </button>
+              {offices.length > 0 && (
+                <select
+                  value={officeFilter}
+                  onChange={(e) => setOfficeFilter(e.target.value)}
+                  aria-label="Office"
+                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white"
+                  style={{ border: "1px solid var(--border)", color: officeFilter ? INK : INK_MUTED }}
+                >
+                  <option value="">All offices</option>
+                  {offices.map((o) => (
+                    <option key={o.id} value={o.id}>{o.name}</option>
+                  ))}
+                  <option value="none">No office</option>
+                </select>
+              )}
               <button
                 type="button"
                 onClick={() =>

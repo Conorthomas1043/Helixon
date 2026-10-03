@@ -7,8 +7,11 @@ import { INVOICE_STATUSES } from "@/lib/placements";
 import { normaliseInvoicing } from "@/lib/invoicing-settings";
 import { logAudit } from "@/lib/agency-audit";
 import { getAccess } from "@/lib/permissions";
+import { accountingConnection } from "@/lib/integrations/accounting-sync";
+import { providerFor } from "@/lib/integrations/providers";
 
-// GET   one invoice with the agency's invoice details (for printing)
+// GET   one invoice with the agency's invoice details (for printing) and
+//       the connected accounts package, if any
 // PATCH { status, paidOn? }   mark paid / sent / void. Voiding a contract
 //       invoice puts its timesheets back to approved.
 
@@ -23,7 +26,10 @@ export async function GET(request, { params }) {
   ]);
   if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const from = normaliseInvoicing(agency?.settings);
-  return NextResponse.json({ invoice, from: { ...from, companyName: from.companyName || agency?.name || "" } });
+  // The connected Xero / QuickBooks, for the "Send to …" button.
+  const conn = await accountingConnection(auth.agencyId);
+  const accounting = conn ? { provider: conn.provider, label: providerFor(conn.provider).label } : null;
+  return NextResponse.json({ invoice, accounting, from: { ...from, companyName: from.companyName || agency?.name || "" } });
 }
 
 export async function PATCH(request, { params }) {

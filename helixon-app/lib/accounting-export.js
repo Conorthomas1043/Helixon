@@ -12,7 +12,9 @@ export function ukDate(d) {
   return y && m && day ? `${day}/${m}/${y}` : "";
 }
 
-function lines(inv) {
+// An invoice's lines as { description, quantity, unitPrice } - one
+// "Recruitment fee" line for an invoice saved without any.
+export function invoiceLines(inv) {
   const list = Array.isArray(inv.lines) && inv.lines.length ? inv.lines : [{ description: "Recruitment fee", quantity: 1, unitPrice: inv.subtotal }];
   return list.map((l) => ({
     description: String(l.description || "Item").slice(0, 300),
@@ -25,7 +27,7 @@ function lines(inv) {
 export function xeroInvoiceRows(invoices, { accountCode = "200" } = {}) {
   return invoices.flatMap((inv) => {
     const vat = Number(inv.vat_rate || 0);
-    return lines(inv).map((l) => ({
+    return invoiceLines(inv).map((l) => ({
       "*ContactName": inv.bill_to?.name || "Client",
       EmailAddress: inv.bill_to?.email || "",
       POAddressLine1: inv.bill_to?.address ? String(inv.bill_to.address).split("\n")[0] : "",
@@ -47,7 +49,7 @@ export function xeroInvoiceRows(invoices, { accountCode = "200" } = {}) {
 export function quickbooksInvoiceRows(invoices) {
   return invoices.flatMap((inv) => {
     const vat = Number(inv.vat_rate || 0);
-    return lines(inv).map((l) => ({
+    return invoiceLines(inv).map((l) => ({
       InvoiceNo: inv.number,
       Customer: inv.bill_to?.name || "Client",
       InvoiceDate: ukDate(inv.issued_on),

@@ -29,13 +29,17 @@ export function readAnalyticsFilters(params, now = Date.now()) {
     jobId: cleanUuid(params.get("jobId")),
     recruiterId: (params.get("recruiterId") || "").slice(0, 100) || null,
     clientId: cleanUuid(params.get("clientId")),
+    officeId: /^[a-z0-9-]{1,40}$/.test(params.get("officeId") || "") ? params.get("officeId") : null,
   };
 }
 
-// The job ids a client filter narrows to. null = no client filter.
-export async function jobIdsForClient(agencyId, clientId) {
-  if (!clientId) return { jobIds: null, error: null };
-  const { data, error } = await supabase.from("jobs").select("id").eq("agency_id", agencyId).eq("client_id", clientId).limit(5000);
+// The job ids a client and/or office filter narrows to. null = neither.
+export async function jobIdsForClient(agencyId, clientId, officeId = null) {
+  if (!clientId && !officeId) return { jobIds: null, error: null };
+  let q = supabase.from("jobs").select("id").eq("agency_id", agencyId);
+  if (clientId) q = q.eq("client_id", clientId);
+  if (officeId) q = q.eq("office_id", officeId);
+  const { data, error } = await q.limit(5000);
   if (error) return { jobIds: null, error };
   return { jobIds: (data ?? []).map((j) => j.id), error: null };
 }

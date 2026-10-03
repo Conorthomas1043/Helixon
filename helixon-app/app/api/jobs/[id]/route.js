@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns } from "@/lib/clients";
 import { cleanJobDetails } from "@/lib/job-details";
+import { normaliseOffices } from "@/lib/offices";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -197,6 +198,12 @@ export async function PATCH(request, { params }) {
   if (details.owner_id) {
     const { data: member } = await supabase.from("profiles").select("clerk_user_id").eq("agency_id", agencyId).eq("clerk_user_id", details.owner_id).maybeSingle();
     if (!member) return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
+  }
+  if (details.office_id) {
+    const { data: agency } = await supabase.from("agencies").select("settings").eq("id", agencyId).maybeSingle();
+    if (!normaliseOffices(agency?.settings).offices.some((o) => o.id === details.office_id)) {
+      return NextResponse.json({ error: "That office doesn't exist - add it in Settings → Offices." }, { status: 400 });
+    }
   }
 
   if (body.hideClient !== undefined) update.hide_client = body.hideClient === true;

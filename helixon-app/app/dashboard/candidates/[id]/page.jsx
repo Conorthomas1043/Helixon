@@ -39,6 +39,7 @@ import {
   createTag,
   editCandidateNote,
   deleteCandidateNote,
+  pinCandidateNote,
   addCandidateTag,
   removeCandidateTag,
   setCandidateNextAction,
@@ -54,6 +55,8 @@ import {
 import Report from "@/app/analyse/_components/Report";
 import { EmailCard } from "@/app/analyse/_components/Rail";
 import { Toasts, useToasts } from "@/app/analyse/_components/ui";
+import { useUndoDelete } from "@/components/dashboard/use-undo-delete";
+import SmsPanel from "@/components/dashboard/SmsPanel";
 import { useEmailComposer } from "@/app/analyse/_lib/useEmailComposer";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { TAG_CATALOG } from "@/lib/tag-catalog";
@@ -158,6 +161,7 @@ function activityDescription(entry) {
     case "candidate_merged":
     case "candidate_linked":
     case "call_notes_summarised":
+    case "sms_received":
       return entry.meta?.note ?? "";
     case "rescreened":
       return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
@@ -226,6 +230,7 @@ const EVENT_LABELS = {
   candidate_merged: "Duplicate merged",
   candidate_linked: "Linked as same person",
   call_notes_summarised: "Call notes",
+  sms_received: "Text received",
 };
 
 const OUTREACH_ACTIONS = [
@@ -1476,7 +1481,7 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
  * Notes
  * ---------------------------------------------------------------------- */
 
-function NoteItem({ note, mine, onEdit, onDelete }) {
+function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.body);
   const [saving, setSaving] = useState(false);
@@ -1516,29 +1521,52 @@ function NoteItem({ note, mine, onEdit, onDelete }) {
   }
 
   return (
-    <li className="group text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+    <li
+      className="group text-[13px] rounded-[10px] p-3"
+      style={{ background: note.pinnedAt ? "var(--mint)" : "var(--mist)", border: note.pinnedAt ? "1px solid var(--forest)" : "1px solid transparent" }}
+    >
+      {note.pinnedAt && (
+        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
+          Pinned
+        </p>
+      )}
       <p className="whitespace-pre-wrap" style={{ color: INK }}>{note.body}</p>
       <div className="flex items-center justify-between gap-2 mt-1.5">
         <p className="text-[11px]" style={{ color: INK_FAINT }}>
           - {note.author} · {formatRelativeTime(note.createdAt)}
         </p>
-        {mine && (
-          <span className="flex items-center gap-2 text-[11px] font-semibold">
-            <button type="button" onClick={() => setEditing(true)} className="hover:underline" style={{ color: INK_MUTED }}>
-              Edit
-            </button>
-            <button type="button" onClick={() => onDelete(note.id)} className="hover:underline" style={{ color: RED_STRONG }}>
-              Delete
-            </button>
-          </span>
-        )}
+        <span className="flex items-center gap-2 text-[11px] font-semibold">
+          <button type="button" onClick={() => onPin(note.id, !note.pinnedAt)} className="hover:underline" style={{ color: INK_MUTED }}>
+            {note.pinnedAt ? "Unpin" : "Pin"}
+          </button>
+          {mine && (
+            <>
+              <button type="button" onClick={() => setEditing(true)} className="hover:underline" style={{ color: INK_MUTED }}>
+                Edit
+              </button>
+              <button type="button" onClick={() => onDelete(note.id)} className="hover:underline" style={{ color: RED_STRONG }}>
+                Delete
+              </button>
+            </>
+          )}
+        </span>
       </div>
     </li>
   );
 }
 
-function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote }) {
+function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote, onPinNote }) {
   const [draft, setDraft] = useState("");
+  // Pinned first (most recently pinned on top), then newest first.
+  const ordered = useMemo(
+    () =>
+      [...notes].sort((a, b) => {
+        if (Boolean(a.pinnedAt) !== Boolean(b.pinnedAt)) return a.pinnedAt ? -1 : 1;
+        if (a.pinnedAt) return String(b.pinnedAt).localeCompare(String(a.pinnedAt));
+        return String(b.createdAt).localeCompare(String(a.createdAt));
+      }),
+    [notes]
+  );
   const [saving, setSaving] = useState(false);
 
   return (
@@ -1582,8 +1610,15 @@ function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote 
         </p>
       ) : (
         <ul className="space-y-2.5">
-          {notes.map((n) => (
-            <NoteItem key={n.id} note={n} mine={Boolean(currentUserId) && n.authorId === currentUserId} onEdit={onEditNote} onDelete={onDeleteNote} />
+          {ordered.map((n) => (
+            <NoteItem
+              key={n.id}
+              note={n}
+              mine={Boolean(currentUserId) && n.authorId === currentUserId}
+              onEdit={onEditNote}
+              onDelete={onDeleteNote}
+              onPin={onPinNote}
+            />
           ))}
         </ul>
       )}
@@ -2083,7 +2118,7 @@ export default function CandidateProfilePage({ params }) {
   const [creatingFeedbackRequest, setCreatingFeedbackRequest] = useState(null);
   // Every action on this page reports a failure here - they used to fail
   // silently (a lost note, a stage that snapped back on reload).
-  const { toasts, toast } = useToasts();
+  const { toasts, toast, dismiss } = useToasts();
   const failed = useCallback((err, fallback) => toast(err?.message || fallback, "error"), [toast]);
   // Built-in tags straight away; the agency's own arrive from /api/tags.
   const [tags, setTags] = useState(TAG_CATALOG);
@@ -2274,11 +2309,26 @@ export default function CandidateProfilePage({ params }) {
     [id, failed]
   );
 
+  const undoable = useUndoDelete(toast);
   const handleDeleteNote = useCallback(
-    async (noteId) => {
-      if (!confirm("Delete this note?")) return;
-      const ok = await deleteCandidateNote(id, noteId).catch((err) => failed(err, "Couldn't delete the note."));
-      if (ok) setCandidate((c) => (c ? { ...c, notes: c.notes.filter((n) => n.id !== noteId) } : c));
+    (noteId) => {
+      const note = candidate?.notes.find((n) => n.id === noteId);
+      if (!note) return;
+      undoable({
+        key: `note:${noteId}`,
+        message: "Note deleted",
+        hide: () => setCandidate((c) => (c ? { ...c, notes: c.notes.filter((n) => n.id !== noteId) } : c)),
+        restore: () => setCandidate((c) => (c && !c.notes.some((n) => n.id === noteId) ? { ...c, notes: [...c.notes, note] } : c)),
+        commit: () => deleteCandidateNote(id, noteId),
+      });
+    },
+    [id, candidate, undoable]
+  );
+
+  const handlePinNote = useCallback(
+    async (noteId, pinned) => {
+      const note = await pinCandidateNote(id, noteId, pinned).catch((err) => failed(err, "Couldn't pin the note."));
+      if (note) setCandidate((c) => (c ? { ...c, notes: c.notes.map((n) => (n.id === noteId ? note : n)) } : c));
     },
     [id, failed]
   );
@@ -2513,9 +2563,10 @@ export default function CandidateProfilePage({ params }) {
                   clientEmail={candidate.job?.client_email}
                 />
                 <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
-                <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
+                <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
                 <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />
+                <SmsPanel candidate={candidate} onSent={refreshActivity} />
                 <MergeDuplicateCard candidate={candidate} />
               </div>
             </div>
@@ -2525,7 +2576,7 @@ export default function CandidateProfilePage({ params }) {
       {editingDetails && candidate && (
         <EditDetailsDialog candidate={candidate} onCancel={closeEditDetails} onSaved={handleDetailsSaved} />
       )}
-      <Toasts toasts={toasts} />
+      <Toasts toasts={toasts} onDismiss={dismiss} />
     </main>
   );
 }

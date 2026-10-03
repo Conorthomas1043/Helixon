@@ -21,6 +21,7 @@ const SECTIONS = [
       { href: "/dashboard/settings/invoicing", label: "Invoices", body: "Your company details, bank details, VAT and payment terms on invoices." },
       { href: "/dashboard/settings/targets", label: "Targets & commission", body: "Monthly targets per recruiter and the commission plan behind the Performance page." },
       { href: "/dashboard/team", label: "Team", body: "Invite teammates, roles, and who's working on what." },
+      { href: "/dashboard/settings/offices", label: "Offices & brands", body: "Split the workspace by office, team or brand, and filter jobs and analytics by it." },
     ],
   },
   {
@@ -30,7 +31,7 @@ const SECTIONS = [
       { href: "/dashboard/settings/permissions", label: "Permissions", body: "Keep fees and invoices to admins, and limit members to their own candidates." },
       { href: "/dashboard/settings/audit", label: "Audit log", body: "Who deleted, exported or changed what, and when." },
       { href: "/dashboard/settings/connections", label: "Calendar & email", body: "Subscribe to your interviews in Google, Outlook or Apple, and log emails by BCC." },
-      { href: "/dashboard/settings/integrations", label: "Integrations", body: "API keys, webhooks for Zapier and Make, and the LinkedIn extension." },
+      { href: "/dashboard/settings/integrations", label: "Integrations", body: "Your Gmail or Outlook, Xero or QuickBooks, texting, the job feed, API keys, webhooks and the LinkedIn extension." },
       { href: "/dashboard/import", label: "Import", body: "Bring candidates, clients and jobs over from a spreadsheet or your old system." },
     ],
   },

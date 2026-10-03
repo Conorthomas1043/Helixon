@@ -36,6 +36,15 @@ function toWorkHistory(extracted) {
   }));
 }
 
+// Notes, newest first, with when they were pinned - falling back to the
+// columns from before pinning (20261003040000) if it isn't applied.
+async function loadNotes(candidateId) {
+  const query = (cols) => supabase.from("candidate_notes").select(cols).eq("candidate_id", candidateId).order("created_at", { ascending: false });
+  const res = await query("id, author_id, author_name, note, created_at, pinned_at");
+  if (res.error?.code === "42703") return query("id, author_id, author_name, note, created_at");
+  return res;
+}
+
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
@@ -58,11 +67,7 @@ export async function GET(request, { params }) {
   }
 
   const [{ data: notes }, { data: activity }, recruiterNames, { data: latestScore }] = await Promise.all([
-    supabase
-      .from("candidate_notes")
-      .select("id, author_id, author_name, note, created_at")
-      .eq("candidate_id", id)
-      .order("created_at", { ascending: false }),
+    loadNotes(id),
     supabase
       .from("candidate_activity")
       .select("id, type, actor, meta, created_at")
@@ -176,7 +181,7 @@ export async function GET(request, { params }) {
     retention90d: candidate.retention_90d,
     createdAt: candidate.created_at,
     lastActivityAt: candidate.last_activity_at,
-    notes: (notes ?? []).map((n) => ({ id: n.id, author: n.author_name, authorId: n.author_id, createdAt: n.created_at, body: n.note })),
+    notes: (notes ?? []).map((n) => ({ id: n.id, author: n.author_name, authorId: n.author_id, createdAt: n.created_at, body: n.note, pinnedAt: n.pinned_at ?? null })),
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, timestamp: a.created_at })),
   });
 }

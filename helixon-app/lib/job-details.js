@@ -1,5 +1,6 @@
 // A job's ownership and commercial details (migration 20261003000000):
-// who owns it, how many hires, the agreed fee, priority and target date.
+// who owns it, how many hires, the agreed fee, priority and target date -
+// and which office or brand it's under (20261003050000, lib/offices.js).
 
 export const JOB_PRIORITIES = { urgent: "Urgent", high: "High", normal: "Normal", low: "Low" };
 const PRIORITY_RANK = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -13,6 +14,10 @@ export function cleanJobDetails(body = {}) {
   if (body.ownerId !== undefined) {
     if (body.ownerId !== null && (typeof body.ownerId !== "string" || !/^[\w-]{1,64}$/.test(body.ownerId))) return { error: "Unknown owner." };
     out.owner_id = body.ownerId || null;
+  }
+  if (body.officeId !== undefined) {
+    if (body.officeId !== null && body.officeId !== "" && (typeof body.officeId !== "string" || !/^[a-z0-9-]{1,40}$/.test(body.officeId))) return { error: "Unknown office." };
+    out.office_id = body.officeId || null;
   }
   if (body.openings !== undefined) {
     if (body.openings === null || body.openings === "") out.openings = null;

@@ -14,6 +14,7 @@ import { STAGE_LABELS } from "@/lib/stage-labels";
 import ClientPicker from "@/components/dashboard/ClientPicker";
 import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
+import { useOffices } from "@/components/dashboard/use-offices";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
 
 async function fetchJob(id) {
@@ -282,6 +283,7 @@ function SelectField({ label, children, ...props }) {
 }
 
 function EditJobForm({ job, team = [], onCancel, onSave }) {
+  const offices = useOffices();
   const [client, setClient] = useState({
     clientId: job.clientId ?? null,
     clientName: job.company || "",
@@ -304,6 +306,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
     feeAmount: job.feeAmount ?? "",
     priority: job.priority || "",
     targetDate: job.targetDate || "",
+    officeId: job.officeId || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -344,6 +347,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
         feeAmount: form.feeAmount === "" ? null : form.feeAmount,
         priority: form.priority || null,
         targetDate: form.targetDate || null,
+        ...(offices.length || job.officeId ? { officeId: form.officeId || null } : {}),
       });
     } catch (err) {
       setError(err?.message || "Failed to save changes. Please try again.");
@@ -388,6 +392,14 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
             <option key={m.id} value={m.id}>{m.name}</option>
           ))}
         </SelectField>
+        {offices.length > 0 && (
+          <SelectField label="Office / brand" value={form.officeId} onChange={(e) => set("officeId", e.target.value)}>
+            <option value="">None</option>
+            {offices.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </SelectField>
+        )}
         <SelectField label="Priority" value={form.priority} onChange={(e) => set("priority", e.target.value)}>
           <option value="">Normal</option>
           {Object.entries(JOB_PRIORITIES).filter(([k]) => k !== "normal").map(([k, label]) => (
@@ -438,6 +450,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
 }
 
 export default function JobDetailPage({ params }) {
+  const offices = useOffices();
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -690,6 +703,7 @@ export default function JobDetailPage({ params }) {
                       {(job.seniority || job.employmentType) && <li>{[job.seniority, job.employmentType].filter(Boolean).join(" · ")}</li>}
                       {job.salaryRange && <li>{job.salaryRange}</li>}
                       {job.minYearsExperience != null && <li>{job.minYearsExperience}+ years&apos; experience</li>}
+                      {job.officeId && offices.some((o) => o.id === job.officeId) && <li>Office: {offices.find((o) => o.id === job.officeId).name}</li>}
                       <li>
                         Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span style={{ color: INK_FAINT }}>not assigned</span>}
                         {job.priority && job.priority !== "normal" && (

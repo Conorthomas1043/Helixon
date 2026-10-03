@@ -27,7 +27,7 @@ export async function GET(request) {
   const access = await getAccess(auth);
   if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
 
-  const { jobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId);
+  const { jobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId, filters.officeId);
   if (clientError) return fail(clientError);
 
   const [current, previous, placements, { data: members, error: membersError }] = await Promise.all([

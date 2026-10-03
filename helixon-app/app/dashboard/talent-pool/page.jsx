@@ -21,6 +21,7 @@ import { downloadCsv } from "@/lib/csv";
 import { formatRelativeTime } from "@/lib/candidate-format";
 import { scoreTone } from "@/app/analyse/_lib/analyse";
 import { Card, Icon, Notice, Spinner, Toasts, cx, useToasts } from "@/app/analyse/_components/ui";
+import { useUndoDelete } from "@/components/dashboard/use-undo-delete";
 import { Avatar, PillButton } from "@/app/analyse/_components/compareBits";
 
 const SCREEN_CONCURRENCY = 2;
@@ -510,7 +511,8 @@ function TalentPoolContent() {
   const [busyIds, setBusyIds] = useState(() => new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const stopRef = useRef(false);
-  const { toasts, toast } = useToasts();
+  const { toasts, toast, dismiss } = useToasts();
+  const undoable = useUndoDelete(toast);
 
   useEffect(() => {
     getJobs()
@@ -611,16 +613,24 @@ function TalentPoolContent() {
     }
   }
 
-  async function removeItem(item) {
-    if (!confirm(`Remove ${item.name} from the talent pool? Their profile and screenings stay as they are.`)) return;
-    try {
-      await removeFromTalentPool(item.id);
-      setData((d) => ({ ...d, total: d.total - 1, items: d.items.filter((i) => i.id !== item.id) }));
-      setSelected((s) => s.filter((x) => x !== item.id));
-      toast(`${item.name} removed from the pool`);
-    } catch (err) {
-      toast(err.message || "Couldn't remove them.", "error");
-    }
+  function removeItem(item) {
+    const index = data?.items.findIndex((i) => i.id === item.id) ?? -1;
+    undoable({
+      key: `pool:${item.id}`,
+      message: `${item.name} removed from the pool`,
+      hide: () => {
+        setData((d) => ({ ...d, total: d.total - 1, items: d.items.filter((i) => i.id !== item.id) }));
+        setSelected((s) => s.filter((x) => x !== item.id));
+      },
+      restore: () =>
+        setData((d) => {
+          if (!d || d.items.some((i) => i.id === item.id)) return d;
+          const items = [...d.items];
+          items.splice(index < 0 ? items.length : Math.min(index, items.length), 0, item);
+          return { ...d, total: d.total + 1, items };
+        }),
+      commit: () => removeFromTalentPool(item.id),
+    });
   }
 
   async function bulkAvailability(value) {
@@ -1169,7 +1179,7 @@ function TalentPoolContent() {
           </div>
         </div>
       )}
-      <Toasts toasts={toasts} />
+      <Toasts toasts={toasts} onDismiss={dismiss} />
     </main>
   );
 }

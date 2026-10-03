@@ -127,8 +127,8 @@ comment on table public.interview_booking_links is 'Service-role only. token is 
 -- Moves every row that points at p_remove to p_keep (any public table with
 -- a candidate_id column), fills p_keep's blanks from p_remove, and deletes
 -- p_remove - all or nothing. Where moving a row would duplicate one p_keep
--- already has (a unique constraint, e.g. the same shortlist twice), the
--- duplicate is dropped instead. Returns the removed row's CV path when
+-- already has (a unique constraint, e.g. the same shortlist twice), that
+-- row is dropped instead. Returns the removed row's CV path when
 -- p_keep didn't take it over, so the caller can delete the file.
 create or replace function public.merge_candidates(
   p_agency uuid,
@@ -143,6 +143,7 @@ declare
   r public.candidates%rowtype;
   t text;
   n bigint;
+  rid tid;
   moved jsonb := '{}'::jsonb;
 begin
   if p_keep is null or p_remove is null or p_keep = p_remove then
@@ -167,9 +168,17 @@ begin
       execute format('update public.%I set candidate_id = $1 where candidate_id = $2', t) using p_keep, p_remove;
       get diagnostics n = row_count;
     exception when unique_violation then
-      execute format('delete from public.%I where candidate_id = $1', t) using p_remove;
-      get diagnostics n = row_count;
-      n := -n;
+      -- Some rows clash with ones p_keep already has: move them one at a
+      -- time and drop only the ones that clash.
+      n := 0;
+      for rid in execute format('select ctid from public.%I where candidate_id = $1', t) using p_remove loop
+        begin
+          execute format('update public.%I set candidate_id = $1 where ctid = $2', t) using p_keep, rid;
+          n := n + 1;
+        exception when unique_violation then
+          execute format('delete from public.%I where ctid = $1', t) using rid;
+        end;
+      end loop;
     end;
     if n <> 0 then moved := moved || jsonb_build_object(t, n); end if;
   end loop;

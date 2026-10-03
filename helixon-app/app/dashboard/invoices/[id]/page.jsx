@@ -4,7 +4,7 @@
 // and send to the client, with the agency's details from Invoice settings.
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
-import { getInvoice, updateInvoice } from "@/lib/dashboard-api";
+import { getInvoice, syncInvoiceToAccounts, updateInvoice } from "@/lib/dashboard-api";
 import { printSection } from "@/lib/print";
 import { Page, PageHeader, Button, ErrorState, ErrorText, LoadingCard, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
@@ -30,6 +30,8 @@ export default function InvoicePage({ params }) {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const [syncing, setSyncing] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const docRef = useRef(null);
 
@@ -63,6 +65,21 @@ export default function InvoicePage({ params }) {
     [id]
   );
 
+  const sendToAccounts = useCallback(async () => {
+    setError(null);
+    setNotice(null);
+    setSyncing(true);
+    try {
+      const res = await syncInvoiceToAccounts(id);
+      setNotice(res.pushed ? `Sent to ${res.label}.` : res.status === "paid" ? `Paid in ${res.label} - marked paid here.` : `Not paid in ${res.label} yet.`);
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSyncing(false);
+    }
+  }, [id]);
+
   if (status === "loading") {
     return (
       <Page width={900}>
@@ -78,7 +95,8 @@ export default function InvoicePage({ params }) {
     );
   }
 
-  const { invoice: inv, from } = data;
+  const { invoice: inv, from, accounting } = data;
+  const inAccounts = accounting && inv.external_id && inv.external_provider === accounting.provider;
   const missingDetails = !from.address || !from.bankDetails;
 
   return (
@@ -104,11 +122,27 @@ export default function InvoicePage({ params }) {
                 Void
               </Button>
             )}
+            {accounting && (inAccounts ? inv.status === "sent" : inv.status === "sent" || inv.status === "paid") && (
+              <Button onClick={sendToAccounts} disabled={syncing}>
+                {syncing ? "Working…" : inAccounts ? `Check payment in ${accounting.label}` : `Send to ${accounting.label}`}
+              </Button>
+            )}
             <Button onClick={() => printSection(docRef.current)}>Print / save PDF</Button>
           </>
         }
       />
       <ErrorText>{error}</ErrorText>
+      {notice && (
+        <p role="status" className="text-[12px]" style={{ color: "var(--forest)" }}>
+          {notice}
+        </p>
+      )}
+      {inAccounts && !notice && (
+        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          In {accounting.label}
+          {inv.external_synced_at ? ` · checked ${longDate(inv.external_synced_at)}` : ""}
+        </p>
+      )}
       {missingDetails && (
         <p className="text-[12px]" style={{ color: INK_MUTED }}>
           Your address or bank details aren&apos;t on this invoice yet - add them in{" "}

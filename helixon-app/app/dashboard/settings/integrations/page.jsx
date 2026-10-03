@@ -1,12 +1,15 @@
 "use client";
 
-// /dashboard/settings/integrations - API keys for the REST API (/api/v1),
-// outgoing webhooks (Zapier, Make, your own systems) and the LinkedIn
-// extension. Owner and admins only (app/api/integrations).
+// /dashboard/settings/integrations - connected apps (your Gmail / Outlook,
+// Xero / QuickBooks, texting, the job feed - components/dashboard/
+// ConnectedApps.jsx), then API keys for the REST API (/api/v1), outgoing
+// webhooks (Zapier, Make, your own systems) and the LinkedIn extension,
+// which are owner and admins only (app/api/integrations).
 
 import { useCallback, useEffect, useState } from "react";
 import { addWebhook, createApiKey, deleteWebhook, getApiKeys, getWebhooks, revokeApiKey, updateWebhook } from "@/lib/dashboard-api";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, Field, LoadingCard, Pill, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import ConnectedApps from "@/components/dashboard/ConnectedApps";
 
 function fmt(d) {
   return d ? new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
@@ -301,12 +304,15 @@ export default function IntegrationsPage() {
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Workspace"
         title="Integrations"
-        subtitle="Connect Helixon to the rest of your tools: the REST API, webhooks for Zapier and Make, and the LinkedIn extension."
+        subtitle="Connect Helixon to the rest of your tools: your mailbox, your accounts, texting, job boards, the REST API, webhooks for Zapier and Make, and the LinkedIn extension."
       />
+      <ConnectedApps />
       {allowed === null ? (
         <LoadingCard rows={4} />
       ) : allowed === false ? (
-        <ErrorState title="Only the workspace owner or an admin can manage integrations" onRetry={retry} />
+        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          API keys, webhooks and the LinkedIn extension are managed by the workspace owner or an admin.
+        </p>
       ) : (
         <>
           <ApiKeys origin={origin} />

@@ -14,10 +14,11 @@ import { notify } from "@/lib/notifications";
 //
 // POST { body }            add a note
 // PATCH { noteId, body }   edit your own note
+// PATCH { noteId, pinned }  pin / unpin any note (pinned ones sit at the top)
 // DELETE ?noteId=          delete your own note
 
 function toNote(row) {
-  return { id: row.id, author: row.author_name, authorId: row.author_id, createdAt: row.created_at, body: row.note };
+  return { id: row.id, author: row.author_name, authorId: row.author_id, createdAt: row.created_at, body: row.note, pinnedAt: row.pinned_at ?? null };
 }
 
 async function context(params) {
@@ -104,6 +105,27 @@ export async function PATCH(request, { params }) {
   const { auth, id } = ctx;
 
   const payload = await request.json().catch(() => null);
+
+  // Pinning isn't editing - anyone on the team can pin a note.
+  if (typeof payload?.pinned === "boolean") {
+    const noteId = cleanUuid(payload.noteId);
+    if (!noteId) return NextResponse.json({ error: "Which note?" }, { status: 400 });
+    const { data, error } = await supabase
+      .from("candidate_notes")
+      .update(payload.pinned ? { pinned_at: new Date().toISOString(), pinned_by: auth.userId } : { pinned_at: null, pinned_by: null })
+      .eq("id", noteId)
+      .eq("candidate_id", id)
+      .eq("agency_id", auth.agencyId)
+      .select()
+      .maybeSingle();
+    if (error) {
+      const missing = error.code === "42703" || error.code === "PGRST204";
+      return NextResponse.json({ error: missing ? "Pinning isn't set up yet." : "Failed to pin note" }, { status: missing ? 503 : 500 });
+    }
+    if (!data) return NextResponse.json({ error: "Note not found." }, { status: 404 });
+    return NextResponse.json(toNote(data));
+  }
+
   const own = await ownNote(auth, id, cleanUuid(payload?.noteId));
   if (own.response) return own.response;
   const noteBody = cleanText(payload?.body, { max: 5000 });
