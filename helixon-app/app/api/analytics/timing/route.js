@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { cleanUuid } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics-data";
 
 // Everything the main funnel/quality/conversion numbers in
 // getAnalyticsSnapshot() (lib/dashboard-api.js) don't cover: speed
@@ -85,31 +85,34 @@ const EMPTY_RESPONSE = {
   },
 };
 
-// Optional filters, matching the Analytics page's: ?jobId=, ?recruiterId=,
-// ?days= (candidates created in the last N days). They narrow which
-// candidates everything is computed from; the channel figures follow the
-// job filter, and feedback stays agency-wide.
+// Optional filters, matching the Analytics page's (lib/analytics-data.js
+// readAnalyticsFilters): period/from/to, jobId, recruiterId, clientId. They
+// narrow which candidates everything is computed from; the channel figures
+// follow the job/client filter, and feedback stays agency-wide.
 export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {
     return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
   const { agencyId } = auth;
-  const params = new URL(request.url).searchParams;
-  const jobFilter = cleanUuid(params.get("jobId"));
-  const recruiterFilter = (params.get("recruiterId") || "").slice(0, 100) || null;
-  const days = Number(params.get("days"));
-  const since = Number.isInteger(days) && days > 0 && days <= 3650 ? new Date(Date.now() - days * 86400000).toISOString() : null;
+  const filters = readAnalyticsFilters(new URL(request.url).searchParams);
+  const { jobIds: clientJobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId);
+  if (clientError) {
+    console.error("[analytics/timing] Client lookup failed:", clientError.message);
+    return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
+  }
 
-  let candidateQuery = supabase
-    .from("candidates")
-    .select("id, job_id, created_at, stage, email, recruiter_id, source, rejection_reason, placement_fee, placement_cost, retention_30d, retention_90d")
-    .eq("agency_id", agencyId);
-  if (jobFilter) candidateQuery = candidateQuery.eq("job_id", jobFilter);
-  if (recruiterFilter) candidateQuery = candidateQuery.eq("recruiter_id", recruiterFilter);
-  if (since) candidateQuery = candidateQuery.gte("created_at", since);
+  // Paged (lib/analytics-data.js) - a plain select stopped at the
+  // database's row limit without saying so.
+  const candidateQuery = loadCandidates(
+    agencyId,
+    filters,
+    "id, job_id, created_at, stage, email, recruiter_id, source, rejection_reason, placement_fee, placement_cost, retention_30d, retention_90d",
+    { jobIds: clientJobIds }
+  );
   let channelQuery = supabase.from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId);
-  if (jobFilter) channelQuery = channelQuery.eq("job_id", jobFilter);
+  if (filters.jobId) channelQuery = channelQuery.eq("job_id", filters.jobId);
+  if (clientJobIds) channelQuery = channelQuery.in("job_id", clientJobIds.length ? clientJobIds : ["00000000-0000-0000-0000-000000000000"]);
 
   const [
     { data: candidates, error: candError },
@@ -127,7 +130,7 @@ export async function GET(request) {
   ]);
 
   if (candError || jobError || channelError || feedbackError || verdictError) {
-    console.error("[analytics/timing] Query failed:", (candError || jobError || channelError || feedbackError).message);
+    console.error("[analytics/timing] Query failed:", (candError || jobError || channelError || feedbackError || verdictError).message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
 
@@ -136,14 +139,11 @@ export async function GET(request) {
     return NextResponse.json(EMPTY_RESPONSE);
   }
 
-  // Paged the same way app/api/dashboard-stats/route.js pages score rows -
-  // an .in() with thousands of ids is its own problem, but agency-scoped
-  // activity history stays small enough in practice for one bounded query.
-  const { data: activity, error: activityError } = await supabase
-    .from("candidate_activity")
-    .select("candidate_id, type, meta, created_at")
-    .in("candidate_id", candidateIds.slice(0, 5000))
-    .order("created_at", { ascending: true });
+  // Only the types used below, fetched a chunk of candidates at a time -
+  // one .in() with thousands of ids is too long a request to send.
+  const { data: activity, error: activityError } = await loadActivity(candidateIds, {
+    types: ["stage_changed", ...Object.keys(OUTREACH_TYPES)],
+  });
 
   if (activityError) {
     console.error("[analytics/timing] Activity query failed:", activityError.message);

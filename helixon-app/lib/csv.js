@@ -6,7 +6,8 @@ export function downloadCsv(filename, rows) {
     // A cell starting with =, +, -, @, tab or CR is interpreted as a formula
     // by Excel/Sheets when the CSV is opened - prefix it with a leading
     // apostrophe so it's forced to render as text instead of executing.
-    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+    // Real numbers (a negative change, a loss) are left alone.
+    if (typeof val !== "number" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = [headers.join(","), ...rows.map((row) => headers.map((h) => escape(row[h])).join(","))];

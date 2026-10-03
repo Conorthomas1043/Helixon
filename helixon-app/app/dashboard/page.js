@@ -8,7 +8,8 @@ import DashboardNav from "@/components/DashboardNav";
 import CountUp from "@/components/dashboard/CountUp";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
-import { getFollowUps, completeNextAction } from "@/lib/dashboard-api";
+import { getFollowUps, completeNextAction, getPerformance } from "@/lib/dashboard-api";
+import { METRICS, METRIC_KEYS } from "@/lib/performance";
 import { STRONG_MATCH_MIN, REVIEW_MIN } from "@/lib/scoreBands";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
@@ -61,6 +62,7 @@ async function fetchDashboardData() {
     agencyName: raw.agencyName ?? null,
     plan: raw.plan ?? null,
     recentAnalyses: raw.analyses ?? [],
+    truncated: raw.truncated === true,
   };
 }
 
@@ -71,6 +73,8 @@ function normalizeAnalysis(raw, index) {
   const score = typeof raw.score === "number" && !Number.isNaN(raw.score) ? raw.score : null;
   const createdDate = raw.createdAt ? new Date(raw.createdAt) : null;
   const createdAt = createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate : null;
+  const activityDate = raw.lastActivityAt ? new Date(raw.lastActivityAt) : null;
+  const lastActivityAt = activityDate && !Number.isNaN(activityDate.getTime()) ? activityDate : null;
   return {
     id: raw.id ?? raw._id ?? `analysis-${index}`,
     candidateId: raw.candidateId ?? null,
@@ -84,6 +88,7 @@ function normalizeAnalysis(raw, index) {
     stage: raw.stage && Object.prototype.hasOwnProperty.call(STAGE_LABELS, raw.stage) ? raw.stage : null,
     score,
     createdAt,
+    lastActivityAt,
     nextAction: raw.nextAction?.label ? raw.nextAction : null,
   };
 }
@@ -1072,6 +1077,124 @@ function DashboardError({ onRetry }) {
   );
 }
 
+/* ─── Scope, targets, truncation ────────────────────────────────────────── */
+
+const SCOPE_KEY = "helixon.dashboard.scope";
+
+function readScope() {
+  try {
+    return window.localStorage.getItem(SCOPE_KEY) === "mine" ? "mine" : "team";
+  } catch {
+    return "team";
+  }
+}
+
+function ScopeToggle({ scope, onChange }) {
+  const tab = (active) => ({
+    fontSize: 12,
+    fontWeight: 600,
+    padding: "6px 14px",
+    borderRadius: 9999,
+    border: "none",
+    cursor: "pointer",
+    background: active ? SURFACE : "transparent",
+    color: active ? TEXT : TEXT_SUB,
+    boxShadow: active ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
+  });
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+      <p style={{ fontSize: 12, color: TEXT_FAINT, margin: 0 }}>
+        {scope === "mine" ? "Showing candidates assigned to you." : "Showing the whole team's candidates."}
+      </p>
+      <div role="group" aria-label="Whose numbers to show" style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: 9999, background: BORDER2 }}>
+        <button type="button" aria-pressed={scope === "mine"} onClick={() => onChange("mine")} style={tab(scope === "mine")}>Mine</button>
+        <button type="button" aria-pressed={scope === "team"} onClick={() => onChange("team")} style={tab(scope === "team")}>Team</button>
+      </div>
+    </div>
+  );
+}
+
+function TruncatedNotice() {
+  return (
+    <div role="status" style={{ ...CARD, padding: "12px 16px", fontSize: 13, color: AMBER_FG, background: AMBER_BG, borderColor: "transparent" }}>
+      Your agency has more candidates than the Overview can load at once, so these numbers leave out the oldest ones.
+      {" "}<Link href="/dashboard/analytics" style={{ color: AMBER_FG, fontWeight: 600 }}>Analytics</Link> counts everything.
+    </div>
+  );
+}
+
+function formatMetric(key, n) {
+  if (METRICS[key]?.money) {
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(Number(n || 0));
+  }
+  return formatNumber(Number(n || 0));
+}
+
+// This month against target - the same figures as /dashboard/performance,
+// for you or for the team depending on the Mine/Team switch.
+function TargetsCard({ scope }) {
+  const [state, setState] = useState({ status: "loading", data: null });
+  useEffect(() => {
+    let cancelled = false;
+    getPerformance("this_month")
+      .then((data) => { if (!cancelled) setState({ status: "ready", data }); })
+      .catch(() => { if (!cancelled) setState({ status: "error", data: null }); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Not every plan or role can read performance - nothing to show then.
+  if (state.status === "error") return null;
+
+  const source = state.data
+    ? scope === "mine"
+      ? state.data.people?.find((p) => p.me) ?? null
+      : state.data.team ?? null
+    : null;
+  const rows = source
+    ? METRIC_KEYS.filter((k) => Number(source.targets?.[k]) > 0)
+        .slice(0, 4)
+        .map((k) => {
+          const actual = Number(source.metrics?.[k] || 0);
+          const target = Number(source.targets[k]);
+          return { key: k, label: METRICS[k].label, actual, target, pct: Math.min(100, Math.round((actual / target) * 100)) };
+        })
+    : [];
+
+  return (
+    <section style={{ ...CARD, padding: 24 }} aria-busy={state.status === "loading"}>
+      <SectionHeading
+        eyebrow="This month"
+        title={scope === "mine" ? "Your targets" : "Team targets"}
+        action={<Link href="/dashboard/performance" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>Leaderboard →</Link>}
+      />
+      {state.status === "loading" ? (
+        <div style={{ height: 96, borderRadius: 10, background: SURFACE2 }} />
+      ) : rows.length === 0 ? (
+        <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0 }}>
+          No targets set{scope === "mine" ? " for you" : ""} yet.{" "}
+          <Link href="/dashboard/settings/targets" style={{ color: VIOLET_FG, fontWeight: 600 }}>Set targets</Link>
+        </p>
+      ) : (
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+          {rows.map((r) => (
+            <li key={r.key}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13 }}>
+                <span style={{ color: TEXT }}>{r.label}</span>
+                <span style={{ fontFamily: "var(--font-mono)", color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>
+                  {formatMetric(r.key, r.actual)} / {formatMetric(r.key, r.target)}
+                </span>
+              </div>
+              <div style={{ height: 6, borderRadius: 9999, background: BORDER2, marginTop: 6, overflow: "hidden" }} role="progressbar" aria-valuenow={r.pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${r.label}: ${r.pct}% of target`}>
+                <div style={{ height: 6, width: `${r.pct}%`, borderRadius: 9999, background: r.pct >= 100 ? GREEN : r.pct >= 60 ? CYAN : RED }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 
 function AgencyDashboardPage() {
@@ -1092,6 +1215,17 @@ function AgencyDashboardPage() {
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
 
+  const { user: clerkUser } = useUser();
+  const myId = clerkUser?.id ?? null;
+  // Mine/Team, remembered per browser. Nothing that depends on it renders
+  // until the data has loaded on the client, so reading it up front can't
+  // make the server and client renders disagree.
+  const [scope, setScopeState] = useState(() => (typeof window === "undefined" ? "team" : readScope()));
+  const setScope = useCallback((next) => {
+    setScopeState(next);
+    try { window.localStorage.setItem(SCOPE_KEY, next); } catch { /* private mode - just don't remember */ }
+  }, []);
+
   const stageOrder = FUNNEL_ORDER;
   const lastStageKey = stageOrder[stageOrder.length - 1];
 
@@ -1101,7 +1235,11 @@ function AgencyDashboardPage() {
   // jobs/recruiter roll-ups below are dashboard-page-specific.
   const model = useMemo(() => {
     const rawAnalyses = data?.recentAnalyses ?? [];
-    const normalized = rawAnalyses.map((raw, i) => normalizeAnalysis(raw, i)).filter(Boolean);
+    const everyone = rawAnalyses.map((raw, i) => normalizeAnalysis(raw, i)).filter(Boolean);
+    // The switch only matters once someone else owns candidates too.
+    const hasTeammates = everyone.some((a) => a.recruiterId && a.recruiterId !== myId);
+    const mineOnly = scope === "mine" && hasTeammates && myId;
+    const normalized = mineOnly ? everyone.filter((a) => a.recruiterId === myId) : everyone;
     const stats = computeCandidateStats(normalized);
     const completed = stats.analyses.filter((a) => a.status === "completed");
 
@@ -1131,8 +1269,8 @@ function AgencyDashboardPage() {
     });
     const recruiters = Array.from(recruiterMap.values()).map((r) => ({ ...r, avgScore: r.scoreCount > 0 ? Math.round(r.scoreSum / r.scoreCount) : null })).sort((a, b) => b.placements - a.placements || (b.avgScore ?? 0) - (a.avgScore ?? 0)).slice(0, 4);
 
-    return { ...stats, jobs, recruiters };
-  }, [data, stageOrder, lastStageKey]);
+    return { ...stats, jobs, recruiters, hasTeammates, mineOnly: Boolean(mineOnly), everyone };
+  }, [data, stageOrder, lastStageKey, scope, myId]);
 
   // /api/dashboard-stats returns { agencyName, plan, analyses } flat -
   // this used to read data.agency.name/data.agency.plan, a key that never
@@ -1145,7 +1283,6 @@ function AgencyDashboardPage() {
   // The agency name is shown separately and only when it's a real name - the
   // "your agency" placeholder that used to be spliced into the greeting is
   // never displayed.
-  const { user: clerkUser } = useUser();
   const greetingName = clerkUser?.firstName || null;
   const agencyName = data?.agencyName && data.agencyName !== "your agency" ? data.agencyName : null;
   const plan = data?.plan ?? null;
@@ -1173,9 +1310,17 @@ function AgencyDashboardPage() {
           <>
             <DashboardHeader greetingName={greetingName} agencyName={agencyName} plan={plan} subtitle={subtitle} isRefreshing={isFetching} refreshError={!isFetching && hasError} onRefresh={retry} />
 
+            {data.truncated && <TruncatedNotice />}
+            {model.hasTeammates && <ScopeToggle scope={scope} onChange={setScope} />}
+
             {model.analyses.length === 0 ? (
               <div style={CARD}>
-                <EmptyState title="No candidates yet" body="Your pipeline is empty. Upload your first CV to get started." actionLabel="New analysis" actionHref="/analyse" />
+                <EmptyState
+                  title={model.mineOnly ? "No candidates assigned to you" : "No candidates yet"}
+                  body={model.mineOnly ? "Switch to Team to see everyone's, or screen a CV to start your own pipeline." : "Your pipeline is empty. Upload your first CV to get started."}
+                  actionLabel="New analysis"
+                  actionHref="/analyse"
+                />
               </div>
             ) : (
               <>
@@ -1183,7 +1328,11 @@ function AgencyDashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} />
-                  <UsageSummary plan={plan} analyses={model.analyses} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                    {/* Plan usage is the agency's, whichever view is on. */}
+                    <UsageSummary plan={plan} analyses={model.everyone} />
+                    <TargetsCard scope={model.mineOnly ? "mine" : "team"} />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">

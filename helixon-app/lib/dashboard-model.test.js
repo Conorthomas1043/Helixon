@@ -33,3 +33,29 @@ describe("computeCandidateStats - overdue follow-ups", () => {
     expect(stats.attentionItemsAll.some((i) => i.reasonLabel.startsWith("Overdue"))).toBe(false);
   });
 });
+
+describe("computeCandidateStats - stalled and duplicates", () => {
+  it("measures stalled from the last activity, not the analysis date", () => {
+    const old = new Date(now - 10 * 86400000);
+    const stats = computeCandidateStats(
+      [
+        row({ id: "a", candidateId: "a", createdAt: old, lastActivityAt: new Date(now - 86400000) }),
+        row({ id: "b", candidateId: "b", createdAt: old, lastActivityAt: new Date(now - 7 * 86400000) }),
+        row({ id: "c", candidateId: "c", createdAt: old, lastActivityAt: null }),
+      ],
+      now
+    );
+    const stalled = stats.attentionItemsAll.filter((i) => i.reasonLabel.startsWith("Stalled")).map((i) => i.id);
+    expect(stalled.sort()).toEqual(["b-stalled", "c-stalled"]);
+  });
+
+  it("counts a pipeline entry once even if it appears more than once", () => {
+    const stats = computeCandidateStats(
+      [row({ id: "s1", candidateId: "c1" }), row({ id: "s2", candidateId: "c1", createdAt: new Date(now - 2 * 86400000) }), row({ id: "s3", candidateId: "c2" })],
+      now
+    );
+    expect(stats.totals.total).toBe(2);
+    expect(stats.totals.inPipeline).toBe(2);
+    expect(stats.stageCounts.Interview).toBe(2);
+  });
+});

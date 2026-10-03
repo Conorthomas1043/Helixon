@@ -1,21 +1,25 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { REMINDER_PREF_KEY, remindersEnabled } from "@/lib/reminder-email";
+import { DIGEST_PREF_KEY, digestEnabled } from "@/lib/analytics-digest";
 
 // The signed-in person's email preferences, kept on their Clerk user's
 // private metadata (server-only):
 //   followUpReminders   weekday follow-up reminder (app/api/cron/reminders)
 //   applicationAlerts   an email per application from the jobs page
 //                       (lib/applications.js)
-// Both are on unless set to false.
+//   weeklyDigest        Monday analytics summary
+//                       (app/api/cron/analytics-digest)
+// The first two are on unless set to false; the digest is off until
+// switched on.
 //
-// GET                                              current settings
-// PATCH { followUpReminders?, applicationAlerts? }  change them
+// GET                                                            current settings
+// PATCH { followUpReminders?, applicationAlerts?, weeklyDigest? }  change them
 
-const KEYS = [REMINDER_PREF_KEY, "applicationAlerts"];
+const KEYS = [REMINDER_PREF_KEY, "applicationAlerts", DIGEST_PREF_KEY];
 
 function prefs(meta) {
-  return { followUpReminders: remindersEnabled(meta), applicationAlerts: meta?.applicationAlerts !== false };
+  return { followUpReminders: remindersEnabled(meta), applicationAlerts: meta?.applicationAlerts !== false, weeklyDigest: digestEnabled(meta) };
 }
 
 export async function GET() {

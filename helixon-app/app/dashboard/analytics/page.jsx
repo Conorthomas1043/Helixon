@@ -1,17 +1,20 @@
 "use client";
 
 // /dashboard/analytics - every figure is computed from the agency's own data:
-// getAnalyticsSnapshot() in lib/dashboard-api.js reduces the full candidate
-// list client-side, and app/api/analytics/timing adds the time-based,
-// commercial, feedback and recruiter-verdict figures. Nothing here is a
-// static or generic number. Bars and funnels are plain divs, no chart
-// library.
+// app/api/analytics/snapshot works out the funnel, conversion, quality,
+// trends and changes vs the previous period server-side, and
+// app/api/analytics/timing adds the time-based, commercial, feedback and
+// recruiter-verdict figures. Nothing here is a static or generic number.
+// Bars and funnels are plain divs; the over-time charts use recharts.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import DashboardNav from "@/components/DashboardNav";
-import { getAnalyticsSnapshot as fetchAnalytics, getJobs, getRecruiters } from "@/lib/dashboard-api";
+import { getAnalyticsSnapshot as fetchAnalytics, getClients, getJobs, getRecruiters } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
+import { analyticsCsvRows } from "@/lib/analytics-csv";
+import { printSection } from "@/lib/print";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
 
@@ -31,7 +34,22 @@ function SectionHeading({ eyebrow, title, action }) {
   );
 }
 
-function StatCard({ label, value, sub }) {
+// "▲ 4 pts vs previous 30 days". Up isn't always good news (more failed
+// analyses), so the arrow carries direction and the text stays neutral ink.
+function Delta({ value, unit = "", against }) {
+  if (typeof value !== "number") return null;
+  const arrow = value > 0 ? "▲" : value < 0 ? "▼" : "–";
+  const amount = value === 0 ? "No change" : `${Math.abs(value).toLocaleString("en-GB")}${unit}`;
+  return (
+    <p className="text-[11px] mt-1 tabular-nums" style={{ color: INK_MUTED }}>
+      <span aria-hidden="true" style={{ color: value > 0 ? "var(--forest)" : value < 0 ? RED : INK_FAINT }}>{arrow}</span>{" "}
+      <span className="sr-only">{value > 0 ? "Up " : value < 0 ? "Down " : ""}</span>
+      {amount} {against}
+    </p>
+  );
+}
+
+function StatCard({ label, value, sub, delta }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
       <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
@@ -45,7 +63,88 @@ function StatCard({ label, value, sub }) {
           {sub}
         </p>
       )}
+      {delta}
     </div>
+  );
+}
+
+const money = (n) => `£${Number(n || 0).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
+
+function TrendTooltip({ active, payload, label, format }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-[8px] px-3 py-2 text-[12px]" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+      <p style={{ color: INK_FAINT }}>{label}</p>
+      <p className="font-semibold tabular-nums" style={{ color: INK }}>{format(payload[0].value)}</p>
+    </div>
+  );
+}
+
+// One small chart per measure - analysed, placed and fees are on very
+// different scales, so they never share an axis.
+function TrendChart({ title, points, dataKey, format, total }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2 mb-2">
+        <p className="text-[12px] font-semibold" style={{ color: INK }}>{title}</p>
+        <p className="text-[12px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>{format(total)}</p>
+      </div>
+      <div style={{ height: 140 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={points} margin={{ top: 4, right: 0, bottom: 0, left: 0 }} barCategoryGap={2}>
+            <CartesianGrid vertical={false} stroke="var(--border)" />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: INK_FAINT }} interval="preserveStartEnd" minTickGap={16} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: INK_FAINT }} width={dataKey === "fees" ? 48 : 28} allowDecimals={false} tickFormatter={dataKey === "fees" ? (v) => (v >= 1000 ? `£${Math.round(v / 1000)}k` : `£${v}`) : undefined} />
+            <Tooltip cursor={{ fill: "rgba(var(--forest-rgb),0.06)" }} content={<TrendTooltip format={format} />} />
+            <Bar dataKey={dataKey} fill="var(--forest)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function Trends({ trends }) {
+  const points = trends?.points || [];
+  if (points.length === 0) {
+    return <p className="text-[13px]" style={{ color: INK_MUTED }}>Nothing in this period yet.</p>;
+  }
+  const sum = (k) => points.reduce((n, p) => n + (p[k] || 0), 0);
+  const count = (n) => Number(n || 0).toLocaleString("en-GB");
+  const hasFees = sum("fees") > 0;
+  return (
+    <>
+      <div className={`grid grid-cols-1 ${hasFees ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-6`}>
+        <TrendChart title="Candidates analysed" points={points} dataKey="analysed" format={count} total={sum("analysed")} />
+        <TrendChart title="Placements" points={points} dataKey="placed" format={count} total={sum("placed")} />
+        {hasFees && <TrendChart title="Fees placed" points={points} dataKey="fees" format={money} total={sum("fees")} />}
+      </div>
+      <details className="mt-4 text-[12px]" style={{ color: INK_MUTED }}>
+        <summary className="cursor-pointer font-semibold" style={{ color: "var(--forest)" }}>Show as a table</summary>
+        <div className="overflow-x-auto mt-2">
+          <table className="w-full">
+            <thead>
+              <tr style={{ color: INK_FAINT }}>
+                <th className="text-left font-semibold pb-1">{trends.unit === "week" ? "Week of" : "Month"}</th>
+                <th className="text-right font-semibold pb-1">Analysed</th>
+                <th className="text-right font-semibold pb-1">Placed</th>
+                <th className="text-right font-semibold pb-1">Fees</th>
+              </tr>
+            </thead>
+            <tbody>
+              {points.map((p) => (
+                <tr key={p.start}>
+                  <td className="py-0.5">{p.label}</td>
+                  <td className="py-0.5 text-right tabular-nums">{count(p.analysed)}</td>
+                  <td className="py-0.5 text-right tabular-nums">{count(p.placed)}</td>
+                  <td className="py-0.5 text-right tabular-nums">{money(p.fees)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </>
   );
 }
 
@@ -502,7 +601,14 @@ const PERIODS = [
   { value: "30d", label: "Last 30 days" },
   { value: "90d", label: "Last 90 days" },
   { value: "365d", label: "Last 12 months" },
+  { value: "custom", label: "Custom range…" },
 ];
+
+const DATE_INPUT_CLASS = "text-[12.5px] px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+
+function fmtDay(iso) {
+  return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
+}
 
 function FilterSelect({ value, onChange, options, ariaLabel }) {
   return (
@@ -522,40 +628,6 @@ function FilterSelect({ value, onChange, options, ariaLabel }) {
   );
 }
 
-// The headline figures as a two-column CSV (section, metric, value) - the
-// same numbers the page shows, for the filters currently applied.
-function snapshotRows(snapshot, filterLabel) {
-  const rows = [];
-  const add = (section, metric, value) => rows.push({ Section: section, Metric: metric, Value: value ?? "" });
-  add("Filters", "Applied", filterLabel);
-  add("Totals", "Candidates analysed", snapshot.totals.completed);
-  add("Totals", "Processing", snapshot.totals.processing);
-  add("Totals", "Failed", snapshot.totals.failed);
-  add("Quality", "Average match score", snapshot.quality.avgScore);
-  add("Quality", "Strong (80+)", snapshot.quality.strong);
-  add("Quality", "Moderate (60-79)", snapshot.quality.moderate);
-  add("Quality", "Weak (<60)", snapshot.quality.weak);
-  add("Conversion", "Shortlist rate %", snapshot.conversion.shortlistRate);
-  add("Conversion", "Interview rate %", snapshot.conversion.interviewRate);
-  add("Conversion", "Offer rate %", snapshot.conversion.offerRate);
-  add("Conversion", "Placement rate %", snapshot.conversion.placementRate);
-  snapshot.funnel.forEach((f) => add("Funnel", `Reached ${f.label}`, f.count));
-  Object.entries(snapshot.pipeline.stageCounts).forEach(([k, n]) => add("Pipeline", `Now in ${STAGE_LABELS[k] || k}`, n));
-  add("Pipeline", "Stalled 5+ days", snapshot.pipeline.stalled);
-  const t = snapshot.timing;
-  if (t) {
-    add("Speed", "Time to fill (days)", t.timeToFillDays);
-    add("Speed", "Time to hire (days)", t.timeToHireDays);
-    (t.source || []).forEach((i) => add("Source of hire", i.label, i.count ?? i.total));
-    (t.rejectionReasons || []).forEach((i) => add("Rejection reasons", i.label, i.count ?? i.total));
-  }
-  snapshot.team.forEach((r) => {
-    add("Team", `${r.name} - active`, r.activeCandidates);
-    add("Team", `${r.name} - placed`, r.placed);
-  });
-  return rows;
-}
-
 export default function AnalyticsPage() {
   const [snapshot, setSnapshot] = useState(null);
   const [status, setStatus] = useState("loading");
@@ -563,17 +635,34 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState("all");
   const [jobId, setJobId] = useState("all");
   const [recruiterId, setRecruiterId] = useState("all");
+  const [clientId, setClientId] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
+  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     getJobs().then(setJobs).catch(() => {});
     getRecruiters().then(setRecruiters).catch(() => {});
+    getClients().then((c) => setClients(c || [])).catch(() => {});
   }, []);
 
-  const filtered = period !== "all" || jobId !== "all" || recruiterId !== "all";
+  // A custom range waits until at least one end is picked.
+  const customPending = period === "custom" && !from && !to;
+  const effectivePeriod = customPending ? "all" : period;
+  const periodLabel =
+    effectivePeriod === "custom"
+      ? from && to
+        ? `${fmtDay(from)} to ${fmtDay(to)}`
+        : from
+          ? `since ${fmtDay(from)}`
+          : `until ${fmtDay(to)}`
+      : effectivePeriod !== "all" && PERIODS.find((p) => p.value === effectivePeriod)?.label.toLowerCase();
+  const filtered = effectivePeriod !== "all" || jobId !== "all" || recruiterId !== "all" || clientId !== "all";
   const filterLabel = [
-    period !== "all" && PERIODS.find((p) => p.value === period)?.label.toLowerCase(),
+    periodLabel,
+    clientId !== "all" && (clients.find((c) => c.id === clientId)?.name || "One client"),
     jobId !== "all" && (jobs.find((j) => j.id === jobId)?.title || "One job"),
     recruiterId !== "all" && (recruiters.find((r) => r.id === recruiterId)?.name || "One recruiter"),
   ]
@@ -583,7 +672,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    fetchAnalytics({ period, jobId, recruiterId })
+    fetchAnalytics({ period: effectivePeriod, from, to, jobId, recruiterId, clientId })
       .then((s) => {
         if (cancelled) return;
         setSnapshot(s);
@@ -595,9 +684,16 @@ export default function AnalyticsPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, period, jobId, recruiterId]);
+  }, [reloadKey, effectivePeriod, from, to, jobId, recruiterId, clientId]);
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  const previousRange = snapshot?.filters?.previous;
+  const against = previousRange
+    ? effectivePeriod === "custom"
+      ? `vs ${fmtDay(previousRange.from)} to ${fmtDay(new Date(new Date(previousRange.to).getTime() - 86400000).toISOString())}`
+      : `vs previous ${PERIODS.find((p) => p.value === effectivePeriod)?.label.replace(/^Last /, "").toLowerCase()}`
+    : "";
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
@@ -623,11 +719,29 @@ export default function AnalyticsPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <FilterSelect ariaLabel="Period" value={period} onChange={setPeriod} options={PERIODS} />
+          {period === "custom" && (
+            <>
+              <input type="date" aria-label="From" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
+              <span className="text-[12px]" style={{ color: INK_FAINT }}>to</span>
+              <input type="date" aria-label="To" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
+            </>
+          )}
+          {clients.length > 0 && (
+            <FilterSelect
+              ariaLabel="Client"
+              value={clientId}
+              onChange={(next) => {
+                setClientId(next);
+                setJobId("all");
+              }}
+              options={[{ value: "all", label: "All clients" }, ...clients.map((c) => ({ value: c.id, label: c.name }))]}
+            />
+          )}
           <FilterSelect
             ariaLabel="Job"
             value={jobId}
             onChange={setJobId}
-            options={[{ value: "all", label: "All jobs" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]}
+            options={[{ value: "all", label: "All jobs" }, ...jobs.filter((j) => clientId === "all" || j.client_id === clientId).map((j) => ({ value: j.id, label: j.title }))]}
           />
           <FilterSelect
             ariaLabel="Recruiter"
@@ -640,8 +754,11 @@ export default function AnalyticsPage() {
               type="button"
               onClick={() => {
                 setPeriod("all");
+                setFrom("");
+                setTo("");
                 setJobId("all");
                 setRecruiterId("all");
+                setClientId("all");
               }}
               className="text-[12.5px] font-semibold px-2"
               style={{ color: "var(--forest)" }}
@@ -652,10 +769,22 @@ export default function AnalyticsPage() {
           <button
             type="button"
             disabled={status !== "ready"}
-            onClick={() =>
-              downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, snapshotRows(snapshot, filterLabel || "All time"))
-            }
+            onClick={() => printSection("analytics-report")}
             className="ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z" />
+            </svg>
+            Save as PDF
+          </button>
+          <button
+            type="button"
+            disabled={status !== "ready"}
+            onClick={() =>
+              downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, analyticsCsvRows(snapshot, filterLabel || "All time"))
+            }
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK_MUTED }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -666,7 +795,12 @@ export default function AnalyticsPage() {
         </div>
         {filtered && (
           <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
-            Showing candidates for {filterLabel}. Channel figures follow the job filter; client and candidate feedback is agency-wide.
+            Showing candidates for {filterLabel}. Channel figures follow the job and client filters; client and candidate feedback is agency-wide.
+          </p>
+        )}
+        {customPending && (
+          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
+            Pick a start or end date - showing all time until then.
           </p>
         )}
 
@@ -674,12 +808,60 @@ export default function AnalyticsPage() {
         {status === "error" && <ErrorState onRetry={retry} />}
 
         {status === "ready" && snapshot && (
-          <>
+          <div id="analytics-report" className="space-y-6">
+            <div className="hidden print:block">
+              <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>Recruitment analytics</h2>
+              <p className="text-[12px]" style={{ color: INK_MUTED }}>
+                {filterLabel || "All time"} · generated {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+              </p>
+            </div>
+
+            {snapshot.truncated && (
+              <p role="status" className="rounded-[12px] px-4 py-3 text-[13px]" style={{ background: GREEN_BG, color: INK }}>
+                This is more data than can be counted at once, so the oldest candidates are left out. Narrow the period or pick a job to see exact figures.
+              </p>
+            )}
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Candidates analysed" value={snapshot.totals.completed} sub={`${snapshot.totals.processing} processing · ${snapshot.totals.failed} failed`} />
-              <StatCard label="Avg. match score" value={snapshot.quality.avgScore} sub={`${snapshot.quality.strong} strong matches`} />
-              <StatCard label="Shortlist rate" value={`${snapshot.conversion.shortlistRate}%`} sub="of analysed candidates" />
-              <StatCard label="Placement rate" value={`${snapshot.conversion.placementRate}%`} sub="of analysed candidates" />
+              <StatCard
+                label="Candidates analysed"
+                value={snapshot.totals.completed}
+                sub={`${snapshot.totals.processing} processing · ${snapshot.totals.failed} failed`}
+                delta={<Delta value={snapshot.deltas?.completed} against={against} />}
+              />
+              <StatCard
+                label="Avg. match score"
+                value={snapshot.quality.avgScore}
+                sub={`${snapshot.quality.strong} strong matches`}
+                delta={<Delta value={snapshot.deltas?.avgScore} against={against} />}
+              />
+              <StatCard
+                label="Shortlist rate"
+                value={`${snapshot.conversion.shortlistRate}%`}
+                sub="of analysed candidates"
+                delta={<Delta value={snapshot.deltas?.shortlistRate} unit=" pts" against={against} />}
+              />
+              <StatCard
+                label="Placement rate"
+                value={`${snapshot.conversion.placementRate}%`}
+                sub="of analysed candidates"
+                delta={<Delta value={snapshot.deltas?.placementRate} unit=" pts" against={against} />}
+              />
+            </div>
+
+            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <SectionHeading
+                eyebrow="Over time"
+                title={snapshot.trends?.unit === "week" ? "Week by week" : "Month by month"}
+                action={
+                  typeof snapshot.placedInPeriod === "number" && (
+                    <span className="text-[12px]" style={{ color: INK_MUTED }}>
+                      <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{snapshot.placedInPeriod}</strong> placed in this period
+                    </span>
+                  )
+                }
+              />
+              <Trends trends={snapshot.trends} />
             </div>
 
             <div>
@@ -700,9 +882,12 @@ export default function AnalyticsPage() {
               <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
                 <SectionHeading eyebrow="Conversion" title="Stage conversion rates" />
                 <div className="grid grid-cols-2 gap-3">
-                  <StatCard label="Interview rate" value={`${snapshot.conversion.interviewRate}%`} />
-                  <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} />
+                  <StatCard label="Interview rate" value={`${snapshot.conversion.interviewRate}%`} delta={<Delta value={snapshot.deltas?.interviewRate} unit=" pts" against={against} />} />
+                  <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} delta={<Delta value={snapshot.deltas?.offerRate} unit=" pts" against={against} />} />
                 </div>
+                <p className="text-[11px] mt-3" style={{ color: INK_FAINT }}>
+                  Counts how far each candidate got, including those later rejected.
+                </p>
               </div>
             </div>
 
@@ -742,6 +927,9 @@ export default function AnalyticsPage() {
                   </Link>
                 }
               />
+              {snapshot.team.length === 0 && (
+                <p className="text-[13px]" style={{ color: INK_MUTED }}>No candidates assigned to anyone for these filters.</p>
+              )}
               <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
                 {snapshot.team.map((r) => (
                   <li key={r.id} className="flex items-center justify-between gap-3 py-3">
@@ -798,7 +986,7 @@ export default function AnalyticsPage() {
               <SectionHeading eyebrow="Sentiment" title="Candidate & client feedback" />
               {snapshot.timing?.feedback && <FeedbackRow feedback={snapshot.timing.feedback} />}
             </div>
-          </>
+          </div>
         )}
       </div>
     </main>

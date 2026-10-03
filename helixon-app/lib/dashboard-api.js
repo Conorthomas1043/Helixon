@@ -6,7 +6,7 @@
 // except where a caller needs the status itself (getTeamSeatUsage). Stage
 // values come from lib/stage-labels.js.
 
-import { FUNNEL_ORDER, STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/stage-labels";
 
 async function apiFetch(url, options) {
   const res = await fetch(url, { credentials: "include", ...options });
@@ -501,27 +501,29 @@ export async function completeNextAction(id) {
   });
 }
 
-/**
- * getAnalyticsSnapshot - app/api/analytics is a real, agency-scoped
- * endpoint but returns a different (thinner) shape than this dashboard's
- * analytics page needs (see its own header comment: funnel/quality/
- * pipeline/conversion/team). Rather than build a second server-side
- * aggregation for the same data, this reduces the real candidate list
- * client-side. At much larger scale this belongs in a server-side
- * aggregate query instead.
- */
-// Speed/efficiency + offer-acceptance figures from app/api/analytics/timing
-// - a separate, server-aggregated call (it needs candidate_activity's full
-// stage-transition history, which getAllCandidates()'s per-candidate rows
-// don't carry). Fails soft: a broken/slow timing query shouldn't blank out
-// the rest of the Analytics page, which has real value without it.
+// Analytics page filters -> query string for both analytics endpoints.
+//   { period: "all" | "30d" | "90d" | "365d" | "custom", from, to
+//     (YYYY-MM-DD, custom only), jobId, recruiterId, clientId }
+export function analyticsQuery(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.period && filters.period !== "all") params.set("period", filters.period);
+  if (filters.period === "custom") {
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+  }
+  for (const key of ["jobId", "recruiterId", "clientId"]) {
+    if (filters[key] && filters[key] !== "all") params.set(key, filters[key]);
+  }
+  return params.toString();
+}
+
+// Speed/efficiency, outreach, sourcing, financial, retention and feedback
+// figures (app/api/analytics/timing). Fails soft: a broken or slow timing
+// query shouldn't blank out the rest of the Analytics page, which has real
+// value without it.
 async function getTimingSnapshot(filters = {}) {
   try {
-    const params = new URLSearchParams();
-    if (filters.jobId && filters.jobId !== "all") params.set("jobId", filters.jobId);
-    if (filters.recruiterId && filters.recruiterId !== "all") params.set("recruiterId", filters.recruiterId);
-    if (ANALYTICS_PERIOD_DAYS[filters.period]) params.set("days", String(ANALYTICS_PERIOD_DAYS[filters.period]));
-    const data = await apiFetch(`/api/analytics/timing?${params.toString()}`);
+    const data = await apiFetch(`/api/analytics/timing?${analyticsQuery(filters)}`);
     if (!data.ok) return null;
     return data;
   } catch {
@@ -529,114 +531,20 @@ async function getTimingSnapshot(filters = {}) {
   }
 }
 
-// Analytics page periods -> days (candidates created in that window).
-export const ANALYTICS_PERIOD_DAYS = { "30d": 30, "90d": 90, "365d": 365 };
-
-// filters: { period: "all" | "30d" | "90d" | "365d", jobId, recruiterId }
+/**
+ * getAnalyticsSnapshot - the Analytics page's numbers. The headline
+ * figures (funnel, conversion, quality, pipeline, score calibration, team,
+ * trends and changes vs the previous period) are worked out server-side by
+ * app/api/analytics/snapshot from the stage-change history; the rest come
+ * from app/api/analytics/timing.
+ */
 export async function getAnalyticsSnapshot(filters = {}) {
-  const [candidates, allTeam, timing] = await Promise.all([
-    getAllCandidates({
-      sortBy: "newest",
-      jobId: filters.jobId,
-      recruiterId: filters.recruiterId,
-      dateRange: ANALYTICS_PERIOD_DAYS[filters.period] ? filters.period : "all",
-    }),
-    getRecruiters(),
+  const [snapshot, timing] = await Promise.all([
+    apiFetch(`/api/analytics/snapshot?${analyticsQuery(filters)}`),
     getTimingSnapshot(filters),
   ]);
-  const team = filters.recruiterId && filters.recruiterId !== "all" ? allTeam.filter((r) => r.id === filters.recruiterId) : allTeam;
-
-  const completed = candidates.filter((c) => c.status === "completed");
-  const processing = candidates.filter((c) => c.status === "processing").length;
-  const failed = candidates.filter((c) => c.status === "failed").length;
-
-  const funnel = FUNNEL_ORDER.map((key, idx) => ({
-    key,
-    label: STAGE_LABELS[key],
-    count: completed.filter((c) => FUNNEL_ORDER.indexOf(c.stage) >= idx).length,
-  }));
-
-  const scored = completed.filter((c) => c.score !== null && c.score !== undefined);
-  const avgScore = scored.length ? Math.round(scored.reduce((s, c) => s + c.score, 0) / scored.length) : 0;
-  const strong = scored.filter((c) => c.score >= 80).length;
-  const moderate = scored.filter((c) => c.score >= 60 && c.score < 80).length;
-  const weak = scored.filter((c) => c.score < 60).length;
-
-  const stageCounts = {};
-  Object.keys(STAGE_LABELS).forEach((k) => (stageCounts[k] = completed.filter((c) => c.stage === k).length));
-
-  const midStages = FUNNEL_ORDER.slice(1, -1);
-  const now = Date.now();
-  const DAY = 86400000;
-  const stalled = completed.filter(
-    (c) => midStages.includes(c.stage) && c.lastActivityAt && new Date(c.lastActivityAt).getTime() < now - 5 * DAY
-  ).length;
-
-  const placed = completed.filter((c) => c.stage === "Placed").length;
-  const reachedOrFurther = (from) =>
-    completed.filter((c) => FUNNEL_ORDER.indexOf(c.stage) >= FUNNEL_ORDER.indexOf(from)).length;
-
-  const calibration = computeScoreCalibration(completed);
-
-  return {
-    totals: {
-      totalCandidates: candidates.length,
-      completed: completed.length,
-      processing,
-      failed,
-    },
-    funnel,
-    quality: { avgScore, strong, moderate, weak, scoredCount: scored.length },
-    pipeline: { stageCounts, stalled },
-    conversion: {
-      shortlistRate: completed.length ? Math.round((reachedOrFurther("Shortlisted") / completed.length) * 100) : 0,
-      interviewRate: completed.length ? Math.round((reachedOrFurther("Interview") / completed.length) * 100) : 0,
-      offerRate: completed.length ? Math.round((reachedOrFurther("Offer") / completed.length) * 100) : 0,
-      placementRate: completed.length ? Math.round((placed / completed.length) * 100) : 0,
-    },
-    calibration,
-    team,
-    timing,
-  };
-}
-
-const CALIBRATION_MIN_SAMPLE = 10;
-const CALIBRATION_BANDS = [
-  { key: "80+", label: "80+", test: (s) => s >= 80 },
-  { key: "60-79", label: "60-79", test: (s) => s >= 60 && s < 80 },
-  { key: "<60", label: "Below 60", test: (s) => s < 60 },
-];
-
-// Whether a higher match score actually predicts a better outcome is an
-// empirical question this agency's own history can answer - and the only
-// honest way to answer it, since no accuracy figure produced anywhere else
-// in this product was ever measured against a real recruiting outcome.
-// Only candidates who've reached a terminal stage (Placed or Rejected)
-// count as a resolved outcome - anyone still mid-pipeline hasn't resolved
-// yet and would bias the rate if counted either way.
-function computeScoreCalibration(completed) {
-  const resolved = completed.filter(
-    (c) => (c.stage === "Placed" || c.stage === "Rejected") && typeof c.score === "number"
-  );
-
-  const bands = CALIBRATION_BANDS.map((band) => {
-    const inBand = resolved.filter((c) => band.test(c.score));
-    const placedInBand = inBand.filter((c) => c.stage === "Placed").length;
-    return {
-      key: band.key,
-      label: band.label,
-      total: inBand.length,
-      placed: placedInBand,
-      placementRate: inBand.length ? Math.round((placedInBand / inBand.length) * 100) : null,
-    };
-  });
-
-  return {
-    sampleSize: resolved.length,
-    hasEnoughData: resolved.length >= CALIBRATION_MIN_SAMPLE,
-    minSample: CALIBRATION_MIN_SAMPLE,
-    bands,
-  };
+  if (!snapshot?.ok) throw new Error(snapshot?.error || "Failed to load analytics");
+  return { ...snapshot, timing };
 }
 
 // Shortlists - see app/api/shortlists. `candidateId` marks which lists

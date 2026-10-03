@@ -4,8 +4,13 @@
 // this one function rather than drifting into two implementations.
 //
 // `candidates` - normalized rows, one per candidate:
-//   { id, candidateName, jobTitle, company, recruiterName, status,
-//     stage, score, createdAt (Date), nextAction ({ label, dueAt } | null) }
+//   { id, candidateId, candidateName, jobTitle, company, recruiterName,
+//     status, stage, score, createdAt (Date), lastActivityAt (Date | null),
+//     nextAction ({ label, dueAt } | null) }
+//
+// Rows are one per pipeline entry (a person on one job). If the same
+// entry turns up more than once (e.g. several analyses of it), only the
+// most recent counts, so nobody is double-counted in the pipeline numbers.
 
 import { STAGE_LABELS, FUNNEL_ORDER } from "./stage-labels";
 import { STRONG_MATCH_MIN } from "./scoreBands";
@@ -28,9 +33,16 @@ export function computeCandidateStats(candidates, now = Date.now()) {
   const lastStageKey = stageOrder[stageOrder.length - 1];
   const midStages = stageOrder.slice(1, -1);
 
-  const analyses = [...candidates].sort(
+  const sorted = [...candidates].sort(
     (a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)
   );
+  const seen = new Set();
+  const analyses = sorted.filter((a) => {
+    const key = a.candidateId ?? a.id;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   const completed = analyses.filter((a) => a.status === "completed");
   const processing = analyses.filter((a) => a.status === "processing");
@@ -133,15 +145,23 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       });
     });
 
+  // Stalled = nothing has happened to them for 5+ days. Measured from the
+  // last activity (stage move, note, email ...), not from when the CV was
+  // analysed - otherwise someone moved to Interview yesterday reads as
+  // stalled because their analysis is a week old.
   completed
-    .filter((a) => midStages.includes(a.stage) && a.createdAt && now - a.createdAt.getTime() > 5 * DAY)
+    .filter((a) => {
+      if (!midStages.includes(a.stage)) return false;
+      const since = a.lastActivityAt ?? a.createdAt;
+      return since && now - since.getTime() > 5 * DAY;
+    })
     .forEach((a) => {
       attentionItems.push({
         id: `${a.id}-stalled`,
         candidateName: a.candidateName,
         jobTitle: a.jobTitle,
         score: a.score,
-        createdAt: a.createdAt,
+        createdAt: a.lastActivityAt ?? a.createdAt,
         reasonLabel: `Stalled · ${STAGE_LABELS[a.stage]}`,
         tone: TONE.amber,
         actionLabel: "Review candidate",

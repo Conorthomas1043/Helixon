@@ -8,9 +8,16 @@
 // job can be recorded and reused - otherwise concurrent requests would each
 // create a duplicate job. After that, BULK_CONCURRENCY workers drain the
 // queue. A 429 stops the run and leaves the rest paused for Retry.
+//
+// CVs can be added one by one or as a .zip (_lib/zip.js). The run is kept
+// in this browser as it goes (_lib/bulkRun.js), so a closed tab or dropped
+// connection can be resumed instead of starting again.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
+import { downloadCsv } from "@/lib/csv";
+import { isZipFile, unzipCvs } from "../_lib/zip";
+import { bulkResultRows, clearSavedRun, loadSavedRun, pendingInRun, saveRun, serialiseQueue } from "../_lib/bulkRun";
 import { Card, CardHeader, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
 import { MethodPicker, RoleBuilder, SpecChecklist, TemplateGallery } from "./RoleInputs";
 import { EMPTY_ROLE_DRAFT, composeRoleText } from "../_lib/roles";
@@ -46,6 +53,11 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   const [rateLimited, setRateLimited] = useState(false);
   const [queueError, setQueueError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [unzipping, setUnzipping] = useState(false);
+  // An unfinished run from an earlier visit, until resumed or discarded.
+  // Nothing new is saved while it's on offer, so it can't be overwritten.
+  const [savedRun, setSavedRun] = useState(null);
+  const [savedRunChecked, setSavedRunChecked] = useState(false);
 
   const nextIdRef = useRef(0);
   const abortRef = useRef(false);
@@ -63,6 +75,76 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [running]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadSavedRun().then((run) => {
+      if (cancelled) return;
+      if (run && pendingInRun(run) > 0) setSavedRun(run);
+      else if (run) clearSavedRun();
+      setSavedRunChecked(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Keep the run as it goes; forget it once nothing is left to analyse.
+  useEffect(() => {
+    if (!savedRunChecked || savedRun) return undefined;
+    const t = setTimeout(() => {
+      if (queue.length === 0 || queue.every((it) => it.status === "done")) {
+        clearSavedRun();
+        return;
+      }
+      const resolvedId = resolvedJobRef.current.id;
+      saveRun({
+        savedAt: new Date().toISOString(),
+        role: {
+          pickMode: jobPickMode,
+          jobId: resolvedId || bulkJobId,
+          jobText: resolvedId ? resolvedJobRef.current.text : bulkJobText,
+          jobFile: resolvedId || bulkJobId ? null : bulkJobFile,
+          jobFileName: bulkJobFileName,
+        },
+        blind: bulkBlind,
+        queue: serialiseQueue(queue),
+      });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [queue, savedRun, savedRunChecked, jobPickMode, bulkJobId, bulkJobText, bulkJobFile, bulkJobFileName, bulkBlind]);
+
+  function resumeSavedRun() {
+    const run = savedRun;
+    if (!run) return;
+    const role = run.role || {};
+    if (role.jobId) {
+      resolvedJobRef.current = { id: role.jobId, text: role.jobText || "" };
+      setBulkJobId(role.jobId);
+      setBulkJobText(role.jobText || "");
+      setBulkJobFile(null);
+      setBulkJobFileName(null);
+      setJobPickMode(savedJobs.some((j) => j.id === role.jobId) ? "saved" : "paste");
+    } else if (role.jobFile) {
+      setBulkJobFile(role.jobFile);
+      setBulkJobFileName(role.jobFileName || role.jobFile.name || null);
+      setBulkJobText("");
+      setJobPickMode("upload");
+    } else {
+      setBulkJobText(role.jobText || "");
+      setJobPickMode(role.pickMode === "saved" ? "paste" : role.pickMode || "paste");
+    }
+    setBulkBlind(run.blind !== false);
+    const restored = run.queue || [];
+    nextIdRef.current = restored.reduce((max, it) => Math.max(max, it.id + 1), 0);
+    setQueue(restored);
+    setSavedRun(null);
+  }
+
+  function discardSavedRun() {
+    clearSavedRun();
+    setSavedRun(null);
+  }
 
   function selectSavedJob(jobId) {
     const job = savedJobs.find((j) => j.id === jobId);
@@ -107,11 +189,32 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     }
   }
 
-  function addFiles(fileList) {
-    const incoming = Array.from(fileList || []);
-    if (!incoming.length) return;
-    const accepted = [];
+  async function addFiles(fileList) {
+    const picked = Array.from(fileList || []);
+    if (!picked.length) return;
     const rejected = [];
+    // Zips are opened here and their CVs join the queue like any other.
+    const zips = picked.filter(isZipFile);
+    let incoming = picked.filter((f) => !isZipFile(f));
+    if (zips.length) {
+      setUnzipping(true);
+      try {
+        for (const zip of zips) {
+          const room = Math.max(0, BULK_MAX_FILES - queue.length - incoming.length);
+          try {
+            const { files, skipped } = await unzipCvs(new Uint8Array(await zip.arrayBuffer()), { limit: room });
+            incoming = incoming.concat(files);
+            rejected.push(...skipped.map((s) => `${s} in ${zip.name}`));
+            if (files.length === 0 && skipped.length === 0) rejected.push(`${zip.name} (no CVs inside)`);
+          } catch {
+            rejected.push(`${zip.name} (couldn't be opened)`);
+          }
+        }
+      } finally {
+        setUnzipping(false);
+      }
+    }
+    const accepted = [];
     incoming.forEach((f) => {
       const problem = cvFileProblem(f);
       if (problem) rejected.push(`${f.name} (${f.size > 10 * 1024 * 1024 ? "over 10 MB" : "not a PDF or DOCX"})`);
@@ -206,6 +309,8 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   async function startBulk() {
     const items = queue.filter((it) => it.status === "queued" || it.status === "failed");
     if (!canStart || !items.length) return;
+    // Starting a new run replaces the earlier unfinished one.
+    if (savedRun) discardSavedRun();
     setRunning(true);
     setRateLimited(false);
     abortRef.current = false;
@@ -382,6 +487,24 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
           }
         />
         <div className="px-5 py-4 space-y-4">
+          {savedRun && (
+            <Notice tone="info">
+              <span className="block">
+                You have an unfinished run from{" "}
+                {new Date(savedRun.savedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}:{" "}
+                {(savedRun.queue || []).length - pendingInRun(savedRun)} of {(savedRun.queue || []).length} CVs done.
+              </span>
+              <span className="flex gap-2 mt-2">
+                <Button size="sm" variant="primary" onClick={resumeSavedRun} disabled={running || queue.length > 0}>
+                  Pick up where it stopped
+                </Button>
+                <Button size="sm" variant="ghost" onClick={discardSavedRun}>
+                  Discard it
+                </Button>
+              </span>
+              {queue.length > 0 && <span className="block text-[12px] mt-1">Clear the CVs below to pick it up.</span>}
+            </Notice>
+          )}
           {!running && queue.length < BULK_MAX_FILES && (
             <button
               type="button"
@@ -404,10 +527,11 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
             >
               <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
               <span className="text-[13.5px] font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
-              <span className="text-[12px] text-[var(--ink-faint)]">PDF or Word · up to 10 MB each</span>
+              <span className="text-[12px] text-[var(--ink-faint)]">PDF or Word, up to 10 MB each, or a .zip of them</span>
             </button>
           )}
-          <input ref={cvInputRef} type="file" multiple accept={CV_ACCEPT} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
+          <input ref={cvInputRef} type="file" multiple accept={`${CV_ACCEPT},.zip,application/zip`} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
+          {unzipping && <p className="text-[12.5px] text-[var(--ink-soft)]" role="status">Opening zip…</p>}
           {queueError && <Notice tone="warn" onDismiss={() => setQueueError(null)}>{queueError}</Notice>}
 
           {(running || settledCount > 0) && (
@@ -446,6 +570,17 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                   </Button>
                 )}
               </span>
+            </div>
+          )}
+          {doneCount > 0 && !running && (
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                icon="download"
+                onClick={() => downloadCsv(`bulk-screening-${new Date().toISOString().slice(0, 10)}.csv`, bulkResultRows(queue, window.location.origin))}
+              >
+                Download results (CSV)
+              </Button>
             </div>
           )}
           {allSettled && (

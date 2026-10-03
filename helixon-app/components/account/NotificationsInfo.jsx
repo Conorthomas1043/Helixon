@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Toggle } from "@/components/account/ui";
 
 // The "Notifications" tab: the optional emails - the weekday follow-up
-// reminder (app/api/cron/reminders) and new-application alerts from the
-// jobs page (lib/applications.js). Everything else Helixon sends is
+// reminder (app/api/cron/reminders), new-application alerts from the jobs
+// page (lib/applications.js) and the weekly analytics summary
+// (app/api/cron/analytics-digest). Everything else Helixon sends is
 // transactional (sign-in and verification, team invitations, billing
 // receipts, and emails a recruiter sends from inside the app) and can't be
 // turned off because the account needs it.
@@ -71,6 +72,13 @@ export default function NotificationsInfo() {
               onChange={(v) => change("applicationAlerts", v)}
               label="New applications"
               description="An email when someone applies through your jobs page for a job you own, with their match score."
+            />
+            <Toggle
+              id="weekly-digest"
+              checked={prefs.weeklyDigest}
+              onChange={(v) => change("weeklyDigest", v)}
+              label="Weekly analytics summary"
+              description="A Monday-morning email with your agency's last 7 days - candidates analysed, placements, fees and conversion - against the week before. Off unless you switch it on."
             />
           </>
         )}
