@@ -13,8 +13,10 @@ import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRan
 const LIMIT = 20000;
 
 // Tables from later migrations may not exist yet: count nothing for them.
-async function rows(query) {
-  const { data, error } = await query;
+// `fallback` is the same query without newer columns, tried before giving up.
+async function rows(query, fallback) {
+  let { data, error } = await query;
+  if (error && fallback) ({ data, error } = await fallback());
   if (error) {
     console.warn("[performance] Query skipped:", error.message);
     return [];
@@ -29,6 +31,15 @@ export async function GET(request) {
   const period = periodRange(new URL(request.url).searchParams.get("period"));
   const fromTs = `${period.from}T00:00:00Z`;
   const toTs = `${period.to}T00:00:00Z`;
+  const placementQuery = (cols) =>
+    supabase
+      .from("placements")
+      .select(cols)
+      .eq("agency_id", agencyId)
+      .or(`and(offer_date.gte.${period.from},offer_date.lt.${period.to}),and(offer_date.is.null,created_at.gte.${fromTs},created_at.lt.${toTs})`)
+      .limit(LIMIT);
+  const invoiceQuery = (cols) =>
+    supabase.from("invoices").select(cols).eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to).limit(LIMIT);
 
   const [{ data: agency }, members, candidates, activity, interviews, placements, invoices, canManage] = await Promise.all([
     supabase.from("agencies").select("settings").eq("id", agencyId).maybeSingle(),
@@ -45,15 +56,12 @@ export async function GET(request) {
         .limit(LIMIT)
     ),
     rows(supabase.from("interviews").select("created_by").eq("agency_id", agencyId).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
-    rows(
-      supabase
-        .from("placements")
-        .select("recruiter_id, status, kind, fee_amount, offer_date, created_at")
-        .eq("agency_id", agencyId)
-        .or(`and(offer_date.gte.${period.from},offer_date.lt.${period.to}),and(offer_date.is.null,created_at.gte.${fromTs},created_at.lt.${toTs})`)
-        .limit(LIMIT)
+    // splits (shared placements) came later - without the column, every
+    // placement is credited to its one recruiter.
+    rows(placementQuery("recruiter_id, splits, status, kind, fee_amount, offer_date, created_at"), () =>
+      placementQuery("recruiter_id, status, kind, fee_amount, offer_date, created_at")
     ),
-    rows(supabase.from("invoices").select("total, vat_amount, placements(recruiter_id)").eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to).limit(LIMIT)),
+    rows(invoiceQuery("total, vat_amount, placements(recruiter_id, splits)"), () => invoiceQuery("total, vat_amount, placements(recruiter_id)")),
     canManageWorkspace(auth),
   ]);
 
@@ -66,7 +74,7 @@ export async function GET(request) {
       activity,
       interviews,
       placements: placements.map((p) => ({ ...p, ...placementInPeriod(p, period.from, period.to) })),
-      invoices: invoices.map((i) => ({ ...i, recruiter_id: i.placements?.recruiter_id ?? null })),
+      invoices: invoices.map((i) => ({ ...i, recruiter_id: i.placements?.recruiter_id ?? null, splits: i.placements?.splits ?? null })),
     },
     nameToId
   );

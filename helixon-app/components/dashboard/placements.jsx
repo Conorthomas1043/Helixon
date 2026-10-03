@@ -10,6 +10,7 @@ import {
   createPlacement,
   deleteTimesheet,
   getPlacement,
+  getRecruiters,
   raiseInvoice,
   reviewTimesheet,
   saveTimesheet,
@@ -68,7 +69,69 @@ const blankForm = (p) => ({
   chargeRate: p?.chargeRate ?? "",
   currency: p?.currency || "GBP",
   notes: p?.notes || "",
+  splits: p?.splits?.length ? p.splits.map((s) => ({ recruiterId: s.recruiterId, percent: String(s.percent) })) : [],
 });
+
+// Sharing a placement's fee and credit between recruiters (lib/placements.js
+// cleanSplits). Empty = all to the candidate's recruiter.
+function SplitEditor({ splits, onChange }) {
+  const [team, setTeam] = useState([]);
+  useEffect(() => {
+    getRecruiters().then(setTeam).catch(() => {});
+  }, []);
+  const total = splits.reduce((n, s) => n + (Number(s.percent) || 0), 0);
+  const update = (i, patch) => onChange(splits.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+
+  if (splits.length === 0) {
+    return (
+      <button
+        type="button"
+        className="text-[12px] font-semibold"
+        style={{ color: "var(--forest)" }}
+        onClick={() => onChange([{ recruiterId: "", percent: "50" }, { recruiterId: "", percent: "50" }])}
+      >
+        + Split the fee with a colleague
+      </button>
+    );
+  }
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+        Fee split
+      </legend>
+      {splits.map((s, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <Select
+            aria-label={`Person ${i + 1}`}
+            value={s.recruiterId}
+            onChange={(e) => update(i, { recruiterId: e.target.value })}
+            options={[{ value: "", label: "Choose…" }, ...team.map((m) => ({ value: m.id, label: m.name }))]}
+          />
+          <TextInput aria-label={`Share for person ${i + 1}`} type="number" min="1" max="100" step="1" value={s.percent} onChange={(e) => update(i, { percent: e.target.value })} style={{ maxWidth: 90 }} />
+          <span className="text-[12px]" style={{ color: INK_MUTED }}>%</span>
+          {splits.length > 2 && (
+            <button type="button" aria-label={`Remove person ${i + 1}`} className="text-[12px]" style={{ color: INK_FAINT }} onClick={() => onChange(splits.filter((_, j) => j !== i))}>
+              Remove
+            </button>
+          )}
+        </div>
+      ))}
+      <div className="flex items-center gap-3 text-[12px]">
+        {splits.length < 5 && (
+          <button type="button" className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => onChange([...splits, { recruiterId: "", percent: "" }])}>
+            + Add person
+          </button>
+        )}
+        <button type="button" style={{ color: INK_FAINT }} onClick={() => onChange([])}>
+          No split
+        </button>
+        <span className="ml-auto tabular-nums" style={{ color: Math.abs(total - 100) < 0.01 ? INK_MUTED : "var(--score-low)" }}>
+          Total {total}%
+        </span>
+      </div>
+    </fieldset>
+  );
+}
 
 // Record an offer for `candidate` ({ id, name }), or edit `placement`.
 export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
@@ -86,6 +149,8 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
     setBusy(true);
     setError(null);
     const body = { kind: f.kind, status: f.status, currency: f.currency, offerDate: f.offerDate, startDate: f.startDate, notes: f.notes };
+    // Only sent when there is one, or to clear one that was there.
+    if (f.splits.length || placement?.splits?.length) body.splits = f.splits.map((s) => ({ recruiterId: s.recruiterId, percent: Number(s.percent) }));
     if (contract) Object.assign(body, { rateUnit: f.rateUnit, payRate: f.payRate, chargeRate: f.chargeRate, endDate: f.endDate });
     else {
       Object.assign(body, { salary: f.salary, feePercent: f.feePercent, rebateDays: f.rebateDays });
@@ -93,6 +158,11 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
     }
     // On a new offer, blanks are left out so the client's terms fill them.
     if (!placement) for (const k of Object.keys(body)) if (body[k] === "") delete body[k];
+    if (body.splits?.some((s) => !s.recruiterId)) {
+      setError("Choose who each share of the split goes to.");
+      setBusy(false);
+      return;
+    }
     try {
       const saved = placement ? await updatePlacement(placement.id, body) : await createPlacement({ ...body, candidateId: candidate.id });
       onSaved(saved);
@@ -183,6 +253,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
           </div>
         )}
 
+        <SplitEditor splits={f.splits} onChange={(splits) => setF((prev) => ({ ...prev, splits }))} />
         <Field label="Currency">
           <Select
             value={f.currency}
@@ -388,6 +459,7 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
                 {p.salary != null ? `Salary ${formatMoney(p.salary, p.currency)}` : "No salary yet"}
                 {p.feePercent != null ? ` · ${p.feePercent}%` : ""}
                 {p.feeAmount != null ? ` · fee ${formatMoney(p.feeAmount, p.currency)}` : ""}
+                {p.splits?.length > 1 ? ` · split ${p.splits.map((x) => `${x.percent}%`).join(" / ")}` : ""}
               </>
             )}
           </p>

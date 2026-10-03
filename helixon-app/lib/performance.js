@@ -3,6 +3,8 @@
 // commission plan are kept in agencies.settings.performance; everything
 // here is pure so it's tested and the page and API agree.
 
+import { creditShares } from "./placements";
+
 export const METRICS = {
   cvs_added: { label: "CVs added", short: "CVs" },
   calls: { label: "Calls logged", short: "Calls" },
@@ -127,14 +129,22 @@ export function aggregate({ candidates = [], activity = [], interviews = [], pla
     else if (a.type === "cv_sent_logged") bump(id, "cvs_sent");
   }
   for (const i of interviews) bump(i.created_by, "interviews");
+  // A split placement (lib/placements.js creditShares) credits each person
+  // their share of the offer, the placement and the fee.
   for (const p of placements) {
-    if (p.counts_offer) bump(p.recruiter_id, "offers");
-    if (p.counts_placement) {
-      bump(p.recruiter_id, "placements");
-      if (p.kind === "permanent" && p.fee_amount != null) bump(p.recruiter_id, "fees", Number(p.fee_amount));
+    for (const { id, share } of creditShares(p)) {
+      if (p.counts_offer) bump(id, "offers", share);
+      if (p.counts_placement) {
+        bump(id, "placements", share);
+        if (p.kind === "permanent" && p.fee_amount != null) bump(id, "fees", Number(p.fee_amount) * share);
+      }
     }
   }
-  for (const inv of invoices) bump(inv.recruiter_id, "cash", Number(inv.total || 0) - Number(inv.vat_amount || 0));
+  for (const inv of invoices) {
+    const net = Number(inv.total || 0) - Number(inv.vat_amount || 0);
+    const shares = creditShares({ recruiter_id: inv.recruiter_id, splits: inv.splits });
+    for (const { id, share } of shares) bump(id, "cash", net * share);
+  }
   return out;
 }
 

@@ -172,6 +172,13 @@ function adaptJob(j) {
     requiredSkills: j.required_skills ?? [],
     preferredSkills: j.preferred_skills ?? [],
     minYearsExperience: j.min_years_experience,
+    // lib/job-details.js - owner falls back to whoever created the job.
+    ownerId: j.owner_id || j.user_id || null,
+    openings: j.openings ?? null,
+    feePercent: j.fee_percent == null ? null : Number(j.fee_percent),
+    feeAmount: j.fee_amount == null ? null : Number(j.fee_amount),
+    priority: j.priority ?? null,
+    targetDate: j.target_date ?? null,
   };
 }
 
@@ -1058,4 +1065,42 @@ export async function updateWebhook(id, fields) {
 
 export async function deleteWebhook(id) {
   return apiFetch(`/api/integrations/webhooks?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+// Business development - app/api/opportunities, lib/opportunities.js.
+export async function getOpportunities({ clientId } = {}) {
+  const q = clientId ? `?clientId=${encodeURIComponent(clientId)}` : "";
+  return apiFetch(`/api/opportunities${q}`);
+}
+
+export async function createOpportunity(fields) {
+  const res = await apiFetch("/api/opportunities", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.opportunity;
+}
+
+export async function updateOpportunity(id, fields) {
+  const res = await apiFetch(`/api/opportunities/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  return res.opportunity;
+}
+
+export async function deleteOpportunity(id) {
+  return apiFetch(`/api/opportunities/${id}`, { method: "DELETE" });
+}
+
+// A follow-up on a client: { label, dueAt } to set, { completed: true } when done.
+export async function setClientNextAction(clientId, body) {
+  const res = await apiFetch(`/api/clients/${clientId}/next-action`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return res.nextAction;
 }

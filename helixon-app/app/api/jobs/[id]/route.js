@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns } from "@/lib/clients";
+import { cleanJobDetails } from "@/lib/job-details";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -189,6 +190,15 @@ export async function PATCH(request, { params }) {
     }
     update.public_description = body.publicDescription ? body.publicDescription.trim() : null;
   }
+  // Owner, openings, fee, priority, target date (lib/job-details.js).
+  const details = cleanJobDetails(body);
+  if (details.error) return NextResponse.json({ error: details.error }, { status: 400 });
+  Object.assign(update, details);
+  if (details.owner_id) {
+    const { data: member } = await supabase.from("profiles").select("clerk_user_id").eq("agency_id", agencyId).eq("clerk_user_id", details.owner_id).maybeSingle();
+    if (!member) return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
+  }
+
   if (body.hideClient !== undefined) update.hide_client = body.hideClient === true;
   if (body.showSalary !== undefined) update.show_salary = body.showSalary === true;
   // A job can't go live without an advert to show.
@@ -210,7 +220,7 @@ export async function PATCH(request, { params }) {
     .update(update)
     .eq("id", id)
     .eq("agency_id", agencyId)
-    .select("id, status, title, client, client_email, client_id, contact_id, location, employment_type, seniority, salary_range, min_years_experience, required_skills, preferred_skills, published, published_at, public_title, public_description, hide_client, show_salary")
+    .select("*")
     .maybeSingle();
 
   if (error) {

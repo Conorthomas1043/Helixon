@@ -38,6 +38,36 @@ export function contractMargin(payRate, chargeRate) {
   return { margin, percent: Number(chargeRate) > 0 ? round2((margin / Number(chargeRate)) * 100) : null };
 }
 
+// A shared placement's split: [{ recruiterId, percent }] - two to five
+// different people, shares adding up to 100. Empty/null clears it (all
+// credit to the placement's recruiter). { error } if it doesn't add up.
+export function cleanSplits(raw) {
+  if (raw === null || raw === undefined || (Array.isArray(raw) && raw.length === 0)) return { splits: null };
+  if (!Array.isArray(raw) || raw.length < 2 || raw.length > 5) return { error: "A split is between two and five people." };
+  const seen = new Set();
+  const splits = [];
+  for (const s of raw) {
+    const id = typeof s?.recruiterId === "string" ? s.recruiterId : "";
+    const percent = Number(s?.percent);
+    if (!/^[\w-]{1,64}$/.test(id) || seen.has(id)) return { error: "Each person can only be in a split once." };
+    if (!Number.isFinite(percent) || percent <= 0 || percent > 100) return { error: "Each share must be more than 0%." };
+    seen.add(id);
+    splits.push({ recruiterId: id, percent: round2(percent) });
+  }
+  const total = round2(splits.reduce((n, s) => n + s.percent, 0));
+  if (Math.abs(total - 100) > 0.01) return { error: `The shares add up to ${total}%, not 100%.` };
+  return { splits };
+}
+
+// Who gets credit for a placement row, and how much: [{ id, share }]
+// where shares add to 1.
+export function creditShares(p) {
+  if (Array.isArray(p?.splits) && p.splits.length > 1) {
+    return p.splits.map((s) => ({ id: s.recruiterId, share: Number(s.percent) / 100 }));
+  }
+  return p?.recruiter_id ? [{ id: p.recruiter_id, share: 1 }] : [];
+}
+
 // Placement fields from a request body, as columns. Derived values (fee
 // from salary x %, rebate end from start + days) are filled in when not
 // given. `current` is the existing row on an update.
@@ -93,6 +123,11 @@ export function cleanPlacement(body = {}, current = {}) {
   ].filter(Boolean);
   if (errors.length) return { error: `Check the numbers and dates (${errors[0]}).` };
   if (body.notes !== undefined) out.notes = cleanText(body.notes, { max: 2000 }) || null;
+  if (body.splits !== undefined) {
+    const { splits, error } = cleanSplits(body.splits);
+    if (error) return { error };
+    out.splits = splits;
+  }
 
   const merged = { ...current, ...out };
   // Fee from salary x % unless a fee was typed.
@@ -130,6 +165,7 @@ export function toPlacement(row) {
     rebateDays: row.rebate_days,
     rebateUntil: row.rebate_until,
     notes: row.notes,
+    splits: Array.isArray(row.splits) ? row.splits : null,
     createdAt: row.created_at,
   };
 }

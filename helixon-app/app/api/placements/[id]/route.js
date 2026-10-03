@@ -6,7 +6,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements";
-import { syncCandidate } from "@/lib/placement-sync";
+import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
 
 // One placement: GET (with invoices and timesheets), PATCH, DELETE (only
 // while nothing has been invoiced).
@@ -50,6 +50,9 @@ export async function PATCH(request, { params }) {
   const fields = cleanPlacement(await request.json().catch(() => ({})), p);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (!Object.keys(fields).length) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+  if (fields.splits && !(await splitsAreTeammates(auth.agencyId, fields.splits))) {
+    return NextResponse.json({ error: "Everyone in a split must be in your team." }, { status: 400 });
+  }
   const { data, error } = await supabase
     .from("placements")
     .update({ ...fields, updated_at: new Date().toISOString() })

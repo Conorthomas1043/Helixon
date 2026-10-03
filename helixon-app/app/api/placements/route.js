@@ -7,7 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { logClientActivity } from "@/lib/clients";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";
-import { syncCandidate } from "@/lib/placement-sync";
+import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
 
 // Offers and placements (lib/placements.js).
 //
@@ -51,15 +51,32 @@ export async function POST(request) {
   if (!candidate) return NextResponse.json({ error: "Candidate not found." }, { status: 404 });
 
   const terms = candidate.jobs?.clients || {};
+  // A fee agreed for this job (lib/job-details.js) beats the client's
+  // standard terms. Read separately so a database without those columns
+  // yet still records the placement.
+  const { data: jobTerms } = candidate.job_id
+    ? await supabase.from("jobs").select("fee_percent, fee_amount").eq("id", candidate.job_id).eq("agency_id", auth.agencyId).maybeSingle()
+    : { data: null };
+  const jobFee =
+    jobTerms?.fee_amount != null && body.feeAmount === undefined && body.feePercent === undefined
+      ? { feeAmount: Number(jobTerms.fee_amount) }
+      : jobTerms?.fee_percent != null && body.feePercent === undefined
+        ? { feePercent: Number(jobTerms.fee_percent) }
+        : terms.fee_percent != null && body.feePercent === undefined
+          ? { feePercent: Number(terms.fee_percent) }
+          : {};
   const withDefaults = {
     kind: "permanent",
     status: "offered",
-    ...(terms.fee_percent != null && body.feePercent === undefined ? { feePercent: Number(terms.fee_percent) } : {}),
+    ...jobFee,
     ...(terms.rebate_days != null && body.rebateDays === undefined ? { rebateDays: terms.rebate_days } : {}),
     ...body,
   };
   const fields = cleanPlacement(withDefaults);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
+  if (fields.splits && !(await splitsAreTeammates(auth.agencyId, fields.splits))) {
+    return NextResponse.json({ error: "Everyone in a split must be in your team." }, { status: 400 });
+  }
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const { data, error } = await supabase

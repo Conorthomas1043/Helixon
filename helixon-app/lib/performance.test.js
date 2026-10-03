@@ -67,3 +67,16 @@ describe("aggregate", () => {
     expect(out.get("u2")).toMatchObject({ cvs_added: 1, interviews: 1, offers: 0, placements: 0 });
   });
 });
+
+describe("aggregate - split placements", () => {
+  it("shares offers, placements, fees and cash", async () => {
+    const { aggregate } = await import("./performance");
+    const splits = [{ recruiterId: "a", percent: 50 }, { recruiterId: "b", percent: 50 }];
+    const out = aggregate({
+      placements: [{ recruiter_id: "a", splits, counts_offer: true, counts_placement: true, kind: "permanent", fee_amount: 10000 }],
+      invoices: [{ recruiter_id: "a", splits, total: 12000, vat_amount: 2000 }],
+    });
+    expect(out.get("a")).toMatchObject({ offers: 0.5, placements: 0.5, fees: 5000, cash: 5000 });
+    expect(out.get("b")).toMatchObject({ offers: 0.5, placements: 0.5, fees: 5000, cash: 5000 });
+  });
+});

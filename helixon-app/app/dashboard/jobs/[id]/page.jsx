@@ -8,7 +8,8 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
-import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel } from "@/lib/dashboard-api";
+import { getJobById, getJobCandidates, updateJobStatus, updateJob, deleteJob, getJobChannels, setJobChannel, getRecruiters } from "@/lib/dashboard-api";
+import { JOB_PRIORITIES, daysToTarget } from "@/lib/job-details";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import ClientPicker from "@/components/dashboard/ClientPicker";
 import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
@@ -18,11 +19,12 @@ import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, init
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
   if (!job) return null;
-  const [candidates, channels] = await Promise.all([
+  const [candidates, channels, team] = await Promise.all([
     getJobCandidates(id),
     getJobChannels(id).catch(() => []),
+    getRecruiters().catch(() => []),
   ]);
-  return { job, candidates, channels };
+  return { job, candidates, channels, team };
 }
 
 const CHANNEL_LABELS = {
@@ -266,7 +268,20 @@ function TextField({ label, ...props }) {
 // seniority, employment type, minimum experience, skills) - not the raw job spec text, which every future
 // analysis against this job re-parses fresh rather than reading back from
 // here (see api/jobs/[id]'s PATCH handler comment).
-function EditJobForm({ job, onCancel, onSave }) {
+const SELECT_CLASS = "w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+
+function SelectField({ label, children, ...props }) {
+  return (
+    <label className="block">
+      <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <select {...props} className={SELECT_CLASS} style={{ border: "1px solid var(--border)", color: INK }}>
+        {children}
+      </select>
+    </label>
+  );
+}
+
+function EditJobForm({ job, team = [], onCancel, onSave }) {
   const [client, setClient] = useState({
     clientId: job.clientId ?? null,
     clientName: job.company || "",
@@ -283,6 +298,12 @@ function EditJobForm({ job, onCancel, onSave }) {
     minYearsExperience: job.minYearsExperience ?? "",
     requiredSkills: (job.requiredSkills || []).join(", "),
     preferredSkills: (job.preferredSkills || []).join(", "),
+    ownerId: job.ownerId || "",
+    openings: job.openings ?? "",
+    feePercent: job.feePercent ?? "",
+    feeAmount: job.feeAmount ?? "",
+    priority: job.priority || "",
+    targetDate: job.targetDate || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -317,6 +338,12 @@ function EditJobForm({ job, onCancel, onSave }) {
         minYearsExperience: form.minYearsExperience === "" ? null : Number(form.minYearsExperience),
         requiredSkills: parseSkills(form.requiredSkills),
         preferredSkills: parseSkills(form.preferredSkills),
+        ownerId: form.ownerId || null,
+        openings: form.openings === "" ? null : Number(form.openings),
+        feePercent: form.feePercent === "" ? null : form.feePercent,
+        feeAmount: form.feeAmount === "" ? null : form.feeAmount,
+        priority: form.priority || null,
+        targetDate: form.targetDate || null,
       });
     } catch (err) {
       setError(err?.message || "Failed to save changes. Please try again.");
@@ -353,6 +380,24 @@ function EditJobForm({ job, onCancel, onSave }) {
           value={form.minYearsExperience}
           onChange={(e) => set("minYearsExperience", e.target.value)}
         />
+      </div>
+      <div className="grid sm:grid-cols-3 gap-4">
+        <SelectField label="Owner" value={form.ownerId} onChange={(e) => set("ownerId", e.target.value)}>
+          <option value="">Not assigned</option>
+          {team.map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </SelectField>
+        <SelectField label="Priority" value={form.priority} onChange={(e) => set("priority", e.target.value)}>
+          <option value="">Normal</option>
+          {Object.entries(JOB_PRIORITIES).filter(([k]) => k !== "normal").map(([k, label]) => (
+            <option key={k} value={k}>{label}</option>
+          ))}
+        </SelectField>
+        <TextField label="Target fill date" type="date" value={form.targetDate} onChange={(e) => set("targetDate", e.target.value)} />
+        <TextField label="Openings" type="number" min={1} max={1000} value={form.openings} onChange={(e) => set("openings", e.target.value)} placeholder="1" />
+        <TextField label="Fee % (this job)" type="number" min={0} max={100} step="0.5" value={form.feePercent} onChange={(e) => set("feePercent", e.target.value)} placeholder="Client's standard" />
+        <TextField label="Fixed fee (this job)" type="number" min={0} step="100" value={form.feeAmount} onChange={(e) => set("feeAmount", e.target.value)} placeholder="£" />
       </div>
       <TextField
         label="Required skills (comma-separated)"
@@ -595,7 +640,7 @@ export default function JobDetailPage({ params }) {
 
               {editing ? (
                 <div className="pt-5" style={{ borderTop: "1px solid var(--border)" }}>
-                  <EditJobForm job={job} onCancel={() => setEditing(false)} onSave={handleSaveEdit} />
+                  <EditJobForm job={job} team={data.team || []} onCancel={() => setEditing(false)} onSave={handleSaveEdit} />
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
@@ -605,6 +650,28 @@ export default function JobDetailPage({ params }) {
                       {(job.seniority || job.employmentType) && <li>{[job.seniority, job.employmentType].filter(Boolean).join(" · ")}</li>}
                       {job.salaryRange && <li>{job.salaryRange}</li>}
                       {job.minYearsExperience != null && <li>{job.minYearsExperience}+ years&apos; experience</li>}
+                      <li>
+                        Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span style={{ color: INK_FAINT }}>not assigned</span>}
+                        {job.priority && job.priority !== "normal" && (
+                          <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
+                            {JOB_PRIORITIES[job.priority]}
+                          </span>
+                        )}
+                      </li>
+                      {(job.openings || job.targetDate) && (
+                        <li>
+                          {job.openings ? `${job.openings} opening${job.openings === 1 ? "" : "s"}` : null}
+                          {job.openings && job.targetDate ? " · " : null}
+                          {job.targetDate ? (() => {
+                            const d = daysToTarget(job.targetDate);
+                            const when = new Date(`${job.targetDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+                            return <span style={{ color: d != null && d < 0 && job.status === "open" ? "var(--score-low)" : INK }}>Fill by {when}{d != null && job.status === "open" ? (d < 0 ? ` (${-d} days overdue)` : ` (${d} days left)`) : ""}</span>;
+                          })() : null}
+                        </li>
+                      )}
+                      {(job.feePercent != null || job.feeAmount != null) && (
+                        <li>Fee: {job.feeAmount != null ? `£${job.feeAmount.toLocaleString("en-GB")}` : `${job.feePercent}% of salary`}</li>
+                      )}
                       <li style={{ color: job.clientEmail ? INK : INK_FAINT }}>
                         {job.clientEmail ? (
                           <>Client contact: <a href={`mailto:${job.clientEmail}`} className="underline">{job.clientEmail}</a></>

@@ -38,6 +38,7 @@ import {
 import { formatDateOnly, formatRelativeTime } from "@/lib/candidate-format";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
+import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/opportunities";
 
 const ACTIVITY_LABELS = {
   client_created: "Client added",
@@ -54,6 +55,9 @@ const ACTIVITY_LABELS = {
   interview_scheduled: "Interview scheduled",
   placement_made: "Placement",
   invoice_sent: "Invoice",
+  opportunity_created: "Deal added",
+  opportunity_stage: "Deal moved",
+  next_action_completed: "Follow-up done",
 };
 
 function EditClientDialog({ client, onClose, onSaved }) {
@@ -456,6 +460,15 @@ export default function ClientDetailPage({ params }) {
         </div>
 
         <div className="space-y-6">
+          <ClientFollowUpCard
+            clientId={client.id}
+            nextAction={client.nextAction}
+            onChange={(nextAction) => {
+              setData((d) => ({ ...d, client: { ...d.client, nextAction } }));
+              if (!nextAction) reload();
+            }}
+          />
+          <ClientDealsCard clientId={client.id} />
           <Card
             title="Contacts"
             action={

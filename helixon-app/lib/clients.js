@@ -99,6 +99,7 @@ export function toClient(row) {
     termsNotes: row.terms_notes,
     ownerId: row.owner_id,
     customFields: row.custom_fields ?? {},
+    nextAction: row.next_action?.label ? row.next_action : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

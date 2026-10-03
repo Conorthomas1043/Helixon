@@ -856,49 +856,61 @@ function ActivityOverview({ analyses }) {
 
 /* ─── Active jobs ───────────────────────────────────────────────────────── */
 
-function ActiveJobs({ jobs }) {
+const PRIORITY_LABEL = { urgent: "Urgent", high: "High", low: "Low" };
+
+// Open jobs (job status, not "has analysed candidates"), most urgent first,
+// with each job's screening mix where it has one.
+function ActiveJobs({ jobs, total, statsByJob }) {
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading
         eyebrow="Roles"
-        title="Active jobs"
-        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>All jobs →</Link>}
+        title="Open jobs"
+        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>{total > jobs.length ? `All ${total} →` : "All jobs →"}</Link>}
       />
       {jobs.length === 0 ? (
-        <EmptyState title="No active jobs" body="Jobs appear here once candidates have been analysed against them." />
+        <EmptyState title="No open jobs" body="Add a job to start building its pipeline." actionLabel="New job" actionHref="/dashboard/jobs?new=1" />
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {jobs.map((job, i) => (
-            <li
-              key={job.key}
-              className="fade-up-in"
-              style={{ borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}
-            >
-              <Link
-                href={job.jobId ? `/dashboard/jobs/${job.jobId}` : "/dashboard/jobs"}
-                className="hover:bg-[var(--mist)] transition-colors"
-                style={{ display: "block", padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
-              >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.jobTitle}${job.company ? ` · ${job.company}` : ""}`}>
-                  {job.jobTitle}
-                  {job.company && <span style={{ color: TEXT_SUB, fontWeight: 400 }}> · {job.company}</span>}
-                </p>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: TEXT_SUB, flexShrink: 0 }}>{formatNumber(job.candidateCount)}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ flex: 1, height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden", display: "flex" }}>
-                  {job.stageSegments.map((seg) =>
-                    seg.pct > 0 ? (
-                      <div key={seg.key} title={`${STAGE_LABELS[seg.key]}: ${seg.pct}%`} style={{ width: `${seg.pct}%`, background: STAGE_COLORS[seg.key] }} />
-                    ) : null
-                  )}
-                </div>
-                <span style={{ fontSize: 11, color: TEXT_FAINT, flexShrink: 0 }}>{formatNumber(job.strongMatches)} strong</span>
-              </div>
-              </Link>
-            </li>
-          ))}
+          {jobs.map((job, i) => {
+            const stats = statsByJob.get(job.id);
+            const late = job.targetDate && job.targetDate < today;
+            return (
+              <li key={job.id} className="fade-up-in" style={{ borderTop: `1px solid ${BORDER}`, "--stagger-delay": `${i * 50}ms` }}>
+                <Link
+                  href={`/dashboard/jobs/${job.id}`}
+                  className="hover:bg-[var(--mist)] transition-colors"
+                  style={{ display: "block", padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.title}${job.client ? ` · ${job.client}` : ""}`}>
+                      {job.title}
+                      {job.client && <span style={{ color: TEXT_SUB, fontWeight: 400 }}> · {job.client}</span>}
+                    </p>
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                      {PRIORITY_LABEL[job.priority] && (job.priority === "urgent" || job.priority === "high") && (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
+                      )}
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: TEXT_SUB }}>{formatNumber(job.candidates)}</span>
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ flex: 1, height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden", display: "flex" }}>
+                      {(stats?.stageSegments || []).map((seg) =>
+                        seg.pct > 0 ? <div key={seg.key} title={`${STAGE_LABELS[seg.key]}: ${seg.pct}%`} style={{ width: `${seg.pct}%`, background: STAGE_COLORS[seg.key] }} /> : null
+                      )}
+                    </div>
+                    <span style={{ fontSize: 11, color: late ? RED : TEXT_FAINT, flexShrink: 0 }}>
+                      {job.interviewing ? `${job.interviewing} interviewing · ` : ""}
+                      {job.offers ? `${job.offers} offer${job.offers === 1 ? "" : "s"} · ` : ""}
+                      {job.targetDate ? `fill by ${new Date(`${job.targetDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}` : `${formatNumber(stats?.strongMatches ?? 0)} strong`}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -1077,6 +1089,149 @@ function DashboardError({ onRetry }) {
   );
 }
 
+/* ─── Business view (app/api/dashboard-ops) ─────────────────────────────── */
+
+function formatMoneyShort(n) {
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(Number(n || 0));
+}
+
+function BusinessKpis({ kpis }) {
+  const items = [
+    { label: "Open jobs", value: kpis.openJobs, sub: kpis.openings > kpis.openJobs ? `${formatNumber(kpis.openings)} openings` : "Roles you're filling", href: "/dashboard/jobs" },
+    { label: "Interviews", value: kpis.interviewsThisWeek, sub: kpis.interviewsToday ? `${kpis.interviewsToday} today` : "Next 7 days", href: "/dashboard/interviews" },
+    { label: "Offers out", value: kpis.offersOut, sub: "Waiting on an answer", href: "/dashboard/placements" },
+    { label: "Placed this month", value: kpis.placementsThisMonth, sub: `${formatMoneyShort(kpis.feesThisMonth)} in fees`, href: "/dashboard/placements" },
+    {
+      label: "Owed to you",
+      value: formatMoneyShort(kpis.outstanding),
+      sub: kpis.overdueCount ? `${formatMoneyShort(kpis.overdueTotal)} overdue` : "Nothing overdue",
+      tone: kpis.overdueCount ? RED : null,
+      href: "/dashboard/placements?tab=invoices",
+    },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+      {items.map((it, i) => (
+        <Link
+          key={it.label}
+          href={it.href}
+          className="fade-up-in lift-on-hover"
+          style={{ ...CARD, padding: 18, textDecoration: "none", display: "block", "--stagger-delay": `${i * 60}ms` }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            {typeof it.value === "number" ? formatNumber(it.value) : it.value}
+          </p>
+          <p style={{ fontSize: 12, color: it.tone || TEXT_FAINT, margin: "8px 0 0" }}>{it.sub}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+const ALERT_TONE = {
+  red: { bg: RED_BG, fg: RED },
+  amber: { bg: AMBER_BG, fg: AMBER_FG },
+  neutral: { bg: SURFACE2, fg: TEXT_SUB },
+};
+
+// Money, compliance and contract risks that need someone today.
+function RisksPanel({ alerts }) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? alerts : alerts.slice(0, 6);
+  return (
+    <div style={{ ...CARD, padding: "20px 24px" }}>
+      <SectionHeading eyebrow="Money & compliance" title="Don't let these slip" />
+      {alerts.length === 0 ? (
+        <EmptyState title="All clear" body="No overdue invoices, timesheets waiting, expiring checks, or contracts and rebate periods ending soon." />
+      ) : (
+        <>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {shown.map((a) => {
+              const tone = ALERT_TONE[a.tone] || ALERT_TONE.neutral;
+              return (
+                <li key={a.id} style={{ borderTop: `1px solid ${BORDER}` }}>
+                  <Link href={a.href} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
+                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: tone.fg, flexShrink: 0 }} />
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{a.title}</span>
+                      {a.detail && <span style={{ display: "block", fontSize: 12, color: TEXT_SUB, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.detail}</span>}
+                    </span>
+                    {typeof a.amount === "number" && (
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: tone.fg, flexShrink: 0 }}>{formatMoneyShort(a.amount)}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {alerts.length > 6 && (
+            <button type="button" onClick={() => setExpanded((v) => !v)} style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: VIOLET_FG, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              {expanded ? "Show fewer" : `Show all ${alerts.length}`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// Interviews in the next 7 days, and client follow-ups that are due.
+function dayLabel(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function AgendaPanel({ interviews, total, clientFollowUps }) {
+  return (
+    <div style={{ ...CARD, padding: "20px 24px" }}>
+      <SectionHeading
+        eyebrow="Next 7 days"
+        title="Agenda"
+        action={<Link href="/dashboard/interviews" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>{total > interviews.length ? `All ${total} →` : "Interviews →"}</Link>}
+      />
+      {interviews.length === 0 && clientFollowUps.length === 0 ? (
+        <EmptyState title="Nothing booked" body="No interviews in the next week and no client follow-ups due." />
+      ) : (
+        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+          {interviews.map((i) => (
+            <li key={i.id} style={{ borderTop: `1px solid ${BORDER}` }}>
+              <Link href={`/dashboard/candidates/${i.candidateId}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
+                <span style={{ width: 78, flexShrink: 0, fontSize: 12, color: TEXT_SUB }}>
+                  <span style={{ display: "block", fontWeight: 600, color: TEXT }}>{dayLabel(i.startsAt)}</span>
+                  {new Date(i.startsAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{i.candidateName}</span>
+                  <span style={{ display: "block", fontSize: 12, color: TEXT_SUB }}>
+                    {i.round > 1 ? `Round ${i.round} · ` : ""}
+                    {i.jobTitle || "Interview"}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+          {clientFollowUps.map((c) => (
+            <li key={`client-${c.id}`} style={{ borderTop: `1px solid ${BORDER}` }}>
+              <Link href={`/dashboard/clients/${c.id}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
+                <span style={{ width: 78, flexShrink: 0, fontSize: 12, fontWeight: 600, color: c.overdue ? RED : TEXT }}>{c.overdue ? "Overdue" : "Today"}</span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{c.label}</span>
+                  <span style={{ display: "block", fontSize: 12, color: TEXT_SUB }}>Client · {c.name}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /* ─── Scope, targets, truncation ────────────────────────────────────────── */
 
 const SCOPE_KEY = "helixon.dashboard.scope";
@@ -1217,6 +1372,7 @@ function AgencyDashboardPage() {
 
   const { user: clerkUser } = useUser();
   const myId = clerkUser?.id ?? null;
+  const [ops, setOps] = useState(null);
   // Mine/Team, remembered per browser. Nothing that depends on it renders
   // until the data has loaded on the client, so reading it up front can't
   // make the server and client renders disagree.
@@ -1255,7 +1411,10 @@ function AgencyDashboardPage() {
     const jobs = Array.from(jobMap.values()).map((job) => ({
       ...job,
       stageSegments: stageOrder.map((key) => ({ key, pct: job.candidateCount > 0 ? Math.round(((job.stageCounts[key] ?? 0) / job.candidateCount) * 100) : 0, isPlaced: key === lastStageKey })),
-    })).sort((a, b) => b.candidateCount - a.candidateCount).slice(0, 5);
+    }));
+    // Screening mix per job, for the Open jobs panel (which lists jobs by
+    // their status, from /api/dashboard-ops).
+    const jobStats = new Map(jobs.filter((j) => j.jobId).map((j) => [j.jobId, j]));
 
     const recruiterMap = new Map();
     completed.forEach((a) => {
@@ -1269,7 +1428,7 @@ function AgencyDashboardPage() {
     });
     const recruiters = Array.from(recruiterMap.values()).map((r) => ({ ...r, avgScore: r.scoreCount > 0 ? Math.round(r.scoreSum / r.scoreCount) : null })).sort((a, b) => b.placements - a.placements || (b.avgScore ?? 0) - (a.avgScore ?? 0)).slice(0, 4);
 
-    return { ...stats, jobs, recruiters, hasTeammates, mineOnly: Boolean(mineOnly), everyone };
+    return { ...stats, jobStats, recruiters, hasTeammates, mineOnly: Boolean(mineOnly), everyone };
   }, [data, stageOrder, lastStageKey, scope, myId]);
 
   // /api/dashboard-stats returns { agencyName, plan, analyses } flat -
@@ -1283,6 +1442,17 @@ function AgencyDashboardPage() {
   // The agency name is shown separately and only when it's a real name - the
   // "your agency" placeholder that used to be spliced into the greeting is
   // never displayed.
+  // The business view follows the same Mine/Team switch.
+  const opsScope = model.mineOnly ? "mine" : "team";
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/dashboard-ops?scope=${opsScope}`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("ops"))))
+      .then((d) => { if (!cancelled) setOps(d); })
+      .catch(() => { if (!cancelled) setOps((prev) => prev ?? false); });
+    return () => { cancelled = true; };
+  }, [opsScope, reloadKey]);
+
   const greetingName = clerkUser?.firstName || null;
   const agencyName = data?.agencyName && data.agencyName !== "your agency" ? data.agencyName : null;
   const plan = data?.plan ?? null;
@@ -1313,6 +1483,14 @@ function AgencyDashboardPage() {
             {data.truncated && <TruncatedNotice />}
             {model.hasTeammates && <ScopeToggle scope={scope} onChange={setScope} />}
 
+            {ops && <BusinessKpis kpis={ops.kpis} />}
+            {ops && (
+              <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+                <RisksPanel alerts={ops.alerts} />
+                <AgendaPanel interviews={ops.interviews} total={ops.interviewsTotal} clientFollowUps={ops.clientFollowUps} />
+              </div>
+            )}
+
             {model.analyses.length === 0 ? (
               <div style={CARD}>
                 <EmptyState
@@ -1321,9 +1499,15 @@ function AgencyDashboardPage() {
                   actionLabel="New analysis"
                   actionHref="/analyse"
                 />
+                {ops && ops.activeJobsTotal > 0 && (
+                  <div style={{ padding: "0 24px 24px" }}>
+                    <ActiveJobs jobs={ops.activeJobs} total={ops.activeJobsTotal} statsByJob={model.jobStats} />
+                  </div>
+                )}
               </div>
             ) : (
               <>
+                <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
                 <DashboardKpis totals={model.totals} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
@@ -1346,7 +1530,7 @@ function AgencyDashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <ActiveJobs jobs={model.jobs} />
+                  {ops ? <ActiveJobs jobs={ops.activeJobs} total={ops.activeJobsTotal} statsByJob={model.jobStats} /> : <div />}
                   <RecruiterPerformance recruiters={model.recruiters} />
                 </div>
 

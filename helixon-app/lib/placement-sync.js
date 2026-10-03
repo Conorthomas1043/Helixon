@@ -22,3 +22,11 @@ export async function syncCandidate(placement, actor) {
   await supabase.from("candidates").update(update).eq("id", c.id);
   if (update.stage) await logActivity(supabase, c.id, "stage_changed", actor, { from: c.stage, to: update.stage });
 }
+
+// Whether everyone in a placement's split is a member of the agency.
+export async function splitsAreTeammates(agencyId, splits) {
+  const ids = [...new Set((splits || []).map((s) => s.recruiterId))];
+  if (ids.length === 0) return true;
+  const { data } = await supabase.from("profiles").select("clerk_user_id").eq("agency_id", agencyId).in("clerk_user_id", ids);
+  return (data ?? []).length === ids.length;
+}

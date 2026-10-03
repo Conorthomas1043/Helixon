@@ -48,3 +48,26 @@ describe("invoices and timesheets", () => {
     expect(weekStarting("2026-09-28")).toBe("2026-09-28");
   });
 });
+
+describe("split fees", () => {
+  it("accepts shares that add up to 100", async () => {
+    const { cleanSplits } = await import("./placements");
+    expect(cleanSplits([{ recruiterId: "a", percent: 60 }, { recruiterId: "b", percent: "40" }])).toEqual({ splits: [{ recruiterId: "a", percent: 60 }, { recruiterId: "b", percent: 40 }] });
+    expect(cleanSplits([])).toEqual({ splits: null });
+    expect(cleanSplits(null)).toEqual({ splits: null });
+  });
+  it("refuses splits that don't add up or repeat someone", async () => {
+    const { cleanSplits } = await import("./placements");
+    expect(cleanSplits([{ recruiterId: "a", percent: 60 }, { recruiterId: "b", percent: 30 }]).error).toMatch("90%");
+    expect(cleanSplits([{ recruiterId: "a", percent: 50 }, { recruiterId: "a", percent: 50 }]).error).toBeTruthy();
+    expect(cleanSplits([{ recruiterId: "a", percent: 100 }]).error).toBeTruthy();
+  });
+  it("credits each person their share", async () => {
+    const { creditShares } = await import("./placements");
+    expect(creditShares({ recruiter_id: "a", splits: null })).toEqual([{ id: "a", share: 1 }]);
+    expect(creditShares({ recruiter_id: "a", splits: [{ recruiterId: "a", percent: 70 }, { recruiterId: "b", percent: 30 }] })).toEqual([
+      { id: "a", share: 0.7 },
+      { id: "b", share: 0.3 },
+    ]);
+  });
+});

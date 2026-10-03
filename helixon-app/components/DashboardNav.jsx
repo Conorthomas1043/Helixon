@@ -36,6 +36,7 @@ const MORE = [
   {
     group: "Revenue",
     links: [
+      { href: "/dashboard/business-development", label: "Business development" },
       { href: "/dashboard/placements", label: "Placements & invoices" },
       { href: "/dashboard/performance", label: "Performance" },
       { href: "/dashboard/analytics", label: "Analytics" },

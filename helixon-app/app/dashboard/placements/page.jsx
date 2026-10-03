@@ -32,12 +32,16 @@ function Stat({ label, value, hint, tone }) {
 const sum = (list, f) => list.reduce((s, x) => s + (Number(f(x)) || 0), 0);
 
 export default function PlacementsPage() {
-  const [tab, setTab] = useState("placements");
+  // ?tab=invoices and ?kind=contract (links from the Overview's alerts).
+  // Nothing here renders before the data loads, so reading the URL up
+  // front can't make the server and client renders differ.
+  const query = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+  const [tab, setTab] = useState(() => (query?.get("tab") === "invoices" ? "invoices" : "placements"));
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [status, setStatus] = useState("all");
-  const [kind, setKind] = useState("all");
+  const [kind, setKind] = useState(() => (query?.get("kind") === "contract" ? "contract" : "all"));
   const [invoiceFilter, setInvoiceFilter] = useState("unpaid");
   const [invoiceError, setInvoiceError] = useState(null);
 

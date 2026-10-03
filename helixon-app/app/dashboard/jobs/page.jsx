@@ -7,10 +7,12 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import ClientPicker from "@/components/dashboard/ClientPicker";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
+import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
 
 function Stat({ label, value, accent }) {
   return (
@@ -58,6 +60,20 @@ function JobCard({ job }) {
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-4">
+          {(job.priority === "urgent" || job.priority === "high") && (
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(192,57,43,0.10)", color: "var(--score-low)" }}>
+              {JOB_PRIORITIES[job.priority]}
+            </span>
+          )}
+          {job.targetDate && job.status === "open" && (() => {
+            const d = daysToTarget(job.targetDate);
+            return (
+              <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: d != null && d < 0 ? "var(--score-low)" : INK_MUTED }}>
+                {d == null ? null : d < 0 ? `${-d}d overdue` : d === 0 ? "Due today" : `${d}d to fill`}
+              </span>
+            );
+          })()}
+          {job.openings > 1 && <Chip>{`${job.openings} openings`}</Chip>}
           <Chip>{job.seniority}</Chip>
           <Chip>{job.employmentType}</Chip>
           <Chip>{job.salaryRange}</Chip>
@@ -333,6 +349,9 @@ function JobsContent() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("open");
+  const [mineOnly, setMineOnly] = useState(false);
+  const { user } = useUser();
+  const myId = user?.id ?? null;
   const [sortBy, setSortBy] = useState("newest");
 
   // Search, open/closed and sort all happen here - the list is every job
@@ -342,6 +361,7 @@ function JobsContent() {
     const list = (jobs ?? []).filter(
       (j) =>
         (statusFilter === "all" || (statusFilter === "open" ? j.status === "open" : j.status !== "open")) &&
+        (!mineOnly || j.ownerId === myId) &&
         (!q || [j.title, j.company, j.location].filter(Boolean).join(" ").toLowerCase().includes(q))
     );
     const by = {
@@ -350,9 +370,12 @@ function JobsContent() {
       candidates: (a, b) => (b.candidateCount ?? 0) - (a.candidateCount ?? 0),
       strong: (a, b) => (b.strongMatches ?? 0) - (a.strongMatches ?? 0),
       title: (a, b) => String(a.title || "").localeCompare(String(b.title || "")),
+      priority: (a, b) => priorityRank(a.priority) - priorityRank(b.priority) || new Date(b.created_at || 0) - new Date(a.created_at || 0),
+      // Soonest target date first; jobs with none go last.
+      target: (a, b) => (a.targetDate || "9999").localeCompare(b.targetDate || "9999"),
     }[sortBy];
     return [...list].sort(by);
-  }, [jobs, search, statusFilter, sortBy]);
+  }, [jobs, search, statusFilter, sortBy, mineOnly, myId]);
 
   const totalOpen = jobs?.filter((j) => j.status === "open").length ?? 0;
   const totalCandidates = jobs?.reduce((sum, j) => sum + j.candidateCount, 0) ?? 0;
@@ -432,6 +455,15 @@ function JobsContent() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => setMineOnly((v) => !v)}
+                aria-pressed={mineOnly}
+                className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ background: mineOnly ? "var(--forest)" : "white", color: mineOnly ? "white" : INK_MUTED, border: `1px solid ${mineOnly ? "var(--forest)" : "var(--border)"}` }}
+              >
+                My jobs
+              </button>
               <select
                 aria-label="Sort jobs"
                 value={sortBy}
@@ -444,11 +476,13 @@ function JobsContent() {
                 <option value="candidates">Most candidates</option>
                 <option value="strong">Most strong matches</option>
                 <option value="title">Title A–Z</option>
+                <option value="priority">Priority</option>
+                <option value="target">Fill-by date</option>
               </select>
             </div>
             {visibleJobs.length === 0 ? (
               <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
-                No {statusFilter === "all" ? "" : `${statusFilter} `}jobs match{search.trim() ? ` "${search.trim()}"` : ""}.
+                No {mineOnly ? "of your " : ""}{statusFilter === "all" ? "" : `${statusFilter} `}jobs match{search.trim() ? ` "${search.trim()}"` : ""}.
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
