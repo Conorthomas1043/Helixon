@@ -61,7 +61,7 @@ export async function GET(request, { params }) {
     if (error) console.warn("[candidate export] Optional data skipped:", error.message);
     return data ?? [];
   };
-  const [extra, interviews, emails, enrollments, placements, checks, references, clientDecisions] = await Promise.all([
+  const [extra, interviews, emails, enrollments, placements, checks, references, clientDecisions, signatures, extraDetails] = await Promise.all([
     optional(
       supabase
         .from("candidates")
@@ -94,7 +94,12 @@ export async function GET(request, { params }) {
         .in("candidate_id", ids)
     ),
     optional(supabase.from("shortlist_candidates").select("candidate_id, client_decision, client_comment, client_decided_at, client_decided_by").in("candidate_id", ids).not("client_decided_at", "is", null)),
+    // Documents sent to them to sign, and what they told us on their
+    // self-service link (migration 20261003010000).
+    optional(supabase.from("signature_requests").select("candidate_id, kind, title, body, status, sent_at, signed_at, signed_name, signed_ip, declined_reason").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional(supabase.from("candidates").select("id, notice_period, salary_expectation, available_from").eq("agency_id", auth.agencyId).in("id", ids)),
   ]);
+  const detailsById = new Map(extraDetails.map((e) => [e.id, e]));
   const extraById = new Map(extra.map((e) => [e.id, e]));
   const forCandidate = (list, id) => list.filter((x) => x.candidate_id === id);
 
@@ -201,6 +206,20 @@ export async function GET(request, { params }) {
         reference: r.answers,
       })),
       clientFeedbackOnShortlists: forCandidate(clientDecisions, c.id).map((d) => ({ decision: d.client_decision, comment: d.client_comment, at: d.client_decided_at, by: d.client_decided_by })),
+      availability: detailsById.has(c.id)
+        ? { noticePeriod: detailsById.get(c.id).notice_period, salaryExpectation: detailsById.get(c.id).salary_expectation, availableFrom: detailsById.get(c.id).available_from }
+        : undefined,
+      documentsSentToSign: forCandidate(signatures, c.id).map((d) => ({
+        kind: d.kind,
+        title: d.title,
+        text: d.body,
+        status: d.status,
+        sentAt: d.sent_at,
+        signedAt: d.signed_at,
+        signedAs: d.signed_name,
+        signedFromIp: d.signed_ip,
+        declinedReason: d.declined_reason,
+      })),
     })),
   };
 

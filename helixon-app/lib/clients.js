@@ -100,6 +100,7 @@ export function toClient(row) {
     ownerId: row.owner_id,
     customFields: row.custom_fields ?? {},
     nextAction: row.next_action?.label ? row.next_action : null,
+    termsSignedAt: row.terms_signed_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

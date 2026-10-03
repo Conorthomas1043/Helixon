@@ -23,6 +23,10 @@ export const WEBHOOK_EVENTS = {
   "invoice.created": "An invoice is raised",
   "invoice.paid": "An invoice is marked paid",
   "reference.received": "A referee answers",
+  "signature.signed": "A document sent for e-signature is signed",
+  "signature.declined": "Someone declines to sign a document",
+  "interview.booked": "A candidate books an interview time from a booking link",
+  "candidate.self_updated": "A candidate updates their details on their private link",
 };
 
 const MAX_FAILURES = 20;

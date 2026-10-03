@@ -76,6 +76,10 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
     }
     erased += ids.length;
 
+    // In-app notifications about them (they name the person). Best effort:
+    // the table only exists after migration 20261003010000.
+    await supabase.from("notifications").delete().eq("agency_id", agencyId).in("href", ids.map((id) => `/dashboard/candidates/${id}`));
+
     // Files go after the records, so a storage hiccup can't leave a
     // half-deleted candidate; a failure is logged for manual follow-up.
     const storageError =

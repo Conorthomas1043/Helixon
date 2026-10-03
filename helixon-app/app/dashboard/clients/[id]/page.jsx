@@ -39,6 +39,8 @@ import { formatDateOnly, formatRelativeTime } from "@/lib/candidate-format";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
 import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/opportunities";
+import SignaturesCard from "@/components/dashboard/SignaturesCard";
+import { termsOfBusinessText } from "@/lib/signatures-shared";
 
 const ACTIVITY_LABELS = {
   client_created: "Client added",
@@ -58,6 +60,9 @@ const ACTIVITY_LABELS = {
   opportunity_created: "Deal added",
   opportunity_stage: "Deal moved",
   next_action_completed: "Follow-up done",
+  signature_requested: "Sent for signature",
+  signature_signed: "Signed",
+  signature_declined: "Signature declined",
 };
 
 function EditClientDialog({ client, onClose, onSaved }) {
@@ -519,12 +524,26 @@ export default function ClientDetailPage({ params }) {
 
           <CustomFieldsCard key={client.id} entity="client" recordId={client.id} values={client.customFields} />
 
+          <SignaturesCard
+            title="Terms of business"
+            kinds={["terms", "other"]}
+            signer={contacts.find((c) => c.isPrimary) || contacts[0] ? { name: (contacts.find((c) => c.isPrimary) || contacts[0]).name, email: (contacts.find((c) => c.isPrimary) || contacts[0]).email } : null}
+            template={(kind, agencyName) =>
+              kind === "terms"
+                ? { title: `Terms of business - ${client.name}`, body: termsOfBusinessText({ agencyName, clientName: client.name, feePercent: client.feePercent, paymentTermsDays: client.paymentTermsDays, rebateDays: client.rebateDays, termsNotes: client.termsNotes }) }
+                : { title: "", body: "" }
+            }
+            clientId={client.id}
+            onChanged={reload}
+          />
+
           <Card title="Terms" action={<Button size="sm" onClick={() => setEditing(true)}>Edit</Button>}>
             <dl className="text-[13px] space-y-2">
               {[
                 ["Fee", client.feePercent != null ? `${client.feePercent}% of salary` : null],
                 ["Payment terms", client.paymentTermsDays != null ? `${client.paymentTermsDays} days` : null],
                 ["Rebate period", client.rebateDays != null ? `${client.rebateDays} days` : null],
+                ["Signed terms", client.termsSignedAt ? formatDateOnly(client.termsSignedAt) : null],
                 ["Address", client.address],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-3">

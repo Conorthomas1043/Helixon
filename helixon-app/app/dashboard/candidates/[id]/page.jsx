@@ -20,6 +20,7 @@ import InterviewsPanel from "@/components/dashboard/InterviewsPanel";
 import EmailThreadPanel from "@/components/dashboard/EmailThreadPanel";
 import PlacementPanel from "@/components/dashboard/PlacementPanel";
 import CompliancePanel from "@/components/dashboard/CompliancePanel";
+import { BookingLinksCard, CandidateDocumentsCard, MergeDuplicateCard, SelfServiceCard } from "@/components/dashboard/candidate-extras";
 import PhoneActions from "@/components/dashboard/PhoneActions";
 import { CustomFieldsCard, SubStagePicker } from "@/components/dashboard/custom-fields";
 import {
@@ -146,6 +147,16 @@ function activityDescription(entry) {
     case "privacy_notice_sent":
     case "consent_recorded":
     case "consent_withdrawn":
+    case "signature_requested":
+    case "signature_signed":
+    case "signature_declined":
+    case "portal_link_created":
+    case "candidate_self_updated":
+    case "candidate_document_uploaded":
+    case "booking_link_created":
+    case "candidate_merged":
+    case "candidate_linked":
+    case "call_notes_summarised":
       return entry.meta?.note ?? "";
     case "rescreened":
       return entry.meta?.job_title ? `${entry.meta.job_title}${entry.meta.match_score != null ? ` · ${entry.meta.match_score}` : ""}` : "";
@@ -204,6 +215,16 @@ const EVENT_LABELS = {
   privacy_notice_sent: "Privacy notice sent",
   consent_recorded: "Consent recorded",
   consent_withdrawn: "Consent withdrawn",
+  signature_requested: "Sent for signature",
+  signature_signed: "Document signed",
+  signature_declined: "Signature declined",
+  portal_link_created: "Self-service link",
+  candidate_self_updated: "Updated their details",
+  candidate_document_uploaded: "Uploaded a document",
+  booking_link_created: "Interview times offered",
+  candidate_merged: "Duplicate merged",
+  candidate_linked: "Linked as same person",
+  call_notes_summarised: "Call notes",
 };
 
 const OUTREACH_ACTIONS = [
@@ -2427,7 +2448,10 @@ export default function CandidateProfilePage({ params }) {
                   loggingActivity={loggingActivity}
                 />
                 {candidate.status === "completed" && <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />}
+                {candidate.status === "completed" && <BookingLinksCard candidate={candidate} onBooked={refreshActivity} />}
+                {candidate.status === "completed" && <CandidateDocumentsCard candidate={candidate} />}
                 <CompliancePanel candidate={candidate} onChanged={refreshActivity} />
+                <SelfServiceCard candidate={candidate} />
                 <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
                 <FeedbackRequestsPanel
                   requests={feedbackRequests}
@@ -2440,6 +2464,7 @@ export default function CandidateProfilePage({ params }) {
                 <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} />
                 <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
                 <EmailPanel candidate={candidate} onSent={refreshActivity} />
+                <MergeDuplicateCard candidate={candidate} />
               </div>
             </div>
           </>

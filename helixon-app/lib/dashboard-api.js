@@ -1104,3 +1104,75 @@ export async function setClientNextAction(clientId, body) {
   });
   return res.nextAction;
 }
+
+// E-signatures - app/api/signatures, lib/signatures.js.
+export async function getSignatureRequests({ clientId, candidateId } = {}) {
+  const q = new URLSearchParams();
+  if (clientId) q.set("clientId", clientId);
+  if (candidateId) q.set("candidateId", candidateId);
+  return apiFetch(`/api/signatures?${q.toString()}`);
+}
+
+export async function getSignatureRequest(id) {
+  const res = await apiFetch(`/api/signatures/${id}`);
+  return res.request;
+}
+
+// Resolves { request, link, emailError }.
+export async function createSignatureRequest(fields) {
+  return apiFetch("/api/signatures", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function voidSignatureRequest(id) {
+  return apiFetch(`/api/signatures/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ void: true }),
+  });
+}
+
+// Candidate self-service link, interview booking links and merging -
+// app/api/candidates/[id]/portal-link, booking-links, merge.
+export async function getPortalLink(candidateId) {
+  return apiFetch(`/api/candidates/${candidateId}/portal-link`);
+}
+
+export async function createPortalLink(candidateId, { send = false } = {}) {
+  return apiFetch(`/api/candidates/${candidateId}/portal-link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ send }),
+  });
+}
+
+export async function revokePortalLink(candidateId) {
+  return apiFetch(`/api/candidates/${candidateId}/portal-link`, { method: "DELETE" });
+}
+
+export async function getBookingLinks(candidateId) {
+  return apiFetch(`/api/candidates/${candidateId}/booking-links`);
+}
+
+export async function createBookingLink(candidateId, fields) {
+  return apiFetch(`/api/candidates/${candidateId}/booking-links`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+}
+
+export async function cancelBookingLink(candidateId, linkId) {
+  return apiFetch(`/api/candidates/${candidateId}/booking-links?linkId=${encodeURIComponent(linkId)}`, { method: "DELETE" });
+}
+
+export async function mergeCandidate(candidateId, otherId) {
+  return apiFetch(`/api/candidates/${candidateId}/merge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ otherId }),
+  });
+}
