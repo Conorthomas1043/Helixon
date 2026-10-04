@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import posthog from "posthog-js";
+import { useAnalyticsIdentity } from "@/lib/analytics";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { COLORS } from "@/lib/account";
 
@@ -61,15 +62,11 @@ export default function AppNav({ active }) {
     };
   }, [menuOpen]);
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !userId || !posthog.__loaded) return;
-
-    const properties = {};
-    if (userEmail) properties.email = userEmail;
-    if (userName) properties.name = userName;
-
-    posthog.identify(userId, properties);
-  }, [isLoaded, isSignedIn, userId, userEmail, userName]);
+  useAnalyticsIdentity({
+    userId: isLoaded && isSignedIn ? userId : null,
+    email: userEmail,
+    name: userName,
+  });
 
   const topLink = (key, label, href) => (
     <Link

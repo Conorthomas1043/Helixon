@@ -11,6 +11,7 @@
 // and when anyone offline was last active - from each person's heartbeat
 // (DashboardNav) and the status they set here.
 
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
@@ -805,6 +806,7 @@ export default function TeamPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [removingId, setRemovingId] = useState(null);
   const [removeError, setRemoveError] = useState("");
+  const [ask, confirmDialog] = useConfirm();
 
   // Seat usage lives here, not inside the invite panel, so removing someone
   // refreshes the "x of 5 seats" counter too - it used to stay stale until
@@ -883,7 +885,7 @@ export default function TeamPage() {
 
   const [changingRoleId, setChangingRoleId] = useState(null);
   async function handleChangeRole(member, role) {
-    if (role === "admin" && !confirm(`Make ${member.name} an admin? They'll be able to invite, remove and reassign people.`)) return;
+    if (role === "admin" && !(await ask({ title: `Make ${member.name} an admin?`, body: "They'll be able to invite, remove and reassign people.", confirmLabel: "Make admin" }))) return;
     setChangingRoleId(member.id);
     setRemoveError("");
     try {
@@ -954,6 +956,7 @@ export default function TeamPage() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
+      {confirmDialog}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>

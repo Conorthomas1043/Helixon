@@ -1,9 +1,10 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
+import { AGENCY_SEATS } from "@/lib/plan-features";
 
-// Agency plan seat cap, confirmed with the user (2026-09-17) - not a value
-// inferred from pricing copy, which never states a number.
-export const AGENCY_SEAT_LIMIT = 5;
+// Agency plan seat cap, confirmed with the user (2026-09-17). Defined in
+// lib/plan-features.js so the pricing copy states the same number.
+export const AGENCY_SEAT_LIMIT = AGENCY_SEATS;
 
 // Ensures the given agency has a Clerk Organization backing its team
 // membership, creating one lazily on first use rather than only at signup.

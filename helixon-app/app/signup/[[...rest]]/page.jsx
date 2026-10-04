@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignUp, useUser } from "@clerk/nextjs";
@@ -39,7 +40,7 @@ const STEPS = [
 
 const STEP_COPY = [
   { eyebrow: "01 · Agency", title: <>What&apos;s your<br />agency called?</>, body: "We'll use this to set up your workspace and where your team collaborates." },
-  { eyebrow: "02 · Account", title: <>Create your<br />account.</>, body: "Set a username and password - Clerk keeps this part secure and verifies your email automatically." },
+  { eyebrow: "02 · Account", title: <>Create your<br />account.</>, body: "Choose a username and password. We'll verify your email so your workspace stays secure." },
 ];
 
 // ── Per-step mark - a small, quiet motif rather than a big illustration ──
@@ -63,6 +64,9 @@ function StepMark({ step }) {
 
 // ── Floating-label field - the signature input treatment for this flow ────
 function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
+  // The label wasn't tied to the input, so screen readers announced an
+  // unnamed text field.
+  const id = useId();
   const [focused, setFocused] = useState(false);
   const active = focused || value.length > 0;
 
@@ -78,6 +82,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
       }}
     >
       <label
+        htmlFor={id}
         className="absolute left-3.5 select-none pointer-events-none transition-all"
         style={{
           top: active ? "7px" : "50%",
@@ -94,6 +99,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
         {label}
       </label>
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -118,7 +124,9 @@ function MagneticButton({ children, disabled }) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
   function handleMouseMove(e) {
-    if (disabled || !ref.current) return;
+    // The button follows the pointer; skip that for people who've asked
+    // their system for less motion.
+    if (disabled || !ref.current || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const r = ref.current.getBoundingClientRect();
     setPos({ x: (e.clientX - (r.left + r.width / 2)) * 0.08, y: (e.clientY - (r.top + r.height / 2)) * 0.25 });
   }
@@ -133,7 +141,8 @@ function MagneticButton({ children, disabled }) {
       onMouseLeave={reset}
       className="flex-1 relative text-white font-semibold py-3 rounded-[12px] text-sm flex items-center justify-center gap-2 overflow-hidden"
       style={{
-        background: disabled ? "var(--ink-mute)" : "var(--forest)",
+        background: "var(--forest)",
+        opacity: disabled ? 0.55 : 1,
         cursor: disabled ? "not-allowed" : "pointer",
         transform: `translate(${pos.x}px, ${pos.y}px)`,
         transition: `transform 0.25s ${EASE}, background 0.2s ease`,
@@ -306,6 +315,7 @@ export default function SignupPage() {
         setCompleting(false);
         return;
       }
+      track("workspace_created", { plan: plan || null });
       router.push("/analyse");
     } catch {
       setCompleteError("Network error. Please try again.");

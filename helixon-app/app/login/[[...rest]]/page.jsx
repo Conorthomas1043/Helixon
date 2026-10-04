@@ -39,7 +39,7 @@ function LoginContent() {
 
   return (
     <AuthShell
-      mobileTagline="94% match accuracy · 10x faster screening"
+      mobileTagline="Unlimited screening · Swiss-hosted"
       brandMiddle={
         <div className="relative z-10 space-y-9 auth-panel-in" style={{ animationDuration: "0.6s" }}>
           <div className="space-y-4">
@@ -54,10 +54,13 @@ function LoginContent() {
             </p>
           </div>
 
+          {/* Only figures the product can stand behind - the same ones the
+              homepage uses. "94% match accuracy" and "10x faster" were here
+              with nothing to back them. */}
           <div className="flex gap-9">
             {[
-              { value: "94%", label: "Match accuracy" },
-              { value: "10x", label: "Faster screening" },
+              { value: "<1 min", label: "Per CV" },
+              { value: "50", label: "CVs per bulk upload" },
               { value: "∞", label: "Analyses / month" },
             ].map((s) => (
               <div key={s.label}>

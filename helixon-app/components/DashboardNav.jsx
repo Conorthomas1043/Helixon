@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import posthog from "posthog-js";
+import { useAnalyticsIdentity } from "@/lib/analytics";
 import PresenceDot from "@/components/PresenceDot";
 import { usePresenceHeartbeat } from "@/lib/hooks/usePresenceHeartbeat";
 import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
@@ -188,15 +189,15 @@ function DashboardNavContent() {
   const [teammates, setTeammates] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !userId || !posthog.__loaded) return;
+  useAnalyticsIdentity({
+    userId: isLoaded && isSignedIn ? userId : null,
+    email: userEmail,
+    name: userName,
+    agencyId: me?.agencyId,
+    agencyName: me?.agencyName,
+    plan: me?.plan,
+  });
 
-    const properties = {};
-    if (userEmail) properties.email = userEmail;
-    if (userName) properties.name = userName;
-
-    posthog.identify(userId, properties);
-  }, [isLoaded, isSignedIn, userId, userEmail, userName]);
 
   // Workspace name + plan for the nav strip and the teammate stack -
   // fetched here (not read from any single page's own data) since this

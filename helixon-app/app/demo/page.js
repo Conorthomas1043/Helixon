@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/analytics";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
@@ -120,6 +121,15 @@ export default function DemoRequestPage() {
 
   const nameRef = useRef(null);
   const emailRef = useRef(null);
+  const startedRef = useRef(false);
+
+  // First keystroke in the form. With demo_request_submitted this gives
+  // the form's abandonment rate, which was unmeasurable before.
+  function markStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track("demo_form_started");
+  }
   const successRef = useRef(null);
 
   // Focus the first field only with a mouse/trackpad. On a phone it threw
@@ -220,7 +230,7 @@ export default function DemoRequestPage() {
         </div>
       </nav>
 
-      <main id="main-content" className="flex-1 flex flex-col">
+      <main id="main-content" className="flex-1 flex flex-col" onInput={markStarted}>
         <div className="flex-1 flex items-center justify-center px-4 py-12 sm:py-16 relative overflow-hidden">
           <div
             aria-hidden="true"

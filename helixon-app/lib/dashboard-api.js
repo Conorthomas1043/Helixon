@@ -7,6 +7,7 @@
 // values come from lib/stage-labels.js.
 
 import { STAGE_LABELS } from "@/lib/stage-labels";
+import { track } from "@/lib/analytics";
 
 async function apiFetch(url, options) {
   const res = await fetch(url, { credentials: "include", ...options });
@@ -193,6 +194,7 @@ export async function createJob(fields) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fields),
   });
+  track("job_created", { source: "manual" });
   return adaptJob(job);
 }
 
@@ -267,11 +269,13 @@ export async function getTeamSeatUsage() {
 }
 
 export async function inviteTeammate(email) {
-  return apiFetch("/api/team/invite", {
+  const result = await apiFetch("/api/team/invite", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
+  track("teammate_invited");
+  return result;
 }
 
 export async function cancelTeamInvite(invitationId) {
@@ -836,11 +840,13 @@ export async function getShortlistShares(shortlistId) {
 }
 
 export async function createShortlistShare(shortlistId, options) {
-  return apiFetch(`/api/shortlists/${shortlistId}/shares`, {
+  const share = await apiFetch(`/api/shortlists/${shortlistId}/shares`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options),
   });
+  track("shortlist_shared");
+  return share;
 }
 
 export async function revokeShortlistShare(shortlistId, shareId) {

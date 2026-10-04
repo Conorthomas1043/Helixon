@@ -31,6 +31,9 @@ export async function GET() {
   // /api/complete-signup). Without it every agency-scoped API answers 403, so
   // the dashboard uses this flag to explain that instead of failing.
   let hasAgency = false;
+  // The caller's own agency id - lets analytics group events by account
+  // (the customer is the agency, not the individual recruiter).
+  let agencyId = null;
   try {
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
@@ -41,6 +44,7 @@ export async function GET() {
     firstName = profile?.first_name || user?.firstName || null;
 
     hasAgency = Boolean(profile?.agency_id);
+    agencyId = profile?.agency_id || null;
 
     if (profile?.agency_id) {
       const [{ data: agency }, resolvedPlan] = await Promise.all([
@@ -59,6 +63,6 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, agencyName, plan, hasAgency },
+    user: { id: userId, email, firstName, agencyName, agencyId, plan, hasAgency },
   });
 }

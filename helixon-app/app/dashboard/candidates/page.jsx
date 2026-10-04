@@ -8,6 +8,7 @@
 // so that part of the tree sits in a <Suspense> boundary, which Next.js
 // requires or static prerendering fails the build.
 
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -512,6 +513,7 @@ function CandidateDatabaseContent() {
   const [searchInput, setSearchInput] = useState(initialFilters.search);
   const [nearInput, setNearInput] = useState(initialFilters.near);
   const [errorMessage, setErrorMessage] = useState("");
+  const [ask, confirmDialog] = useConfirm();
 
   useEffect(() => {
     const qs = paramsFromFilters(filters);
@@ -674,7 +676,7 @@ function CandidateDatabaseContent() {
 
   const removeCustomTag = useCallback(
     async (tag) => {
-      if (!confirm(`Delete the tag "${tag.label}"? It's taken off every candidate that has it.`)) return;
+      if (!(await ask({ title: `Delete the tag "${tag.label}"?`, body: "It's taken off every candidate that has it.", confirmLabel: "Delete tag", danger: true }))) return;
       try {
         await deleteTag(tag.id);
         setTags((list) => list.filter((t) => t.id !== tag.id));
@@ -684,7 +686,7 @@ function CandidateDatabaseContent() {
         setExportError(err.message || "Couldn't delete the tag.");
       }
     },
-    [retry]
+    [retry, ask]
   );
 
   const toggleSelect = useCallback((id) => {
@@ -756,11 +758,12 @@ function CandidateDatabaseContent() {
     [runBulk]
   );
 
-  const bulkDelete = useCallback(() => {
+  const bulkDelete = useCallback(async () => {
     const n = selectedIds.size;
-    if (!confirm(`Permanently erase ${n} candidate${n === 1 ? "" : "s"}? Their CVs, analyses, notes and history are deleted and can't be recovered.`)) return;
+    const label = `${n} candidate${n === 1 ? "" : "s"}`;
+    if (!(await ask({ title: `Permanently erase ${label}?`, body: "Their CVs, analyses, notes and history are deleted and can't be recovered.", confirmLabel: `Erase ${label}`, danger: true }))) return;
     runBulk({ action: "delete" }, { clearSelection: true });
-  }, [selectedIds, runBulk]);
+  }, [selectedIds, runBulk, ask]);
 
   const result = data?.result;
   const stageCounts = data?.stageCounts;
@@ -768,6 +771,7 @@ function CandidateDatabaseContent() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
+      {confirmDialog}
 
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

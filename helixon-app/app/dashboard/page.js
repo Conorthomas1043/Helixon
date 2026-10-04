@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -219,6 +220,72 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
         </Link>
       )}
     </div>
+  );
+}
+
+/* ─── First run ─────────────────────────────────────────────────────────── */
+
+// What a brand-new account sees instead of a wall of zeros. It used to open
+// on five empty business KPIs, an "All clear" risks panel and an empty
+// agenda, with the one useful action ("Upload your first CV") below the
+// fold. A short checklist gives the first session a clear goal; the
+// workspace step starts ticked, because it's done (paying and naming the
+// agency created it) and a list that's already under way is one people
+// finish. It goes away by itself once the first CV has been screened.
+function GettingStarted({ hasJob, showTeam }) {
+  const steps = [
+    { key: "workspace", title: "Set up your workspace", body: "Your agency's Helixon is ready.", done: true },
+    { key: "analyse", title: "Screen your first CV", body: "Score a CV against a role and see the evidence behind it. It takes under a minute.", href: "/analyse", cta: "Screen a CV", primary: true },
+    { key: "job", title: "Add a job you're working on", body: "Keep every candidate for a role, their scores and their stage in one pipeline.", href: "/dashboard/jobs?new=1", cta: "Add a job", done: hasJob },
+    { key: "import", title: "Bring in candidates you already have", body: "Import from a spreadsheet or your old system so search covers everyone.", href: "/dashboard/import", cta: "Import" },
+    showTeam && { key: "team", title: "Invite your team", body: "Shortlists, notes and scores are shared, with a record of who did what.", href: "/dashboard/team", cta: "Invite" },
+  ].filter(Boolean);
+  const doneCount = steps.filter((st) => st.done).length;
+
+  return (
+    <section style={{ ...CARD, padding: "24px 28px" }} aria-labelledby="getting-started-title">
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>Getting started</p>
+          <h2 id="getting-started-title" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: TEXT, margin: 0 }}>
+            Get your first shortlist in a few minutes
+          </h2>
+        </div>
+        <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0 }}>{doneCount} of {steps.length} done</p>
+      </div>
+      <div role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={doneCount}
+        style={{ height: 4, borderRadius: 9999, background: BORDER2, overflow: "hidden", marginBottom: 8 }}>
+        <div style={{ width: `${(doneCount / steps.length) * 100}%`, height: "100%", background: VIOLET, borderRadius: 9999 }} />
+      </div>
+      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        {steps.map((st) => (
+          <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderTop: `1px solid ${BORDER2}` }}>
+            <span aria-hidden="true" style={{
+              width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center",
+              background: st.done ? VIOLET : "transparent", border: `1.5px solid ${st.done ? VIOLET : st.primary ? VIOLET : BORDER}`,
+            }}>
+              {st.done && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              )}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: st.done ? TEXT_FAINT : TEXT, margin: 0, textDecoration: st.done ? "line-through" : "none" }}>
+                {st.title}<span className="sr-only">{st.done ? " (done)" : ""}</span>
+              </p>
+              {!st.done && <p style={{ fontSize: 13, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>}
+            </div>
+            {!st.done && st.href && (
+              <Link href={st.href} onClick={() => track("onboarding_step_clicked", { step: st.key })} style={{
+                flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
+                background: st.primary ? VIOLET : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+              }}>
+                {st.cta}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -1454,6 +1521,9 @@ function AgencyDashboardPage() {
     return () => { cancelled = true; };
   }, [opsScope, reloadKey]);
 
+  // Nothing screened and no open jobs: a brand-new workspace.
+  const isNewAccount = data != null && model.everyone.length === 0;
+  const hasOpenJob = Boolean(ops && ops.kpis?.openJobs > 0);
   const greetingName = clerkUser?.firstName || null;
   const agencyName = data?.agencyName && data.agencyName !== "your agency" ? data.agencyName : null;
   const plan = data?.plan ?? null;
@@ -1484,15 +1554,25 @@ function AgencyDashboardPage() {
             {data.truncated && <TruncatedNotice />}
             {model.hasTeammates && <ScopeToggle scope={scope} onChange={setScope} />}
 
-            {ops && <BusinessKpis kpis={ops.kpis} />}
-            {ops && (
+            {isNewAccount && <GettingStarted hasJob={hasOpenJob} showTeam={plan?.name === "Agency"} />}
+
+            {/* All zeros and "All clear" on day one say nothing; they come
+                back as soon as there's anything to report. */}
+            {ops && !(isNewAccount && !hasOpenJob) && <BusinessKpis kpis={ops.kpis} />}
+            {ops && !(isNewAccount && !hasOpenJob) && (
               <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
                 <RisksPanel alerts={ops.alerts} />
                 <AgendaPanel interviews={ops.interviews} total={ops.interviewsTotal} clientFollowUps={ops.clientFollowUps} />
               </div>
             )}
 
-            {model.analyses.length === 0 ? (
+            {isNewAccount ? (
+              ops && ops.activeJobsTotal > 0 && (
+                <div style={{ ...CARD, padding: 24 }}>
+                  <ActiveJobs jobs={ops.activeJobs} total={ops.activeJobsTotal} statsByJob={model.jobStats} />
+                </div>
+              )
+            ) : model.analyses.length === 0 ? (
               <div style={CARD}>
                 <EmptyState
                   title={model.mineOnly ? "No candidates assigned to you" : "No candidates yet"}

@@ -56,6 +56,7 @@ import Report from "@/app/analyse/_components/Report";
 import { EmailCard } from "@/app/analyse/_components/Rail";
 import { Toasts, useToasts } from "@/app/analyse/_components/ui";
 import { useUndoDelete } from "@/components/dashboard/use-undo-delete";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import SmsPanel from "@/components/dashboard/SmsPanel";
 import { useEmailComposer } from "@/app/analyse/_lib/useEmailComposer";
 import { STAGE_LABELS } from "@/lib/stage-labels";
@@ -2120,6 +2121,7 @@ export default function CandidateProfilePage({ params }) {
   // silently (a lost note, a stage that snapped back on reload).
   const { toasts, toast, dismiss } = useToasts();
   const failed = useCallback((err, fallback) => toast(err?.message || fallback, "error"), [toast]);
+  const [ask, confirmDialog] = useConfirm();
   // Built-in tags straight away; the agency's own arrive from /api/tags.
   const [tags, setTags] = useState(TAG_CATALOG);
   // No prev/next-candidate endpoint exists yet - the UI already disables
@@ -2270,23 +2272,48 @@ export default function CandidateProfilePage({ params }) {
   const handleDeleteCandidate = useCallback(async () => {
     const name = candidate?.fullName || "this candidate";
     const others = candidate?.otherRoles?.length || 0;
-    if (!confirm(`Permanently delete ${name}? This erases their CV, scores, notes and activity history, and cannot be undone.`)) {
-      return;
-    }
-    // They're also on file for other jobs - an erasure request has to
-    // cover those records too.
-    const everyRecord =
-      others > 0 &&
-      confirm(
-        `${name} also has ${others} other record${others === 1 ? "" : "s"} (screened for ${candidate.otherRoles.map((r) => r.jobTitle).join(", ")}).\n\nOK = erase every record (use this for a GDPR erasure request)\nCancel = only remove them from ${candidate.jobTitle}`
-      );
+    // They're also on file for other jobs - an erasure request has to cover
+    // those records too. This used to be a native confirm() where OK meant
+    // "erase everything" and Cancel meant "remove from this job only", so
+    // pressing Cancel still deleted. Each choice now says what it does, and
+    // Cancel really cancels.
+    const scope = await ask(
+      others > 0
+        ? {
+            title: `Delete ${name}?`,
+            body: (
+              <>
+                <p>
+                  {name} also has {others} other record{others === 1 ? "" : "s"} (screened for{" "}
+                  {candidate.otherRoles.map((r) => r.jobTitle).join(", ")}).
+                </p>
+                <p className="mt-2">
+                  For a GDPR erasure request, erase every record. Either way the CV, scores, notes and history that are
+                  deleted can&apos;t be recovered.
+                </p>
+              </>
+            ),
+            choices: [
+              { value: "job", label: `Remove from ${candidate.jobTitle || "this job"} only`, danger: true },
+              { value: "all", label: `Erase all ${others + 1} records`, danger: true },
+            ],
+          }
+        : {
+            title: `Permanently delete ${name}?`,
+            body: "This erases their CV, scores, notes and activity history, and can't be undone.",
+            confirmLabel: "Delete permanently",
+            danger: true,
+          }
+    );
+    if (!scope) return;
+    const everyRecord = scope === "all";
     try {
       await deleteCandidate(id, { everyRecord });
       router.push("/dashboard/candidates");
     } catch (err) {
       failed(err, "Couldn't delete this candidate. Please try again.");
     }
-  }, [id, candidate, router, failed]);
+  }, [id, candidate, router, failed, ask]);
 
   const handleAddNote = useCallback(
     async (body) => {
@@ -2488,6 +2515,7 @@ export default function CandidateProfilePage({ params }) {
 
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+      {confirmDialog}
       <DashboardNav />
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         {status === "loading" && <ProfileSkeleton />}

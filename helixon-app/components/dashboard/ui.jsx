@@ -88,7 +88,7 @@ const BUTTON = {
 
 export function Button({ variant = "secondary", size = "md", href, className = "", style, children, ...props }) {
   const cls = `inline-flex items-center justify-center gap-1.5 font-semibold rounded-full transition-colors disabled:opacity-50 ${FOCUS} ${
-    size === "sm" ? "text-[11px] px-2.5 py-1" : "text-[12px] px-3.5 py-1.5"
+    size === "sm" ? "text-[12px] px-3 py-1 min-h-[28px]" : "text-[12px] px-3.5 py-1.5 min-h-[32px]"
   } ${className}`;
   const s = { ...BUTTON[variant], ...style };
   if (href) {
@@ -214,6 +214,14 @@ export function ErrorText({ children }) {
 // A modal dialog: Escape and the backdrop close it; focus starts inside.
 export function Dialog({ title, onClose, children, width = 560, busy = false }) {
   const ref = useRef(null);
+  // Focus goes back to whatever opened the dialog when it closes; it used
+  // to drop to the top of the page, losing a keyboard user's place.
+  useEffect(() => {
+    const opener = document.activeElement;
+    return () => {
+      if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
+    };
+  }, []);
   useEffect(() => {
     const first = ref.current?.querySelector("input, select, textarea, button");
     first?.focus();

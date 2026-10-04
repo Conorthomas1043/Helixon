@@ -5,18 +5,38 @@
 
 import { useState } from "react";
 
+// Same rule as acceptableCv() in lib/applications.js, checked before the
+// upload starts: a too-large file used to upload in full (slow on a phone)
+// and only then come back as an error.
+const MAX_CV_BYTES = 10 * 1024 * 1024;
+function cvProblem(file) {
+  if (!file) return null;
+  if (file.size > MAX_CV_BYTES) return "Your CV is too large - the limit is 10 MB.";
+  const name = String(file.name || "").toLowerCase();
+  if (!name.endsWith(".pdf") && !name.endsWith(".docx")) return "Upload your CV as a PDF or Word (.docx) file.";
+  return null;
+}
+
 const input = "w-full text-[14px] px-3.5 py-2.5 rounded-[10px] bg-white focus-visible:outline focus-visible:outline-2";
 const inputStyle = { border: "1px solid var(--border)", color: "var(--ink)" };
 
 export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
   const [state, setState] = useState("form");
   const [error, setError] = useState("");
+  const [cvError, setCvError] = useState("");
+  const [sentTo, setSentTo] = useState("");
 
   async function submit(e) {
     e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const problem = cvProblem(form.get("cv"));
+    if (problem) {
+      setCvError(problem);
+      e.currentTarget.elements.namedItem("cv")?.focus();
+      return;
+    }
     setState("sending");
     setError("");
-    const form = new FormData(e.currentTarget);
     form.set("slug", slug);
     form.set("jobId", jobId);
     if (src) form.set("src", src);
@@ -24,6 +44,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
       const res = await fetch("/api/public/apply", { method: "POST", body: form });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || "Something went wrong. Please try again.");
+      setSentTo(String(form.get("email") || ""));
       setState("done");
     } catch (err) {
       setError(err.message);
@@ -33,17 +54,21 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
 
   if (state === "done") {
     return (
-      <div className="rounded-[14px] bg-white p-6" style={{ border: "1px solid var(--border)" }}>
+      <div id="apply" role="status" className="rounded-[14px] bg-white p-6" style={{ border: "1px solid var(--border)" }}>
         <h2 className="text-lg font-semibold mb-1" style={{ color: "var(--ink)" }}>Application sent</h2>
         <p className="text-[14px]" style={{ color: "var(--ink-soft)" }}>
-          Thanks for applying for {jobTitle}. {agencyName} will be in touch if your experience is a match.
+          Thanks for applying for {jobTitle}. A recruiter at {agencyName} will review your application
+          {sentTo ? <> and contact you at <strong style={{ color: "var(--ink)" }}>{sentTo}</strong></> : " and contact you"} if it&apos;s a match for the role.
+        </p>
+        <p className="text-[13px] mt-2" style={{ color: "var(--ink-faint)" }}>
+          It&apos;s worth checking your spam folder in the next few days. You can close this page.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="rounded-[14px] bg-white p-6 space-y-4" style={{ border: "1px solid var(--border)" }}>
+    <form id="apply" onSubmit={submit} className="rounded-[14px] bg-white p-6 space-y-4 scroll-mt-6" style={{ border: "1px solid var(--border)" }}>
       <h2 className="text-lg font-semibold" style={{ color: "var(--ink)" }}>Apply for this job</h2>
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="block">
@@ -65,8 +90,23 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
       </div>
       <label className="block">
         <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>CV (PDF or Word, up to 10 MB)</span>
-        <input name="cv" type="file" required accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="block w-full text-[14px]" style={{ color: "var(--ink)" }} />
+        <input
+          name="cv"
+          type="file"
+          required
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={(e) => setCvError(cvProblem(e.target.files?.[0]) || "")}
+          aria-invalid={cvError ? "true" : "false"}
+          aria-describedby={cvError ? "apply-cv-error" : undefined}
+          className="block w-full text-[14px]"
+          style={{ color: "var(--ink)" }}
+        />
       </label>
+      {cvError && (
+        <p id="apply-cv-error" className="text-[13px] -mt-2" style={{ color: "var(--score-low)" }}>
+          {cvError}
+        </p>
+      )}
       <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
         <label>
           Website

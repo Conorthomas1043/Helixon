@@ -13,6 +13,7 @@
 // in this browser as it goes (_lib/bulkRun.js), so a closed tab or dropped
 // connection can be resumed instead of starting again.
 
+import { track } from "@/lib/analytics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
@@ -314,6 +315,9 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     setRunning(true);
     setRateLimited(false);
     abortRef.current = false;
+    track("bulk_analysis_started", { cv_count: items.length, job_source: bulkJobId ? "saved" : bulkJobFile ? "file" : "text" });
+    const tally = { ok: 0, failed: 0 };
+    const count = (outcome) => { if (outcome.outcome === "ok") tally.ok++; else if (outcome.outcome !== "aborted") tally.failed++; };
 
     // A picked saved job is already resolved. Otherwise run CVs one at a
     // time until one succeeds and creates the job, so parallel requests
@@ -323,6 +327,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     let idx = 0;
     while (!resolvedJobRef.current.id && idx < items.length) {
       const outcome = await runOne(items[idx], null, bulkJobText, bulkJobFile);
+      count(outcome);
       idx++;
       if (outcome.outcome === "aborted") {
         setRunning(false);
@@ -344,6 +349,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
         if (abortRef.current) return;
         const item = rest[cursor++];
         const outcome = await runOne(item, resolvedId, resolvedText, null);
+        count(outcome);
         if (outcome.outcome === "aborted") {
           abortRef.current = true;
           return;
@@ -357,6 +363,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     }
     await Promise.all(Array.from({ length: BULK_CONCURRENCY }, worker));
     setRunning(false);
+    track("bulk_analysis_finished", { cv_count: items.length, succeeded: tally.ok, failed: tally.failed, stopped: abortRef.current });
   }
 
   async function retryOne(id) {

@@ -61,6 +61,15 @@ export default async function PublicJobPage({ params, searchParams }) {
           <p className="text-[14px] mt-2" style={{ color: "var(--ink-soft)" }}>
             {[publicJob.client, publicJob.location, publicJob.employmentType, publicJob.seniority, publicJob.salary].filter(Boolean).join(" · ")}
           </p>
+          {/* The form sits below the full description; on a phone that's a
+              long scroll before an applicant sees any way to apply. */}
+          <a
+            href="#apply"
+            className="inline-flex items-center justify-center mt-5 min-h-[44px] text-[14px] font-semibold px-6 rounded-full"
+            style={{ background: "var(--forest)", color: "white" }}
+          >
+            Apply for this job
+          </a>
           <div className="mt-6 text-[15px] leading-relaxed whitespace-pre-line" style={{ color: "var(--ink)" }}>
             {publicJob.description}
           </div>

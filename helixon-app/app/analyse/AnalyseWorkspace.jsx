@@ -7,6 +7,7 @@
 //   report  - the assessment as a document, with an action rail beside it
 // plus Bulk mode (BulkFlow) for many CVs against one role.
 
+import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -270,6 +271,9 @@ export default function AnalyseWorkspace() {
       if (redirectForStatus(response, data)) return;
 
       if (!data?.ok) {
+        // Without this, failed analyses were invisible in analytics: only
+        // successes were recorded, so the failure rate couldn't be seen.
+        track("analysis_failed", { status: response.status, comparison: isCompare, cv_file_type: cv.type || "unknown" });
         setError(data?.error || "Something went wrong analysing this candidate. Please try again.");
         return;
       }
@@ -318,6 +322,7 @@ export default function AnalyseWorkspace() {
         scoringVersion: SCORING_VERSION,
       });
     } catch {
+      track("analysis_failed", { status: "network", comparison: isCompare, cv_file_type: cv.type || "unknown" });
       setError("Network error - check your connection and try again.");
     } finally {
       const remaining = MIN_LOADING_MS - (Date.now() - startedAt);

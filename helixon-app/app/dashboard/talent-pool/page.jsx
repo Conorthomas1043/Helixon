@@ -12,6 +12,7 @@
 // rescreen) - no re-uploading. ?jobId= deep-links straight to a job;
 // ?due=1 opens on the check-ins that are due.
 
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -513,6 +514,7 @@ function TalentPoolContent() {
   const stopRef = useRef(false);
   const { toasts, toast, dismiss } = useToasts();
   const undoable = useUndoDelete(toast);
+  const [ask, confirmDialog] = useConfirm();
 
   useEffect(() => {
     getJobs()
@@ -657,7 +659,8 @@ function TalentPoolContent() {
 
   async function bulkRemove() {
     const ids = [...selected];
-    if (!confirm(`Remove ${ids.length} ${ids.length === 1 ? "person" : "people"} from the talent pool? Their profiles and screenings stay as they are.`)) return;
+    const who = `${ids.length} ${ids.length === 1 ? "person" : "people"}`;
+    if (!(await ask({ title: `Remove ${who} from the talent pool?`, body: "Their profiles and screenings stay as they are.", confirmLabel: "Remove from pool" }))) return;
     setBulkBusy(true);
     try {
       await bulkUpdateCandidates(ids, { action: "unpool" });
@@ -748,6 +751,7 @@ function TalentPoolContent() {
   return (
     <main className="min-h-screen bg-[var(--mist)] pb-28">
       <DashboardNav />
+      {confirmDialog}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
