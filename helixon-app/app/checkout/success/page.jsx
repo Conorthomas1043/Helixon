@@ -87,6 +87,15 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             >
               Back to pricing
             </Link>
+            {/* Someone who may have just been charged needs a person to
+                talk to, not only a way back to the price list. */}
+            <p className="text-[12px] mt-4" style={{ color: "var(--ink-faint)" }}>
+              Think something&apos;s gone wrong?{" "}
+              <Link href="/contact" className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
+                Contact us
+              </Link>{" "}
+              and we&apos;ll sort it out.
+            </p>
           </>
         ) : (
           <>

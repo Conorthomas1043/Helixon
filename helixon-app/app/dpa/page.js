@@ -91,7 +91,7 @@ export default function DpaPage() {
         "--mist": "#f6f8f6",
         "--border": "#dde6e1",
         "--signal": "#f59e0b",
-        "--font-display": "'Fraunces', Georgia, serif",
+        "--font-display": "var(--font-fraunces), Georgia, serif",
         "--font-mono": "'IBM Plex Mono', monospace",
       }}
     >

@@ -43,7 +43,7 @@ export const css = `
   --shadow-card:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px -12px rgba(0,0,0,.55);
   --shadow-pop:0 24px 60px -18px rgba(0,0,0,.75), 0 0 0 1px var(--border-strong);
 
-  --font-ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-ui:var(--font-inter),"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
   --font-mono:ui-monospace,"SFMono-Regular","JetBrains Mono","IBM Plex Mono",Menlo,Consolas,monospace;
 
   --sidebar-w:248px;

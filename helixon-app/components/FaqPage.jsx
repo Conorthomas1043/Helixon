@@ -4,57 +4,27 @@ import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
+import { FAQ_GROUPS } from "@/lib/faq-content";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FAQ - accordion list grouped by topic, same nav/footer/tokens as landing.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const FAQ_GROUPS = [
-  {
-    group: "Getting started",
-    items: [
-      { q: "Do I need a card to try it?", a: "Yes - Helixon doesn't offer a free trial. Choose an Individual or Agency plan to get started, with unlimited analyses from day one." },
-      { q: "What file types can I upload?", a: "PDF and Word (.docx) CVs. If you're working from something else, exporting to PDF first works fine." },
-      { q: "How long does a scan actually take?", a: "Around 30 seconds on average - reading the CV, parsing the job description, analysing fit, and generating the score all happen in one pass." },
-    ],
-  },
-  {
-    group: "Scoring & accuracy",
-    items: [
-      { q: "How is the match score calculated?", a: "It weighs how closely a candidate's experience, skills, and seniority match what the job description asks for - not a keyword count. Equivalent experience under a different title still scores fairly." },
-      { q: "Can I use my own job description instead of a preset?", a: "Yes - paste in your own job description at the analysis step and Helixon reads it the same way it reads the presets." },
-      { q: "What if I disagree with a score?", a: "You can leave feedback on any analysis, which feeds into your agency's accuracy rate on the dashboard and helps you spot patterns in where the scoring runs hot or cold for your roles." },
-    ],
-  },
-  {
-    group: "Data & privacy",
-    items: [
-      { q: "Is my data used to train any model?", a: "No. CVs and job descriptions are processed only to generate your analysis and are never used for training." },
-      { q: "Where is data stored?", a: "On EU servers, in line with GDPR." },
-      { q: "Can I delete my data?", a: "Yes - deleting your account from Account settings removes all analyses, candidates, and billing history permanently." },
-    ],
-  },
-  {
-    group: "Billing",
-    items: [
-      { q: "Can I cancel anytime?", a: "Yes, there's no lock-in on Individual or Agency. Cancel from Billing and you'll keep access until the end of your current billing period." },
-      { q: "Is there a cap on how many analyses I can run?", a: "No - Individual and Agency plans both include unlimited analyses, with no monthly cap to track or roll over." },
-      { q: "Do you offer invoicing for agencies?", a: "Agency plans can be invoiced directly - reach out via the Contact page and we'll set that up." },
-    ],
-  },
-];
-
-function FaqItem({ q, a, isOpen, onToggle }) {
+function FaqItem({ id, q, a, isOpen, onToggle }) {
   return (
     <div className="border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
       <button
+        type="button"
+        id={`${id}-q`}
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="w-full flex items-center justify-between gap-4 py-4 text-left"
+        aria-controls={`${id}-a`}
+        className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
       >
         <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{q}</span>
         <svg
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round"
+          aria-hidden="true"
           className="shrink-0 transition-transform duration-200"
           style={{ transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}
         >
@@ -62,10 +32,14 @@ function FaqItem({ q, a, isOpen, onToggle }) {
         </svg>
       </button>
       <div
+        id={`${id}-a`}
+        role="region"
+        aria-labelledby={`${id}-q`}
+        inert={!isOpen}
         className="overflow-hidden transition-all duration-200"
-        style={{ maxHeight: isOpen ? "200px" : "0px" }}
+        style={{ maxHeight: isOpen ? "400px" : "0px", opacity: isOpen ? 1 : 0 }}
       >
-        <p className="text-xs leading-relaxed pb-4 pr-8" style={{ color: "var(--ink-soft)" }}>{a}</p>
+        <p className="text-sm leading-relaxed pb-4 pr-8" style={{ color: "var(--ink-soft)" }}>{a}</p>
       </div>
     </div>
   );
@@ -82,7 +56,7 @@ export default function FaqPage() {
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M6 4v2.5M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M6 4v2.5M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           Frequently asked
         </span>
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -106,6 +80,7 @@ export default function FaqPage() {
                   return (
                     <FaqItem
                       key={key}
+                      id={`faq-${key.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`}
                       q={item.q}
                       a={item.a}
                       isOpen={openKey === key}

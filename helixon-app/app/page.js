@@ -1,7 +1,5 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { useUser } from "@clerk/nextjs";
 import Button from "@/components/landing/Button";
 import ChatWidget from "@/components/landing/ChatWidget";
@@ -13,6 +11,7 @@ import AnalysisExample from "@/components/landing/AnalysisExample";
 import useScrollEntrance from "@/lib/hooks/useScrollEntrance";
 import useRovingTabs from "@/lib/hooks/useRovingTabs";
 import { PLAN_FEATURES } from "@/lib/plan-features";
+import { startCheckout } from "@/lib/start-checkout";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -384,7 +383,7 @@ function AnalysisExampleSection() {
   );
 }
 
-/* ── Pricing plan buy button - unchanged: calls /api/checkout, then redirects ── */
+/* ── Pricing plan buy button: starts a Stripe checkout, then redirects ── */
 function BuyPlanButton({ plan, label, highlight }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -392,29 +391,13 @@ function BuyPlanButton({ plan, label, highlight }) {
   async function handleClick() {
     setError("");
     setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      let data;
-      try { data = await res.json(); } catch { data = null; }
-
-      if (!res.ok || !data?.ok || !data?.redirectTo) {
-        setError(data?.error || "Something went wrong. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      if (posthog.__loaded) {
-        posthog.capture("checkout_started", { plan });
-      }
-      window.location.href = data.redirectTo;
-    } catch {
-      setError("Network error. Please try again.");
+    const result = await startCheckout(plan);
+    if (!result.ok) {
+      setError(result.error);
       setLoading(false);
+      return;
     }
+    window.location.assign(result.redirectTo);
   }
 
   return (
@@ -426,9 +409,10 @@ function BuyPlanButton({ plan, label, highlight }) {
         aria-busy={loading}
         className="text-center text-sm font-semibold py-3 rounded-[10px] transition-all w-full min-h-[44px]"
         style={{
-          background: loading ? "var(--ink-mute)" : highlight ? "white" : "var(--forest)",
+          background: highlight ? "white" : "var(--forest)",
           color: highlight ? "var(--forest)" : "white",
-          cursor: loading ? "not-allowed" : "pointer",
+          opacity: loading ? 0.75 : 1,
+          cursor: loading ? "wait" : "pointer",
         }}
       >
         {loading ? "Redirecting…" : label}
@@ -522,7 +506,7 @@ function UploadTabContent() {
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </svg>
         <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>Drop up to 50 CVs</p>
-        <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word, scanned or typed</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word (.docx)</p>
       </div>
       <div className="space-y-1.5">
         {files.map((f) => (
@@ -890,7 +874,7 @@ const FEATURE_GROUPS = [
   {
     title: "Screen faster",
     body: "Get through a full pile of CVs in the time it used to take to read three.",
-    items: ["Bulk CV upload against one role", "PDF, Word, scanned and photographed CVs", "Fast, consistent parsing"],
+    items: ["Bulk CV upload against one role", "PDF and Word CVs, tables and columns included", "Fast, consistent parsing"],
   },
   {
     title: "Make better screening decisions",
@@ -971,8 +955,8 @@ function TrustSection() {
 
 const PLANS = [
   {
-    name: "Not sure yet?", price: "", period: "",
-    features: ["Full platform walkthrough", "No obligation"],
+    name: "Not sure yet?", price: "Demo", period: "on your own CVs",
+    features: ["Full platform walkthrough", "Run it on your own CVs and roles", "No obligation"],
     cta: "Get a demo", highlight: false, action: "demo",
   },
   {
@@ -1133,7 +1117,7 @@ export default function LandingPage() {
 
               {!signedIn && (
                 <p className="fade-up-in text-[13px] mt-4" style={{ color: "var(--ink-faint)", "--stagger-delay": "280ms" }}>
-                  Plans from &pound;249 a month. Billed monthly, cancel anytime.
+                  See it on your own CVs, no obligation. Plans from &pound;249 a month.
                 </p>
               )}
             </div>

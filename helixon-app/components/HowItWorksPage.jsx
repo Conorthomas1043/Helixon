@@ -19,8 +19,8 @@ const STEPS = [
   {
     n: "2",
     title: "Upload the CV",
-    body: "Drag in a PDF or Word file. No reformatting, no copy-pasting into a template - Helixon parses the document as-is, including tables, multi-column layouts, and scanned exports, in a matter of seconds.",
-    icon: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
+    body: "Drag in a PDF or Word file. No reformatting, no copy-pasting into a template - Helixon parses the document as-is, including tables and multi-column layouts, in a matter of seconds.",
+    icon: <><path d="M12 16V4m0 0L7 9m5-5 5 5" /><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></>,
   },
   {
     n: "3",
@@ -45,7 +45,7 @@ const DETAILS = [
   },
   {
     title: "Your data stays yours",
-    body: "CVs and job descriptions are processed to generate your analysis and are never used to train any model. Everything is stored on EU servers in line with GDPR.",
+    body: "CVs and job descriptions are processed to generate your analysis and are never used to train any model. Everything is stored in Switzerland, which the UK and EU recognise as adequate, in line with GDPR.",
   },
 ];
 
@@ -59,13 +59,13 @@ export default function HowItWorksPage() {
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-14 text-center">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-          Under 30 seconds, start to finish
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+          Under a minute per CV
         </span>
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-2xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           From CV to decision, in three steps.
         </h1>
-        <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-[15px] leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
           No spreadsheets, no manual comparison. Here&apos;s exactly what happens between dropping in a CV and having a scored, ready-to-act-on candidate.
         </p>
       </section>
@@ -79,7 +79,7 @@ export default function HowItWorksPage() {
                 <span className="w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                   {s.n}
                 </span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden">{s.icon}</svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden" aria-hidden="true">{s.icon}</svg>
               </div>
               <div>
                 <h2 className="text-base font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.title}</h2>
@@ -87,7 +87,7 @@ export default function HowItWorksPage() {
               </div>
               {i < STEPS.length - 1 && (
                 <div className="hidden sm:flex ml-auto self-center shrink-0" style={{ color: "var(--ink-mute)" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M6 4l8 8-8 8" />
                   </svg>
                 </div>
@@ -109,7 +109,7 @@ export default function HowItWorksPage() {
           {DETAILS.map((d) => (
             <div key={d.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
               <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{d.title}</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d.body}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d.body}</p>
             </div>
           ))}
         </div>

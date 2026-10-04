@@ -1,4 +1,4 @@
-import { Geist_Mono } from "next/font/google";
+import { Fraunces, Geist_Mono, Inter, Outfit } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -6,12 +6,27 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import SiteAnnouncement from "@/components/SiteAnnouncement";
 import "./globals.css";
 
+// Every font the site uses, self-hosted through next/font. They used to come
+// from a Google Fonts stylesheet: a render-blocking request to a third-party
+// origin on every page, which held back first paint, and it pulled in
+// Fraunces (three legal pages only) everywhere. next/font serves them from
+// our own domain with size-matched fallbacks, so text doesn't jump when the
+// web font arrives. globals.css maps these onto --font-display/-body/-mono.
+const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], display: "swap" });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
-  // Only the Clerk widgets use this font; preloading it on every page (home
-  // included) logged a "preloaded but not used" warning.
+  // Numbers and the Clerk widgets only; not worth a preload on every page.
+  preload: false,
+});
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  axes: ["opsz"],
+  // Display face for the legal pages only.
   preload: false,
 });
 
@@ -73,23 +88,7 @@ export default function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" className={`${geistMono.variable} h-full`}>
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
-          {/* Every Google font the site uses, in one request: Outfit
-              (--font-display), Inter (--font-body), Geist Mono
-              (--font-mono) and Fraunces (the legal pages' display face). */}
-          <link
-            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap"
-            rel="stylesheet"
-          />
-        </head>
-
+      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} ${fraunces.variable} h-full`}>
         <body className="min-h-full flex flex-col antialiased">
           {/* Admin-set banner (/admin/site); renders nothing unless one is on. */}
           <SiteAnnouncement />

@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import posthog from "posthog-js";
+import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import { PLAN_FEATURES } from "@/lib/plan-features";
+import { startCheckout } from "@/lib/start-checkout";
 
 const PLANS = [
   {
     id: "individual",
     name: "Individual",
     price: 249,
-    description: "For recruiters screening candidates independently.",
+    description: "For a recruiter screening candidates on their own desk.",
     features: PLAN_FEATURES.individual,
   },
   {
@@ -24,6 +25,16 @@ const PLANS = [
   },
 ];
 
+// The objections people raise at the point of paying, answered next to the
+// buttons instead of on a separate FAQ page they'd have to leave for.
+// Every answer matches the homepage FAQ and the checkout flow.
+const PRICING_FAQS = [
+  { q: "Is there a contract?", a: "No. Both plans are billed monthly. Cancel from your account and you keep access until the end of the billing period." },
+  { q: "Is screening really unlimited?", a: "Yes. There's no monthly cap on analyses on either plan, so you never have to ration CVs." },
+  { q: "Do I need an account first?", a: "No. Choose a plan, pay securely through Stripe, and you'll set up your account straight after." },
+  { q: "Where is candidate data kept?", a: "In Switzerland, which the UK and EU recognise as adequate. It's encrypted and never used to train any model." },
+];
+
 export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState("");
@@ -31,37 +42,13 @@ export default function PricingPage() {
   async function choosePlan(plan) {
     setLoadingPlan(plan);
     setError("");
-
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          window.location.href = `/login?next=/pricing`;
-          return;
-        }
-        throw new Error(data.error || "Unable to start checkout.");
-      }
-
-      if (!data.redirectTo) {
-        throw new Error("Checkout URL was not returned.");
-      }
-
-      if (posthog.__loaded) {
-        posthog.capture("checkout_started", { plan });
-      }
-
-      window.location.href = data.redirectTo;
-    } catch (err) {
-      setError(err?.message || "Unable to start checkout.");
+    const result = await startCheckout(plan);
+    if (!result.ok) {
+      setError(result.error);
       setLoadingPlan(null);
+      return;
     }
+    window.location.assign(result.redirectTo);
   }
 
   return (
@@ -80,8 +67,8 @@ export default function PricingPage() {
             <br />
             the bottleneck
           </h1>
-          <p className="text-sm leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
-            No three-analysis trial. No fake limits. Choose a Helixon subscription and screen without a usage cap.
+          <p className="text-[15px] leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
+            Unlimited screening on both plans. Monthly billing, no contract, cancel anytime.
           </p>
         </div>
 
@@ -113,7 +100,7 @@ export default function PricingPage() {
                     className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
                     style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
                   >
-                    Most popular
+                    Recommended for agencies
                   </span>
                 )}
 
@@ -133,7 +120,7 @@ export default function PricingPage() {
                   </span>
                 </div>
 
-                <p className="text-xs leading-relaxed mt-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-soft)" }}>
+                <p className="text-xs leading-relaxed mt-3 sm:min-h-[2.5rem]" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-soft)" }}>
                   {plan.description}
                 </p>
 
@@ -144,17 +131,21 @@ export default function PricingPage() {
                   aria-busy={loading}
                   className="w-full mt-6 rounded-[10px] py-3.5 text-sm font-semibold transition-colors min-h-[48px]"
                   style={{
-                    background: loading ? "var(--ink-mute)" : plan.highlight ? "white" : "var(--forest)",
+                    background: plan.highlight ? "white" : "var(--forest)",
                     color: plan.highlight ? "var(--forest)" : "white",
+                    opacity: loading ? 0.75 : 1,
                     cursor: loading ? "wait" : "pointer",
                   }}
                 >
                   {loading ? "Opening checkout…" : `Choose ${plan.name}`}
                 </button>
+                <p className="text-[11px] text-center mt-2" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
+                  Billed monthly · Cancel anytime
+                </p>
 
                 <ul className="grid gap-2.5 mt-6">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
+                    <li key={feature} className="flex items-start gap-2 text-sm" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
                       <span aria-hidden="true" className="shrink-0 font-bold" style={{ color: plan.highlight ? "white" : "var(--forest)" }}>
                         ✓
                       </span>
@@ -168,8 +159,39 @@ export default function PricingPage() {
         </div>
 
         <p className="mt-7 max-w-lg mx-auto text-center text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
-          Billing is handled securely by Stripe. You must be signed in before starting checkout.
+          Payment is handled securely by Stripe. No account needed first: you&rsquo;ll set one up straight after checkout.
         </p>
+
+        {/* A way forward for anyone not ready to pay today, instead of a dead end. */}
+        <div className="max-w-2xl mx-auto mt-10 rounded-[16px] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div>
+            <p className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>Not sure which plan fits?</p>
+            <p className="text-sm leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
+              Get a demo and see Helixon run on your own CVs first. No obligation.
+            </p>
+          </div>
+          <Link
+            href="/demo"
+            className="inline-flex items-center justify-center shrink-0 text-sm font-semibold px-5 rounded-[10px] min-h-[44px] w-full sm:w-auto transition-colors hover:bg-[var(--mint)]"
+            style={{ border: "1.5px solid var(--border)", color: "var(--ink)" }}
+          >
+            Get a demo
+          </Link>
+        </div>
+
+        <div className="max-w-2xl mx-auto mt-14">
+          <h2 className="text-lg font-semibold tracking-tight mb-5 text-center" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            Before you choose
+          </h2>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+            {PRICING_FAQS.map((f) => (
+              <div key={f.q}>
+                <dt className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{f.q}</dt>
+                <dd className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </section>
 
       </main>
