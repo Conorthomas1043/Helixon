@@ -74,7 +74,8 @@ Defined in `vercel.json`, all under `app/api/cron/` (times are UTC):
 ## Code layout
 
 - `app/`: routes. `app/api/` holds the 200 or so route handlers. Each area has an `error.js` boundary (`components/RouteError.jsx`).
-- `components/`: shared UI. `components/dashboard/ui.jsx` is the kit for customer screens: `Page`, `Card`, `Button`, `Field`, `Dialog` (focus-trapped), `EmptyState`, `ErrorState`. `use-confirm.jsx` replaces `window.confirm`.
+- `components/ui`: the UI kit, the one set of building blocks for every screen: `Button`, `Card`, `Field` and inputs, `Switch`, `Segmented`, `Notice`, `Dialog` (focus-trapped), `EmptyState`, `ErrorState`, `Pill`, toasts and icons. Colours come from the `--ui-*` tokens in `app/globals.css`, which the admin console redefines for its dark theme (`app/admin/_shared/styles.js`). Each area's `ui` module (`components/dashboard/ui`, `app/analyse/_components/ui`, `components/account/ui`, `app/employee/_shared/ui`, `app/admin/_shared/ui`) re-exports it and adds only that area's own layouts. `/ui-gallery` shows every component in both themes when `UI_GALLERY=1` is set. `components/dashboard/use-confirm.jsx` replaces `window.confirm`.
+- Loading data on the server: the candidate profile (`app/dashboard/candidates/[id]/page.jsx`) loads with `lib/candidate-profile.js`, the same loader `GET /api/candidates/[id]` uses, and hands it to the client component, which only fetches again on retry. Its panels live in `_components/`. New pages should follow this pattern.
 - `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`).
 - `app/globals.css`: design tokens (`--forest`, `--ink-*`, score colours, radii, shadows), mapped into Tailwind's theme.
 - `supabase/migrations/`: the schema history, applied with the "Apply database migrations" workflow (see the runbook).

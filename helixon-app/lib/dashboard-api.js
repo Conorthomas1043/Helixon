@@ -6,6 +6,7 @@
 // except where a caller needs the status itself (getTeamSeatUsage). Stage
 // values come from lib/stage-labels.js.
 
+import { shapeCandidate } from "@/lib/candidate-shape";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { track } from "@/lib/analytics";
 import { announceSignedOut, OFFLINE_MESSAGE, responseErrorMessage } from "@/lib/api-errors";
@@ -101,8 +102,7 @@ export async function getCandidatesForExport(query = {}) {
 }
 
 export async function getCandidateById(id) {
-  const candidate = await apiFetch(`/api/candidates/${id}`);
-  return { ...candidate, job: candidate.job ? { ...candidate.job, company: candidate.job.client } : null };
+  return shapeCandidate(await apiFetch(`/api/candidates/${id}`));
 }
 
 // Name, contact details and current role, as corrected by a recruiter - see
