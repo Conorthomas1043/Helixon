@@ -13,9 +13,11 @@ function toDate(value, { dateOnly = false } = {}) {
 // "4 Oct 2026"; { withYear: false } → "4 Oct"; { withTime: true } → "4 Oct,
 // 14:05" (no year, as the dashboard shows it). `empty` is what a missing or
 // invalid value shows.
+/** @param {any} value @param {{ withYear?: boolean, withTime?: boolean, dateOnly?: boolean, empty?: string | null }} [options] */
 export function formatDate(value, { withYear = true, withTime = false, dateOnly = false, empty = "-" } = {}) {
   const d = toDate(value, { dateOnly });
   if (!d) return empty;
+  /** @type {Intl.DateTimeFormatOptions} */
   const options = withTime
     ? { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }
     : { day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}) };
@@ -28,6 +30,7 @@ export function formatDate(value, { withYear = true, withTime = false, dateOnly 
 //   short    "3m ago", "2h ago"; a date after a day (staff call lists)
 //   compact  "3m", "2h", "4d" (notification badges)
 //   relative "3 min ago", "yesterday", "4 days ago"; a date after a week
+/** @param {any} value @param {{ now?: number, style?: "long" | "short" | "compact" | "relative", empty?: string | null }} [options] */
 export function timeAgo(value, { now = Date.now(), style = "long", empty } = {}) {
   const d = toDate(value);
   if (!d) return empty !== undefined ? empty : style === "long" ? (value ? "-" : "never") : null;

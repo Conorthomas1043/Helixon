@@ -47,7 +47,7 @@ export async function rescreenCandidate(id, jobId) {
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.ok) {
-    const err = new Error(data?.error || "Couldn't screen this candidate.");
+    const err = /** @type {Error & { status?: number, existingId?: string | null }} */ (new Error(data?.error || "Couldn't screen this candidate."));
     err.status = res.status;
     err.existingId = data?.existingId || null;
     throw err;

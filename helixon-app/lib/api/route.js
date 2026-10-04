@@ -52,6 +52,10 @@ export async function parseBody(request, schema, { allowEmpty = false } = {}) {
   return { body: result.data };
 }
 
+/**
+ * @param {(request: Request, context: any, auth: any, body?: any) => Promise<Response>} handler
+ * @param {{ body?: import("zod").ZodType, optionalBody?: boolean, requireSubscription?: boolean }} [options]
+ */
 export function customerRoute(handler, { body: schema, optionalBody = false, requireSubscription = false } = {}) {
   return async function route(request, context) {
     const auth = await requireCustomerContext(requireSubscription ? { requireSubscription: true } : undefined);

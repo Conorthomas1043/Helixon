@@ -224,6 +224,7 @@ export async function completeNextAction(id) {
 }
 
 // Client-ready profile - see app/api/candidates/[id]/client-profile.
+/** @param {string} candidateId @param {{ blind?: boolean, includeConcerns?: boolean, label?: string }} [options] */
 export async function getClientProfile(candidateId, { blind = false, includeConcerns = false, label } = {}) {
   const params = new URLSearchParams();
   if (blind) params.set("blind", "1");

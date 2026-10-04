@@ -5,6 +5,7 @@
 import { apiFetch } from "./core";
 
 // E-signatures - app/api/signatures, lib/signatures.js.
+/** @param {{ clientId?: string, candidateId?: string }} [filters] */
 export async function getSignatureRequests({ clientId, candidateId } = {}) {
   const q = new URLSearchParams();
   if (clientId) q.set("clientId", clientId);

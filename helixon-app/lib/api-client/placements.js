@@ -74,6 +74,7 @@ export async function saveInvoicingSettings(fields) {
 }
 
 // Invoices for Xero / QuickBooks, or a payroll sheet - app/api/exports/accounting.
+/** @param {string} format @param {{ from?: string, to?: string }} [range] */
 export async function getAccountingExport(format, { from, to } = {}) {
   const q = new URLSearchParams({ format });
   if (from) q.set("from", from);

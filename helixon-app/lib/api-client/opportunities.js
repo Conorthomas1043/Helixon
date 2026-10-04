@@ -5,6 +5,7 @@
 import { apiFetch } from "./core";
 
 // Business development - app/api/opportunities, lib/opportunities.js.
+/** @param {{ clientId?: string }} [filters] */
 export async function getOpportunities({ clientId } = {}) {
   const q = clientId ? `?clientId=${encodeURIComponent(clientId)}` : "";
   return apiFetch(`/api/opportunities${q}`);

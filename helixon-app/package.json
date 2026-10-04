@@ -14,7 +14,8 @@
     "calibrate": "node scripts/fit-score-weights.mjs",
     "eval:fairness": "node scripts/eval-fairness.mjs",
     "typecheck": "node scripts/typecheck.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "npm run lint && npm run typecheck && npm test && node scripts/check-migrations.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

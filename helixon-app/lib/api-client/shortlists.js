@@ -7,6 +7,7 @@ import { apiFetch } from "./core";
 
 // Shortlists - see app/api/shortlists. `candidateId` marks which lists
 // already have that person on them (containsCandidate).
+/** @param {{ jobId?: string, candidateId?: string }} [filters] */
 export async function getShortlists({ jobId, candidateId } = {}) {
   const params = new URLSearchParams();
   if (jobId) params.set("jobId", jobId);

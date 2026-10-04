@@ -18,7 +18,6 @@
   "lib/cv-analysis/scoring/progressionEngine.js": 1,
   "lib/cv-analysis/scoring/salaryEngine.js": 8,
   "lib/cv-analysis/scoring/scoreCandidate.js": 2,
-  "lib/dashboard-api.js": 10,
   "lib/employee-auth.js": 2,
   "lib/employee-calendar.js": 3,
   "lib/employee-cold-calls.js": 4,
