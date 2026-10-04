@@ -7,7 +7,7 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import AnalysisExample from "@/components/landing/AnalysisExample";
-import { PLAN_FEATURES } from "@/lib/plan-features";
+import { PLAN_FEATURES, PLAN_FOR, agencyPerSeatNote, placementFeeExample } from "@/lib/plan-features";
 import {
   BulkPreviewCard,
   BuyPlanButton,
@@ -343,19 +343,19 @@ function TrustSection() {
 
 const PLANS = [
   {
-    name: "Not sure yet?", price: "Demo", period: "on your own CVs",
+    name: "Not sure yet?", price: "Demo", period: "on your own CVs", forWhom: "For anyone who wants to see it on a live role before paying.",
     features: ["Full platform walkthrough", "Run it on your own CVs and roles", "No obligation"],
     cta: "Get a demo", highlight: false, action: "demo",
   },
   {
-    name: "Individual", price: "£249", period: "/ month",
+    name: "Individual", price: "£249", period: "/ month", forWhom: PLAN_FOR.individual,
     features: PLAN_FEATURES.individual,
-    cta: "Buy Individual", highlight: false, plan: "individual",
+    cta: "Choose Individual", highlight: false, plan: "individual",
   },
   {
-    name: "Agency", price: "£349", period: "/ month",
+    name: "Agency", price: "£349", period: "/ month", forWhom: PLAN_FOR.agency, note: agencyPerSeatNote(),
     features: PLAN_FEATURES.agency,
-    cta: "Buy Agency", highlight: true, plan: "agency",
+    cta: "Choose Agency", highlight: true, plan: "agency",
   },
 ];
 
@@ -474,11 +474,14 @@ export default function LandingPage() {
             <div className="text-center mb-14">
               <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Pricing</p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-                Plans built around how agencies actually screen
+                One price, unlimited screening, the whole desk included
               </h2>
               <p className="text-[15px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
                 Book a demo to see it run on your own CVs, or start on a plan today.
                 Monthly billing, no long-term contract.
+              </p>
+              <p className="text-[13px] leading-relaxed max-w-xl mx-auto mt-3" style={{ color: "var(--ink-faint)" }}>
+                {placementFeeExample()}
               </p>
             </div>
           </Reveal>
@@ -505,10 +508,14 @@ export default function LandingPage() {
                   <h3 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
                     {plan.name}
                   </h3>
-                  <div className="flex items-baseline gap-1.5 mb-6">
+                  <div className="flex items-baseline gap-1.5 mb-2">
                     <span className="text-[2.25rem] font-semibold leading-none" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
                     <span className="text-[13px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.period}</span>
                   </div>
+                  {plan.note && (
+                    <p className="text-[12px] mb-2" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.note}</p>
+                  )}
+                  <p className="text-[13px] leading-snug mb-6" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>{plan.forWhom}</p>
                   <ul className="space-y-3 mb-7 flex-1">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
@@ -557,7 +564,9 @@ export default function LandingPage() {
         <Reveal>
           <CtaBand
             heading="Your next great hire is already in that pile of CVs."
-            body="Find them in minutes, not hours. Get a demo and we'll show you how."
+            body="Find them in minutes, not hours. Get a demo and we'll show you how, or pick a plan and start today."
+            secondaryLabel="See pricing"
+            secondaryHref="#pricing"
           />
         </Reveal>
 

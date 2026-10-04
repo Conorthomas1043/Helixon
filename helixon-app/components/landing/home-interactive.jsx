@@ -763,7 +763,7 @@ export function HeroActions() {
       </div>
       {!signedIn && (
         <p className="fade-up-in text-[13px] mt-4" style={{ color: "var(--ink-faint)", "--stagger-delay": "280ms" }}>
-          See it on your own CVs, no obligation. Plans from &pound;249 a month.
+          See it on your own CVs, no obligation. Plans from &pound;249 a month, with unlimited screening.
         </p>
       )}
     </>
