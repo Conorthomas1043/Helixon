@@ -33,7 +33,7 @@ jobs:
         run: node scripts/check-migrations.mjs
 
   build:
-    name: Production build
+    name: Production build and e2e
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -44,8 +44,10 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
-      CLERK_SECRET_KEY: sk_test_ci
+      # Production-format placeholders: a development key would make Clerk
+      # redirect every first visit through its handshake, which e2e can't follow.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuZXhhbXBsZS5jb20k
+      CLERK_SECRET_KEY: sk_live_ci
       STRIPE_SECRET_KEY: sk_test_ci
       RESEND_API_KEY: re_ci
     steps:
@@ -57,3 +59,14 @@ jobs:
           cache-dependency-path: helixon-app/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: Install the e2e browser
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end tests against the production build
+        run: npm run test:e2e
+      - name: Keep e2e traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: helixon-app/test-results
+          retention-days: 7

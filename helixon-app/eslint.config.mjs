@@ -10,6 +10,11 @@ const eslintConfig = defineConfig([
     rules: { "no-undef": "error" },
   },
   {
+    // Playwright fixtures call `use()`, which isn't a React hook.
+    files: ["e2e/**/*.js"],
+    rules: { "react-hooks/rules-of-hooks": "off" },
+  },
+  {
     // The LinkedIn browser extension runs with the `chrome` extension API.
     files: ["extensions/**/*.js"],
     languageOptions: { globals: { chrome: "readonly" } },

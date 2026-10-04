@@ -13,7 +13,8 @@
     "eval:labelled": "node scripts/eval-labelled.mjs",
     "calibrate": "node scripts/fit-score-weights.mjs",
     "eval:fairness": "node scripts/eval-fairness.mjs",
-    "typecheck": "node scripts/typecheck.mjs"
+    "typecheck": "node scripts/typecheck.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
