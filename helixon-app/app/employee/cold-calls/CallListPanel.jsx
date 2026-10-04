@@ -12,7 +12,7 @@ import { timeAgo as fmtTimeAgo } from "@/lib/format";
 
 const timeAgo = (iso, now) => fmtTimeAgo(iso, { now, style: "short" });
 
-const CLAIM_TTL_MS = 30 * 60 * 1000; // keep in sync with lib/employee-call-list.js
+const CLAIM_TTL_MS = 30 * 60 * 1000; // keep in sync with lib/employee/call-list.js
 const PAGE = 100;
 
 const FIELD_LABELS = { contact_name: "Name", first_name: "First name", last_name: "Last name", company: "Company", phone: "Phone", email: "Email", notes: "Notes" };

@@ -1,11 +1,11 @@
 // lib/session.js
 // Reads the current employee session in server-side route handlers.
-// Backed by lib/employee-auth.js (Supabase employee_sessions table) - this
+// Backed by lib/employee/auth.js (Supabase employee_sessions table) - this
 // file exposes the narrower shapes the /api/employee/* routes want.
 
 import { NextResponse } from "next/server";
-import { getEmployeeSession } from "./employee-auth";
-import { can } from "./employee-permissions";
+import { getEmployeeSession } from "./employee/auth";
+import { can } from "./employee/permissions";
 
 export const SESSION_COOKIE = "employee_session";
 
@@ -16,7 +16,7 @@ export async function getCurrentEmployeeId() {
 
 /**
  * Session check plus a permission check for one portal section
- * (lib/employee-permissions.js). Use "view" for reads and "edit" for
+ * (lib/employee/permissions.js). Use "view" for reads and "edit" for
  * anything that changes data:
  *
  *   const { employeeId, forbidden } = await employeeAccess("calendar", "edit");

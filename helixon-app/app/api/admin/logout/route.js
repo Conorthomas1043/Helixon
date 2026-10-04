@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { destroyAdminSession, isAdminRouteHidden } from "@/lib/admin-auth";
+import { destroyAdminSession, isAdminRouteHidden } from "@/lib/admin/auth";
 
 // POST only. The header "Log out" button used to navigate to this URL, which
 // sends a GET, so the request was answered 405 and the session was never

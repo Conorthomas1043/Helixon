@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { InterviewInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews";
 import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
 import { sendInterviewInvites } from "@/lib/interview-invites";

@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getSignedDownloadUrl } from "@/lib/employee-files";
+import { getSignedDownloadUrl } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function GET(request, { params }) {

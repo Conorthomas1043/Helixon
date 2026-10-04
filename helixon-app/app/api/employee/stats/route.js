@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getStats } from "@/lib/employee-store";
+import { getStats } from "@/lib/employee/store";
 
 export async function GET() {
   const { employeeId, forbidden } = await employeeAccess("platform", "view");

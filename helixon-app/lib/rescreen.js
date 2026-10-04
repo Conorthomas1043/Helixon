@@ -7,7 +7,7 @@
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import { matchHighlights } from "@/lib/analysis-report";
-import { copyCandidateCv } from "@/lib/candidate-files";
+import { copyCandidateCv } from "@/lib/candidates/files";
 import { reportError } from "@/lib/report-error";
 
 const SOURCE_COLUMNS =

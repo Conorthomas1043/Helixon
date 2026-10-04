@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 vi.mock("@/lib/mailer", () => ({ sendAgencyEmail: vi.fn(), senderEmail: vi.fn() }));
-vi.mock("@/lib/candidate-activity", () => ({ logActivity: vi.fn() }));
+vi.mock("@/lib/candidates/activity", () => ({ logActivity: vi.fn() }));
 
 const { inboundDomain, replyAddress, tokenFromAddress } = await import("./tracked-email");
 

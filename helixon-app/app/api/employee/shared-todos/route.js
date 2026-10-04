@@ -1,10 +1,10 @@
 // app/api/employee/shared-todos/route.js
-// Team-visible task list - see lib/employee-shared-todos.js.
+// Team-visible task list - see lib/employee/shared-todos.js.
 //
 // Previously this route authenticated via a Supabase Auth Bearer token and
 // looked the caller up by `employees.email` - but employees don't have
 // Supabase Auth accounts or an email column; they log in through
-// lib/employee-auth.js's own username/password + cookie-session system
+// lib/employee/auth.js's own username/password + cookie-session system
 // (see lib/session.js). That mismatch meant this route could never
 // actually be called by the employee dashboard: it 403'd unconditionally.
 // Rewritten to use the same employeeAccess() session check every
@@ -17,7 +17,7 @@ import {
   addSharedTodo,
   updateSharedTodo,
   deleteSharedTodo,
-} from "@/lib/employee-shared-todos";
+} from "@/lib/employee/shared-todos";
 
 export async function GET() {
   const { employeeId, forbidden } = await employeeAccess("team_tasks", "view");

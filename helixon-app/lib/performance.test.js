@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregate, cleanCommission, cleanTargets, commissionFor, periodRange, placementInPeriod, scaleTargets } from "@/lib/performance";
+import { aggregate, cleanCommission, cleanTargets, commissionFor, periodRange, placementInPeriod, scaleTargets } from "./performance";
 
 describe("periodRange", () => {
   const now = new Date("2026-02-15T12:00:00Z");

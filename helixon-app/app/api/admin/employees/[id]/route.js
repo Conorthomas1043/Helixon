@@ -1,8 +1,8 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanUuid } from "@/lib/sanitize";
-import { effectivePermissions, rolePreset } from "@/lib/employee-permissions";
+import { effectivePermissions, rolePreset } from "@/lib/employee/permissions";
 import { ONBOARDING_TASKS } from "@/lib/onboarding-tasks";
 
 // Everything the admin console's employee drawer shows about one person:

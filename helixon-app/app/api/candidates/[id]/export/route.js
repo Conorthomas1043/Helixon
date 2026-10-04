@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
-import { personCandidateIds } from "@/lib/candidate-person";
+import { logActivity } from "@/lib/candidates/activity";
+import { personCandidateIds } from "@/lib/candidates/person";
 import { getAgencyTags } from "@/lib/agency-tags";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
@@ -14,7 +14,7 @@ import { agencyDb } from "@/lib/agency-db";
 // GET - everything the agency holds about one person, as a JSON file, for
 // a subject access or data portability request (UK GDPR Arts. 15 and 20).
 // Covers every candidate row for the person (they get one per job they're
-// screened for - lib/candidate-person.js) and everything hanging off them:
+// screened for - lib/candidates/person.js) and everything hanging off them:
 // analyses, notes, activity, emails drafted or sent, feedback requests,
 // shortlists and clients' responses, interviews and scorecards, email
 // threads and sequences, offers, compliance checks and references. The original CV file is listed by name; the agency can

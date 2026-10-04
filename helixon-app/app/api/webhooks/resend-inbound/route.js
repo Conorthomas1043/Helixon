@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { tokenFromAddress } from "@/lib/tracked-email";
 import { bccTokenFromAddress, memberForToken } from "@/lib/member-tokens";
 import { fileEmail } from "@/lib/email-filing";

@@ -35,13 +35,13 @@ vi.mock("@/lib/permissions", () => ({
   canSeeCandidate: () => true,
   scopeCandidateQuery: (q) => q,
 }));
-vi.mock("@/lib/candidate-activity", () => ({ logActivity: vi.fn() }));
+vi.mock("@/lib/candidates/activity", () => ({ logActivity: vi.fn() }));
 vi.mock("@/lib/agency-audit", () => ({ logAudit: vi.fn() }));
 vi.mock("@/lib/webhooks", () => ({ emitWebhook: vi.fn() }));
 vi.mock("@/lib/placement-sync", () => ({ syncCandidate: vi.fn(), splitsAreTeammates: async () => true }));
 vi.mock("@/lib/recruiter-directory", () => ({ recruiterDisplayName: () => "Ada", resolveRecruiterNames: async () => new Map() }));
 vi.mock("@/lib/integrations/accounting-sync", () => ({ syncInvoiceToAccounts: vi.fn() }));
-vi.mock("@/lib/candidate-erasure", () => ({
+vi.mock("@/lib/candidates/erasure", () => ({
   eraseCandidates: vi.fn(async (db, agencyId, list) => {
     db.tables.candidates = db.tables.candidates.filter((c) => !(list.includes(c.id) && c.agency_id === agencyId));
     return { erased: list.length };
@@ -55,7 +55,7 @@ const invoice = await import("./invoices/[id]/route");
 const clients = await import("./clients/route");
 const client = await import("./clients/[id]/route");
 const candidate = await import("./candidates/[id]/route");
-const { listCandidates, countCandidateStages } = await import("@/lib/candidate-list");
+const { listCandidates, countCandidateStages } = await import("@/lib/candidates/list");
 const { listJobs } = await import("@/lib/job-list");
 const { loadDashboardStats } = await import("@/lib/dashboard-stats");
 

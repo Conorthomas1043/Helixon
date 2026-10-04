@@ -1,6 +1,6 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 
 // The admin audit trail: every privileged action (and every admin sign-in

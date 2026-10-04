@@ -8,14 +8,14 @@
 // contacted) instead of financial/retention ones.
 //
 // Writes to candidate_activity, same table stage changes already use -
-// see lib/candidate-activity.js. No new table needed; "type" there was
+// see lib/candidates/activity.js. No new table needed; "type" there was
 // always free-text with no CHECK constraint.
 
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";

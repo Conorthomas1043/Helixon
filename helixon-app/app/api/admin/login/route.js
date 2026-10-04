@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { checkAdminCredentials, createAdminSession } from "@/lib/admin-auth";
-import { writeAdminAudit } from "@/lib/admin-audit";
-import { verifyAdminTotp, adminHasTotp } from "@/lib/admin-totp";
+import { checkAdminCredentials, createAdminSession } from "@/lib/admin/auth";
+import { writeAdminAudit } from "@/lib/admin/audit";
+import { verifyAdminTotp, adminHasTotp } from "@/lib/admin/totp";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
@@ -64,7 +64,7 @@ export async function POST(request) {
     }
 
     // Always the same message for a wrong username or wrong password (and the
-    // same amount of work either way) - see lib/admin-auth.js.
+    // same amount of work either way) - see lib/admin/auth.js.
     const result = await checkAdminCredentials(username, password);
 
     if (!result.ok) {

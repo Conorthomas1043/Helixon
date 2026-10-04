@@ -1,7 +1,7 @@
 import { after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanEmail, cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { CANDIDATE_COLUMNS, apiError, apiJson, toApiCandidate, withApiKey } from "@/lib/api-v1";
 import { emitWebhook } from "@/lib/webhooks";

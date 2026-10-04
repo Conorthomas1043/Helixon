@@ -2,12 +2,12 @@
 // app/employee/dashboard/team-tasks-panel.js
 // Team-visible task list: every active employee sees every task here.
 // Only the creator or assignee can edit/complete a task; only the creator
-// can delete it (enforced server-side in lib/employee-shared-todos.js -
+// can delete it (enforced server-side in lib/employee/shared-todos.js -
 // this component just doesn't render controls the API would reject).
 
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useEffect, useMemo, useState } from "react";
-import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee-day";
+import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee/day";
 import { Card } from "../_shared/ui";
 
 const PRIORITY_DOT = { high: "#c0392b", medium: "#b45309", low: "#8a9a92" };

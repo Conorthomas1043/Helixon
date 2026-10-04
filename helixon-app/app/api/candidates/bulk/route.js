@@ -6,7 +6,7 @@ import { STAGE_LABELS } from "@/lib/stage-labels";
 import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { eraseCandidates } from "@/lib/candidate-erasure";
+import { eraseCandidates } from "@/lib/candidates/erasure";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";

@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { emitWebhook } from "@/lib/webhooks";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { notify } from "@/lib/notifications";
 import { SIGNATURE_KINDS, TOKEN_RE, cleanSignature, documentHash } from "@/lib/signatures";

@@ -81,7 +81,7 @@ Users build a mental model from labels. Counted across the UI strings:
 | Its output | **Assessment** (report heading), **analysis**, **report**, **screening** |
 | The thing being filled | **Job** (nav, 325 strings) and **role** (analyse flow, 236 strings) |
 | "Shortlist" | A pipeline **stage** ("Shortlisted") *and* a separate shareable **list** feature ("Shortlists", "Add to shortlist…") |
-| Score bands | "Strong Match / Worth Reviewing / Weak Match" (`lib/scoreBands.js`), "Strong match / Worth reviewing / Not suitable" (AI recommendation), "Strong / Review / Weak" (dashboard and homepage), "Weak match" (`lib/candidate-format.js`) |
+| Score bands | "Strong Match / Worth Reviewing / Weak Match" (`lib/scoreBands.js`), "Strong match / Worth reviewing / Not suitable" (AI recommendation), "Strong / Review / Weak" (dashboard and homepage), "Weak match" (`lib/candidates/format.js`) |
 
 - **Inferred:** "Shortlisted" vs "Shortlists" is the riskiest overlap. A recruiter can move someone to the Shortlisted stage and assume the client can see them; they can't until the candidate is added to a Shortlist and shared.
 - **Study:** S3 (card sort and terminology test). **Quick win:** a product glossary, and one name per concept.

@@ -23,8 +23,8 @@ How the app in `helixon-app/` fits together. Read this before changing auth, dat
 | Area | People | Auth | Guard used in API routes |
 |---|---|---|---|
 | `/dashboard`, `/analyse`, `/account`, `/billing` | Agency members | Clerk session, checked in `proxy.ts` | `requireCustomerContext()` (`lib/customer-auth.js`). It returns the member's `agencyId`, role and subscription state |
-| `/admin` | Helixon staff (operators) | Own username/password + TOTP, signed session cookie, double-submit CSRF token. The login can be moved to a secret path with `ADMIN_LOGIN_SLUG` | `requireAdminSession()` (`lib/admin-auth.js`) |
-| `/employee` | Helixon staff (sales/ops) | Own bcrypt credentials, sessions in `employee_sessions` | `employeeAccess()` (`lib/session.js`, backed by `lib/employee-auth.js`) |
+| `/admin` | Helixon staff (operators) | Own username/password + TOTP, signed session cookie, double-submit CSRF token. The login can be moved to a secret path with `ADMIN_LOGIN_SLUG` | `requireAdminSession()` (`lib/admin/auth.js`) |
+| `/employee` | Helixon staff (sales/ops) | Own bcrypt credentials, sessions in `employee_sessions` | `employeeAccess()` (`lib/session.js`, backed by `lib/employee/auth.js`) |
 | `/share`, `/scorecard`, `/portal`, `/book`, `/sign`, `/reference`, `/feedback` | Clients, candidates, referees, with no account | An unguessable token in the link | Token lookup in each route |
 | `/api/v1/*` | Customer integrations | API key (`lib/api-keys.js`) | `lib/api-v1.js` |
 | `/api/cron/*`, `/api/internal/*` | Vercel Cron, the edge proxy | Bearer secret, compared in constant time (`lib/timing-safe.js`) | |
@@ -75,7 +75,7 @@ Defined in `vercel.json`, all under `app/api/cron/` (times are UTC):
 
 - `app/`: routes. `app/api/` holds the 200 or so route handlers. Each area has an `error.js` boundary (`components/RouteError.jsx`).
 - `components/ui`: the UI kit, the one set of building blocks for every screen: `Button`, `Card`, `Field` and inputs, `Switch`, `Segmented`, `Notice`, `Dialog` (focus-trapped), `EmptyState`, `ErrorState`, `Pill`, toasts and icons. Colours come from the `--ui-*` tokens in `app/globals.css`, which the admin console redefines for its dark theme (`app/admin/_shared/styles.js`). Each area's `ui` module (`components/dashboard/ui`, `app/analyse/_components/ui`, `components/account/ui`, `app/employee/_shared/ui`, `app/admin/_shared/ui`) re-exports it and adds only that area's own layouts. `/ui-gallery` shows every component in both themes when `UI_GALLERY=1` is set. `components/dashboard/use-confirm.jsx` replaces `window.confirm`.
-- Loading data on the server: the candidate profile (`app/dashboard/candidates/[id]/page.jsx`) loads with `lib/candidate-profile.js`, the same loader `GET /api/candidates/[id]` uses, and hands it to the client component, which only fetches again on retry. Its panels live in `_components/`. New pages should follow this pattern.
+- Loading data on the server: the candidate profile (`app/dashboard/candidates/[id]/page.jsx`) loads with `lib/candidates/profile.js`, the same loader `GET /api/candidates/[id]` uses, and hands it to the client component, which only fetches again on retry. Its panels live in `_components/`. New pages should follow this pattern.
 - `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`).
 - `app/globals.css`: design tokens (`--forest`, `--ink-*`, score colours, radii, shadows), mapped into Tailwind's theme.
 - `supabase/migrations/`: the schema history, applied with the "Apply database migrations" workflow (see the runbook).

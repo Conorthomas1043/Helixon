@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { gradeHealth } from "@/lib/ops/health-grade";

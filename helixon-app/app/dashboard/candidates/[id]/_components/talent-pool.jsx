@@ -3,7 +3,7 @@
 // Part of the candidate profile page (../page.jsx).
 
 import Link from "next/link";
-import { CARD, INK, INK_FAINT, INK_MUTED, formatRelativeTime, scoreColor } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED, formatRelativeTime, scoreColor } from "@/lib/candidates/format";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { useState } from "react";
 import { FieldLabel, SectionHeading } from "./primitives";

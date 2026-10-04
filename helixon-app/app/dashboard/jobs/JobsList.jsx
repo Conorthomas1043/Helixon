@@ -13,7 +13,7 @@ import ClientPicker from "@/components/dashboard/ClientPicker";
 import DashboardNav from "@/components/DashboardNav";
 import { adaptJob, getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
-import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidates/format";
 import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
 import { useOffices } from "@/components/dashboard/use-offices";
 import { Button, EmptyState as KitEmptyState, Skeleton as Block } from "@/components/ui";

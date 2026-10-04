@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import PresenceDot from "@/components/PresenceDot";
-import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
 import { presenceLine } from "@/lib/presence";
 import { setMyPresence, setPresenceHidden } from "@/lib/dashboard-api";
 import { useState } from "react";

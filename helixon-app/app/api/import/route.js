@@ -6,7 +6,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/import-mapping";
 import { getAgencyPrivacy, addMonths } from "@/lib/privacy-settings";
-import { linkedInHandle } from "@/lib/candidate-duplicates";
+import { linkedInHandle } from "@/lib/candidates/duplicates";
 import { ensureClient } from "@/lib/clients";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";

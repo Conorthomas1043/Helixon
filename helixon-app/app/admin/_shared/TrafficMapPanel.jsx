@@ -5,7 +5,7 @@
 // - on the map or in the list - calls onSelect(point).
 
 import dynamic from "next/dynamic";
-import { blockedShare, placeLabel } from "@/lib/admin-traffic";
+import { blockedShare, placeLabel } from "@/lib/admin/traffic";
 
 // Client-only: the map measures the SVG and loads the world outlines lazily.
 const WorldMap = dynamic(() => import("./WorldMap"), {

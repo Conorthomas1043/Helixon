@@ -1,11 +1,11 @@
 // app/api/employee/goals/items/route.js
 // The micro-goal checklist under one goal. Same edit permission as the
 // parent goal (creator or assignee only) - enforced in
-// lib/employee-goals.js's canWrite(), not here.
+// lib/employee/goals.js's canWrite(), not here.
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { addGoalItem, toggleGoalItem, deleteGoalItem } from "@/lib/employee-goals";
+import { addGoalItem, toggleGoalItem, deleteGoalItem } from "@/lib/employee/goals";
 
 export async function POST(request) {
   const { employeeId, forbidden } = await employeeAccess("goals", "edit");

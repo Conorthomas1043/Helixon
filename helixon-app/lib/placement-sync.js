@@ -4,7 +4,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { stageForStatus } from "@/lib/placements";
 import { FUNNEL_ORDER } from "@/lib/stage-labels";
 

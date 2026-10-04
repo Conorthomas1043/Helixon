@@ -1,11 +1,11 @@
 // app/api/employee/calendar/feed-token/route.js
 // Issues (or shows) the signed-in employee's secret ICS feed URL - see
-// lib/employee-calendar.js's ensureFeedToken/regenerateFeedToken and the
+// lib/employee/calendar.js's ensureFeedToken/regenerateFeedToken and the
 // feed itself at app/api/employee/calendar/feed/[token].
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { ensureFeedToken, regenerateFeedToken } from "@/lib/employee-calendar";
+import { ensureFeedToken, regenerateFeedToken } from "@/lib/employee/calendar";
 
 function feedUrl(token) {
   const origin = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.helixon.co.uk").replace(/\/+$/, "");

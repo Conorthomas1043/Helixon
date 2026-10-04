@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { poolRootId } from "@/lib/rescreen";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";

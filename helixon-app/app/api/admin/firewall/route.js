@@ -1,9 +1,9 @@
 import { BlockList, isIP } from "node:net";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";

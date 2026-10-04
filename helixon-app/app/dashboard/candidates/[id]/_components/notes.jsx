@@ -2,7 +2,7 @@
 
 // Part of the candidate profile page (../page.jsx).
 
-import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG, formatRelativeTime } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG, formatRelativeTime } from "@/lib/candidates/format";
 import { useMemo, useState } from "react";
 import { SectionHeading } from "./primitives";
 

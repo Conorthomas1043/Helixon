@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Icon } from "../_shared/icons";
 import { toast } from "../_shared/toast";
-import { ROLES, SECTIONS, rolePreset } from "@/lib/employee-permissions";
+import { ROLES, SECTIONS, rolePreset } from "@/lib/employee/permissions";
 
 const LEVEL_OPTIONS = [
   { key: "none", label: "None" },

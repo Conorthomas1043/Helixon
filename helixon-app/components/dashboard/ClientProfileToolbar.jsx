@@ -5,7 +5,7 @@
 // printout itself (.print-hide).
 
 import Link from "next/link";
-import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 
 function Toggle({ checked, onChange, children }) {
   return (

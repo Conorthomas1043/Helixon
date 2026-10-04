@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminErrorResponse, adminDbError } from "@/lib/admin/http";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {

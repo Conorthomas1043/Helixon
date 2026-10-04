@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getShortlistShares, createShortlistShare, revokeShortlistShare } from "@/lib/dashboard-api";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
-import { formatDate } from "@/lib/candidate-format";
+import { formatDate } from "@/lib/candidates/format";
 import CopyButton from "@/components/dashboard/CopyButton";
 
 export default function ShareShortlist({ shortlist, onClose }) {

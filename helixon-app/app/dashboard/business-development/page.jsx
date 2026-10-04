@@ -11,7 +11,7 @@ import { getClients, getOpportunities, getRecruiters, setClientNextAction, updat
 import { OPEN_STAGES, OPPORTUNITY_STAGES, effectiveProbability, pipelineSummary } from "@/lib/opportunities";
 import { OpportunityDialog, StagePill } from "@/components/dashboard/opportunities";
 import { Button, Card, EmptyState, ErrorState, LoadingCard, Page, PageHeader, formatMoney, INK, INK_MUTED, INK_FAINT, CARD } from "@/components/dashboard/ui";
-import { formatDateOnly } from "@/lib/candidate-format";
+import { formatDateOnly } from "@/lib/candidates/format";
 
 function Stat({ label, value, sub }) {
   return (

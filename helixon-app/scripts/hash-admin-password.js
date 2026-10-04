@@ -1,5 +1,5 @@
 // Generates a bcrypt hash for an admin password, for the
-// ADMIN_PASSWORD_HASH_<USERNAME> environment variable (see lib/admin-auth.js).
+// ADMIN_PASSWORD_HASH_<USERNAME> environment variable (see lib/admin/auth.js).
 //
 // Usage:  node scripts/hash-admin-password.js
 // Prompts for the password without echoing it, then prints the hash. Paste

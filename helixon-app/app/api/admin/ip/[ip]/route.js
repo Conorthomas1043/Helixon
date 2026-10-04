@@ -1,11 +1,11 @@
 import { isIP } from "node:net";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { enumerateIp, neighbourhood } from "@/lib/security/ip-intel";
 import { getFirewallRules, matchRange, blockIsActive } from "@/lib/security/rules";
 import { scoreRequest } from "@/lib/security/threat-score";
-import { decodePlace } from "@/lib/admin-traffic";
+import { decodePlace } from "@/lib/admin/traffic";
 
 // The IP dossier (Admin > Investigate): everything we know about one IP.
 //   - activity: totals across all logged requests

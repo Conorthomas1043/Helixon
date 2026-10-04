@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { RECOMMENDATIONS, cleanScorecard, formatInterviewTime } from "@/lib/interviews";
 
 // Public: an interviewer's scorecard link (app/scorecard/[token]). The

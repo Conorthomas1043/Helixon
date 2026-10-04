@@ -9,7 +9,7 @@ import Link from "next/link";
 import { createOpportunity, deleteOpportunity, getClients, getOpportunities, getRecruiters, setClientNextAction, updateOpportunity } from "@/lib/dashboard-api";
 import { DEFAULT_PROBABILITY, OPPORTUNITY_STAGES, effectiveProbability } from "@/lib/opportunities";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
-import { formatDateOnly } from "@/lib/candidate-format";
+import { formatDateOnly } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 
 const STAGE_OPTIONS = Object.entries(OPPORTUNITY_STAGES).map(([value, label]) => ({ value, label }));

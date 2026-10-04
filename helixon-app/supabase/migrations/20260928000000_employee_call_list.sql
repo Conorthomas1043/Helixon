@@ -2,7 +2,7 @@
 -- from a CSV import on /employee/cold-calls; everyone sees the whole list
 -- with numbers, can claim a contact so two people don't ring the same
 -- person, and logging a call against a row marks it done (linking the
--- employee_cold_calls entry). See lib/employee-call-list.js.
+-- employee_cold_calls entry). See lib/employee/call-list.js.
 --
 -- Accessed only through the service-role client in the API routes, like the
 -- other employee_* tables, so RLS is enabled with no policies.

@@ -11,7 +11,7 @@ import ClientProfileDocument from "@/components/dashboard/ClientProfileDocument"
 import ClientProfileToolbar from "@/components/dashboard/ClientProfileToolbar";
 import { getClientProfile, recordClientProfilePrinted } from "@/lib/dashboard-api";
 import { printSection } from "@/lib/print";
-import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 
 export default function ClientProfilePage({ params }) {

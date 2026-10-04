@@ -3,7 +3,7 @@
 // code rather than a database table since it changes rarely and doesn't
 // need its own admin UI yet. Completion state per employee lives in
 // Supabase (employee_onboarding_progress table, see
-// lib/employee-onboarding.js). Edit this array to change the checklist -
+// lib/employee/onboarding.js). Edit this array to change the checklist -
 // task_key values are permanent identifiers, so avoid renaming an existing
 // key once employees may have completed it (add a new one instead).
 //

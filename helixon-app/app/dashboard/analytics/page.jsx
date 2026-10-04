@@ -17,7 +17,7 @@ import { downloadCsv } from "@/lib/csv";
 import { analyticsCsvRows } from "@/lib/analytics-csv";
 import { printSection } from "@/lib/print";
 import { STAGE_LABELS } from "@/lib/stage-labels";
-import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 import { SectionHeading, Skeleton as Block } from "@/components/ui";
 

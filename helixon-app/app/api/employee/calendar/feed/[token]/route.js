@@ -3,12 +3,12 @@
 // employee adds it via "subscribe by URL" (app/employee/calendar's
 // "Connect" panel). Deliberately NOT behind the employee_session cookie -
 // a calendar app can't send it - so this authenticates with the opaque
-// per-employee token instead (lib/employee-calendar.js's
+// per-employee token instead (lib/employee/calendar.js's
 // findEmployeeByFeedToken). Not listed in proxy.ts's gated prefixes,
 // same as every other /api/employee/* route.
 
 import { NextResponse } from "next/server";
-import { findEmployeeByFeedToken, getEvents, buildIcsFeed } from "@/lib/employee-calendar";
+import { findEmployeeByFeedToken, getEvents, buildIcsFeed } from "@/lib/employee/calendar";
 
 const PAST_DAYS = 90;
 const FUTURE_DAYS = 365;

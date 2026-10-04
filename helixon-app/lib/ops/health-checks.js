@@ -12,8 +12,8 @@
 // them all in parallel.
 
 import "server-only";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { isAdminRouteHidden } from "@/lib/admin-auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { isAdminRouteHidden } from "@/lib/admin/auth";
 
 const FETCH_TIMEOUT_MS = 8000;
 

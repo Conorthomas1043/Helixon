@@ -5,7 +5,7 @@ import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/signatures";
 import { agencyDb } from "@/lib/agency-db";

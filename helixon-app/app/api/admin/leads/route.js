@@ -1,10 +1,10 @@
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
 import { salesNotificationEmail } from "@/lib/demo-notification";
 import { reportError } from "@/lib/report-error";

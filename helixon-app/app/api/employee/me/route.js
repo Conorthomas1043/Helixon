@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getEmployeeSession } from "@/lib/employee-auth";
-import { effectivePermissions } from "@/lib/employee-permissions";
+import { getEmployeeSession } from "@/lib/employee/auth";
+import { effectivePermissions } from "@/lib/employee/permissions";
 
 // Returns the currently signed-in employee, or 401. Used by the portal to
 // personalise the greeting, drive the one-time "Welcome back" banner, hide

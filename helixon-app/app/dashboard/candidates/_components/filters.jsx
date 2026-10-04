@@ -3,7 +3,7 @@
 // Part of the candidate list (app/dashboard/candidates/page.jsx).
 
 import { CANDIDATE_COLUMNS } from "@/lib/list-columns";
-import { INK, INK_FAINT, INK_MUTED } from "@/lib/candidate-format";
+import { INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
 
 /* ------------------------------------------------------------------------
  * Small pieces

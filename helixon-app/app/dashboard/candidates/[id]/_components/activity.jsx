@@ -2,7 +2,7 @@
 
 // Part of the candidate profile page (../page.jsx).
 
-import { CARD, INK, INK_FAINT, INK_MUTED, dayBucketLabel, formatTime } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED, dayBucketLabel, formatTime } from "@/lib/candidates/format";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { useMemo } from "react";
 import { SectionHeading } from "./primitives";

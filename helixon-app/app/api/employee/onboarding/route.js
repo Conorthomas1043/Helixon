@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentEmployeeId } from "@/lib/session";
-import { getOnboardingProgress, setOnboardingTaskState } from "@/lib/employee-onboarding";
+import { getOnboardingProgress, setOnboardingTaskState } from "@/lib/employee/onboarding";
 
 export async function GET() {
   const employeeId = await getCurrentEmployeeId();

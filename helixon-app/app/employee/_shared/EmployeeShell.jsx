@@ -9,10 +9,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { can } from "@/lib/employee-permissions";
+import { can } from "@/lib/employee/permissions";
 import { reportQuietly } from "@/lib/report-error";
 
-// `section` is the permission key (lib/employee-permissions.js) that
+// `section` is the permission key (lib/employee/permissions.js) that
 // decides whether the link shows. Today has none: it adapts its cards.
 export const EMPLOYEE_SECTIONS = [
   { href: "/employee/dashboard", label: "Today", section: null },

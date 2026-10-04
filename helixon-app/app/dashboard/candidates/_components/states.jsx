@@ -3,7 +3,7 @@
 // Part of the candidate list (app/dashboard/candidates/page.jsx).
 
 import { Skeleton as Block, Button, EmptyState as KitEmptyState } from "@/components/ui";
-import { INK, INK_MUTED } from "@/lib/candidate-format";
+import { INK, INK_MUTED } from "@/lib/candidates/format";
 
 /* ------------------------------------------------------------------------
  * Skeleton / empty / error

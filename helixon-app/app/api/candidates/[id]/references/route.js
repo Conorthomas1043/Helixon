@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { cleanReferee, toReference } from "@/lib/compliance";
 import { loadCandidate } from "@/lib/compliance-server";
 import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";

@@ -2,7 +2,7 @@
 // app/employee/files/page.js
 // Shared filing system - folders and files visible to every active
 // employee, stored in the private "employee-files" Storage bucket. See
-// lib/employee-files.js for who can create/delete what.
+// lib/employee/files.js for who can create/delete what.
 
 import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
 import { useConfirm } from "@/components/dashboard/use-confirm";

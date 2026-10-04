@@ -8,7 +8,7 @@ import { DataTable } from "../_shared/datatable";
 import { timeAgo } from "../_shared/data";
 import { useAdminEmployees } from "../_shared/hooks";
 import { toast } from "../_shared/toast";
-import { ROLES, rolePreset } from "@/lib/employee-permissions";
+import { ROLES, rolePreset } from "@/lib/employee/permissions";
 import SalesMarketingPanel from "./sales-marketing-panel";
 import EmployeeDrawer from "./EmployeeDrawer";
 import { PermissionMatrix, RolePicker, SecretReveal, accessSummary, roleLabel } from "./access";

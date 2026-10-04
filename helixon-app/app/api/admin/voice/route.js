@@ -1,6 +1,6 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { FEEDBACK_DOWN_REASONS } from "@/app/analyse/_lib/analyse";
 
 // /admin/voice - everything customers tell Helixon, in one place

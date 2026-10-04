@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { agencyDb } from "@/lib/agency-db";
 

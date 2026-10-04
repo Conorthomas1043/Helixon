@@ -1,12 +1,12 @@
 // app/api/employee/goals/route.js
-// Shared team goals - see lib/employee-goals.js for the visibility/edit
+// Shared team goals - see lib/employee/goals.js for the visibility/edit
 // model (everyone sees every goal; creator or assignee can edit; only
 // the creator can delete). Micro-goal (checklist item) actions live at
 // app/api/employee/goals/items/route.js.
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getGoals, addGoal, updateGoal, deleteGoal } from "@/lib/employee-goals";
+import { getGoals, addGoal, updateGoal, deleteGoal } from "@/lib/employee/goals";
 
 const VALID_STATUSES = new Set(["not_started", "in_progress", "blocked", "done"]);
 

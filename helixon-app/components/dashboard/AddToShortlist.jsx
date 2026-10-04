@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getShortlists, createShortlist, addToShortlist, removeFromShortlist } from "@/lib/dashboard-api";
-import { INK, INK_MUTED, INK_FAINT } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT } from "@/lib/candidates/format";
 
 export default function AddToShortlist({ candidateIds, jobId = null, defaultName = "", onChange, className = "", label = "Add to client shortlist" }) {
   const [open, setOpen] = useState(false);

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { cronAuthorized } from "@/lib/cron-auth";
-import { applyFilters, readFilters, resolveFilters } from "@/lib/candidate-query";
+import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { searchHref } from "@/lib/saved-searches";
 import { sendAgencyEmail, mailConfigured, siteUrl } from "@/lib/mailer";
 

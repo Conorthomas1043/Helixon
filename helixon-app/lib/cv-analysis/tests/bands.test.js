@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getScoreBand, STRONG_MATCH_MIN, REVIEW_MIN } from "../../scoreBands.js";
-import { scoreLabel, scoreBandOf } from "../../candidate-format.js";
+import { scoreLabel, scoreBandOf } from "../../candidates/format.js";
 import { estimateSalary } from "../scoring/salaryEngine.js";
 
 describe("score cut-offs", () => {

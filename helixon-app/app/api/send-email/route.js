@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";

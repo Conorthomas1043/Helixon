@@ -1,6 +1,6 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse } from "@/lib/admin/http";
 import { RUBRIC_VERSION } from "@/lib/cv-analysis/config";
 import { calibrate, componentShares } from "@/lib/cv-analysis/calibration";
 import { loadScores } from "@/lib/cv-analysis/calibration/load";

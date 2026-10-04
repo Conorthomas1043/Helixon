@@ -3,7 +3,7 @@
 // Part of the team page (app/dashboard/team/page.jsx).
 
 import { Skeleton as Block } from "@/components/ui";
-import { CARD, INK, INK_MUTED } from "@/lib/candidate-format";
+import { CARD, INK, INK_MUTED } from "@/lib/candidates/format";
 
 export function TeamSkeleton() {
   return (

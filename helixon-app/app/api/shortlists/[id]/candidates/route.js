@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { MAX_NOTE_LEN, addToShortlist, loadShortlist, shortlistAuth } from "@/lib/shortlists";
 

@@ -2,9 +2,9 @@
 
 // Dashboard API calls: candidates (re-exported by lib/dashboard-api.js).
 
-import { shapeCandidate } from "@/lib/candidate-shape";
+import { shapeCandidate } from "@/lib/candidates/shape";
 import { apiFetch } from "./core";
-import { buildCandidatesQuery } from "@/lib/candidate-list-params";
+import { buildCandidatesQuery } from "@/lib/candidates/list-params";
 
 export { buildCandidatesQuery };
 

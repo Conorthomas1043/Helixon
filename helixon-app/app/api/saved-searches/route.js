@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
-import { applyFilters, readFilters, resolveFilters } from "@/lib/candidate-query";
+import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { agencyDb } from "@/lib/agency-db";
 
 // Saved Candidates searches (lib/saved-searches.js): your own plus ones

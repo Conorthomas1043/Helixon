@@ -875,7 +875,7 @@
     "hex": 11,
     "inlineStyles": 0
   },
-  "lib/candidate-format.js": {
+  "lib/candidates/format.js": {
     "hex": 3,
     "inlineStyles": 0
   },

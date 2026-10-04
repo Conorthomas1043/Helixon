@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { isIP } from "node:net";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
 import { blockIsActive } from "@/lib/security/rules";
 import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
-import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow } from "@/lib/admin-traffic";
+import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow } from "@/lib/admin/traffic";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {

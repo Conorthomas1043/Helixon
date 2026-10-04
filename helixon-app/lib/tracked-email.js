@@ -9,7 +9,7 @@
 import "server-only";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { sendAgencyEmail, senderEmail } from "@/lib/mailer";
 
 export function inboundDomain() {

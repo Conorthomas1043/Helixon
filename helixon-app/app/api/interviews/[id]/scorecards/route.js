@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, formatInterviewTime, toScorecard } from "@/lib/interviews";
 import { loadInterview } from "@/lib/interview-access";

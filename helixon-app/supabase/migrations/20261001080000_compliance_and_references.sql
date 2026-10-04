@@ -12,7 +12,7 @@
 --                      answer on a private link (app/reference/[token])
 --
 -- Both cascade with the candidate, so erasure removes them (the stored
--- documents are removed by lib/candidate-erasure.js).
+-- documents are removed by lib/candidates/erasure.js).
 -- Agency foreign keys don't cascade - see 20261001090000.
 -- Service-role only: RLS on, no policies.
 

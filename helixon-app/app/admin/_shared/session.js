@@ -6,7 +6,7 @@ import { csrfHeaders } from "./csrf";
 // Keeps the console's view of the admin session in step with the server's.
 //
 // The server ends a session after 30 idle minutes (sliding - see
-// lib/admin-session.js). This hook:
+// lib/admin/session.js). This hook:
 //   - polls GET /api/admin/session (which does NOT extend it) so the sidebar can
 //     show who's signed in and how long is left;
 //   - treats real use (mouse, keys, touch) as activity and, at most every five

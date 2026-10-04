@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getEmployeeSession } from "@/lib/employee-auth";
+import { getEmployeeSession } from "@/lib/employee/auth";
 import EmployeeMobileApp from "./EmployeeMobileApp";
 
 export const metadata = {

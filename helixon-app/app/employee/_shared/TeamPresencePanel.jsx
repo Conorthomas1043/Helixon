@@ -2,7 +2,7 @@
 // app/employee/_shared/TeamPresencePanel.jsx
 // Who's online, busy, or offline right now, and how long the active ones
 // have been signed in. Reused on the dashboard and (in a lighter form)
-// wherever else it's useful - see lib/employee-presence.js for how status
+// wherever else it's useful - see lib/employee/presence.js for how status
 // and "signed in since" are derived.
 
 import { useCallback, useEffect, useState } from "react";

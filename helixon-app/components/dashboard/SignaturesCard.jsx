@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createSignatureRequest, getSignatureRequest, getSignatureRequests, voidSignatureRequest } from "@/lib/dashboard-api";
 import { SIGNATURE_KINDS, SIGNATURE_STATUSES } from "@/lib/signatures-shared";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
-import { formatDateOnly } from "@/lib/candidate-format";
+import { formatDateOnly } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import CopyButton from "@/components/dashboard/CopyButton";
 

@@ -1,5 +1,5 @@
 // Generates a two-factor (TOTP) secret for an admin, for the
-// ADMIN_TOTP_SECRET_<USERNAME> environment variable (see lib/admin-totp.js).
+// ADMIN_TOTP_SECRET_<USERNAME> environment variable (see lib/admin/totp.js).
 //
 // Usage:  node scripts/generate-admin-totp.js <username>
 //

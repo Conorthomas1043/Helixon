@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { requireAdminSession } from "@/lib/admin/auth";
 import { getAdminOpsData, OPS_RANGE_HOURS } from "../../../../lib/ops/admin-data";
 import { reportError } from "@/lib/report-error";
 
 // Was previously gated by isAllowedAdmin(), a second, separately-implemented
 // auth check expecting a Supabase Bearer token - but the real admin login
-// (lib/admin-auth.js) is a hardcoded-credential system that only ever
+// (lib/admin/auth.js) is a hardcoded-credential system that only ever
 // produces the httpOnly helixon_admin_session cookie, never a Supabase
 // token. That meant every admin, on every load, got 403'd on the four pages
 // that call this route (sales, ops, seo, security/investigate) - a wiring

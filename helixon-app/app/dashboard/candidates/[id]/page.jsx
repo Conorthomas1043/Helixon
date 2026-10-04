@@ -1,6 +1,6 @@
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { loadCandidateProfile } from "@/lib/candidate-profile";
-import { shapeCandidate } from "@/lib/candidate-shape";
+import { loadCandidateProfile } from "@/lib/candidates/profile";
+import { shapeCandidate } from "@/lib/candidates/shape";
 import CandidateProfile from "./CandidateProfile";
 
 // The candidate profile, loaded on the server so the page arrives with the

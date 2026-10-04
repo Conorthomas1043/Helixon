@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { cleanSearchTerm, likePattern, quoted } from "@/lib/candidate-search";
+import { cleanSearchTerm, likePattern, quoted } from "@/lib/candidates/search";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 

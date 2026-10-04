@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { notify } from "@/lib/notifications";
 import { isStopMessage, normalisePhone, smsWebhookUrl, verifyTwilioSignature } from "@/lib/sms";
 

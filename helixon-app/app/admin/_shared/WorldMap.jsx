@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { geoDistance, geoEqualEarth, geoGraticule10, geoOrthographic, geoPath } from "d3-geo";
-import { blockedShare, placeLabel } from "@/lib/admin-traffic";
+import { blockedShare, placeLabel } from "@/lib/admin/traffic";
 
 const WIDTH = 900;
 const HEIGHT = 480;

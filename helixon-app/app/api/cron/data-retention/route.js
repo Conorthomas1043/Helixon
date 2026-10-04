@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { supabase } from "@/lib/supabase";
-import { writeAdminAuditSafe } from "@/lib/admin-audit";
-import { removeCandidateCvs } from "@/lib/candidate-files";
+import { writeAdminAuditSafe } from "@/lib/admin/audit";
+import { removeCandidateCvs } from "@/lib/candidates/files";
 import { sweepAllAgencies } from "@/lib/data-retention";
 import { reportError } from "@/lib/report-error";
 

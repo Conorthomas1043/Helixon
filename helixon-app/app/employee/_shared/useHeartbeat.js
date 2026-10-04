@@ -1,7 +1,7 @@
 "use client";
 // app/employee/_shared/useHeartbeat.js
 // Pings /api/employee/presence every 45s while an employee page is open
-// and the tab is visible, so lib/employee-presence.js's "online within the
+// and the tab is visible, so lib/employee/presence.js's "online within the
 // last 3 minutes" window has something recent to check against. Mount
 // this once per signed-in employee page (dashboard, ops, calendar,
 // goals) - it's a no-op fire-and-forget, no state to render.

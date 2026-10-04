@@ -5,9 +5,9 @@
 import AddToShortlist from "@/components/dashboard/AddToShortlist";
 import Link from "next/link";
 import PhoneActions from "@/components/dashboard/PhoneActions";
-import { AMBER, AMBER_BG, CARD, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, RED_STRONG, scoreColor, scoreLabel } from "@/lib/candidate-format";
+import { AMBER, AMBER_BG, CARD, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, RED_STRONG, scoreColor, scoreLabel } from "@/lib/candidates/format";
 import { STAGE_LABELS } from "@/lib/stage-labels";
-import { agoLabel, daysInStage, lastContact, linkedinUrl } from "@/lib/candidate-insights";
+import { agoLabel, daysInStage, lastContact, linkedinUrl } from "@/lib/candidates/insights";
 import { useNow } from "@/lib/hooks/useNow";
 import { useState } from "react";
 import { Avatar, CopyButton, ShortcutsHint } from "./primitives";

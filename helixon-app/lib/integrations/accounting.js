@@ -20,6 +20,7 @@ function qbBase(realmId) {
   return `${host}/v3/company/${encodeURIComponent(realmId)}`;
 }
 
+/** @param {string} url @param {{ token: string, method?: string, body?: any, headers?: Record<string, string> }} options */
 async function call(url, { token, method = "GET", body, headers = {} }) {
   const res = await fetch(url, {
     method,

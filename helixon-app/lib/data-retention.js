@@ -6,7 +6,7 @@
 // purge. /dashboard/privacy shows what's coming up so an agency can keep
 // someone on purpose.
 
-import { eraseCandidates } from "@/lib/candidate-erasure";
+import { eraseCandidates } from "@/lib/candidates/erasure";
 import { getAgencyPrivacy, retentionCutoff, RETENTION_WARNING_DAYS, addMonths } from "@/lib/privacy-settings";
 import { reportError } from "@/lib/report-error";
 

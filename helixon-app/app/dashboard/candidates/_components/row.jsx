@@ -3,7 +3,7 @@
 // Part of the candidate list (app/dashboard/candidates/page.jsx).
 
 import Link from "next/link";
-import { AMBER, AMBER_BG, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, formatRelativeTime, scoreColor, scoreLabel } from "@/lib/candidate-format";
+import { AMBER, AMBER_BG, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, formatRelativeTime, scoreColor, scoreLabel } from "@/lib/candidates/format";
 import { Avatar as KitAvatar } from "@/components/ui";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { useNow } from "@/lib/hooks/useNow";

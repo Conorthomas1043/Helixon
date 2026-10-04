@@ -1,11 +1,11 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { generateEmployeePassword, hashEmployeePassword } from "@/lib/employee-auth";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { generateEmployeePassword, hashEmployeePassword } from "@/lib/employee/auth";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
-import { ROLES as ROLE_LIST, cleanOverrides, effectivePermissions, overridesAfterRoleChange, overridesFor } from "@/lib/employee-permissions";
+import { ROLES as ROLE_LIST, cleanOverrides, effectivePermissions, overridesAfterRoleChange, overridesFor } from "@/lib/employee/permissions";
 import { reportError } from "@/lib/report-error";
 
 function validUsername(value) {

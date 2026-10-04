@@ -1,5 +1,5 @@
 // Copies of compliance documents (a passport scan, a DBS certificate) in
-// the private "cvs" bucket - see lib/candidate-files.js for how the bucket
+// the private "cvs" bucket - see lib/candidates/files.js for how the bucket
 // is locked down. Path: <agency>/<candidate>/compliance/<random>.<ext>,
 // without the original filename (which is kept in compliance_checks).
 

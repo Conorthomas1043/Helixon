@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
-import { INK, INK_MUTED, INK_FAINT, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD } from "@/lib/candidates/format";
 import { trapTab } from "@/lib/focus-trap";
 import { Card as SurfaceCard, cx } from "@/components/ui";
 

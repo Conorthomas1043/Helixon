@@ -35,7 +35,7 @@ import {
   INK_MUTED,
   INK_FAINT,
 } from "@/components/dashboard/ui";
-import { formatDateOnly, formatRelativeTime } from "@/lib/candidate-format";
+import { formatDateOnly, formatRelativeTime } from "@/lib/candidates/format";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
 import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/opportunities";

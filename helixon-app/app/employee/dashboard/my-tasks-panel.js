@@ -14,7 +14,7 @@
 // resyncing from the server if a write fails.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { addDays, dayKey, groupTasks, relativeDayLabel, startOfWeekKey, toDayKey } from "@/lib/employee-day";
+import { addDays, dayKey, groupTasks, relativeDayLabel, startOfWeekKey, toDayKey } from "@/lib/employee/day";
 import { Card, Chip } from "../_shared/ui";
 
 const PRIORITIES = [

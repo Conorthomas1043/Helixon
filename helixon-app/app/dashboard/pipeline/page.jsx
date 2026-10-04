@@ -24,7 +24,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { subStageLabel, useCustomisation } from "@/components/dashboard/custom-fields";
 import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
-import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 import { Skeleton as Block } from "@/components/ui";
 

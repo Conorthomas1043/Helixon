@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/cv-analysis", () => ({ analyseCV: vi.fn(), estimateSalary: vi.fn() }));
-vi.mock("@/lib/candidate-files", () => ({ copyCandidateCv: vi.fn() }));
+vi.mock("@/lib/candidates/files", () => ({ copyCandidateCv: vi.fn() }));
 
 const { jobTextFor, poolRootId, rescreenCandidate } = await import("./rescreen");
 const { analyseCV } = await import("@/lib/cv-analysis");

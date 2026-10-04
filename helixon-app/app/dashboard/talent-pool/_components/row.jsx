@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { Avatar } from "@/app/analyse/_components/compareBits";
 import { Icon, Spinner, cx } from "@/app/analyse/_components/ui";
-import { formatRelativeTime } from "@/lib/candidate-format";
+import { formatRelativeTime } from "@/lib/candidates/format";
 import { scoreTone } from "@/app/analyse/_lib/analyse";
 import { AvailabilityPicker, CheckInPicker, NoteEditor, PoolExpiry } from "./pickers";
 

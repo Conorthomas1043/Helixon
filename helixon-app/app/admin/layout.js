@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getAdminSession } from "@/lib/admin-auth";
+import { getAdminSession } from "@/lib/admin/auth";
 import { css } from "./_shared/styles";
 import AdminShell from "./_shared/AdminShell";
 

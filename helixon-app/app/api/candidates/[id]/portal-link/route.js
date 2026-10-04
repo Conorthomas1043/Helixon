@@ -4,14 +4,14 @@ import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { newToken } from "@/lib/signatures";
-import { PORTAL_LINK_DAYS } from "@/lib/candidate-portal";
+import { PORTAL_LINK_DAYS } from "@/lib/candidates/portal";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// A candidate's private self-service link (lib/candidate-portal.js).
+// A candidate's private self-service link (lib/candidates/portal.js).
 // GET               the current link, if there is one
 // POST { send? }    a new link (any older one stops working); with send,
 //                   emailed to the candidate

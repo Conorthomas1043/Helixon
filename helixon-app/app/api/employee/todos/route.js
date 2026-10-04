@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getTodos, addTodo, updateTodo, deleteTodo } from "@/lib/employee-todos";
+import { getTodos, addTodo, updateTodo, deleteTodo } from "@/lib/employee/todos";
 
 export async function GET() {
   const { employeeId, forbidden } = await employeeAccess("tasks", "view");

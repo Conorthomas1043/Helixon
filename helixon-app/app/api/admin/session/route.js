@@ -1,7 +1,7 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { adminHasTotp, isTwoFactorRequired } from "@/lib/admin-totp";
-import { adminJson as json, adminErrorResponse } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { adminHasTotp, isTwoFactorRequired } from "@/lib/admin/totp";
+import { adminJson as json, adminErrorResponse } from "@/lib/admin/http";
 
 // Who is signed in and how long the session has left. The console polls this
 // to show the signed-in admin, warn before an idle timeout, and nudge admins

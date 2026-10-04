@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { PlacementInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";

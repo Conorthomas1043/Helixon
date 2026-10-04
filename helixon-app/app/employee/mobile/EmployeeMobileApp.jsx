@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { can } from "@/lib/employee-permissions";
+import { can } from "@/lib/employee/permissions";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 import { useState } from "react";
 import { CalendarTab } from "./_components/calendar";
@@ -11,7 +11,7 @@ import { ICONS, Icon } from "./_components/shared";
 import { StatsTab } from "./_components/stats";
 import { TodosTab } from "./_components/todos";
 
-// `section` is the permission key (lib/employee-permissions.js); tabs the
+// `section` is the permission key (lib/employee/permissions.js); tabs the
 // employee can't view aren't shown.
 const TABS = [
   { id: "todos", label: "To-dos", icon: "todo", section: "tasks" },

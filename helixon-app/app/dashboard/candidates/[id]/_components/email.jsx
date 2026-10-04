@@ -3,7 +3,7 @@
 // Part of the candidate profile page (../page.jsx).
 
 import { EmailCard } from "@/app/analyse/_components/Rail";
-import { INK, INK_MUTED, RED_STRONG } from "@/lib/candidate-format";
+import { INK, INK_MUTED, RED_STRONG } from "@/lib/candidates/format";
 import { Toasts, useToasts } from "@/app/analyse/_components/ui";
 import { trapTab } from "@/lib/focus-trap";
 import { updateCandidateContact } from "@/lib/dashboard-api";

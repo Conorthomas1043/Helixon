@@ -3,15 +3,15 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { eraseCandidates } from "@/lib/candidate-erasure";
+import { eraseCandidates } from "@/lib/candidates/erasure";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
-import { personCandidateIds } from "@/lib/candidate-person";
+import { logActivity } from "@/lib/candidates/activity";
+import { personCandidateIds } from "@/lib/candidates/person";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
-import { loadCandidateProfile } from "@/lib/candidate-profile";
+import { loadCandidateProfile } from "@/lib/candidates/profile";
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
@@ -109,7 +109,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
 // tool an agency needs to fulfil a data subject's right to erasure (privacy
 // policy: "Requests should be directed to the recruitment agency... who acts
 // as the data controller"). The ordering and failure handling live in
-// lib/candidate-erasure.js, shared with bulk delete.
+// lib/candidates/erasure.js, shared with bulk delete.
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
@@ -131,7 +131,7 @@ export const DELETE = customerRoute(async (request, { params }, auth) => {
   }
 
   // ?all=1 erases every record for this person - each job they were
-  // screened for is a separate row (lib/candidate-person.js). An erasure
+  // screened for is a separate row (lib/candidates/person.js). An erasure
   // request needs all of them; plain removal from one job doesn't.
   const everyRecord = new URL(request.url).searchParams.get("all") === "1";
   const ids = everyRecord ? await personCandidateIds(supabase, agencyId, id).catch(() => [id]) : [id];

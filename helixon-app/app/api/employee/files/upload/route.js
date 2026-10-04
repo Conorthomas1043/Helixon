@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { uploadFile, MAX_FILE_BYTES } from "@/lib/employee-files";
+import { uploadFile, MAX_FILE_BYTES } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function POST(request) {

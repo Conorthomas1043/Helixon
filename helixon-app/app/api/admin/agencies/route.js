@@ -1,8 +1,8 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { startOfMonthUtc } from "@/lib/agency-controls";
 import { demoExpired } from "@/lib/subscription-status";

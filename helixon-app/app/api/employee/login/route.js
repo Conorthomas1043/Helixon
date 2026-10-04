@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loginEmployee } from "@/lib/employee-auth";
+import { loginEmployee } from "@/lib/employee/auth";
 import { isFeatureEnabled } from "@/lib/site-settings";
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{1,64}$/;

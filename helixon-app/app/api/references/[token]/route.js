@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { REFERENCE_QUESTIONS, cleanReferenceAnswers } from "@/lib/compliance";
 import { notify } from "@/lib/notifications";
 

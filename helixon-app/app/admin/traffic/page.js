@@ -14,7 +14,7 @@ import { TRAFFIC_CLASSES } from "@/lib/traffic-class";
 import { timeAgo } from "../_shared/data";
 import { csrfHeaders } from "../_shared/csrf";
 import { toast } from "../_shared/toast";
-import { placeLabel } from "@/lib/admin-traffic";
+import { placeLabel } from "@/lib/admin/traffic";
 
 // Every refresh is itself a logged request, so live mode stays modest.
 const LIVE_MS = 15_000;

@@ -1,6 +1,6 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { PLAN_MONTHLY_GBP, planLabel } from "@/lib/plans";
 import { demoExpired } from "@/lib/subscription-status";
 

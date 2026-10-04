@@ -14,7 +14,7 @@
 import DashboardNav from "@/components/DashboardNav";
 import Link from "next/link";
 import PresenceDot from "@/components/PresenceDot";
-import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
 import { PRESENCE_ORDER, computePresence, timeAgo } from "@/lib/presence";
 import { getRecruiters as fetchRecruiters, getTeamSeatUsage, removeTeammate, setTeammateRole } from "@/lib/dashboard-api";
 import { reportQuietly } from "@/lib/report-error";

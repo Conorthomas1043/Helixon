@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { requireAdminSession } from "@/lib/admin/auth";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { reportError } from "@/lib/report-error";
 

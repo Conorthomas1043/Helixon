@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentEmployeeId } from "@/lib/session";
-import { recordHeartbeat, setBusy, getTeamPresence } from "@/lib/employee-presence";
+import { recordHeartbeat, setBusy, getTeamPresence } from "@/lib/employee/presence";
 
 export async function GET() {
   const employeeId = await getCurrentEmployeeId();

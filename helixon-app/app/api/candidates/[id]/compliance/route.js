@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
 import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance";
 import { storeComplianceDocument } from "@/lib/compliance-files";

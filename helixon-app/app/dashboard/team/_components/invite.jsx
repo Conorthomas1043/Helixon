@@ -3,7 +3,7 @@
 // Part of the team page (app/dashboard/team/page.jsx).
 
 import Link from "next/link";
-import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG } from "@/lib/candidates/format";
 import { assignUnassignedCandidates, cancelTeamInvite, inviteTeammate } from "@/lib/dashboard-api";
 import { trapTab } from "@/lib/focus-trap";
 import { useEffect, useRef, useState } from "react";

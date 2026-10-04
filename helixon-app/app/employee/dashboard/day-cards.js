@@ -5,7 +5,7 @@
 // from data the dashboard page has already fetched (see page.js).
 
 import Link from "next/link";
-import { eventsOnDay, formatTime, goalProgress, relativeDayLabel, toDayKey, upcomingEvents } from "@/lib/employee-day";
+import { eventsOnDay, formatTime, goalProgress, relativeDayLabel, toDayKey, upcomingEvents } from "@/lib/employee/day";
 import { Card, CardHeader, Chip, EmptyLine, HeaderLink, ProgressBar } from "../_shared/ui";
 
 function ListSkeleton({ rows = 2 }) {

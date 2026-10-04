@@ -6,7 +6,7 @@ import { mergeContext, renderTemplate } from "@/lib/email-merge";
 import { stepDueAt, stopReason } from "@/lib/sequences";
 import { agencyFromName, mailConfigured } from "@/lib/mailer";
 import { sendTrackedEmail } from "@/lib/tracked-email";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { reportError } from "@/lib/report-error";
 
 // Sends the sequence emails that are due (lib/sequences.js). For each due

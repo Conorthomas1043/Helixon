@@ -13,7 +13,7 @@ import { reportError } from "@/lib/report-error";
 // This used to also return `isAdmin` from a lookup of the `admins` table by
 // Clerk user id - but that column holds old Supabase auth uuids, so it never
 // matched anyone, and nothing read the flag. Admin access is the separate
-// credential login in lib/admin-auth.js.
+// credential login in lib/admin/auth.js.
 export async function GET() {
   const { userId } = await auth();
 

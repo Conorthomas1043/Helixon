@@ -1,6 +1,6 @@
 // Saved Candidates searches ("smart lists") - see migration
 // 20261001050000. params are the Candidates page's own URL filters
-// (lib/candidate-query.js); only the known keys are kept.
+// (lib/candidates/query.js); only the known keys are kept.
 
 import { cleanLine } from "@/lib/sanitize";
 

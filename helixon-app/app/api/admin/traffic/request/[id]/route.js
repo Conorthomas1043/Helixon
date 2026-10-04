@@ -1,8 +1,8 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { getAdminSupabase } from "@/lib/admin-supabase";
-import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { getAdminSupabase } from "@/lib/admin/supabase";
+import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { scoreRequest } from "@/lib/security/threat-score";
-import { decodePlace } from "@/lib/admin-traffic";
+import { decodePlace } from "@/lib/admin/traffic";
 
 // One request in full for the request inspector (Admin > Traffic): what
 // was sent (redacted headers, query, a blocked request's body), where from,

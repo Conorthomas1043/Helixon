@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";

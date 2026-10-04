@@ -28,6 +28,7 @@ function parseDay(value) {
 // "all" has no bounds and nothing to compare with.
 //   period: "all" | "30d" | "90d" | "365d" | "custom" (with from/to as
 //   YYYY-MM-DD, both days included)
+/** @param {{ period?: string, from?: string, to?: string }} [range] */
 export function resolveRange({ period, from, to } = {}, now = Date.now()) {
   let start = null;
   let end = null;

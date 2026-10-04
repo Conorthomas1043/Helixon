@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { writeAdminAuditSafe } from "@/lib/admin-audit";
+import { writeAdminAuditSafe } from "@/lib/admin/audit";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";

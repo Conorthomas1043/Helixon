@@ -1,6 +1,6 @@
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { countCandidateStages, listCandidates } from "@/lib/candidate-list";
-import { buildCandidatesQuery, filtersFromParams } from "@/lib/candidate-list-params";
+import { countCandidateStages, listCandidates } from "@/lib/candidates/list";
+import { buildCandidatesQuery, filtersFromParams } from "@/lib/candidates/list-params";
 import CandidateList from "./CandidateList";
 
 // The candidate list, loaded on the server so it arrives with its first page

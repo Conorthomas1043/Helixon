@@ -1,10 +1,10 @@
 // app/api/employee/calendar/route.js
-// Shared team calendar CRUD - see lib/employee-calendar.js. Every active
+// Shared team calendar CRUD - see lib/employee/calendar.js. Every active
 // employee sees every event; only the creator can edit or delete one.
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getEvents, addEvent, updateEvent, deleteEvent } from "@/lib/employee-calendar";
+import { getEvents, addEvent, updateEvent, deleteEvent } from "@/lib/employee/calendar";
 
 export async function GET(request) {
   const { employeeId, forbidden } = await employeeAccess("calendar", "view");

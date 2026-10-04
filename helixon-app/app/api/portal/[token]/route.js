@@ -2,12 +2,12 @@ import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { emitWebhook } from "@/lib/webhooks";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { notify } from "@/lib/notifications";
 import { storeComplianceDocument } from "@/lib/compliance-files";
 import { CHECK_KINDS } from "@/lib/compliance";
 import { TOKEN_RE } from "@/lib/signatures";
-import { cleanPortalUpdate, portalView } from "@/lib/candidate-portal";
+import { cleanPortalUpdate, portalView } from "@/lib/candidates/portal";
 
 // Public: a candidate's self-service page (app/portal/[token]). The token
 // is the only credential. Answers with only the candidate's own editable

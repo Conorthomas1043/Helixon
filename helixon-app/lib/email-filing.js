@@ -13,7 +13,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 
 const MAX_BODY = 50000;

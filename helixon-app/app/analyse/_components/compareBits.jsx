@@ -8,7 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
-import { initials } from "@/lib/candidate-format";
+import { initials } from "@/lib/candidates/format";
 import { Icon, cx } from "./ui";
 import { Avatar as KitAvatar } from "@/components/ui";
 

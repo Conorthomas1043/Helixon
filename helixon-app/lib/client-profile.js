@@ -52,6 +52,10 @@ function skillNames(extracted, result) {
   return out;
 }
 
+/**
+ * @param {{ candidate?: Record<string, any>, extracted?: Record<string, any>, result?: Record<string, any> | null, job?: Record<string, any> | null }} input
+ * @param {{ blind?: boolean, label?: string, includeConcerns?: boolean }} [options]
+ */
 export function buildClientProfile({ candidate = {}, extracted = {}, result = null, job = null }, { blind = false, label = "Candidate", includeConcerns = false } = {}) {
   const ex = extracted || {};
   // Free-text redaction works off what extraction identified, plus what the

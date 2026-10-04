@@ -5,7 +5,7 @@
 
 -- ── Employees ────────────────────────────────────────────────────────────
 -- Which portal sections an employee can use. NULL means "whatever their
--- role allows" (lib/employee-permissions.js holds the role presets); an
+-- role allows" (lib/employee/permissions.js holds the role presets); an
 -- object overrides individual sections with "none", "view" or "edit",
 -- e.g. {"cold_calls": "none", "files": "view"}.
 alter table public.employees

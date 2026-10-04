@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getCandidateEmails, getEmailSequences, enrollInSequence, stopEnrollment } from "@/lib/dashboard-api";
 import { Card, Button, ErrorText, Pill, Select, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import ComposeEmail from "@/components/dashboard/ComposeEmail";
-import { formatDate } from "@/lib/candidate-format";
+import { formatDate } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 
 function Message({ m }) {

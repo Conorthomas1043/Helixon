@@ -20,7 +20,7 @@ import {
 import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stage-labels";
 import ShareShortlist from "@/components/dashboard/ShareShortlist";
 import { CLIENT_DECISIONS } from "@/lib/client-decisions";
-import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { reportQuietly } from "@/lib/report-error";
 import { Avatar as KitAvatar } from "@/components/ui";

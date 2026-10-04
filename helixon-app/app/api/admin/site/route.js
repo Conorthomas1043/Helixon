@@ -1,7 +1,7 @@
-import { requireAdminSession } from "@/lib/admin-auth";
-import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin-csrf";
-import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
-import { adminJson as json, adminErrorResponse } from "@/lib/admin-http";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { adminJson as json, adminErrorResponse } from "@/lib/admin/http";
 import { FEATURES, SETTING_KEYS, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
 
 // Site controls (/admin/site): maintenance mode, the announcement banner

@@ -6,7 +6,7 @@ import { buildCsp, createNonce } from "@/lib/csp";
 import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
-} from "@/lib/admin-session";
+} from "@/lib/admin/session";
 
 // Flip to false to go live again - routes all page traffic to
 // /under-development while true, leaving /api and static assets alone.
@@ -69,7 +69,7 @@ function notFoundResponse(request: NextRequest) {
 // scripts on other sites can't forge either - so any state-changing /api
 // request that provably comes from another site is rejected here, once, for
 // all routes. (The admin API additionally uses a double-submit token, see
-// lib/admin-csrf.js.)
+// lib/admin/csrf.js.)
 //
 // Requests with neither header are non-browser clients (curl, server-to-
 // server) - there's no ambient browser cookie to abuse, so they pass and are
@@ -344,8 +344,8 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   // separate system (env-var credentials + its own signed session cookie),
   // never built on Supabase Auth or Clerk. This uses the same signed,
   // httpOnly helixon_admin_session cookie the API routes check (verified
-  // here via lib/admin-session.js, an Edge-Runtime-safe reimplementation of
-  // the same check lib/admin-auth.js uses server-side - see that file for
+  // here via lib/admin/session.js, an Edge-Runtime-safe reimplementation of
+  // the same check lib/admin/auth.js uses server-side - see that file for
   // why it's not just imported directly). Excludes the login page itself so
   // this doesn't redirect-loop.
   if (HIDE_ADMIN) {

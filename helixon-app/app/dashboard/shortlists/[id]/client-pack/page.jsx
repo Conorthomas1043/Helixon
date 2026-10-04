@@ -13,7 +13,7 @@ import ClientProfileToolbar from "@/components/dashboard/ClientProfileToolbar";
 import { getShortlist, getClientProfile, recordClientProfilePrinted } from "@/lib/dashboard-api";
 import { blindLabel } from "@/lib/client-profile";
 import { printSection } from "@/lib/print";
-import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
+import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 
 export default function ClientPackPage({ params }) {

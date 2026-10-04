@@ -13,7 +13,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { getCurrentEmployeeId, SESSION_COOKIE } from "@/lib/session";
-import { hashEmployeePassword } from "@/lib/employee-auth";
+import { hashEmployeePassword } from "@/lib/employee/auth";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
 

@@ -2,7 +2,7 @@
 // app/employee/goals/page.js
 // Shared team goals: a status (not started / in progress / blocked /
 // done), an optional deadline, notes, and a "micro-goal" tick list under
-// each one. Visible to every active employee - see lib/employee-goals.js
+// each one. Visible to every active employee - see lib/employee/goals.js
 // for exactly who can edit vs. just view.
 
 import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";

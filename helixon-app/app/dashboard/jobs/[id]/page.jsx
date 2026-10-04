@@ -15,7 +15,7 @@ import ClientPicker from "@/components/dashboard/ClientPicker";
 import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { useOffices } from "@/components/dashboard/use-offices";
-import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { Avatar, Skeleton as Block } from "@/components/ui";
 

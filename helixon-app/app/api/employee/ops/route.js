@@ -1,6 +1,6 @@
 // Previously this route authenticated via a Supabase Auth Bearer token and
 // looked the caller up by employees.email - but employees don't have
-// Supabase Auth accounts; they log in through lib/employee-auth.js's own
+// Supabase Auth accounts; they log in through lib/employee/auth.js's own
 // username/password + cookie-session system (see lib/session.js). That
 // mismatch meant this route could never actually be called: it 403'd
 // unconditionally (see the same fix already applied to

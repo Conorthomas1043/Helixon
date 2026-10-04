@@ -1,12 +1,12 @@
 // app/api/employee/files/route.js
-// Shared filing system - see lib/employee-files.js for the visibility/edit
+// Shared filing system - see lib/employee/files.js for the visibility/edit
 // model (everyone browses and downloads everything; only the creator of a
 // folder or uploader of a file can delete it). Uploads are handled by the
 // separate multipart route at app/api/employee/files/upload/route.js.
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { listFolder, createFolder, deleteFolder, deleteFile } from "@/lib/employee-files";
+import { listFolder, createFolder, deleteFolder, deleteFile } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
 
 export async function GET(request) {

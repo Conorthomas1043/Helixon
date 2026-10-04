@@ -1,5 +1,5 @@
 // app/api/employee/call-list/route.js
-// Shared cold-call list imported from CSV - see lib/employee-call-list.js.
+// Shared cold-call list imported from CSV - see lib/employee/call-list.js.
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
@@ -12,7 +12,7 @@ import {
   reopenRow,
   deleteRow,
   MAX_IMPORT_ROWS,
-} from "@/lib/employee-call-list";
+} from "@/lib/employee/call-list";
 import { reportError } from "@/lib/report-error";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -2,7 +2,7 @@
 // app/employee/cold-calls/page.js
 // Cold call log for the sales team - every active employee sees every
 // call (it doubles as a team leaderboard), but only the person who made
-// a call can edit or delete it. See lib/employee-cold-calls.js.
+// a call can edit or delete it. See lib/employee/cold-calls.js.
 
 import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
 import { useConfirm } from "@/components/dashboard/use-confirm";

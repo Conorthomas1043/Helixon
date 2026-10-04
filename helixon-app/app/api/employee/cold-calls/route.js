@@ -1,12 +1,12 @@
 // app/api/employee/cold-calls/route.js
-// Cold call log for the sales team - see lib/employee-cold-calls.js for the
+// Cold call log for the sales team - see lib/employee/cold-calls.js for the
 // visibility/edit model (everyone sees every call; only the caller who
 // logged it can edit or delete it).
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
-import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee-cold-calls";
-import { finishRow } from "@/lib/employee-call-list";
+import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee/cold-calls";
+import { finishRow } from "@/lib/employee/call-list";
 import { reportError } from "@/lib/report-error";
 
 const VALID_OUTCOMES = new Set(OUTCOMES);

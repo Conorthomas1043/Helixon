@@ -6,9 +6,9 @@ import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { findExistingPerson } from "@/lib/candidate-duplicates";
+import { findExistingPerson } from "@/lib/candidates/duplicates";
 import { ensureClient } from "@/lib/clients";
-import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidate-files";
+import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidates/files";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
 import { NextResponse, after } from "next/server";
@@ -372,7 +372,7 @@ export async function POST(request) {
 
     // Someone already on file (same email or LinkedIn) is linked to their
     // existing record rather than becoming a second, unconnected person -
-    // see lib/candidate-duplicates.js.
+    // see lib/candidates/duplicates.js.
     const existingPerson = await findExistingPerson(supabase, agencyId, ex);
 
     /*
@@ -548,7 +548,7 @@ export async function POST(request) {
      * than silently leaving the candidate stuck with no stage or score.
      */
     // Keep the original CV file so recruiters can preview, download and
-    // send it (lib/candidate-files.js) - only the extracted text used to be
+    // send it (lib/candidates/files.js) - only the extracted text used to be
     // kept. Stored after every other write has succeeded, so the cleanup()
     // path above never has a file to leave behind, and a storage failure
     // never costs the analysis itself: the candidate just has no file.

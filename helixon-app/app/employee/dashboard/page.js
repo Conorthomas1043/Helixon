@@ -28,8 +28,8 @@ import {
   groupTasks,
   myOpenGoals,
   startOfWeekKey,
-} from "@/lib/employee-day";
-import { can } from "@/lib/employee-permissions";
+} from "@/lib/employee/day";
+import { can } from "@/lib/employee/permissions";
 
 // Follow-ups are read from the calls you've logged in this window.
 const CALL_HISTORY_DAYS = 120;
@@ -98,7 +98,7 @@ export default function EmployeeDashboard() {
 
   const todayKey = dayKey();
 
-  // What this employee can see (admin-set, lib/employee-permissions.js).
+  // What this employee can see (admin-set, lib/employee/permissions.js).
   // Sections they can't open aren't fetched or shown; before /me loads
   // everything counts as visible.
   const access = useMemo(() => {

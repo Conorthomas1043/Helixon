@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
-import { logActivity } from "@/lib/candidate-activity";
+import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { CLIENT_DECISIONS, SHARE_TOKEN_RE, shareActive, sharedProfiles } from "@/lib/shortlist-shares";

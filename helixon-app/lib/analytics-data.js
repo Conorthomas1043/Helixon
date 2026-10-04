@@ -49,6 +49,12 @@ export async function jobIdsForClient(agencyId, clientId, officeId = null) {
 //   window: { from: Date|null, to: Date|null } - defaults to the filters'
 //   range; pass { from: null, to: null } for all time.
 //   extra(query) - optional further narrowing (e.g. only placed rows).
+/**
+ * @param {string} agencyId
+ * @param {any} filters
+ * @param {string} columns
+ * @param {{ window?: any, jobIds?: string[] | null, extra?: (query: any) => any }} [options]
+ */
 export async function loadCandidates(agencyId, filters, columns, { window, jobIds, extra } = {}) {
   const range = window ?? filters.range;
   if (Array.isArray(jobIds) && jobIds.length === 0) return { data: [], error: null, truncated: false };
@@ -71,6 +77,10 @@ export async function loadCandidates(agencyId, filters, columns, { window, jobId
 
 // candidate_activity rows for these candidates, oldest first, optionally
 // only some types.
+/**
+ * @param {string[]} candidateIds
+ * @param {{ types?: string[], columns?: string }} [options]
+ */
 export async function loadActivity(candidateIds, { types, columns = "candidate_id, type, meta, created_at" } = {}) {
   const ids = [...new Set(candidateIds)];
   let all = [];
@@ -104,6 +114,11 @@ export function groupTransitions(activity) {
 // candidate was added): [{ id, at, fee }]. `at` is the last recorded move
 // into Placed; with no recorded move (set before history was kept), the
 // last activity on the record is the nearest date there is.
+/**
+ * @param {string} agencyId
+ * @param {any} filters
+ * @param {{ jobIds?: string[] | null }} [options]
+ */
 export async function loadPlacements(agencyId, filters, { jobIds } = {}) {
   const { data, error, truncated } = await loadCandidates(agencyId, filters, "id, created_at, last_activity_at, placement_fee", {
     jobIds,

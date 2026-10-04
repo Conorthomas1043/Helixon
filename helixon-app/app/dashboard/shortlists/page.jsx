@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getShortlists, createShortlist, getJobs } from "@/lib/dashboard-api";
-import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidates/format";
 import { Skeleton as Block } from "@/components/ui";
 
 function NewShortlistForm({ jobs, onCreated }) {
