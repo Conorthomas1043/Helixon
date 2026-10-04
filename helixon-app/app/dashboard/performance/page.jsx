@@ -81,7 +81,7 @@ export default function PerformancePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {METRIC_KEYS.map((k) => (
               <div key={k} className="rounded-[12px] px-3 py-2.5 bg-white" style={{ border: "1px solid var(--border)" }}>
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                   {METRICS[k].short}
                 </p>
                 <p className="text-lg font-semibold tabular-nums" style={{ color: INK }}>
@@ -89,7 +89,7 @@ export default function PerformancePage() {
                 </p>
                 {data.team.targets[k] ? (
                   <>
-                    <p className="text-[10px]" style={{ color: INK_MUTED }}>
+                    <p className="text-[11px]" style={{ color: INK_MUTED }}>
                       of {value(k, data.team.targets[k])}
                     </p>
                     <Progress actual={data.team.metrics[k]} target={data.team.targets[k]} />
@@ -114,7 +114,7 @@ export default function PerformancePage() {
             <div className="overflow-x-auto -mx-5 sm:-mx-6">
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="text-left text-[10px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                     <th className="px-5 sm:px-6 py-2 font-semibold">Recruiter</th>
                     {METRIC_KEYS.map((k) => (
                       <th key={k} className="px-2 py-2 font-semibold text-right whitespace-nowrap" style={k === rankBy ? { color: INK } : null}>
@@ -141,7 +141,7 @@ export default function PerformancePage() {
                           {value(k, p.metrics[k])}
                           {p.targets[k] ? (
                             <>
-                              <span className="block text-[10px]" style={{ color: INK_FAINT }}>
+                              <span className="block text-[11px]" style={{ color: INK_FAINT }}>
                                 / {value(k, p.targets[k])}
                               </span>
                               <Progress actual={p.metrics[k]} target={p.targets[k]} />

@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { planForPriceId } from "@/lib/plans";
+import { agencyIdForProfile, billingEventsFor, captureAgencyEvent } from "@/lib/server-analytics";
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook
 // signature - this is the "raw request body access" caveat that makes
@@ -45,6 +46,7 @@ export async function POST(request) {
           }, { onConflict: "user_id" });
 
         if (error) console.error("[stripe-webhook] Failed to upsert subscription:", error.message);
+        after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan: plan || null }));
         break;
       }
 
@@ -67,12 +69,22 @@ export async function POST(request) {
         const update = { status: sub.status, updated_at: new Date().toISOString() };
         if (plan) update.plan = plan;
 
-        const { error } = await supabaseAdmin
+        const { data: rows, error } = await supabaseAdmin
           .from("subscriptions")
           .update(update)
-          .eq("stripe_subscription_id", sub.id);
+          .eq("stripe_subscription_id", sub.id)
+          .select("user_id, plan");
 
         if (error) console.error("[stripe-webhook] Failed to update subscription status:", error.message);
+
+        const billingEvents = billingEventsFor(event.type, sub, event.data.previous_attributes);
+        const row = rows?.[0];
+        if (billingEvents.length && row) {
+          after(async () => {
+            const agencyId = await agencyIdForProfile(row.user_id);
+            for (const e of billingEvents) await captureAgencyEvent(e.event, agencyId, { ...e.properties, plan: row.plan || plan || null });
+          });
+        }
         break;
       }
 

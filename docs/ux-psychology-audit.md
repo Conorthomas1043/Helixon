@@ -8,6 +8,30 @@
 
 ---
 
+## Status: fix pass (all items below are on `main`)
+
+| Backlog item | Status |
+|---|---|
+| `past_due` grace period + site-wide payment banner | **Done.** `past_due` keeps access while Stripe retries; `unpaid`/`canceled` stop it. Every signed-in page shows a banner, with separate copy for the person who pays and for teammates |
+| Welcome + activation emails | **Done.** The welcome email (rewritten for the paid model) is sent once per new workspace. A one-off day-2–7 nudge goes to workspaces with nothing screened, from the weekday reminders cron. Both are recorded in `agencies.settings.lifecycle`; replies go to hello@ |
+| Stripe webhook → server events | **Done.** `subscription_started`, `payment_failed`, `payment_recovered`, `subscription_cancel_scheduled`, `subscription_cancelled`, `plan_changed`, `subscription_status_changed`, all recorded per agency with no personal data (unit-tested) |
+| Applicant acknowledgement email | **Done.** Sent in the agency's name; the confirmation screen says an email is on its way only when one is |
+| Cancellation reason + save offer | **Done.** "Cancel subscription" on Billing asks why, offers a switch to Individual (when price is the reason) or a conversation (when it's scoring, a missing feature or low use), then opens Stripe. The reason is recorded server-side |
+| Report toolbar simplification | **Done.** Copy summary · More ▾ (Re-score, Upload a CV to compare, Compare everyone for this role) · Next candidate |
+| Homepage as server components | **Done.** `app/page.js` renders on the server; interactive pieces live in `components/landing/home-interactive.jsx`. Homepage FAQPage JSON-LD added |
+| Employee portal `alert()`/`confirm()` | **Done.** Replaced with toasts and the shared confirm dialog |
+| CSP | **Done.** Google Fonts origins removed |
+| Text under 11px in the app and public pages | **Done.** 112 instances raised to 11px; the marketing mockups keep their miniature sizes on purpose |
+| Cause-specific errors (analyse, apply) | **Done** |
+| Lint debt | **Done.** The whole repo lints clean (from 66 errors and 16 warnings). Real anti-patterns were fixed: render-time `Date.now()`, prop→state effects, the reduced-motion hook now uses `useSyncExternalStore`, state is now set from the URL on first render. Fetch-on-open effects and deliberate full-page reloads are annotated with the reason |
+| Testimonials / logos | **Needs content.** Real, attributed quotes only; none were invented |
+| Annual plan / money-back guarantee | **Needs a business decision** and a Stripe price |
+| Interactive "try one sample CV" | **Not built.** It needs a cost and abuse budget for unauthenticated model calls |
+| Dashboard aggregation on the server | **Not done.** It changes the API behind the most-used screen and couldn't be checked against real data here; the existing `truncated` notice still shows the limit |
+| Blind-screening prompt | **Kept native on purpose.** An async dialog would lose the click and get the CV's new tab blocked as a pop-up |
+
+---
+
 ## Executive summary
 
 Helixon's engineering quality is high. Accessibility, reduced motion and honest copy are clearly deliberate in many places, and the core analyse flow is well designed. The biggest problems weren't in any single screen but at the joins between them:

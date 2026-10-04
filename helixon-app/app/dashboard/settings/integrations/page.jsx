@@ -212,7 +212,7 @@ function Webhooks() {
         </Field>
         {data && (
           <fieldset>
-            <legend className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <legend className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
               Events (none ticked = all)
             </legend>
             <div className="grid sm:grid-cols-2 gap-1">

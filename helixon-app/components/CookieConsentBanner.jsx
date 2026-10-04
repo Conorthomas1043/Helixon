@@ -41,11 +41,10 @@ export default function CookieConsentBanner({ embedded = false }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (visible) {
-      const t = requestAnimationFrame(() => setMounted(true));
-      return () => cancelAnimationFrame(t);
-    }
-    setMounted(false);
+    // Only the entrance needs a frame's delay; hiding is just `visible`.
+    if (!visible) return undefined;
+    const t = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(t);
   }, [visible]);
 
   function setConsent(value) {
@@ -69,7 +68,7 @@ export default function CookieConsentBanner({ embedded = false }) {
       className={`${embedded ? "relative z-30 px-4 pt-4" : "fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 sm:pb-6"} cookie-banner`}
       role="region"
       aria-label="Cookie consent"
-      data-visible={mounted ? "true" : "false"}
+      data-visible={mounted && visible ? "true" : "false"}
     >
       <div
         className="max-w-[720px] mx-auto rounded-[16px] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"

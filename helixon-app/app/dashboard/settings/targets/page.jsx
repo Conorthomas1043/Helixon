@@ -94,7 +94,7 @@ export default function TargetsSettingsPage() {
             <div className="overflow-x-auto -mx-5 sm:-mx-6">
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="text-left text-[10px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                     <th className="px-5 sm:px-6 py-2 font-semibold" />
                     {METRIC_KEYS.map((k) => (
                       <th key={k} className="px-1.5 py-2 font-semibold text-right whitespace-nowrap">
@@ -155,7 +155,7 @@ export default function TargetsSettingsPage() {
                 </Field>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
                   Rates above the threshold
                 </p>
                 <ul className="space-y-2 max-w-xl">
@@ -202,7 +202,7 @@ export default function TargetsSettingsPage() {
               </div>
               {people.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
                     Personal thresholds (optional)
                   </p>
                   <ul className="grid sm:grid-cols-2 gap-2 max-w-xl">

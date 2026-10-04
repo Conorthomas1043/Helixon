@@ -4,6 +4,8 @@
 // employee, stored in the private "employee-files" Storage bucket. See
 // lib/employee-files.js for who can create/delete what.
 
+import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
@@ -34,6 +36,8 @@ const FILE_ICON = (
 );
 
 export default function EmployeeFilesPage() {
+  const [ask, confirmDialog] = useConfirm();
+  const { toasts, notify, dismiss } = useToasts();
   const router = useRouter();
   useHeartbeat();
   const fileInputRef = useRef(null);
@@ -89,7 +93,9 @@ export default function EmployeeFilesPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     if (!checking) fetchFolder();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-fetch only when these inputs change; the fetch function is recreated every render
   }, [checking, folderId]);
 
   async function handleCreateFolder(e) {
@@ -103,7 +109,7 @@ export default function EmployeeFilesPage() {
         body: JSON.stringify({ action: "create_folder", name: newFolderName.trim(), parent_id: folderId }),
       });
       const data = await res.json();
-      if (!data.ok) { alert(data.error || "Could not create folder."); return; }
+      if (!data.ok) { notify(data.error || "Could not create folder.", { tone: "error" }); return; }
       setNewFolderName("");
       setShowNewFolder(false);
       fetchFolder();
@@ -113,7 +119,7 @@ export default function EmployeeFilesPage() {
   }
 
   async function handleDeleteFolder(folder) {
-    if (!confirm(`Delete "${folder.name}"? It must be empty.`)) return;
+    if (!(await ask({ title: `Delete "${folder.name}"? It must be empty.`, confirmLabel: "Delete folder", danger: true }))) return;
     try {
       const res = await fetch("/api/employee/files", {
         method: "POST",
@@ -121,15 +127,15 @@ export default function EmployeeFilesPage() {
         body: JSON.stringify({ action: "delete_folder", id: folder.id }),
       });
       const data = await res.json();
-      if (!data.ok) { alert(data.error || "Could not delete folder."); return; }
+      if (!data.ok) { notify(data.error || "Could not delete folder.", { tone: "error" }); return; }
       fetchFolder();
     } catch {
-      alert("Could not delete folder.");
+      notify("Could not delete folder.", { tone: "error" });
     }
   }
 
   async function handleDeleteFile(file) {
-    if (!confirm(`Delete "${file.name}"?`)) return;
+    if (!(await ask({ title: `Delete "${file.name}"?`, confirmLabel: "Delete file", danger: true }))) return;
     setFiles((prev) => prev.filter((f) => f.id !== file.id));
     try {
       const res = await fetch("/api/employee/files", {
@@ -140,7 +146,7 @@ export default function EmployeeFilesPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete.");
     } catch (err) {
-      alert(err.message || "Failed to delete.");
+      notify(err.message || "Failed to delete.", { tone: "error" });
       fetchFolder();
     }
   }
@@ -178,6 +184,8 @@ export default function EmployeeFilesPage() {
 
   return (
     <EmployeeShell section="files">
+      {confirmDialog}
+      <Toaster toasts={toasts} onDismiss={dismiss} />
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

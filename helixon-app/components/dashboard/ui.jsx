@@ -35,7 +35,7 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
           </Link>
         )}
         {eyebrow && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             {eyebrow}
           </p>
         )}
@@ -60,7 +60,7 @@ export function Card({ title, eyebrow, action, children, className = "", padded 
         <div className="flex items-end justify-between gap-3 mb-4">
           <div className="min-w-0">
             {eyebrow && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
                 {eyebrow}
               </p>
             )}
@@ -108,7 +108,7 @@ export function Button({ variant = "secondary", size = "md", href, className = "
 export function Field({ label, hint, children, className = "" }) {
   return (
     <label className={`block ${className}`}>
-      <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
         {label}
       </span>
       {children}
@@ -146,7 +146,7 @@ export function Select({ options, ...props }) {
 
 export function Pill({ children, color = INK_MUTED, background = "var(--mist)" }) {
   return (
-    <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ color, background }}>
+    <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ color, background }}>
       {children}
     </span>
   );

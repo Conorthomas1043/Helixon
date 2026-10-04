@@ -124,7 +124,8 @@ export default function EmployeeMobileApp({ employee }) {
     } catch {
       // cookie will expire on its own if this fails
     }
-    window.location.href = "/employee/login";
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+    window.location.assign("/employee/login");
   }
 
   return (
@@ -260,6 +261,7 @@ function TodosTab() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -463,6 +465,7 @@ function CalendarTab({ employee }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -706,6 +709,7 @@ function CallsTab({ employee }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -940,6 +944,7 @@ function FilesTab({ employee }) {
   }, [folderId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -1219,6 +1224,7 @@ function StatsTab() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 

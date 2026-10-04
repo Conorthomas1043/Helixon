@@ -7,6 +7,8 @@
 // Calendar OAuth connection (lib/google-calendar.js) that needs
 // GOOGLE_CALENDAR_CLIENT_ID/SECRET configured before it can do anything.
 
+import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
@@ -41,6 +43,8 @@ function toLocalInputValue(date) {
 }
 
 function CalendarPageContent() {
+  const [ask, confirmDialog] = useConfirm();
+  const { toasts, notify, dismiss } = useToasts();
   const router = useRouter();
   const searchParams = useSearchParams();
   useHeartbeat();
@@ -63,7 +67,13 @@ function CalendarPageContent() {
 
   const [googleStatus, setGoogleStatus] = useState(null);
   const [googleBusy, setGoogleBusy] = useState(false);
-  const [banner, setBanner] = useState(null);
+  // The Google connect flow returns here with ?googleConnected or
+  // ?googleError; read on the first render rather than copied in by an effect.
+  const [banner, setBanner] = useState(() => {
+    if (searchParams.get("googleConnected")) return { tone: "ok", message: "Google Calendar connected." };
+    const googleError = searchParams.get("googleError");
+    return googleError ? { tone: "error", message: GOOGLE_ERROR_MESSAGES[googleError] || "Could not connect Google Calendar." } : null;
+  });
 
   useEffect(() => {
     (async () => {
@@ -82,11 +92,7 @@ function CalendarPageContent() {
   }, [router]);
 
   useEffect(() => {
-    const connected = searchParams.get("googleConnected");
-    const googleError = searchParams.get("googleError");
-    if (connected) setBanner({ tone: "ok", message: "Google Calendar connected." });
-    else if (googleError) setBanner({ tone: "error", message: GOOGLE_ERROR_MESSAGES[googleError] || "Could not connect Google Calendar." });
-    if (connected || googleError) {
+    if (searchParams.get("googleConnected") || searchParams.get("googleError")) {
       router.replace("/employee/calendar");
     }
   }, [searchParams, router]);
@@ -128,6 +134,7 @@ function CalendarPageContent() {
 
   useEffect(() => {
     if (checking) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     fetchEvents();
     fetchFeedUrl();
     fetchGoogleStatus();
@@ -196,7 +203,7 @@ function CalendarPageContent() {
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this event?")) return;
+    if (!(await ask({ title: "Delete this event?", confirmLabel: "Delete event", danger: true }))) return;
     setEvents((prev) => prev.filter((e) => e.id !== id));
     try {
       const res = await fetch("/api/employee/calendar", {
@@ -207,7 +214,7 @@ function CalendarPageContent() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete event.");
     } catch (err) {
-      alert(err.message || "Failed to delete event.");
+      notify(err.message || "Failed to delete event.", { tone: "error" });
       fetchEvents();
     }
   }
@@ -220,7 +227,7 @@ function CalendarPageContent() {
   }
 
   async function regenerateFeed() {
-    if (!confirm("Regenerate your feed link? Any calendar already subscribed to the old one will stop receiving updates.")) return;
+    if (!(await ask({ title: "Regenerate your feed link? Any calendar already subscribed to the old one will stop receiving updates.", confirmLabel: "Regenerate link", danger: true }))) return;
     setFeedLoading(true);
     try {
       const res = await fetch("/api/employee/calendar/feed-token", { method: "POST" });
@@ -232,7 +239,7 @@ function CalendarPageContent() {
   }
 
   async function disconnectGoogle() {
-    if (!confirm("Disconnect Google Calendar? This stops future syncing but doesn't delete anything already synced.")) return;
+    if (!(await ask({ title: "Disconnect Google Calendar? This stops future syncing but doesn't delete anything already synced.", confirmLabel: "Disconnect", danger: true }))) return;
     setGoogleBusy(true);
     try {
       await fetch("/api/employee/calendar/google/disconnect", { method: "POST" });
@@ -247,7 +254,7 @@ function CalendarPageContent() {
     try {
       const res = await fetch("/api/employee/calendar/google/sync", { method: "POST" });
       const data = await res.json();
-      if (!data.ok) { alert(data.error || "Sync failed."); return; }
+      if (!data.ok) { notify(data.error || "Sync failed.", { tone: "error" }); return; }
       await Promise.all([fetchGoogleStatus(), fetchEvents()]);
     } finally {
       setGoogleBusy(false);
@@ -274,6 +281,8 @@ function CalendarPageContent() {
 
   return (
     <EmployeeShell section="calendar">
+      {confirmDialog}
+      <Toaster toasts={toasts} onDismiss={dismiss} />
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

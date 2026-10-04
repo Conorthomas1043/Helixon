@@ -148,9 +148,9 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
 
           <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-faint)" }}>
             Still stuck?{" "}
-            <a href="/contact" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>
+            <Link href="/contact" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>
               Contact support
-            </a>
+            </Link>
           </p>
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
       <footer className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
-          <a href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</a>
+          <Link href="/login" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>Login</Link>
         </div>
       </footer>
 

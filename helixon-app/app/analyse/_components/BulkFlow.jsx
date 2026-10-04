@@ -270,11 +270,13 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
       const res = await fetch("/api/run", { method: "POST", body: fd });
       const data = await res.json().catch(() => null);
       if (res.status === 401) {
-        window.location.href = "/login?next=%2Fanalyse%3Fmode%3Dbulk";
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+        window.location.assign("/login?next=%2Fanalyse%3Fmode%3Dbulk");
         return { outcome: "aborted" };
       }
       if (res.status === 402 || data?.upgrade) {
-        window.location.href = "/pricing?reason=subscription_required";
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+        window.location.assign("/pricing?reason=subscription_required");
         return { outcome: "aborted" };
       }
       if (res.status === 429) {

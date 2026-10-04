@@ -96,7 +96,7 @@ function SectionRow({ n, title, extra }) {
 }
 
 function BestTag() {
-  return <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--forest)]">Best</span>;
+  return <span className="ml-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--forest)]">Best</span>;
 }
 
 function ScoreBar({ value, best }) {
@@ -308,7 +308,7 @@ export default function CompareWorkspace() {
       <div id="compare-print" className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
               {job && n >= 2 ? job.title : "Side by side"}
             </h1>

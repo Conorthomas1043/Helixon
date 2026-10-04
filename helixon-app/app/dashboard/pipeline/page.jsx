@@ -81,7 +81,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
             {candidate.jobTitle}
           </p>
           {subStage && (
-            <span className="inline-block text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="inline-block text-[11px] font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
               {subStage}
             </span>
           )}
@@ -95,7 +95,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         </span>
       </Link>
       <div className="flex items-center justify-between mt-2.5 gap-2">
-        <span className="text-[10px] truncate" style={{ color: INK_FAINT }}>
+        <span className="text-[11px] truncate" style={{ color: INK_FAINT }}>
           {candidate.recruiterName ?? "Unassigned"}
           {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
         </span>
@@ -313,7 +313,7 @@ function PipelineContent() {
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
         <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate pipeline
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -412,7 +412,7 @@ function PipelineContent() {
                           <span className="ml-1.5 tabular-nums font-medium" style={{ color: INK_FAINT }}>{items.length}</span>
                         </span>
                         {avg !== null && (
-                          <span className="text-[10px] tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
+                          <span className="text-[11px] tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
                             avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
                           </span>
                         )}

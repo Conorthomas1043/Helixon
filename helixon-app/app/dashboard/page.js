@@ -1,5 +1,6 @@
 "use client";
 
+import { useNow } from "@/lib/hooks/useNow";
 import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -554,7 +555,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
 // every agency "0 of 3" - better to show what actually happened.
 function UsageSummary({ plan, analyses }) {
   const DAY = 86400000;
-  const now = Date.now();
+  const now = useNow();
   const last30 = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < 30 * DAY).length;
   const thisMonth = analyses.filter((a) => {
     if (!a.createdAt) return false;
@@ -831,15 +832,18 @@ function ActivityOverview({ analyses }) {
   const [windowDays, setWindowDays] = useState(7);
   // Re-triggers whenever the 7D/30D toggle changes, so switching windows
   // re-grows the bars instead of just snapping to new heights.
-  const [barsGrown, setBarsGrown] = useState(false);
+  // Which window the bars have finished growing for: switching windows
+  // makes this stale, so the bars drop and grow again without a reset.
+  const [grownFor, setGrownFor] = useState(null);
+  const barsGrown = grownFor === windowDays;
+  const mountedAt = useNow();
   useEffect(() => {
-    setBarsGrown(false);
-    const t = setTimeout(() => setBarsGrown(true), 60);
+    const t = setTimeout(() => setGrownFor(windowDays), 60);
     return () => clearTimeout(t);
   }, [windowDays]);
 
   const stats = useMemo(() => {
-    const now = Date.now();
+    const now = mountedAt;
     const DAY = 86400000;
     const current = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() < windowDays * DAY);
     const previous = analyses.filter((a) => a.createdAt && now - a.createdAt.getTime() >= windowDays * DAY && now - a.createdAt.getTime() < windowDays * 2 * DAY);
@@ -866,7 +870,7 @@ function ActivityOverview({ analyses }) {
         return scored.length ? Math.round(scored.reduce((n, a) => n + a.score, 0) / scored.length) : null;
       })(),
     };
-  }, [analyses, windowDays]);
+  }, [analyses, windowDays, mountedAt]);
 
   const delta = stats.currentCount - stats.previousCount;
   const maxBucket = Math.max(1, ...stats.dayBuckets.map((d) => d.count));
@@ -908,7 +912,7 @@ function ActivityOverview({ analyses }) {
               background: VIOLET, opacity: d.count === 0 ? 0.15 : 0.85,
               transition: `height 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 20}ms`,
             }} />
-            <span style={{ fontSize: 9, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
+            <span style={{ fontSize: 11, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
           </div>
         ))}
       </div>
@@ -1428,6 +1432,7 @@ function AgencyDashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setIsFetching(true);
     fetchDashboardData()
       .then((d) => { if (!cancelled) { setData(d); setHasError(false); } })

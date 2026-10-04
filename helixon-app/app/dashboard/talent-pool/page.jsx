@@ -96,7 +96,7 @@ function StatCard({ label, value, sub, accent, onClick, active }) {
         onClick && "hover:border-[var(--ink-mute)]"
       )}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
       <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
@@ -755,7 +755,7 @@ function TalentPoolContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
               Talent pool
             </h1>
@@ -861,7 +861,7 @@ function TalentPoolContent() {
                       <Icon name="briefcase" size={18} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
                       <p className="text-[16px] font-semibold text-[var(--ink)] truncate">
                         {job.title}
                         {job.client && <span className="font-normal text-[var(--ink-soft)]"> · {job.client}</span>}
@@ -920,7 +920,7 @@ function TalentPoolContent() {
                 <section aria-labelledby="open-jobs-title">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-3 mb-2.5">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
                       <h2 id="open-jobs-title" className="text-[15px] font-semibold text-[var(--ink)]">
                         Open jobs you could fill from the pool
                       </h2>
@@ -1033,7 +1033,7 @@ function TalentPoolContent() {
                       >
                         {AVAILABILITY[k] && <span className="w-1.5 h-1.5 rounded-full" style={{ background: on ? "white" : AVAILABILITY[k].dot }} />}
                         {label}
-                        <span className={cx("text-[10px] tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
+                        <span className={cx("text-[11px] tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
                           {counts[k]}
                         </span>
                       </button>

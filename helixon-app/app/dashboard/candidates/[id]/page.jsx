@@ -9,6 +9,7 @@
 // Recently-viewed tracking uses localStorage and stores candidate ids only,
 // never CV contents or contact details.
 
+import { useNow } from "@/lib/hooks/useNow";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
@@ -283,7 +284,7 @@ function SectionHeading({ eyebrow, title, action }) {
     <div className="flex items-end justify-between gap-4 mb-4">
       <div>
         {eyebrow && (
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             {eyebrow}
           </p>
         )}
@@ -310,7 +311,7 @@ function Avatar({ name, size = 56 }) {
 
 function FieldLabel({ children }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
       {children}
     </p>
   );
@@ -387,7 +388,7 @@ function CopyButton({ text, label }) {
           setTimeout(() => setCopied(false), 1200);
         })
       }
-      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+      className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
       style={{ background: "var(--mist)", color: copied ? "var(--forest)" : INK_FAINT }}
     >
       {copied ? "Copied" : "Copy"}
@@ -414,7 +415,8 @@ function CandidateFacts({ candidate }) {
 
 function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext, onFocusNote, onDelete, onEdit, onActivityLogged }) {
   const score = candidate.score;
-  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
+  const now = useNow();
+  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < now;
   const upcomingStage = candidate.status === "completed" ? nextStageAfter(candidate.stage) : null;
 
   return (
@@ -842,7 +844,7 @@ function DocumentsSection({ candidate }) {
       {resume ? (
         <div className="flex flex-wrap items-center gap-4 rounded-[12px] p-4" style={{ background: "var(--mist)" }}>
           <span
-            className="w-10 h-12 rounded-[6px] flex items-center justify-center shrink-0 text-[10px] font-bold tracking-wide"
+            className="w-10 h-12 rounded-[6px] flex items-center justify-center shrink-0 text-[11px] font-bold tracking-wide"
             style={{ background: "white", border: "1px solid var(--border)", color: isPdf ? "#b42318" : "#1d4ed8" }}
             aria-hidden="true"
           >
@@ -992,7 +994,8 @@ function ActivityTimeline({ activity }) {
 function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubStageChange, onAssign, onAddTag, onRemoveTag, onCreateTag, onSetNextAction, onCompleteNextAction, onLogActivity, loggingActivity }) {
   const [nextActionLabel, setNextActionLabel] = useState("");
   const [nextActionDue, setNextActionDue] = useState("");
-  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
+  const now = useNow();
+  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < now;
   const availableTags = tags.filter((t) => !candidate.tags.includes(t.id));
 
   return (
@@ -1231,11 +1234,15 @@ function RetentionToggle({ value, onChange }) {
 function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
   const [fee, setFee] = useState(candidate.placementFee ?? "");
   const [cost, setCost] = useState(candidate.placementCost ?? "");
-
-  useEffect(() => {
+  // Reset the inputs when the saved values change (after a save, or another
+  // candidate), during render rather than in an effect's extra render.
+  const savedKey = `${candidate.placementFee ?? ""}|${candidate.placementCost ?? ""}`;
+  const [syncedKey, setSyncedKey] = useState(savedKey);
+  if (syncedKey !== savedKey) {
+    setSyncedKey(savedKey);
     setFee(candidate.placementFee ?? "");
     setCost(candidate.placementCost ?? "");
-  }, [candidate.placementFee, candidate.placementCost]);
+  }
 
   const isRejected = candidate.stage === "Rejected";
   const isPlaced = candidate.stage === "Placed";
@@ -1527,7 +1534,7 @@ function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
       style={{ background: note.pinnedAt ? "var(--mint)" : "var(--mist)", border: note.pinnedAt ? "1px solid var(--forest)" : "1px solid transparent" }}
     >
       {note.pinnedAt && (
-        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
+        <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
           Pinned
         </p>
       )}
@@ -2140,6 +2147,7 @@ export default function CandidateProfilePage({ params }) {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setStatus("loading");
     getCandidateById(id)
       .then((c) => {

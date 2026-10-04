@@ -113,7 +113,7 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
           className="absolute z-40 mt-2 w-72 rounded-[12px] bg-white p-3 shadow-xl right-0 sm:left-0 sm:right-auto"
           style={{ border: "1px solid var(--border)" }}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
             {candidateIds.length === 1 ? "Shortlists" : `Add ${candidateIds.length} people to`}
           </p>
           {lists === null ? (

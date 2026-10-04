@@ -22,7 +22,7 @@ function Stat({ label, value, accent }) {
       <p className="text-base font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[10px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -54,7 +54,7 @@ function JobCard({ job }) {
             </p>
           </div>
           <span
-            className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0"
             style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
           >
             {job.status === "open" ? "Open" : "Closed"}
@@ -326,6 +326,7 @@ function JobsContent() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setStatus("loading");
     fetchJobs()
       .then((j) => {
@@ -391,7 +392,7 @@ function JobsContent() {
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Job workspace
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -454,7 +455,7 @@ function JobsContent() {
                     style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                   >
                     {o.label}
-                    <span className="tabular-nums text-[10px] px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                    <span className="tabular-nums text-[11px] px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
                       {count}
                     </span>
                   </button>

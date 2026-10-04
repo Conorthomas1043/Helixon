@@ -15,7 +15,7 @@ import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placeme
 function Stat({ label, value, hint, tone }) {
   return (
     <div className="rounded-[12px] px-4 py-3" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         {label}
       </p>
       <p className="text-xl font-semibold tabular-nums mt-0.5" style={{ color: tone || INK }}>
@@ -260,7 +260,7 @@ export default function PlacementsPage() {
                 <div className="overflow-x-auto -mx-5 sm:-mx-6">
                   <table className="w-full text-[13px]">
                     <thead>
-                      <tr className="text-left text-[10px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                      <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                         <th className="px-5 sm:px-6 py-2 font-semibold">Number</th>
                         <th className="px-2 py-2 font-semibold">Client</th>
                         <th className="px-2 py-2 font-semibold">Issued</th>

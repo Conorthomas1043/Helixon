@@ -186,7 +186,7 @@ export default function InvoicePage({ params }) {
         </div>
 
         <div className="mt-8 text-[13px] leading-relaxed">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             Bill to
           </p>
           <p className="font-semibold">{inv.bill_to?.name}</p>
@@ -197,7 +197,7 @@ export default function InvoicePage({ params }) {
 
         <table className="w-full text-[13px] mt-8">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-widest" style={{ color: INK_FAINT, borderBottom: "1px solid var(--border)" }}>
+            <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT, borderBottom: "1px solid var(--border)" }}>
               <th className="py-2 font-semibold">Description</th>
               <th className="py-2 font-semibold text-right w-20">Qty</th>
               <th className="py-2 font-semibold text-right w-28">Rate</th>
@@ -235,7 +235,7 @@ export default function InvoicePage({ params }) {
           <div className="mt-10 text-[12px] leading-relaxed space-y-3" style={{ color: INK_MUTED }}>
             {from.bankDetails && (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
                   Payment details
                 </p>
                 <Lines text={from.bankDetails} />

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PAYMENT_ISSUE_STATUSES } from "@/lib/subscription-status";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { getAgencyPlan } from "@/lib/plan";
@@ -34,10 +35,14 @@ export async function GET() {
   // The caller's own agency id - lets analytics group events by account
   // (the customer is the agency, not the individual recruiter).
   let agencyId = null;
+  // A failed renewal on the agency's subscription: { status, isPayer }.
+  // Drives the payment banner on every signed-in page - while Stripe
+  // retries (past_due) access continues, so without it nobody would know.
+  let paymentIssue = null;
   try {
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
-      .select("first_name, last_name, agency_id")
+      .select("id, first_name, last_name, agency_id")
       .eq("clerk_user_id", userId)
       .maybeSingle();
     if (error) throw error;
@@ -53,6 +58,7 @@ export async function GET() {
       ]);
       agencyName = agency?.name || null;
       plan = resolvedPlan;
+      paymentIssue = await findPaymentIssue(profile.agency_id, profile.id);
     }
   } catch (e) {
     console.error("[auth/me] Profile lookup failed (non-fatal):", e.message);
@@ -63,6 +69,29 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, agencyName, agencyId, plan, hasAgency },
+    user: { id: userId, email, firstName, agencyName, agencyId, plan, hasAgency, paymentIssue },
   });
+}
+
+// The agency's subscription rows that need a new payment method. Only the
+// member who pays (owns the row) can fix it in Billing; everyone else is
+// told who to ask. Errors are non-fatal - no banner rather than a broken page.
+async function findPaymentIssue(agencyId, profileId) {
+  try {
+    const { data: members } = await supabaseAdmin.from("profiles").select("id").eq("agency_id", agencyId);
+    const ids = (members || []).map((m) => m.id);
+    if (!ids.length) return null;
+    const { data: subs } = await supabaseAdmin
+      .from("subscriptions")
+      .select("user_id, status")
+      .in("user_id", ids)
+      .in("status", [...PAYMENT_ISSUE_STATUSES])
+      .limit(5);
+    const row = (subs || [])[0];
+    if (!row) return null;
+    return { status: row.status, isPayer: (subs || []).some((s) => s.user_id === profileId) };
+  } catch (e) {
+    console.error("[auth/me] Payment status lookup failed (non-fatal):", e.message);
+    return null;
+  }
 }

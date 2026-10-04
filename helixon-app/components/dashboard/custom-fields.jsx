@@ -154,7 +154,7 @@ export function CustomFieldsCard({ entity, recordId, values: initial, onSaved })
             const shown = formatFieldValue(d, values[d.id]);
             return (
               <div key={d.id} className={d.type === "longtext" ? "sm:col-span-2" : ""}>
-                <dt className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                <dt className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                   {d.label}
                 </dt>
                 <dd className="text-[13px] whitespace-pre-wrap break-words" style={{ color: shown ? INK : INK_FAINT }}>

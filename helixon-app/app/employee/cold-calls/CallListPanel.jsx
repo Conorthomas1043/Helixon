@@ -5,6 +5,7 @@
 // nobody else rings them, and log the outcome (which ticks them off).
 // API: app/api/employee/call-list. Parsing: lib/csv.js.
 
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { contactsFromCsv, downloadCsv } from "@/lib/csv";
 
@@ -44,6 +45,7 @@ async function post(body) {
 const btn = "text-xs font-semibold px-2.5 py-1.5 rounded-lg transition disabled:opacity-50";
 
 export default function CallListPanel({ employee, onLogCall, refreshKey }) {
+  const [ask, confirmDialog] = useConfirm();
   const [list, setList] = useState({ pending: [], done: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -185,6 +187,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
 
   return (
     <section className="rounded-[16px] mb-6 overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-label="Call list">
+      {confirmDialog}
       <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border-soft)" }}>
         <div>
           <h2 className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -369,7 +372,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                       <button
                         type="button"
                         disabled={busy}
-                        onClick={() => confirm("Delete this contact from the list?") && act(row, "delete")}
+                        onClick={async () => (await ask({ title: "Delete this contact from the list?", confirmLabel: "Delete contact", danger: true })) && act(row, "delete")}
                         className={btn}
                         style={{ color: "#e0554f" }}
                         aria-label="Delete contact"

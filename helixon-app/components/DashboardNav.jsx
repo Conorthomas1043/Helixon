@@ -107,7 +107,7 @@ function MoreMenu({ activeHref, compact = false }) {
         >
           {MORE.map((g) => (
             <div key={g.group}>
-              <p className="text-[10px] font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
                 {g.group}
               </p>
               {g.links.map((l) => (
@@ -157,7 +157,7 @@ function TeammateStack({ teammates }) {
       {shown.map((t) => (
         <span key={t.id} className="relative">
           <span
-            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold text-white ring-2 ring-white"
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white ring-2 ring-white"
             style={{ background: "var(--forest)", opacity: t.presence?.online ? 1 : 0.55 }}
           >
             {initials(t.name)}
@@ -166,7 +166,7 @@ function TeammateStack({ teammates }) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
           +{overflow}
         </span>
       )}
@@ -187,7 +187,8 @@ function DashboardNavContent() {
 
   const [me, setMe] = useState(null); // { firstName, agencyName, plan }
   const [teammates, setTeammates] = useState(null);
-  const [showWelcome, setShowWelcome] = useState(false);
+  // Read from the URL on the first render rather than copied in by an effect.
+  const [showWelcome, setShowWelcome] = useState(() => searchParams.get("welcome") === "1");
 
   useAnalyticsIdentity({
     userId: isLoaded && isSignedIn ? userId : null,
@@ -248,10 +249,7 @@ function DashboardNavContent() {
   // redirects here with ?welcome=1 (see app/login) - stripped from the URL
   // immediately via replace() so a manual refresh doesn't re-show it.
   useEffect(() => {
-    if (searchParams.get("welcome") === "1") {
-      setShowWelcome(true);
-      router.replace(pathname);
-    }
+    if (searchParams.get("welcome") === "1") router.replace(pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- pathname/router intentionally excluded: this should only react to the query param changing, not to every route change
   }, [searchParams]);
 
@@ -286,7 +284,7 @@ function DashboardNavContent() {
           </div>
           <span className="flex flex-col leading-none min-w-0">
             <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:block text-[10px] font-medium mt-0.5 truncate max-w-[220px]" style={{ color: "var(--ink-soft)" }}>
+            <span className="hidden sm:block text-[11px] font-medium mt-0.5 truncate max-w-[220px]" style={{ color: "var(--ink-soft)" }}>
               {workspaceLabel}
             </span>
           </span>
@@ -323,7 +321,7 @@ function DashboardNavContent() {
             style={{ border: "1px solid var(--border)" }}
           >
             <span className="relative">
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style={{ background: "var(--forest)" }}>
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: "var(--forest)" }}>
                 {initialsLabel}
               </span>
               {myPresence && myPresence.state !== "hidden" && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
@@ -334,7 +332,7 @@ function DashboardNavContent() {
             <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
               {myPresence && (
                 <div className="pb-1.5 mb-1.5" style={{ borderBottom: "1px solid var(--border)" }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
                   {[
                     [null, "active", "Automatic", "Active or idle, from what you're doing"],
                     ["busy", "busy", "Busy", "Heads down - teammates see you're busy"],
@@ -405,7 +403,35 @@ function DashboardNavContent() {
         </div>
         <MoreMenu activeHref={activeHref} compact />
       </div>
+      {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
     </nav>
+  );
+}
+
+// Shown on every signed-in page while a renewal payment has failed.
+// During Stripe's retries (past_due) everything keeps working, so this is
+// the only sign anything is wrong; once it's unpaid, screening has stopped.
+// Only the member who pays can fix it, so teammates are told to ask them.
+function PaymentIssueBanner({ issue }) {
+  const stopped = issue.status === "unpaid";
+  return (
+    <div role="alert" className="border-t" style={{ background: "#fff7f7", borderColor: "#fecaca" }}>
+      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]" style={{ color: "var(--ink)" }}>
+        <span>
+          <strong style={{ color: "var(--score-low)" }}>Your last Helixon payment didn&apos;t go through.</strong>{" "}
+          {stopped
+            ? "Screening and email are paused until it's paid."
+            : "Everything still works for now; update the payment method to keep it that way."}
+        </span>
+        {issue.isPayer ? (
+          <Link href="/billing" className="font-semibold underline" style={{ color: "var(--score-low)" }}>
+            Update payment method
+          </Link>
+        ) : (
+          <span style={{ color: "var(--ink-soft)" }}>Ask whoever manages billing for your agency to update it.</span>
+        )}
+      </div>
+    </div>
   );
 }
 

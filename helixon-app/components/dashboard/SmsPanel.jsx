@@ -59,7 +59,7 @@ export default function SmsPanel({ candidate, onSent }) {
                 style={{ background: m.direction === "out" ? "var(--mint)" : "var(--mist)", color: INK }}
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
-                <p className="text-[10px] mt-1" style={{ color: INK_FAINT }}>
+                <p className="text-[11px] mt-1" style={{ color: INK_FAINT }}>
                   {when(m.createdAt)}
                   {m.direction === "out" && m.status ? ` · ${m.status}` : ""}
                 </p>

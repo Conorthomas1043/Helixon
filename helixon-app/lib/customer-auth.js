@@ -2,13 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 
 import { supabase } from "@/lib/supabase";
 import { getAgencyControls, SUSPENDED_MESSAGE } from "@/lib/agency-controls";
-import { grantsAccess } from "@/lib/subscription-status";
+import { ACCESS_STATUSES, grantsAccess } from "@/lib/subscription-status";
 
 const SUBSCRIPTION_COLUMNS = "id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at";
 
-export const ACTIVE_SUBSCRIPTION_STATUSES = new Set([
-  "active",
-]);
+// Same set grantsAccess() uses, so the query and the check can't disagree.
+export const ACTIVE_SUBSCRIPTION_STATUSES = ACCESS_STATUSES;
 
 // demo_expires_at arrives with migration 20260929030200; before that every
 // demo is open-ended, as it always was.

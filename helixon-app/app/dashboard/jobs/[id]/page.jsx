@@ -44,10 +44,15 @@ function ChannelRow({ channelKey, value, onSave }) {
   const [spend, setSpend] = useState(value?.spend ?? 0);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  // Follow the saved figures when they change, during render rather than
+  // in an effect's extra render.
+  const savedKey = `${value?.clicks ?? 0}|${value?.spend ?? 0}`;
+  const [syncedKey, setSyncedKey] = useState(savedKey);
+  if (syncedKey !== savedKey) {
+    setSyncedKey(savedKey);
     setClicks(value?.clicks ?? 0);
     setSpend(value?.spend ?? 0);
-  }, [value?.clicks, value?.spend]);
+  }
 
   async function save() {
     setSaving(true);
@@ -116,7 +121,7 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
 
 function FieldLabel({ children }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
       {children}
     </p>
   );
@@ -128,7 +133,7 @@ function Stat({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[10px] uppercase tracking-wide mt-0.5" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] uppercase tracking-wide mt-0.5" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -150,7 +155,7 @@ function Avatar({ name }) {
 function StageBadge({ stage, status }) {
   if (status !== "completed") {
     return (
-      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_FAINT }}>
+      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_FAINT }}>
         {status === "failed" ? "Failed" : "Processing"}
       </span>
     );
@@ -159,7 +164,7 @@ function StageBadge({ stage, status }) {
   const isPlaced = stage === "Placed";
   return (
     <span
-      className="text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: isPlaced ? GREEN_BG : "var(--mist)", color: isPlaced ? "var(--forest)" : INK_MUTED }}
     >
       {STAGE_LABELS[stage]}
@@ -254,7 +259,7 @@ function StateMessage({ title, body, onRetry }) {
 function TextField({ label, ...props }) {
   return (
     <label className="block">
-      <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
       <input
         {...props}
         className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -274,7 +279,7 @@ const SELECT_CLASS = "w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-
 function SelectField({ label, children, ...props }) {
   return (
     <label className="block">
-      <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
       <select {...props} className={SELECT_CLASS} style={{ border: "1px solid var(--border)", color: INK }}>
         {children}
       </select>
@@ -463,6 +468,7 @@ export default function JobDetailPage({ params }) {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setStatus("loading");
     fetchJob(id)
       .then((d) => {
@@ -707,7 +713,7 @@ export default function JobDetailPage({ params }) {
                       <li>
                         Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span style={{ color: INK_FAINT }}>not assigned</span>}
                         {job.priority && job.priority !== "normal" && (
-                          <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
+                          <span className="ml-2 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
                             {JOB_PRIORITIES[job.priority]}
                           </span>
                         )}

@@ -5,6 +5,7 @@
 // can delete it (enforced server-side in lib/employee-shared-todos.js -
 // this component just doesn't render controls the API would reject).
 
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useEffect, useMemo, useState } from "react";
 import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee-day";
 import { Card } from "../_shared/ui";
@@ -12,6 +13,7 @@ import { Card } from "../_shared/ui";
 const PRIORITY_DOT = { high: "#c0392b", medium: "#b45309", low: "#8a9a92" };
 
 export default function TeamTasksPanel({ currentEmployeeId, notify }) {
+  const [ask, confirmDialog] = useConfirm();
   // Errors go to the page's toasts when it has them, else a plain alert.
   const report = (message) => (notify ? notify(message, { tone: "error" }) : alert(message));
   const [todos, setTodos] = useState([]);
@@ -40,6 +42,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     fetchAll();
   }, []);
 
@@ -83,7 +86,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this team task?")) return;
+    if (!(await ask({ title: "Delete this team task?", confirmLabel: "Delete task", danger: true }))) return;
     setTodos((prev) => prev.filter((t) => t.id !== id));
     try {
       const res = await fetch("/api/employee/shared-todos", {
@@ -109,6 +112,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
 
   return (
     <Card className="overflow-hidden" aria-labelledby="team-tasks-title">
+      {confirmDialog}
       <div
         className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         style={{ borderColor: "var(--border-soft)" }}

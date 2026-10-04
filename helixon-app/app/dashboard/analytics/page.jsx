@@ -23,7 +23,7 @@ function SectionHeading({ eyebrow, title, action }) {
   return (
     <div className="flex items-end justify-between gap-4 mb-4">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
           {eyebrow}
         </p>
         <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -53,7 +53,7 @@ function Delta({ value, unit = "", against }) {
 function StatCard({ label, value, sub, delta }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
         {label}
       </p>
       <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>
@@ -94,8 +94,8 @@ function TrendChart({ title, points, dataKey, format, total }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={points} margin={{ top: 4, right: 0, bottom: 0, left: 0 }} barCategoryGap={2}>
             <CartesianGrid vertical={false} stroke="var(--border)" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: INK_FAINT }} interval="preserveStartEnd" minTickGap={16} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: INK_FAINT }} width={dataKey === "fees" ? 48 : 28} allowDecimals={false} tickFormatter={dataKey === "fees" ? (v) => (v >= 1000 ? `£${Math.round(v / 1000)}k` : `£${v}`) : undefined} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: INK_FAINT }} interval="preserveStartEnd" minTickGap={16} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: INK_FAINT }} width={dataKey === "fees" ? 48 : 28} allowDecimals={false} tickFormatter={dataKey === "fees" ? (v) => (v >= 1000 ? `£${Math.round(v / 1000)}k` : `£${v}`) : undefined} />
             <Tooltip cursor={{ fill: "rgba(var(--forest-rgb),0.06)" }} content={<TrendTooltip format={format} />} />
             <Bar dataKey={dataKey} fill="var(--forest)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
           </BarChart>
@@ -170,7 +170,7 @@ function FunnelChart({ funnel }) {
                 <span className="text-[11px] font-semibold tabular-nums text-white">{stage.count}</span>
               </div>
             </div>
-            <span className="text-[10px] w-16 text-right shrink-0" style={{ color: INK_FAINT }}>
+            <span className="text-[11px] w-16 text-right shrink-0" style={{ color: INK_FAINT }}>
               {i > 0 && dropOff > 0 ? `-${dropOff}%` : ""}
             </span>
           </div>
@@ -281,7 +281,7 @@ function ScoreCalibration({ calibration }) {
                 </div>
               )}
             </div>
-            <span className="text-[10px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+            <span className="text-[11px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
               {band.total > 0 ? `${band.placed}/${band.total} placed` : "no data"}
             </span>
           </div>
@@ -347,7 +347,7 @@ function TimeInStage({ timeInStage }) {
               <span className="text-[11px] font-semibold tabular-nums text-white">{s.medianDays}d</span>
             </div>
           </div>
-          <span className="text-[10px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
+          <span className="text-[11px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
             {s.count} sample{s.count === 1 ? "" : "s"}
           </span>
         </div>
@@ -386,7 +386,7 @@ function RankedList({ items, emptyLabel, rateLabel }) {
               </div>
             </div>
             {rateLabel && item.placementRate !== null && item.placementRate !== undefined && (
-              <span className="text-[10px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+              <span className="text-[11px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
                 {item.placementRate}% {rateLabel}
               </span>
             )}
@@ -543,7 +543,7 @@ function PipelineBar({ pipeline }) {
             <div className="w-full rounded-full mt-2 mb-2 flex items-end" style={{ height: 36, background: "var(--mist)" }}>
               <div className="w-full rounded-full" style={{ height: `${heightPct}%`, background: isPlaced ? "var(--forest)" : "#a9c4b5" }} />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
               {STAGE_LABELS[key]}
             </span>
           </div>
@@ -675,6 +675,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setStatus("loading");
     fetchAnalytics({ period: effectivePeriod, from, to, jobId, recruiterId, clientId, officeId })
       .then((s) => {
@@ -705,7 +706,7 @@ export default function AnalyticsPage() {
       <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Recruitment analytics
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>

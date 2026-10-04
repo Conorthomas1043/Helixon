@@ -101,7 +101,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
 
       {shares?.length > 0 && (
         <div className="mt-6 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>Links</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>Links</p>
           <ul className="space-y-2">
             {shares.map((s) => (
               <li key={s.id} className="flex flex-wrap items-center gap-2 text-[12px]" style={{ color: INK }}>

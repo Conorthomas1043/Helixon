@@ -123,7 +123,7 @@ export function FormField({ id, label, error, hint, children }) {
           {error}
         </p>
       ) : hint ? (
-        <p className="text-[10px] mt-1.5" style={{ color: COLORS.faint }}>
+        <p className="text-[11px] mt-1.5" style={{ color: COLORS.faint }}>
           {hint}
         </p>
       ) : null}

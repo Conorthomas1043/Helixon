@@ -35,6 +35,7 @@ export function useAdminStats(range) {
   }, [range]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -113,6 +114,7 @@ export function useAdminTraffic(range, filters = {}) {
   const hasOlder = older.qs === qs && older.rows.length ? !older.done : Boolean(traffic?.cursor);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -243,6 +245,7 @@ export function useAdminUsers() {
   }, [searchInput]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -412,6 +415,7 @@ export function useAdminEmployees() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -488,6 +492,7 @@ export function useAdminOps() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -523,6 +528,7 @@ export function useAdminHealth() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 
@@ -558,6 +564,7 @@ export function useAdminServices() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 

@@ -5,6 +5,8 @@
 // each one. Visible to every active employee - see lib/employee-goals.js
 // for exactly who can edit vs. just view.
 
+import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
@@ -29,6 +31,8 @@ function isOverdue(deadline, status) {
 }
 
 export default function EmployeeGoalsPage() {
+  const [ask, confirmDialog] = useConfirm();
+  const { toasts, notify, dismiss } = useToasts();
   const router = useRouter();
   useHeartbeat();
 
@@ -79,6 +83,7 @@ export default function EmployeeGoalsPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     if (!checking) fetchAll();
   }, [checking]);
 
@@ -116,13 +121,13 @@ export default function EmployeeGoalsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update goal.");
     } catch (err) {
-      alert(err.message || "Failed to update goal.");
+      notify(err.message || "Failed to update goal.", { tone: "error" });
       fetchAll();
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this goal, including its micro-goals?")) return;
+    if (!(await ask({ title: "Delete this goal, including its micro-goals?", confirmLabel: "Delete goal", danger: true }))) return;
     setGoals((prev) => prev.filter((g) => g.id !== id));
     try {
       const res = await fetch("/api/employee/goals", {
@@ -133,7 +138,7 @@ export default function EmployeeGoalsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete goal.");
     } catch (err) {
-      alert(err.message || "Failed to delete goal.");
+      notify(err.message || "Failed to delete goal.", { tone: "error" });
       fetchAll();
     }
   }
@@ -153,7 +158,7 @@ export default function EmployeeGoalsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update micro-goal.");
     } catch (err) {
-      alert(err.message || "Failed to update micro-goal.");
+      notify(err.message || "Failed to update micro-goal.", { tone: "error" });
       fetchAll();
     }
   }
@@ -169,7 +174,7 @@ export default function EmployeeGoalsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to remove micro-goal.");
     } catch (err) {
-      alert(err.message || "Failed to remove micro-goal.");
+      notify(err.message || "Failed to remove micro-goal.", { tone: "error" });
       fetchAll();
     }
   }
@@ -188,7 +193,7 @@ export default function EmployeeGoalsPage() {
       if (!data.ok) throw new Error(data.error || "Failed to add micro-goal.");
       setGoals((prev) => prev.map((g) => (g.id === goal.id ? { ...g, items: [...g.items, data.item] } : g)));
     } catch (err) {
-      alert(err.message || "Failed to add micro-goal.");
+      notify(err.message || "Failed to add micro-goal.", { tone: "error" });
     }
   }
 
@@ -211,6 +216,8 @@ export default function EmployeeGoalsPage() {
 
   return (
     <EmployeeShell section="goals">
+      {confirmDialog}
+      <Toaster toasts={toasts} onDismiss={dismiss} />
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

@@ -39,7 +39,7 @@ function NewShortlistForm({ jobs, onCreated }) {
   return (
     <form onSubmit={submit} className="rounded-[14px] p-4 flex flex-wrap items-end gap-3" style={CARD}>
       <label className="flex-1 min-w-[200px]">
-        <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>New shortlist</span>
+        <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>New shortlist</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -50,7 +50,7 @@ function NewShortlistForm({ jobs, onCreated }) {
         />
       </label>
       <label className="min-w-[180px]">
-        <span className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>For job (optional)</span>
+        <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>For job (optional)</span>
         <select
           value={jobId}
           onChange={(e) => setJobId(e.target.value)}
@@ -118,7 +118,7 @@ export default function ShortlistsPage() {
       <DashboardNav />
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header>
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             Client submissions
           </p>
           <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>

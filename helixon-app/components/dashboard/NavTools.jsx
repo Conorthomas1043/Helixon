@@ -210,7 +210,7 @@ export function SearchPalette() {
           <path d="m20 20-3.5-3.5" />
         </svg>
         <span className="hidden lg:inline">Search</span>
-        <kbd className="hidden lg:inline text-[10px] px-1 rounded" style={{ background: "var(--mist)" }}>⌘K</kbd>
+        <kbd className="hidden lg:inline text-[11px] px-1 rounded" style={{ background: "var(--mist)" }}>⌘K</kbd>
       </button>
       {open && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && close()}>
@@ -255,7 +255,7 @@ export function SearchPalette() {
                   className="flex items-center gap-3 px-5 py-2.5 cursor-pointer"
                   style={{ background: i === active ? "var(--mist)" : "transparent" }}
                 >
-                  <span className="text-[10px] font-semibold uppercase tracking-wide w-16 shrink-0" style={{ color: "var(--ink-faint)" }}>{KIND_LABEL[r.kind]}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wide w-16 shrink-0" style={{ color: "var(--ink-faint)" }}>{KIND_LABEL[r.kind]}</span>
                   <span className="min-w-0">
                     <span className="block text-[13px] font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
                     {r.subtitle && <span className="block text-[12px] truncate" style={{ color: "var(--ink-soft)" }}>{r.subtitle}</span>}
@@ -356,7 +356,7 @@ export function NotificationsBell() {
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
         {state.unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center text-white" style={{ background: "var(--score-low)" }}>
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[11px] font-bold flex items-center justify-center text-white" style={{ background: "var(--score-low)" }}>
             {state.unread > 9 ? "9+" : state.unread}
           </span>
         )}
@@ -389,7 +389,7 @@ export function NotificationsBell() {
                     <span className="block text-[12.5px]" style={{ color: "var(--ink)", fontWeight: n.read ? 400 : 600 }}>{n.title}</span>
                     {n.body && <span className="block text-[11.5px] truncate" style={{ color: "var(--ink-soft)" }}>{n.body}</span>}
                   </span>
-                  <span className="text-[10px] shrink-0" style={{ color: "var(--ink-faint)" }}>{timeAgo(n.createdAt)}</span>
+                  <span className="text-[11px] shrink-0" style={{ color: "var(--ink-faint)" }}>{timeAgo(n.createdAt)}</span>
                 </button>
               </li>
             ))}

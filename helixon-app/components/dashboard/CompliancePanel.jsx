@@ -287,7 +287,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
       ) : (
         <div className="space-y-5">
           <section>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
               Privacy
             </p>
             <p className="text-[12px]" style={{ color: INK }}>
@@ -326,7 +326,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                 Checks
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "check" })}>
@@ -383,7 +383,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                 References
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "reference" })}>

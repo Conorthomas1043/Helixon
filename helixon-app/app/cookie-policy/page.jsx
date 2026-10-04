@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CONSENT_KEY } from "@/components/CookieConsentBanner";
 
@@ -121,7 +122,7 @@ export default function CookiePolicyPage() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
+          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
             <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
               <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
                 <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
@@ -133,19 +134,19 @@ export default function CookiePolicyPage() {
               <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
               <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
             </span>
-          </a>
+          </Link>
 
           <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-            <a href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</a>
-            <a href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</a>
-            <a href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</a>
+            <Link href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</Link>
+            <Link href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</Link>
+            <Link href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</Link>
           </div>
 
           <div className="flex items-center gap-2">
-            <a href="/demo" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
+            <Link href="/demo" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")} onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}>
               Get a demo
-            </a>
+            </Link>
             <button type="button" onClick={() => setMobileNavOpen((v) => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
               className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -168,7 +169,7 @@ export default function CookiePolicyPage() {
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
           <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
-            <a href="/" className="hover:underline">Helixon</a> <span className="mx-1">/</span> Legal
+            <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
           </p>
           <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
             Cookie Policy
@@ -244,8 +245,8 @@ export default function CookiePolicyPage() {
             Changes to this policy
           </h2>
           <p className="text-[13px] leading-relaxed" style={{ color: "#4a6357" }}>
-            We'll update this page if the cookies we use change, and update the effective date above. For material
-            changes, we'll show a notice on your next visit.
+            We&apos;ll update this page if the cookies we use change, and update the effective date above. For material
+            changes, we&apos;ll show a notice on your next visit.
           </p>
         </section>
 
@@ -260,11 +261,11 @@ export default function CookiePolicyPage() {
         <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
           <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
-            <a href="/dpa">DPA</a>
-            <a href="/cookie-policy" style={{ color: "var(--forest)", fontWeight: 600 }}>Cookies</a>
-            <a href="/login">Login</a>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/dpa">DPA</Link>
+            <Link href="/cookie-policy" style={{ color: "var(--forest)", fontWeight: 600 }}>Cookies</Link>
+            <Link href="/login">Login</Link>
           </div>
         </div>
       </footer>

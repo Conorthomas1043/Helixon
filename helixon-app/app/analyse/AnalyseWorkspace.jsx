@@ -21,7 +21,7 @@ import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
 import { printSection } from "@/lib/print";
-import { Button, Card, Icon, Notice, Segmented, Toasts, useToasts } from "./_components/ui";
+import { BUTTON_BASE, BUTTON_SIZES, BUTTON_VARIANTS, Button, Card, Icon, Notice, Segmented, Toasts, cx, useToasts } from "./_components/ui";
 import {
   MIN_LOADING_MS,
   RUN_STEPS,
@@ -38,16 +38,91 @@ import {
 import { EMPTY_ROLE_DRAFT } from "./_lib/roles";
 import { useEmailComposer } from "./_lib/useEmailComposer";
 
+// When the server doesn't say what went wrong, say what most likely did,
+// from the status - not one "Something went wrong" for every failure.
+function failureMessage(status) {
+  if (status === 413) return "That file is too large to analyse. Try a smaller PDF or Word (.docx) file.";
+  if (status === 429) return "You've run a lot of analyses in a short time. Wait a minute, then try again.";
+  if (status === 408 || status === 504) return "The analysis took too long to finish. Long CVs and specs sometimes do; trying again usually works.";
+  if (status >= 500) return "Our analysis service had a problem with this one. Try again in a moment, and contact us if it keeps happening.";
+  return "Something went wrong analysing this candidate. Please try again.";
+}
+
 function redirectForStatus(response, data) {
   if (response.status === 402 || data?.upgrade) {
-    window.location.href = "/pricing?reason=subscription_required";
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+    window.location.assign("/pricing?reason=subscription_required");
     return true;
   }
   if (response.status === 401) {
-    window.location.href = "/login?next=%2Fanalyse";
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+    window.location.assign("/login?next=%2Fanalyse");
     return true;
   }
   return false;
+}
+
+// A small disclosure menu for the report's secondary actions. Escape or a
+// click outside closes it, and focus goes back to the button.
+function MoreActions({ actions }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const buttonRef = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    function onPointer(e) {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", onPointer);
+    window.addEventListener("keydown", onKey);
+    wrapRef.current?.querySelector("[role=menuitem]")?.focus();
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={cx(BUTTON_BASE, BUTTON_SIZES.sm, BUTTON_VARIANTS.secondary)}
+      >
+        More
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : "none" }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-[40px] z-30 min-w-[240px] rounded-[12px] bg-white border border-[var(--border)] shadow-lg py-1.5">
+          {actions.map((a) => (
+            <button
+              key={a.label}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                a.onSelect();
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-[13px] text-[var(--ink)] hover:bg-[var(--mint)] focus-visible:bg-[var(--mint)] outline-none"
+            >
+              <Icon name={a.icon} size={15} />
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AnalyseWorkspace() {
@@ -274,7 +349,7 @@ export default function AnalyseWorkspace() {
         // Without this, failed analyses were invisible in analytics: only
         // successes were recorded, so the failure rate couldn't be seen.
         track("analysis_failed", { status: response.status, comparison: isCompare, cv_file_type: cv.type || "unknown" });
-        setError(data?.error || "Something went wrong analysing this candidate. Please try again.");
+        setError(data?.error || failureMessage(response.status));
         return;
       }
 
@@ -452,23 +527,24 @@ export default function AnalyseWorkspace() {
           </div>
 
           {inReport ? (
+            // Five equal buttons made every action look as likely as the
+            // next. The two that keep a screening session moving stay out;
+            // re-scoring and comparing go under "More".
             <div className="flex flex-wrap gap-2">
               <Button size="sm" icon="copy" onClick={copySummary}>
                 Copy summary
               </Button>
-              <Button size="sm" icon="refresh" onClick={() => setRerunning(true)}>
-                Re-score
-              </Button>
-              {/* Two compare actions sat side by side with near-identical
-                  labels; each now says what it compares. */}
-              <Button size="sm" icon="compare" onClick={() => setComparing(true)}>
-                Upload a CV to compare
-              </Button>
-              {jobId && candidateId && (
-                <Button size="sm" icon="layers" onClick={() => router.push(`/analyse/compare?jobId=${jobId}&ids=${candidateId}`)}>
-                  Compare everyone for this role
-                </Button>
-              )}
+              <MoreActions
+                actions={[
+                  { label: "Re-score", icon: "refresh", onSelect: () => setRerunning(true) },
+                  { label: "Upload a CV to compare", icon: "compare", onSelect: () => setComparing(true) },
+                  jobId && candidateId && {
+                    label: "Compare everyone for this role",
+                    icon: "layers",
+                    onSelect: () => router.push(`/analyse/compare?jobId=${jobId}&ids=${candidateId}`),
+                  },
+                ].filter(Boolean)}
+              />
               <Button size="sm" variant="dark" icon="plus" onClick={newCandidateSameRole}>
                 Next candidate
               </Button>

@@ -81,16 +81,16 @@ export function Icon({ name, size = 16, className = "", strokeWidth = 1.7 }) {
   );
 }
 
-const BUTTON_BASE =
+export const BUTTON_BASE =
   "inline-flex items-center justify-center gap-1.5 font-medium rounded-[8px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)] whitespace-nowrap";
 
-const BUTTON_SIZES = {
+export const BUTTON_SIZES = {
   sm: "h-8 px-3 text-[12.5px]",
   md: "h-9 px-3.5 text-[13px]",
   lg: "h-11 px-5 text-[14px]",
 };
 
-const BUTTON_VARIANTS = {
+export const BUTTON_VARIANTS = {
   primary: "bg-[var(--forest)] text-white hover:bg-[var(--forest-deep)]",
   dark: "bg-[var(--ink)] text-white hover:bg-black",
   secondary: "bg-white text-[var(--ink)] border border-[var(--border)] hover:bg-[var(--mist)]",

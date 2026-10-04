@@ -50,11 +50,11 @@ function StepRow({ number, title, body }) {
   );
 }
 
-export default function WelcomeEmail({ email = "there", analyseUrl }) {
+export default function WelcomeEmail({ firstName, planLabel, isAgency = false, analyseUrl, teamUrl, importUrl }) {
   return (
     <Html>
       <Head />
-      <Preview>You're verified - your 3 free CV analyses are ready to use.</Preview>
+      <Preview>Your Helixon workspace is ready. Here&apos;s the quickest way to your first shortlist.</Preview>
       <Body style={{ backgroundColor: COLORS.mist, margin: 0, padding: "32px 0", fontFamily: FONT_BODY }}>
         <Container
           style={{
@@ -105,7 +105,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
 
           <Section style={{ padding: "24px 32px 0" }}>
             {/* ── Eyebrow - green "success" tone since this fires right
-                after verification succeeds, not before it like VerifyEmail. ── */}
+                after the workspace is created. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "18px" }}>
               <tr>
                 <td style={{ backgroundColor: COLORS.mint, borderRadius: "999px", padding: "6px 14px" }}>
@@ -117,11 +117,12 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             </table>
 
             <Heading style={{ fontFamily: FONT_DISPLAY, fontSize: "26px", fontWeight: 600, lineHeight: 1.15, color: COLORS.ink, margin: "0 0 12px" }}>
-              Your first analysis is 30 seconds away
+              {firstName ? `${firstName}, your` : "Your"} first shortlist is a few minutes away
             </Heading>
             <Text style={{ fontSize: "14px", lineHeight: 1.6, color: COLORS.inkSoft, margin: "0 0 24px" }}>
-              You've got <strong style={{ color: COLORS.ink }}>3 free analyses</strong> to try. No card, no
-              catch - just drop in a CV and a job spec and see your first score.
+              Your <strong style={{ color: COLORS.ink }}>{planLabel || "Helixon"}</strong> plan includes unlimited
+              screening. The quickest way to see what it does: take one role you&apos;re working on today and a
+              few of the CVs you&apos;ve had for it.
             </Text>
 
             {/* ── Primary CTA - same forest button as VerifyEmail, keeps
@@ -133,7 +134,7 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
                     href={analyseUrl}
                     style={{ display: "inline-block", padding: "13px 24px", fontSize: "14px", fontWeight: 600, color: "#ffffff", textDecoration: "none" }}
                   >
-                    Run your first analysis →
+                    Screen your first CV →
                   </Link>
                 </td>
               </tr>
@@ -145,15 +146,13 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
             <Text style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: COLORS.inkFaint, margin: "0 0 14px" }}>
               How it works
             </Text>
-            <StepRow number="1" title="Name & pick the job" body="Name the analysis, then pick a preset role or paste your own job description." />
-            <StepRow number="2" title="Upload the CV" body="Drag in a PDF or Word file - no formatting required." />
-            <StepRow number="3" title="Get your score" body="Match score, red flags, and a ready-to-send email, all in one screen." />
+            <StepRow number="1" title="Add the role" body="Pick a preset, paste the advert or upload the job spec." />
+            <StepRow number="2" title="Upload the CVs" body="One at a time, or up to 50 at once with bulk upload. PDF or Word." />
+            <StepRow number="3" title="Review the ranked shortlist" body="A score for each candidate, the evidence behind it, what to check and a draft email." />
           </Section>
 
-          {/* ── Retention nudge - sets expectation for what happens after
-              the 3 free analyses run out, framed as value not a paywall,
-              and gives a reason to come back even if they don't convert
-              on this first visit. ── */}
+          {/* ── The one next step after the first CV: the team (Agency) or
+              existing candidates (Individual). ── */}
           <Section style={{ padding: "4px 32px 28px" }}>
             <table
               role="presentation"
@@ -164,9 +163,18 @@ export default function WelcomeEmail({ email = "there", analyseUrl }) {
               <tr>
                 <td style={{ padding: "16px 18px" }}>
                   <Text style={{ fontSize: "12.5px", lineHeight: 1.6, color: COLORS.inkSoft, margin: 0 }}>
-                    <strong style={{ color: COLORS.ink }}>Screening a stack of CVs this week?</strong>{" "}
-                    Individual and Agency plans unlock unlimited analyses, bulk upload, and shortlist
-                    history - most agencies break even after one placement.
+                    {isAgency ? (
+                      <>
+                        <strong style={{ color: COLORS.ink }}>Working as a team?</strong>{" "}
+                        Your plan includes up to 5 people. Invite them from{" "}
+                        <Link href={teamUrl} style={{ color: COLORS.forest }}>Team</Link> and shortlists, notes and scores are shared.
+                      </>
+                    ) : (
+                      <>
+                        <strong style={{ color: COLORS.ink }}>Already have a candidate database?</strong>{" "}
+                        <Link href={importUrl} style={{ color: COLORS.forest }}>Import it</Link> from a spreadsheet so every search covers everyone.
+                      </>
+                    )}
                   </Text>
                 </td>
               </tr>

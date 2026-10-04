@@ -24,7 +24,11 @@ export function useAdminSession() {
   // Difference between the server's clock and ours, so the countdown is right
   // even if this computer's clock is off.
   const offsetRef = useRef(0);
-  const lastPingRef = useRef(Date.now());
+  // Set on mount (see the effect below) rather than during render.
+  const lastPingRef = useRef(0);
+  useEffect(() => {
+    lastPingRef.current = Date.now();
+  }, []);
   const expiresRef = useRef(null);
   const endedRef = useRef(false);
 
@@ -77,6 +81,7 @@ export function useAdminSession() {
 
   // Initial load + polling.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     refresh();
     const timer = setInterval(refresh, POLL_MS);
     return () => clearInterval(timer);

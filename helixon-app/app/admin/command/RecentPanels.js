@@ -1,5 +1,6 @@
 "use client";
 
+import { useNow } from "@/lib/hooks/useNow";
 import Link from "next/link";
 
 import { Panel, Avatar, Skeleton } from "../_shared/ui";
@@ -30,6 +31,7 @@ function Loading() {
 // "Needs attention" + latest activity, so the landing page answers "what should
 // I look at right now?" before "what are the numbers?".
 export default function RecentPanels() {
+  const now = useNow();
   const leads = useAdminData("/api/admin/leads?range=30d", { every: POLL });
   const agencies = useAdminData("/api/admin/agencies", { every: POLL });
   const audit = useAdminData("/api/admin/audit?page=1", { every: POLL });
@@ -56,7 +58,7 @@ export default function RecentPanels() {
     });
   }
 
-  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+  const dayAgo = now - 24 * 60 * 60 * 1000;
   const failedLogins = (audit.data?.entries || []).filter(
     (e) => e.action === "admin_login_failed" && Date.parse(e.at) > dayAgo,
   ).length;

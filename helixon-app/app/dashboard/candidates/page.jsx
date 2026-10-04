@@ -8,6 +8,7 @@
 // so that part of the tree sits in a <Suspense> boundary, which Next.js
 // requires or static prerendering fails the build.
 
+import { useNow } from "@/lib/hooks/useNow";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
@@ -150,7 +151,7 @@ function Pill({ active, onClick, children, count }) {
       {children}
       {typeof count === "number" && (
         <span
-          className="text-[10px] font-semibold px-1.5 rounded-full tabular-nums"
+          className="text-[11px] font-semibold px-1.5 rounded-full tabular-nums"
           style={{
             background: active ? "rgba(255,255,255,0.25)" : "var(--mist)",
             color: active ? "white" : INK_FAINT,
@@ -220,7 +221,7 @@ function ScorePill({ score }) {
       <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span className="text-[10px] whitespace-nowrap" style={{ color: INK_FAINT }}>
+      <span className="text-[11px] whitespace-nowrap" style={{ color: INK_FAINT }}>
         {score === null || score === undefined ? "" : scoreLabel(score).split(" ")[0]}
       </span>
     </div>
@@ -230,14 +231,14 @@ function ScorePill({ score }) {
 function StageBadge({ stage, status }) {
   if (status === "failed") {
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
+      <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
         Failed
       </span>
     );
   }
   if (status === "processing") {
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
+      <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
         Processing
       </span>
     );
@@ -252,7 +253,7 @@ function StageBadge({ stage, status }) {
   const isPlaced = stage === STAGE_ORDER[STAGE_ORDER.length - 1];
   return (
     <span
-      className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: isPlaced ? GREEN_BG : "var(--mist)", color: isPlaced ? "var(--forest)" : INK_MUTED }}
     >
       {STAGE_LABELS[stage]}
@@ -283,7 +284,8 @@ function shortDate(iso) {
 }
 
 function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
-  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < Date.now();
+  const now = useNow();
+  const overdue = candidate.nextAction && new Date(candidate.nextAction.dueAt).getTime() < now;
   const show = (key) => columns.has(key);
   return (
     <li>
@@ -305,7 +307,7 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {candidate.fullName}
               {candidate.inTalentPool && (
-                <span className="ml-1.5 align-middle text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
+                <span className="ml-1.5 align-middle text-[11px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
                   ☆ Pool
                 </span>
               )}
@@ -327,7 +329,7 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           {show("skills") && (
             <div className="hidden lg:flex flex-wrap gap-1 w-40 shrink-0">
               {candidate.skills.slice(0, 3).map((s) => (
-                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                <span key={s} className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
                   {s}
                 </span>
               ))}
@@ -593,6 +595,7 @@ function CandidateDatabaseContent() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     setStatus((s) => (s === "ready" ? "ready" : "loading"));
     fetchCandidates(filters)
       .then((d) => {
@@ -776,7 +779,7 @@ function CandidateDatabaseContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate database
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -853,7 +856,7 @@ function CandidateDatabaseContent() {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-[10px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
+                <span className="text-[11px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
                   {activeFilterCount}
                 </span>
               )}

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { grantsAccess } from "@/lib/subscription-status";
+import { ACCESS_STATUSES, grantsAccess } from "@/lib/subscription-status";
 
 // The single reliable source for "what plan is this agency actually on
 // right now". agencies.settings.plan and agencies.plan_name are both
@@ -34,13 +34,13 @@ export async function getAgencyPlan(agencyId) {
   // re-subscribe, or a second member's own subscription), and
   // maybeSingle() errors on more than one row - which threw here and took
   // the Team page's invite panel down with a 500. An Agency-plan row wins.
-  const query = (columns) => supabase.from("subscriptions").select(columns).in("user_id", profileIds).eq("status", "active");
-  let { data: subscriptions, error: subError } = await query("plan,stripe_subscription_id,demo_expires_at");
+  const query = (columns) => supabase.from("subscriptions").select(columns).in("user_id", profileIds).in("status", [...ACCESS_STATUSES]);
+  let { data: subscriptions, error: subError } = await query("plan,status,stripe_subscription_id,demo_expires_at");
   // demo_expires_at arrives with migration 20260929030200.
-  if (subError?.code === "42703") ({ data: subscriptions, error: subError } = await query("plan"));
+  if (subError?.code === "42703") ({ data: subscriptions, error: subError } = await query("plan,status"));
   if (subError) throw new Error(subError.message);
 
   // Demo access that has reached its end date no longer grants a plan.
-  const plans = (subscriptions || []).filter((s) => grantsAccess({ status: "active", ...s })).map((s) => s.plan).filter(Boolean);
+  const plans = (subscriptions || []).filter((s) => grantsAccess(s)).map((s) => s.plan).filter(Boolean);
   return plans.includes("agency") ? "agency" : plans[0] || null;
 }

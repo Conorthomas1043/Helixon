@@ -16,7 +16,7 @@ import { formatDateOnly } from "@/lib/candidate-format";
 function Stat({ label, value, sub }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>{label}</p>
       <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>{value}</p>
       {sub && <p className="text-[11px] mt-1" style={{ color: INK_MUTED }}>{sub}</p>}
     </div>

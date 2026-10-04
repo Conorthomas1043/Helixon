@@ -40,7 +40,7 @@ export default function CommandPage() {
   const { health, error: healthError, reload: reloadHealth } = useAdminHealth();
 
   const trafficRows = traffic?.rows || [];
-  const blocked = traffic?.blockedIps || [];
+  const blocked = useMemo(() => traffic?.blockedIps || [], [traffic]);
   const totals = stats?.totals || {};
   const kpis = ops?.kpis || {};
   const sales = ops?.sales || {};

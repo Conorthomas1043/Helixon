@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { after } from "next/server";
+import { sendWelcomeEmail } from "@/lib/lifecycle-email";
 import { stripe } from "@/lib/stripe";
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
@@ -97,6 +99,17 @@ export async function createProfileAndAgency({
     // orphan agency behind if the profile insert fails.
     await supabase.from("agencies").delete().eq("id", agency.id);
     throw new Error(profileError.message);
+  }
+
+  // Both signup paths (Clerk webhook, /api/complete-signup) create a
+  // workspace through here exactly once, so this is where the welcome email
+  // goes. After the response, so it never slows down or breaks signup.
+  const welcome = () => sendWelcomeEmail({ agencyId: agency.id, to: email, firstName, plan });
+  try {
+    after(welcome);
+  } catch {
+    // Not inside a request (scripts, tests): send inline instead.
+    await welcome();
   }
 
   return { profileId: profile.id, agencyId: agency.id };

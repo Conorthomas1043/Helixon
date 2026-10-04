@@ -146,7 +146,7 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
             <TextArea ref={bodyRef} rows={10} maxLength={20000} value={body} onChange={(e) => setBody(e.target.value)} />
           </Field>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(fields).map(([k, label]) => (
                 <button key={k} type="button" onClick={() => insertField(k)} title={`{{${k}}}`} className="text-[11px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>

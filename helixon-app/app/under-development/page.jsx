@@ -200,7 +200,7 @@ function GateForm() {
                 className="text-[1.6rem] font-semibold tracking-tight mb-2"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
-                You're in
+                You&apos;re in
               </h1>
               <p className="text-[13.5px]" style={{ color: "var(--ink-soft)" }}>
                 Taking you through now.

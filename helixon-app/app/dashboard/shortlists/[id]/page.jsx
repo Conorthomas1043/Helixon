@@ -217,7 +217,7 @@ export default function ShortlistDetailPage({ params }) {
             <header className="rounded-[14px] p-5 sm:p-6 space-y-4" style={CARD}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>Shortlist</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>Shortlist</p>
                   {renaming ? (
                     <form onSubmit={saveName} className="flex items-center gap-2">
                       <input
@@ -340,7 +340,7 @@ export default function ShortlistDetailPage({ params }) {
                           {c.score ?? "-"}
                         </span>
                         {c.stage && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: STAGE_COLORS[c.stage] || INK_MUTED }}>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: STAGE_COLORS[c.stage] || INK_MUTED }}>
                             {STAGE_LABELS[c.stage] ?? c.stage}
                           </span>
                         )}

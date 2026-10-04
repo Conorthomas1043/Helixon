@@ -16,7 +16,7 @@ const STATUS = {
 
 function Heading({ children }) {
   return (
-    <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: FAINT }}>
+    <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: FAINT }}>
       {children}
     </h3>
   );
@@ -36,7 +36,7 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
     <article className="client-profile-page bg-white rounded-[14px] p-8 sm:p-10 text-[13px] leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
       <header className="flex items-start justify-between gap-6 pb-5 mb-6" style={{ borderBottom: `2px solid ${INK}` }}>
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: FAINT }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: FAINT }}>
             Candidate profile{p.job?.title ? ` · ${p.job.title}` : ""}{p.job?.client && !p.blind ? ` · ${p.job.client}` : ""}
           </p>
           <h2 className="text-[26px] font-semibold leading-tight" style={{ fontFamily: "var(--font-display)" }}>
@@ -58,7 +58,7 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
             <div className="text-[34px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "#0f6b4f" }}>
               {p.score}
             </div>
-            <div className="text-[10px] uppercase tracking-[0.12em] mt-1" style={{ color: FAINT }}>Match</div>
+            <div className="text-[11px] uppercase tracking-[0.12em] mt-1" style={{ color: FAINT }}>Match</div>
           </div>
         )}
       </header>

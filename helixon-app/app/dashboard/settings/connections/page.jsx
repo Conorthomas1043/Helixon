@@ -11,7 +11,7 @@ function CopyRow({ label, value }) {
   const [copied, setCopied] = useState(false);
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
       <div className="flex gap-2">
         <TextInput readOnly value={value} onFocus={(e) => e.target.select()} aria-label={label} />
         <Button

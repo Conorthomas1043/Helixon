@@ -96,7 +96,7 @@ function SplitEditor({ splits, onChange }) {
   }
   return (
     <fieldset className="space-y-2">
-      <legend className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+      <legend className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
         Fee split
       </legend>
       {splits.map((s, i) => (
@@ -310,7 +310,7 @@ function Timesheets({ placement, timesheets, onChanged }) {
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         Timesheets
       </p>
       {timesheets.length > 0 && (

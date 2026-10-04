@@ -26,7 +26,8 @@ export function useAdminData(url, { every = 0, enabled = true } = {}) {
       const response = await fetch(url, { credentials: "include", cache: "no-store" });
 
       if (response.status === 401) {
-        window.location.href = "/";
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+        window.location.assign("/");
         return;
       }
 
@@ -46,6 +47,7 @@ export function useAdminData(url, { every = 0, enabled = true } = {}) {
   }, [url, enabled]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     load();
   }, [load]);
 

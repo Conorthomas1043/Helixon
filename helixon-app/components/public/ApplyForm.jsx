@@ -25,6 +25,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
   const [error, setError] = useState("");
   const [cvError, setCvError] = useState("");
   const [sentTo, setSentTo] = useState("");
+  const [emailed, setEmailed] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
@@ -43,11 +44,22 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
     try {
       const res = await fetch("/api/public/apply", { method: "POST", body: form });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || "Something went wrong. Please try again.");
+      if (!res.ok) {
+        throw new Error(
+          d.error ||
+            (res.status === 413
+              ? "Your CV is too large to upload - the limit is 10 MB."
+              : res.status === 429
+                ? "You've sent several applications recently - please try again later."
+                : "Your application didn't send. Please try again; your details are still filled in.")
+        );
+      }
       setSentTo(String(form.get("email") || ""));
+      setEmailed(Boolean(d.confirmationEmail));
       setState("done");
     } catch (err) {
-      setError(err.message);
+      // A dropped connection throws a TypeError with a browser message.
+      setError(err instanceof TypeError ? "We couldn't reach the server. Check your connection and try again; your details are still filled in." : err.message);
       setState("form");
     }
   }
@@ -61,7 +73,9 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
           {sentTo ? <> and contact you at <strong style={{ color: "var(--ink)" }}>{sentTo}</strong></> : " and contact you"} if it&apos;s a match for the role.
         </p>
         <p className="text-[13px] mt-2" style={{ color: "var(--ink-faint)" }}>
-          It&apos;s worth checking your spam folder in the next few days. You can close this page.
+          {emailed
+            ? "We've emailed you a confirmation. If it isn't in your inbox in a few minutes, check your spam folder. You can close this page."
+            : "It's worth checking your spam folder in the next few days. You can close this page."}
         </p>
       </div>
     );

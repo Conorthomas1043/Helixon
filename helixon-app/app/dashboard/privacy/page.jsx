@@ -58,7 +58,7 @@ function daysUntil(iso) {
 function StatCard({ label, value, sub, accent, icon }) {
   return (
     <div className="rounded-[14px] p-4 sm:p-5 bg-white border border-[var(--border)]">
-      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
+      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {icon && <Icon name={icon} size={12} />}
         {label}
       </p>
@@ -74,7 +74,7 @@ function SectionTitle({ eyebrow, title, action }) {
   return (
     <div className="flex items-start justify-between gap-3 mb-4">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{eyebrow}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{eyebrow}</p>
         <h2 className="text-[16px] font-semibold text-[var(--ink)] mt-0.5">{title}</h2>
       </div>
       {action}
@@ -205,7 +205,7 @@ function PrivacyContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
               Data &amp; privacy
             </h1>
@@ -367,7 +367,7 @@ function PrivacyContent() {
               {/* Candidates' requests */}
               <section aria-labelledby="requests-title">
                 <div className="mb-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Candidates&apos; rights</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Candidates&apos; rights</p>
                   <h2 id="requests-title" className="text-[16px] font-semibold text-[var(--ink)] mt-0.5">
                     When a candidate asks about their data
                   </h2>

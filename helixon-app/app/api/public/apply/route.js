@@ -1,4 +1,6 @@
 import { emitWebhook } from "@/lib/webhooks";
+import { mailConfigured, sendAgencyEmail, siteUrl } from "@/lib/mailer";
+import { escapeHtml } from "@/lib/demo-notification";
 import { NextResponse, after } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
@@ -71,5 +73,33 @@ export async function POST(request) {
       })
     );
   }
-  return NextResponse.json({ ok: true }, { status: 201 });
+  // A receipt for the applicant, in the agency's name. Before, nothing
+  // confirmed an application had arrived - the page was the only record.
+  const confirming = mailConfigured();
+  if (confirming) {
+    const jobTitle = found.job.public_title || found.job.title;
+    after(() => sendAgencyEmail({ agencyId: found.agency.id, fromName: found.agency.name, replyTo: null, to: email, ...applicationReceivedEmail({ name, jobTitle, agencyName: found.agency.name, slug: String(form.get("slug") || "") }) }));
+  }
+  return NextResponse.json({ ok: true, confirmationEmail: confirming }, { status: 201 });
+}
+
+function applicationReceivedEmail({ name, jobTitle, agencyName, slug }) {
+  const first = String(name || "").split(" ")[0];
+  const privacy = `${siteUrl()}/jobs/${encodeURIComponent(slug)}/privacy`;
+  const lines = [
+    first ? `Hi ${first},` : "Hi,",
+    "",
+    `Thanks for applying for ${jobTitle}. ${agencyName} has received your application and CV.`,
+    "",
+    "A recruiter will review it, and if it's a match for the role they'll contact you at this email address.",
+    "",
+    `How your data is used: ${privacy}`,
+  ];
+  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:#13201b;max-width:480px">
+    <p>${escapeHtml(lines[0])}</p>
+    <p>Thanks for applying for <strong>${escapeHtml(jobTitle)}</strong>. ${escapeHtml(agencyName)} has received your application and CV.</p>
+    <p>A recruiter will review it, and if it's a match for the role they'll contact you at this email address.</p>
+    <p style="font-size:12px;color:#587364"><a href="${privacy}" style="color:#0b6e4f">How your data is used</a></p>
+  </div>`;
+  return { subject: `Application received: ${jobTitle}`, text: lines.join("\n"), html };
 }

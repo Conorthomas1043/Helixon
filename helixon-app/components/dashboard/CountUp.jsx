@@ -19,8 +19,9 @@ export default function CountUp({ value, duration = 600, format }) {
   useEffect(() => {
     if (!isNumeric) return undefined;
 
+    // With reduced motion the target is shown directly (below), so there's
+    // nothing to animate - just remember where the next change starts from.
     if (reducedMotion) {
-      setDisplay(value);
       fromRef.current = value;
       return undefined;
     }
@@ -46,9 +47,9 @@ export default function CountUp({ value, duration = 600, format }) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-runs when the target value itself changes, not on every render
   }, [value, isNumeric, reducedMotion, duration]);
 
   if (!isNumeric) return value;
-  return format ? format(display) : display.toLocaleString("en-GB");
+  const shown = reducedMotion ? value : display;
+  return format ? format(shown) : shown.toLocaleString("en-GB");
 }

@@ -248,7 +248,7 @@ export default function ClientsPage() {
             <div className="rounded-[14px] overflow-x-auto" style={CARD}>
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="text-left text-[10px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                     <th className="px-5 py-3 font-semibold">Client</th>
                     <th className="px-3 py-3 font-semibold hidden md:table-cell">Owner</th>
                     <th className="px-3 py-3 font-semibold text-right">Open jobs</th>

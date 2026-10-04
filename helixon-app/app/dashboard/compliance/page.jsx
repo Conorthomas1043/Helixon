@@ -112,7 +112,7 @@ export default function CompliancePage() {
               ["References awaited", data.references.length, false],
             ].map(([label, n, alarm]) => (
               <div key={label} className="rounded-[12px] px-4 py-3 bg-white" style={{ border: "1px solid var(--border)" }}>
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                   {label}
                 </p>
                 <p className="text-xl font-semibold tabular-nums" style={{ color: alarm ? "var(--score-low)" : INK }}>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendActivationNudges } from "@/lib/lifecycle-email";
 import crypto from "crypto";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
@@ -54,6 +55,15 @@ export async function GET(request) {
   }
   if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
     return NextResponse.json({ ok: false, error: "Email isn't configured." }, { status: 503 });
+  }
+
+  // Separate from the follow-up reminders below: a one-off nudge to new
+  // workspaces that haven't screened a CV yet (lib/lifecycle-email.jsx).
+  try {
+    const nudges = await sendActivationNudges();
+    if (nudges.sent) console.log(`[cron/reminders] Activation nudges sent: ${nudges.sent}`);
+  } catch (err) {
+    console.error("[cron/reminders] Activation nudges failed:", err?.message);
   }
 
   const now = new Date();

@@ -358,7 +358,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Jump every CV to</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Jump every CV to</p>
             {active && (
               <button type="button" onClick={() => chooseSection(null)} className="text-[12px] font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]">
                 Back to top

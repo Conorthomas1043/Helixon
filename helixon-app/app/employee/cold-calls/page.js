@@ -4,6 +4,8 @@
 // call (it doubles as a team leaderboard), but only the person who made
 // a call can edit or delete it. See lib/employee-cold-calls.js.
 
+import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
@@ -52,6 +54,8 @@ function toLocalInputValue(date) {
 const EMPTY_FORM = { contact_name: "", company: "", phone: "", outcome: "no_answer", notes: "", follow_up_at: "", called_at: "" };
 
 export default function ColdCallsPage() {
+  const [ask, confirmDialog] = useConfirm();
+  const { toasts, notify, dismiss } = useToasts();
   const router = useRouter();
   useHeartbeat();
 
@@ -109,7 +113,9 @@ export default function ColdCallsPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the server when the view opens or its inputs change; the loading state it sets is the point
     if (!checking) fetchAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- re-fetch only when these inputs change; the fetch function is recreated every render
   }, [checking, scope]);
 
   function openAdd() {
@@ -199,13 +205,13 @@ export default function ColdCallsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to update outcome.");
     } catch (err) {
-      alert(err.message || "Failed to update outcome.");
+      notify(err.message || "Failed to update outcome.", { tone: "error" });
       fetchAll();
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Delete this call log entry?")) return;
+    if (!(await ask({ title: "Delete this call log entry?", confirmLabel: "Delete entry", danger: true }))) return;
     setCalls((prev) => prev.filter((c) => c.id !== id));
     try {
       const res = await fetch("/api/employee/cold-calls", {
@@ -216,7 +222,7 @@ export default function ColdCallsPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Failed to delete.");
     } catch (err) {
-      alert(err.message || "Failed to delete.");
+      notify(err.message || "Failed to delete.", { tone: "error" });
       fetchAll();
     }
   }
@@ -243,6 +249,8 @@ export default function ColdCallsPage() {
 
   return (
     <EmployeeShell section="cold_calls">
+      {confirmDialog}
+      <Toaster toasts={toasts} onDismiss={dismiss} />
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

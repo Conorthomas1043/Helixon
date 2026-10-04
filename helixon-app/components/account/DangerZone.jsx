@@ -36,7 +36,8 @@ export default function DangerZone() {
       }
 
       // The sign-in no longer exists, so a full navigation to the home page.
-      window.location.href = "/";
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load on purpose: it drops all client state after sign-out, account deletion or an expired session
+      window.location.assign("/");
     } catch {
       setError("Network error - please check your connection and try again.");
       setBusy(false);

@@ -173,7 +173,7 @@ function SequenceDialog({ sequence, fields, onClose, onSaved }) {
           <Button onClick={() => setSteps((list) => [...list, { delayDays: 3, subject: "", body: "" }])}>+ Add a follow-up email</Button>
         )}
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert into email {focused + 1}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert into email {focused + 1}</p>
           <FieldChips fields={fields} onInsert={insert} />
         </div>
         <p className="text-[12px]" style={{ color: INK_MUTED }}>

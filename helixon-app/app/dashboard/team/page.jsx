@@ -443,7 +443,7 @@ function Metric({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[10px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -459,7 +459,7 @@ function SummaryTile({ label, value, sub, dot, active, onClick }) {
       className="text-left rounded-[14px] p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
       style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
     >
-      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         {dot && <PresenceDot state={dot} size={8} />}
         {label}
       </p>
@@ -486,7 +486,7 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
               {member.name}
               {isYou && <span className="font-normal" style={{ color: INK_FAINT }}> (you)</span>}
             </p>
-            <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="text-[11px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
               {ROLE_LABELS[member.role] || "Member"}
             </span>
           </div>
@@ -503,7 +503,7 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
           )}
         </div>
         {member.overdue > 0 && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
             {member.overdue} overdue
           </span>
         )}
@@ -590,7 +590,7 @@ function MyStatusCard({ me, presence, enabled, onSaved }) {
   if (!enabled) {
     return (
       <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
-        <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
           Presence
         </p>
         <p className="text-[13px]" style={{ color: INK_MUTED }}>
@@ -649,7 +649,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
 
   return (
     <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
         Your status
       </p>
       <p className="flex items-center gap-2 text-[14px] font-semibold" style={{ color: INK }}>
@@ -960,7 +960,7 @@ export default function TeamPage() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Team workspace
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -1029,7 +1029,7 @@ export default function TeamPage() {
                       style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                     >
                       {label}
-                      <span className="text-[10px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                      <span className="text-[11px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
                         {count}
                       </span>
                     </button>

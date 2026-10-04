@@ -50,7 +50,7 @@ export default function SettingsPage() {
       <PageHeader eyebrow="Workspace" title="Settings" subtitle="How Helixon works for your agency." />
       {SECTIONS.map((s) => (
         <section key={s.title}>
-          <h2 className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
             {s.title}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">

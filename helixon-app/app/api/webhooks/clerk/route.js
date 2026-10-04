@@ -1,4 +1,5 @@
 import { Webhook } from "svix";
+import { ACCESS_STATUSES } from "@/lib/subscription-status";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { anonymiseDeletedUser } from "@/lib/anonymise-user";
@@ -320,7 +321,7 @@ async function canMoveToInvitingAgency(profile) {
     .from("subscriptions")
     .select("id")
     .eq("user_id", profile.id)
-    .eq("status", "active")
+    .in("status", [...ACCESS_STATUSES])
     .limit(1);
   if (subsError) throw new Error(subsError.message);
   return (subs || []).length === 0;
