@@ -20,20 +20,13 @@ import {
 import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stage-labels";
 import ShareShortlist from "@/components/dashboard/ShareShortlist";
 import { CLIENT_DECISIONS } from "@/lib/client-decisions";
-import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor } from "@/lib/candidate-format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { reportQuietly } from "@/lib/report-error";
+import { Avatar as KitAvatar } from "@/components/ui";
 
 function Avatar({ name }) {
-  return (
-    <span
-      className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-white shrink-0"
-      style={{ background: "var(--forest)" }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </span>
-  );
+  return <KitAvatar name={name} tone="solid" />;
 }
 
 function NoteEditor({ value, onSave }) {

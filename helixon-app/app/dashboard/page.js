@@ -15,6 +15,7 @@ import { getFollowUps, completeNextAction, getPerformance } from "@/lib/dashboar
 import { METRICS, METRIC_KEYS } from "@/lib/performance";
 import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "@/lib/scoreBands";
 import { formatDate as fmtDate } from "@/lib/format";
+import { Button, EmptyState as KitEmptyState, SectionHeading, Skeleton as Block } from "@/components/ui";
 
 const formatDate = (date) => fmtDate(date, { withTime: true });
 
@@ -173,50 +174,21 @@ function StageBadge({ stage }) {
   );
 }
 
-function SectionHeading({ eyebrow, title, action }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
-      <div>
-        {eyebrow && (
-          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
-            {eyebrow}
-          </p>
-        )}
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 600, color: TEXT, margin: 0 }}>
-          {title}
-        </h2>
-      </div>
-      {action}
-    </div>
-  );
-}
-
 function EmptyState({ title, body, actionLabel, actionHref }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "40px 24px" }}>
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ACCENT_FG} strokeWidth="1.5">
-          <path d="M9 12h6m-3-3v6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-        </svg>
-      </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginBottom: 4 }}>{title}</p>
-      <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 320, marginBottom: 16 }}>{body}</p>
-      {actionLabel && actionHref && (
-        <Link href={actionHref} style={{
-          display: "inline-flex",
-          alignItems: "center",
-          fontSize: 14,
-          fontWeight: 600,
-          padding: "8px 16px",
-          borderRadius: 9999,
-          background: ACCENT,
-          color: "#fff",
-          textDecoration: "none",
-        }}>
-          {actionLabel}
-        </Link>
-      )}
-    </div>
+    <KitEmptyState
+      framed={false}
+      icon="plus"
+      title={title}
+      body={body}
+      action={
+        actionLabel && actionHref ? (
+          <Button variant="primary" href={actionHref}>
+            {actionLabel}
+          </Button>
+        ) : null
+      }
+    />
   );
 }
 
@@ -1163,10 +1135,6 @@ function DashboardFooter() {
 }
 
 /* ─── Skeleton ──────────────────────────────────────────────────────────── */
-
-function Block({ style = {} }) {
-  return <div className="shimmer-block" style={{ borderRadius: 8, ...style }} />;
-}
 
 function DashboardSkeleton() {
   return (

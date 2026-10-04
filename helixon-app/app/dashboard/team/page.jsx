@@ -32,6 +32,7 @@ import PresenceDot from "@/components/PresenceDot";
 import { PRESENCE_ORDER, computePresence, presenceLine, timeAgo } from "@/lib/presence";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
 import { reportQuietly } from "@/lib/report-error";
+import { Skeleton as Block } from "@/components/ui";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -765,10 +766,6 @@ function MyStatusEditor({ me, presence, onSaved }) {
       </label>
     </div>
   );
-}
-
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
 }
 
 function TeamSkeleton() {

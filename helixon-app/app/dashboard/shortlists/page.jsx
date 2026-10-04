@@ -11,10 +11,7 @@ import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getShortlists, createShortlist, getJobs } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidate-format";
-
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
-}
+import { Skeleton as Block } from "@/components/ui";
 
 function NewShortlistForm({ jobs, onCreated }) {
   const [name, setName] = useState("");

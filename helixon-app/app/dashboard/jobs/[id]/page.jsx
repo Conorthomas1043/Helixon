@@ -15,8 +15,9 @@ import ClientPicker from "@/components/dashboard/ClientPicker";
 import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { useOffices } from "@/components/dashboard/use-offices";
-import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
+import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel } from "@/lib/candidate-format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { Avatar, Skeleton as Block } from "@/components/ui";
 
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
@@ -141,18 +142,6 @@ function Stat({ label, value, accent }) {
   );
 }
 
-function Avatar({ name }) {
-  return (
-    <div
-      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[12px] font-semibold"
-      style={{ background: "var(--mist)", color: "var(--forest)" }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </div>
-  );
-}
-
 function StageBadge({ stage, status }) {
   if (status !== "completed") {
     return (
@@ -203,10 +192,6 @@ function RankedCandidateRow({ candidate, rank }) {
       </Link>
     </li>
   );
-}
-
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
 }
 
 function JobDetailSkeleton() {

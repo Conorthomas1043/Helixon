@@ -16,6 +16,7 @@ import { downloadCsv } from "@/lib/csv";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidate-format";
 import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
 import { useOffices } from "@/components/dashboard/use-offices";
+import { Button, EmptyState as KitEmptyState, Skeleton as Block } from "@/components/ui";
 
 function Stat({ label, value, accent }) {
   return (
@@ -101,10 +102,6 @@ function JobCard({ job }) {
   );
 }
 
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
-}
-
 function JobsSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true" aria-label="Loading jobs">
@@ -142,31 +139,18 @@ function ErrorState({ onRetry }) {
 
 function EmptyState({ onNew }) {
   return (
-    <div className="rounded-[16px] flex flex-col items-center text-center py-14 px-6" style={CARD}>
-      <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
-        No jobs yet
-      </p>
-      <p className="text-[14px] max-w-sm mb-5" style={{ color: INK_MUTED }}>
-        Add a role you&apos;re hiring for, or screen a CV against a job description and the role is saved for you.
-      </p>
-      <div className="flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          onClick={onNew}
-          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--forest)", color: "white" }}
-        >
-          Add a job
-        </button>
-        <Link
-          href="/analyse"
-          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
-        >
-          Screen a CV
-        </Link>
-      </div>
-    </div>
+    <KitEmptyState
+      title="No jobs yet"
+      body="Add a role you're hiring for, or screen a CV against a job description and the role is saved for you."
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button variant="primary" onClick={onNew}>
+            Add a job
+          </Button>
+          <Button href="/analyse">Screen a CV</Button>
+        </div>
+      }
+    />
   );
 }
 

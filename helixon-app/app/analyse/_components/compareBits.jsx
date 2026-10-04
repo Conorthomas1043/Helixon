@@ -10,6 +10,7 @@ import { updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
 import { initials } from "@/lib/candidate-format";
 import { Icon, cx } from "./ui";
+import { Avatar as KitAvatar } from "@/components/ui";
 
 // Column letters, A-D, used by both views.
 export const LETTERS = ["A", "B", "C", "D"];
@@ -69,15 +70,7 @@ export function PillTabs({ value, onChange, options, ariaLabel }) {
 }
 
 export function Avatar({ name, letter, size = 36 }) {
-  return (
-    <span
-      className="rounded-full flex items-center justify-center shrink-0 font-semibold bg-[var(--mist)] text-[var(--forest)] border border-[var(--border)]"
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
-      aria-hidden="true"
-    >
-      {letter || initials(name)}
-    </span>
-  );
+  return <KitAvatar name={name} letter={letter} size={size} bordered />;
 }
 
 export function StagePill({ stage }) {

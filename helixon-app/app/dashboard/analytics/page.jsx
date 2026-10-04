@@ -19,22 +19,7 @@ import { printSection } from "@/lib/print";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
 import { reportQuietly } from "@/lib/report-error";
-
-function SectionHeading({ eyebrow, title, action }) {
-  return (
-    <div className="flex items-end justify-between gap-4 mb-4">
-      <div>
-        <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
-          {eyebrow}
-        </p>
-        <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
-          {title}
-        </h2>
-      </div>
-      {action}
-    </div>
-  );
-}
+import { SectionHeading, Skeleton as Block } from "@/components/ui";
 
 // "▲ 4 pts vs previous 30 days". Up isn't always good news (more failed
 // analyses), so the arrow carries direction and the text stays neutral ink.
@@ -552,10 +537,6 @@ function PipelineBar({ pipeline }) {
       })}
     </div>
   );
-}
-
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
 }
 
 function AnalyticsSkeleton() {

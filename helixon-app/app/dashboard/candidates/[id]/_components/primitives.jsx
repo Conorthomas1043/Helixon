@@ -3,9 +3,12 @@
 // Part of the candidate profile page (../page.jsx).
 
 import Link from "next/link";
-import { CARD, INK, INK_FAINT, INK_MUTED, initials } from "@/lib/candidate-format";
+import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidate-format";
 import { track } from "@/lib/analytics";
 import { useRef, useState } from "react";
+import { Avatar as KitAvatar, SectionHeading, Skeleton as Block } from "@/components/ui";
+
+export { Block, SectionHeading };
 
 // Creates one of the agency's own tags and puts it on this candidate.
 export function NewTagForm({ onCreate }) {
@@ -40,34 +43,8 @@ export function NewTagForm({ onCreate }) {
   );
 }
 
-export function SectionHeading({ eyebrow, title, action }) {
-  return (
-    <div className="flex items-end justify-between gap-4 mb-4">
-      <div>
-        {eyebrow && (
-          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
-            {eyebrow}
-          </p>
-        )}
-        <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
-          {title}
-        </h2>
-      </div>
-      {action}
-    </div>
-  );
-}
-
 export function Avatar({ name, size = 56 }) {
-  return (
-    <div
-      className="rounded-full flex items-center justify-center shrink-0 font-semibold"
-      style={{ width: size, height: size, background: "var(--mist)", color: "var(--forest)", fontSize: size / 3.2 }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </div>
-  );
+  return <KitAvatar name={name} size={size} />;
 }
 
 export function FieldLabel({ children }) {
@@ -155,10 +132,6 @@ export function CopyButton({ text, label }) {
       {copied ? "Copied" : "Copy"}
     </button>
   );
-}
-
-export function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
 }
 
 export function ProfileSkeleton() {

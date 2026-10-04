@@ -45,9 +45,9 @@ import {
   formatRelativeTime,
   scoreColor,
   scoreLabel,
-  initials,
-} from "@/lib/candidate-format";
+  } from "@/lib/candidate-format";
 import { reportQuietly } from "@/lib/report-error";
+import { Avatar as KitAvatar, Button, EmptyState as KitEmptyState, Skeleton as Block } from "@/components/ui";
 
 const STAGE_ORDER = Object.keys(STAGE_LABELS);
 
@@ -137,7 +137,7 @@ function paramsFromFilters(f) {
  * Small pieces
  * ---------------------------------------------------------------------- */
 
-function Pill({ active, onClick, children, count }) {
+function FilterChip({ active, onClick, children, count }) {
   return (
     <button
       type="button"
@@ -263,15 +263,7 @@ function StageBadge({ stage, status }) {
 }
 
 function Avatar({ name }) {
-  return (
-    <div
-      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold"
-      style={{ background: "var(--mist)", color: "var(--forest)" }}
-      aria-hidden="true"
-    >
-      {initials(name)}
-    </div>
-  );
+  return <KitAvatar name={name} size={40} />;
 }
 
 /* ------------------------------------------------------------------------
@@ -424,10 +416,6 @@ function ColumnsMenu({ columns, onChange }) {
  * Skeleton / empty / error
  * ---------------------------------------------------------------------- */
 
-function Block({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
-}
-
 function ListSkeleton() {
   return (
     <div className="space-y-2.5" aria-busy="true" aria-label="Loading candidates">
@@ -440,34 +428,20 @@ function ListSkeleton() {
 
 function EmptyState({ hasFilters, onClear }) {
   return (
-    <div className="flex flex-col items-center text-center py-14 px-6">
-      <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
-        {hasFilters ? "No candidates match these filters" : "No candidates yet"}
-      </p>
-      <p className="text-[14px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
-        {hasFilters
-          ? "Try widening your search or clearing a filter."
-          : "Candidates will appear here once you start screening CVs against your roles."}
-      </p>
-      {hasFilters ? (
-        <button
-          type="button"
-          onClick={onClear}
-          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
-        >
-          Clear filters
-        </button>
-      ) : (
-        <Link
-          href="/analyse"
-          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--forest)", color: "white" }}
-        >
-          Screen a CV
-        </Link>
-      )}
-    </div>
+    <KitEmptyState
+      framed={false}
+      title={hasFilters ? "No candidates match these filters" : "No candidates yet"}
+      body={hasFilters ? "Try widening your search or clearing a filter." : "Candidates will appear here once you start screening CVs against your roles."}
+      action={
+        hasFilters ? (
+          <Button onClick={onClear}>Clear filters</Button>
+        ) : (
+          <Button variant="primary" href="/analyse">
+            Screen a CV
+          </Button>
+        )
+      }
+    />
   );
 }
 
@@ -826,20 +800,20 @@ function CandidateDatabaseContent() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            <Pill active={filters.stage === "all"} onClick={() => updateFilter({ stage: "all" })} count={stageCounts?.all}>
+            <FilterChip active={filters.stage === "all"} onClick={() => updateFilter({ stage: "all" })} count={stageCounts?.all}>
               All
-            </Pill>
+            </FilterChip>
             {STAGE_ORDER.map((key) => (
-              <Pill key={key} active={filters.stage === key} onClick={() => updateFilter({ stage: key })} count={stageCounts?.[key]}>
+              <FilterChip key={key} active={filters.stage === key} onClick={() => updateFilter({ stage: key })} count={stageCounts?.[key]}>
                 {STAGE_LABELS[key]}
-              </Pill>
+              </FilterChip>
             ))}
 
             <span className="w-px h-5 mx-1 shrink-0" style={{ background: "var(--border)" }} />
 
-            <Pill active={filters.pool} onClick={() => updateFilter({ pool: !filters.pool })}>
+            <FilterChip active={filters.pool} onClick={() => updateFilter({ pool: !filters.pool })}>
               ☆ Talent pool
-            </Pill>
+            </FilterChip>
 
             <button
               type="button"

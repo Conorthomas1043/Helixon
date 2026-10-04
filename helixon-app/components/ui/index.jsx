@@ -13,6 +13,7 @@
 import { Children, cloneElement, forwardRef, Fragment, isValidElement, useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { trapTab } from "@/lib/focus-trap";
+import { initials } from "@/lib/format";
 
 export function cx(...parts) {
   return parts.filter(Boolean).join(" ");
@@ -194,6 +195,41 @@ export function Pill({ tone = "neutral", color, background, className = "", chil
     >
       {children}
     </span>
+  );
+}
+
+// A person's initials in a circle. `tone="solid"` fills it with the accent.
+export function Avatar({ name, letter, size = 36, tone = "soft", bordered = false, className = "" }) {
+  const solid = tone === "solid";
+  return (
+    <span
+      aria-hidden="true"
+      className={cx("inline-flex items-center justify-center shrink-0 rounded-full font-semibold", bordered && "border border-[var(--ui-border)]", className)}
+      style={{
+        width: size,
+        height: size,
+        fontSize: Math.round(size * 0.34),
+        background: solid ? "var(--ui-accent)" : "var(--ui-surface-muted)",
+        color: solid ? "var(--ui-on-accent)" : "var(--ui-accent)",
+      }}
+    >
+      {letter || initials(name)}
+    </span>
+  );
+}
+
+// An eyebrow, title and optional action above a section.
+export function SectionHeading({ eyebrow, title, action, className = "" }) {
+  return (
+    <div className={cx("flex items-end justify-between gap-4 mb-4", className)}>
+      <div className="min-w-0">
+        {eyebrow && <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ui-text-faint)]">{eyebrow}</p>}
+        <h2 className="text-base font-semibold text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
+          {title}
+        </h2>
+      </div>
+      {action}
+    </div>
   );
 }
 

@@ -26,6 +26,7 @@ import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } f
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidate-format";
 import { reportQuietly } from "@/lib/report-error";
+import { Skeleton as Block } from "@/components/ui";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 
@@ -145,10 +146,6 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
       </div>
     </div>
   );
-}
-
-function Block({ className = "" }) {
-  return <div className={`shimmer-block rounded-[10px] ${className}`} />;
 }
 
 function PipelineSkeleton() {
