@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { groupTransitions, inRange, loadActivity, loadCandidates, loadPlacements } from "@/lib/analytics-data";
 import { computeCore, furthestStageIndex } from "@/lib/analytics-snapshot";
 import { buildDigestEmail, digestEnabled } from "@/lib/analytics-digest";
+import { reportError } from "@/lib/report-error";
 
 // Monday-morning analytics summary: last week's headline numbers for the
 // agency against the week before (lib/analytics-digest.js), emailed to
@@ -21,14 +22,6 @@ const PAGE = 1000;
 const CLERK_BATCH = 100;
 const SEND_BATCH = 100;
 const COLUMNS = "id, job_id, created_at, stage, processing_status, match_score, recruiter_id, last_activity_at";
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 async function allProfiles() {
   let rows = [];
@@ -119,7 +112,7 @@ export async function GET(request) {
     profiles = rows;
     suspended = new Set((suspendedRows ?? []).map((a) => a.id));
   } catch (err) {
-    console.error("[cron/analytics-digest] Query failed:", err.message);
+    reportError("[cron/analytics-digest] Query failed:", err.message);
     return NextResponse.json({ ok: false, error: "Query failed" }, { status: 500 });
   }
 
@@ -165,7 +158,7 @@ export async function GET(request) {
       }
     } catch (err) {
       agencyErrors += 1;
-      console.error("[cron/analytics-digest] Agency failed:", agencyId, err.message);
+      reportError("[cron/analytics-digest] Agency failed:", agencyId, err.message);
     }
   }
 
@@ -177,7 +170,7 @@ export async function GET(request) {
     const { error } = await resend.batch.send(batch);
     if (error) {
       failed += batch.length;
-      console.error("[cron/analytics-digest] Send failed:", error.message);
+      reportError("[cron/analytics-digest] Send failed:", error.message);
     } else {
       sent += batch.length;
     }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
+import { reportError } from "@/lib/report-error";
 
 // POST /api/billing/portal - hands the user off to Stripe's hosted Billing
 // Portal (invoices, payment method, cancel/change plan) instead of
@@ -23,7 +24,7 @@ export async function POST() {
     .maybeSingle();
 
   if (subError) {
-    console.error("[billing/portal] Subscription lookup failed:", subError.message);
+    reportError("[billing/portal] Subscription lookup failed:", subError.message);
     return NextResponse.json({ ok: false, error: "Could not load billing details. Please try again." }, { status: 500 });
   }
   if (!subscription?.stripe_customer_id) {
@@ -39,7 +40,7 @@ export async function POST() {
     });
     return NextResponse.json({ ok: true, redirectTo: session.url });
   } catch (err) {
-    console.error("[billing/portal] Stripe error:", err);
+    reportError("[billing/portal] Stripe error:", err);
     return NextResponse.json({ ok: false, error: "Could not open billing portal. Please try again." }, { status: 500 });
   }
 }

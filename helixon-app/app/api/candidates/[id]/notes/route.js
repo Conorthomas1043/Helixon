@@ -7,6 +7,7 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
 import { findMentions } from "@/lib/mentions";
 import { notify } from "@/lib/notifications";
+import { reportError } from "@/lib/report-error";
 
 // Team notes on a candidate. The text lives in candidate_notes.note - this
 // route used to write a `body` column that doesn't exist (and no
@@ -73,7 +74,7 @@ export async function POST(request, { params }) {
     .single();
 
   if (error) {
-    console.error("[notes POST] Insert failed:", error.message);
+    reportError("[notes POST] Insert failed:", error.message);
     return NextResponse.json({ error: "Failed to save note" }, { status: 500 });
   }
 

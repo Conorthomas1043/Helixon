@@ -9,6 +9,7 @@ import { getConnection, integrationReady, publicConnection, removeConnection } f
 import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { MAILBOX_PROVIDERS, syncMailbox } from "@/lib/integrations/mailbox";
 import { smsConfigured, smsWebhookUrl } from "@/lib/sms";
+import { reportError } from "@/lib/report-error";
 
 // The services a workspace can connect (lib/integrations/providers.js).
 // GET                                 each one: set up? connected (to what)?
@@ -69,7 +70,7 @@ export async function POST(request) {
       const conn = await getConnection(auth.agencyId, provider, auth.userId);
       if (!conn) continue;
       if (Date.now() - new Date(conn.last_synced_at || 0).getTime() < AUTO_EVERY_MS) continue;
-      after(() => syncMailbox(conn).catch((err) => console.error("[integrations] auto sync failed:", err?.message)));
+      after(() => syncMailbox(conn).catch((err) => reportError("[integrations] auto sync failed:", err?.message)));
     }
     return NextResponse.json({ ok: true });
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
+import { reportError } from "@/lib/report-error";
 
 // POST /api/account/delete  { confirm: "DELETE" }
 //
@@ -49,7 +50,7 @@ export async function POST(request) {
     const client = await clerkClient();
     await client.users.deleteUser(userId);
   } catch (err) {
-    console.error("[account/delete] Failed:", err?.message || err);
+    reportError("[account/delete] Failed:", err?.message || err);
     return NextResponse.json({ ok: false, error: "We couldn't delete your account. Please try again or contact support." }, { status: 500 });
   }
 

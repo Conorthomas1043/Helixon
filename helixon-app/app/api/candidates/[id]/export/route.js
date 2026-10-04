@@ -8,6 +8,7 @@ import { personCandidateIds } from "@/lib/candidate-person";
 import { getAgencyTags } from "@/lib/agency-tags";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
+import { reportError } from "@/lib/report-error";
 
 // GET - everything the agency holds about one person, as a JSON file, for
 // a subject access or data portability request (UK GDPR Arts. 15 and 20).
@@ -54,7 +55,7 @@ export async function GET(request, { params }) {
   ]);
   const failed = [candidates, scores, notes, activity, artifacts, feedbackRequests, shortlists].find((r) => r.error);
   if (failed) {
-    console.error("[candidate export] Query failed:", failed.error.message);
+    reportError("[candidate export] Query failed:", failed.error.message);
     return NextResponse.json({ error: "Couldn't gather their data. Please try again." }, { status: 500 });
   }
 

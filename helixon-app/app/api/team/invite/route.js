@@ -22,6 +22,7 @@ import {
   unassignedCandidateIds,
 } from "@/lib/team-reassign";
 import { logAudit } from "@/lib/agency-audit";
+import { reportError } from "@/lib/report-error";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -67,7 +68,7 @@ export async function GET() {
     try {
       return (await unassignedCandidateIds(supabase, auth.agencyId)).length;
     } catch (err) {
-      console.error("[team/invite] Failed to count unassigned candidates:", err.message);
+      reportError("[team/invite] Failed to count unassigned candidates:", err.message);
       return 0;
     }
   };
@@ -112,7 +113,7 @@ export async function GET() {
       outsideMembers,
     });
   } catch (err) {
-    console.error("[team/invite] Failed to read seat usage:", err.message);
+    reportError("[team/invite] Failed to read seat usage:", err.message);
     return NextResponse.json({ error: "Couldn't load team seat usage." }, { status: 500 });
   }
 }
@@ -124,7 +125,7 @@ async function requireOrgOwner(orgId, userId) {
   try {
     role = await getOrgMemberRole({ orgId, userId });
   } catch (err) {
-    console.error("[team/invite] Failed to look up caller role:", err.message);
+    reportError("[team/invite] Failed to look up caller role:", err.message);
     return NextResponse.json({ error: "Couldn't verify your team role. Please try again." }, { status: 500 });
   }
   if (role !== "org:admin") {
@@ -175,7 +176,7 @@ export async function POST(request) {
       ownerClerkUserId: auth.userId,
     });
   } catch (err) {
-    console.error("[team/invite] Failed to ensure org:", err.message);
+    reportError("[team/invite] Failed to ensure org:", err.message);
     return NextResponse.json({ error: "Couldn't set up your team workspace. Please try again." }, { status: 500 });
   }
 
@@ -189,7 +190,7 @@ export async function POST(request) {
   try {
     usage = await getOrgSeatUsage(orgId);
   } catch (err) {
-    console.error("[team/invite] Failed to read seat usage:", err.message);
+    reportError("[team/invite] Failed to read seat usage:", err.message);
     return NextResponse.json({ error: "Couldn't check seat availability. Please try again." }, { status: 500 });
   }
 
@@ -208,7 +209,7 @@ export async function POST(request) {
     // whether an arbitrary email address has an account, so the response is
     // the same whatever went wrong.
     const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
-    console.error("[team/invite] Clerk invitation failed:", detail);
+    reportError("[team/invite] Clerk invitation failed:", detail);
     return NextResponse.json(
       { error: "We couldn't send that invite. Check the address, and that they aren't already on your team or invited, then try again." },
       { status: 400 }
@@ -258,7 +259,7 @@ export async function DELETE(request) {
       await revokeAgencyOrgInvitation({ orgId: agency.clerk_org_id, invitationId, requestingUserId: auth.userId });
     } catch (err) {
       const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
-      console.error("[team/invite] Clerk revoke failed:", detail);
+      reportError("[team/invite] Clerk revoke failed:", detail);
       return NextResponse.json({ error: "Couldn't cancel that invite. Please refresh and try again." }, { status: 400 });
     }
 
@@ -280,7 +281,7 @@ export async function DELETE(request) {
   try {
     role = await getOrgMemberRole({ orgId: agency.clerk_org_id, userId: memberUserId });
   } catch (err) {
-    console.error("[team/invite] Failed to look up member role:", err.message);
+    reportError("[team/invite] Failed to look up member role:", err.message);
     return NextResponse.json({ error: "Couldn't verify that team member. Please refresh and try again." }, { status: 400 });
   }
 
@@ -311,7 +312,7 @@ export async function DELETE(request) {
     await removeAgencyOrgMember({ orgId: agency.clerk_org_id, userId: memberUserId });
   } catch (err) {
     const detail = err?.errors?.[0]?.longMessage || err.message || "unknown error";
-    console.error("[team/invite] Clerk member removal failed:", detail);
+    reportError("[team/invite] Clerk member removal failed:", detail);
     return NextResponse.json({ error: "Couldn't remove that team member. Please refresh and try again." }, { status: 400 });
   }
 
@@ -328,7 +329,7 @@ export async function DELETE(request) {
     .eq("clerk_user_id", memberUserId)
     .eq("agency_id", auth.agencyId);
   if (detachError) {
-    console.error("[team/invite] Removed from Clerk org but failed to detach profile:", detachError.message);
+    reportError("[team/invite] Removed from Clerk org but failed to detach profile:", detachError.message);
   }
 
   let reassigned = 0;
@@ -345,7 +346,7 @@ export async function DELETE(request) {
     } catch (err) {
       // They're off the team either way; their candidates now show in the
       // Team page's "unassigned" pile, where they can be picked up in one go.
-      console.error("[team/invite] Member removed but reassigning their candidates failed:", err.message);
+      reportError("[team/invite] Member removed but reassigning their candidates failed:", err.message);
       return NextResponse.json({
         ok: true,
         reassignFailed: true,
@@ -397,7 +398,7 @@ export async function PATCH(request) {
     });
     return NextResponse.json({ ok: true, reassigned });
   } catch (err) {
-    console.error("[team/invite] Bulk reassignment failed:", err.message);
+    reportError("[team/invite] Bulk reassignment failed:", err.message);
     return NextResponse.json({ error: "Couldn't reassign those candidates. Please try again." }, { status: 500 });
   }
 }

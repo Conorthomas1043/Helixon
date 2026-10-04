@@ -6,6 +6,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { rescreenCandidate } from "@/lib/rescreen";
 import { candidateHidden } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // POST { jobId } - screen a candidate already on file against another job
 // using the CV we already hold (lib/rescreen.js). A full analysis, so it
@@ -46,7 +47,7 @@ export async function POST(request, { params }) {
     }
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
-    console.error("[rescreen] Failed:", err?.message);
+    reportError("[rescreen] Failed:", err?.message);
     return NextResponse.json({ ok: false, error: "Something went wrong screening this candidate." }, { status: 500 });
   }
 }

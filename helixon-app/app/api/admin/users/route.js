@@ -6,6 +6,7 @@ import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/create-profile";
+import { reportError } from "@/lib/report-error";
 
 // Customers now sign in through Clerk, so real accounts live in Clerk (mirrored
 // in `profiles` by clerk_user_id). This route used to manage ONLY Supabase Auth
@@ -263,7 +264,7 @@ export async function GET(request) {
       clerkTotal = result.totalCount;
       truncated = Boolean(result.truncated);
     } catch (err) {
-      console.error("[admin/users] Could not load Clerk users:", err?.message || err);
+      reportError("[admin/users] Could not load Clerk users:", err?.message || err);
       clerkError = "Could not load Clerk accounts. Showing legacy accounts only.";
     }
 
@@ -353,7 +354,7 @@ export async function POST(request) {
     });
 
     if (error || !data?.user) {
-      console.error("[admin/users] createUser failed:", error?.message);
+      reportError("[admin/users] createUser failed:", error?.message);
       return json({ error: "Could not create the user. Check the email isn't already registered." }, 400);
     }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { mergeContext, renderTemplate } from "@/lib/email-merge";
@@ -7,6 +7,7 @@ import { stepDueAt, stopReason } from "@/lib/sequences";
 import { agencyFromName, mailConfigured } from "@/lib/mailer";
 import { sendTrackedEmail } from "@/lib/tracked-email";
 import { logActivity } from "@/lib/candidate-activity";
+import { reportError } from "@/lib/report-error";
 
 // Sends the sequence emails that are due (lib/sequences.js). For each due
 // enrolment: stop it if the candidate has no email or has been rejected or
@@ -18,14 +19,6 @@ import { logActivity } from "@/lib/candidate-activity";
 // CRON_SECRET, fail-closed - same as the other crons.
 
 const BATCH = 300;
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 export async function GET(request) {
   const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
@@ -44,7 +37,7 @@ export async function GET(request) {
     .order("next_send_at")
     .limit(BATCH);
   if (error) {
-    console.error("[cron/sequences] Query failed:", error.message);
+    reportError("[cron/sequences] Query failed:", error.message);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 

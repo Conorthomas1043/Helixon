@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
 import { computePresence } from "@/lib/presence";
 import { getAgencyPrivacy } from "@/lib/privacy-settings";
+import { reportError } from "@/lib/report-error";
 
 // "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
 // join through a Clerk Organization invite (app/api/team/invite), and the
@@ -58,7 +59,7 @@ export async function GET() {
   try {
     roles = await rolesFor(agencyId, members ?? []);
   } catch (err) {
-    console.error("[team] Failed to load member roles:", err.message);
+    reportError("[team] Failed to load member roles:", err.message);
   }
 
   // Presence is left out entirely when the agency has switched it off

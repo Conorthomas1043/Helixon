@@ -5,6 +5,7 @@
 // of screening a CV against a new job description on /analyse.
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { trapTab } from "@/lib/focus-trap";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -208,11 +209,15 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const firstRef = useRef(null);
+  const dialogRef = useRef(null);
   const set = (key) => (e) => setF((v) => ({ ...v, [key]: e.target.value }));
 
   useEffect(() => {
     firstRef.current?.focus();
-    const onKey = (e) => { if (e.key === "Escape" && !saving) onCancel(); };
+    const onKey = (e) => {
+      if (e.key === "Escape" && !saving) onCancel();
+      if (e.key === "Tab") trapTab(e, dialogRef.current);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [saving, onCancel]);
@@ -254,6 +259,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
       <form
+        ref={dialogRef}
         onSubmit={submit}
         role="dialog"
         aria-modal="true"

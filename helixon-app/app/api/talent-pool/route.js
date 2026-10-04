@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { candidateHaystack, quickFit } from "@/lib/talent-pool-match";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // GET ?jobId= - the agency's talent pool: everyone saved for future roles
 // (app/api/candidates/[id]/talent-pool), with their availability, check-in
@@ -84,7 +85,7 @@ export async function GET(request) {
       .order("talent_pool_at", { ascending: false })
       .range(from, from + PAGE - 1), access, auth);
     if (error) {
-      console.error("[talent-pool] Load failed:", error.message);
+      reportError("[talent-pool] Load failed:", error.message);
       return NextResponse.json({ error: "Couldn't load the talent pool." }, { status: 500 });
     }
     rows.push(...(data || []));
@@ -101,7 +102,7 @@ export async function GET(request) {
       .eq("agency_id", agencyId)
       .in("pooled_from_id", ids);
     if (error) {
-      console.error("[talent-pool] Linked rows failed:", error.message);
+      reportError("[talent-pool] Linked rows failed:", error.message);
       return NextResponse.json({ error: "Couldn't load the talent pool." }, { status: 500 });
     }
     linked.push(...(data || []));

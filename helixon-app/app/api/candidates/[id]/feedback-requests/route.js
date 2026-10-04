@@ -23,6 +23,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency-display";
 import { feedbackRequestEmail } from "@/lib/feedback-request-email";
 import { candidateHidden } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 const MAX_EMAILS_PER_HOUR = 40;
 
@@ -65,7 +66,7 @@ export async function GET(request, { params }) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[feedback-requests] Query failed:", error.message);
+    reportError("[feedback-requests] Query failed:", error.message);
     return NextResponse.json({ error: "Failed to load feedback requests." }, { status: 500 });
   }
 
@@ -103,7 +104,7 @@ async function emailRequest({ auth, candidate, row, to }) {
     text: email.text,
   });
   if (error) {
-    console.error("[feedback-requests] Send failed:", error.message);
+    reportError("[feedback-requests] Send failed:", error.message);
     return "The email couldn't be sent - copy the link instead.";
   }
   await logActivity(supabase, candidate.id, "feedback_request_sent", recruiterDisplayName(auth.profile) || auth.userId, {
@@ -180,7 +181,7 @@ export async function POST(request, { params }) {
     .single();
 
   if (error) {
-    console.error("[feedback-requests] Insert failed:", error.message);
+    reportError("[feedback-requests] Insert failed:", error.message);
     return NextResponse.json({ error: "Failed to create feedback request." }, { status: 500 });
   }
 

@@ -5,6 +5,7 @@ import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 import { after } from "next/server";
 import { recordSignal } from "@/lib/research-signals";
 import { questionTopic } from "@/lib/assistant-topics";
+import { reportError } from "@/lib/report-error";
 
 // Keep this on the server only - never expose GEMINI_API_KEY to the client.
 let genAI = null;
@@ -106,7 +107,7 @@ export async function POST(req) {
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      console.error("Assistant route error: GEMINI_API_KEY is not configured.");
+      reportError("Assistant route error: GEMINI_API_KEY is not configured.");
 
       return Response.json(
         {
@@ -216,7 +217,7 @@ export async function POST(req) {
       reply: text.length > MAX_REPLY_CHARS ? `${text.slice(0, MAX_REPLY_CHARS).trimEnd()}…` : text,
     });
   } catch (err) {
-    console.error("Assistant route error:", err);
+    reportError("Assistant route error:", err);
 
     const status = err?.status === 429 ? 429 : 500;
     const message =

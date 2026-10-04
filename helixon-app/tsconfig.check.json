@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "incremental": false
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "lib/**/*.js"],
+  "exclude": ["node_modules", ".next", "**/*.test.js"]
+}

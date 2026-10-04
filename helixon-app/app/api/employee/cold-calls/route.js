@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
 import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee-cold-calls";
 import { finishRow } from "@/lib/employee-call-list";
+import { reportError } from "@/lib/report-error";
 
 const VALID_OUTCOMES = new Set(OUTCOMES);
 
@@ -52,7 +53,7 @@ export async function POST(request) {
       try {
         await finishRow(employeeId, body.call_list_id, { status: "done", coldCallId: call.id });
       } catch (err) {
-        console.error("[cold-calls] Could not mark call-list row done:", err?.message || err);
+        reportError("[cold-calls] Could not mark call-list row done:", err?.message || err);
       }
     }
     return NextResponse.json({ ok: true, call });

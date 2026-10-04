@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
+import { reportError } from "@/lib/report-error";
 
 // Thumbs up/down on an analysis (see the feedback buttons in app/analyse).
 //
@@ -70,7 +71,7 @@ export async function POST(request) {
   });
 
   if (error) {
-    console.error("[feedback] Insert failed:", error.message);
+    reportError("[feedback] Insert failed:", error.message);
     return NextResponse.json({ ok: false, error: "Could not save feedback." }, { status: 500 });
   }
 

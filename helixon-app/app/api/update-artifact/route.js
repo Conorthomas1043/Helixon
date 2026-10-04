@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
+import { reportError } from "@/lib/report-error";
 
 // Records the text a recruiter finally sent after editing an AI-drafted email,
 // and whether they kept the draft largely as written (see draft-email).
@@ -34,7 +35,7 @@ export async function POST(request) {
     .maybeSingle();
 
   if (fetchError) {
-    console.error("[update-artifact] Lookup failed:", fetchError.message);
+    reportError("[update-artifact] Lookup failed:", fetchError.message);
     return NextResponse.json({ ok: false, error: "Could not update the draft." }, { status: 500 });
   }
   if (!artifact) {
@@ -66,7 +67,7 @@ export async function POST(request) {
     .eq("agency_id", agencyId);
 
   if (updateError) {
-    console.error("[update-artifact] Update failed:", updateError.message);
+    reportError("[update-artifact] Update failed:", updateError.message);
     return NextResponse.json({ ok: false, error: "Could not update the draft." }, { status: 500 });
   }
 

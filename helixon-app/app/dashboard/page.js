@@ -27,12 +27,12 @@ const TEXT      = "var(--ink)";
 const TEXT_SUB  = "var(--ink-soft)";
 const TEXT_FAINT= "var(--ink-faint)";
 
-const VIOLET    = "var(--forest)";
-const VIOLET_FG = "var(--forest)";
-const VIOLET_BG = "var(--mint)";
+const ACCENT    = "var(--forest)";
+const ACCENT_FG = "var(--forest)";
+const ACCENT_BG = "var(--mint)";
 
-const CYAN      = "var(--gold)";
-const CYAN_BG   = "rgba(192,138,45,0.12)";
+const GOLD      = "var(--gold)";
+const GOLD_BG   = "rgba(192,138,45,0.12)";
 
 const GREEN     = "var(--score-strong)";
 const GREEN_FG  = "var(--score-strong)";
@@ -166,8 +166,8 @@ function StageBadge({ stage }) {
       fontWeight: 600,
       padding: "2px 8px",
       borderRadius: 9999,
-      background: isPlaced ? GREEN_BG : VIOLET_BG,
-      color: isPlaced ? GREEN_FG : VIOLET_FG,
+      background: isPlaced ? GREEN_BG : ACCENT_BG,
+      color: isPlaced ? GREEN_FG : ACCENT_FG,
       border: `1px solid rgba(var(--forest-rgb),0.2)`,
     }}>
       {STAGE_LABELS[stage]}
@@ -196,8 +196,8 @@ function SectionHeading({ eyebrow, title, action }) {
 function EmptyState({ title, body, actionLabel, actionHref }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "40px 24px" }}>
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={VIOLET_FG} strokeWidth="1.5">
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ACCENT_FG} strokeWidth="1.5">
           <path d="M9 12h6m-3-3v6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
         </svg>
       </div>
@@ -211,7 +211,7 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
           fontWeight: 600,
           padding: "8px 16px",
           borderRadius: 9999,
-          background: VIOLET,
+          background: ACCENT,
           color: "#fff",
           textDecoration: "none",
         }}>
@@ -254,14 +254,14 @@ function GettingStarted({ hasJob, showTeam }) {
       </div>
       <div role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={doneCount}
         style={{ height: 4, borderRadius: 9999, background: BORDER2, overflow: "hidden", marginBottom: 8 }}>
-        <div style={{ width: `${(doneCount / steps.length) * 100}%`, height: "100%", background: VIOLET, borderRadius: 9999 }} />
+        <div style={{ width: `${(doneCount / steps.length) * 100}%`, height: "100%", background: ACCENT, borderRadius: 9999 }} />
       </div>
       <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {steps.map((st) => (
           <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderTop: `1px solid ${BORDER2}` }}>
             <span aria-hidden="true" style={{
               width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center",
-              background: st.done ? VIOLET : "transparent", border: `1.5px solid ${st.done ? VIOLET : st.primary ? VIOLET : BORDER}`,
+              background: st.done ? ACCENT : "transparent", border: `1.5px solid ${st.done ? ACCENT : st.primary ? ACCENT : BORDER}`,
             }}>
               {st.done && (
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
@@ -276,7 +276,7 @@ function GettingStarted({ hasJob, showTeam }) {
             {!st.done && st.href && (
               <Link href={st.href} onClick={() => track("onboarding_step_clicked", { step: st.key })} style={{
                 flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
-                background: st.primary ? VIOLET : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+                background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
               }}>
                 {st.cta}
               </Link>
@@ -322,14 +322,14 @@ function TeamWelcome({ agencyName, onDismiss }) {
       <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {steps.map((st, i) => (
           <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: `1px solid ${BORDER2}` }}>
-            <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: VIOLET_BG, color: VIOLET_FG }}>{i + 1}</span>
+            <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: ACCENT_BG, color: ACCENT_FG }}>{i + 1}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0 }}>{st.title}</p>
               <p style={{ fontSize: 13, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>
             </div>
             <Link href={st.href} onClick={() => track("team_welcome_step_clicked", { step: st.key })} style={{
               flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
-              background: st.primary ? VIOLET : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+              background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
             }}>
               {st.cta}
             </Link>
@@ -382,8 +382,8 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
               letterSpacing: "0.08em",
               padding: "3px 10px",
               borderRadius: 9999,
-              background: VIOLET_BG,
-              color: VIOLET_FG,
+              background: ACCENT_BG,
+              color: ACCENT_FG,
               border: `1px solid rgba(var(--forest-rgb),0.2)`,
             }}>
               {plan.name} plan
@@ -392,7 +392,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
         </div>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 28px)", fontWeight: 600, color: TEXT, marginBottom: 6, marginTop: 0 }}>
           {getGreeting()}
-          {greetingName ? <>, <span style={{ color: VIOLET_FG }}>{greetingName}</span></> : null}
+          {greetingName ? <>, <span style={{ color: ACCENT_FG }}>{greetingName}</span></> : null}
         </h1>
         {agencyName && (
           <p style={{ fontSize: 13, color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>{agencyName}</p>
@@ -440,7 +440,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
         <Link href="/analyse" style={{
           display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999,
-          background: VIOLET, color: "#fff", textDecoration: "none",
+          background: ACCENT, color: "#fff", textDecoration: "none",
         }}>
           + Screen a CV
         </Link>
@@ -478,7 +478,7 @@ function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
             style={{
               height: 3,
               width: meterGrown ? `${Math.min(100, Math.max(0, meter))}%` : "0%",
-              background: VIOLET,
+              background: ACCENT,
               borderRadius: 9999,
               transition: "width 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
@@ -495,8 +495,8 @@ function DashboardKpis({ totals }) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-live="polite">
       <KpiCard index={0} label="Total analyses" value={totals.total} sub={`${formatNumber(totals.last7)} in the last 7 days`} />
       <KpiCard index={1} label="Strong matches" value={totals.strongMatches} sub={totals.completed > 0 ? `${totals.strongMatchPct}% of completed` : "No completed yet"} accent={GREEN_FG} />
-      <KpiCard index={2} label="In pipeline" value={totals.inPipeline} sub="Active, not yet placed" accent={CYAN} />
-      <KpiCard index={3} label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "-"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={VIOLET_FG} />
+      <KpiCard index={2} label="In pipeline" value={totals.inPipeline} sub="Active, not yet placed" accent={GOLD} />
+      <KpiCard index={3} label="Avg. score" value={totals.completed > 0 ? totals.avgScore : "-"} sub={totals.completed > 0 ? "Across completed" : "No completed yet"} meter={totals.completed > 0 ? totals.avgScore : undefined} accent={ACCENT_FG} />
     </div>
   );
 }
@@ -526,7 +526,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
         eyebrow="Candidate pipeline"
         title="Where candidates stand"
         action={
-          <Link href="/dashboard/pipeline" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>
+          <Link href="/dashboard/pipeline" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
             Open pipeline →
           </Link>
         }
@@ -628,7 +628,7 @@ function UsageSummary({ plan, analyses }) {
           <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "2px 0 0" }}>in the last 30 days</p>
         </div>
       </div>
-      <Link href="/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: VIOLET_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <Link href="/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: ACCENT_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
         {plan?.name ? "Manage plan →" : "Choose a plan →"}
       </Link>
     </div>
@@ -687,7 +687,7 @@ function AttentionPanel({ items: firstItems, allItems, total }) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
+          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
         >
           {expanded ? "Show fewer" : `Show ${hiddenCount} more ${hiddenCount === 1 ? "item" : "items"} needing attention`}
         </button>
@@ -748,7 +748,7 @@ function FollowUpsPanel() {
   const shown = expanded ? state.items : state.items.slice(0, 7);
   const tabStyle = (on) => ({
     fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, cursor: "pointer",
-    border: `1px solid ${on ? VIOLET : BORDER}`, background: on ? VIOLET : SURFACE, color: on ? "#fff" : TEXT_SUB,
+    border: `1px solid ${on ? ACCENT : BORDER}`, background: on ? ACCENT : SURFACE, color: on ? "#fff" : TEXT_SUB,
   });
 
   return (
@@ -802,7 +802,7 @@ function FollowUpsPanel() {
                     disabled={completing === item.id}
                     title="Mark done"
                     aria-label={`Mark "${item.label}" for ${item.candidateName} done`}
-                    style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, border: `1px solid ${BORDER}`, background: SURFACE, color: VIOLET_FG, cursor: "pointer", opacity: completing === item.id ? 0.5 : 1 }}
+                    style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, border: `1px solid ${BORDER}`, background: SURFACE, color: ACCENT_FG, cursor: "pointer", opacity: completing === item.id ? 0.5 : 1 }}
                   >
                     Done
                   </button>
@@ -817,7 +817,7 @@ function FollowUpsPanel() {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
+          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
         >
           {expanded ? "Show fewer" : `Show all ${state.items.length}${state.truncated ? "+" : ""}`}
         </button>
@@ -850,7 +850,7 @@ function TopCandidates({ candidates, total }) {
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: VIOLET_BG, color: VIOLET_FG, fontSize: 12, fontWeight: 700,
+                  background: ACCENT_BG, color: ACCENT_FG, fontSize: 12, fontWeight: 700,
                 }}>
                   {c.candidateName[0]}
                 </div>
@@ -868,7 +868,7 @@ function TopCandidates({ candidates, total }) {
         </ul>
       )}
       {hiddenCount > 0 && (
-        <Link href="/dashboard/candidates?scoreBand=80%2B" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
+        <Link href="/dashboard/candidates?scoreBand=80%2B" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
           {hiddenCount} more strong {hiddenCount === 1 ? "candidate" : "candidates"} →
         </Link>
       )}
@@ -935,7 +935,7 @@ function ActivityOverview({ analyses }) {
             {[7, 30].map((d) => (
               <button key={d} type="button" onClick={() => setWindowDays(d)} aria-pressed={windowDays === d} style={{
                 fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 9999,
-                background: windowDays === d ? VIOLET : "transparent",
+                background: windowDays === d ? ACCENT : "transparent",
                 color: windowDays === d ? "#fff" : TEXT_FAINT,
                 border: "none", cursor: "pointer",
               }}>{d}D</button>
@@ -959,7 +959,7 @@ function ActivityOverview({ analyses }) {
             <div style={{
               width: "100%", borderRadius: "3px 3px 0 0",
               height: barsGrown ? `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%` : 0,
-              background: VIOLET, opacity: d.count === 0 ? 0.15 : 0.85,
+              background: ACCENT, opacity: d.count === 0 ? 0.15 : 0.85,
               transition: `height 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 20}ms`,
             }} />
             <span style={{ fontSize: 11, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
@@ -988,7 +988,7 @@ function ActiveJobs({ jobs, total, statsByJob }) {
       <SectionHeading
         eyebrow="Roles"
         title="Open jobs"
-        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>{total > jobs.length ? `All ${total} →` : "All jobs →"}</Link>}
+        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > jobs.length ? `All ${total} →` : "All jobs →"}</Link>}
       />
       {jobs.length === 0 ? (
         <EmptyState title="No open jobs" body="Add a job to start building its pipeline." actionLabel="New job" actionHref="/dashboard/jobs?new=1" />
@@ -1047,7 +1047,7 @@ function RecruiterPerformance({ recruiters }) {
       <SectionHeading
         eyebrow="Team"
         title="Recruiter performance"
-        action={<Link href="/dashboard/analytics" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>Full analytics →</Link>}
+        action={<Link href="/dashboard/analytics" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Full analytics →</Link>}
       />
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {recruiters.map((r, i) => (
@@ -1063,7 +1063,7 @@ function RecruiterPerformance({ recruiters }) {
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
             >
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: VIOLET_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: VIOLET_FG, flexShrink: 0 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: ACCENT_FG, flexShrink: 0 }}>
                 {r.name[0]}
               </div>
               <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.name}>{r.name}</p>
@@ -1091,7 +1091,7 @@ function RecentAnalyses({ analyses }) {
         eyebrow="Activity feed"
         title="Recent analyses"
         action={
-          <Link href="/dashboard/candidates?sortBy=newest" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>
+          <Link href="/dashboard/candidates?sortBy=newest" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
             View all →
           </Link>
         }
@@ -1203,7 +1203,7 @@ function DashboardError({ onRetry }) {
     <div style={{ ...CARD, padding: 40, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       <p style={{ fontSize: 15, fontWeight: 600, color: TEXT, marginBottom: 6 }}>Unable to load dashboard</p>
       <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
-      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: VIOLET, color: "#fff", border: "none", cursor: "pointer" }}>
+      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: ACCENT, color: "#fff", border: "none", cursor: "pointer" }}>
         Try again
       </button>
     </div>
@@ -1288,7 +1288,7 @@ function RisksPanel({ alerts }) {
             })}
           </ul>
           {alerts.length > 6 && (
-            <button type="button" onClick={() => setExpanded((v) => !v)} style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: VIOLET_FG, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <button type="button" onClick={() => setExpanded((v) => !v)} style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
               {expanded ? "Show fewer" : `Show all ${alerts.length}`}
             </button>
           )}
@@ -1314,7 +1314,7 @@ function AgendaPanel({ interviews, total, clientFollowUps }) {
       <SectionHeading
         eyebrow="Next 7 days"
         title="Agenda"
-        action={<Link href="/dashboard/interviews" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>{total > interviews.length ? `All ${total} →` : "Interviews →"}</Link>}
+        action={<Link href="/dashboard/interviews" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > interviews.length ? `All ${total} →` : "Interviews →"}</Link>}
       />
       {interviews.length === 0 && clientFollowUps.length === 0 ? (
         <EmptyState title="Nothing booked" body="No interviews in the next week and no client follow-ups due." />
@@ -1442,14 +1442,14 @@ function TargetsCard({ scope }) {
       <SectionHeading
         eyebrow="This month"
         title={scope === "mine" ? "Your targets" : "Team targets"}
-        action={<Link href="/dashboard/performance" style={{ fontSize: 12, fontWeight: 600, color: VIOLET_FG, textDecoration: "none" }}>Leaderboard →</Link>}
+        action={<Link href="/dashboard/performance" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Leaderboard →</Link>}
       />
       {state.status === "loading" ? (
         <div style={{ height: 96, borderRadius: 10, background: SURFACE2 }} />
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0 }}>
           No targets set{scope === "mine" ? " for you" : ""} yet.{" "}
-          <Link href="/dashboard/settings/targets" style={{ color: VIOLET_FG, fontWeight: 600 }}>Set targets</Link>
+          <Link href="/dashboard/settings/targets" style={{ color: ACCENT_FG, fontWeight: 600 }}>Set targets</Link>
         </p>
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1462,7 +1462,7 @@ function TargetsCard({ scope }) {
                 </span>
               </div>
               <div style={{ height: 6, borderRadius: 9999, background: BORDER2, marginTop: 6, overflow: "hidden" }} role="progressbar" aria-valuenow={r.pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${r.label}: ${r.pct}% of target`}>
-                <div style={{ height: 6, width: `${r.pct}%`, borderRadius: 9999, background: r.pct >= 100 ? GREEN : r.pct >= 60 ? CYAN : RED }} />
+                <div style={{ height: 6, width: `${r.pct}%`, borderRadius: 9999, background: r.pct >= 100 ? GREEN : r.pct >= 60 ? GOLD : RED }} />
               </div>
             </li>
           ))}

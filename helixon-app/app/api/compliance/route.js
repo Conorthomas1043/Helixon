@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { EXPIRING_DAYS, checkState, privacyNoticeStatus, toCheck } from "@/lib/compliance";
 import { sendPrivacyNotices } from "@/lib/compliance-email";
+import { reportError } from "@/lib/report-error";
 
 // The agency's compliance to-do list (/dashboard/compliance).
 //
@@ -50,7 +51,7 @@ export async function GET() {
   ]);
   const failed = [checksRes, placedRes, rtwRes, noticeRes, refsRes].find((r) => r.error);
   if (failed) {
-    console.error("[compliance] Query failed:", failed.error.message);
+    reportError("[compliance] Query failed:", failed.error.message);
     return NextResponse.json({ error: "Failed to load compliance." }, { status: 500 });
   }
 

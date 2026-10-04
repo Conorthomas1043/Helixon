@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
+import { reportError } from "@/lib/report-error";
 
 export async function GET() {
   try {
@@ -10,7 +11,7 @@ export async function GET() {
     if (error?.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    console.error("Admin services data error", error);
+    reportError("Admin services data error", error);
     return NextResponse.json({ error: "Unable to load live service data" }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { getAgencyPlan } from "@/lib/plan";
+import { reportError } from "@/lib/report-error";
 
 // GET /api/billing - the data behind app/billing. Reuses the same
 // getCustomerContext() helper api/run and api/dashboard-stats already use,
@@ -27,7 +28,7 @@ export async function GET() {
   ]);
 
   if (agencyError || subError) {
-    console.error("[billing] Lookup failed:", (agencyError || subError).message);
+    reportError("[billing] Lookup failed:", (agencyError || subError).message);
     return NextResponse.json({ ok: false, error: "Could not load billing details. Please try again." }, { status: 500 });
   }
 

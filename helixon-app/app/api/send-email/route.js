@@ -7,6 +7,7 @@ import { cleanLine } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { reportError } from "@/lib/report-error";
 
 // Sends real email through Resend, so cap how many one account can fire off
 // even though each draft can only be sent once.
@@ -229,7 +230,7 @@ export async function POST(request) {
       });
 
     if (sendError) {
-      console.error(
+      reportError(
         "[send-email] Resend error:",
         sendError.message
       );
@@ -275,7 +276,7 @@ export async function POST(request) {
         recruiterDisplayName(auth.profile) || userId,
         { note: `Sent from Helixon to ${to}: "${finalSubject}"`, sent_via: "helixon" }
       ).catch((err) => {
-        console.error("[send-email] Sent, but couldn't record it on the timeline:", err?.message);
+        reportError("[send-email] Sent, but couldn't record it on the timeline:", err?.message);
       });
     }
 
@@ -285,7 +286,7 @@ export async function POST(request) {
       id: sent?.id || null,
     });
   } catch (error) {
-    console.error(
+    reportError(
       "[send-email] Error:",
       error
     );

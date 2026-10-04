@@ -7,6 +7,7 @@ import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
 import { salesNotificationEmail } from "@/lib/demo-notification";
+import { reportError } from "@/lib/report-error";
 
 // Demo-request pipeline: everyone who filled in the "Get a demo" form, with
 // where they came from, plus the sales workflow on top (PATCH): a status
@@ -132,7 +133,7 @@ export async function PATCH(request) {
       try {
         await new Resend(process.env.RESEND_API_KEY).emails.send(salesNotificationEmail(lead, { resent: true }));
       } catch (err) {
-        console.error("[admin/leads] Resend failed:", err?.message || err);
+        reportError("[admin/leads] Resend failed:", err?.message || err);
         return json({ error: "The email didn't send. Check the Resend dashboard and try again." }, 502);
       }
       await supabase.from("demo_requests").update({ email_sent: true }).eq("id", leadId);
@@ -156,7 +157,7 @@ export async function PATCH(request) {
       } catch (err) {
         const detail = err?.errors?.[0];
         const reason = detail?.longMessage || detail?.message || err?.message || "";
-        console.error("[admin/leads] Invitation failed:", reason);
+        reportError("[admin/leads] Invitation failed:", reason);
         if (/already|exists|duplicate/i.test(`${detail?.code || ""} ${reason}`)) {
           return json({ error: "That email already has a Helixon account or a pending invitation." }, 409);
         }

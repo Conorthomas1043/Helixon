@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { employeeAccess } from "@/lib/session";
 import { exchangeCodeForTokens, saveConnection } from "@/lib/google-calendar";
+import { reportError } from "@/lib/report-error";
 
 const STATE_COOKIE = "google_oauth_state";
 
@@ -48,7 +49,7 @@ export async function GET(request) {
     await saveConnection(employeeId, tokens);
     return NextResponse.redirect(new URL("/employee/calendar?googleConnected=1", request.url));
   } catch (err) {
-    console.error("[google-calendar] callback failed:", err.message);
+    reportError("[google-calendar] callback failed:", err.message);
     return NextResponse.redirect(new URL("/employee/calendar?googleError=exchange_failed", request.url));
   }
 }

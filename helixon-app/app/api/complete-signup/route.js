@@ -8,6 +8,7 @@ import {
   generateUsername,
   linkSubscriptionFromStripeSession,
 } from "@/lib/create-profile";
+import { reportError } from "@/lib/report-error";
 
 // Used by app/signup when someone lands there already signed in to Clerk
 // (the post-checkout redirect from app/checkout/success for a user whose
@@ -39,7 +40,7 @@ export async function POST(request) {
       .maybeSingle();
 
     if (lookupError) {
-      console.error("[complete-signup] Profile lookup failed:", lookupError.message);
+      reportError("[complete-signup] Profile lookup failed:", lookupError.message);
       return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
     }
 
@@ -96,13 +97,13 @@ export async function POST(request) {
       } catch (err) {
         // Their account exists either way - don't fail the whole request
         // over subscription linking; the Stripe webhook will retry entitlement.
-        console.error("[complete-signup] Failed to link subscription:", err.message);
+        reportError("[complete-signup] Failed to link subscription:", err.message);
       }
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[complete-signup] Failed:", err.message);
+    reportError("[complete-signup] Failed:", err.message);
     return NextResponse.json({ ok: false, error: "Could not finish setting up your account. Please try again." }, { status: 500 });
   }
 }

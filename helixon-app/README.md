@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Helixon app
 
-## Getting Started
+AI CV screening and a recruitment CRM for agencies. Next.js (App Router) on Vercel, Clerk for customer sign-in, Supabase Postgres for data, Stripe for billing.
 
-First, run the development server:
+- **How it fits together:** [`docs/architecture.md`](../docs/architecture.md)
+- **Deploying, migrations, incidents:** [`docs/runbook.md`](../docs/runbook.md)
+- **Product vocabulary:** [`docs/glossary.md`](../docs/glossary.md)
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # fill in at least the Supabase and Clerk keys
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Read `AGENTS.md` before changing framework code: this Next.js version differs from older docs, and its own guides are in `node_modules/next/dist/docs/`.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+CI (`.github/workflows/ci.yml`) runs these on every push and pull request. Run them before pushing:
 
-## Learn More
+| Command | What it checks |
+|---|---|
+| `npm run lint` | ESLint (Next.js core-web-vitals rules) |
+| `npm run typecheck` | Types in `lib/` and the `.ts` files. Existing errors are listed in `scripts/typecheck-baseline.json`; a file may lose errors but never gain them |
+| `npm test` | Vitest unit tests, including the tenant-isolation guard (`lib/security/tenant-isolation.test.js`) |
+| `npm run build` | Production build |
 
-To learn more about Next.js, take a look at the following resources:
+## Scoring evaluation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npm run eval:cv`, `eval:labelled`, `calibrate` and `eval:fairness` exercise the CV scoring pipeline against sample and labelled data. They call the AI APIs, so they need keys and cost money. Run them when changing `lib/cv-analysis`.

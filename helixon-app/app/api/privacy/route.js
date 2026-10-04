@@ -7,6 +7,7 @@ import { getOrgMemberRole } from "@/lib/clerk-org";
 import { RETENTION_CHOICES, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { upcomingRetention } from "@/lib/data-retention";
 import { logAudit } from "@/lib/agency-audit";
+import { reportError } from "@/lib/report-error";
 
 // The workspace's Data & privacy settings (/dashboard/privacy).
 //
@@ -45,7 +46,7 @@ export async function GET() {
       upcoming,
     });
   } catch (err) {
-    console.error("[privacy] Load failed:", err.message);
+    reportError("[privacy] Load failed:", err.message);
     return NextResponse.json({ error: "Couldn't load your privacy settings." }, { status: 500 });
   }
 }

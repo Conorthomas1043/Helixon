@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { personCandidateIds } from "@/lib/candidate-person";
 import { candidateHidden, getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
+import { reportError } from "@/lib/report-error";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -254,7 +255,7 @@ export async function PATCH(request, { params }) {
     .maybeSingle();
 
   if (error) {
-    console.error("[candidates PATCH] Update failed:", error.message);
+    reportError("[candidates PATCH] Update failed:", error.message);
     return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   }
   if (!data) {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 import { can } from "@/lib/employee-permissions";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const RED = "#e0554f";
 const AMBER = "#d99a3a";
@@ -240,6 +241,7 @@ function ErrorNotice({ message }) {
 // ── To-dos ───────────────────────────────────────────────────────────────
 
 function TodosTab() {
+  const [ask, confirmDialog] = useConfirm();
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -305,7 +307,7 @@ function TodosTab() {
   }
 
   async function deleteTodo(todo) {
-    if (!window.confirm(`Delete "${todo.title}"?`)) return;
+    if (!(await ask({ title: `Delete "${todo.title}"?`, confirmLabel: "Delete task", danger: true }))) return;
     const previous = todos;
     setTodos((current) => current.filter((t) => t.id !== todo.id));
     try {
@@ -327,6 +329,7 @@ function TodosTab() {
 
   return (
     <div>
+      {confirmDialog}
       <SectionTitle>Add a task</SectionTitle>
       <form onSubmit={addTodo} className="flex gap-2 mb-1">
         <input
@@ -440,6 +443,7 @@ function TodoRow({ todo, onToggle, onDelete }) {
 // step, not something worth re-building in this compact shell.
 
 function CalendarTab({ employee }) {
+  const [ask, confirmDialog] = useConfirm();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -513,7 +517,7 @@ function CalendarTab({ employee }) {
   }
 
   async function handleDelete(ev) {
-    if (!window.confirm(`Delete "${ev.title}"?`)) return;
+    if (!(await ask({ title: `Delete "${ev.title}"?`, confirmLabel: "Delete event", danger: true }))) return;
     setEvents((current) => current.filter((e) => e.id !== ev.id));
     try {
       const res = await fetch("/api/employee/calendar", {
@@ -541,6 +545,7 @@ function CalendarTab({ employee }) {
 
   return (
     <div>
+      {confirmDialog}
       <div className="flex items-center justify-between mb-2.5">
         <SectionTitle>Team calendar</SectionTitle>
         <button
@@ -682,6 +687,7 @@ const OUTCOME_DOT = {
 };
 
 function CallsTab({ employee }) {
+  const [ask, confirmDialog] = useConfirm();
   const [calls, setCalls] = useState([]);
   const [stats, setStats] = useState(null);
   const [outcomes, setOutcomes] = useState(Object.keys(OUTCOME_LABEL));
@@ -758,7 +764,7 @@ function CallsTab({ employee }) {
   }
 
   async function handleDelete(call) {
-    if (!window.confirm(`Delete this call log entry?`)) return;
+    if (!(await ask({ title: "Delete this call log entry?", confirmLabel: "Delete entry", danger: true }))) return;
     setCalls((current) => current.filter((c) => c.id !== call.id));
     try {
       const res = await fetch("/api/employee/cold-calls", {
@@ -778,6 +784,7 @@ function CallsTab({ employee }) {
 
   return (
     <div>
+      {confirmDialog}
       <div className="flex items-center justify-between mb-2.5">
         <SectionTitle>My calls</SectionTitle>
         <button
@@ -914,6 +921,7 @@ function formatBytes(bytes) {
 }
 
 function FilesTab({ employee }) {
+  const [ask, confirmDialog] = useConfirm();
   const fileInputRef = useRef(null);
   const [folderId, setFolderId] = useState(null);
   const [breadcrumb, setBreadcrumb] = useState([]);
@@ -968,7 +976,7 @@ function FilesTab({ employee }) {
   }
 
   async function deleteFolder(folder) {
-    if (!window.confirm(`Delete "${folder.name}"? It must be empty.`)) return;
+    if (!(await ask({ title: `Delete "${folder.name}"?`, body: "Only empty folders can be deleted.", confirmLabel: "Delete folder", danger: true }))) return;
     try {
       const res = await fetch("/api/employee/files", {
         method: "POST",
@@ -984,7 +992,7 @@ function FilesTab({ employee }) {
   }
 
   async function deleteFile(file) {
-    if (!window.confirm(`Delete "${file.name}"?`)) return;
+    if (!(await ask({ title: `Delete "${file.name}"?`, confirmLabel: "Delete file", danger: true }))) return;
     setFiles((current) => current.filter((f) => f.id !== file.id));
     try {
       const res = await fetch("/api/employee/files", {
@@ -1024,6 +1032,7 @@ function FilesTab({ employee }) {
 
   return (
     <div>
+      {confirmDialog}
       <div className="flex items-center justify-between mb-2.5">
         <SectionTitle>Files</SectionTitle>
         <div className="flex items-center gap-1.5">

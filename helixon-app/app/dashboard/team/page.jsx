@@ -13,6 +13,7 @@
 
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { trapTab } from "@/lib/focus-trap";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";
@@ -344,17 +345,21 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
   const owns = target.totalCandidates || 0;
   const [to, setTo] = useState(() => (others.some((m) => m.id === viewerId) ? viewerId : others[0]?.id || ""));
   const cancelRef = useRef(null);
+  const dialogRef = useRef(null);
 
   useEffect(() => {
     cancelRef.current?.focus();
-    const onKey = (e) => { if (e.key === "Escape" && !busy) onCancel(); };
+    const onKey = (e) => {
+      if (e.key === "Escape" && !busy) onCancel();
+      if (e.key === "Tab") trapTab(e, dialogRef.current);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [busy, onCancel]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-[16px] p-6 bg-white shadow-xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-[16px] p-6 bg-white shadow-xl">
         <h2 id="remove-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
           Remove {target.name}?
         </h2>

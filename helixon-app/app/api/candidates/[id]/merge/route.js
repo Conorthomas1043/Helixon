@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { removeCandidateCvs } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
+import { reportError } from "@/lib/report-error";
 
 // POST { otherId } - the same person recorded twice.
 //
@@ -45,7 +46,7 @@ export async function POST(request, { params }) {
   if ((keep.job_id ?? null) === (other.job_id ?? null)) {
     const { data, error } = await supabase.rpc("merge_candidates", { p_agency: auth.agencyId, p_keep: keep.id, p_remove: other.id });
     if (error) {
-      console.error("[candidates/merge] Merge failed:", error.message);
+      reportError("[candidates/merge] Merge failed:", error.message);
       const missing = /merge_candidates/.test(error.message) && /function|schema cache/i.test(error.message);
       return NextResponse.json({ error: missing ? "Merging needs a database update first (migration 20261003010000)." : "Couldn't merge them - nothing was changed." }, { status: missing ? 503 : 500 });
     }

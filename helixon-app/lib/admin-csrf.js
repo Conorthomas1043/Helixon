@@ -15,22 +15,13 @@
 // needed, works fine alongside the existing signed session cookie.
 
 import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin-csrf-constants";
 
 export { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER };
 
 export function generateCsrfToken() {
   return crypto.randomBytes(32).toString("hex");
-}
-
-// Constant-time comparison so a mismatched token can't be brute-forced via
-// response-timing differences.
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string") return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 // Verifies the double-submit pair for a mutating request. Returns true/false,

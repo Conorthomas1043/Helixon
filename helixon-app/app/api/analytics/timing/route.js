@@ -5,6 +5,7 @@ import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics-data";
 import { getAccess } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // Everything the main funnel/quality/conversion numbers in
 // getAnalyticsSnapshot() (lib/dashboard-api.js) don't cover: speed
@@ -103,7 +104,7 @@ export async function GET(request) {
   if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
   const { jobIds: clientJobIds, error: clientError } = await jobIdsForClient(agencyId, filters.clientId, filters.officeId);
   if (clientError) {
-    console.error("[analytics/timing] Client lookup failed:", clientError.message);
+    reportError("[analytics/timing] Client lookup failed:", clientError.message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
 
@@ -135,7 +136,7 @@ export async function GET(request) {
   ]);
 
   if (candError || jobError || channelError || feedbackError || verdictError) {
-    console.error("[analytics/timing] Query failed:", (candError || jobError || channelError || feedbackError || verdictError).message);
+    reportError("[analytics/timing] Query failed:", (candError || jobError || channelError || feedbackError || verdictError).message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
 
@@ -151,7 +152,7 @@ export async function GET(request) {
   });
 
   if (activityError) {
-    console.error("[analytics/timing] Activity query failed:", activityError.message);
+    reportError("[analytics/timing] Activity query failed:", activityError.message);
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
 

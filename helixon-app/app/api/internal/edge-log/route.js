@@ -22,7 +22,7 @@
 // closed: if the secret isn't set, or doesn't match, the request is
 // rejected rather than silently trusted.
 
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { enforceFirewallPolicy } from "@/lib/security/firewall";
@@ -32,6 +32,7 @@ import { blockIsActive, getFirewallRules, matchRange, matchRequestRule } from "@
 import { redactHeaders, redactPayload, redactQuery } from "@/lib/request-capture";
 import { classifyUserAgent } from "@/lib/traffic-class";
 import { maybeCheckTraffic } from "@/lib/traffic-alerts";
+import { reportError } from "@/lib/report-error";
 
 // blocked_ips.expires_at arrives with migration 20260929030000; until then
 // every block is permanent, as before.
@@ -48,18 +49,10 @@ const RULES = new Set(["allow_list", "country", "ip_range", "path", "user_agent"
 // Columns added by migration 20260929040000 (request inspector).
 const DETAIL_COLUMNS = ["uid", "host", "protocol", "query", "headers", "payload", "outcome", "status_code", "location", "rule", "threat_score", "signals", "region", "postal", "timezone", "edge_id"];
 
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
-
 function authorised(request) {
   const expected = process.env.INTERNAL_EDGE_LOG_SECRET;
   if (!expected) {
-    console.error("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set - rejecting all requests.");
+    reportError("[edge-log] INTERNAL_EDGE_LOG_SECRET is not set - rejecting all requests.");
     return { ok: false, status: 503 };
   }
   if (!timingSafeEqualStr(expected, request.headers.get(INTERNAL_HEADER) || "")) return { ok: false, status: 401 };
@@ -97,7 +90,7 @@ async function insertLog(row) {
       ({ error } = await supabase.from("request_logs").insert(basic));
     }
   }
-  if (error) console.error("[edge-log] insert failed:", error.message);
+  if (error) reportError("[edge-log] insert failed:", error.message);
 }
 
 export async function POST(request) {

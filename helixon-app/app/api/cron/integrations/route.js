@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { supabase } from "@/lib/supabase";
 import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { syncMailbox } from "@/lib/integrations/mailbox";
 import { integrationReady } from "@/lib/integrations/store";
+import { reportError } from "@/lib/report-error";
 
 // Daily: invoices sent to Xero / QuickBooks are checked for payment (and
 // marked paid here), and every connected mailbox is synced - mailboxes also
@@ -15,14 +16,6 @@ import { integrationReady } from "@/lib/integrations/store";
 export const maxDuration = 300;
 
 const BUDGET_MS = 240000;
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 export async function GET(request) {
   const secret = process.env.CRON_SECRET;
@@ -56,7 +49,7 @@ export async function GET(request) {
       }
     } catch (err) {
       summary.errors += 1;
-      console.error("[cron/integrations]", conn.provider, conn.id, err?.message);
+      reportError("[cron/integrations]", conn.provider, conn.id, err?.message);
     }
   }
   return NextResponse.json({ ok: true, ...summary });

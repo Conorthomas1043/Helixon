@@ -12,6 +12,7 @@
 import { track } from "@/lib/analytics";
 import { useNow } from "@/lib/hooks/useNow";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { trapTab } from "@/lib/focus-trap";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
@@ -2029,10 +2030,14 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const firstRef = useRef(null);
+  const dialogRef = useRef(null);
 
   useEffect(() => {
     firstRef.current?.focus();
-    const onKey = (e) => { if (e.key === "Escape" && !saving) onCancel(); };
+    const onKey = (e) => {
+      if (e.key === "Escape" && !saving) onCancel();
+      if (e.key === "Tab") trapTab(e, dialogRef.current);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [saving, onCancel]);
@@ -2061,6 +2066,7 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
       <form
+        ref={dialogRef}
         onSubmit={save}
         role="dialog"
         aria-modal="true"

@@ -13,6 +13,7 @@ import {
   deleteRow,
   MAX_IMPORT_ROWS,
 } from "@/lib/employee-call-list";
+import { reportError } from "@/lib/report-error";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -79,7 +80,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: true });
     }
   } catch (err) {
-    console.error("[call-list]", action, err?.message || err);
+    reportError("[call-list]", action, err?.message || err);
     return NextResponse.json({ ok: false, error: "Something went wrong. Please try again." }, { status: 500 });
   }
 

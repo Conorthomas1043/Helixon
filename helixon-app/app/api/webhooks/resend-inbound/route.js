@@ -7,6 +7,7 @@ import { tokenFromAddress } from "@/lib/tracked-email";
 import { bccTokenFromAddress, memberForToken } from "@/lib/member-tokens";
 import { fileEmail } from "@/lib/email-filing";
 import { notify } from "@/lib/notifications";
+import { reportError } from "@/lib/report-error";
 
 // Replies to emails sent through Helixon (lib/tracked-email.js). Resend
 // receives mail for RESEND_INBOUND_DOMAIN and posts an "email.received"
@@ -114,7 +115,7 @@ export async function POST(request) {
       const to = user?.primaryEmailAddress?.emailAddress;
       if (to) await resend.emails.receiving.forward({ emailId: data.email_id, to, from: `Helixon <${process.env.RESEND_FROM_EMAIL}>` });
     } catch (err) {
-      console.error("[resend-inbound] Forward failed:", err?.message);
+      reportError("[resend-inbound] Forward failed:", err?.message);
     }
   }
 

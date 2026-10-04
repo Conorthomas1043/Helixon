@@ -6,6 +6,7 @@ import { planLabel } from "@/lib/plans";
 import { getAgencyPlan } from "@/lib/plan";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // GET /api/dashboard-stats - feeds app/dashboard/page.js's fetchDashboardData().
 // It only reads `agencyName`, `plan`, `analyses` and `truncated` from this
@@ -66,7 +67,7 @@ export async function GET() {
   ]);
 
   if (agencyError || rowError) {
-    console.error("[dashboard-stats] Query failed:", (agencyError || rowError).message);
+    reportError("[dashboard-stats] Query failed:", (agencyError || rowError).message);
     return NextResponse.json({ error: "Failed to load dashboard data" }, { status: 500 });
   }
 

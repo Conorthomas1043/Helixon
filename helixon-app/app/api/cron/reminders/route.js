@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { sendActivationNudges } from "@/lib/lifecycle-email";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { DEFAULT_TIME_ZONE, followUpItems, interviewFollowUpItems } from "@/lib/follow-ups";
 import { buildReminderEmail, remindersEnabled } from "@/lib/reminder-email";
+import { reportError } from "@/lib/report-error";
 
 // Weekday-morning follow-up reminders: each recruiter gets one email
 // listing the next actions and talent-pool check-ins that are overdue or due
@@ -21,14 +22,6 @@ const PAGE = 1000;
 const ROW_CAP = 20000;
 const CLERK_BATCH = 100;
 const SEND_BATCH = 100;
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 async function fetchFollowUpRows() {
   let rows = [];
@@ -63,7 +56,7 @@ export async function GET(request) {
     const nudges = await sendActivationNudges();
     if (nudges.sent) console.log(`[cron/reminders] Activation nudges sent: ${nudges.sent}`);
   } catch (err) {
-    console.error("[cron/reminders] Activation nudges failed:", err?.message);
+    reportError("[cron/reminders] Activation nudges failed:", err?.message);
   }
 
   const now = new Date();
@@ -89,7 +82,7 @@ export async function GET(request) {
     interviewRows = (ivs ?? []).map((r) => ({ ...r, recruiter_id: r.candidates?.recruiter_id ?? null })).filter((r) => r.recruiter_id);
     suspended = new Set((suspendedRows ?? []).map((a) => a.id));
   } catch (err) {
-    console.error("[cron/reminders] Query failed:", err.message);
+    reportError("[cron/reminders] Query failed:", err.message);
     return NextResponse.json({ ok: false, error: "Query failed" }, { status: 500 });
   }
 
@@ -104,7 +97,7 @@ export async function GET(request) {
       .select("clerk_user_id, agency_id")
       .in("clerk_user_id", assigned.slice(i, i + CLERK_BATCH));
     if (error) {
-      console.error("[cron/reminders] Profile lookup failed:", error.message);
+      reportError("[cron/reminders] Profile lookup failed:", error.message);
       return NextResponse.json({ ok: false, error: "Query failed" }, { status: 500 });
     }
     for (const p of profiles ?? []) memberAgency.set(p.clerk_user_id, p.agency_id);
@@ -161,7 +154,7 @@ export async function GET(request) {
     const { error } = await resend.batch.send(batch);
     if (error) {
       failed += batch.length;
-      console.error("[cron/reminders] Send failed:", error.message);
+      reportError("[cron/reminders] Send failed:", error.message);
     } else {
       sent += batch.length;
     }

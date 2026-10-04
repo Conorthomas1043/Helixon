@@ -1,0 +1,38 @@
+# Applies supabase/migrations to the production database, replacing pasting
+# SQL into the dashboard editor. Run it by hand from the Actions tab after the
+# change that needs it is merged (it is never triggered automatically).
+#
+# Needs one repository secret: SUPABASE_DB_URL, the project's Postgres
+# connection string (Supabase dashboard > Connect > Session pooler).
+name: Apply database migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only list what would be applied"
+        type: boolean
+        default: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    defaults:
+      run:
+        working-directory: helixon-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Pending migrations
+        run: supabase migration list --db-url "$SUPABASE_DB_URL"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Apply
+        if: ${{ !inputs.dry_run }}
+        run: supabase db push --db-url "$SUPABASE_DB_URL"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

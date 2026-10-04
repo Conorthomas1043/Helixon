@@ -6,6 +6,7 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 import { FROM_EMAIL, escapeHtml, salesNotificationEmail } from "@/lib/demo-notification";
+import { reportError } from "@/lib/report-error";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -89,7 +90,7 @@ export async function POST(request) {
       await recordSignal({ kind: "research_optin", label: "demo_request", meta: { demoRequestId: insertedId } });
     }
   } catch (err) {
-    console.error("Failed to save demo request:", err);
+    reportError("Failed to save demo request:", err);
     return NextResponse.json(
       { ok: false, error: "Something went wrong saving your request. Please try again." },
       { status: 500 }
@@ -119,11 +120,11 @@ export async function POST(request) {
 
       emailSent = true;
     } catch (err) {
-      console.error("Failed to send demo request email:", err);
+      reportError("Failed to send demo request email:", err);
       // Don't fail the request - it's already saved.
     }
   } else {
-    console.error("RESEND_API_KEY is not set - demo request email not sent.");
+    reportError("RESEND_API_KEY is not set - demo request email not sent.");
   }
 
   if (emailSent && insertedId) {
@@ -133,7 +134,7 @@ export async function POST(request) {
       .update({ email_sent: true })
       .eq("id", insertedId)
       .then(({ error }) => {
-        if (error) console.error("Failed to mark demo request as emailed:", error);
+        if (error) reportError("Failed to mark demo request as emailed:", error);
       });
   }
 

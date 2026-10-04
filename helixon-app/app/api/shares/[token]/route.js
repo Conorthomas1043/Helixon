@@ -10,6 +10,7 @@ import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { clerkClient } from "@clerk/nextjs/server";
 import { notify } from "@/lib/notifications";
 import { captureAgencyEvent } from "@/lib/server-analytics";
+import { reportError } from "@/lib/report-error";
 
 // Public: a client's view of a shared shortlist (app/share/[token]). The
 // token is the only credential, and the link stops working when revoked or
@@ -131,7 +132,7 @@ export async function POST(request, { params }) {
         });
       }
     } catch (err) {
-      console.error("[shares] Recruiter alert failed:", err?.message);
+      reportError("[shares] Recruiter alert failed:", err?.message);
     }
   }
   return NextResponse.json({ ok: true });

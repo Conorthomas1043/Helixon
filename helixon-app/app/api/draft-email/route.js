@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { neutralizeUntrusted, UNTRUSTED_CONTENT_RULES } from "@/lib/prompt-safety";
+import { reportError } from "@/lib/report-error";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -281,7 +282,7 @@ Do not include a preamble.
             null,
     });
   } catch (error) {
-    console.error(
+    reportError(
       "[draft-email] Error:",
       error
     );

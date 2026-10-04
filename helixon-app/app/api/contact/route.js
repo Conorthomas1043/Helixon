@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
+import { reportError } from "@/lib/report-error";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -69,7 +70,7 @@ export async function POST(req) {
 
     return Response.json({ ok: true });
   } catch (err) {
-    console.error("Contact form send failed:", err);
+    reportError("Contact form send failed:", err);
     return Response.json({ error: "Couldn't send your message. Please try again." }, { status: 502 });
   }
 }

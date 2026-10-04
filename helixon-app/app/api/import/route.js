@@ -7,6 +7,7 @@ import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/import-mapping";
 import { getAgencyPrivacy, addMonths } from "@/lib/privacy-settings";
 import { linkedInHandle } from "@/lib/candidate-duplicates";
 import { ensureClient } from "@/lib/clients";
+import { reportError } from "@/lib/report-error";
 
 // POST { type, mapping, rows: [[cells]], firstRow, options? } - one batch
 // (up to IMPORT_BATCH rows) of a CSV import from /dashboard/import. Every
@@ -117,7 +118,7 @@ async function importCandidates(items, { auth, actor, options }) {
   if (!rows.length) return { created: 0, skipped };
   const { data: created, error } = await supabase.from("candidates").insert(rows).select("id");
   if (error) {
-    console.error("[import] Candidates insert failed:", error.message);
+    reportError("[import] Candidates insert failed:", error.message);
     return { created: 0, skipped, errors: [{ row: null, error: "This batch couldn't be saved." }] };
   }
   const ids = (created ?? []).map((c) => c.id);

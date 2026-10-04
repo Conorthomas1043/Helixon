@@ -78,8 +78,9 @@ Sentry.init({
   // for when they consent after page load). Plain error reporting is unaffected.
   integrations: consented ? [Sentry.replayIntegration()] : [],
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  // Every request traced in development; one in ten in production, which is
+  // plenty for performance trends and keeps the Sentry bill in proportion.
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
   // Enable logs to be sent to Sentry
   enableLogs: true,
 

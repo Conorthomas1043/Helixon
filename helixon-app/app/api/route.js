@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { rateLimit } from "@/lib/ratelimit";
+import { reportError } from "@/lib/report-error";
 
 // Wires up the password-change form on app/account/security/page.jsx.
 // (Note: this endpoint didn't exist before this migration either - the
@@ -42,14 +43,14 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Current password is incorrect." }, { status: 401 });
     }
   } catch (err) {
-    console.error("[account/password] Current password verification failed:", err.message);
+    reportError("[account/password] Current password verification failed:", err.message);
     return NextResponse.json({ ok: false, error: "Current password is incorrect." }, { status: 401 });
   }
 
   try {
     await client.users.updateUser(userId, { password: newPassword });
   } catch (err) {
-    console.error("[account/password] Password update failed:", err.message);
+    reportError("[account/password] Password update failed:", err.message);
     const message = err?.errors?.[0]?.longMessage || "Couldn't update your password. Please try again.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }

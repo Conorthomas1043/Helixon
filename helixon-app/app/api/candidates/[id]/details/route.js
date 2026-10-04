@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { candidateHidden, getAccess } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 const REJECTION_REASON_VALUES = new Set([
@@ -108,7 +109,7 @@ export async function PATCH(request, { params }) {
     .maybeSingle();
 
   if (error) {
-    console.error("[candidates/details] Update failed:", error.message);
+    reportError("[candidates/details] Update failed:", error.message);
     return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   }
   if (!data) {

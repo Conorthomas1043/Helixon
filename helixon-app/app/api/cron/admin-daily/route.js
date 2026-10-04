@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin-audit";
@@ -8,6 +8,7 @@ import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
 import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
+import { reportError } from "@/lib/report-error";
 
 // Once a day (vercel.json), the admin console's time-based controls:
 //   1. lift bans whose end date has passed (public.timed_bans)
@@ -27,14 +28,6 @@ import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 
 const SYSTEM = "system:admin-daily";
 const TIDY_AFTER_DAYS = 7;
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 async function liftExpiredBans(nowIso) {
   const { data: due, error } = await supabase.from("timed_bans").select("user_id,until").lte("until", nowIso).limit(200);
@@ -61,7 +54,7 @@ async function liftExpiredBans(nowIso) {
     } catch (err) {
       // The account was deleted since - nothing left to unban.
       if (err?.status === 404) await supabase.from("timed_bans").delete().eq("user_id", ban.user_id);
-      else console.error("[admin-daily] Couldn't lift ban", ban.user_id, err?.message || err);
+      else reportError("[admin-daily] Couldn't lift ban", ban.user_id, err?.message || err);
     }
   }
   return lifted;
@@ -161,7 +154,7 @@ export async function GET(request) {
   const expected = process.env.CRON_SECRET;
   const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   if (!expected) {
-    console.error("[admin-daily] CRON_SECRET is not set - refusing to run.");
+    reportError("[admin-daily] CRON_SECRET is not set - refusing to run.");
     return NextResponse.json({ ok: false }, { status: 503 });
   }
   if (!timingSafeEqualStr(expected, provided)) {
@@ -175,7 +168,7 @@ export async function GET(request) {
     try {
       result[name] = await fn();
     } catch (err) {
-      console.error(`[admin-daily] ${name} failed:`, err?.message || err);
+      reportError(`[admin-daily] ${name} failed:`, err?.message || err);
       result[name] = { error: true };
     }
   };

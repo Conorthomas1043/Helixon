@@ -6,6 +6,7 @@ import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin-audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin-http";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { ROLES as ROLE_LIST, cleanOverrides, effectivePermissions, overridesAfterRoleChange, overridesFor } from "@/lib/employee-permissions";
+import { reportError } from "@/lib/report-error";
 
 function validUsername(value) {
   return typeof value === "string" && /^[A-Za-z0-9._-]{3,64}$/.test(value);
@@ -46,7 +47,7 @@ async function revokeEmployeeSessions(supabase, employeeId, sessionId = null) {
   let query = supabase.from("employee_sessions").delete().eq("employee_id", employeeId);
   if (sessionId) query = query.eq("id", sessionId);
   const { error } = await query;
-  if (error) console.error("[admin/employees] Failed to revoke employee sessions:", error.message);
+  if (error) reportError("[admin/employees] Failed to revoke employee sessions:", error.message);
   return !error;
 }
 

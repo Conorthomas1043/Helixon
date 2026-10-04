@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { cleanText } from "@/lib/sanitize";
+import { reportError } from "@/lib/report-error";
 
 const MAX_SUBMISSIONS_PER_HOUR = 20; // per IP - this is a low-traffic public form, not an API
 const TAG_VALUES = new Set([
@@ -89,7 +90,7 @@ export async function POST(request, { params }) {
     .is("responded_at", null); // guards a race between two near-simultaneous submits on the same link
 
   if (error) {
-    console.error("[feedback-requests] Response save failed:", error.message);
+    reportError("[feedback-requests] Response save failed:", error.message);
     return NextResponse.json({ error: "Could not save your response. Please try again." }, { status: 500 });
   }
 

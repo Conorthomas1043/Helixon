@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { getRedis } from "@/lib/redis";
 
 // Optional two-factor login for admins: a 6-digit time-based code (RFC 6238 -
@@ -51,12 +52,6 @@ function hotp(secret, counter) {
 
 export function totpCode(secretBase32, atMs = Date.now()) {
   return hotp(base32Decode(secretBase32), Math.floor(atMs / 1000 / STEP_SECONDS));
-}
-
-function timingSafeEqualStr(a, b) {
-  const bufA = Buffer.from(String(a));
-  const bufB = Buffer.from(String(b));
-  return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
 }
 
 function secretFor(username) {
@@ -118,7 +113,7 @@ export async function verifyAdminTotp(username, code) {
 
   for (let drift = -WINDOW_STEPS; drift <= WINDOW_STEPS; drift++) {
     const counter = nowCounter + drift;
-    if (timingSafeEqualStr(hotp(secret, counter), submitted)) {
+    if (timingSafeEqualStr(hotp(secret, counter), String(submitted))) {
       return (await markUsed(username, counter))
         ? { ok: true }
         : { ok: false, reason: "code already used" };

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin-audit";
 import { removeCandidateCvs } from "@/lib/candidate-files";
 import { sweepAllAgencies } from "@/lib/data-retention";
+import { reportError } from "@/lib/report-error";
 
 // Fulfils the DPA's Annex C promise ("automatic deletion of candidate and
 // CV data 90 days after an agency's subscription is cancelled") - until
@@ -16,14 +17,6 @@ import { sweepAllAgencies } from "@/lib/data-retention";
 // app/api/internal/edge-log. Fails closed: no secret configured means every
 // request is rejected, never silently trusted.
 const RETENTION_DAYS = 90;
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
 
 // Same dependency order as app/api/candidates/[id]'s DELETE handler
 // (feedback and shortlist_candidates reference scores.id with NO ACTION,
@@ -51,7 +44,7 @@ async function purgeCandidates(candidateIds) {
 
   const storageError = await removeCandidateCvs(cvPaths);
   if (storageError) {
-    console.error("[data-retention] Candidates purged but CV file removal failed:", storageError.message);
+    reportError("[data-retention] Candidates purged but CV file removal failed:", storageError.message);
   }
 }
 
@@ -60,7 +53,7 @@ export async function GET(request) {
   const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
 
   if (!expected) {
-    console.error("[data-retention] CRON_SECRET is not set - refusing to run.");
+    reportError("[data-retention] CRON_SECRET is not set - refusing to run.");
     return NextResponse.json({ ok: false }, { status: 503 });
   }
   if (!timingSafeEqualStr(expected, provided)) {
@@ -82,7 +75,7 @@ export async function GET(request) {
       });
     }
   } catch (err) {
-    console.error("[data-retention] Inactivity sweep failed:", err.message);
+    reportError("[data-retention] Inactivity sweep failed:", err.message);
   }
 
   // 1b. Research feedback older than 24 months (storage limitation, UK
@@ -92,7 +85,7 @@ export async function GET(request) {
     const { error } = await supabase.from("research_signals").delete().lt("created_at", before);
     if (error && error.code !== "42P01" && error.code !== "PGRST205") throw new Error(error.message);
   } catch (err) {
-    console.error("[data-retention] Research signal sweep failed:", err.message);
+    reportError("[data-retention] Research signal sweep failed:", err.message);
   }
 
   // 2. Agencies cancelled 90+ days ago: erase everything (DPA Annex C).
@@ -110,7 +103,7 @@ export async function GET(request) {
     .lt("updated_at", cutoff);
 
   if (subsError) {
-    console.error("[data-retention] Failed to query subscriptions:", subsError.message);
+    reportError("[data-retention] Failed to query subscriptions:", subsError.message);
     return NextResponse.json({ error: "Failed to query subscriptions" }, { status: 500 });
   }
 
@@ -127,7 +120,7 @@ export async function GET(request) {
     .in("id", profileIds);
 
   if (profilesError) {
-    console.error("[data-retention] Failed to resolve agencies:", profilesError.message);
+    reportError("[data-retention] Failed to resolve agencies:", profilesError.message);
     return NextResponse.json({ error: "Failed to resolve agencies" }, { status: 500 });
   }
 
@@ -158,7 +151,7 @@ export async function GET(request) {
       .eq("agency_id", agencyId);
 
     if (candErr) {
-      console.error(`[data-retention] Failed to list candidates for agency ${agencyId}:`, candErr.message);
+      reportError(`[data-retention] Failed to list candidates for agency ${agencyId}:`, candErr.message);
       continue;
     }
 

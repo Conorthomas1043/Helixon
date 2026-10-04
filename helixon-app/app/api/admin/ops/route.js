@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { getAdminOpsData, OPS_RANGE_HOURS } from "../../../../lib/ops/admin-data";
+import { reportError } from "@/lib/report-error";
 
 // Was previously gated by isAllowedAdmin(), a second, separately-implemented
 // auth check expecting a Supabase Bearer token - but the real admin login
@@ -21,7 +22,7 @@ export async function GET(request) {
     if (error?.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    console.error("Admin ops data error", error);
+    reportError("Admin ops data error", error);
     return NextResponse.json({ error: "Unable to load operational data" }, { status: 500 });
   }
 }

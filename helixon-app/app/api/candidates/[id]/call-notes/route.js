@@ -8,6 +8,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/permissions";
 import { CALL_NOTES_SCHEMA, MAX_NOTES, SYSTEM_PROMPT, buildPrompt, cleanCallNotes, noteText } from "@/lib/call-notes";
+import { reportError } from "@/lib/report-error";
 
 // POST { notes, kind?: "call" | "meeting", save?: true }
 // Rough call notes or a transcript in, a tidy summary out (lib/call-notes.js):
@@ -63,7 +64,7 @@ export async function POST(request, { params }) {
     });
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) return NextResponse.json({ error: "The AI is busy - try again in a minute." }, { status: 429 });
-    console.error("[call-notes] Request failed:", err?.status, err?.message);
+    reportError("[call-notes] Request failed:", err?.status, err?.message);
     return NextResponse.json({ error: "Couldn't summarise those notes - try again." }, { status: 502 });
   }
   if (response.stop_reason === "refusal") return NextResponse.json({ error: "Those notes couldn't be summarised." }, { status: 422 });

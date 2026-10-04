@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { candidateCvUrl } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // GET /api/candidates/[id]/cv
 //   ?format=text        -> { text } - the extracted CV text (every analysed
@@ -64,7 +65,7 @@ export async function GET(request, { params }) {
       download,
     });
   } catch (err) {
-    console.error(`[candidates/cv] Signed URL failed for candidate ${id}:`, err?.message);
+    reportError(`[candidates/cv] Signed URL failed for candidate ${id}:`, err?.message);
     return NextResponse.json({ error: "Couldn't open the CV. Please try again." }, { status: 500 });
   }
 
@@ -75,7 +76,7 @@ export async function GET(request, { params }) {
     meta: {},
   });
   if (activityError) {
-    console.error(`[candidates/cv] Failed to record CV access for candidate ${id}:`, activityError.message);
+    reportError(`[candidates/cv] Failed to record CV access for candidate ${id}:`, activityError.message);
   }
 
   return NextResponse.json({ url: signedUrl });

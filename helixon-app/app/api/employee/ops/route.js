@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { employeeAccess } from "@/lib/session";
 import { groupBy, classifyAcquisition } from "@/lib/ops/attribution";
+import { reportError } from "@/lib/report-error";
 
 function client() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -56,7 +57,7 @@ export async function GET() {
       seo: { channels: groupBy((demos.data || []).map(x => ({ ...x, channel: classifyAcquisition(x) })), x => x.channel).map(([channel,count]) => ({ channel,count })) },
     });
   } catch (error) {
-    console.error("Employee ops error", error);
+    reportError("Employee ops error", error);
     return NextResponse.json({ error: "Unable to load employee operations" }, { status: 500 });
   }
 }

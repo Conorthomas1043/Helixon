@@ -6,6 +6,7 @@ import { anonymiseDeletedUser } from "@/lib/anonymise-user";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
 import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/create-profile";
 import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/clerk-org";
+import { reportError } from "@/lib/report-error";
 
 // Replaces app/api/auth/signup/route.js's job of creating the `agencies`
 // row and the `profiles` row. Under Supabase Auth that happened inline in
@@ -33,7 +34,7 @@ const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 export async function POST(request) {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("[clerk webhook] CLERK_WEBHOOK_SECRET is not set.");
+    reportError("[clerk webhook] CLERK_WEBHOOK_SECRET is not set.");
     return NextResponse.json({ ok: false, error: "Webhook not configured." }, { status: 500 });
   }
 
@@ -57,7 +58,7 @@ export async function POST(request) {
       "svix-signature": svixSignature,
     });
   } catch (err) {
-    console.error("[clerk webhook] Signature verification failed:", err.message);
+    reportError("[clerk webhook] Signature verification failed:", err.message);
     return NextResponse.json({ ok: false, error: "Invalid signature." }, { status: 400 });
   }
 
@@ -77,7 +78,7 @@ export async function POST(request) {
       await handleOrganizationInvitationCreated(event.data);
     }
   } catch (err) {
-    console.error(`[clerk webhook] Failed handling ${event.type}:`, err.message);
+    reportError(`[clerk webhook] Failed handling ${event.type}:`, err.message);
     // 500 tells Clerk to retry the webhook delivery.
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
@@ -162,7 +163,7 @@ async function handleUserCreated(clerkUser) {
   // ── Case 2: brand-new signup - create the agency + profile, same shape
   // as the old app/api/auth/signup/route.js did.
   if (!USERNAME_RE.test(username)) {
-    console.error(`[clerk webhook] user ${clerkUserId} created with invalid/missing username metadata; skipping profile creation`);
+    reportError(`[clerk webhook] user ${clerkUserId} created with invalid/missing username metadata; skipping profile creation`);
     return;
   }
 
@@ -202,7 +203,7 @@ async function handleUserCreated(clerkUser) {
       // The account was created successfully either way - don't throw
       // here, or Clerk will retry this whole webhook and re-run into the
       // "username already exists" case for an account that's already set up.
-      console.error("[clerk webhook] Failed to link subscription:", err.message);
+      reportError("[clerk webhook] Failed to link subscription:", err.message);
     }
   }
 }
@@ -220,7 +221,7 @@ async function handleOrganizationMembershipCreated(membership) {
   const clerkUserId = membership.public_user_data?.user_id;
   const orgId = membership.organization?.id;
   if (!clerkUserId || !orgId) {
-    console.error("[clerk webhook] organizationMembership.created missing user_id or organization.id");
+    reportError("[clerk webhook] organizationMembership.created missing user_id or organization.id");
     return;
   }
 
@@ -231,7 +232,7 @@ async function handleOrganizationMembershipCreated(membership) {
     .maybeSingle();
   if (agencyError) throw new Error(agencyError.message);
   if (!agency) {
-    console.error(`[clerk webhook] organizationMembership.created for org ${orgId}, but no agency has that clerk_org_id`);
+    reportError(`[clerk webhook] organizationMembership.created for org ${orgId}, but no agency has that clerk_org_id`);
     return;
   }
 
@@ -279,7 +280,7 @@ async function handleOrganizationMembershipCreated(membership) {
     // Their own paid (or shared) workspace - never pulled out of it
     // automatically. They hold a seat but see their own agency until they
     // leave it; the owner can remove them from the Team page.
-    console.error(
+    reportError(
       `[clerk webhook] user ${clerkUserId} joined org ${orgId} but already belongs to another active agency; not moved`
     );
     return;
@@ -344,7 +345,7 @@ async function handleOrganizationMembershipDeleted(membership) {
   const clerkUserId = membership.public_user_data?.user_id;
   const orgId = membership.organization?.id;
   if (!clerkUserId || !orgId) {
-    console.error("[clerk webhook] organizationMembership.deleted missing user_id or organization.id");
+    reportError("[clerk webhook] organizationMembership.deleted missing user_id or organization.id");
     return;
   }
 

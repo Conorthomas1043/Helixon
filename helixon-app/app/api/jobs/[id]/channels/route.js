@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { reportError } from "@/lib/report-error";
 
 const CHANNEL_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 
@@ -36,7 +37,7 @@ export async function GET(request, { params }) {
     .order("channel", { ascending: true });
 
   if (error) {
-    console.error("[jobs/channels] Query failed:", error.message);
+    reportError("[jobs/channels] Query failed:", error.message);
     return NextResponse.json({ error: "Failed to load channels." }, { status: 500 });
   }
 
@@ -84,7 +85,7 @@ export async function POST(request, { params }) {
     .single();
 
   if (error) {
-    console.error("[jobs/channels] Upsert failed:", error.message);
+    reportError("[jobs/channels] Upsert failed:", error.message);
     return NextResponse.json({ error: "Failed to save channel data." }, { status: 500 });
   }
 

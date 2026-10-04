@@ -4,6 +4,7 @@ import { writeAdminAudit } from "@/lib/admin-audit";
 import { verifyAdminTotp, adminHasTotp } from "@/lib/admin-totp";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
+import { reportError } from "@/lib/report-error";
 
 // Attempts allowed per hour. The per-IP cap stops one client hammering
 // passwords; the per-username cap stops a distributed guess at one admin
@@ -37,7 +38,7 @@ async function audit(action, username, request, metadata = {}) {
       request,
     });
   } catch (err) {
-    console.error("[admin/login] Could not write audit log:", err.message);
+    reportError("[admin/login] Could not write audit log:", err.message);
   }
 }
 
@@ -86,7 +87,7 @@ export async function POST(request) {
 
     return json({ ok: true, username });
   } catch (error) {
-    console.error("[admin/login] Error:", error);
+    reportError("[admin/login] Error:", error);
     return json({ error: "Internal server error" }, 500);
   }
 }

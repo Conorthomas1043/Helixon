@@ -9,6 +9,7 @@ import { fetchTokens, providerFor } from "@/lib/integrations/providers";
 import { saveConnection } from "@/lib/integrations/store";
 import { quickbooksCompany, xeroTenant } from "@/lib/integrations/accounting";
 import { mailboxAddress } from "@/lib/integrations/mailbox";
+import { reportError } from "@/lib/report-error";
 
 // The service sends the person back here with ?code=&state= (or ?error=).
 // The state must match the cookie set by ../connect for this provider,
@@ -69,7 +70,7 @@ export async function GET(request, { params }) {
     await logAudit({ auth, request, action: "integration.connected", targetType: "integration", targetId: provider, summary: `${p.label} connected${account.name ? ` (${account.name})` : ""}` });
     return back("integrationConnected=1");
   } catch (err) {
-    console.error(`[integrations/${provider}] callback failed:`, err?.message);
+    reportError(`[integrations/${provider}] callback failed:`, err?.message);
     return back("integrationError=exchange_failed");
   }
 }

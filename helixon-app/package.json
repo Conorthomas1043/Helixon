@@ -12,7 +12,8 @@
     "eval:cv": "node scripts/eval-cv-scoring.mjs",
     "eval:labelled": "node scripts/eval-labelled.mjs",
     "calibrate": "node scripts/fit-score-weights.mjs",
-    "eval:fairness": "node scripts/eval-fairness.mjs"
+    "eval:fairness": "node scripts/eval-fairness.mjs",
+    "typecheck": "node scripts/typecheck.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
@@ -28,7 +29,7 @@
     "d3-geo": "^3.1.1",
     "fflate": "^0.8.3",
     "mammoth": "^1.12.0",
-    "next": "16.3.5",
+    "next": "^16.3.8",
     "posthog-js": "^1.427.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -46,7 +47,7 @@
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "eslint": "^9",
-    "eslint-config-next": "16.3.5",
+    "eslint-config-next": "^16.3.8",
     "javascript-obfuscator": "^5.7.0",
     "tailwindcss": "^4",
     "typescript": "^6.0.3",

@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/permissions";
 import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/sms";
+import { reportError } from "@/lib/report-error";
 
 // Texts with a candidate (lib/sms.js, Twilio).
 // GET            the conversation, oldest first, and whether texting is set up
@@ -91,7 +92,7 @@ export async function POST(request, { params }) {
     })
     .select("id, direction, body, status, created_at")
     .single();
-  if (error) console.error("[sms] Sent but not stored:", error.message);
+  if (error) reportError("[sms] Sent but not stored:", error.message);
   await logActivity(supabase, candidate.id, "sms_logged", recruiterDisplayName(auth.profile) || auth.userId, { note: body.slice(0, 300) });
   return NextResponse.json({ message: row ? toMessage(row) : { id: sent.sid, direction: "out", body, status: sent.status, createdAt: new Date().toISOString() } });
 }

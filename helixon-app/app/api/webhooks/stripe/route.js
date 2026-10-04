@@ -3,6 +3,7 @@ import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { planForPriceId } from "@/lib/plans";
 import { agencyIdForProfile, billingEventsFor, captureAgencyEvent } from "@/lib/server-analytics";
+import { reportError } from "@/lib/report-error";
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook
 // signature - this is the "raw request body access" caveat that makes
@@ -17,7 +18,7 @@ export async function POST(request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error("[stripe-webhook] Signature verification failed:", err.message);
+    reportError("[stripe-webhook] Signature verification failed:", err.message);
     return NextResponse.json({ error: "Invalid signature." }, { status: 400 });
   }
 
@@ -30,7 +31,7 @@ export async function POST(request) {
         const plan = session.metadata?.plan;
 
         if (!userId) {
-          console.error("[stripe-webhook] checkout.session.completed with no userId - cannot fulfill.");
+          reportError("[stripe-webhook] checkout.session.completed with no userId - cannot fulfill.");
           break;
         }
 
@@ -45,7 +46,7 @@ export async function POST(request) {
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
-        if (error) console.error("[stripe-webhook] Failed to upsert subscription:", error.message);
+        if (error) reportError("[stripe-webhook] Failed to upsert subscription:", error.message);
         after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan: plan || null }));
         break;
       }
@@ -75,7 +76,7 @@ export async function POST(request) {
           .eq("stripe_subscription_id", sub.id)
           .select("user_id, plan");
 
-        if (error) console.error("[stripe-webhook] Failed to update subscription status:", error.message);
+        if (error) reportError("[stripe-webhook] Failed to update subscription status:", error.message);
 
         const billingEvents = billingEventsFor(event.type, sub, event.data.previous_attributes);
         const row = rows?.[0];
@@ -96,7 +97,7 @@ export async function POST(request) {
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("[stripe-webhook] Handler error:", err);
+    reportError("[stripe-webhook] Handler error:", err);
     // Return 500 so Stripe retries - don't swallow errors as a 200, or a
     // failed fulfillment silently never gets fixed.
     return NextResponse.json({ error: "Webhook handler failed." }, { status: 500 });

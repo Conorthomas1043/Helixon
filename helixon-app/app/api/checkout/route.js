@@ -5,6 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { PRICE_IDS } from "@/lib/plans";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
+import { reportError } from "@/lib/report-error";
 
 // Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
 // shared with the webhook's reverse lookup (planForPriceId) so an upgrade/
@@ -64,7 +65,7 @@ export async function POST(request) {
         .maybeSingle();
 
       if (profileError) {
-        console.error("[checkout] Profile lookup failed:", profileError.message);
+        reportError("[checkout] Profile lookup failed:", profileError.message);
         return NextResponse.json({ ok: false, error: "Could not load your account. Please try again." }, { status: 500 });
       }
 
@@ -113,7 +114,7 @@ export async function POST(request) {
 
     return NextResponse.json({ ok: true, redirectTo: session.url });
   } catch (err) {
-    console.error("[checkout] Stripe error:", err);
+    reportError("[checkout] Stripe error:", err);
     return NextResponse.json({ ok: false, error: "Checkout is temporarily unavailable. Please try again." }, { status: 500 });
   }
 }

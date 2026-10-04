@@ -13,6 +13,7 @@ import { buildReport, matchHighlights } from "@/lib/analysis-report";
 
 import { NextResponse, after } from "next/server";
 import { candidatePayload, emitWebhook } from "@/lib/webhooks";
+import { reportError } from "@/lib/report-error";
 
 // A single analysis makes 2-3 Claude calls (candidate + job extraction in
 // parallel - the job one skipped for a saved job - then the fit judgement),
@@ -554,7 +555,7 @@ export async function POST(request) {
     try {
       storedCv = await storeCandidateCv({ agencyId, candidateId: candidate.id, file });
     } catch (err) {
-      console.error("[run] Failed to store CV file:", err?.message);
+      reportError("[run] Failed to store CV file:", err?.message);
     }
 
     const { error: candidateUpdateError } = await supabase
@@ -573,7 +574,7 @@ export async function POST(request) {
       .eq("id", candidate.id);
 
     if (candidateUpdateError) {
-      console.error("[run] Failed to update candidate with analysis result:", candidateUpdateError.message);
+      reportError("[run] Failed to update candidate with analysis result:", candidateUpdateError.message);
       // The file isn't linked to the candidate, so nothing could ever
       // reach or delete it - remove it rather than orphan a CV.
       if (storedCv) await removeCandidateCvs([storedCv.path]);
@@ -647,7 +648,7 @@ export async function POST(request) {
       stage: "Screened",
     });
   } catch (error) {
-    console.error(
+    reportError(
       "[run] Error:",
       error
     );

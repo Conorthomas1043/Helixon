@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { groupTransitions, inRange, jobIdsForClient, loadActivity, loadCandidates, loadPlacements, readAnalyticsFilters } from "@/lib/analytics-data";
 import { computeCore, computeDeltas, computeTeam, computeTrends, furthestStageIndex } from "@/lib/analytics-snapshot";
 import { getAccess } from "@/lib/permissions";
+import { reportError } from "@/lib/report-error";
 
 // GET /api/analytics/snapshot - the Analytics page's headline numbers
 // (totals, funnel, quality, pipeline, conversion, score calibration, team),
@@ -76,6 +77,6 @@ export async function GET(request) {
 }
 
 function fail(error) {
-  console.error("[analytics/snapshot] Query failed:", error.message);
+  reportError("[analytics/snapshot] Query failed:", error.message);
   return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
 }

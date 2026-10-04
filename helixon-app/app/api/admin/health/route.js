@@ -7,6 +7,7 @@ import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { gradeHealth } from "@/lib/ops/health-grade";
 import { cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
+import { reportError } from "@/lib/report-error";
 
 // Single combined "is the site actually working" snapshot: the existing
 // live-services checks (Stripe/Clerk/Redis/Resend/Sentry) plus the database
@@ -47,7 +48,7 @@ async function recordAndLoadHistory(supabase, grade, adminUsername) {
     .select("id,created_at,overall,failing,checked_by")
     .single();
   if (insertError) {
-    console.error("[admin/health] Couldn't record snapshot:", insertError.message);
+    reportError("[admin/health] Couldn't record snapshot:", insertError.message);
     return history;
   }
   return [inserted, ...(history || [])].slice(0, HISTORY);
@@ -66,7 +67,7 @@ export async function GET() {
     return json({ ...snapshot, grade, muted, history });
   } catch (error) {
     if (error?.message === "Unauthorized") return json({ error: "Unauthorized" }, 401);
-    console.error("Admin health data error", error);
+    reportError("Admin health data error", error);
     return json({ error: "Unable to load health data" }, 500);
   }
 }
@@ -99,7 +100,7 @@ export async function PATCH(request) {
     return json({ ok: true, muted: value.muted });
   } catch (error) {
     if (error?.message === "Unauthorized") return json({ error: "Unauthorized" }, 401);
-    console.error("Admin health settings error", error);
+    reportError("Admin health settings error", error);
     return json({ error: "Something went wrong. Please try again." }, 500);
   }
 }

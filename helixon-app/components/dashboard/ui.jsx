@@ -5,12 +5,13 @@
 // app/globals.css via lib/candidate-format.js). Newer pages use these
 // rather than each re-declaring their own card, button and field styles.
 
-import { useEffect, useRef } from "react";
+import { Children, cloneElement, Fragment, isValidElement, useEffect, useId, useRef } from "react";
 import Link from "next/link";
+import { trapTab } from "@/lib/focus-trap";
 import DashboardNav from "@/components/DashboardNav";
 import { INK, INK_MUTED, INK_FAINT, CARD } from "@/lib/candidate-format";
 
-export { INK, INK_MUTED, INK_FAINT, CARD };
+export { INK, INK_MUTED, INK_FAINT, CARD, trapTab };
 
 const FOCUS = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
@@ -106,14 +107,23 @@ export function Button({ variant = "secondary", size = "md", href, className = "
 }
 
 export function Field({ label, hint, children, className = "" }) {
+  const hintId = useId();
+  // The label wraps the control, so its name comes for free; the hint is
+  // tied on with aria-describedby so screen readers read it too.
+  const only = hint && Children.count(children) === 1 && isValidElement(children) && children.type !== Fragment ? children : null;
+  const control = only
+    ? cloneElement(only, {
+        "aria-describedby": [only.props["aria-describedby"], hintId].filter(Boolean).join(" "),
+      })
+    : children;
   return (
     <label className={`block ${className}`}>
       <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
         {label}
       </span>
-      {children}
+      {control}
       {hint && (
-        <span className="block text-[11px] mt-1" style={{ color: INK_FAINT }}>
+        <span id={hintId} className="block text-[11px] mt-1" style={{ color: INK_FAINT }}>
           {hint}
         </span>
       )}
@@ -121,7 +131,8 @@ export function Field({ label, hint, children, className = "" }) {
   );
 }
 
-const INPUT_CLS = `w-full text-[13px] px-3 py-2 rounded-[8px] bg-white ${FOCUS}`;
+// 16px on phones: iOS Safari zooms the page into any field smaller than that.
+const INPUT_CLS = `w-full text-[16px] sm:text-[13px] px-3 py-2 rounded-[8px] bg-white ${FOCUS}`;
 const INPUT_STYLE = { border: "1px solid var(--border)", color: INK };
 
 export function TextInput(props) {
@@ -227,6 +238,7 @@ export function Dialog({ title, onClose, children, width = 560, busy = false }) 
     first?.focus();
     const onKey = (e) => {
       if (e.key === "Escape" && !busy) onClose();
+      if (e.key === "Tab") trapTab(e, ref.current);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

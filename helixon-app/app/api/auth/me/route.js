@@ -3,6 +3,7 @@ import { PAYMENT_ISSUE_STATUSES } from "@/lib/subscription-status";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { getAgencyPlan } from "@/lib/plan";
+import { reportError } from "@/lib/report-error";
 
 // Returns the currently signed-in user (email + first name from `profiles`),
 // or 401 if there's no valid session. Used by the dashboard
@@ -61,7 +62,7 @@ export async function GET() {
       paymentIssue = await findPaymentIssue(profile.agency_id, profile.id);
     }
   } catch (e) {
-    console.error("[auth/me] Profile lookup failed (non-fatal):", e.message);
+    reportError("[auth/me] Profile lookup failed (non-fatal):", e.message);
     // Unknown, not "no": don't tell the dashboard to show a setup screen just
     // because a lookup failed.
     hasAgency = null;
@@ -91,7 +92,7 @@ async function findPaymentIssue(agencyId, profileId) {
     if (!row) return null;
     return { status: row.status, isPayer: (subs || []).some((s) => s.user_id === profileId) };
   } catch (e) {
-    console.error("[auth/me] Payment status lookup failed (non-fatal):", e.message);
+    reportError("[auth/me] Payment status lookup failed (non-fatal):", e.message);
     return null;
   }
 }
