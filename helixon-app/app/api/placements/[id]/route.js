@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { PlacementInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -20,9 +21,7 @@ async function load(agencyId, rawId) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const p = await load(auth.agencyId, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const [{ data: invoices }, { data: timesheets }] = await Promise.all([
@@ -43,14 +42,12 @@ export async function GET(request, { params }) {
       notes: t.notes,
     })),
   });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const p = await load(auth.agencyId, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const fields = cleanPlacement(await request.json().catch(() => ({})), p);
+  const fields = cleanPlacement(body, p);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (!Object.keys(fields).length) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   if (fields.splits && !(await splitsAreTeammates(auth.agencyId, fields.splits))) {
@@ -71,11 +68,9 @@ export async function PATCH(request, { params }) {
   await syncCandidate(data, actor);
   after(() => emitWebhook(auth.agencyId, "placement.updated", { ...toPlacement(data), previousStatus: p.status }));
   return NextResponse.json({ placement: redactPlacement(toPlacement(data), await getAccess(auth)) });
-}
+}, { body: PlacementInput, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const p = await load(auth.agencyId, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { count } = await (await agencyDb()).from("invoices").select("id", { count: "exact", head: true }).eq("placement_id", p.id);
@@ -83,4 +78,4 @@ export async function DELETE(request, { params }) {
   const { error } = await (await agencyDb()).from("placements").delete().eq("id", p.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete." }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { cleanLine } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
 import { agencyDb } from "@/lib/agency-db";
@@ -10,9 +11,7 @@ import { agencyDb } from "@/lib/agency-db";
 // GET                         each sequence with active/completed/stopped counts
 // POST { name, steps }        create one
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   const [{ data, error }, { data: enrollments }] = await Promise.all([
     (await agencyDb()).from("email_sequences").select("*").eq("agency_id", auth.agencyId).order("name"),
     (await agencyDb()).from("sequence_enrollments").select("sequence_id, status, stopped_reason").eq("agency_id", auth.agencyId).limit(20000),
@@ -26,12 +25,9 @@ export async function GET() {
     if (e.stopped_reason === "Replied") s.replied += 1;
   }
   return NextResponse.json({ sequences: (data ?? []).map((r) => toSequence(r, stats.get(r.id) ?? { active: 0, completed: 0, stopped: 0, replied: 0 })) });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = await request.json().catch(() => ({}));
+export const POST = customerRoute(async (request, _context, auth, body) => {
   const name = cleanLine(body.name, 120);
   if (!name) return NextResponse.json({ error: "Name the sequence." }, { status: 400 });
   const steps = cleanSequenceSteps(body.steps);
@@ -43,4 +39,4 @@ export async function POST(request) {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the sequence." }, { status: 500 });
   return NextResponse.json({ sequence: toSequence(data) }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });

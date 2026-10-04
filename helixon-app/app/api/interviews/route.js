@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { InterviewInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { logClientActivity } from "@/lib/clients";
@@ -24,9 +25,7 @@ import { agencyDb } from "@/lib/agency-db";
 //     earlier in the funnel (unless moveToInterview is false) and emails
 //     calendar invites.
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const params = new URL(request.url).searchParams;
 
   let query = (await agencyDb())
@@ -52,12 +51,9 @@ export async function GET(request) {
   if (params.get("scope") === "mine") rows = rows.filter((r) => r.candidates?.recruiter_id === auth.userId || r.created_by === auth.userId);
   const names = await resolveRecruiterNames(supabase, rows.map((r) => r.candidates?.recruiter_id));
   return NextResponse.json({ interviews: rows.map((r) => shapeInterview(r, names)) });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = await request.json().catch(() => ({}));
+export const POST = customerRoute(async (request, _context, auth, body) => {
 
   const candidateId = cleanUuid(body.candidateId);
   if (!candidateId) return NextResponse.json({ error: "Which candidate?" }, { status: 400 });
@@ -123,4 +119,4 @@ export async function POST(request) {
   const shaped = shapeInterview(fresh.data);
   after(() => emitWebhook(auth.agencyId, "interview.scheduled", shaped));
   return NextResponse.json({ interview: shaped, invites }, { status: 201 });
-}
+}, { body: InterviewInput, optionalBody: true });

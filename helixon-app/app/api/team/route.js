@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
 import { computePresence } from "@/lib/presence";
@@ -31,11 +31,7 @@ async function rolesFor(agencyId, profiles) {
   );
 }
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (_request, _context, auth) => {
   const { agencyId } = auth;
 
   const [{ data: members, error: membersError }, { data: candidates, error: candidatesError }] = await Promise.all([
@@ -113,4 +109,4 @@ export async function GET() {
       };
     })
   );
-}
+});

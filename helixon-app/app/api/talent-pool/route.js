@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { cleanUuid } from "@/lib/sanitize";
 import { candidateHaystack, quickFit } from "@/lib/talent-pool-match";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
@@ -43,11 +43,7 @@ function skillNames(raw) {
   return Array.isArray(raw) ? raw.map((s) => (typeof s === "string" ? s : s?.name || "")).filter(Boolean) : [];
 }
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, _context, auth) => {
   const { agencyId } = auth;
   const jobId = cleanUuid(new URL(request.url).searchParams.get("jobId"));
 
@@ -202,4 +198,4 @@ export async function GET(request) {
       ? { id: selected.id, title: selected.title, client: selected.client, status: selected.status, ...selectedReq }
       : null,
   });
-}
+});

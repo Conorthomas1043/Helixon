@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanText } from "@/lib/sanitize";
 import { slugify, validSlug } from "@/lib/careers";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
@@ -34,22 +35,17 @@ async function load(agencyId) {
   return data;
 }
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   const [agency, manage] = await Promise.all([load(auth.agencyId), canManageWorkspace(auth)]);
   if (!agency) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(shape(agency, manage));
-}
+});
 
-export async function PATCH(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, _context, auth, body) => {
   if (!(await canManageWorkspace(auth))) return NextResponse.json({ error: NOT_ADMIN }, { status: 403 });
   const agency = await load(auth.agencyId);
   if (!agency) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await request.json().catch(() => ({}));
   const update = {};
   const settings = { ...(agency.settings || {}) };
 
@@ -85,4 +81,4 @@ export async function PATCH(request) {
     return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   }
   return NextResponse.json(shape(data, true));
-}
+}, { body: JsonObject, optionalBody: true });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/import-mapping";
@@ -19,13 +20,10 @@ import { agencyDb } from "@/lib/agency-db";
 // Answers { created, skipped, errors: [{ row, error }] } - row numbers are
 // the spreadsheet's (firstRow is the batch's first data row).
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, _context, auth, body) => {
   if (!(await rateLimit(`import:${auth.userId}`, 120))) {
     return NextResponse.json({ error: "Too many import batches - try again in a while." }, { status: 429 });
   }
-  const body = await request.json().catch(() => ({}));
   if (!IMPORT_TYPES[body.type]) return NextResponse.json({ error: "Unknown import type." }, { status: 400 });
   if (!Array.isArray(body.rows) || body.rows.length === 0) return NextResponse.json({ error: "No rows." }, { status: 400 });
   if (body.rows.length > IMPORT_BATCH) return NextResponse.json({ error: `Send at most ${IMPORT_BATCH} rows at a time.` }, { status: 400 });
@@ -50,7 +48,7 @@ export async function POST(request) {
   const result =
     body.type === "candidates" ? await importCandidates(valid, ctx) : body.type === "clients" ? await importClients(valid, ctx) : await importJobs(valid, ctx);
   return NextResponse.json({ ...result, errors: [...errors, ...(result.errors || [])] });
-}
+}, { body: JsonObject, optionalBody: true });
 
 async function importCandidates(items, { auth, actor, options }) {
   const emails = [...new Set(items.map((i) => i.record.email).filter(Boolean))];

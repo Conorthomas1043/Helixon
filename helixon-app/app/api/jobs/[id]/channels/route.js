@@ -8,7 +8,8 @@
 
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -19,11 +20,7 @@ async function assertOwnsJob(agencyId, jobId) {
   return !!data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -43,13 +40,9 @@ export async function GET(request, { params }) {
   }
 
   return NextResponse.json({ channels: data || [] });
-}
+});
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const { agencyId, userId } = auth;
   const { id } = await params;
 
@@ -57,7 +50,6 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await request.json().catch(() => null);
   const channel = body?.channel;
   if (!CHANNEL_VALUES.has(channel)) {
     return NextResponse.json({ error: "Invalid channel." }, { status: 400 });
@@ -91,4 +83,4 @@ export async function POST(request, { params }) {
   }
 
   return NextResponse.json({ channel: data });
-}
+}, { body: JsonObject, optionalBody: true });

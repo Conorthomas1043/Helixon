@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { candidateCvUrl } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
@@ -20,11 +20,7 @@ import { agencyDb } from "@/lib/agency-db";
 // from another agency is a 404. Opening or downloading the original is
 // recorded on the candidate's activity timeline - it's personal data
 // leaving the app, so there should be a trail of who did it and when.
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
@@ -81,4 +77,4 @@ export async function GET(request, { params }) {
   }
 
   return NextResponse.json({ url: signedUrl });
-}
+});

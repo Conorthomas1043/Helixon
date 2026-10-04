@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanLine } from "@/lib/sanitize";
@@ -14,14 +15,11 @@ import { agencyDb } from "@/lib/agency-db";
 //      (on a call, in person, by email) - e.g. to stay in the talent pool
 // POST { action: "withdraw" }   they withdrew consent
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, full_name, name, email");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
 
   if (body.action === "send") {
@@ -45,4 +43,4 @@ export async function POST(request, { params }) {
     return NextResponse.json({ ok: true });
   }
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
-}
+}, { body: JsonObject, optionalBody: true });

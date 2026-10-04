@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { AUDIT_ACTIONS } from "@/lib/agency-audit";
 
 // GET ?before=<ISO>&action= - the workspace's audit log (lib/agency-audit.js),
 // newest first, 100 at a time. Owner and admins only.
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   if (!(await canManageWorkspace(auth))) return NextResponse.json({ error: NOT_ADMIN }, { status: 403 });
   const params = new URL(request.url).searchParams;
   let q = supabase.from("agency_audit_log").select("*").eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(101);
@@ -38,4 +36,4 @@ export async function GET(request) {
     more: rows.length > 100,
     actions: AUDIT_ACTIONS,
   });
-}
+});

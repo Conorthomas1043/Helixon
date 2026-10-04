@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
@@ -22,11 +22,7 @@ import { agencyDb } from "@/lib/agency-db";
 //
 // Internal-only values are left out: storage paths, the feedback-request
 // secret token, other people's user ids.
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { id } = await params;
@@ -242,4 +238,4 @@ export async function GET(request, { params }) {
       "Cache-Control": "no-store",
     },
   });
-}
+});

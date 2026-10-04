@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -23,13 +24,10 @@ function scorecardUrl(token) {
   return `${siteUrl()}/scorecard/${token}`;
 }
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
   const interview = await loadInterview(auth.agencyId, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const candidateName = interview.candidates?.full_name || interview.candidates?.name || "the candidate";
 
@@ -89,11 +87,9 @@ export async function POST(request, { params }) {
   }
 
   return NextResponse.json({ error: "Unknown mode." }, { status: 400 });
-}
+}, { body: JsonObject, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const interview = await loadInterview(auth.agencyId, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -102,4 +98,4 @@ export async function DELETE(request, { params }) {
   const { error } = await (await agencyDb()).from("interview_feedback").delete().eq("id", scorecardId).eq("interview_id", interview.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to remove it." }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});

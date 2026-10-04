@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -9,10 +10,7 @@ import { ENTITY_TABLES, cleanFieldValues, fieldsFor, normaliseCustomisation } fr
 // PATCH { entity: "candidate"|"job"|"client", id, values: { fieldId: value } }
 // Sets custom field values on one record; a blank removes one.
 
-export async function PATCH(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = await request.json().catch(() => ({}));
+export const PATCH = customerRoute(async (request, _context, auth, body) => {
   const table = ENTITY_TABLES[body.entity];
   const id = cleanUuid(body.id);
   if (!table || !id || !body.values || typeof body.values !== "object") return NextResponse.json({ error: "Invalid request." }, { status: 400 });
@@ -36,4 +34,4 @@ export async function PATCH(request) {
     if (labels.length) await logActivity(supabase, id, "details_updated", recruiterDisplayName(auth.profile) || auth.userId, { note: `Updated ${labels.join(", ")}` });
   }
   return NextResponse.json({ values: result.values });
-}
+}, { body: JsonObject, optionalBody: true });

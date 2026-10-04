@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
@@ -39,9 +40,7 @@ const toLink = (row) => ({
   createdAt: row.created_at,
 });
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
@@ -49,16 +48,14 @@ export async function GET(request, { params }) {
   const { data, error } = await (await agencyDb()).from("interview_booking_links").select("*").eq("candidate_id", c.id).order("created_at", { ascending: false }).limit(10);
   if (error) return NextResponse.json({ links: [], unavailable: true });
   return NextResponse.json({ links: (data ?? []).map(toLink) });
-}
+});
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, input) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
   const offer = cleanBookingRequest(body);
   if (offer.error) return NextResponse.json({ error: offer.error }, { status: 400 });
   if (offer.contact_id) {
@@ -114,11 +111,9 @@ export async function POST(request, { params }) {
     note: `${offer.slots.length} interview time${offer.slots.length === 1 ? "" : "s"} offered${body.send === true && !emailError ? " (emailed)" : ""}`,
   });
   return NextResponse.json({ link, emailError }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
@@ -127,4 +122,4 @@ export async function DELETE(request, { params }) {
   if (!linkId) return NextResponse.json({ error: "Which link?" }, { status: 400 });
   await (await agencyDb()).from("interview_booking_links").update({ status: "cancelled" }).eq("id", linkId).eq("candidate_id", c.id).eq("status", "open");
   return NextResponse.json({ ok: true });
-}
+});

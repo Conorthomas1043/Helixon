@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JobInput } from "@/lib/api/schemas";
 import { cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns } from "@/lib/clients";
 import { cleanJobDetails } from "@/lib/job-details";
 import { normaliseOffices } from "@/lib/offices";
 import { agencyDb } from "@/lib/agency-db";
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -37,7 +34,7 @@ export async function GET(request, { params }) {
     offers: completed.filter((c) => c.stage === "Offer").length,
     placed: completed.filter((c) => c.stage === "Placed").length,
   });
-}
+});
 
 const VALID_STATUSES = new Set(["open", "closed"]);
 
@@ -84,15 +81,10 @@ function cleanSkillList(value) {
 // editing the structured fields here can't drift out of sync with
 // anything else the way editing the free-text spec without re-parsing it
 // could.
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
@@ -239,7 +231,7 @@ export async function PATCH(request, { params }) {
   }
 
   return NextResponse.json({ ok: true, job });
-}
+}, { body: JobInput, optionalBody: true });
 
 // Deliberately refuses to delete a job with any candidates attached, rather
 // than either blocking on a foreign-key error (this repo's migrations
@@ -248,11 +240,7 @@ export async function PATCH(request, { params }) {
 // scores and notes a recruiter cares about. "Closed" (via PATCH status)
 // already covers "no longer active but keep the history" - DELETE is only
 // for a job with nothing attached to it yet, e.g. one created by mistake.
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -282,4 +270,4 @@ export async function DELETE(request, { params }) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});

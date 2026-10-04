@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { buildOps } from "@/lib/dashboard-ops";
 import { getAccess } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
@@ -27,9 +27,7 @@ async function rows(query, fallback) {
   return data ?? [];
 }
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const db = await agencyDb();
   const { agencyId, userId } = auth;
   const mine = new URL(request.url).searchParams.get("scope") === "mine";
@@ -112,4 +110,4 @@ export async function GET(request) {
     ops.kpis.overdueTotal = null;
   }
   return NextResponse.json({ ...ops, financialsHidden: !access.canSeeFinancials });
-}
+});

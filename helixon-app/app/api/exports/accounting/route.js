@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { payrollRows, quickbooksInvoiceRows, xeroInvoiceRows } from "@/lib/accounting-export";
@@ -14,9 +14,7 @@ import { agencyDb } from "@/lib/agency-db";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Only the owner and admins can export invoices and pay." }, { status: 403 });
   const params = new URL(request.url).searchParams;
   const format = params.get("format");
@@ -56,4 +54,4 @@ export async function GET(request) {
 
   await logAudit({ auth, request, action: "accounting.exported", summary: `${format} export${from || to ? ` (${from || "start"} to ${to || "today"})` : ""}: ${rows.length} rows` });
   return NextResponse.json({ rows });
-}
+});

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
@@ -27,13 +28,11 @@ const COLUMNS = "id, full_name, name, job_id, pooled_from_id, cv_file_url, jobs(
 // The row a person's other records hang off (same rule as lib/rescreen.js).
 const poolRootId = (c) => c.pooled_from_id || c.id;
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, input) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const keepId = cleanUuid((await params).id);
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
   const otherId = cleanUuid(body.otherId);
   if (!keepId || !otherId || keepId === otherId) return NextResponse.json({ error: "Pick a different candidate." }, { status: 400 });
 
@@ -70,4 +69,4 @@ export async function POST(request, { params }) {
   await logActivity(supabase, keep.id, "candidate_linked", actor, { note: `Linked as the same person as ${otherName}${other.jobs?.title ? ` (${other.jobs.title})` : ""}` });
   await logActivity(supabase, other.id, "candidate_linked", actor, { note: `Linked as the same person as ${keep.full_name || keep.name || "candidate"}` });
   return NextResponse.json({ ok: true, mode: "linked" });
-}
+}, { body: JsonObject, optionalBody: true });

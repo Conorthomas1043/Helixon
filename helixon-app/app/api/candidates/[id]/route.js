@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { eraseCandidates } from "@/lib/candidate-erasure";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
@@ -12,16 +13,12 @@ import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { loadCandidateProfile } from "@/lib/candidate-profile";
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const result = await loadCandidateProfile(auth, id);
   if (result.status !== 200) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json(result.body);
-}
+});
 
 // Correcting what was read off the CV: name, contact details and current
 // role. Extraction gets these wrong sometimes (a mangled name, a phone number
@@ -37,17 +34,12 @@ const EDITABLE = {
   currentCompany: { column: "current_company", label: "current company", clean: (v) => cleanLine(v, 160) },
 };
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
@@ -111,18 +103,14 @@ export async function PATCH(request, { params }) {
     currentTitle: data.current_title,
     currentCompany: data.current_company,
   });
-}
+}, { body: JsonObject, optionalBody: true });
 
 // Permanently erases a candidate and every row that references them - the
 // tool an agency needs to fulfil a data subject's right to erasure (privacy
 // policy: "Requests should be directed to the recruitment agency... who acts
 // as the data controller"). The ordering and failure handling live in
 // lib/candidate-erasure.js, shared with bulk delete.
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId } = auth;
@@ -158,4 +146,4 @@ export async function DELETE(request, { params }) {
   }
 
   return NextResponse.json({ ok: true, erased });
-}
+});

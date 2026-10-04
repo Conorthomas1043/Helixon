@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -12,9 +13,7 @@ import { agencyDb } from "@/lib/agency-db";
 // The first email goes out on the next sequence run after its delay
 // (app/api/cron/sequences).
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext({ requireSubscription: true });
-  if (!auth.ok) return NextResponse.json({ error: auth.error, upgrade: auth.upgrade }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const id = cleanUuid((await params).id);
   const { data: sequence } = id
     ? await (await agencyDb()).from("email_sequences").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
@@ -22,7 +21,6 @@ export async function POST(request, { params }) {
   if (!sequence) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!sequence.active) return NextResponse.json({ error: "This sequence is paused." }, { status: 409 });
 
-  const body = await request.json().catch(() => ({}));
   const ids = [...new Set((Array.isArray(body.candidateIds) ? body.candidateIds : []).map(cleanUuid).filter(Boolean))].slice(0, 200);
   if (!ids.length) return NextResponse.json({ error: "Choose who to add." }, { status: 400 });
 
@@ -56,4 +54,4 @@ export async function POST(request, { params }) {
     await Promise.all(rows.map((r) => logActivity(supabase, r.candidate_id, "sequence_enrolled", actor, { note: sequence.name })));
   }
   return NextResponse.json({ enrolled: rows.length, skipped });
-}
+}, { body: JsonObject, optionalBody: true, requireSubscription: true });

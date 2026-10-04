@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { followUpItems, interviewFollowUpItems, sortFollowUps } from "@/lib/follow-ups";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
@@ -24,10 +24,7 @@ function validTimeZone(tz) {
   }
 }
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-
+export const GET = customerRoute(async (request, _context, auth) => {
   const params = new URL(request.url).searchParams;
   const mine = params.get("scope") !== "all";
   const timeZone = validTimeZone(params.get("tz")) || "UTC";
@@ -63,4 +60,4 @@ export async function GET(request) {
     items: items.map((i) => ({ ...i, recruiterName: names.get(i.recruiterId) ?? null })),
     truncated: (data ?? []).length >= LIMIT,
   });
-}
+});

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { OpportunityInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logClientActivity } from "@/lib/clients";
@@ -18,14 +19,12 @@ async function load(agencyId, rawId) {
   return data;
 }
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, input) => {
   const { id } = await params;
   const current = await load(auth.agencyId, id);
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
   const update = cleanOpportunity(body);
   if (update.error) return NextResponse.json({ error: update.error }, { status: 400 });
 
@@ -59,15 +58,13 @@ export async function PATCH(request, { params }) {
     });
   }
   return NextResponse.json({ opportunity: toOpportunity(data) });
-}
+}, { body: OpportunityInput, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const current = await load(auth.agencyId, id);
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { error } = await (await agencyDb()).from("client_opportunities").delete().eq("id", current.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete the deal." }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});

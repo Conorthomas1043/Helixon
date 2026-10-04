@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const { recruiterId } = await request.json();
+  const { recruiterId } = body;
 
   const { data: before } = await (await agencyDb())
     .from("candidates")
@@ -62,4 +59,4 @@ export async function PATCH(request, { params }) {
   });
 
   return NextResponse.json(data);
-}
+}, { body: JsonObject });

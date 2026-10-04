@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients";
 import { getAccess } from "@/lib/permissions";
@@ -12,10 +13,7 @@ import { agencyDb } from "@/lib/agency-db";
 //                     and fees billed
 // POST { name, ... }  create one
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-
+export const GET = customerRoute(async (_request, _context, auth) => {
   const [{ data: clients, error }, { data: contacts }, { data: jobs }] = await Promise.all([
     (await agencyDb()).from("clients").select("*").eq("agency_id", auth.agencyId).order("name").limit(2000),
     (await agencyDb()).from("client_contacts").select("client_id").eq("agency_id", auth.agencyId).limit(10000),
@@ -58,13 +56,9 @@ export async function GET() {
       };
     }),
   });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-
-  const body = await request.json().catch(() => ({}));
+export const POST = customerRoute(async (request, _context, auth, body) => {
   const fields = cleanClientFields(body, { requireName: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
 
@@ -79,4 +73,4 @@ export async function POST(request) {
   }
   await logClientActivity(auth.agencyId, data.id, "client_created", recruiterDisplayName(auth.profile) || auth.userId);
   return NextResponse.json({ client: toClient(data) }, { status: 201 });
-}
+}, { body: ClientInput, optionalBody: true });

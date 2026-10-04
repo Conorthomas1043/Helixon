@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -25,9 +25,7 @@ async function load(auth, params) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const check = await load(auth, params);
@@ -37,11 +35,9 @@ export async function GET(request, { params }) {
   } catch {
     return NextResponse.json({ error: "The document couldn't be opened." }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const check = await load(auth, params);
@@ -77,11 +73,9 @@ export async function PATCH(request, { params }) {
     await logActivity(supabase, check.candidate_id, "compliance_check", actor, { note: `${data.label || CHECK_KINDS[data.kind]}: ${CHECK_STATUSES[data.status]}` });
   }
   return NextResponse.json({ check: toCheck(data) });
-}
+});
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const check = await load(auth, params);
@@ -90,4 +84,4 @@ export async function DELETE(request, { params }) {
   if (error) return NextResponse.json({ error: "Failed to delete." }, { status: 500 });
   if (check.document_path) await removeComplianceDocuments([check.document_path]);
   return NextResponse.json({ ok: true });
-}
+});

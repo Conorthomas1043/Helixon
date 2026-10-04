@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
 import { siteUrl } from "@/lib/mailer";
 import { toSignatureRequest } from "@/lib/signatures";
@@ -17,9 +18,7 @@ async function load(agencyId, rawId) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const row = await load(auth.agencyId, (await params).id);
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({
@@ -29,18 +28,16 @@ export async function GET(request, { params }) {
       audit: row.status === "signed" ? { signedName: row.signed_name, signedAt: row.signed_at, ip: row.signed_ip, userAgent: row.signed_user_agent, documentHash: row.document_hash } : null,
     },
   });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, input) => {
   const row = await load(auth.agencyId, (await params).id);
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
   if (body.void !== true) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   if (row.status !== "sent") return NextResponse.json({ error: "Only a document that hasn't been signed can be withdrawn." }, { status: 409 });
   const { data, error } = await (await agencyDb()).from("signature_requests").update({ status: "void" }).eq("id", row.id).eq("status", "sent").select("*").maybeSingle();
   if (error || !data) return NextResponse.json({ error: "Couldn't withdraw it." }, { status: 500 });
   await logAudit({ auth, request, action: "signature.withdrawn", targetType: "signature", targetId: data.id, summary: `Withdrew "${data.title}"` });
   return NextResponse.json({ request: toSignatureRequest(data) });
-}
+}, { body: JsonObject, optionalBody: true });

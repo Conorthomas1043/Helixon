@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { cleanUuid } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
@@ -8,9 +8,7 @@ import { agencyDb } from "@/lib/agency-db";
 // GET - the emails sent to and received from this candidate through
 // Helixon (email_messages), oldest first, and any sequences they're in.
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const id = cleanUuid((await params).id);
@@ -57,4 +55,4 @@ export async function GET(request, { params }) {
       enrolledAt: e.created_at,
     })),
   });
-}
+});

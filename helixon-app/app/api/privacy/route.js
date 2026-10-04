@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { getOrgMemberRole } from "@/lib/clerk-org";
@@ -31,9 +32,7 @@ async function canManage(auth) {
   }
 }
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   try {
     const [settings, upcoming, manage] = await Promise.all([
       getAgencyPrivacy(supabase, auth.agencyId),
@@ -50,15 +49,12 @@ export async function GET() {
     reportError("[privacy] Load failed:", err.message);
     return NextResponse.json({ error: "Couldn't load your privacy settings." }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, _context, auth, body) => {
   if (!(await canManage(auth))) {
     return NextResponse.json({ error: "Only the workspace owner or an admin can change these settings." }, { status: 403 });
   }
-  const body = await request.json().catch(() => null);
   const { rawSettings } = await getAgencyPrivacy(supabase, auth.agencyId);
   const next = { ...rawSettings };
   if (body?.retentionMonths !== undefined) {
@@ -84,12 +80,9 @@ export async function PATCH(request) {
   }
   await logAudit({ auth, request, action: "settings.privacy", summary: "Changed privacy settings", meta: body && typeof body === "object" ? Object.keys(body) : null });
   return NextResponse.json({ ok: true });
-}
+}, { body: JsonObject, optionalBody: true });
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = await request.json().catch(() => null);
+export const POST = customerRoute(async (request, _context, auth, body) => {
   if (body?.action !== "keep") return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   const ids = Array.isArray(body.ids) ? [...new Set(body.ids.map(cleanUuid).filter(Boolean))].slice(0, 200) : [];
   if (!ids.length) return NextResponse.json({ error: "Choose who to keep." }, { status: 400 });
@@ -103,4 +96,4 @@ export async function POST(request) {
   await (await agencyDb()).from("candidates").update({ last_activity_at: now }).eq("agency_id", auth.agencyId).in("id", keep);
   await supabase.from("candidate_activity").insert(keep.map((id) => ({ candidate_id: id, type: "retention_extended", actor, meta: { note: "Kept past the retention period" } })));
   return NextResponse.json({ ok: true, kept: keep.length });
-}
+}, { body: JsonObject, optionalBody: true });

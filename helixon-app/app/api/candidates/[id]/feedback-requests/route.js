@@ -15,7 +15,8 @@ import crypto from "crypto";
 import { Resend } from "resend";
 import { currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidate-activity";
@@ -49,11 +50,7 @@ function shape(row) {
   };
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId } = auth;
@@ -72,7 +69,7 @@ export async function GET(request, { params }) {
   }
 
   return NextResponse.json({ requests: (data || []).map(shape) });
-}
+});
 
 // Emails the link for `row` (a feedback_requests row) to `to`, from the
 // agency's name with replies going to the recruiter. Returns an error
@@ -114,17 +111,12 @@ async function emailRequest({ auth, candidate, row, to }) {
   return null;
 }
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => ({}));
   const sendTo = body?.sendTo ? cleanEmail(body.sendTo) : null;
   if (body?.sendTo && !sendTo) {
     return NextResponse.json({ error: "That email address doesn't look right." }, { status: 400 });
@@ -189,4 +181,4 @@ export async function POST(request, { params }) {
   // The link exists either way; a failed send says so and leaves it to copy.
   const sendError = sendTo ? await emailRequest({ auth, candidate, row: data, to: sendTo }) : null;
   return NextResponse.json({ request: shape(data), emailedTo: sendTo && !sendError ? sendTo : null, sendError });
-}
+}, { body: JsonObject, optionalBody: true });

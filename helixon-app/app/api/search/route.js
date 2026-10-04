@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { cleanSearchTerm, likePattern, quoted } from "@/lib/candidate-search";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
@@ -11,9 +11,7 @@ import { agencyDb } from "@/lib/agency-db";
 
 const PER_KIND = 6;
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const term = cleanSearchTerm(new URL(request.url).searchParams.get("q"));
   if (!term || term.length < 2) return NextResponse.json({ results: [] });
   const p = quoted(likePattern(term));
@@ -55,4 +53,4 @@ export async function GET(request) {
     })),
   ];
   return NextResponse.json({ results });
-}
+});

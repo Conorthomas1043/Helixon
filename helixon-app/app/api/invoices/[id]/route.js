@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { InvoiceUpdate } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
 import { INVOICE_STATUSES } from "@/lib/placements";
 import { normaliseInvoicing } from "@/lib/invoicing-settings";
@@ -16,9 +17,7 @@ import { agencyDb } from "@/lib/agency-db";
 // PATCH { status, paidOn? }   mark paid / sent / void. Voiding a contract
 //       invoice puts its timesheets back to approved.
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const [{ data: invoice }, { data: agency }] = await Promise.all([
@@ -31,14 +30,11 @@ export async function GET(request, { params }) {
   const conn = await accountingConnection(auth.agencyId);
   const accounting = conn ? { provider: conn.provider, label: providerFor(conn.provider).label } : null;
   return NextResponse.json({ invoice, accounting, from: { ...from, companyName: from.companyName || agency?.name || "" } });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
-  const body = await request.json().catch(() => ({}));
   if (!id || !INVOICE_STATUSES[body.status] || body.status === "draft") return NextResponse.json({ error: "Mark it sent, paid or void." }, { status: 400 });
   const paidOn = body.status === "paid" ? (/^\d{4}-\d{2}-\d{2}$/.test(body.paidOn || "") ? body.paidOn : new Date().toISOString().slice(0, 10)) : null;
   const { data, error } = await (await agencyDb())
@@ -56,4 +52,4 @@ export async function PATCH(request, { params }) {
   }
   await logAudit({ auth, request, action: "invoice.status", targetType: "invoice", targetId: data.id, summary: `Invoice ${data.number || ""} marked ${body.status}` });
   return NextResponse.json({ invoice: data });
-}
+}, { body: InvoiceUpdate, optionalBody: true });

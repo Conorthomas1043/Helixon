@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { INVOICE_STATUSES } from "@/lib/placements";
 import { getAccess } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // GET ?status= - the agency's invoices, newest first.
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const status = new URL(request.url).searchParams.get("status");
   let q = (await agencyDb())
@@ -21,4 +19,4 @@ export async function GET(request) {
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: "Failed to load invoices." }, { status: 500 });
   return NextResponse.json({ invoices: data ?? [] });
-}
+});

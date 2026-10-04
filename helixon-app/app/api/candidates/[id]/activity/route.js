@@ -13,7 +13,8 @@
 
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
@@ -22,17 +23,12 @@ import { agencyDb } from "@/lib/agency-db";
 
 const ACTIVITY_TYPES = new Set(["call_logged", "email_logged", "meeting_logged", "cv_sent_logged", "sms_logged", "whatsapp_logged"]);
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => null);
   const type = body?.type;
   if (!ACTIVITY_TYPES.has(type)) {
     return NextResponse.json({ error: "Invalid activity type." }, { status: 400 });
@@ -65,4 +61,4 @@ export async function POST(request, { params }) {
       ? { id: latest.id, type: latest.type, actor: latest.actor, meta: latest.meta, timestamp: latest.created_at }
       : null,
   });
-}
+}, { body: JsonObject, optionalBody: true });

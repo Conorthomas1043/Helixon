@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
@@ -21,10 +22,7 @@ import { agencyDb } from "@/lib/agency-db";
 const MAX_PER_REQUEST = 100;
 const MAX_PER_HOUR = 400;
 
-export async function POST(request) {
-  const auth = await requireCustomerContext({ requireSubscription: true });
-  if (!auth.ok) return NextResponse.json({ error: auth.error, upgrade: auth.upgrade }, { status: auth.status });
-  const body = await request.json().catch(() => ({}));
+export const POST = customerRoute(async (request, _context, auth, body) => {
 
   const ids = [...new Set((Array.isArray(body.candidateIds) ? body.candidateIds : []).map(cleanUuid).filter(Boolean))];
   if (ids.length === 0) return NextResponse.json({ error: "Choose who to email." }, { status: 400 });
@@ -90,4 +88,4 @@ export async function POST(request) {
     failed: failed.length,
     skippedNoEmail: rendered.filter((r) => !r.email).map((r) => r.name),
   });
-}
+}, { body: JsonObject, optionalBody: true, requireSubscription: true });

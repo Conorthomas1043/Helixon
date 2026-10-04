@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { OpportunityInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { loadClient, logClientActivity } from "@/lib/clients";
@@ -13,9 +14,7 @@ import { agencyDb } from "@/lib/agency-db";
 // POST { clientId, title, stage?, value?, probability?, expectedClose?,
 //        ownerId?, contactId?, notes? }  create one
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const clientId = cleanUuid(new URL(request.url).searchParams.get("clientId"));
 
   let q = (await agencyDb())
@@ -32,12 +31,10 @@ export async function GET(request) {
     return NextResponse.json({ error: "Failed to load deals." }, { status: 500 });
   }
   return NextResponse.json({ opportunities: (data ?? []).map(toOpportunity) });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await request.json().catch(() => null)) ?? {};
+export const POST = customerRoute(async (request, _context, auth, input) => {
+  const body = input;
 
   const client = await loadClient(auth.agencyId, body.clientId);
   if (!client) return NextResponse.json({ error: "Pick the client or prospect this deal is with." }, { status: 400 });
@@ -67,4 +64,4 @@ export async function POST(request) {
 
   await logClientActivity(auth.agencyId, client.id, "opportunity_created", recruiterDisplayName(auth.profile) || auth.userId, { note: data.title });
   return NextResponse.json({ opportunity: toOpportunity(data) }, { status: 201 });
-}
+}, { body: OpportunityInput, optionalBody: true });

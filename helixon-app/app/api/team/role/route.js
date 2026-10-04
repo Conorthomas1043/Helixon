@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { getOrgCreatorId, getOrgMemberRole, setOrgMemberRole } from "@/lib/clerk-org";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
@@ -10,13 +11,7 @@ import { reportError } from "@/lib/report-error";
 // owner or an admin can do it; the owner's own role never changes, and
 // nobody changes their own role here (so a team can't end up with no one
 // able to manage it).
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
-  const body = await request.json().catch(() => null);
+export const POST = customerRoute(async (request, _context, auth, body) => {
   const target = typeof body?.userId === "string" ? body.userId : "";
   const role = body?.role === "admin" ? "org:admin" : body?.role === "member" ? "org:member" : null;
   if (!target || !role) {
@@ -58,4 +53,4 @@ export async function POST(request) {
     reportError("[team/role] Failed to change role:", detail);
     return NextResponse.json({ error: "Couldn't change their role. Please try again." }, { status: 500 });
   }
-}
+}, { body: JsonObject, optionalBody: true });

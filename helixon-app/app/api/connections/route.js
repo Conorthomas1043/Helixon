@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { siteUrl } from "@/lib/mailer";
 import { bccAddress, memberToken } from "@/lib/member-tokens";
 import { inboundDomain } from "@/lib/tracked-email";
@@ -25,16 +26,12 @@ async function shape(auth, rotatePurpose = null) {
   };
 }
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   return NextResponse.json(await shape(auth));
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await request.json().catch(() => null)) ?? {};
+export const POST = customerRoute(async (request, _context, auth, input) => {
+  const body = input;
   if (!["calendar", "bcc"].includes(body.purpose) || body.rotate !== true) return NextResponse.json({ error: "Nothing to do." }, { status: 400 });
   return NextResponse.json(await shape(auth, body.purpose));
-}
+}, { body: JsonObject, optionalBody: true });

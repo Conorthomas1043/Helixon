@@ -7,7 +7,8 @@
 
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { candidateHidden, getAccess } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
@@ -33,17 +34,12 @@ function cleanMoney(value) {
   return Math.round(n * 100) / 100;
 }
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
@@ -126,4 +122,4 @@ export async function PATCH(request, { params }) {
     retention30d: data.retention_30d,
     retention90d: data.retention_90d,
   });
-}
+}, { body: JsonObject, optionalBody: true });

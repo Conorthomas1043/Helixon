@@ -1,5 +1,6 @@
 import { NextResponse, after } from "next/server";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
@@ -22,9 +23,7 @@ export const maxDuration = 120;
 
 const AUTO_EVERY_MS = 15 * 60000;
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   const canManage = await canManageWorkspace(auth);
   const providers = await Promise.all(
     Object.entries(PROVIDERS).map(async ([name, p]) => ({
@@ -41,11 +40,9 @@ export async function GET() {
     sms: { configured: smsConfigured(), webhookUrl: smsWebhookUrl() },
     site: siteUrl(),
   });
-}
+});
 
-export async function DELETE(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, _context, auth) => {
   const provider = new URL(request.url).searchParams.get("provider");
   const p = providerFor(provider);
   if (!p) return NextResponse.json({ error: "Unknown service." }, { status: 400 });
@@ -57,12 +54,10 @@ export async function DELETE(request) {
   } catch {
     return NextResponse.json({ error: "Couldn't disconnect - try again." }, { status: 500 });
   }
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await request.json().catch(() => null)) ?? {};
+export const POST = customerRoute(async (request, _context, auth, input) => {
+  const body = input;
 
   if (body.action === "auto") {
     for (const provider of MAILBOX_PROVIDERS) {
@@ -88,4 +83,4 @@ export async function POST(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message || "Sync failed." }, { status: 502 });
   }
-}
+}, { body: JsonObject, optionalBody: true });

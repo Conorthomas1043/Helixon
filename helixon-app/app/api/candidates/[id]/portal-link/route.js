@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidate-activity";
@@ -39,9 +40,7 @@ async function activeLink(candidateId) {
   return { data, error };
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
@@ -49,16 +48,14 @@ export async function GET(request, { params }) {
   const { data, error } = await activeLink(c.id);
   if (error) return NextResponse.json({ link: null, unavailable: true });
   return NextResponse.json({ link: toLink(data) });
-}
+});
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, input) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
 
   const now = new Date();
   await (await agencyDb()).from("candidate_portal_links").update({ revoked_at: now.toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
@@ -100,15 +97,13 @@ export async function POST(request, { params }) {
     note: body.send === true && !emailError ? "Self-service link emailed" : "Self-service link created",
   });
   return NextResponse.json({ link, emailError }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await (await agencyDb()).from("candidate_portal_links").update({ revoked_at: new Date().toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
   return NextResponse.json({ ok: true });
-}
+});

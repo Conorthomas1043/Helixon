@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
@@ -15,9 +15,7 @@ import { agencyDb } from "@/lib/agency-db";
 // POST   add a check - JSON, or multipart form fields plus a `document`
 //        file (a scan of what was checked)
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, created_at, source, consent_given_at, consent_source, privacy_notice_sent_at");
@@ -36,11 +34,9 @@ export async function GET(request, { params }) {
       due: privacyNoticeStatus(c),
     },
   });
-}
+});
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
@@ -72,4 +68,4 @@ export async function POST(request, { params }) {
     note: `${data.label || CHECK_KINDS[data.kind]}: ${CHECK_STATUSES[data.status]}${data.expires_on ? ` (expires ${data.expires_on})` : ""}`,
   });
   return NextResponse.json({ check: toCheck(data) }, { status: 201 });
-}
+});

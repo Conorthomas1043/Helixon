@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients";
 import { getAccess } from "@/lib/permissions";
@@ -12,9 +13,7 @@ import { agencyDb } from "@/lib/agency-db";
 // PATCH   edit details and terms (a rename updates its jobs' client name)
 // DELETE  only when no jobs are attached - otherwise mark it inactive
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -71,16 +70,13 @@ export async function GET(request, { params }) {
     financialsHidden: !canSeeFinancials,
     activity: (activity ?? []).map((a) => ({ id: a.id, type: a.type, actor: a.actor, meta: a.meta, createdAt: a.created_at })),
   });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await request.json().catch(() => ({}));
   const fields = cleanClientFields(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
@@ -103,11 +99,9 @@ export async function PATCH(request, { params }) {
     fields: Object.keys(fields),
   });
   return NextResponse.json({ client: toClient(data) });
-}
+}, { body: ClientInput, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -119,4 +113,4 @@ export async function DELETE(request, { params }) {
   const { error } = await (await agencyDb()).from("clients").delete().eq("id", client.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete client." }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidate-query";
 import { agencyDb } from "@/lib/agency-db";
@@ -11,9 +12,7 @@ import { agencyDb } from "@/lib/agency-db";
 // GET ?counts=1           with how many candidates each matches now
 // POST { name, params, shared?, alert? }
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const { data, error } = await (await agencyDb())
     .from("saved_searches")
     .select("*")
@@ -34,12 +33,10 @@ export async function GET(request) {
     );
   }
   return NextResponse.json({ searches });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const fields = cleanSavedSearch(await request.json().catch(() => ({})));
+export const POST = customerRoute(async (request, _context, auth, body) => {
+  const fields = cleanSavedSearch(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   const { data, error } = await (await agencyDb())
     .from("saved_searches")
@@ -48,4 +45,4 @@ export async function POST(request) {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the search." }, { status: 500 });
   return NextResponse.json({ search: toSavedSearch(data, auth.userId) }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });

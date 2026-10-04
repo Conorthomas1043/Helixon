@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
@@ -16,9 +17,7 @@ import { agencyDb } from "@/lib/agency-db";
 //        candidateId?, placementId?, send? }
 //      create one; with send and an email, email the signing link
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const params = new URL(request.url).searchParams;
   const clientId = cleanUuid(params.get("clientId"));
   const candidateId = cleanUuid(params.get("candidateId"));
@@ -33,12 +32,10 @@ export async function GET(request) {
     return NextResponse.json({ error: "Failed to load documents." }, { status: 500 });
   }
   return NextResponse.json({ requests: (data ?? []).map((r) => toSignatureRequest(r, { includeLink: r.status === "sent", siteUrl: siteUrl() })) });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await request.json().catch(() => null)) ?? {};
+export const POST = customerRoute(async (request, _context, auth, input) => {
+  const body = input;
   const fields = cleanSignatureRequest(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
 
@@ -111,4 +108,4 @@ export async function POST(request) {
   if (clientId) await logClientActivity(auth.agencyId, clientId, "signature_requested", actor, { note });
 
   return NextResponse.json({ request: toSignatureRequest(data, { includeLink: true, siteUrl: siteUrl() }), link, emailError }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency-display";
@@ -28,9 +29,7 @@ async function loadCandidate(agencyId, id) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { id } = await params;
@@ -58,11 +57,9 @@ export async function GET(request, { params }) {
     agencyName: agencyDisplayName(agency, auth.profile),
     preparedBy: recruiterDisplayName(auth.profile),
   });
-}
+});
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { id } = await params;
@@ -70,10 +67,9 @@ export async function POST(request, { params }) {
   const candidate = await loadCandidate(auth.agencyId, id);
   if (!candidate) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await request.json().catch(() => null);
   const blind = body?.blind === true;
   await logActivity(supabase, id, "client_profile_printed", recruiterDisplayName(auth.profile) || auth.userId, {
     note: blind ? "Anonymised profile" : "Named profile",
   });
   return NextResponse.json({ ok: true });
-}
+}, { body: JsonObject, optionalBody: true });

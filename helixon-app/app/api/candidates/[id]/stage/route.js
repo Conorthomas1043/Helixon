@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidate-activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -13,17 +14,12 @@ import { agencyDb } from "@/lib/agency-db";
 // of the agency's sub-stages (lib/custom-fields.js). A sub-stage on its own
 // also moves them to the stage it sits under; changing the stage without
 // one clears the sub-stage.
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { agencyId, userId, profile } = auth;
   const { id } = await params;
 
-  const body = await request.json().catch(() => ({}));
   let { stage } = body;
   const wantsSubStage = body.subStage !== undefined;
   let subStage = null;
@@ -73,4 +69,4 @@ export async function PATCH(request, { params }) {
   }
 
   return NextResponse.json(data);
-}
+}, { body: JsonObject, optionalBody: true });

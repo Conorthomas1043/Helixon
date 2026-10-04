@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logClientActivity } from "@/lib/clients";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
@@ -16,16 +17,13 @@ import { agencyDb } from "@/lib/agency-db";
 // Numbered from the agency's prefix; VAT and due date from its invoice
 // settings (and the client's payment terms, when set).
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const { data: p } = id
     ? await (await agencyDb()).from("placements").select("*, clients(name, address, payment_terms_days)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
     : { data: null };
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
 
   const [{ data: agency }, { data: numbers }, { data: contact }] = await Promise.all([
     supabase.from("agencies").select("name, settings").eq("id", auth.agencyId).maybeSingle(),
@@ -92,4 +90,4 @@ export async function POST(request, { params }) {
   }
   after(() => emitWebhook(auth.agencyId, "invoice.created", invoice));
   return NextResponse.json({ invoice: { id: invoice.id, number: invoice.number, total: invoice.total } }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });

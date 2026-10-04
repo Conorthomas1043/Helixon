@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { agencyDb } from "@/lib/agency-db";
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
   const { id } = await params;
 
@@ -44,4 +40,4 @@ export async function GET(request, { params }) {
       createdAt: c.created_at,
     }))
   );
-}
+});

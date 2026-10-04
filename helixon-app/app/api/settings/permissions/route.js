@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanPermissions, getAccess, normalisePermissions } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
@@ -9,18 +10,14 @@ import { logAudit } from "@/lib/agency-audit";
 //        signed-in member can see
 // PATCH  change them - owner or admin only
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   const [access, canManage] = await Promise.all([getAccess(auth), canManageWorkspace(auth)]);
   return NextResponse.json({ permissions: access.permissions, canManage, canSeeFinancials: access.canSeeFinancials, seesAllCandidates: access.seesAllCandidates });
-}
+});
 
-export async function PATCH(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, _context, auth, body) => {
   if (!(await canManageWorkspace(auth))) return NextResponse.json({ error: NOT_ADMIN }, { status: 403 });
-  const changes = cleanPermissions(await request.json().catch(() => ({})));
+  const changes = cleanPermissions(body);
   if (!Object.keys(changes).length) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
   const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
   const settings = data?.settings || {};
@@ -34,4 +31,4 @@ export async function PATCH(request) {
     summary: Object.entries(changes).map(([k, v]) => `${k === "financialsAdminOnly" ? "Financials admin-only" : "Own candidates only"}: ${v ? "on" : "off"}`).join(", "),
   });
   return NextResponse.json({ permissions, canManage: true });
-}
+}, { body: JsonObject, optionalBody: true });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JobInput } from "@/lib/api/schemas";
 import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns, logClientActivity } from "@/lib/clients";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -9,11 +10,7 @@ import { agencyDb } from "@/lib/agency-db";
 // See app/api/candidates/route.js for why this was rewritten - Clerk auth
 // instead of the dead Supabase-Auth bearer-token check, and agency_id
 // scoping that was previously missing entirely.
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (_request, _context, auth) => {
   const { agencyId } = auth;
 
   const { data: jobs, error } = await (await agencyDb())
@@ -41,16 +38,12 @@ export async function GET() {
       };
     })
   );
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const POST = customerRoute(async (request, _context, auth, input) => {
   const { agencyId, userId } = auth;
 
-  const body = (await request.json().catch(() => null)) ?? {};
+  const body = input;
   const title = cleanLine(body.title, 160);
   if (!title) {
     return NextResponse.json({ error: "A job title is required." }, { status: 400 });
@@ -103,4 +96,4 @@ export async function POST(request) {
     await logClientActivity(agencyId, data.client_id, "job_created", recruiterDisplayName(auth.profile) || userId, { note: data.title, job_id: data.id });
   }
   return NextResponse.json(data, { status: 201 });
-}
+}, { body: JobInput, optionalBody: true });

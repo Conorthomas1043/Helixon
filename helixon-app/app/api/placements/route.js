@@ -1,7 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { PlacementInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { logClientActivity } from "@/lib/clients";
@@ -20,9 +21,7 @@ import { agencyDb } from "@/lib/agency-db";
 
 const INVOICE_COLS = "id, number, status, total, currency, issued_on, due_on, paid_on";
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, _context, auth) => {
   const params = new URL(request.url).searchParams;
   let query = (await agencyDb()).from("placements").select(`*, invoices(${INVOICE_COLS})`).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(2000);
   const candidateId = cleanUuid(params.get("candidateId"));
@@ -39,12 +38,9 @@ export async function GET(request) {
     placements: visible.map((p) => redactPlacement({ ...toPlacement(p), recruiterName: names.get(p.recruiter_id) ?? null, invoices: p.invoices ?? [] }, access)),
     financialsHidden: !access.canSeeFinancials,
   });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = await request.json().catch(() => ({}));
+export const POST = customerRoute(async (request, _context, auth, body) => {
   const candidateId = cleanUuid(body.candidateId);
   const { data: candidate } = candidateId
     ? await (await agencyDb())
@@ -108,4 +104,4 @@ export async function POST(request) {
   await syncCandidate(data, actor);
   after(() => emitWebhook(auth.agencyId, "placement.created", toPlacement(data)));
   return NextResponse.json({ placement: redactPlacement({ ...toPlacement(data), invoices: [] }, await getAccess(auth)) }, { status: 201 });
-}
+}, { body: PlacementInput, optionalBody: true });

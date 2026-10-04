@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
@@ -32,24 +33,19 @@ async function load(auth, params) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ reference: toReference(ref), link: referenceUrl(ref.token) });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const now = new Date();
   let update;
@@ -86,15 +82,13 @@ export async function PATCH(request, { params }) {
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logActivity(supabase, ref.candidate_id, body.action === "resend" ? "reference_requested" : "reference_received", actor, { note });
   return NextResponse.json({ reference: toReference(data) });
-}
+}, { body: JsonObject, optionalBody: true });
 
-export async function DELETE(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await (await agencyDb()).from("candidate_references").delete().eq("id", ref.id).eq("agency_id", auth.agencyId);
   return NextResponse.json({ ok: true });
-}
+});

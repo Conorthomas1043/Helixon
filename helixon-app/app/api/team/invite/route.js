@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import {
   ensureAgencyOrg,
   getOrgSeatUsage,
@@ -40,11 +42,7 @@ async function requireAgencyPlan(context) {
 // GET: seat usage + pending invitations, so the dashboard can render
 // "3 of 5 seats used" and disable the invite form once full without a
 // separate round trip per number.
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (_request, _context, auth) => {
   if (!(await requireAgencyPlan(auth))) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
@@ -116,7 +114,7 @@ export async function GET() {
     reportError("[team/invite] Failed to read seat usage:", err.message);
     return NextResponse.json({ error: "Couldn't load team seat usage." }, { status: 500 });
   }
-}
+});
 
 // Returns a 403/500 response unless userId is the org's owner ("org:admin"),
 // or null when they are.
@@ -225,16 +223,11 @@ export async function POST(request) {
 // { userId }) - both free the seat they held, just at different points in
 // the invite lifecycle, so one endpoint covers both rather than splitting
 // "team offboarding" across two routes.
-export async function DELETE(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const DELETE = customerRoute(async (request, _context, auth, body) => {
   if (!(await requireAgencyPlan(auth))) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
   const invitationId = body?.invitationId;
   const memberUserId = body?.userId;
 
@@ -357,17 +350,12 @@ export async function DELETE(request) {
 
   await logAudit({ auth, request, action: "team.removed", targetType: "user", summary: `Removed a teammate${reassigned ? ` (${reassigned} candidates reassigned)` : ""}` });
   return NextResponse.json({ ok: true, reassigned });
-}
+}, { body: JsonObject, optionalBody: true });
 
 // PATCH { reassignUnassignedTo }: hand every candidate that no current
 // member owns (left behind by an earlier removal, or unassigned by hand) to
 // one member in a single step. Owner only, like the rest of team management.
-export async function PATCH(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
+export const PATCH = customerRoute(async (request, _context, auth, body) => {
   const { data: agency, error: agencyError } = await supabase
     .from("agencies")
     .select("clerk_org_id")
@@ -382,7 +370,6 @@ export async function PATCH(request) {
     if (ownerCheck) return ownerCheck;
   }
 
-  const body = await request.json().catch(() => null);
   const to = body?.reassignUnassignedTo;
   if (!to || !(await isValidAssignee(supabase, auth.agencyId, to))) {
     return NextResponse.json({ error: "Pick a current team member to take these candidates." }, { status: 400 });
@@ -401,4 +388,4 @@ export async function PATCH(request) {
     reportError("[team/invite] Bulk reassignment failed:", err.message);
     return NextResponse.json({ error: "Couldn't reassign those candidates. Please try again." }, { status: 500 });
   }
-}
+}, { body: JsonObject, optionalBody: true });

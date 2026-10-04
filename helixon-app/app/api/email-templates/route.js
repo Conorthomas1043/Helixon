@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { MERGE_FIELDS } from "@/lib/email-merge";
 import { cleanTemplate, toTemplate } from "@/lib/email-templates";
 import { inboundDomain } from "@/lib/tracked-email";
@@ -11,9 +12,7 @@ import { agencyDb } from "@/lib/agency-db";
 // GET                                          templates + the merge fields
 // POST { name, audience?, subject, body }      create one
 
-export async function GET() {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (_request, _context, auth) => {
   const { data, error } = await (await agencyDb()).from("email_templates").select("*").eq("agency_id", auth.agencyId).order("name");
   if (error) return NextResponse.json({ error: "Failed to load templates." }, { status: 500 });
   return NextResponse.json({
@@ -22,12 +21,10 @@ export async function GET() {
     // Whether replies are captured onto candidates' threads (lib/tracked-email.js).
     repliesCaptured: Boolean(inboundDomain() && process.env.RESEND_WEBHOOK_SECRET),
   });
-}
+});
 
-export async function POST(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const fields = cleanTemplate(await request.json().catch(() => ({})));
+export const POST = customerRoute(async (request, _context, auth, body) => {
+  const fields = cleanTemplate(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   const { data, error } = await (await agencyDb())
     .from("email_templates")
@@ -36,4 +33,4 @@ export async function POST(request) {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the template." }, { status: 500 });
   return NextResponse.json({ template: toTemplate(data) }, { status: 201 });
-}
+}, { body: JsonObject, optionalBody: true });

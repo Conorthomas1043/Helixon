@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
 import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/compare?ids=a,b,c&jobId=j
@@ -51,11 +51,7 @@ function shapeResult(result = {}) {
   };
 }
 
-export async function GET(request) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const GET = customerRoute(async (request, _context, auth) => {
   const { agencyId } = auth;
   const url = new URL(request.url);
   const ids = [...new Set((url.searchParams.get("ids") || "").split(",").map((s) => s.trim()).filter(Boolean))].slice(0, MAX_COMPARE);
@@ -175,4 +171,4 @@ export async function GET(request) {
   }
 
   return NextResponse.json({ job, candidates: shaped, pool, max: MAX_COMPARE });
-}
+});

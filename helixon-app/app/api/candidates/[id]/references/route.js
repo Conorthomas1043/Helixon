@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { JsonObject } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanReferee, toReference } from "@/lib/compliance";
@@ -18,14 +19,11 @@ import { agencyDb } from "@/lib/agency-db";
 
 const LINK_DAYS = 30;
 
-export async function POST(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = customerRoute(async (request, { params }, auth, body) => {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, full_name, name");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
   const referee = cleanReferee(body);
   if (referee.error) return NextResponse.json({ error: referee.error }, { status: 400 });
   const send = body.send !== false && Boolean(referee.referee_email);
@@ -68,4 +66,4 @@ export async function POST(request, { params }) {
     { reference: toReference({ ...data, requested_at: emailError ? null : data.requested_at }), link: referenceUrl(data.token), emailError },
     { status: 201 }
   );
-}
+}, { body: JsonObject, optionalBody: true });

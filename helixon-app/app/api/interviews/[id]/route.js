@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { customerRoute } from "@/lib/api/route";
+import { InterviewInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews";
@@ -19,24 +20,19 @@ import { agencyDb } from "@/lib/agency-db";
 
 const TIMING = ["starts_at", "duration_minutes", "location", "kind"];
 
-export async function GET(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
   const interview = await loadInterview(auth.agencyId, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { data } = await (await agencyDb()).from("interview_feedback").select("*").eq("interview_id", interview.id).order("created_at");
   return NextResponse.json({ interview: shapeInterview({ ...interview, interview_feedback: data ?? [] }, new Map(), { includeTokens: true }) });
-}
+});
 
-export async function PATCH(request, { params }) {
-  const auth = await requireCustomerContext();
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
   const interview = await loadInterview(auth.agencyId, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await request.json().catch(() => ({}));
   const fields = cleanInterviewFields(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (fields.contact_id) {
@@ -74,4 +70,4 @@ export async function PATCH(request, { params }) {
 
   const { data } = await (await agencyDb()).from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
   return NextResponse.json({ interview: shapeInterview(data, new Map(), { includeTokens: true }), invites });
-}
+}, { body: InterviewInput, optionalBody: true });
