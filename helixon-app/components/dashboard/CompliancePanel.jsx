@@ -19,6 +19,7 @@ import {
 } from "@/lib/dashboard-api";
 import { CHECK_KINDS, CHECK_STATUSES, REFERENCE_QUESTIONS, RTW_DOCUMENTS, checkState } from "@/lib/compliance";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const STATE_PILL = {
   ok: ["Verified", "#1f6f43", "#e5f4ea"],
@@ -213,6 +214,7 @@ function ReferenceAnswers({ answers }) {
 }
 
 export default function CompliancePanel({ candidate, onChanged }) {
+  const [ask, confirmDialog] = useConfirm();
   const [data, setData] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [dialog, setDialog] = useState(null);
@@ -279,6 +281,8 @@ export default function CompliancePanel({ candidate, onChanged }) {
   const rtw = data?.checks.find((c) => c.kind === "right_to_work");
 
   return (
+    <>
+      {confirmDialog}
     <Card eyebrow="Compliance" title={rtw ? `Right to work: ${CHECK_STATUSES[rtw.status]}` : "Compliance"}>
       {!data ? (
         <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
@@ -306,15 +310,19 @@ export default function CompliancePanel({ candidate, onChanged }) {
                 </Button>
               )}
               {p.consentGivenAt ? (
-                <Button size="sm" variant="ghost" disabled={busy} onClick={() => window.confirm("Record that they've withdrawn consent?") && run(() => privacyNoticeAction(candidate.id, "withdraw"), "Consent withdrawn.")}>
+                <Button size="sm" variant="ghost" disabled={busy} onClick={async () => (await ask({ title: "Record that they've withdrawn consent?", confirmLabel: "Record withdrawal", danger: true })) && run(() => privacyNoticeAction(candidate.id, "withdraw"), "Consent withdrawn.")}>
                   Consent withdrawn
                 </Button>
               ) : (
                 <Button
                   size="sm"
                   disabled={busy}
-                  onClick={() => {
-                    const how = window.prompt("How did they give consent? (e.g. on a call, by email)", "on a call");
+                  onClick={async () => {
+                    const how = await ask({
+                      title: "Record consent",
+                      input: { label: "How did they give consent?", hint: "For example: on a call, by email", defaultValue: "on a call", required: true, maxLength: 200 },
+                      confirmLabel: "Record consent",
+                    });
                     if (how) run(() => privacyNoticeAction(candidate.id, "consent", { source: how }), "Consent recorded.");
                   }}
                 >
@@ -370,7 +378,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
                         type="button"
                         disabled={busy}
                         style={{ color: INK_FAINT }}
-                        onClick={() => window.confirm("Delete this check and any stored document?") && run(() => deleteComplianceCheck(candidate.id, c.id))}
+                        onClick={async () => (await ask({ title: "Delete this check?", body: "Any document stored with it is deleted too.", confirmLabel: "Delete check", danger: true })) && run(() => deleteComplianceCheck(candidate.id, c.id))}
                       >
                         Delete
                       </button>
@@ -427,8 +435,12 @@ export default function CompliancePanel({ candidate, onChanged }) {
                             type="button"
                             disabled={busy}
                             style={{ color: INK_MUTED }}
-                            onClick={() => {
-                              const notes = window.prompt(`What did ${r.refereeName} say?`);
+                            onClick={async () => {
+                              const notes = await ask({
+                                title: "Reference taken by phone",
+                                input: { label: `What did ${r.refereeName} say?`, multiline: true, required: true },
+                                confirmLabel: "Save reference",
+                              });
                               if (notes) run(() => updateReference(candidate.id, r.id, { action: "taken", notes }), "Reference saved.");
                             }}
                           >
@@ -436,7 +448,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
                           </button>
                         </>
                       )}
-                      <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={() => window.confirm("Delete this reference?") && run(() => deleteReference(candidate.id, r.id))}>
+                      <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={async () => (await ask({ title: "Delete this reference?", confirmLabel: "Delete reference", danger: true })) && run(() => deleteReference(candidate.id, r.id))}>
                         Delete
                       </button>
                     </div>
@@ -477,5 +489,6 @@ export default function CompliancePanel({ candidate, onChanged }) {
         />
       )}
     </Card>
+    </>
   );
 }

@@ -10,6 +10,8 @@ import { useCallback, useEffect, useState } from "react";
 import { addWebhook, createApiKey, deleteWebhook, getApiKeys, getWebhooks, revokeApiKey, updateWebhook } from "@/lib/dashboard-api";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, Field, LoadingCard, Pill, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import ConnectedApps from "@/components/dashboard/ConnectedApps";
+import { useConfirm } from "@/components/dashboard/use-confirm";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 function fmt(d) {
   return d ? new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
@@ -24,6 +26,7 @@ function Code({ children }) {
 }
 
 function ApiKeys({ origin }) {
+  const [ask, confirmDialog] = useConfirm();
   const [keys, setKeys] = useState(null);
   const [name, setName] = useState("");
   const [fresh, setFresh] = useState(null);
@@ -65,7 +68,7 @@ function ApiKeys({ origin }) {
   }
 
   async function revoke(k) {
-    if (!window.confirm(`Revoke "${k.name}"? Anything using it stops working straight away.`)) return;
+    if (!(await ask({ title: `Revoke "${k.name}"?`, body: "Anything using this key stops working straight away.", confirmLabel: "Revoke key", danger: true }))) return;
     setError(null);
     try {
       await revokeApiKey(k.id);
@@ -76,6 +79,8 @@ function ApiKeys({ origin }) {
   }
 
   return (
+    <>
+      {confirmDialog}
     <Card title="API keys" eyebrow="REST API">
       <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
         A key lets a script, Zapier or the LinkedIn extension read and add candidates, jobs and clients in this workspace, acting as you. Keep it secret - anyone with it can see your candidates.
@@ -89,9 +94,9 @@ function ApiKeys({ origin }) {
             <code className="text-[12px] break-all flex-1" style={{ color: INK }}>
               {fresh}
             </code>
-            <Button size="sm" onClick={() => navigator.clipboard?.writeText(fresh)}>
+            <CopyButton size="sm" text={fresh}>
               Copy
-            </Button>
+            </CopyButton>
           </div>
         </div>
       )}
@@ -146,10 +151,12 @@ curl -X POST ${origin}/api/v1/candidates \\
         </div>
       </details>
     </Card>
+    </>
   );
 }
 
 function Webhooks() {
+  const [ask, confirmDialog] = useConfirm();
   const [data, setData] = useState(null);
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState([]);
@@ -192,6 +199,8 @@ function Webhooks() {
   };
 
   return (
+    <>
+      {confirmDialog}
     <Card title="Webhooks" eyebrow="Zapier, Make, your own systems">
       <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
         When something happens here, Helixon POSTs it as JSON to your address - in Zapier, use &quot;Webhooks by Zapier → Catch Hook&quot; and paste its URL. Each delivery is signed: check the Helixon-Signature header (t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot; with the signing secret).
@@ -266,7 +275,7 @@ function Webhooks() {
                 <button type="button" style={{ color: INK_MUTED }} onClick={() => setShown(shown === e.id ? null : e.id)}>
                   {shown === e.id ? "Hide secret" : "Signing secret"}
                 </button>
-                <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={() => window.confirm("Remove this webhook?") && run(() => deleteWebhook(e.id))}>
+                <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={async () => (await ask({ title: "Remove this webhook?", body: `${e.url} stops getting events.`, confirmLabel: "Remove webhook", danger: true })) && run(() => deleteWebhook(e.id))}>
                   Remove
                 </button>
               </div>
@@ -280,6 +289,7 @@ function Webhooks() {
         </ul>
       )}
     </Card>
+    </>
   );
 }
 

@@ -8,6 +8,7 @@ import { getInvoice, syncInvoiceToAccounts, updateInvoice } from "@/lib/dashboar
 import { printSection } from "@/lib/print";
 import { Page, PageHeader, Button, ErrorState, ErrorText, LoadingCard, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 function money(value, currency) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: currency || "GBP" }).format(Number(value) || 0);
@@ -26,6 +27,7 @@ function Lines({ text }) {
 }
 
 export default function InvoicePage({ params }) {
+  const [ask, confirmDialog] = useConfirm();
   const { id } = use(params);
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading");
@@ -54,7 +56,7 @@ export default function InvoicePage({ params }) {
   const setInvoiceStatus = useCallback(
     async (next) => {
       setError(null);
-      if (next === "void" && !window.confirm("Void this invoice? It stays on record, marked void.")) return;
+      if (next === "void" && !(await ask({ title: "Void this invoice?", body: "It stays on record, marked void.", confirmLabel: "Void invoice", danger: true }))) return;
       try {
         await updateInvoice(id, { status: next });
         setReloadKey((k) => k + 1);
@@ -62,7 +64,7 @@ export default function InvoicePage({ params }) {
         setError(err.message);
       }
     },
-    [id]
+    [id, ask]
   );
 
   const sendToAccounts = useCallback(async () => {
@@ -100,6 +102,8 @@ export default function InvoicePage({ params }) {
   const missingDetails = !from.address || !from.bankDetails;
 
   return (
+    <>
+      {confirmDialog}
     <Page width={900}>
       <PageHeader
         back={{ href: "/dashboard/placements", label: "Placements & invoices" }}
@@ -247,5 +251,6 @@ export default function InvoicePage({ params }) {
         )}
       </div>
     </Page>
+    </>
   );
 }

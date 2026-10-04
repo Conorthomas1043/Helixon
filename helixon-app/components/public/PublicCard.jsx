@@ -2,7 +2,7 @@
 // shortlist reviews, references, applications): a centred white card with
 // the Helixon mark - or the agency's name when the page is theirs.
 
-export default function PublicCard({ children, agencyName, width = 560 }) {
+export default function PublicCard({ children, agencyName, width = 560, loading = false }) {
   return (
     <main className="min-h-screen flex items-start sm:items-center justify-center px-4 py-10" style={{ background: "var(--mist)" }}>
       <div
@@ -17,13 +17,34 @@ export default function PublicCard({ children, agencyName, width = 560 }) {
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
-          <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            {agencyName || "Helixon"}
-          </span>
+          {loading ? (
+            <span className="h-3.5 w-28 rounded-full animate-pulse motion-reduce:animate-none" style={{ background: "var(--mist)" }} />
+          ) : (
+            <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              {agencyName || "Helixon"}
+            </span>
+          )}
         </div>
         {children}
       </div>
     </main>
+  );
+}
+
+// The loading state for those pages. The agency's name isn't known until
+// the link has been checked, so the name slot is a placeholder rather than
+// "Helixon" flashing up first, and the body is the shape of a form rather
+// than a bare "Loading…".
+export function PublicCardLoading({ label = "Loading…", width }) {
+  return (
+    <PublicCard loading width={width}>
+      <div aria-busy="true" className="space-y-3">
+        <p className="sr-only" role="status">{label}</p>
+        {["w-2/3 h-5", "w-full h-3", "w-5/6 h-3", "w-full h-24 mt-5", "w-full h-11 mt-5"].map((cls) => (
+          <div key={cls} className={`${cls} rounded-[8px] animate-pulse motion-reduce:animate-none`} style={{ background: "var(--mist)" }} />
+        ))}
+      </div>
+    </PublicCard>
   );
 }
 

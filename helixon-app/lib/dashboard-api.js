@@ -8,12 +8,21 @@
 
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { track } from "@/lib/analytics";
+import { announceSignedOut, OFFLINE_MESSAGE, responseErrorMessage } from "@/lib/api-errors";
 
 async function apiFetch(url, options) {
-  const res = await fetch(url, { credentials: "include", ...options });
+  let res;
+  try {
+    res = await fetch(url, { credentials: "include", ...options });
+  } catch (err) {
+    // A deliberate cancel isn't a connection problem.
+    if (err?.name === "AbortError") throw err;
+    throw new Error(OFFLINE_MESSAGE);
+  }
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(data?.error || "Request failed");
+    if (res.status === 401) announceSignedOut();
+    throw new Error(responseErrorMessage(res.status, data));
   }
   return data;
 }

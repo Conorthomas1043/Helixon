@@ -22,6 +22,7 @@ import {
 } from "@/lib/interviews";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { RatingPicker } from "@/components/public/PublicCard";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 const TZ = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "Europe/London";
 
@@ -270,7 +271,7 @@ export function RequestScorecardDialog({ interview, onClose, onSaved }) {
           <p>{result.emailed ? `Sent to ${f.reviewerEmail}.` : result.sendError ? `The link was created, but ${result.sendError.toLowerCase()} Copy it below.` : "Here's their private link:"}</p>
           <TextInput readOnly value={result.url} onFocus={(e) => e.target.select()} aria-label="Scorecard link" />
           <div className="flex gap-2">
-            <Button onClick={() => navigator.clipboard?.writeText(result.url)}>Copy link</Button>
+            <CopyButton text={result.url}>Copy link</CopyButton>
             <Button variant="primary" onClick={onClose}>Done</Button>
           </div>
         </div>

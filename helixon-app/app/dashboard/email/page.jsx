@@ -32,6 +32,7 @@ import {
   INK_MUTED,
   INK_FAINT,
 } from "@/components/dashboard/ui";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 function FieldChips({ fields, onInsert }) {
   return (
@@ -190,6 +191,7 @@ function SequenceDialog({ sequence, fields, onClose, onSaved }) {
 }
 
 export default function EmailSettingsPage() {
+  const [ask, confirmDialog] = useConfirm();
   const [data, setData] = useState(null);
   const [sequences, setSequences] = useState([]);
   const [status, setStatus] = useState("loading");
@@ -230,6 +232,8 @@ export default function EmailSettingsPage() {
   }
 
   return (
+    <>
+      {confirmDialog}
     <Page width={1000}>
       <PageHeader
         eyebrow="Outreach"
@@ -263,7 +267,7 @@ export default function EmailSettingsPage() {
                     </div>
                     <span className="text-[11px] tabular-nums" style={{ color: INK_FAINT }}>used {t.uses}×</span>
                     <Button size="sm" onClick={() => setTemplateDialog(t)}>Edit</Button>
-                    <Button size="sm" variant="ghost" onClick={() => window.confirm(`Delete "${t.name}"?`) && run(() => deleteEmailTemplate(t.id))}>Delete</Button>
+                    <Button size="sm" variant="ghost" onClick={async () => (await ask({ title: `Delete "${t.name}"?`, confirmLabel: "Delete template", danger: true })) && run(() => deleteEmailTemplate(t.id))}>Delete</Button>
                   </li>
                 ))}
               </ul>
@@ -287,7 +291,7 @@ export default function EmailSettingsPage() {
                     </div>
                     <Button size="sm" onClick={() => run(() => saveEmailSequence(s.id, { active: !s.active }))}>{s.active ? "Pause" : "Resume"}</Button>
                     <Button size="sm" onClick={() => setSequenceDialog(s)}>Edit</Button>
-                    <Button size="sm" variant="ghost" onClick={() => window.confirm(`Delete "${s.name}"? Everyone on it stops getting its emails.`) && run(() => deleteEmailSequence(s.id))}>Delete</Button>
+                    <Button size="sm" variant="ghost" onClick={async () => (await ask({ title: `Delete "${s.name}"?`, body: "Everyone on it stops getting its emails.", confirmLabel: "Delete sequence", danger: true })) && run(() => deleteEmailSequence(s.id))}>Delete</Button>
                   </li>
                 ))}
               </ul>
@@ -302,5 +306,6 @@ export default function EmailSettingsPage() {
         <SequenceDialog sequence={sequenceDialog === "new" ? null : sequenceDialog} fields={data.mergeFields} onClose={closeSequence} onSaved={() => { setSequenceDialog(null); reload(); }} />
       )}
     </Page>
+    </>
   );
 }

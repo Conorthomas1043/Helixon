@@ -72,8 +72,10 @@ export function OpportunityDialog({ opportunity = null, clientId = null, onClose
     }
   }
 
+  // Already inside a dialog, so deleting asks in place (a second dialog on
+  // top would share the Escape key) rather than with the native box.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   async function remove() {
-    if (!window.confirm(`Delete "${opportunity.title}"?`)) return;
     setBusy(true);
     try {
       await deleteOpportunity(opportunity.id);
@@ -133,10 +135,21 @@ export function OpportunityDialog({ opportunity = null, clientId = null, onClose
           <Button onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          {opportunity && (
-            <Button variant="danger" className="ml-auto" onClick={remove} disabled={busy}>
+          {opportunity && !confirmingDelete && (
+            <Button variant="danger" className="ml-auto" onClick={() => setConfirmingDelete(true)} disabled={busy}>
               Delete
             </Button>
+          )}
+          {opportunity && confirmingDelete && (
+            <span className="ml-auto flex items-center gap-2" role="group" aria-label="Confirm delete">
+              <span className="text-[12px]" style={{ color: "var(--ink-soft)" }}>Delete this deal?</span>
+              <Button size="sm" onClick={() => setConfirmingDelete(false)} disabled={busy}>
+                Keep
+              </Button>
+              <Button size="sm" variant="danger" onClick={remove} disabled={busy}>
+                Yes, delete
+              </Button>
+            </span>
           )}
         </div>
       </form>

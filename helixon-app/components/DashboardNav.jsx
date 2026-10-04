@@ -11,6 +11,7 @@ import { PRESENCE_LABELS, computePresence } from "@/lib/presence";
 import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
+import { SIGNED_OUT_EVENT } from "@/lib/api-errors";
 
 // The everyday screens are tabs; everything else sits under "More",
 // grouped, so the bar fits without scrolling on a laptop.
@@ -418,8 +419,56 @@ function DashboardNavContent() {
         </div>
         <MoreMenu activeHref={activeHref} compact plan={me?.plan} />
       </div>
+      <SignedOutBanner />
       {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
     </nav>
+  );
+}
+
+// When a request comes back 401 (the session ended: signed out in another
+// tab, a password change, an admin removed the session), every save on the
+// page would fail with a small error and no way forward. This says what
+// happened once, at the top, and opens sign-in in a new tab so whatever is
+// typed on this page survives. It clears itself when the person comes back
+// to the tab signed in.
+function SignedOutBanner() {
+  const [signedOut, setSignedOut] = useState(false);
+  useEffect(() => {
+    const onSignedOut = () => setSignedOut(true);
+    window.addEventListener(SIGNED_OUT_EVENT, onSignedOut);
+    return () => window.removeEventListener(SIGNED_OUT_EVENT, onSignedOut);
+  }, []);
+  useEffect(() => {
+    if (!signedOut) return undefined;
+    const recheck = () => {
+      if (document.visibilityState !== "visible") return;
+      fetch("/api/auth/me", { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.ok) setSignedOut(false);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener("focus", recheck);
+    document.addEventListener("visibilitychange", recheck);
+    return () => {
+      window.removeEventListener("focus", recheck);
+      document.removeEventListener("visibilitychange", recheck);
+    };
+  }, [signedOut]);
+  if (!signedOut) return null;
+  return (
+    <div role="alert" className="border-t" style={{ background: "#fff8e6", borderColor: "#f3d48a" }}>
+      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]" style={{ color: "var(--ink)" }}>
+        <span>
+          <strong style={{ color: "#92620f" }}>You&apos;ve been signed out, so changes can&apos;t be saved.</strong>{" "}
+          Sign in again in a new tab, then come back and try again. Anything you&apos;ve typed here stays put.
+        </span>
+        <a href="/login" target="_blank" rel="noopener" className="font-semibold underline" style={{ color: "#92620f" }}>
+          Sign in again
+        </a>
+      </div>
+    </div>
   );
 }
 

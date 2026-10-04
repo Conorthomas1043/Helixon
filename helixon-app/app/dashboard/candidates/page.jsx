@@ -470,14 +470,14 @@ function EmptyState({ hasFilters, onClear }) {
   );
 }
 
-function ErrorState({ onRetry }) {
+function ErrorState({ onRetry, message }) {
   return (
     <div className="flex flex-col items-center text-center py-14 px-6">
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         Unable to load candidates
       </p>
       <p className="text-[13px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
-        Something went wrong while loading the candidate database.
+        {message || "Something went wrong while loading the candidate database."}
       </p>
       <button
         type="button"
@@ -1090,11 +1090,11 @@ function CandidateDatabaseContent() {
           </div>
 
           {status === "loading" && <ListSkeleton />}
-          {status === "error" && errorMessage && errorMessage !== "Failed to load candidates" && errorMessage !== "Request failed" ? (
-            <p role="alert" className="text-[13px] py-6 text-center" style={{ color: RED }}>{errorMessage}</p>
-          ) : status === "error" ? (
-            <ErrorState onRetry={retry} />
-          ) : null}
+          {/* Always with "Try again": a dropped connection or a server error
+              is usually fixed by retrying, so a bare message was a dead end. */}
+          {status === "error" && (
+            <ErrorState onRetry={retry} message={errorMessage && errorMessage !== "Failed to load candidates" ? errorMessage : null} />
+          )}
           {status === "ready" && result && result.items.length === 0 && <EmptyState hasFilters={hasAnyFilter} onClear={clearFilters} />}
           {status === "ready" && result && result.items.length > 0 && (
             <ul className="divide-y" style={{ borderColor: "var(--border)" }}>

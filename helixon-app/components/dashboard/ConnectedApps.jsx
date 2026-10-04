@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { disconnectIntegration, getCareersSettings, getConnections, syncIntegration } from "@/lib/dashboard-api";
 import { Button, Card, ErrorText, Pill, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const ERRORS = {
   not_configured: "isn't set up on this Helixon installation yet.",
@@ -37,6 +38,7 @@ function readBanner() {
 }
 
 function Row({ item, canManage, onChanged }) {
+  const [ask, confirmDialog] = useConfirm();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
@@ -58,6 +60,7 @@ function Row({ item, canManage, onChanged }) {
 
   return (
     <li className="py-3.5 flex flex-wrap items-start justify-between gap-3">
+      {confirmDialog}
       <div className="min-w-0">
         <p className="text-[13px] font-semibold" style={{ color: INK }}>
           {item.label} {c ? <Pill color="var(--forest)" background="var(--mint)">Connected</Pill> : !item.configured ? <Pill>Not set up</Pill> : null}
@@ -99,8 +102,8 @@ function Row({ item, canManage, onChanged }) {
                 size="sm"
                 variant="ghost"
                 disabled={busy}
-                onClick={() =>
-                  window.confirm(`Disconnect ${item.label}?`) &&
+                onClick={async () =>
+                  (await ask({ title: `Disconnect ${item.label}?`, confirmLabel: "Disconnect", danger: true })) &&
                   run(async () => {
                     await disconnectIntegration(item.provider);
                     onChanged();

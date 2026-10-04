@@ -22,10 +22,8 @@ import {
 import { offerLetterText } from "@/lib/signatures-shared";
 import SignaturesCard from "@/components/dashboard/SignaturesCard";
 import { Button, Card, Dialog, ErrorText, Field, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
-
-function copy(text) {
-  navigator.clipboard?.writeText(text).catch(() => {});
-}
+import { useConfirm } from "@/components/dashboard/use-confirm";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 // Offer letters and contracts, worded from the candidate's latest placement.
 export function CandidateDocumentsCard({ candidate }) {
@@ -71,6 +69,7 @@ export function CandidateDocumentsCard({ candidate }) {
 // A private link where the candidate updates their own details and uploads
 // documents (app/portal/[token]).
 export function SelfServiceCard({ candidate }) {
+  const [ask, confirmDialog] = useConfirm();
   const [state, setState] = useState({ loading: true, link: null, unavailable: false });
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -100,7 +99,7 @@ export function SelfServiceCard({ candidate }) {
   }
 
   async function revoke() {
-    if (!window.confirm("Turn this link off? The candidate won't be able to use it any more.")) return;
+    if (!(await ask({ title: "Turn this link off?", body: "The candidate won't be able to use it any more.", confirmLabel: "Turn link off", danger: true }))) return;
     setBusy(true);
     try {
       await revokePortalLink(candidate.id);
@@ -116,6 +115,8 @@ export function SelfServiceCard({ candidate }) {
   if (state.unavailable) return null;
   const { link } = state;
   return (
+    <>
+      {confirmDialog}
     <Card title="Candidate self-service">
       <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
         A private link where they update their details and availability and upload documents like their right to work.
@@ -126,7 +127,7 @@ export function SelfServiceCard({ candidate }) {
         <div className="space-y-2">
           <div className="flex gap-2">
             <TextInput readOnly value={link.url} aria-label="Self-service link" onFocus={(e) => e.target.select()} />
-            <Button size="sm" onClick={() => copy(link.url)}>Copy</Button>
+            <CopyButton size="sm" text={link.url}>Copy</CopyButton>
           </div>
           <p className="text-[11px]" style={{ color: INK_FAINT }}>
             Works until {new Date(link.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
@@ -146,6 +147,7 @@ export function SelfServiceCard({ candidate }) {
       {note && <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>{note}</p>}
       <ErrorText>{error}</ErrorText>
     </Card>
+    </>
   );
 }
 
@@ -263,16 +265,22 @@ export function BookingLinksCard({ candidate, onBooked }) {
             <li key={l.id} className="text-[13px]">
               <p style={{ color: INK }}>{l.openSlots.length} time{l.openSlots.length === 1 ? "" : "s"} waiting for a pick</p>
               <div className="flex gap-3 text-[11px] font-semibold mt-1">
-                <button type="button" style={{ color: "var(--forest)" }} onClick={() => copy(l.url)}>Copy link</button>
+                <CopyButton plain text={l.url} style={{ color: "var(--forest)" }}>Copy link</CopyButton>
                 <button
                   type="button"
                   style={{ color: INK_FAINT }}
                   onClick={async () => {
-                    await cancelBookingLink(candidate.id, l.id).catch(() => {});
+                    setNote("");
+                    try {
+                      await cancelBookingLink(candidate.id, l.id);
+                      setNote("Link cancelled. The candidate can no longer pick a time from it.");
+                    } catch (err) {
+                      setNote(`Couldn't cancel that link: ${err.message}`);
+                    }
                     setReloadKey((k) => k + 1);
                   }}
                 >
-                  Cancel
+                  Cancel link
                 </button>
               </div>
             </li>
@@ -298,6 +306,7 @@ export function BookingLinksCard({ candidate, onBooked }) {
 // Merge a duplicate record of the same person into this one, or link two
 // records for different jobs as the same person.
 export function MergeDuplicateCard({ candidate }) {
+  const [ask, confirmDialog] = useConfirm();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -317,10 +326,21 @@ export function MergeDuplicateCard({ candidate }) {
 
   async function pick(other) {
     const sameJob = (other.jobId ?? null) === (candidate.jobId ?? null);
-    const message = sameJob
-      ? `Merge ${other.fullName} (${other.jobTitle}) into this record? Their notes, activity, interviews, emails and documents move here, and the duplicate is deleted. This can't be undone.`
-      : `${other.fullName} is on a different job (${other.jobTitle}). Link the two as the same person? Both pipeline entries are kept.`;
-    if (!window.confirm(message)) return;
+    const ok = await ask(
+      sameJob
+        ? {
+            title: `Merge ${other.fullName} into this record?`,
+            body: `Their notes, activity, interviews, emails and documents (${other.jobTitle}) move here, and the duplicate is deleted. This can't be undone.`,
+            confirmLabel: "Merge records",
+            danger: true,
+          }
+        : {
+            title: `Link ${other.fullName} as the same person?`,
+            body: `They're on a different job (${other.jobTitle}). Both pipeline entries are kept.`,
+            confirmLabel: "Link records",
+          }
+    );
+    if (!ok) return;
     setBusy(true);
     setError("");
     try {
@@ -335,6 +355,8 @@ export function MergeDuplicateCard({ candidate }) {
   }
 
   return (
+    <>
+      {confirmDialog}
     <Card title="Duplicates" action={!open && <Button size="sm" onClick={() => setOpen(true)}>Find</Button>}>
       {!open ? (
         <p className="text-[12px]" style={{ color: INK_MUTED }}>Same person on file twice? Merge the records or link them.</p>
@@ -360,6 +382,7 @@ export function MergeDuplicateCard({ candidate }) {
         </div>
       )}
     </Card>
+    </>
   );
 }
 

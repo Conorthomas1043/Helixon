@@ -21,6 +21,7 @@ import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stage-labels";
 import ShareShortlist from "@/components/dashboard/ShareShortlist";
 import { CLIENT_DECISIONS } from "@/lib/client-decisions";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 function Avatar({ name }) {
   return (
@@ -105,6 +106,7 @@ function clientEmailHref(shortlist, candidates) {
 }
 
 export default function ShortlistDetailPage({ params }) {
+  const [ask, confirmDialog] = useConfirm();
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -177,7 +179,7 @@ export default function ShortlistDetailPage({ params }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Delete the shortlist "${data.shortlist.name}"? The candidates themselves aren't affected.`)) return;
+    if (!(await ask({ title: `Delete the shortlist "${data.shortlist.name}"?`, body: "Share links stop working. The candidates themselves aren't affected.", confirmLabel: "Delete shortlist", danger: true }))) return;
     try {
       await deleteShortlist(id);
       router.push("/dashboard/shortlists");
@@ -191,6 +193,8 @@ export default function ShortlistDetailPage({ params }) {
   const pill = "inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
   return (
+    <>
+      {confirmDialog}
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
       <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
@@ -359,5 +363,6 @@ export default function ShortlistDetailPage({ params }) {
       </div>
       {sharing && shortlist && <ShareShortlist shortlist={shortlist} onClose={() => setSharing(false)} />}
     </main>
+    </>
   );
 }

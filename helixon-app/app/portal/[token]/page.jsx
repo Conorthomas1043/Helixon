@@ -5,7 +5,7 @@
 // availability current and uploads documents like their right to work.
 
 import { use, useEffect, useRef, useState } from "react";
-import PublicCard from "@/components/public/PublicCard";
+import PublicCard, { PublicCardLoading } from "@/components/public/PublicCard";
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
@@ -87,7 +87,7 @@ export default function PortalPage({ params }) {
     }
   }
 
-  if (state === "loading") return <PublicCard><p className="text-sm" style={{ color: MUTED }}>Loading…</p></PublicCard>;
+  if (state === "loading") return <PublicCardLoading label="Loading your details…" />;
   if (state === "error") {
     return (
       <PublicCard>

@@ -11,6 +11,7 @@ import { downloadCsv } from "@/lib/csv";
 import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements";
 import { Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placements";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 function Stat({ label, value, hint, tone }) {
   return (
@@ -33,6 +34,7 @@ function Stat({ label, value, hint, tone }) {
 const sum = (list, f) => list.reduce((s, x) => s + (Number(f(x)) || 0), 0);
 
 export default function PlacementsPage() {
+  const [ask, confirmDialog] = useConfirm();
   // ?tab=invoices and ?kind=contract (links from the Overview's alerts).
   // Nothing here renders before the data loads, so reading the URL up
   // front can't make the server and client renders differ.
@@ -112,7 +114,7 @@ export default function PlacementsPage() {
 
   async function setInvoiceStatus(id, next) {
     setInvoiceError(null);
-    if (next === "void" && !window.confirm("Void this invoice? Contract timesheets on it go back to approved so they can be invoiced again.")) return;
+    if (next === "void" && !(await ask({ title: "Void this invoice?", body: "It stays on record, marked void. Contract timesheets on it go back to approved so they can be invoiced again.", confirmLabel: "Void invoice", danger: true }))) return;
     try {
       await updateInvoice(id, { status: next });
       reload();
@@ -137,6 +139,8 @@ export default function PlacementsPage() {
   }
 
   return (
+    <>
+      {confirmDialog}
     <Page>
       <PageHeader
         eyebrow="Revenue"
@@ -322,5 +326,6 @@ export default function PlacementsPage() {
         </>
       )}
     </Page>
+    </>
   );
 }

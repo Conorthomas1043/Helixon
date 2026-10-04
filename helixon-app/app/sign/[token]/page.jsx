@@ -5,7 +5,7 @@
 // name and confirms; the agency gets the signed copy with an audit trail.
 
 import { use, useEffect, useState } from "react";
-import PublicCard from "@/components/public/PublicCard";
+import PublicCard, { PublicCardLoading } from "@/components/public/PublicCard";
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
@@ -24,6 +24,8 @@ export default function SignPage({ params }) {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [declining, setDeclining] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
 
   useEffect(() => {
     fetch(`/api/sign/${token}`)
@@ -58,7 +60,7 @@ export default function SignPage({ params }) {
     }
   }
 
-  if (state === "loading") return <PublicCard><p className="text-sm" style={{ color: MUTED }}>Loading…</p></PublicCard>;
+  if (state === "loading") return <PublicCardLoading label="Loading the document…" />;
   if (state === "error" || state === "expired" || state === "closed" || state === "declined") {
     const [title, body] = {
       error: ["Link not available", error],
@@ -128,18 +130,41 @@ export default function SignPage({ params }) {
         <button type="submit" disabled={saving || !agree || name.trim().length < 2} className="w-full text-[14px] font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
           {saving ? "Signing…" : "Sign"}
         </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => {
-            const reason = window.prompt("Optional: tell the agency why you're not signing.");
-            if (reason !== null) send({ decline: true, reason });
-          }}
-          className="w-full text-[12px] underline"
-          style={{ color: MUTED }}
-        >
-          I don&apos;t want to sign this
-        </button>
+        {/* Declining asks in place: a native prompt() box can't be labelled,
+            looks like a browser warning, and is easy to dismiss by mistake. */}
+        {declining ? (
+          <div className="rounded-[12px] p-4 space-y-3" style={{ border: "1px solid var(--border)", background: "var(--mist)" }}>
+            <label className="block text-[13px]" style={{ color: INK }}>
+              <span className="block font-semibold mb-1">Why aren&apos;t you signing? (optional)</span>
+              <textarea
+                rows={3}
+                maxLength={1000}
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white"
+                style={{ border: "1px solid var(--border)", color: INK }}
+              />
+            </label>
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+                Go back
+              </button>
+              <button type="button" disabled={saving} onClick={() => send({ decline: true, reason: declineReason.trim() })} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
+                {saving ? "Sending…" : "Tell the agency I won't sign"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => setDeclining(true)}
+            className="w-full text-[12px] underline"
+            style={{ color: MUTED }}
+          >
+            I don&apos;t want to sign this
+          </button>
+        )}
       </form>
     </PublicCard>
   );

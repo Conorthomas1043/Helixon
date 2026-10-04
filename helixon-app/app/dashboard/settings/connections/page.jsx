@@ -6,30 +6,23 @@
 
 import { useEffect, useState } from "react";
 import { Button, Card, ErrorText, LoadingCard, Page, PageHeader, TextInput, INK, INK_MUTED } from "@/components/dashboard/ui";
+import { useConfirm } from "@/components/dashboard/use-confirm";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 function CopyRow({ label, value }) {
-  const [copied, setCopied] = useState(false);
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
       <div className="flex gap-2">
         <TextInput readOnly value={value} onFocus={(e) => e.target.select()} aria-label={label} />
-        <Button
-          onClick={() => {
-            navigator.clipboard?.writeText(value).then(() => {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1500);
-            });
-          }}
-        >
-          {copied ? "Copied" : "Copy"}
-        </Button>
+        <CopyButton text={value}>Copy</CopyButton>
       </div>
     </div>
   );
 }
 
 export default function ConnectionsPage() {
+  const [ask, confirmDialog] = useConfirm();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,7 +35,14 @@ export default function ConnectionsPage() {
   }, []);
 
   async function rotate(purpose) {
-    if (!window.confirm(purpose === "calendar" ? "Make a new feed address? Calendars subscribed to the old one stop updating." : "Make a new BCC address? The old one stops working.")) return;
+    const calendar = purpose === "calendar";
+    const ok = await ask({
+      title: calendar ? "Make a new feed address?" : "Make a new BCC address?",
+      body: calendar ? "Calendars subscribed to the old address stop updating." : "The old address stops working.",
+      confirmLabel: calendar ? "Make new feed address" : "Make new BCC address",
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       const res = await fetch("/api/connections", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ purpose, rotate: true }) });
@@ -56,6 +56,8 @@ export default function ConnectionsPage() {
   }
 
   return (
+    <>
+      {confirmDialog}
     <Page width={800}>
       <PageHeader back={{ href: "/dashboard/settings", label: "Settings" }} eyebrow="You" title="Calendar & email" subtitle="Personal to you - your teammates have their own." />
       <ErrorText>{error}</ErrorText>
@@ -104,5 +106,6 @@ export default function ConnectionsPage() {
         </>
       )}
     </Page>
+    </>
   );
 }

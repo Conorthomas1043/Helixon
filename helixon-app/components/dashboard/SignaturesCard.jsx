@@ -10,6 +10,8 @@ import { createSignatureRequest, getSignatureRequest, getSignatureRequests, void
 import { SIGNATURE_KINDS, SIGNATURE_STATUSES } from "@/lib/signatures-shared";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidate-format";
+import { useConfirm } from "@/components/dashboard/use-confirm";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 const STATUS_STYLE = {
   sent: [INK_MUTED, "var(--mist)"],
@@ -77,7 +79,7 @@ function NewDocumentForm({ kinds, signer, template, clientId, candidateId, place
         </p>
         <TextInput readOnly value={done.link} onFocus={(e) => e.target.select()} aria-label="Signing link" />
         <div className="flex gap-2 mt-4">
-          <Button variant="primary" onClick={() => navigator.clipboard?.writeText(done.link)}>Copy link</Button>
+          <CopyButton variant="primary" text={done.link}>Copy link</CopyButton>
           <Button onClick={onSaved}>Done</Button>
         </div>
       </Dialog>
@@ -179,6 +181,7 @@ function ViewDialog({ id, onClose }) {
 }
 
 export default function SignaturesCard({ title = "Documents to sign", kinds, signer, template, clientId = null, candidateId = null, placementId = null, onChanged }) {
+  const [ask, confirmDialog] = useConfirm();
   const [list, setList] = useState(null);
   const [unavailable, setUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -206,7 +209,7 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
   const close = useCallback(() => setCreating(false), []);
 
   async function withdraw(r) {
-    if (!window.confirm(`Withdraw "${r.title}"? The link will stop working.`)) return;
+    if (!(await ask({ title: `Withdraw "${r.title}"?`, body: "The signing link stops working.", confirmLabel: "Withdraw", danger: true }))) return;
     try {
       await voidSignatureRequest(r.id);
       reload();
@@ -216,6 +219,8 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
   }
 
   return (
+    <>
+      {confirmDialog}
     <Card title={title} action={!unavailable && <Button size="sm" onClick={() => setCreating(true)}>+ Send</Button>}>
       {list === null ? (
         <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>
@@ -242,9 +247,9 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
                 {r.status === "sent" && (
                   <div className="flex gap-3 mt-1 text-[11px] font-semibold">
                     {r.link && (
-                      <button type="button" style={{ color: "var(--forest)" }} onClick={() => navigator.clipboard?.writeText(r.link)}>
+                      <CopyButton plain text={r.link} style={{ color: "var(--forest)" }}>
                         Copy link
-                      </button>
+                      </CopyButton>
                     )}
                     <button type="button" style={{ color: INK_FAINT }} onClick={() => withdraw(r)}>
                       Withdraw
@@ -260,5 +265,6 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
       {creating && <NewDocumentDialog kinds={kinds} signer={signer} template={template} clientId={clientId} candidateId={candidateId} placementId={placementId} onClose={close} onSaved={reload} />}
       {viewing && <ViewDialog id={viewing} onClose={() => setViewing(null)} />}
     </Card>
+    </>
   );
 }
