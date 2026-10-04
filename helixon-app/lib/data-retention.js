@@ -8,6 +8,7 @@
 
 import { eraseCandidates } from "@/lib/candidate-erasure";
 import { getAgencyPrivacy, retentionCutoff, RETENTION_WARNING_DAYS, addMonths } from "@/lib/privacy-settings";
+import { reportError } from "@/lib/report-error";
 
 const MAX_PER_AGENCY_PER_RUN = 2000;
 
@@ -66,7 +67,7 @@ export async function sweepAllAgencies(supabase, now = new Date()) {
       summary.erased += r.erased;
       summary.expired += r.expired;
     } catch (err) {
-      console.error(`[data-retention] Sweep failed for agency ${a.id}:`, err.message);
+      reportError(`[data-retention] Sweep failed for agency ${a.id}:`, err.message);
       summary.failed.push(a.id);
     }
   }

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getCustomisation, setCustomFieldValues } from "@/lib/dashboard-api";
 import { fieldsFor, formatFieldValue, subStagesFor } from "@/lib/custom-fields";
 import { Button, Card, ErrorText, Field, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { reportQuietly } from "@/lib/report-error";
 
 // The customisation, or null while loading / if it couldn't be read.
 export function useCustomisation() {
@@ -20,7 +21,7 @@ export function useCustomisation() {
       .then((c) => {
         if (!cancelled) setValue(c);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

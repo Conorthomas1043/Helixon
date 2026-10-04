@@ -1,5 +1,6 @@
 import "server-only";
 import { getAdminSupabase } from "@/lib/admin-supabase";
+import { reportError } from "@/lib/report-error";
 
 export async function writeAdminAudit({
   adminUsername,
@@ -78,7 +79,7 @@ export async function writeAdminAuditSafe(entry) {
   try {
     return await writeAdminAudit(entry);
   } catch (error) {
-    console.error(
+    reportError(
       `[admin-audit] COULD NOT RECORD "${entry?.action}" by "${entry?.adminUsername}":`,
       error?.message || error
     );

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "redis";
+import { reportError } from "@/lib/report-error";
 
 /**
  * Cached, connected node-redis client for the Vercel-provisioned Redis
@@ -20,7 +21,7 @@ export function getRedis() {
   if (!globalThis.__helixonRedisClientPromise) {
     const client = createClient({ url });
     client.on("error", (err) => {
-      console.error("[redis] client error:", err.message);
+      reportError("[redis] client error:", err.message);
     });
     globalThis.__helixonRedisClientPromise = client
       .connect()

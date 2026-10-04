@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { reportError } from "@/lib/report-error";
 
 // Shared response helpers for the /api/admin/* routes.
 
@@ -18,13 +19,13 @@ export function adminErrorResponse(scope, error) {
   if (error?.message === "Unauthorized") {
     return adminJson({ error: "Unauthorized" }, 401);
   }
-  console.error(`[admin/${scope}]`, error);
+  reportError(`[admin/${scope}]`, error);
   return adminJson({ error: "Something went wrong. Please try again." }, 500);
 }
 
 // For a failed database call inside a handler: log the detail, return a
 // generic 500 the handler can `return` directly.
 export function adminDbError(scope, error) {
-  console.error(`[admin/${scope}] Database error:`, error?.message || error);
+  reportError(`[admin/${scope}] Database error:`, error?.message || error);
   return adminJson({ error: "Something went wrong. Please try again." }, 500);
 }

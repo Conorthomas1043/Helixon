@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { disconnectIntegration, getCareersSettings, getConnections, syncIntegration } from "@/lib/dashboard-api";
 import { Button, Card, ErrorText, Pill, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { reportQuietly } from "@/lib/report-error";
 
 const ERRORS = {
   not_configured: "isn't set up on this Helixon installation yet.",
@@ -150,7 +151,7 @@ export default function ConnectedApps() {
   useEffect(() => {
     getCareersSettings()
       .then((s) => setFeedUrl(s?.enabled ? s.feedUrl : null))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   if (error) return <Card title="Connected apps"><ErrorText>{error}</ErrorText></Card>;

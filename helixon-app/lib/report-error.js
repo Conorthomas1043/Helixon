@@ -33,3 +33,20 @@ export function reportError(...args) {
     // Reporting must never break the request that hit the error.
   }
 }
+
+// For fire-and-forget work whose failure shouldn't interrupt anyone (loading
+// a side list, recording a print, a background sync): `.catch(reportQuietly)`.
+// It replaces `.catch(() => {})`, which hid every failure. Cancellations
+// and plain "you're offline" errors are still ignored; anything else goes to
+// Sentry as a warning.
+export function reportQuietly(error) {
+  try {
+    if (error?.name === "AbortError") return;
+    const message = String(error?.message || error || "");
+    if (/Couldn't reach Helixon|Failed to fetch|NetworkError|Load failed/i.test(message)) return;
+    Sentry.captureException(error instanceof Error ? error : new Error(message || "Background task failed"), { level: "warning" });
+  } catch {
+    // Reporting must never throw.
+  }
+}
+

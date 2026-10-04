@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Resend } from "resend";
 import { getRedis } from "@/lib/redis";
+import { reportError } from "@/lib/report-error";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -85,7 +86,7 @@ export async function getStripeSnapshot() {
         .sort((a, b) => b.count - a.count),
     };
   } catch (error) {
-    console.error("[live-services] Stripe snapshot failed:", error.message);
+    reportError("[live-services] Stripe snapshot failed:", error.message);
     return { configured: true, error: "Failed to reach Stripe." };
   }
 }
@@ -129,7 +130,7 @@ export async function getClerkSnapshot() {
       sampleSize: users.length,
     };
   } catch (error) {
-    console.error("[live-services] Clerk snapshot failed:", error.message);
+    reportError("[live-services] Clerk snapshot failed:", error.message);
     return { configured: true, error: "Failed to reach Clerk." };
   }
 }
@@ -147,7 +148,7 @@ export async function getRedisSnapshot() {
     await redis.ping();
     return { configured: true, connected: true, latencyMs: Date.now() - start };
   } catch (error) {
-    console.error("[live-services] Redis snapshot failed:", error.message);
+    reportError("[live-services] Redis snapshot failed:", error.message);
     return { configured: true, connected: false, error: "Failed to reach Redis." };
   }
 }
@@ -169,7 +170,7 @@ export async function getResendSnapshot() {
       allVerified: domains.length > 0 && domains.every((d) => d.status === "verified"),
     };
   } catch (error) {
-    console.error("[live-services] Resend snapshot failed:", error.message);
+    reportError("[live-services] Resend snapshot failed:", error.message);
     return { configured: true, error: "Failed to reach Resend." };
   }
 }
@@ -218,7 +219,7 @@ export async function getSentrySnapshot() {
       })),
     };
   } catch (error) {
-    console.error("[live-services] Sentry snapshot failed:", error.message);
+    reportError("[live-services] Sentry snapshot failed:", error.message);
     return { configured: true, error: "Failed to reach Sentry." };
   }
 }

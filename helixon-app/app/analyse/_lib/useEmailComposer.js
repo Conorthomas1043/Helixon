@@ -11,6 +11,7 @@
 import { useCallback, useRef, useState } from "react";
 import posthog from "@/lib/posthog";
 import { EMAIL_PURPOSES, EMAIL_RE } from "./analyse";
+import { reportQuietly } from "@/lib/report-error";
 
 export function useEmailComposer({
   candidateId,
@@ -81,7 +82,7 @@ export function useEmailComposer({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ artifactId, finalText }),
-    }).catch(() => {});
+    }).catch(reportQuietly);
   }, []);
 
   const copy = useCallback(async () => {

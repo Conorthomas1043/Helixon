@@ -31,7 +31,7 @@ export function usePresenceHeartbeat(enabled) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active }),
         keepalive: true,
-      }).catch(() => {});
+      }).catch(() => {}); // best-effort: a missed beat is retried next interval, so not reported
     }
 
     function onActivity() {

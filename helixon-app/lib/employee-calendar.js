@@ -11,6 +11,7 @@ import "server-only";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { can } from "@/lib/employee-permissions";
+import { reportError } from "@/lib/report-error";
 
 const EVENT_SELECT = "*, creator:created_by(id,display_name,full_name,username)";
 
@@ -21,7 +22,7 @@ export async function getEvents({ from, to } = {}) {
 
   const { data, error } = await query;
   if (error) {
-    console.error("[employee-calendar] getEvents failed:", error.message);
+    reportError("[employee-calendar] getEvents failed:", error.message);
     return [];
   }
   return data || [];
@@ -43,7 +44,7 @@ export async function addEvent(employeeId, { title, notes, location, start_at, e
     .single();
 
   if (error) {
-    console.error("[employee-calendar] addEvent failed:", error.message);
+    reportError("[employee-calendar] addEvent failed:", error.message);
     return null;
   }
   return data;
@@ -64,7 +65,7 @@ export async function updateEvent(employeeId, id, updates) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-calendar] updateEvent failed:", error.message);
+    reportError("[employee-calendar] updateEvent failed:", error.message);
     return null;
   }
   return data;
@@ -80,7 +81,7 @@ export async function deleteEvent(employeeId, id) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-calendar] deleteEvent failed:", error.message);
+    reportError("[employee-calendar] deleteEvent failed:", error.message);
     return false;
   }
   return !!data;
@@ -100,7 +101,7 @@ export async function ensureFeedToken(employeeId) {
   const token = crypto.randomBytes(24).toString("hex");
   const { error } = await supabase.from("employees").update({ calendar_feed_token: token }).eq("id", employeeId);
   if (error) {
-    console.error("[employee-calendar] ensureFeedToken failed:", error.message);
+    reportError("[employee-calendar] ensureFeedToken failed:", error.message);
     return null;
   }
   return token;
@@ -110,7 +111,7 @@ export async function regenerateFeedToken(employeeId) {
   const token = crypto.randomBytes(24).toString("hex");
   const { error } = await supabase.from("employees").update({ calendar_feed_token: token }).eq("id", employeeId);
   if (error) {
-    console.error("[employee-calendar] regenerateFeedToken failed:", error.message);
+    reportError("[employee-calendar] regenerateFeedToken failed:", error.message);
     return null;
   }
   return token;

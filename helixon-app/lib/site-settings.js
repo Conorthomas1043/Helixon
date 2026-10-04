@@ -20,6 +20,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { HEALTH_CHECK_KEYS } from "@/lib/ops/health-grade";
+import { reportError } from "@/lib/report-error";
 
 const CACHE_MS = 30_000;
 
@@ -185,7 +186,7 @@ export async function getSiteSettings({ fresh = false, withMeta = false } = {}) 
     cache = { at: now, value };
     return withMeta ? value : value.settings;
   } catch (error) {
-    console.error("[site-settings] Load failed, using defaults:", error?.message || error);
+    reportError("[site-settings] Load failed, using defaults:", error?.message || error);
     const value = cache?.value || { settings: { ...DEFAULTS }, meta: {} };
     return withMeta ? { ...value, unavailable: true } : value.settings;
   }

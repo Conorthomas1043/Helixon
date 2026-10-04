@@ -38,3 +38,22 @@ describe("reportError", () => {
     expect(() => reportError("x")).not.toThrow();
   });
 });
+
+describe("reportQuietly", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("sends a background failure to Sentry as a warning", async () => {
+    const { reportQuietly } = await import("./report-error");
+    const err = new Error("tags endpoint returned 500");
+    reportQuietly(err);
+    expect(Sentry.captureException).toHaveBeenCalledWith(err, { level: "warning" });
+  });
+
+  it("ignores cancellations and being offline", async () => {
+    const { reportQuietly } = await import("./report-error");
+    reportQuietly(Object.assign(new Error("aborted"), { name: "AbortError" }));
+    reportQuietly(new Error("Couldn't reach Helixon. Check your connection and try again."));
+    reportQuietly(new TypeError("Failed to fetch"));
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+});

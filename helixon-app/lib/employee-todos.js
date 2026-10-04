@@ -11,6 +11,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 export async function getTodos(employeeId) {
   const { data, error } = await supabase
@@ -20,7 +21,7 @@ export async function getTodos(employeeId) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[employee-todos] getTodos failed:", error.message);
+    reportError("[employee-todos] getTodos failed:", error.message);
     return [];
   }
   return data || [];
@@ -41,7 +42,7 @@ export async function addTodo(employeeId, { title, notes, priority, due_date }) 
     .single();
 
   if (error) {
-    console.error("[employee-todos] addTodo failed:", error.message);
+    reportError("[employee-todos] addTodo failed:", error.message);
     return null;
   }
   return data;
@@ -64,7 +65,7 @@ export async function updateTodo(employeeId, id, updates) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-todos] updateTodo failed:", error.message);
+    reportError("[employee-todos] updateTodo failed:", error.message);
     return null;
   }
   return data;
@@ -80,7 +81,7 @@ export async function deleteTodo(employeeId, id) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-todos] deleteTodo failed:", error.message);
+    reportError("[employee-todos] deleteTodo failed:", error.message);
     return false;
   }
   return !!data;

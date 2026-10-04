@@ -12,6 +12,7 @@ import ClientProfileToolbar from "@/components/dashboard/ClientProfileToolbar";
 import { getClientProfile, recordClientProfilePrinted } from "@/lib/dashboard-api";
 import { printSection } from "@/lib/print";
 import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 export default function ClientProfilePage({ params }) {
   const { id } = use(params);
@@ -45,7 +46,7 @@ export default function ClientProfilePage({ params }) {
   }
 
   function print() {
-    recordClientProfilePrinted(id, { blind: options.blind }).catch(() => {});
+    recordClientProfilePrinted(id, { blind: options.blind }).catch(reportQuietly);
     printSection(docRef.current);
   }
 

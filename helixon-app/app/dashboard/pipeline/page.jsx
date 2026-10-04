@@ -25,6 +25,7 @@ import { subStageLabel, useCustomisation } from "@/components/dashboard/custom-f
 import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } from "@/lib/dashboard-api";
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 
@@ -239,7 +240,7 @@ function PipelineContent() {
         setJobs(j);
         setRecruiters(r);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   useEffect(() => {

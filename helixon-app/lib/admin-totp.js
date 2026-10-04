@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { getRedis } from "@/lib/redis";
+import { reportError } from "@/lib/report-error";
 
 // Optional two-factor login for admins: a 6-digit time-based code (RFC 6238 -
 // the same scheme Google Authenticator, 1Password, Authy etc. use).
@@ -81,7 +82,7 @@ async function markUsed(username, counter) {
       const result = await redis.set(key, "1", { NX: true, EX: STEP_SECONDS * (WINDOW_STEPS * 2 + 2) });
       return result === "OK";
     } catch (err) {
-      console.error("[admin-totp] Redis error, using in-memory replay guard:", err.message);
+      reportError("[admin-totp] Redis error, using in-memory replay guard:", err.message);
     }
   }
   const now = Date.now();

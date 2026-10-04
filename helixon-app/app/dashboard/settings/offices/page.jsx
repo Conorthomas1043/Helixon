@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { getRecruiters } from "@/lib/dashboard-api";
 import { Button, Card, ErrorText, LoadingCard, Page, PageHeader, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { reportQuietly } from "@/lib/report-error";
 
 export default function OfficesPage() {
   const [state, setState] = useState(null);
@@ -23,7 +24,7 @@ export default function OfficesPage() {
       .catch(() => setError("Couldn't load offices."));
     getRecruiters()
       .then((list) => setTeam(Array.isArray(list) ? list : []))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   function change(next) {

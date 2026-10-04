@@ -8,6 +8,7 @@
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import { matchHighlights } from "@/lib/analysis-report";
 import { copyCandidateCv } from "@/lib/candidate-files";
+import { reportError } from "@/lib/report-error";
 
 const SOURCE_COLUMNS =
   "id, agency_id, name, full_name, email, phone, linkedin, current_title, current_company, location, years_experience, cv_text, extracted, cv_file_url, cv_filename, pooled_from_id";
@@ -145,7 +146,7 @@ export async function rescreenCandidate(supabase, { agencyId, userId, actor, sou
     try {
       cvFile = await copyCandidateCv({ agencyId, candidateId: candidate.id, fromPath: source.cv_file_url });
     } catch (err) {
-      console.error("[rescreen] Couldn't copy the CV file:", err.message);
+      reportError("[rescreen] Couldn't copy the CV file:", err.message);
     }
   }
 
@@ -161,7 +162,7 @@ export async function rescreenCandidate(supabase, { agencyId, userId, actor, sou
       ...(cvFile ? { cv_file_url: cvFile.path, cv_filename: source.cv_filename } : {}),
     })
     .eq("id", candidate.id);
-  if (updateError) console.error("[rescreen] Failed to update candidate with result:", updateError.message);
+  if (updateError) reportError("[rescreen] Failed to update candidate with result:", updateError.message);
 
   await supabase.from("candidate_activity").insert([
     {

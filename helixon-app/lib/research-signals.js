@@ -1,5 +1,6 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 // Writes to public.research_signals (supabase/migrations/20261004090000).
 // Best-effort and never throws: research capture must never break the
@@ -34,12 +35,12 @@ export async function recordSignal({ kind, agencyId = null, profileId = null, sc
       meta,
     });
     if (error && error.code !== "42P01" && error.code !== "PGRST205") {
-      console.error("[research-signals] Insert failed:", error.message);
+      reportError("[research-signals] Insert failed:", error.message);
       return false;
     }
     return !error;
   } catch (err) {
-    console.error("[research-signals] Insert failed:", err?.message);
+    reportError("[research-signals] Insert failed:", err?.message);
     return false;
   }
 }

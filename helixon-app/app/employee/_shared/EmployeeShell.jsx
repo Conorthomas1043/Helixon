@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { can } from "@/lib/employee-permissions";
+import { reportQuietly } from "@/lib/report-error";
 
 // `section` is the permission key (lib/employee-permissions.js) that
 // decides whether the link shows. Today has none: it adapts its cards.
@@ -63,7 +64,7 @@ function useEmployee(initial) {
     fetch("/api/employee/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!cancelled && d?.ok) setEmployee(d.employee); })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => { cancelled = true; };
   }, [initial]);
   return initial || employee;
@@ -102,7 +103,7 @@ function EmployeeNav({ employee }) {
   }, [mobileOpen]);
 
   async function signOut() {
-    await fetch("/api/employee/logout", { method: "POST" }).catch(() => {});
+    await fetch("/api/employee/logout", { method: "POST" }).catch(reportQuietly);
     router.replace("/employee/login");
   }
 
@@ -230,7 +231,7 @@ function AdminBanner({ employee }) {
 
   async function exit() {
     setLeaving(true);
-    await fetch("/api/employee/logout", { method: "POST" }).catch(() => {});
+    await fetch("/api/employee/logout", { method: "POST" }).catch(reportQuietly);
     window.location.assign(employee.impersonatedBy ? "/admin/employees" : "/admin");
   }
 

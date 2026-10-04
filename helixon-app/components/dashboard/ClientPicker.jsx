@@ -9,6 +9,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { getClients, getClient } from "@/lib/dashboard-api";
 import { Field, TextInput, Select } from "@/components/dashboard/ui";
+import { reportQuietly } from "@/lib/report-error";
 
 export default function ClientPicker({ value, onChange }) {
   const listId = useId();
@@ -26,7 +27,7 @@ export default function ClientPicker({ value, onChange }) {
           if (match) onChange({ ...value, clientName: match.name });
         }
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
   }, []);
 
@@ -37,7 +38,7 @@ export default function ClientPicker({ value, onChange }) {
       .then((d) => {
         if (!cancelled) setContactsFor({ clientId: value.clientId, contacts: d.contacts ?? [] });
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

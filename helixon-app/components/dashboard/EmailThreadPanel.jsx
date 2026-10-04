@@ -9,6 +9,7 @@ import { getCandidateEmails, getEmailSequences, enrollInSequence, stopEnrollment
 import { Card, Button, ErrorText, Pill, Select, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import ComposeEmail from "@/components/dashboard/ComposeEmail";
 import { formatDate } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 function Message({ m }) {
   const [open, setOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
   useEffect(() => {
     getEmailSequences()
       .then((s) => setSequences(s.filter((x) => x.active)))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   const reload = useCallback(() => {

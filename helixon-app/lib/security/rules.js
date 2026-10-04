@@ -11,6 +11,7 @@
 import "server-only";
 import { BlockList, isIP } from "node:net";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 const CACHE_MS = 30_000;
 let cache = null;
@@ -126,7 +127,7 @@ export async function getFirewallRules({ fresh = false } = {}) {
     cache = { at: now, value };
     return value;
   } catch (error) {
-    console.error("[firewall-rules] Load failed, using none:", error?.message || error);
+    reportError("[firewall-rules] Load failed, using none:", error?.message || error);
     return cache?.value || indexRules([]);
   }
 }

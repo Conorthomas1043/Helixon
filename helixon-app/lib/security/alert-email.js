@@ -1,10 +1,11 @@
 // Best-effort email notifications for the firewall (lib/security/firewall.js).
 // Never throws - a notification failure must never affect request logging
-// or blocking, which is why every call site here wraps this in .catch(() => {}).
+// or blocking, which is why every call site wraps this in .catch(reportQuietly).
 
 import "server-only";
 import { Resend } from "resend";
 import { escapeHtml } from "@/lib/format";
+import { reportError } from "@/lib/report-error";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -42,7 +43,7 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
       `,
     });
   } catch (err) {
-    console.error("[firewall-alert] Failed to send email:", err.message);
+    reportError("[firewall-alert] Failed to send email:", err.message);
   }
 }
 
@@ -56,7 +57,7 @@ export async function sendAdminAlert({ to, subject, html }) {
     await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
     return true;
   } catch (err) {
-    console.error("[admin-alert] Failed to send email:", err.message);
+    reportError("[admin-alert] Failed to send email:", err.message);
     return false;
   }
 }

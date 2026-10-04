@@ -10,6 +10,7 @@ import "server-only";
 import { supabase } from "@/lib/supabase";
 import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 import { alertRecipients } from "@/lib/site-settings";
+import { reportError } from "@/lib/report-error";
 
 export const WINDOW_MINUTES = 15;
 const CHECK_EVERY_SECONDS = 300;
@@ -109,6 +110,6 @@ export async function maybeCheckTraffic(settings) {
       await supabase.from("traffic_alerts").insert({ kind: f.kind, message: f.message, details: f.details, emailed: Boolean(emailed) });
     }
   } catch (err) {
-    console.error("[traffic-alerts] Check failed:", err?.message);
+    reportError("[traffic-alerts] Check failed:", err?.message);
   }
 }

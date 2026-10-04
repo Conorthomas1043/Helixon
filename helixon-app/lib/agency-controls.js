@@ -7,6 +7,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 export const SUSPENDED_MESSAGE =
   "This workspace has been suspended. Please contact Helixon support at hello@helixon.co.uk.";
@@ -20,7 +21,7 @@ export async function getAgencyControls(agencyId) {
     .maybeSingle();
   if (error) {
     // 42703: before migration 20260929030000.
-    if (error.code !== "42703") console.error("[agency-controls] lookup failed:", error.message);
+    if (error.code !== "42703") reportError("[agency-controls] lookup failed:", error.message);
     return { suspended: false, screeningCap: null };
   }
   return { suspended: Boolean(data?.suspended_at), screeningCap: data?.screening_cap || null };
@@ -38,7 +39,7 @@ export async function screeningsThisMonth(agencyId) {
     .eq("agency_id", agencyId)
     .gte("created_at", startOfMonthUtc());
   if (error) {
-    console.error("[agency-controls] count failed:", error.message);
+    reportError("[agency-controls] count failed:", error.message);
     return 0;
   }
   return count || 0;

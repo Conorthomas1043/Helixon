@@ -31,6 +31,7 @@ import {
 import PresenceDot from "@/components/PresenceDot";
 import { PRESENCE_ORDER, computePresence, presenceLine, timeAgo } from "@/lib/presence";
 import { INK, INK_MUTED, INK_FAINT, RED_STRONG, RED_BG, CARD, initials } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -871,7 +872,7 @@ export default function TeamPage() {
       if (document.visibilityState !== "visible") return;
       fetchRecruiters()
         .then(setRecruiters)
-        .catch(() => {});
+        .catch(reportQuietly);
     }, 30_000);
     const tick = setInterval(() => setNow(Date.now()), 15_000);
     return () => {

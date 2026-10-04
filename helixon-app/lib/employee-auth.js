@@ -24,6 +24,7 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { isFeatureEnabled } from "@/lib/site-settings";
+import { reportError } from "@/lib/report-error";
 
 const COOKIE_NAME = "employee_session";
 const SESSION_HOURS = 12;
@@ -147,7 +148,7 @@ export async function checkEmployeeRateLimit(username, ip) {
     }
     return { blocked: false };
   } catch (e) {
-    console.error("[employee-auth] Rate limit check failed (failing open):", e.message);
+    reportError("[employee-auth] Rate limit check failed (failing open):", e.message);
     return { blocked: false };
   }
 }
@@ -156,7 +157,7 @@ async function recordAttempt(username, ip, success) {
   try {
     await supabase.from("login_attempts").insert({ username, ip, login_type: LOGIN_TYPE, success });
   } catch (e) {
-    console.error("[employee-auth] Failed to record login attempt:", e.message);
+    reportError("[employee-auth] Failed to record login attempt:", e.message);
   }
 }
 
@@ -177,7 +178,7 @@ export async function loginEmployee({ username, password, ip }) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-auth] Lookup failed:", error.message);
+    reportError("[employee-auth] Lookup failed:", error.message);
     await recordAttempt(username, ip, false);
     return { ok: false, error: "Something went wrong. Please try again.", status: 500 };
   }
@@ -207,13 +208,13 @@ export async function loginEmployee({ username, password, ip }) {
   });
 
   if (sessionError) {
-    console.error("[employee-auth] Failed to create session:", sessionError.message);
+    reportError("[employee-auth] Failed to create session:", sessionError.message);
     return { ok: false, error: "Something went wrong. Please try again.", status: 500 };
   }
 
   // Best-effort - a failed timestamp update shouldn't block a successful login.
   supabase.from("employees").update({ last_login: new Date().toISOString() }).eq("id", employee.id)
-    .then(({ error: e }) => { if (e) console.error("[employee-auth] last_login update failed:", e.message); });
+    .then(({ error: e }) => { if (e) reportError("[employee-auth] last_login update failed:", e.message); });
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
@@ -296,7 +297,7 @@ export async function getEmployeeSession({ refresh = true } = {}) {
           .update({ expires_at: new Date(slid).toISOString() })
           .eq("id", session.id)
           .then(({ error }) => {
-            if (error) console.error("[employee-auth] Failed to slide session expiry:", error.message);
+            if (error) reportError("[employee-auth] Failed to slide session expiry:", error.message);
           });
       }
     }
@@ -317,7 +318,7 @@ export async function logoutEmployee() {
     try {
       await supabase.from("employee_sessions").delete().eq("token", token);
     } catch (e) {
-      console.error("[employee-auth] Failed to delete session:", e.message);
+      reportError("[employee-auth] Failed to delete session:", e.message);
     }
   }
   cookieStore.delete(COOKIE_NAME);

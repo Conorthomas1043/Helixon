@@ -13,6 +13,7 @@ import crypto from "node:crypto";
 import dns from "node:dns/promises";
 import net from "node:net";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 export const WEBHOOK_EVENTS = {
   "candidate.created": "A candidate is added (screened, applied, imported by API or the LinkedIn extension)",
@@ -137,7 +138,7 @@ export async function emitWebhook(agencyId, event, data) {
     const wanted = endpoints.filter((e) => !e.events?.length || e.events.includes(event));
     await Promise.all(wanted.map(async (e) => record(e, await deliver(e, event, data))));
   } catch (err) {
-    console.error("[webhooks] Emit failed:", err?.message);
+    reportError("[webhooks] Emit failed:", err?.message);
   }
 }
 

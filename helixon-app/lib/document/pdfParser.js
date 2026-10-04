@@ -1,4 +1,5 @@
 import { extractText, getDocumentProxy } from "unpdf";
+import { reportError } from "@/lib/report-error";
 
 
 
@@ -73,7 +74,7 @@ export default async function parsePDF(buffer){
     catch(error){
 
 
-        console.error(
+        reportError(
             "[pdfParser] failed:",
             error.message
         );

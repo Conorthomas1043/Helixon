@@ -21,6 +21,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 const SCOPE = "https://www.googleapis.com/auth/calendar";
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -113,7 +114,7 @@ export async function saveConnection(employeeId, tokens) {
     connected_at: new Date().toISOString(),
   });
   if (error) {
-    console.error("[google-calendar] saveConnection failed:", error.message);
+    reportError("[google-calendar] saveConnection failed:", error.message);
     return false;
   }
   return true;
@@ -126,7 +127,7 @@ export async function getConnection(employeeId) {
     .eq("employee_id", employeeId)
     .maybeSingle();
   if (error) {
-    console.error("[google-calendar] getConnection failed:", error.message);
+    reportError("[google-calendar] getConnection failed:", error.message);
     return null;
   }
   return data;
@@ -135,7 +136,7 @@ export async function getConnection(employeeId) {
 export async function disconnect(employeeId) {
   const { error } = await supabase.from("employee_google_calendar_tokens").delete().eq("employee_id", employeeId);
   if (error) {
-    console.error("[google-calendar] disconnect failed:", error.message);
+    reportError("[google-calendar] disconnect failed:", error.message);
     return false;
   }
   return true;

@@ -22,6 +22,7 @@ import ShareShortlist from "@/components/dashboard/ShareShortlist";
 import { CLIENT_DECISIONS } from "@/lib/client-decisions";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, initials } from "@/lib/candidate-format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { reportQuietly } from "@/lib/report-error";
 
 function Avatar({ name }) {
   return (
@@ -135,7 +136,7 @@ export default function ShortlistDetailPage({ params }) {
   }, [id, reloadKey]);
 
   useEffect(() => {
-    getJobs().then(setJobs).catch(() => {});
+    getJobs().then(setJobs).catch(reportQuietly);
   }, []);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);

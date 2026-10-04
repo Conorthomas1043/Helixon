@@ -4,6 +4,7 @@
 // until loaded, or when there are none (then office pickers stay hidden).
 
 import { useEffect, useState } from "react";
+import { reportQuietly } from "@/lib/report-error";
 
 export function useOffices() {
   const [offices, setOffices] = useState([]);
@@ -12,7 +13,7 @@ export function useOffices() {
     fetch("/api/settings/offices", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => !cancelled && d && setOffices(d.offices || []))
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

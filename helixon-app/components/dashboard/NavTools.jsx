@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { timeAgo as fmtTimeAgo } from "@/lib/format";
+import { reportQuietly } from "@/lib/report-error";
 
 const timeAgo = (iso) => fmtTimeAgo(iso, { style: "compact" });
 
@@ -181,7 +182,7 @@ export function SearchPalette() {
           setResults(d.results || []);
           setActive(0);
         })
-        .catch(() => {})
+        .catch(reportQuietly)
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 200);
     return () => {
@@ -283,7 +284,7 @@ export function NotificationsBell() {
     fetch("/api/notifications", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setState({ list: d.notifications || [], unread: d.unread || 0, unavailable: Boolean(d.unavailable) }))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   useEffect(() => {
@@ -301,7 +302,7 @@ export function NotificationsBell() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "auto" }),
-      }).catch(() => {});
+      }).catch(reportQuietly);
     sync();
     const t = setInterval(sync, 15 * 60_000);
     return () => clearInterval(t);
@@ -322,7 +323,7 @@ export function NotificationsBell() {
   }, [open]);
 
   async function markRead(body) {
-    await fetch("/api/notifications", { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
+    await fetch("/api/notifications", { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(reportQuietly);
   }
 
   function openItem(n) {

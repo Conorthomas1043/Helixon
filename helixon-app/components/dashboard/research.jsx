@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { UMUX_ITEMS } from "@/lib/umux-lite";
 import { track } from "@/lib/analytics";
+import { reportQuietly } from "@/lib/report-error";
 
 const SNOOZE_KEY = "helixon_pulse_snoozed_until";
 const SNOOZE_DAYS = 14;
@@ -39,7 +40,7 @@ export function PulseSurvey({ analysesCount }) {
       .then((d) => {
         if (!cancelled) setState(d?.pulseDue ? "open" : "hidden");
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };
@@ -169,7 +170,7 @@ export function ResearchOptIn() {
       .then((d) => {
         if (!cancelled && d?.available) setOptedIn(Boolean(d.optedIn));
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

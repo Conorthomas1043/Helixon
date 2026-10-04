@@ -14,6 +14,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 // Paths that aren't a real person looking at the product - admin panel
 // traffic, the internal logging endpoint itself, static assets - excluded
@@ -38,7 +39,7 @@ export async function getStats() {
   ]);
 
   if (error) {
-    console.error("[employee-store] getStats request_logs query failed:", error.message);
+    reportError("[employee-store] getStats request_logs query failed:", error.message);
     return {
       totalUsers: totalUsers || 0,
       siteViewsToday: null,

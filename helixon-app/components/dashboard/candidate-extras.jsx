@@ -24,6 +24,7 @@ import SignaturesCard from "@/components/dashboard/SignaturesCard";
 import { Button, Card, Dialog, ErrorText, Field, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import CopyButton from "@/components/dashboard/CopyButton";
+import { reportQuietly } from "@/lib/report-error";
 
 // Offer letters and contracts, worded from the candidate's latest placement.
 export function CandidateDocumentsCard({ candidate }) {
@@ -31,7 +32,7 @@ export function CandidateDocumentsCard({ candidate }) {
   useEffect(() => {
     getPlacements({ candidateId: candidate.id })
       .then((list) => setPlacement((list || [])[0] || null))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, [candidate.id]);
 
   const template = useCallback(

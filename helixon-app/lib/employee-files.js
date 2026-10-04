@@ -14,6 +14,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 const BUCKET = "employee-files";
 // This is meant to house everyday team documents - call scripts, Word
@@ -56,8 +57,8 @@ export async function listFolder(folderId) {
     getBreadcrumb(folderId),
   ]);
 
-  if (folderError) console.error("[employee-files] listFolder (folders) failed:", folderError.message);
-  if (fileError) console.error("[employee-files] listFolder (files) failed:", fileError.message);
+  if (folderError) reportError("[employee-files] listFolder (folders) failed:", folderError.message);
+  if (fileError) reportError("[employee-files] listFolder (files) failed:", fileError.message);
 
   return {
     breadcrumb,
@@ -74,7 +75,7 @@ export async function createFolder(employeeId, { name, parent_id }) {
     .single();
 
   if (error) {
-    console.error("[employee-files] createFolder failed:", error.message);
+    reportError("[employee-files] createFolder failed:", error.message);
     return null;
   }
   return data;
@@ -91,7 +92,7 @@ export async function deleteFolder(employeeId, id) {
 
   if (error) {
     if (error.code === "23503") return { ok: false, reason: "not_empty" };
-    console.error("[employee-files] deleteFolder failed:", error.message);
+    reportError("[employee-files] deleteFolder failed:", error.message);
     return { ok: false, reason: "error" };
   }
   return { ok: !!data, reason: data ? null : "not_found" };
@@ -113,7 +114,7 @@ export async function uploadFile(employeeId, { folderId, name, buffer, mimeType,
     .upload(storagePath, buffer, { contentType: mimeType || "application/octet-stream" });
 
   if (uploadError) {
-    console.error("[employee-files] storage upload failed:", uploadError.message);
+    reportError("[employee-files] storage upload failed:", uploadError.message);
     return null;
   }
 
@@ -134,7 +135,7 @@ export async function uploadFile(employeeId, { folderId, name, buffer, mimeType,
     // Same cleanup pattern as lib/create-profile.js - don't leave an
     // orphaned blob in storage if the metadata row fails to insert.
     await supabase.storage.from(BUCKET).remove([storagePath]);
-    console.error("[employee-files] uploadFile metadata insert failed:", error.message);
+    reportError("[employee-files] uploadFile metadata insert failed:", error.message);
     return null;
   }
   return data;
@@ -152,7 +153,7 @@ export async function deleteFile(employeeId, id) {
 
   const { error: deleteError } = await supabase.from("employee_files").delete().eq("id", id);
   if (deleteError) {
-    console.error("[employee-files] deleteFile metadata delete failed:", deleteError.message);
+    reportError("[employee-files] deleteFile metadata delete failed:", deleteError.message);
     return false;
   }
 
@@ -160,7 +161,7 @@ export async function deleteFile(employeeId, id) {
   if (storageError) {
     // Metadata is already gone (the file will no longer show up anywhere),
     // so this is a cleanup failure, not a user-facing one.
-    console.error("[employee-files] deleteFile storage remove failed:", storageError.message);
+    reportError("[employee-files] deleteFile storage remove failed:", storageError.message);
   }
   return true;
 }
@@ -179,7 +180,7 @@ export async function getSignedDownloadUrl(id) {
     .createSignedUrl(file.storage_path, SIGNED_URL_TTL_SECONDS, { download: file.name });
 
   if (signError || !data) {
-    console.error("[employee-files] getSignedDownloadUrl failed:", signError?.message);
+    reportError("[employee-files] getSignedDownloadUrl failed:", signError?.message);
     return null;
   }
   return { url: data.signedUrl, name: file.name };

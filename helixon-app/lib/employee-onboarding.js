@@ -6,6 +6,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { ONBOARDING_TASKS, onboardingTaskKeys } from "@/lib/onboarding-tasks";
+import { reportError } from "@/lib/report-error";
 
 export async function getOnboardingProgress(employeeId) {
   const { data, error } = await supabase
@@ -14,7 +15,7 @@ export async function getOnboardingProgress(employeeId) {
     .eq("employee_id", employeeId);
 
   if (error) {
-    console.error("[employee-onboarding] getOnboardingProgress failed:", error.message);
+    reportError("[employee-onboarding] getOnboardingProgress failed:", error.message);
     return { tasks: ONBOARDING_TASKS.map((t) => ({ ...t, completed: false, completedAt: null })), completedCount: 0, totalCount: ONBOARDING_TASKS.length };
   }
 
@@ -46,7 +47,7 @@ export async function setOnboardingTaskState(employeeId, taskKey, completed) {
       .upsert({ employee_id: employeeId, task_key: taskKey, completed_at: new Date().toISOString() }, { onConflict: "employee_id,task_key" });
 
     if (error) {
-      console.error("[employee-onboarding] setOnboardingTaskState (complete) failed:", error.message);
+      reportError("[employee-onboarding] setOnboardingTaskState (complete) failed:", error.message);
       return { ok: false, error: "Could not save progress." };
     }
   } else {
@@ -57,7 +58,7 @@ export async function setOnboardingTaskState(employeeId, taskKey, completed) {
       .eq("task_key", taskKey);
 
     if (error) {
-      console.error("[employee-onboarding] setOnboardingTaskState (uncomplete) failed:", error.message);
+      reportError("[employee-onboarding] setOnboardingTaskState (uncomplete) failed:", error.message);
       return { ok: false, error: "Could not save progress." };
     }
   }

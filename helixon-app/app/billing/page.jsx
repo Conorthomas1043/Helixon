@@ -8,6 +8,7 @@ import { PageCard, Button, InlineAlert } from "@/components/account/ui";
 import { apiRequest, COLORS, GENERIC_ERROR } from "@/lib/account";
 import { PLAN_LABELS } from "@/lib/plans";
 import { Dialog } from "@/components/dashboard/ui";
+import { reportQuietly } from "@/lib/report-error";
 
 // Asked before handing a cancellation over to Stripe. The answers feed
 // /api/billing/cancel-intent; a couple of them have a better answer than
@@ -122,7 +123,7 @@ export default function BillingPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason, canTalk, detail: outcome === "switch" ? `[switching plan] ${detail}` : detail }),
-    }).catch(() => {});
+    }).catch(reportQuietly);
     await openPortal();
   }
 

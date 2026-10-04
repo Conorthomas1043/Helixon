@@ -13,6 +13,7 @@
 // disconnect handler required.
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 // Slightly more than 2x the client heartbeat interval (see
 // app/employee/_shared/useHeartbeat.js), so one missed beat (a slow
@@ -32,7 +33,7 @@ export async function recordHeartbeat(employeeId) {
     .from("employees")
     .update({ presence_updated_at: new Date().toISOString() })
     .eq("id", employeeId);
-  if (error) console.error("[employee-presence] heartbeat failed:", error.message);
+  if (error) reportError("[employee-presence] heartbeat failed:", error.message);
   return !error;
 }
 
@@ -45,7 +46,7 @@ export async function setBusy(employeeId, busy) {
     .from("employees")
     .update({ presence_status: busy ? "busy" : "offline", presence_updated_at: new Date().toISOString() })
     .eq("id", employeeId);
-  if (error) console.error("[employee-presence] setBusy failed:", error.message);
+  if (error) reportError("[employee-presence] setBusy failed:", error.message);
   return !error;
 }
 
@@ -67,11 +68,11 @@ export async function getTeamPresence() {
   ]);
 
   if (empError) {
-    console.error("[employee-presence] getTeamPresence employees failed:", empError.message);
+    reportError("[employee-presence] getTeamPresence employees failed:", empError.message);
     return [];
   }
   if (sessError) {
-    console.error("[employee-presence] getTeamPresence sessions failed:", sessError.message);
+    reportError("[employee-presence] getTeamPresence sessions failed:", sessError.message);
   }
 
   // sessions is ordered newest-first, so the first row seen per employee

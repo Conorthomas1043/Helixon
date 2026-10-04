@@ -2,6 +2,7 @@ import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { AGENCY_SEATS } from "@/lib/plan-features";
+import { reportError } from "@/lib/report-error";
 
 // Agency plan seat cap, confirmed with the user (2026-09-17). Defined in
 // lib/plan-features.js so the pricing copy states the same number.
@@ -56,7 +57,7 @@ export async function ensureAgencyOrg({ agencyId, agencyName, ownerClerkUserId }
   if (!linked?.length) {
     // Lost the race - use the org the other request linked, drop ours.
     await client.organizations.deleteOrganization(org.id).catch((err) => {
-      console.error(`[clerk-org] Failed to delete duplicate org ${org.id}:`, err.message);
+      reportError(`[clerk-org] Failed to delete duplicate org ${org.id}:`, err.message);
     });
     const { data: winner, error: rereadError } = await supabase
       .from("agencies")

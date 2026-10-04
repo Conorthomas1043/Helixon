@@ -14,6 +14,7 @@ import { getShortlist, getClientProfile, recordClientProfilePrinted } from "@/li
 import { blindLabel } from "@/lib/client-profile";
 import { printSection } from "@/lib/print";
 import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 export default function ClientPackPage({ params }) {
   const { id } = use(params);
@@ -56,7 +57,7 @@ export default function ClientPackPage({ params }) {
   }
 
   function print() {
-    for (const p of profiles ?? []) recordClientProfilePrinted(p.id, { blind: options.blind }).catch(() => {});
+    for (const p of profiles ?? []) recordClientProfilePrinted(p.id, { blind: options.blind }).catch(reportQuietly);
     printSection(docRef.current);
   }
 

@@ -38,6 +38,7 @@ import { PanelGroup, ProfileSkeleton, StateMessage } from "./_components/primiti
 import { TalentPoolPanel } from "./_components/talent-pool";
 import { pushRecentlyViewed } from "./_components/utils";
 import { OutcomeReportingPanel, RecruiterWorkspace } from "./_components/workspace";
+import { reportQuietly } from "@/lib/report-error";
 
 // `initialCandidate` is the profile as page.jsx loaded it on the server; when
 // it's there the page shows straight away and only fetches again on retry.
@@ -67,12 +68,12 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
   const nextId = null;
 
   useEffect(() => {
-    getRecruiters().then(setRecruiters).catch(() => {});
-    getTags().then(setTags).catch(() => {});
+    getRecruiters().then(setRecruiters).catch(reportQuietly);
+    getTags().then(setTags).catch(reportQuietly);
   }, []);
 
   useEffect(() => {
-    getFeedbackRequests(id).then(setFeedbackRequests).catch(() => {});
+    getFeedbackRequests(id).then(setFeedbackRequests).catch(reportQuietly);
   }, [id]);
 
   useEffect(() => {
@@ -113,7 +114,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
       .then((c) => {
         if (c) setCandidate((prev) => (prev ? { ...prev, activity: c.activity } : prev));
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, [id]);
 
   // After scheduling or updating an interview: the stage may have moved too.
@@ -122,7 +123,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
       .then((c) => {
         if (c) setCandidate((prev) => (prev ? { ...prev, stage: c.stage, activity: c.activity } : prev));
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, [id]);
 
   // Each resolves true when done, so the panel can close its form.
@@ -379,7 +380,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
 
   const [jobs, setJobs] = useState([]);
   useEffect(() => {
-    getJobs().then(setJobs).catch(() => {});
+    getJobs().then(setJobs).catch(reportQuietly);
   }, []);
 
   const handleSaveToPool = useCallback(

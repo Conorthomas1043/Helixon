@@ -6,6 +6,7 @@ import "server-only";
 import { supabase } from "@/lib/supabase";
 import { open, seal, secretBoxReady } from "@/lib/secret-box";
 import { fetchTokens, providerConfigured, providerFor } from "@/lib/integrations/providers";
+import { reportError } from "@/lib/report-error";
 
 const COLUMNS = "id, agency_id, user_id, provider, account_id, account_name, tokens, expires_at, sync_cursor, last_synced_at, last_error, connected_by, created_at";
 
@@ -28,7 +29,7 @@ export async function getConnection(agencyId, provider, userId = null) {
   q = p.scope === "member" ? q.eq("user_id", userId) : q.is("user_id", null);
   const { data, error } = await q.maybeSingle();
   if (error) {
-    if (!isMissingTable(error)) console.error("[integrations] load failed:", error.message);
+    if (!isMissingTable(error)) reportError("[integrations] load failed:", error.message);
     return null;
   }
   return data;

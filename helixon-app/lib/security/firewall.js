@@ -13,6 +13,7 @@ import "server-only";
 import { scoreRequest } from "./threat-score";
 import { getRedis } from "@/lib/redis";
 import { sendFirewallAlert } from "./alert-email";
+import { reportError, reportQuietly } from "@/lib/report-error";
 
 // Auto-block threshold. threat-score.js's high-confidence signals
 // (path-traversal, sql-injection-probe, xss-probe: 30-35 points each) match
@@ -134,7 +135,7 @@ export async function enforceFirewallPolicy({
       if (error) {
         // Lost the insert race to a concurrent request under the unique
         // constraint on ip - it's still blocked either way.
-        console.error("[firewall] Failed to auto-block", ip, error.message);
+        reportError("[firewall] Failed to auto-block", ip, error.message);
         return true;
       }
 
@@ -149,7 +150,7 @@ export async function enforceFirewallPolicy({
         userAgent,
         score: threat.score,
         signals: threat.signals,
-      }).catch(() => {});
+      }).catch(reportQuietly);
 
       return true;
     }
@@ -174,13 +175,13 @@ export async function enforceFirewallPolicy({
           userAgent,
           score: threat.score,
           signals: threat.signals,
-        }).catch(() => {});
+        }).catch(reportQuietly);
       }
     }
 
     return inducedCrossSite && threat.score >= blockThreshold;
   } catch (err) {
-    console.error("[firewall] enforceFirewallPolicy error:", err.message);
+    reportError("[firewall] enforceFirewallPolicy error:", err.message);
     return Boolean(alreadyBlocked);
   }
 }

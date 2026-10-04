@@ -13,6 +13,7 @@
 
 import { removeCandidateCvs } from "@/lib/candidate-files";
 import { removeComplianceDocuments } from "@/lib/compliance-files";
+import { reportError } from "@/lib/report-error";
 
 const BATCH = 200;
 
@@ -59,7 +60,7 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
     for (const [table, where] of steps) {
       const { error } = await where(supabase.from(table).delete());
       if (error) {
-        console.error(`[candidate-erasure] Failed clearing ${table}:`, error.message);
+        reportError(`[candidate-erasure] Failed clearing ${table}:`, error.message);
         return { erased, failedStep: table };
       }
     }
@@ -71,7 +72,7 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
 
     const { error: deleteError } = await supabase.from("candidates").delete().eq("agency_id", agencyId).in("id", ids);
     if (deleteError) {
-      console.error("[candidate-erasure] Failed deleting candidates:", deleteError.message);
+      reportError("[candidate-erasure] Failed deleting candidates:", deleteError.message);
       return { erased, failedStep: "candidates" };
     }
     erased += ids.length;
@@ -85,7 +86,7 @@ export async function eraseCandidates(supabase, agencyId, candidateIds) {
     const storageError =
       (await removeCandidateCvs((owned || []).map((c) => c.cv_file_url))) || (await removeComplianceDocuments((docs || []).map((d) => d.document_path)));
     if (storageError) {
-      console.error("[candidate-erasure] Candidates erased but CV file removal failed:", storageError.message);
+      reportError("[candidate-erasure] Candidates erased but CV file removal failed:", storageError.message);
     }
   }
 

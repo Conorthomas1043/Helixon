@@ -25,6 +25,7 @@ import { jobTextFor } from "@/lib/rescreen";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { clerkClient } from "@clerk/nextjs/server";
 import { notify } from "@/lib/notifications";
+import { reportError } from "@/lib/report-error";
 
 export const MAX_CV_BYTES = 10 * 1024 * 1024;
 const CV_TYPES = new Set(["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
@@ -81,7 +82,7 @@ export async function receiveApplication({ agency, job, file, applicant, source 
     .select("id")
     .single();
   if (error) {
-    console.error("[applications] Insert failed:", error.message);
+    reportError("[applications] Insert failed:", error.message);
     return { error: "Something went wrong sending your application. Please try again.", status: 500 };
   }
 
@@ -89,7 +90,7 @@ export async function receiveApplication({ agency, job, file, applicant, source 
     const stored = await storeCandidateCv({ agencyId: agency.id, candidateId: candidate.id, file });
     if (stored) await supabase.from("candidates").update({ cv_file_url: stored.path, cv_filename: stored.fileName }).eq("id", candidate.id);
   } catch (err) {
-    console.error("[applications] CV file not stored:", err?.message);
+    reportError("[applications] CV file not stored:", err?.message);
   }
 
   await logActivity(supabase, candidate.id, "applied", applicant.name, {
@@ -185,7 +186,7 @@ export async function screenApplication({ agency, job, candidateId }) {
     });
     await notifyRecruiter({ agency, job, candidate, score });
   } catch (err) {
-    console.error("[applications] Screening failed:", err?.message);
+    reportError("[applications] Screening failed:", err?.message);
     await supabase.from("candidates").update({ processing_status: "failed" }).eq("id", candidateId);
   }
 }
@@ -217,6 +218,6 @@ async function notifyRecruiter({ agency, job, candidate, score }) {
       ].join("\n"),
     });
   } catch (err) {
-    console.error("[applications] Recruiter alert failed:", err?.message);
+    reportError("[applications] Recruiter alert failed:", err?.message);
   }
 }

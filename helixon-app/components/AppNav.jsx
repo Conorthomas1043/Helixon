@@ -7,6 +7,7 @@ import posthog from "@/lib/posthog";
 import { useAnalyticsIdentity } from "@/lib/analytics";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { COLORS } from "@/lib/account";
+import { reportQuietly } from "@/lib/report-error";
 
 // Shared across Dashboard, Billing, and Account settings - import this
 // component from all three instead of redefining it per page.
@@ -41,7 +42,7 @@ export default function AppNav({ active }) {
       .then((d) => {
         if (d.ok) setMe(d.user);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   useEffect(() => {

@@ -18,6 +18,7 @@ import { analyticsCsvRows } from "@/lib/analytics-csv";
 import { printSection } from "@/lib/print";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, GREEN_BG, CARD } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 function SectionHeading({ eyebrow, title, action }) {
   return (
@@ -646,9 +647,9 @@ export default function AnalyticsPage() {
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
-    getJobs().then(setJobs).catch(() => {});
-    getRecruiters().then(setRecruiters).catch(() => {});
-    getClients().then((c) => setClients(c || [])).catch(() => {});
+    getJobs().then(setJobs).catch(reportQuietly);
+    getRecruiters().then(setRecruiters).catch(reportQuietly);
+    getClients().then((c) => setClients(c || [])).catch(reportQuietly);
   }, []);
 
   // A custom range waits until at least one end is picked.

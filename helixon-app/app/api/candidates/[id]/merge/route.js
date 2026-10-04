@@ -7,7 +7,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { removeCandidateCvs } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
-import { reportError } from "@/lib/report-error";
+import { reportError, reportQuietly } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
 // POST { otherId } - the same person recorded twice.
@@ -51,7 +51,7 @@ export async function POST(request, { params }) {
       const missing = /merge_candidates/.test(error.message) && /function|schema cache/i.test(error.message);
       return NextResponse.json({ error: missing ? "Merging needs a database update first (migration 20261003010000)." : "Couldn't merge them - nothing was changed." }, { status: missing ? 503 : 500 });
     }
-    if (data?.orphaned_cv) await removeCandidateCvs([data.orphaned_cv]).catch(() => {});
+    if (data?.orphaned_cv) await removeCandidateCvs([data.orphaned_cv]).catch(reportQuietly);
     await logActivity(supabase, keep.id, "candidate_merged", actor, { note: `Merged the duplicate record for ${otherName} into this one` });
     await logAudit({ auth, request, action: "candidate.merged", targetType: "candidate", targetId: keep.id, summary: `Merged a duplicate of ${otherName}`, meta: { removed: other.id } });
     return NextResponse.json({ ok: true, mode: "merged", moved: data });

@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getEmailTemplates, sendCandidateEmails } from "@/lib/dashboard-api";
 import { Button, Dialog, ErrorText, Field, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { reportQuietly } from "@/lib/report-error";
 
 export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
   const [templates, setTemplates] = useState([]);
@@ -27,7 +28,7 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
         setTemplates(d.templates.filter((t) => t.audience === "candidate"));
         setFields(d.mergeFields);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   function pickTemplate(id) {

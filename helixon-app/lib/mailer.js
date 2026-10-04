@@ -8,6 +8,7 @@ import { Resend } from "resend";
 import { currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency-display";
+import { reportError } from "@/lib/report-error";
 
 export function mailConfigured() {
   return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL);
@@ -47,12 +48,12 @@ export async function sendAgencyEmail({ agencyId, profile = null, to, subject, t
       ...(attachments?.length ? { attachments } : {}),
     });
     if (error) {
-      console.error("[mailer] Send failed:", error.message);
+      reportError("[mailer] Send failed:", error.message);
       return { error: "The email couldn't be sent." };
     }
     return { id: data?.id ?? null };
   } catch (err) {
-    console.error("[mailer] Send failed:", err?.message);
+    reportError("[mailer] Send failed:", err?.message);
     return { error: "The email couldn't be sent." };
   }
 }

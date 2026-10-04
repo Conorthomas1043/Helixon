@@ -13,6 +13,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { phoneKey } from "@/lib/csv";
+import { reportError } from "@/lib/report-error";
 
 export const MAX_IMPORT_ROWS = 2000;
 const CLAIM_TTL_MS = 30 * 60 * 1000;
@@ -38,7 +39,7 @@ export async function getCallList({ doneLimit = 50 } = {}) {
     supabase.from("employee_call_list").select(ROW_SELECT).neq("status", "pending").order("completed_at", { ascending: false }).limit(doneLimit),
   ]);
   if (pending.error || done.error) {
-    console.error("[employee-call-list] getCallList failed:", (pending.error || done.error).message);
+    reportError("[employee-call-list] getCallList failed:", (pending.error || done.error).message);
     return null;
   }
   return { pending: pending.data || [], done: done.data || [] };

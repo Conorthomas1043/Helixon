@@ -10,6 +10,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 export const OUTCOMES = [
   "no_answer",
@@ -35,7 +36,7 @@ export async function getColdCalls({ from, employeeId } = {}) {
 
   const { data, error } = await query;
   if (error) {
-    console.error("[employee-cold-calls] getColdCalls failed:", error.message);
+    reportError("[employee-cold-calls] getColdCalls failed:", error.message);
     return [];
   }
   return data || [];
@@ -58,7 +59,7 @@ export async function addColdCall(employeeId, { contact_name, company, phone, ou
     .single();
 
   if (error) {
-    console.error("[employee-cold-calls] addColdCall failed:", error.message);
+    reportError("[employee-cold-calls] addColdCall failed:", error.message);
     return null;
   }
   return data;
@@ -79,7 +80,7 @@ export async function updateColdCall(employeeId, id, updates) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-cold-calls] updateColdCall failed:", error.message);
+    reportError("[employee-cold-calls] updateColdCall failed:", error.message);
     return null;
   }
   return data;
@@ -95,7 +96,7 @@ export async function deleteColdCall(employeeId, id) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-cold-calls] deleteColdCall failed:", error.message);
+    reportError("[employee-cold-calls] deleteColdCall failed:", error.message);
     return false;
   }
   return !!data;
@@ -121,7 +122,7 @@ export async function getColdCallStats() {
     .gte("called_at", startOfWeek.toISOString());
 
   if (error) {
-    console.error("[employee-cold-calls] getColdCallStats failed:", error.message);
+    reportError("[employee-cold-calls] getColdCallStats failed:", error.message);
     return { byEmployee: [], byOutcomeThisWeek: {} };
   }
 

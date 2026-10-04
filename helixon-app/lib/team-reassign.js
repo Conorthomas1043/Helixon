@@ -6,6 +6,7 @@
 // each candidate from its own profile page.
 
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { reportError } from "@/lib/report-error";
 
 const BATCH = 500;
 
@@ -94,7 +95,7 @@ export async function reassignCandidates(supabase, {
       );
       // The reassignment itself succeeded - a missing timeline entry isn't
       // worth failing the request over.
-      if (activityError) console.error("[team-reassign] Activity insert failed:", activityError.message);
+      if (activityError) reportError("[team-reassign] Activity insert failed:", activityError.message);
     }
   }
   return moved;

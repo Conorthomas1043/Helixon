@@ -1,5 +1,6 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 // Product events that happen outside a browser - billing changes from the
 // Stripe webhook - sent to PostHog's capture API. Without these the funnel
@@ -28,7 +29,7 @@ export async function captureAgencyEvent(event, agencyId, properties = {}) {
       signal: AbortSignal.timeout(3000),
     });
   } catch (err) {
-    console.error("[server-analytics] Capture failed:", err?.message);
+    reportError("[server-analytics] Capture failed:", err?.message);
   }
 }
 

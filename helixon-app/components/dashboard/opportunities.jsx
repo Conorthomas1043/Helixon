@@ -10,6 +10,7 @@ import { createOpportunity, deleteOpportunity, getClients, getOpportunities, get
 import { DEFAULT_PROBABILITY, OPPORTUNITY_STAGES, effectiveProbability } from "@/lib/opportunities";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 const STAGE_OPTIONS = Object.entries(OPPORTUNITY_STAGES).map(([value, label]) => ({ value, label }));
 
@@ -44,7 +45,7 @@ export function OpportunityDialog({ opportunity = null, clientId = null, onClose
 
   useEffect(() => {
     if (!clientId && !opportunity) getClients().then((c) => setClients(c || [])).catch(() => setClients([]));
-    getRecruiters().then(setTeam).catch(() => {});
+    getRecruiters().then(setTeam).catch(reportQuietly);
   }, [clientId, opportunity]);
 
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));

@@ -47,6 +47,7 @@ import {
   scoreLabel,
   initials,
 } from "@/lib/candidate-format";
+import { reportQuietly } from "@/lib/report-error";
 
 const STAGE_ORDER = Object.keys(STAGE_LABELS);
 
@@ -546,7 +547,7 @@ function CandidateDatabaseContent() {
   useEffect(() => {
     getEmailSequences()
       .then((list) => setSequences(list.filter((s) => s.active)))
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   const bulkEnroll = useCallback(
@@ -576,10 +577,10 @@ function CandidateDatabaseContent() {
         setJobs(j);
         setRecruiters(r);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     getTags()
       .then((t) => !cancelled && setTags(t))
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

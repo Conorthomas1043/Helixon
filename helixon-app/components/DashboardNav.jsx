@@ -13,6 +13,7 @@ import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 import { SIGNED_OUT_EVENT } from "@/lib/api-errors";
 import { initials } from "@/lib/format";
+import { reportQuietly } from "@/lib/report-error";
 
 // The everyday screens are tabs; everything else sits under "More",
 // grouped, so the bar fits without scrolling on a laptop.
@@ -216,7 +217,7 @@ function DashboardNavContent() {
       .then((d) => {
         if (d.ok) setMe(d.user);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   // Every signed-in page reports that this person is here (Team page presence).
@@ -232,7 +233,7 @@ function DashboardNavContent() {
         .then((rows) => {
           if (Array.isArray(rows)) setTeammates(rows);
         })
-        .catch(() => {});
+        .catch(reportQuietly);
     load();
     const t = setInterval(load, 60_000);
     return () => clearInterval(t);
@@ -438,7 +439,7 @@ function SignedOutBanner() {
         .then((d) => {
           if (d?.ok) setSignedOut(false);
         })
-        .catch(() => {});
+        .catch(reportQuietly);
     };
     window.addEventListener("focus", recheck);
     document.addEventListener("visibilitychange", recheck);

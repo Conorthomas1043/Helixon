@@ -37,6 +37,7 @@ import {
 } from "./_lib/analyse";
 import { EMPTY_ROLE_DRAFT } from "./_lib/roles";
 import { useEmailComposer } from "./_lib/useEmailComposer";
+import { reportQuietly } from "@/lib/report-error";
 
 // When the server doesn't say what went wrong, say what most likely did,
 // from the status - not one "Something went wrong" for every failure.
@@ -198,7 +199,7 @@ export default function AnalyseWorkspace() {
         setSavedJobs(jobs);
         if (jobs.length) setRoleMode((m) => (m === "paste" ? "saved" : m));
       })
-      .catch(() => {})
+      .catch(reportQuietly)
       .finally(() => setJobsLoaded(true));
   }, []);
 

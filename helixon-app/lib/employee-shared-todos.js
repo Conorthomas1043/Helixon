@@ -12,6 +12,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 const SELECT_WITH_NAMES =
   "*, creator:created_by(id,display_name,full_name,username), assignee:assigned_to(id,display_name,full_name,username)";
@@ -24,7 +25,7 @@ export async function getSharedTodos() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[employee-shared-todos] getSharedTodos failed:", error.message);
+    reportError("[employee-shared-todos] getSharedTodos failed:", error.message);
     return [];
   }
   return data || [];
@@ -46,7 +47,7 @@ export async function addSharedTodo(employeeId, { title, notes, priority, due_da
     .single();
 
   if (error) {
-    console.error("[employee-shared-todos] addSharedTodo failed:", error.message);
+    reportError("[employee-shared-todos] addSharedTodo failed:", error.message);
     return null;
   }
   return data;
@@ -70,7 +71,7 @@ export async function updateSharedTodo(employeeId, id, updates) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-shared-todos] updateSharedTodo failed:", error.message);
+    reportError("[employee-shared-todos] updateSharedTodo failed:", error.message);
     return null;
   }
   return data;
@@ -88,7 +89,7 @@ export async function deleteSharedTodo(employeeId, id) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-shared-todos] deleteSharedTodo failed:", error.message);
+    reportError("[employee-shared-todos] deleteSharedTodo failed:", error.message);
     return false;
   }
   return !!data;

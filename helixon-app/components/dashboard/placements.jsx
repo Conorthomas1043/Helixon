@@ -19,6 +19,7 @@ import {
 import { PLACEMENT_STATUSES, INVOICE_STATUSES, computeFee, contractMargin, weekStarting } from "@/lib/placements";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDate as fmtDate } from "@/lib/format";
+import { reportQuietly } from "@/lib/report-error";
 
 const formatDate = (d) => fmtDate(d, { dateOnly: true, empty: null });
 
@@ -75,7 +76,7 @@ const blankForm = (p) => ({
 function SplitEditor({ splits, onChange }) {
   const [team, setTeam] = useState([]);
   useEffect(() => {
-    getRecruiters().then(setTeam).catch(() => {});
+    getRecruiters().then(setTeam).catch(reportQuietly);
   }, []);
   const total = splits.reduce((n, s) => n + (Number(s.percent) || 0), 0);
   const update = (i, patch) => onChange(splits.map((s, j) => (j === i ? { ...s, ...patch } : s)));
@@ -382,7 +383,7 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
       .then((d) => {
         if (!cancelled) setDetail(d);
       })
-      .catch(() => {});
+      .catch(reportQuietly);
     return () => {
       cancelled = true;
     };

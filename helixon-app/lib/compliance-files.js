@@ -6,6 +6,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { DOCUMENT_TYPES, MAX_DOCUMENT_BYTES, documentExtension } from "@/lib/compliance";
+import { reportError } from "@/lib/report-error";
 
 const BUCKET = "cvs";
 
@@ -18,7 +19,7 @@ export async function storeComplianceDocument({ agencyId, candidateId, file }) {
   const path = `${agencyId}/${candidateId}/compliance/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, Buffer.from(await file.arrayBuffer()), { contentType: DOCUMENT_TYPES[ext], upsert: false });
   if (error) {
-    console.error("[compliance-files] Upload failed:", error.message);
+    reportError("[compliance-files] Upload failed:", error.message);
     return { error: "The document couldn't be uploaded." };
   }
   return { path, name: String(file.name || "Document").slice(0, 200), mime: DOCUMENT_TYPES[ext] };

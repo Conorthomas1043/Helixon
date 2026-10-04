@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { emitWebhook } from "@/lib/webhooks";
 import { getConnection, updateConnection } from "@/lib/integrations/store";
 import { ACCOUNTING_PROVIDERS, invoiceState, pushInvoice } from "@/lib/integrations/accounting";
+import { reportError } from "@/lib/report-error";
 
 // The agency's accounting connection (Xero first if, oddly, both), or null.
 export async function accountingConnection(agencyId) {
@@ -48,7 +49,7 @@ export async function syncInvoice(conn, invoice) {
     .update({ external_provider: conn.provider, external_id: String(externalId).slice(0, 200), external_synced_at: new Date().toISOString() })
     .eq("id", invoice.id)
     .eq("agency_id", invoice.agency_id);
-  if (error) console.error("[accounting] Pushed but not recorded:", invoice.id, error.message);
+  if (error) reportError("[accounting] Pushed but not recorded:", invoice.id, error.message);
   return { provider: conn.provider, externalId, status: invoice.status };
 }
 

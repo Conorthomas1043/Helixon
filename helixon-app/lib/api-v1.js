@@ -5,6 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { authenticateApiKey } from "@/lib/api-keys";
+import { reportError } from "@/lib/report-error";
 
 export const API_VERSION = "2026-10-01";
 
@@ -24,7 +25,7 @@ export function withApiKey(handler) {
     try {
       return await handler(ctx, request, context?.params ? await context.params : {});
     } catch (err) {
-      console.error("[api/v1] Handler failed:", err?.message);
+      reportError("[api/v1] Handler failed:", err?.message);
       return apiError(500, "Something went wrong.");
     }
   };

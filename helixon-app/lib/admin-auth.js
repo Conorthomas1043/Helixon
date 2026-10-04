@@ -9,6 +9,7 @@ import {
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
 import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin-csrf";
+import { reportError } from "@/lib/report-error";
 
 // ── Admin session handling ───────────────────────────────────────────────────
 // Replaces the old pattern of a USERS map + a hardcoded admin key sitting
@@ -59,7 +60,7 @@ function sign(payload) {
     // Not enforced (that would lock every admin out on deploy if the current
     // secret is short) - but a short HMAC key can be brute-forced offline from
     // a captured cookie, so make it loud. Use 32+ random characters.
-    console.error("[admin-auth] ADMIN_SESSION_SECRET is shorter than 32 characters - replace it with a long random value.");
+    reportError("[admin-auth] ADMIN_SESSION_SECRET is shorter than 32 characters - replace it with a long random value.");
   }
   const data = JSON.stringify(payload);
   const sig = crypto.createHmac("sha256", secret).update(data).digest("hex");
@@ -111,7 +112,7 @@ export async function checkAdminCredentials(username, password) {
   if (!known || !expected) {
     await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
     if (known && !expected) {
-      console.error(`[admin-auth] No ADMIN_PASSWORD_HASH_${username.toUpperCase()} configured for allowed admin "${username}".`);
+      reportError(`[admin-auth] No ADMIN_PASSWORD_HASH_${username.toUpperCase()} configured for allowed admin "${username}".`);
     }
     return { ok: false, error: GENERIC_LOGIN_ERROR };
   }

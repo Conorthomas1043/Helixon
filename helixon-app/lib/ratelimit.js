@@ -1,4 +1,5 @@
 import { getRedis } from "@/lib/redis";
+import { reportError } from "@/lib/report-error";
 
 // Same x-forwarded-for/x-real-ip extraction previously duplicated inline
 // in app/api/run - shared here now that more routes need it.
@@ -70,7 +71,7 @@ export async function rateLimit(identifier, maxPerHour = 20) {
   const redisPromise = getRedis();
   if (!redisPromise) {
     if (process.env.NODE_ENV !== "production") return true;
-    console.error("[ratelimit] Redis is not configured in production - using in-memory fallback.");
+    reportError("[ratelimit] Redis is not configured in production - using in-memory fallback.");
     return fallbackAllow(key, maxPerHour);
   }
 
@@ -84,7 +85,7 @@ export async function rateLimit(identifier, maxPerHour = 20) {
 
     return count <= maxPerHour;
   } catch (err) {
-    console.error("[ratelimit] Redis error, using in-memory fallback:", err.message);
+    reportError("[ratelimit] Redis error, using in-memory fallback:", err.message);
     return fallbackAllow(key, maxPerHour);
   }
 }

@@ -24,6 +24,7 @@ import { scoreTone } from "@/app/analyse/_lib/analyse";
 import { Card, Icon, Notice, Spinner, Toasts, cx, useToasts } from "@/app/analyse/_components/ui";
 import { useUndoDelete } from "@/components/dashboard/use-undo-delete";
 import { Avatar, PillButton } from "@/app/analyse/_components/compareBits";
+import { reportQuietly } from "@/lib/report-error";
 
 const SCREEN_CONCURRENCY = 2;
 
@@ -519,7 +520,7 @@ function TalentPoolContent() {
   useEffect(() => {
     getJobs()
       .then(setJobs)
-      .catch(() => {});
+      .catch(reportQuietly);
   }, []);
 
   useEffect(() => {

@@ -7,6 +7,7 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
+import { reportError } from "@/lib/report-error";
 
 const GOAL_SELECT =
   "*, creator:created_by(id,display_name,full_name,username), assignee:assigned_to(id,display_name,full_name,username), items:employee_goal_items(id,title,done,position,created_at)";
@@ -31,7 +32,7 @@ export async function getGoals() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[employee-goals] getGoals failed:", error.message);
+    reportError("[employee-goals] getGoals failed:", error.message);
     return [];
   }
 
@@ -65,7 +66,7 @@ export async function addGoal(employeeId, { title, notes, deadline, assigned_to 
     .single();
 
   if (error) {
-    console.error("[employee-goals] addGoal failed:", error.message);
+    reportError("[employee-goals] addGoal failed:", error.message);
     return null;
   }
   return sortItems(data);
@@ -87,7 +88,7 @@ export async function updateGoal(employeeId, id, updates) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-goals] updateGoal failed:", error.message);
+    reportError("[employee-goals] updateGoal failed:", error.message);
     return null;
   }
   return data ? sortItems(data) : null;
@@ -106,7 +107,7 @@ export async function deleteGoal(employeeId, id) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-goals] deleteGoal failed:", error.message);
+    reportError("[employee-goals] deleteGoal failed:", error.message);
     return false;
   }
   return !!data;
@@ -129,7 +130,7 @@ export async function addGoalItem(employeeId, goalId, title) {
     .single();
 
   if (error) {
-    console.error("[employee-goals] addGoalItem failed:", error.message);
+    reportError("[employee-goals] addGoalItem failed:", error.message);
     return null;
   }
   return data;
@@ -147,7 +148,7 @@ export async function toggleGoalItem(employeeId, goalId, itemId, done) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-goals] toggleGoalItem failed:", error.message);
+    reportError("[employee-goals] toggleGoalItem failed:", error.message);
     return null;
   }
   return data;
@@ -165,7 +166,7 @@ export async function deleteGoalItem(employeeId, goalId, itemId) {
     .maybeSingle();
 
   if (error) {
-    console.error("[employee-goals] deleteGoalItem failed:", error.message);
+    reportError("[employee-goals] deleteGoalItem failed:", error.message);
     return false;
   }
   return !!data;
