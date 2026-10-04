@@ -459,12 +459,14 @@ export default function AnalyseWorkspace() {
               <Button size="sm" icon="refresh" onClick={() => setRerunning(true)}>
                 Re-score
               </Button>
+              {/* Two compare actions sat side by side with near-identical
+                  labels; each now says what it compares. */}
               <Button size="sm" icon="compare" onClick={() => setComparing(true)}>
-                Compare with another CV
+                Upload a CV to compare
               </Button>
               {jobId && candidateId && (
                 <Button size="sm" icon="layers" onClick={() => router.push(`/analyse/compare?jobId=${jobId}&ids=${candidateId}`)}>
-                  Compare for this role
+                  Compare everyone for this role
                 </Button>
               )}
               <Button size="sm" variant="dark" icon="plus" onClick={newCandidateSameRole}>

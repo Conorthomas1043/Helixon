@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
@@ -38,6 +38,16 @@ const PRICING_FAQS = [
 export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState("");
+  // The app sends people here (?reason=subscription_required) when their
+  // subscription stops granting access - most often a failed renewal
+  // payment. They used to get the plain sales page, i.e. an invitation to
+  // buy a second subscription, with no hint that a card update would do.
+  const [lapsed, setLapsed] = useState(false);
+  useEffect(() => {
+    // Read after mount so the page can still be pre-rendered statically.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLapsed(new URLSearchParams(window.location.search).get("reason") === "subscription_required");
+  }, []);
 
   async function choosePlan(plan) {
     setLoadingPlan(plan);
@@ -71,6 +81,24 @@ export default function PricingPage() {
             Unlimited screening on both plans. Monthly billing, no contract, cancel anytime.
           </p>
         </div>
+
+        {lapsed && (
+          <div
+            role="status"
+            className="max-w-xl mx-auto mb-8 rounded-[14px] p-5 text-left"
+            style={{ border: "1px solid #f1dfb5", background: "#fff8e6" }}
+          >
+            <p className="text-[15px] font-semibold" style={{ color: "#7a4f0a" }}>Your Helixon subscription isn&rsquo;t active</p>
+            <p className="text-sm leading-relaxed mt-1" style={{ color: "#7a4f0a" }}>
+              If you already had a plan, the most likely cause is a renewal payment that didn&rsquo;t go through.
+              Update your payment method in Billing to restore access, with no need to buy again.
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 text-sm font-semibold">
+              <Link href="/billing" className="underline" style={{ color: "#7a4f0a" }}>Go to Billing</Link>
+              <Link href="/contact" className="underline" style={{ color: "#7a4f0a" }}>Contact us</Link>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div

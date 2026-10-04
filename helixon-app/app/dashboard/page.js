@@ -163,7 +163,7 @@ function StageBadge({ stage }) {
     <span style={{
       display: "inline-flex",
       alignItems: "center",
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: 600,
       padding: "2px 8px",
       borderRadius: 9999,
@@ -181,7 +181,7 @@ function SectionHeading({ eyebrow, title, action }) {
     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
       <div>
         {eyebrow && (
-          <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
             {eyebrow}
           </p>
         )}
@@ -325,7 +325,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
             <span style={{
               display: "inline-flex",
               alignItems: "center",
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
@@ -415,7 +415,7 @@ function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
       className="fade-up-in lift-on-hover"
       style={{ ...CARD, padding: 20, "--stagger-delay": `${index * 70}ms` }}
     >
-      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
+      <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
         {label}
       </p>
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
@@ -517,7 +517,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
                         }}
                       />
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
                       {STAGE_LABELS[stageKey]}
                     </span>
                   </Link>
@@ -565,7 +565,7 @@ function UsageSummary({ plan, analyses }) {
 
   return (
     <div style={{ ...CARD, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
-      <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
+      <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
       <p style={{ fontSize: 18, fontWeight: 600, color: TEXT, margin: 0, fontFamily: "var(--font-display)" }}>{plan?.name ? `${plan.name}` : "No active plan"}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
         <div>
@@ -957,7 +957,7 @@ function ActiveJobs({ jobs, total, statsByJob }) {
                     </p>
                     <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                       {PRIORITY_LABEL[job.priority] && (job.priority === "urgent" || job.priority === "high") && (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
                       )}
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: TEXT_SUB }}>{formatNumber(job.candidates)}</span>
                     </span>
@@ -1054,7 +1054,7 @@ function RecentAnalyses({ analyses }) {
                   <th key={h} scope="col" style={{
                     padding: h === "Date" ? "8px 0 8px 12px" : "8px 12px 8px 0",
                     textAlign: h === "Score" || h === "Date" ? "right" : "left",
-                    fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
+                    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
                     borderBottom: `1px solid ${BORDER}`,
                   }}>
                     {h}
@@ -1186,7 +1186,7 @@ function BusinessKpis({ kpis }) {
           className="fade-up-in lift-on-hover"
           style={{ ...CARD, padding: 18, textDecoration: "none", display: "block", "--stagger-delay": `${i * 60}ms` }}
         >
-          <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
             {typeof it.value === "number" ? formatNumber(it.value) : it.value}
           </p>
@@ -1588,7 +1588,7 @@ function AgencyDashboardPage() {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
                 <DashboardKpis totals={model.totals} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">

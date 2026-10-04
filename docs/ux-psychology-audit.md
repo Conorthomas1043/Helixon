@@ -1,78 +1,174 @@
-# Helixon: website psychology & UX audit
+# Helixon: product-wide UX, psychology & conversion audit
 
-Scope: the public marketing site and conversion flows (home, `/pricing`, `/demo`, `/how-it-works`, `/faq`, checkout success), plus site-wide performance that affects first impressions. The signed-in dashboard was not audited in depth.
+**Scope:** the whole customer journey, from first visit to renewal. That covers the marketing site, pricing and checkout, signup, first-run, the core analyse workflow, the dashboard, collaboration, billing and failed payments, candidate-facing pages (job ads, applications), lifecycle email, analytics instrumentation, accessibility and performance.
 
-## Summary
+**Method:** we read the code and traced each journey end to end (the routes, the APIs they call, and the copy along the way). Fixes were checked with lint, the existing test suite (85 files, 481 tests), a production build, and screenshots from that build at 1280px and 390px. Internal staff consoles (`/admin`, `/employee`) were only spot-checked.
 
-The site already has a solid base: one clear audience (agency recruiters), outcome-led headlines, a product preview in the hero instead of stock imagery, good reduced-motion handling, and a deliberate "no invented numbers" policy.
+**Severity:** **P0** loses money, data or trust. **P1** clear conversion, activation or retention loss. **P2** friction or polish.
 
-The biggest problems were **trust leaks**. Pages contradicted each other, and some claims didn't match what the product does. A recruiter checking a vendor that handles candidate data will notice "EU servers" on one page and "Switzerland" on another. Next came **friction at the two conversion points**: a false "you must be signed in" warning on `/pricing`, and a bare demo form that gave no reason to trust it.
+---
 
-## Fixed in this branch
+## Executive summary
 
-### 1. Credibility: claims now match the product and each other
+Helixon's engineering quality is high. Accessibility, reduced motion and honest copy are clearly deliberate in many places, and the core analyse flow is well designed. The biggest problems weren't in any single screen but at the joins between them:
 
-| Where | Was | Now | Why |
+1. **A failed payment looked like "you were never a customer"** (P0, fixed). One declined renewal immediately blocks screening. Customers were then sent to the sales page and invited to buy a new plan, with no mention that a payment had failed.
+2. **Deleting a candidate: "Cancel" still deleted** (P0, fixed). A native OK/Cancel box used Cancel to mean "remove from this job only".
+3. **Claims that contradicted the product or each other** (P0, fixed): "94% match accuracy" and "10x faster" with no data behind them, "scanned and photographed CVs" (not supported), "EU servers" vs Switzerland, 30 seconds vs a minute, "Most popular", and "you must sign in before checkout" (false).
+4. **A brand-new account opened on a dashboard of zeros** (P1, fixed). The one useful action sat below the fold.
+5. **Too little instrumentation to manage growth** (P1, mostly fixed). There were 7 product events, no account-level analytics, and identification broke for anyone who accepted cookies after the page had loaded.
+6. **No lifecycle email at all** (P1, recommended). There's no welcome email and no activation nudge. A welcome template exists but nothing sends it, and its copy still promises "3 free analyses".
+
+---
+
+## Macro findings (journeys and systems)
+
+### M1. Failed payment → locked out → told to buy again · P0 · Fixed (copy and flow), policy decision open
+*Lenses: retention, behavioural economics, UX writing*
+
+- `lib/subscription-status.js` grants access only while a subscription is `active`. When a renewal fails, Stripe marks it `past_due` and keeps retrying, but Helixon blocks screening straight away.
+- The next screening attempt returns 402 and redirects to `/pricing?reason=subscription_required`. `/pricing` ignored `reason` and showed "Choose Individual". The billing page could show "You're not on a paid plan yet → View plans".
+- **Risk:** customers who are owed help either churn, or buy a second subscription that double-bills them once the card is fixed.
+- **Fixed:**
+  - `/pricing` now explains, when that reason is present, that the cause is probably a failed renewal, and links to Billing and Contact.
+  - Billing shows a red "Your last payment didn't go through" alert with an "Update payment method" button. It says what's paused (screening and email) and that all data is safe.
+  - Portal opens are now tracked.
+- **Decision for you:** most SaaS products keep access through Stripe's retry window, a grace period of roughly 1–2 weeks. Adding `past_due` to `ACCESS_STATUSES` is a one-line change. Admin Billing already counts `past_due` as paying. The site should also show a "payment failed" banner on every page, not only on Billing (`/api/auth/me` would need to return the subscription status).
+
+### M2. Activation: first-run experience · P1 · Fixed
+*Lenses: behavioural science (goal-gradient, endowed progress), UX*
+
+- **Before:** a new workspace landed on 5 zero-value KPI cards, "Risks: all clear" and "Nothing booked". "No candidates yet → New analysis" sat below them.
+- **Now:** a **Getting started** checklist appears at the top for any workspace that hasn't screened anything.
+  - "Set up your workspace" starts ticked, because it's already true (endowed progress).
+  - Then: **Screen your first CV** (primary), Add a job, Import existing candidates, and Invite your team (Agency plan only).
+  - It shows "x of y done" with a progress bar. The zero KPIs, risks and agenda are hidden until there's something to show, and the checklist disappears after the first screening.
+- Clicks on each step are tracked (`onboarding_step_clicked`).
+- **Next:** define activation as "first analysis within 24h of `workspace_created`" and watch it as a PostHog funnel.
+
+### M3. Analytics and identity · P1 · Mostly fixed
+*Lenses: product analytics, UX analytics, growth*
+
+| Gap | Fix |
+|---|---|
+| 7 events in total; no failures, bulk runs, jobs, invites or shares | Added `workspace_created`, `analysis_failed` (with status), `bulk_analysis_started` / `_finished` (succeeded and failed counts), `job_created`, `teammate_invited`, `shortlist_shared`, `onboarding_step_clicked`, `demo_form_started`, `billing_portal_opened` |
+| `identify` only ran if PostHog was already running when the nav mounted, so anyone accepting cookies after load stayed anonymous | `useAnalyticsIdentity` runs again when consent arrives |
+| No account-level view (the customer is the agency) | `posthog.group("agency", id, { name, plan })`; `/api/auth/me` now returns `agencyId` |
+| Every caller had its own copy of `posthog.__loaded` checks | `lib/analytics.js` `track()` |
+
+**Still open:**
+- Server-side events for things that don't pass through a browser: `subscription_started`, `payment_failed`, `subscription_cancelled` from the Stripe webhook (needs `posthog-node`).
+- A cancellation-reason survey before the Stripe portal.
+- Saved PostHog funnels: visit → demo/checkout → workspace → first analysis → 5th analysis → teammate invited.
+
+### M4. Lifecycle email · P1 · Recommended
+`emails/WelcomeEmail.jsx` is never imported, and its copy describes a free-trial model that no longer exists ("3 free analyses… no card"). After paying, a customer gets a Stripe receipt and nothing from Helixon.
+
+**Recommended sequence:**
+1. **Welcome** right after `workspace_created`: one CTA, "Screen your first CV".
+2. **Day 2, if no analysis yet:** "Here's a 60-second way to try it", with a sample CV and role.
+3. **After the 1st analysis:** "Next: add the whole batch" (bulk upload).
+4. **Agency plan, only one member after 7 days:** "Invite your team".
+5. **Dunning:** "Payment failed" with a link to update the card. Stripe can send this, but the copy should be on-brand.
+
+I didn't wire this up, because it sends email to real customers and needs your sign-off on the sender address and copy.
+
+### M5. Trust and claims consistency · P0 · Fixed
+*Lenses: direct-response, compliance (UK CAP code), credibility*
+
+| Where | Problem | Now |
+|---|---|---|
+| Login panel | "94% match accuracy", "10x faster screening", nothing to back them | "<1 min per CV", "50 CVs per bulk upload", "∞ analyses/month" |
+| Home features | "scanned and photographed CVs" (image-only files fail extraction) | "PDF and Word CVs, tables and columns included" |
+| How it works, FAQ | "EU servers" (the DPA says Switzerland) | Switzerland, consistently |
+| How it works, FAQ | "30 seconds" | "Under a minute per CV" |
+| `/pricing` | "Most popular" (no data) | "Recommended for agencies" |
+| `/pricing` | "You must be signed in before checkout" (false, guest checkout works) | "No account needed first" |
+| Pricing copy | "Team access", with no size | "Up to 5 team members", from one shared constant that the seat limit enforcement also uses |
+
+### M6. Pricing and purchase psychology · P1 · Fixed
+- Positive framing ("Unlimited screening on both plans…").
+- Risk reversal under each button ("Billed monthly · Cancel anytime").
+- A demo option for people who aren't sure yet.
+- An objections block next to the price.
+- Buttons line up across the two plans.
+- One shared checkout helper (the two copies had drifted, and one crashed on non-JSON errors).
+
+**Open decisions:** an annual plan to anchor the monthly price, and a first-month money-back guarantee instead of a trial.
+
+### M7. Demo funnel · P1 · Fixed
+- A "What happens next" panel: reply within one business day, run on your own CVs, no obligation.
+- A benefit-led headline.
+- Errors shown under the field they apply to, with ARIA.
+- No auto-focus on phones (it popped the keyboard over the page).
+- Focus moves to the confirmation after submitting, which also offers a next step.
+- `demo_form_started` makes form abandonment measurable.
+
+### M8. Candidate experience (the agency's own funnel) · P1 · Partly fixed
+Candidates applying through an agency's job page are that agency's conversion funnel, so a bad experience here costs the agency, and indirectly Helixon.
+
+**Fixed:**
+- An "Apply for this job" button at the top. On a phone the form used to sit below the full description.
+- CV size and type are checked before upload. A 15 MB file used to upload completely and only then fail.
+- The confirmation now names the email address they'll be contacted at and suggests checking spam. The old line, "we'll be in touch if you're a match", reads as "probably not".
+
+**Recommended:** an acknowledgement email to applicants. Right now nothing confirms receipt, so the confirmation screen is their only record.
+
+### M9. Destructive actions and confirmations · P0/P1 · Fixed
+- **P0:** on the candidate profile, deleting someone with other records used `confirm()` with OK = erase everything and Cancel = remove from this job, so pressing Cancel still deleted.
+  - It's now a dialog with three explicit buttons: "Remove from {job} only", "Erase all N records", "Cancel".
+  - The body explains GDPR erasure.
+  - Focus starts on Cancel.
+- All other native `confirm()` calls in the customer dashboard (deleting a tag, bulk erase, bulk remove from the talent pool, making someone admin) now use the same `useConfirm()` dialog, with specific button labels ("Erase 3 candidates", not "OK").
+- The `Dialog` primitive now returns focus to the element that opened it.
+- **Left as is:** the "screened blind, open the CV anyway?" prompt. It's a privacy speed bump that only opens a file. The employee portal (internal) still uses `alert()` and `confirm()` in places, even though it has its own Toaster.
+
+---
+
+## Micro findings
+
+| # | Area | Issue | Status |
 |---|---|---|---|
-| Home features + upload tab | "PDF, Word, scanned and photographed CVs" / "scanned or typed" | "PDF and Word CVs, tables and columns included" / "PDF or Word (.docx)" | Upload accepts only `.pdf`/`.docx` (`CV_ACCEPT`), and image-only scans fail text extraction. A visitor who uploads a phone photo after reading this stops trusting every other claim. |
-| How it works | "scanned exports" | removed | Same reason. |
-| How it works badge, FAQ | "Under 30 seconds" / "Around 30 seconds" | "Under a minute per CV" | The homepage and site metadata say under a minute, and the code notes an analysis runs several model calls in sequence. |
-| How it works, FAQ | "EU servers" | "Switzerland, which the UK and EU recognise as adequate" | Switzerland isn't in the EU. The homepage, DPA and privacy policy all say Swiss. |
-| `/pricing` badge | "Most popular" | "Recommended for agencies" | No data backs "most popular" (UK CAP code requires substantiation), and the homepage already uses "Recommended for agencies". |
-| `/pricing` footnote | "You must be signed in before starting checkout" | "No account needed first: you'll set one up straight after checkout" | This was false. `/api/checkout` is built for guest checkout. The old line sent buyers to a login page where they had no account. |
+| 1 | Signup | Agency-name input had no programmatic label | Fixed (`useId` + `htmlFor`) |
+| 2 | Signup | The primary button's resting (disabled) state was white on `--ink-mute`, 1.83:1 contrast, and looked broken | Fixed (dimmed brand colour) |
+| 3 | Signup | Copy named the auth vendor ("Clerk keeps this part secure") | Fixed |
+| 4 | Signup | "Magnetic" button ignored reduced-motion settings | Fixed |
+| 5 | Dashboard | `Button size="sm"` was ~22px tall, under the WCAG 2.2 minimum target size of 24px | Fixed (28px min; md 32px) |
+| 6 | Dashboard | 10px uppercase grey labels on every KPI and section heading | Raised to 11px on Overview; about 140 other `text-[10px]` uses remain (mostly dense tables) |
+| 7 | Analyse | "Compare with another CV" next to "Compare for this role" | Now "Upload a CV to compare" / "Compare everyone for this role" |
+| 8 | Analyse | 5 equal-weight actions on the report toolbar (Hick's law) | Recommended: keep "Next candidate" primary and move Re-score and Compare into a "More" menu |
+| 9 | 404 | Primary button "Go to the app" sent visitors with no account to a login screen | Primary action now depends on whether the visitor is signed in |
+| 10 | Checkout | "We couldn't confirm that payment" offered no human contact | Contact link added |
+| 11 | FAQ | Accordion: closed answers were read by screen readers, and long answers were clipped at 200px | Fixed; FAQPage JSON-LD added |
+| 12 | Home / pricing | Loading button text unreadable (1.83:1) | Fixed |
+| 13 | Fonts | A Google Fonts stylesheet blocked rendering on every page; Fraunces loaded site-wide | Self-hosted with `next/font` and size-matched fallbacks |
+| 14 | Lint | Existing errors in `/pricing`, `/billing`, `/404` | Fixed in the files touched; existing `react-hooks` errors in the dashboard pages (no new ones) and in the legal pages remain |
+| 15 | Copy | 32 generic "Something went wrong" fallbacks | Acceptable where paired with a retry; worth replacing on the analyse and apply paths with cause-specific messages |
 
-### 2. Pricing page: less risk, fewer dead ends
-- **Positive framing:** "No three-analysis trial. No fake limits." became "Unlimited screening on both plans. Monthly billing, no contract, cancel anytime." The old line led with a dig at competitors; the new one says what the buyer gets.
-- **Risk-reversal microcopy under each button:** "Billed monthly · Cancel anytime". People feel the risk most at the moment they click to pay.
-- **A path for undecided visitors:** a "Not sure which plan fits? Get a demo" panel. Before, the only choices were to pay or leave.
-- **Objections answered on the page:** a "Before you choose" block covers contract, unlimited use, whether an account is needed, and where data is kept. Every answer matches the homepage FAQ and the checkout code.
-- **Readability:** feature lists went from 12px to 14px. Card descriptions have a fixed height so the two "Choose" buttons line up.
+---
 
-### 3. Demo page (the site's main conversion goal)
-- **"What happens next" panel:** reply within one business day, a run-through on your own CVs, no obligation. A bare form makes visitors fear a hard sell; spelling out the steps removes that uncertainty. Each promise was already made elsewhere on the site.
-- **Benefit-led headline:** "Get a demo" became "See Helixon on your own CVs". The reply-time promise is now in the subtitle, so phone users see it without scrolling.
-- **Trust chips:** Swiss-hosted · GDPR-ready · Never used to train AI.
-- **Privacy line under the submit button**, linking to the privacy policy.
-- **Errors appear under the field they belong to**, with `aria-invalid` and `aria-describedby`, and focus moves to the first invalid field. Before, there was one generic message box, and `aria-describedby` pointed at an element that didn't exist.
-- **Autofocus only on mouse/trackpad devices.** On phones it used to pop the keyboard up before the visitor had read the page.
-- **Focus moves to the confirmation after submitting**, and there's a next step ("See an example analysis") instead of a dead end.
-- Uses the shared `Logo` component instead of a copy-pasted SVG. The nav stays deliberately minimal with no exit links.
+## Recommendations backlog (ranked by impact ÷ effort)
 
-### 4. Homepage
-- **Hero reassurance:** "See it on your own CVs, no obligation. Plans from £249 a month." This tells people what the main CTA leads to, which is the usual hesitation before clicking "Get a demo".
-- **The "Not sure yet?" pricing tile** had an empty slot where the price should be. It now reads "Demo · on your own CVs" with an extra benefit line.
-- **Readable loading state on the buy buttons:** white on `--ink-mute` was 1.83:1 contrast. The button now keeps its colours and dims slightly.
-- **Shared checkout logic:** home and `/pricing` each had their own checkout code and had drifted. `/pricing` crashed on a non-JSON error response. Both now use `lib/start-checkout.js`.
+| Rank | Item | Lens | Effort |
+|---|---|---|---|
+| 1 | Decide on a `past_due` grace period and add a site-wide failed-payment banner | Retention | S |
+| 2 | Welcome and activation emails (M4) | Lifecycle | M |
+| 3 | Real testimonials or logos near the hero and pricing (never invented) | Social proof | S (content) |
+| 4 | Stripe webhook → PostHog server events; saved activation and retention funnels | Analytics | M |
+| 5 | Acknowledgement email to job applicants | Candidate experience | S |
+| 6 | Cancellation-reason survey before the Stripe portal; offer a pause or downgrade to Individual | Retention | M |
+| 7 | Annual plan and/or money-back guarantee | Pricing | S (decision) |
+| 8 | Interactive "try one sample CV" on the homepage, before an email is asked for | Conversion | L |
+| 9 | Toolbar simplification on the analysis report (micro #8) | UX | S |
+| 10 | Move dashboard aggregation to the server (the client gets every analysis and computes KPIs; `truncated` already shows the ceiling) | Performance | M |
+| 11 | Homepage as server components (all ~1,300 lines currently ship as client JS) | Performance / SEO | M |
+| 12 | Replace `alert()` and `confirm()` in the employee portal with its existing Toaster | Internal UX | S |
 
-### 5. FAQ page
-- "Do I need a card to try it? Yes…" became "Is there a free trial?" Same honest answer, but it now offers the low-risk options (a demo on your own CVs, monthly billing, cancel anytime).
-- The accordion now matches the homepage one for accessibility: `type="button"`, `aria-controls`, labelled regions, and `inert` on closed answers so screen readers skip hidden text. Max height went from 200px to 400px because long answers were being cut off on phones.
-- **FAQPage structured data** (JSON-LD) lets search results show answers directly. The content moved to `lib/faq-content.js` so the server route can read it.
-
-### 6. Performance: self-hosted fonts
-- Every page loaded a **render-blocking Google Fonts stylesheet from another domain**, covering four families. Fraunces was in it even though only three legal pages use it.
-- Fonts now load through `next/font`: served from our own domain, Outfit and Inter preloaded, Geist Mono and Fraunces loaded on demand, and size-matched fallback fonts so text doesn't jump when the web font arrives (less layout shift).
-- `--font-display`, `--font-body` and `--font-mono` now point at the next/font variables. The legal pages and admin UI font stacks were updated to match.
-
-### 7. Checkout success
-- The "We couldn't confirm that payment" screen now links to Contact. Someone who might have been charged needs a person to talk to, not just a link back to pricing.
-
-## Recommended next steps (need data or a business decision)
-
-These would likely do more for conversion than anything above. Each needs facts the code doesn't have, so none were invented.
-
-1. **Social proof (highest impact).** There are no testimonials, customer logos, case studies or usage figures anywhere on the site. For a B2B tool at £249–£349/month, this is the biggest missing trust signal. Add one or two real, attributed quotes, ideally with a measured result ("cut screening time from X to Y"), near the hero and next to pricing.
-2. **Agency plan seat count.** "Team access" doesn't say how many people are included. That leaves buyers guessing and makes the £100 step up hard to judge. State it plainly, e.g. "Up to N recruiters".
-3. **Risk reversal at payment.** There's no free trial (by choice). A first-month money-back guarantee, or a "cancel within 14 days for a full refund" line, would cut the risk of paying without a trial.
-4. **Annual billing option.** A discounted annual price beside the monthly one anchors the monthly price as flexible and improves cash flow.
-5. **Self-serve "try one CV" sample.** The example analysis is static. Letting a visitor score one sample CV against one sample role, before giving an email, is the strongest way to show the product works. It would need limits on cost and abuse.
-6. **Funnel measurement.** `checkout_started` and `demo_request_submitted` exist. Add `demo_form_started` (first field focus) and pricing-page views so form abandonment and pricing drop-off can be measured. Test changes with A/B tests rather than guessing.
-7. **Homepage length.** There are 12 sections, and pricing is about tenth. Test a shorter page, or a version that moves pricing above "Agency workflow", against the current one.
-8. **Homepage as a server component.** All of `app/page.js` is a client component, so every static section ships JavaScript to the browser. Splitting it into a server-rendered shell with small interactive client parts would cut JS on the most-visited page.
-9. **Tighten the CSP.** `fonts.googleapis.com` and `fonts.gstatic.com` are still allowed in `next.config.mjs`. Once nothing else needs them, they can come out.
-10. **Existing lint debt.** `app/dpa`, `app/updates` and `app/cookie-policy` have existing `no-html-link-for-pages` and `no-unescaped-entities` errors that this branch didn't introduce.
+---
 
 ## Verification
-- `npm test`: 85 files, 481 tests passing.
-- `eslint` is clean on every changed marketing file. This also fixes 2 existing errors in `app/pricing/page.js`.
-- `next build` succeeds. The changed pages were rendered from a production build and screenshotted at 1280px and 390px. Headings render in Outfit with the size-matched fallback. On the demo form, an invalid email sets `aria-invalid`, links its error message, and moves focus to the field.
+- `vitest`: 85 files, 481 tests passing.
+- `eslint`: no new errors in any changed file. Existing errors were removed from `/pricing`, `/billing` and `/404`. Existing `react-hooks` errors in the large dashboard pages are unchanged (the counts are identical before and after).
+- `next build --webpack` succeeds.
+- Production-build screenshots checked: home, `/pricing` (normal and lapsed), `/demo` (desktop and phone), `/faq`, 404, login.
+- Not checked visually: the signed-in screens (dashboard checklist, confirmation dialogs, billing alert), because they need a live Clerk session and database.
