@@ -11,7 +11,7 @@ import Link from "next/link";
 import { getShortlists, createShortlist, addToShortlist, removeFromShortlist } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT } from "@/lib/candidate-format";
 
-export default function AddToShortlist({ candidateIds, jobId = null, defaultName = "", onChange, className = "", label = "Add to shortlist" }) {
+export default function AddToShortlist({ candidateIds, jobId = null, defaultName = "", onChange, className = "", label = "Add to client shortlist" }) {
   const [open, setOpen] = useState(false);
   const [lists, setLists] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -109,17 +109,17 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
       {open && (
         <div
           role="dialog"
-          aria-label="Add to shortlist"
+          aria-label="Add to a client shortlist"
           className="absolute z-40 mt-2 w-72 rounded-[12px] bg-white p-3 shadow-xl right-0 sm:left-0 sm:right-auto"
           style={{ border: "1px solid var(--border)" }}
         >
           <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
-            {candidateIds.length === 1 ? "Shortlists" : `Add ${candidateIds.length} people to`}
+            {candidateIds.length === 1 ? "Client shortlists" : `Add ${candidateIds.length} people to`}
           </p>
           {lists === null ? (
             <p className="text-[12px] py-2" style={{ color: INK_MUTED }}>Loading…</p>
           ) : lists.length === 0 ? (
-            <p className="text-[12px] py-1" style={{ color: INK_MUTED }}>No shortlists yet - name one below.</p>
+            <p className="text-[12px] py-1" style={{ color: INK_MUTED }}>No client shortlists yet - name one below. A shortlist is what you send a client to decide on.</p>
           ) : (
             <ul className="max-h-56 overflow-y-auto -mx-1">
               {lists.map((l) => (

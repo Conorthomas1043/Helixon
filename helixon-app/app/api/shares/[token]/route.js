@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
@@ -9,6 +9,7 @@ import { CLIENT_DECISIONS, SHARE_TOKEN_RE, shareActive, sharedProfiles } from "@
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { clerkClient } from "@clerk/nextjs/server";
 import { notify } from "@/lib/notifications";
+import { captureAgencyEvent } from "@/lib/server-analytics";
 
 // Public: a client's view of a shared shortlist (app/share/[token]). The
 // token is the only credential, and the link stops working when revoked or
@@ -16,6 +17,8 @@ import { notify } from "@/lib/notifications";
 //
 // GET                                               the profiles + responses
 // POST { candidateId, decision, comment?, name? }   respond on one person
+
+const CORRECTION_WINDOW_MS = 10 * 60 * 1000;
 
 async function load(token) {
   if (!SHARE_TOKEN_RE.test(token || "")) return null;
@@ -36,6 +39,9 @@ export async function GET(request, { params }) {
     .from("shortlist_shares")
     .update({ view_count: (share.view_count ?? 0) + 1, last_viewed_at: new Date().toISOString() })
     .eq("id", share.id);
+  // How many shares are opened, and how often, is the first half of the
+  // client-response funnel (docs/ux-research-audit.md, R6).
+  after(() => captureAgencyEvent("share_opened", share.agency_id, { views: (share.view_count ?? 0) + 1 }));
 
   return NextResponse.json({
     agencyName: agencyDisplayName(share.agencies),
@@ -59,6 +65,21 @@ export async function POST(request, { params }) {
   const comment = cleanText(body.comment, { max: 2000 }) || null;
   const by = cleanLine(body.name, 200) || share.recipient_name || "Client";
 
+  // The page now saves a decision the moment it's tapped (so one tap is an
+  // answer - a selected-but-unsent choice used to be lost). A change of
+  // mind or an added comment within a few minutes is a correction, not a
+  // new answer: it updates quietly instead of alerting the recruiter again.
+  const { data: prior } = await supabase
+    .from("shortlist_candidates")
+    .select("client_decision, client_decided_at, client_decided_by")
+    .eq("shortlist_id", share.shortlist_id)
+    .eq("candidate_id", candidateId)
+    .maybeSingle();
+  const isCorrection =
+    Boolean(prior?.client_decided_at) &&
+    prior.client_decided_by === by &&
+    Date.now() - Date.parse(prior.client_decided_at) < CORRECTION_WINDOW_MS;
+
   const { data: updated, error } = await supabase
     .from("shortlist_candidates")
     .update({ client_decision: body.decision, client_comment: comment, client_decided_at: new Date().toISOString(), client_decided_by: by })
@@ -69,6 +90,13 @@ export async function POST(request, { params }) {
   if (!updated?.length) return NextResponse.json({ error: "That person isn't on this shortlist." }, { status: 404 });
 
   const decisionLabel = CLIENT_DECISIONS[body.decision];
+  after(() => captureAgencyEvent("share_decision", share.agency_id, { decision: body.decision, correction: isCorrection, with_comment: Boolean(comment) }));
+  if (isCorrection) {
+    if (prior.client_decision !== body.decision) {
+      await logActivity(supabase, candidateId, "client_decision", by, { note: `Changed to ${decisionLabel}${comment ? ` - "${comment}"` : ""} (shortlist: ${share.shortlists?.name})` });
+    }
+    return NextResponse.json({ ok: true, correction: true });
+  }
   await logActivity(supabase, candidateId, "client_decision", by, { note: `${decisionLabel}${comment ? ` - "${comment}"` : ""} (shortlist: ${share.shortlists?.name})` });
   const clientId = share.shortlists?.jobs?.client_id;
   if (clientId) {

@@ -21,7 +21,7 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
         <div className="flex items-center gap-3">
           <Spinner size={18} />
           <h2 className="text-[17px] font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
-            {compare ? "Analysing the second candidate" : "Analysing candidate"}
+            {compare ? "Screening the second candidate" : "Screening candidate"}
           </h2>
           <span className="ml-auto text-[12.5px] tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
             {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}

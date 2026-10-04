@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordSignal } from "@/lib/research-signals";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
@@ -83,6 +84,10 @@ export async function POST(request) {
 
     if (dbError) throw dbError;
     insertedId = data?.id ?? null;
+    // An opt-in to research invitations, ticked by the person on the form.
+    if (body?.researchOptIn === true) {
+      await recordSignal({ kind: "research_optin", label: "demo_request", meta: { demoRequestId: insertedId } });
+    }
   } catch (err) {
     console.error("Failed to save demo request:", err);
     return NextResponse.json(

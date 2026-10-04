@@ -85,6 +85,16 @@ export async function GET(request) {
     console.error("[data-retention] Inactivity sweep failed:", err.message);
   }
 
+  // 1b. Research feedback older than 24 months (storage limitation, UK
+  //     GDPR Art. 5(1)(e)). Tolerates the table not existing yet.
+  try {
+    const before = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.from("research_signals").delete().lt("created_at", before);
+    if (error && error.code !== "42P01" && error.code !== "PGRST205") throw new Error(error.message);
+  } catch (err) {
+    console.error("[data-retention] Research signal sweep failed:", err.message);
+  }
+
   // 2. Agencies cancelled 90+ days ago: erase everything (DPA Annex C).
   const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
 

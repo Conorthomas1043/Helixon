@@ -113,6 +113,7 @@ export default function DemoRequestPage() {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [message, setMessage] = useState("");
+  const [researchOptIn, setResearchOptIn] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
@@ -181,6 +182,7 @@ export default function DemoRequestPage() {
           email: email.trim(),
           company: company.trim(),
           message: message.trim(),
+          researchOptIn,
 
           utm_source: params.get("utm_source"),
           utm_medium: params.get("utm_medium"),
@@ -396,6 +398,11 @@ export default function DemoRequestPage() {
                         required={false}
                         textarea
                       />
+
+                      <label className="flex items-start gap-2.5 text-[12.5px] mb-3 cursor-pointer" style={{ color: "var(--ink-soft)" }}>
+                        <input type="checkbox" checked={researchOptIn} onChange={(e) => setResearchOptIn(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
+                        I&apos;m also happy to be invited to give feedback on new features (optional).
+                      </label>
 
                       <button
                         type="submit"

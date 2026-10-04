@@ -258,18 +258,26 @@ const FEATURE_GROUPS = [
   {
     title: "Make better screening decisions",
     body: "See more than a score \u2014 see the reasoning behind it.",
-    items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Bias-aware scoring"],
+    items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Blind screening, with protected characteristics excluded from scoring"],
   },
   {
     title: "Stay compliant",
     body: "Built for candidate data from the ground up.",
     items: ["Data stored in Switzerland", "Encryption at rest & in transit", "Full audit trail", "GDPR-ready workflow"],
   },
+  // The product is a whole agency system, not only a screener; the page
+  // said so in one section and the metadata not at all, so buyers looking
+  // for an ATS/CRM didn't learn they'd found one (docs/ux-research-audit.md, R1).
+  {
+    title: "Run the whole desk",
+    body: "Everything after the shortlist, in the same place.",
+    items: ["Pipeline, jobs and clients", "Client shortlists with one-tap feedback", "Interviews, offers and placements", "Invoices, targets and agency analytics"],
+  },
 ];
 
 function FeatureGroups() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {FEATURE_GROUPS.map((g) => (
         <div key={g.title} className="rounded-[14px] p-7" style={{ background: "white", border: "1px solid var(--border)" }}>
           <h3 className="text-base font-semibold mb-2" style={{ color: "var(--ink)" }}>{g.title}</h3>

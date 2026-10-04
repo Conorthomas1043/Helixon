@@ -14,6 +14,7 @@ export const NAV_GROUPS = [
       { href: "/admin/agencies", label: "Agencies", icon: "building", hint: "Who's using Helixon, on what plan" },
       { href: "/admin/users", label: "Users", icon: "users", hint: "Accounts, bans and password resets" },
       { href: "/admin/leads", label: "Leads", icon: "inbox", hint: "Demo requests and where they came from" },
+      { href: "/admin/voice", label: "Voice of customer", icon: "users", hint: "Score disagreements, surveys, questions and cancellation reasons" },
       { href: "/admin/billing", label: "Billing", icon: "card", hint: "Subscriptions and revenue" },
     ],
   },

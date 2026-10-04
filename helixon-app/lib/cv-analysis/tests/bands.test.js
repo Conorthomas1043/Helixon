@@ -6,9 +6,9 @@ import { estimateSalary } from "../scoring/salaryEngine.js";
 describe("score cut-offs", () => {
   it("labels the same score the same way everywhere", () => {
     for (const [score, band, label] of [
-      [STRONG_MATCH_MIN, "Strong Match", "Strong match"],
-      [REVIEW_MIN, "Worth Reviewing", "Moderate match"],
-      [REVIEW_MIN - 1, "Weak Match", "Weak match"],
+      [STRONG_MATCH_MIN, "Strong match", "Strong match"],
+      [REVIEW_MIN, "Worth reviewing", "Worth reviewing"],
+      [REVIEW_MIN - 1, "Weak match", "Weak match"],
     ]) {
       expect(getScoreBand(score).band).toBe(band);
       expect(scoreLabel(score)).toBe(label);

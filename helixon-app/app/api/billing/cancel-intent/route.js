@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordSignal } from "@/lib/research-signals";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
@@ -19,5 +20,10 @@ export async function POST(request) {
   const reason = REASONS.has(body?.reason) ? body.reason : "other";
   const detail = cleanLine(body?.detail, 500) || null;
   await captureAgencyEvent("cancellation_started", profile?.agency_id, { reason, detail });
+  // Kept for the Voice of customer page too, readable by a person.
+  await recordSignal({ kind: "cancellation_reason", agencyId: profile?.agency_id, profileId: profile?.id, label: reason, body: detail, meta: { canTalk: body?.canTalk === true } });
+  if (body?.canTalk === true) {
+    await recordSignal({ kind: "research_optin", agencyId: profile?.agency_id, profileId: profile?.id, label: "cancellation" });
+  }
   return NextResponse.json({ ok: true });
 }

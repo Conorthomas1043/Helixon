@@ -183,9 +183,9 @@ function FunnelChart({ funnel }) {
 function QualityDistribution({ quality }) {
   const total = quality.scoredCount || 1;
   const segments = [
-    { key: "strong", label: "80+ Strong", count: quality.strong, color: "var(--forest)" },
-    { key: "moderate", label: "60–79 Moderate", count: quality.moderate, color: AMBER },
-    { key: "weak", label: "Below 60", count: quality.weak, color: RED },
+    { key: "strong", label: "80+ Strong match", count: quality.strong, color: "var(--forest)" },
+    { key: "moderate", label: "60–79 Worth reviewing", count: quality.moderate, color: AMBER },
+    { key: "weak", label: "Below 60 Weak match", count: quality.weak, color: RED },
   ];
   return (
     <div>

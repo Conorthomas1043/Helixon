@@ -1,5 +1,6 @@
 "use client";
 
+import { PulseSurvey } from "@/components/dashboard/research";
 import { useNow } from "@/lib/hooks/useNow";
 import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,7 +13,7 @@ import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
 import { computeCandidateStats } from "@/lib/dashboard-model";
 import { getFollowUps, completeNextAction, getPerformance } from "@/lib/dashboard-api";
 import { METRICS, METRIC_KEYS } from "@/lib/performance";
-import { STRONG_MATCH_MIN, REVIEW_MIN } from "@/lib/scoreBands";
+import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "@/lib/scoreBands";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
@@ -135,10 +136,7 @@ function scoreColor(score) {
 }
 
 function scoreLabel(score) {
-  if (score === null || score === undefined) return "No score";
-  if (score >= STRONG_MATCH_MIN) return "Strong";
-  if (score >= REVIEW_MIN) return "Moderate";
-  return "Weak";
+  return scoreBandLabel(score);
 }
 
 /* ─── Shared components ─────────────────────────────────────────────────── */
@@ -290,6 +288,58 @@ function GettingStarted({ hasJob, showTeam }) {
   );
 }
 
+/* ─── Joining a team ────────────────────────────────────────────────────── */
+
+// For someone invited into a workspace that's already running: the agency's
+// checklist above doesn't apply (it's for an empty workspace), so they used
+// to land on a full dashboard with no orientation. A short, dismissible
+// list of where things are. Structured orientation measurably speeds how
+// fast newcomers become productive (Bauer, Bodner, Erdogan, Truxillo &
+// Tucker, 2007, "Newcomer adjustment during organizational socialization:
+// A meta-analytic review", Journal of Applied Psychology 92(3)).
+const JOINED_KEY = "helixon_team_welcome_dismissed";
+
+function TeamWelcome({ agencyName, onDismiss }) {
+  const steps = [
+    { key: "jobs", title: "Find the jobs you're working on", body: "Each job keeps its candidates, scores and stages together.", href: "/dashboard/jobs", cta: "Open jobs" },
+    { key: "pipeline", title: "See how your team moves candidates", body: "The pipeline shows every stage your agency uses.", href: "/dashboard/pipeline", cta: "Open pipeline" },
+    { key: "analyse", title: "Screen your first CV", body: "Score a CV against one of the team's jobs, or a new one.", href: "/analyse", cta: "Screen a CV", primary: true },
+  ];
+  return (
+    <section style={{ ...CARD, padding: "22px 26px" }} aria-labelledby="team-welcome-title">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>New to the team</p>
+          <h2 id="team-welcome-title" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: TEXT, margin: 0 }}>
+            Welcome to {agencyName || "your agency's"} Helixon
+          </h2>
+          <p style={{ fontSize: 13, color: TEXT_SUB, margin: "4px 0 0" }}>Three places to start. Press <kbd style={{ fontFamily: "var(--font-mono)", fontSize: 12, padding: "1px 5px", border: `1px solid ${BORDER}`, borderRadius: 4 }}>?</kbd> anywhere for keyboard shortcuts.</p>
+        </div>
+        <button type="button" onClick={onDismiss} style={{ fontSize: 13, color: TEXT_SUB, textDecoration: "underline", background: "none", border: 0, cursor: "pointer", minHeight: 32 }}>
+          Got it
+        </button>
+      </div>
+      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        {steps.map((st, i) => (
+          <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: `1px solid ${BORDER2}` }}>
+            <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: VIOLET_BG, color: VIOLET_FG }}>{i + 1}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0 }}>{st.title}</p>
+              <p style={{ fontSize: 13, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>
+            </div>
+            <Link href={st.href} onClick={() => track("team_welcome_step_clicked", { step: st.key })} style={{
+              flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
+              background: st.primary ? VIOLET : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+            }}>
+              {st.cta}
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 /* ─── Header ────────────────────────────────────────────────────────────── */
 
 function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshing, refreshError, onRefresh }) {
@@ -392,7 +442,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
           padding: "10px 16px", borderRadius: 9999,
           background: VIOLET, color: "#fff", textDecoration: "none",
         }}>
-          + New analysis
+          + Screen a CV
         </Link>
       </div>
     </header>
@@ -482,7 +532,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
         }
       />
       {maxCount === 0 ? (
-        <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="New analysis" actionHref="/analyse" />
+        <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="Screen a CV" actionHref="/analyse" />
       ) : (
         <>
           <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
@@ -1047,7 +1097,7 @@ function RecentAnalyses({ analyses }) {
         }
       />
       {analyses.length === 0 ? (
-        <EmptyState title="No analyses yet" body="Upload your first CV to start screening candidates." actionLabel="New analysis" actionHref="/analyse" />
+        <EmptyState title="No analyses yet" body="Upload your first CV to start screening candidates." actionLabel="Screen a CV" actionHref="/analyse" />
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -1526,6 +1576,27 @@ function AgencyDashboardPage() {
     return () => { cancelled = true; };
   }, [opsScope, reloadKey]);
 
+  // A teammate who joined a workspace that's already running and hasn't
+  // screened anything themselves yet.
+  const [teamWelcomeDismissed, setTeamWelcomeDismissed] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem(JOINED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const isNewTeammate =
+    data != null && model.hasTeammates && myId && !model.everyone.some((a) => a.recruiterId === myId) && !teamWelcomeDismissed;
+  function dismissTeamWelcome() {
+    try {
+      window.localStorage.setItem(JOINED_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+    setTeamWelcomeDismissed(true);
+  }
+
   // Nothing screened and no open jobs: a brand-new workspace.
   const isNewAccount = data != null && model.everyone.length === 0;
   const hasOpenJob = Boolean(ops && ops.kpis?.openJobs > 0);
@@ -1556,6 +1627,8 @@ function AgencyDashboardPage() {
           <>
             <DashboardHeader greetingName={greetingName} agencyName={agencyName} plan={plan} subtitle={subtitle} isRefreshing={isFetching} refreshError={!isFetching && hasError} onRefresh={retry} />
 
+            {isNewTeammate && <TeamWelcome agencyName={agencyName} onDismiss={dismissTeamWelcome} />}
+            {!isNewAccount && !isNewTeammate && <PulseSurvey analysesCount={model.everyone.filter((a) => a.recruiterId === myId).length} />}
             {data.truncated && <TruncatedNotice />}
             {model.hasTeammates && <ScopeToggle scope={scope} onChange={setScope} />}
 
@@ -1582,7 +1655,7 @@ function AgencyDashboardPage() {
                 <EmptyState
                   title={model.mineOnly ? "No candidates assigned to you" : "No candidates yet"}
                   body={model.mineOnly ? "Switch to Team to see everyone's, or screen a CV to start your own pipeline." : "Your pipeline is empty. Upload your first CV to get started."}
-                  actionLabel="New analysis"
+                  actionLabel="Screen a CV"
                   actionHref="/analyse"
                 />
                 {ops && ops.activeJobsTotal > 0 && (

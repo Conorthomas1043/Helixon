@@ -11,7 +11,8 @@
     "test": "vitest run",
     "eval:cv": "node scripts/eval-cv-scoring.mjs",
     "eval:labelled": "node scripts/eval-labelled.mjs",
-    "calibrate": "node scripts/fit-score-weights.mjs"
+    "calibrate": "node scripts/fit-score-weights.mjs",
+    "eval:fairness": "node scripts/eval-fairness.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

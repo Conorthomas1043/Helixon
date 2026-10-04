@@ -390,7 +390,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   }, [queue, allSettled]);
 
   const progress = queue.length ? Math.round((settledCount / queue.length) * 100) : 0;
-  const missing = !jobReady ? "Add the role first." : !queue.length ? "Add at least one CV." : !consent ? "Confirm your lawful basis to continue." : null;
+  const missing = !jobReady ? "Add the job first." : !queue.length ? "Add at least one CV." : !consent ? "Confirm your lawful basis to continue." : null;
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-start">
@@ -665,7 +665,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
 
           <div>
             <Button variant="primary" size="lg" className="w-full" disabled={!canStart} onClick={startBulk}>
-              {running ? `Analysing ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Analyse ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+              {running ? `Screening ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Screen ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
             </Button>
             {missing && !running && <p className="text-[12px] text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
           </div>

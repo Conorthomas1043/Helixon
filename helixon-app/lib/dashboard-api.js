@@ -725,11 +725,13 @@ export async function getInterview(id) {
 }
 
 export async function scheduleInterview(fields) {
-  return apiFetch("/api/interviews", {
+  const interview = await apiFetch("/api/interviews", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fields),
   });
+  track("interview_scheduled");
+  return interview;
 }
 
 export async function updateInterview(id, fields) {
@@ -901,6 +903,7 @@ export async function getPlacement(id) {
 
 export async function createPlacement(fields) {
   const res = await apiFetch("/api/placements", jsonBody("POST", fields));
+  track("placement_created");
   return res.placement;
 }
 

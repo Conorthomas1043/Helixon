@@ -463,7 +463,7 @@ function EmptyState({ hasFilters, onClear }) {
           className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--forest)", color: "white" }}
         >
-          New analysis
+          Screen a CV
         </Link>
       )}
     </div>
@@ -799,7 +799,7 @@ function CandidateDatabaseContent() {
               className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
-              + New analysis
+              + Screen a CV
             </Link>
           </div>
         </header>
@@ -1018,7 +1018,7 @@ function CandidateDatabaseContent() {
             <AddToShortlist
               candidateIds={[...selectedIds]}
               jobId={filters.jobId !== "all" ? filters.jobId : null}
-              label="Add to shortlist…"
+              label="Add to client shortlist…"
             />
             {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
               <Link

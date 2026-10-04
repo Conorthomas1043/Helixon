@@ -306,7 +306,7 @@ export default function ShortlistDetailPage({ params }) {
             <section className="rounded-[14px] p-5 sm:p-6" style={CARD}>
               {candidates.length === 0 ? (
                 <p className="text-[13px] text-center py-6" style={{ color: INK_MUTED }}>
-                  Nobody on this list yet. Use &quot;Add to shortlist&quot; on a candidate&apos;s profile, or select people on{" "}
+                  Nobody on this list yet. Use &quot;Add to client shortlist&quot; on a candidate&apos;s profile, or select people on{" "}
                   <Link href={shortlist.jobId ? `/dashboard/candidates?jobId=${shortlist.jobId}` : "/dashboard/candidates"} className="underline font-semibold" style={{ color: "var(--forest)" }}>
                     Candidates
                   </Link>

@@ -16,7 +16,7 @@ import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/component
 // grouped, so the bar fits without scrolling on a laptop.
 const TABS = [
   { href: "/dashboard", label: "Overview" },
-  { href: "/analyse", label: "Analyse" },
+  { href: "/analyse", label: "Screen" },
   { href: "/dashboard/candidates", label: "Candidates" },
   { href: "/dashboard/pipeline", label: "Pipeline" },
   { href: "/dashboard/jobs", label: "Jobs" },
@@ -24,32 +24,40 @@ const TABS = [
   { href: "/dashboard/interviews", label: "Interviews" },
 ];
 
+// Every destination says which question it answers. Bare labels gave four
+// near-synonyms for "people" (Candidates, Pipeline, Talent pool, Shortlists)
+// and two for "numbers" (Performance, Analytics); a one-line description is
+// the "information scent" people follow when choosing where to click
+// (Pirolli & Card, 1999, "Information foraging", Psychological Review
+// 106(4)). `team: true` marks what only makes sense with teammates; on the
+// Individual plan those carry an "Agency plan" tag rather than looking
+// broken (docs/ux-research-audit.md, R1 and R3).
 const MORE = [
   {
-    group: "Sourcing",
+    group: "People",
     links: [
-      { href: "/dashboard/talent-pool", label: "Talent pool" },
-      { href: "/dashboard/shortlists", label: "Shortlists" },
-      { href: "/analyse/compare", label: "Compare" },
-      { href: "/dashboard/email", label: "Email" },
-      { href: "/dashboard/import", label: "Import" },
+      { href: "/dashboard/talent-pool", label: "Talent pool", hint: "People you're keeping for future roles" },
+      { href: "/dashboard/shortlists", label: "Client shortlists", hint: "Lists you send to a client to decide on" },
+      { href: "/analyse/compare", label: "Compare candidates", hint: "Side by side, for one job" },
+      { href: "/dashboard/import", label: "Import", hint: "Bring candidates in from a spreadsheet" },
     ],
   },
   {
     group: "Revenue",
     links: [
-      { href: "/dashboard/business-development", label: "Business development" },
-      { href: "/dashboard/placements", label: "Placements & invoices" },
-      { href: "/dashboard/performance", label: "Performance" },
-      { href: "/dashboard/analytics", label: "Analytics" },
+      { href: "/dashboard/business-development", label: "Business development", hint: "Prospective clients and deals" },
+      { href: "/dashboard/placements", label: "Placements & invoices", hint: "Who you placed and what's owed" },
+      { href: "/dashboard/performance", label: "Performance", hint: "Each recruiter against their targets", team: true },
+      { href: "/dashboard/analytics", label: "Analytics", hint: "Agency funnel, time to fill and fees" },
     ],
   },
   {
     group: "Workspace",
     links: [
-      { href: "/dashboard/team", label: "Team" },
-      { href: "/dashboard/compliance", label: "Compliance" },
-      { href: "/dashboard/settings", label: "Settings" },
+      { href: "/dashboard/email", label: "Email templates", hint: "Reusable emails and follow-up sequences" },
+      { href: "/dashboard/team", label: "Team", hint: "Invite teammates and set roles", team: true },
+      { href: "/dashboard/compliance", label: "Compliance", hint: "Right to work, checks and expiries" },
+      { href: "/dashboard/settings", label: "Settings", hint: "Everything else about your workspace" },
     ],
   },
 ];
@@ -67,7 +75,7 @@ function activeTabHref(pathname) {
 
 // "More" - the rest of the dashboard, grouped. Closes on a pick, Escape or
 // a click outside.
-function MoreMenu({ activeHref, compact = false }) {
+function MoreMenu({ activeHref, compact = false, plan = null }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const current = MORE_LINKS.find((l) => l.href === activeHref);
@@ -102,7 +110,7 @@ function MoreMenu({ activeHref, compact = false }) {
       </button>
       {open && (
         <div
-          className={`absolute right-0 top-[calc(100%+6px)] z-50 w-[min(92vw,420px)] rounded-[12px] p-3 bg-white grid grid-cols-2 sm:grid-cols-3 gap-3`}
+          className={`absolute right-0 top-[calc(100%+6px)] z-50 w-[min(92vw,680px)] max-h-[80vh] overflow-y-auto rounded-[12px] p-3 bg-white grid grid-cols-1 sm:grid-cols-3 gap-3`}
           style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}
         >
           {MORE.map((g) => (
@@ -115,10 +123,17 @@ function MoreMenu({ activeHref, compact = false }) {
                   key={l.href}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="block text-xs px-2 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
-                  style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)" }}
+                  className="block px-2 py-2 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
                 >
-                  {l.label}
+                  <span className="flex items-center gap-1.5 text-[13px]" style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)", fontWeight: 500 }}>
+                    {l.label}
+                    {l.team && plan && plan !== "agency" && (
+                      <span className="text-[10.5px] font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                        Agency plan
+                      </span>
+                    )}
+                  </span>
+                  <span className="block text-[12px] leading-snug mt-0.5" style={{ color: "var(--ink-faint)" }}>{l.hint}</span>
                 </Link>
               ))}
             </div>
@@ -304,7 +319,7 @@ function DashboardNavContent() {
               </Link>
             );
           })}
-          <MoreMenu activeHref={activeHref} />
+          <MoreMenu activeHref={activeHref} plan={me?.plan} />
         </div>
 
         <div className="relative flex items-center gap-2 shrink-0">
@@ -401,7 +416,7 @@ function DashboardNavContent() {
           );
         })}
         </div>
-        <MoreMenu activeHref={activeHref} compact />
+        <MoreMenu activeHref={activeHref} compact plan={me?.plan} />
       </div>
       {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
     </nav>

@@ -9,6 +9,7 @@
 // Recently-viewed tracking uses localStorage and stores candidate ids only,
 // never CV contents or contact details.
 
+import { track } from "@/lib/analytics";
 import { useNow } from "@/lib/hooks/useNow";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -1971,7 +1972,7 @@ function FullAnalysis({ analysis, candidateName }) {
  * any time (it used to be offered only on the Analyse screen after a run).
  * ---------------------------------------------------------------------- */
 
-function EmailPanel({ candidate, onSent }) {
+function EmailPanel({ candidate, onSent, initialPurpose }) {
   const router = useRouter();
   const { toasts, toast } = useToasts();
   const handleStatus = useCallback((response, data) => {
@@ -1994,6 +1995,7 @@ function EmailPanel({ candidate, onSent }) {
     toast,
     handleStatus,
     onSent,
+    initialPurpose,
   });
 
   if (!candidate.jobId) return null;
@@ -2109,6 +2111,43 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
         </div>
       </form>
     </div>
+  );
+}
+
+// A titled, collapsible group of panels on the candidate profile. Showing
+// the everyday groups open and the occasional ones closed is progressive
+// disclosure (Nielsen, 2006, Nielsen Norman Group): fewer visible options
+// make the frequent ones faster to find, as choice time grows with the
+// number of alternatives (Hick, 1952, Quarterly Journal of Experimental
+// Psychology 4(1); Hyman, 1953, Journal of Experimental Psychology 45(3)).
+// Group titles name the task, which is what people scan for (Pirolli &
+// Card, 1999, "Information foraging", Psychological Review 106(4)).
+// Opening a group and using a panel in it are recorded, so the order can
+// be revisited with data (docs/ux-research-audit.md, R4).
+function PanelGroup({ id, title, summary, defaultOpen = false, children }) {
+  const usedRef = useRef(false);
+  return (
+    <details
+      open={defaultOpen}
+      className="group/panel space-y-4"
+      onToggle={(e) => track("profile_group_toggled", { group: id, open: e.currentTarget.open })}
+      onClickCapture={(e) => {
+        if (usedRef.current || e.target.closest("summary")) return;
+        usedRef.current = true;
+        track("profile_panel_used", { group: id });
+      }}
+    >
+      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-[12px] px-4 py-3 min-h-[44px] bg-white border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0">
+          <span className="block text-[14px] font-semibold" style={{ color: "var(--ink)" }}>{title}</span>
+          {summary && <span className="block text-[12px] group-open/panel:hidden" style={{ color: "var(--ink-faint)" }}>{summary}</span>}
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 transition-transform group-open/panel:rotate-180" style={{ color: "var(--ink-faint)" }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </summary>
+      {children}
+    </details>
   );
 }
 
@@ -2252,7 +2291,17 @@ export default function CandidateProfilePage({ params }) {
           });
         }
         setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage, subStage: updated.sub_stage ?? null } : c));
-        toast(`Moved to ${STAGE_LABELS[updated.stage ?? stage] || stage}`);
+        const moved = updated.stage ?? stage;
+        // "Shortlisted" (a stage) and a client shortlist (what the client
+        // sees) share a word; say so at the moment someone could confuse
+        // them (docs/glossary.md).
+        toast(
+          moved === "Shortlisted"
+            ? "Moved to Shortlisted. To show them to the client, add them to a client shortlist."
+            : moved === "Rejected" && candidate?.email
+              ? "Moved to Rejected. A rejection email is ready to draft under Contact - nothing is sent until you send it."
+              : `Moved to ${STAGE_LABELS[moved] || moved}`
+        );
       }
     },
     [id, candidate, failed, toast]
@@ -2551,59 +2600,88 @@ export default function CandidateProfilePage({ params }) {
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-              <div className="space-y-4 lg:space-y-6">
+              {/* Main column: the assessment and the record. */}
+              <div className="space-y-4 lg:space-y-6 order-2 lg:order-1">
                 <MatchOverview candidate={candidate} />
-                {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} />
-                <CustomFieldsCard key={candidate.id} entity="candidate" recordId={candidate.id} values={candidate.customFields} onSaved={refreshActivity} />
+                {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
+                <CustomFieldsCard key={candidate.id} entity="candidate" recordId={candidate.id} values={candidate.customFields} onSaved={refreshActivity} />
                 <ActivityTimeline activity={candidate.activity} />
               </div>
-              <div className="space-y-4 lg:space-y-6">
-                <TalentPoolPanel
-                  candidate={candidate}
-                  jobs={jobs}
-                  onSave={handleSaveToPool}
-                  onUpdate={handleUpdatePool}
-                  onRemove={handleRemoveFromPool}
-                  onRescreen={handleRescreen}
-                />
-                <RecruiterWorkspace
-                  candidate={candidate}
-                  recruiters={recruiters}
-                  tags={tags}
-                  onStageChange={handleStageChange}
-                  onSubStageChange={handleSubStageChange}
-                  onAssign={handleAssign}
-                  onAddTag={handleAddTag}
-                  onRemoveTag={handleRemoveTag}
-                  onCreateTag={handleCreateTag}
-                  onSetNextAction={handleSetNextAction}
-                  onCompleteNextAction={handleCompleteNextAction}
-                  onLogActivity={handleLogActivity}
-                  loggingActivity={loggingActivity}
-                />
-                {candidate.status === "completed" && <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />}
-                {candidate.status === "completed" && <BookingLinksCard candidate={candidate} onBooked={refreshActivity} />}
-                {candidate.status === "completed" && <CandidateDocumentsCard candidate={candidate} />}
-                <CompliancePanel candidate={candidate} onChanged={refreshActivity} />
-                <SelfServiceCard candidate={candidate} />
-                <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
-                <FeedbackRequestsPanel
-                  requests={feedbackRequests}
-                  onCreate={handleCreateFeedbackRequest}
-                  onEmail={handleEmailFeedbackRequest}
-                  creating={creatingFeedbackRequest}
-                  candidateEmail={candidate.email}
-                  clientEmail={candidate.job?.client_email}
-                />
-                <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
-                <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
-                <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
-                <EmailPanel candidate={candidate} onSent={refreshActivity} />
-                <SmsPanel candidate={candidate} onSent={refreshActivity} />
-                <MergeDuplicateCard candidate={candidate} />
+              {/* Side column, grouped by job instead of 15 panels in the order
+                  they were built. On a phone it comes first, so stage and
+                  notes are on the first screen rather than ~20 panels down. */}
+              <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
+                <PanelGroup id="work" title="Work on this candidate" defaultOpen>
+                  <RecruiterWorkspace
+                    candidate={candidate}
+                    recruiters={recruiters}
+                    tags={tags}
+                    onStageChange={handleStageChange}
+                    onSubStageChange={handleSubStageChange}
+                    onAssign={handleAssign}
+                    onAddTag={handleAddTag}
+                    onRemoveTag={handleRemoveTag}
+                    onCreateTag={handleCreateTag}
+                    onSetNextAction={handleSetNextAction}
+                    onCompleteNextAction={handleCompleteNextAction}
+                    onLogActivity={handleLogActivity}
+                    loggingActivity={loggingActivity}
+                  />
+                  <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
+                  <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
+                </PanelGroup>
+                <PanelGroup id="contact" title="Contact" summary="Email, texts, booking links and feedback requests" defaultOpen>
+                  <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
+                  {/* A rejected candidate is offered the rejection email first.
+                      Timely, explained outcomes are a core rule of perceived
+                      fairness in selection (Gilliland, 1993, Academy of
+                      Management Review 18(4)), and fairness perceptions shape
+                      whether applicants recommend or reapply (Hausknecht, Day
+                      & Thomas, 2004, Personnel Psychology 57(3)). Never sent
+                      automatically: the recruiter reviews and sends it. */}
+                  <EmailPanel
+                    key={`email-${candidate.id}-${candidate.stage === "Rejected" ? "rejection" : "default"}`}
+                    candidate={candidate}
+                    onSent={refreshActivity}
+                    initialPurpose={candidate.stage === "Rejected" ? "rejection" : undefined}
+                  />
+                  <SmsPanel candidate={candidate} onSent={refreshActivity} />
+                  {candidate.status === "completed" && <BookingLinksCard candidate={candidate} onBooked={refreshActivity} />}
+                  <FeedbackRequestsPanel
+                    requests={feedbackRequests}
+                    onCreate={handleCreateFeedbackRequest}
+                    onEmail={handleEmailFeedbackRequest}
+                    creating={creatingFeedbackRequest}
+                    candidateEmail={candidate.email}
+                    clientEmail={candidate.job?.client_email}
+                  />
+                  <SelfServiceCard candidate={candidate} />
+                </PanelGroup>
+                <PanelGroup
+                  id="place"
+                  title="Placement & compliance"
+                  summary="Offer, placement, right to work and documents"
+                  defaultOpen={candidate.stage === "Offer" || candidate.stage === "Placed"}
+                >
+                  {candidate.status === "completed" && <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />}
+                  <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
+                  <CompliancePanel candidate={candidate} onChanged={refreshActivity} />
+                  {candidate.status === "completed" && <CandidateDocumentsCard candidate={candidate} />}
+                </PanelGroup>
+                <PanelGroup id="later" title="Keep for later & tidy up" summary="Talent pool and merging duplicates">
+                  <TalentPoolPanel
+                    candidate={candidate}
+                    jobs={jobs}
+                    onSave={handleSaveToPool}
+                    onUpdate={handleUpdatePool}
+                    onRemove={handleRemoveFromPool}
+                    onRescreen={handleRescreen}
+                  />
+                  <MergeDuplicateCard candidate={candidate} />
+                </PanelGroup>
               </div>
             </div>
           </>

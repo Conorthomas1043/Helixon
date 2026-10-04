@@ -20,6 +20,30 @@ Treat everything below the "observed" level as a hypothesis to test, not a concl
 
 ---
 
+## Status: implemented on `main`
+
+Each fix is evidence-led. The source is cited in a code comment where the decision is made, and listed under References below.
+
+| Insight | What changed | Evidence |
+|---|---|---|
+| **R6** Client answers lost | `/share`: one tap saves the answer; a labelled, separately saved comment; "x of y answered" progress bar; an "All done" confirmation; a branded loading skeleton. A change by the same person within 10 minutes counts as a correction, so the recruiter isn't alerted twice. `share_opened` / `share_decision` events | Nielsen 1994 (error prevention, system status); Kivetz et al. 2006 (goal gradient) |
+| **R7** Trust and fairness | Thumbs-down reasons now include "Read the CV wrongly", "Misunderstood the job" and "Quoted the wrong evidence". `npm run eval:fairness` runs a counterfactual paired-CV audit (8 name groups, caring/parental breaks, disability disclosure, school) and flags only differences beyond run-to-run noise. The homepage claim now says what is built: blind screening, with protected characteristics excluded | Lee & See 2004; Bertrand & Mullainathan 2004; Wood et al. 2009; EU AI Act Annex III |
+| **R8** No customer voice | New `research_signals` table (service-role only, deleted after 24 months or with the agency). Admin **Voice of customer** page brings together score disagreements, the pulse survey, cancellation reasons, chat questions by topic (consented visitors only, contact details removed), demo-lead problems and research opt-ins. A **UMUX-Lite** pulse survey runs at most every 90 days, after 10+ screenings. Research opt-ins in Settings, on the demo form and in the cancellation dialog. Privacy policy updated | Lewis et al. 2013; Keiningham et al. 2007; Porter et al. 2004; UK GDPR Art. 5(1)(c),(e) |
+| **R4 / R5** Profile overload, mobile | The 15 side panels are now 4 task groups: *Work on this candidate* and *Contact* open; *Placement & compliance* opens at Offer or Placed; *Keep for later & tidy up* is closed. On phones this column comes first, so stage and notes are on the first screen. `profile_group_toggled` / `profile_panel_used` events | Hick 1952; Hyman 1953; Nielsen 2006; Pirolli & Card 1999 |
+| **R2** Vocabulary | Glossary (`docs/glossary.md`). The core action is **Screen** (nav, buttons, running and report states). "Shortlists" is now **Client shortlists**, and a hint appears when a candidate is moved to the Shortlisted stage. One set of score-band labels (`BAND_LABELS`) replaces five variants. The screening page says "job" | Nielsen 1994; Nielsen & Molich 1990 |
+| **R3 / R1** Navigation, scope | Each "More" item says which question it answers. Team-only items show an "Agency plan" tag on Individual. The homepage gets a "Run the whole desk" group, and the site description now covers the CRM | Pirolli & Card 1999 |
+| **R9** Invited teammates | A "New to the team" orientation card for members who haven't screened yet (jobs, pipeline, screen a CV, the `?` shortcuts) | Bauer et al. 2007 |
+| **R10** Candidate black hole | Moving someone to Rejected sets the composer to a rejection draft and says so. Nothing is ever sent automatically | Gilliland 1993; Hausknecht et al. 2004 |
+| **§4** Measurement | Added `interview_scheduled`, `placement_created`, `share_opened`, `share_decision`, `pulse_survey_submitted`, `profile_panel_used` | Rodden et al. 2010 (HEART) |
+| Minor | Pipeline "Move to…" target raised to 32px | WCAG 2.2 SC 2.5.8 |
+
+**Needs doing outside the code:**
+- Apply the migration `supabase/migrations/20261004090000_research_signals.sql`. Until then, the new features run without errors but don't store anything.
+- Run `npm run eval:fairness` (it needs API keys and costs about £20) and act on any flags.
+- Run the studies in §5. These changes are hypotheses until users confirm them.
+
+---
+
 ## 1. Who uses Helixon
 
 | Persona | What they're trying to do | Touchpoints in the code | Account? | How often | Research coverage today |
@@ -216,3 +240,28 @@ Aggregate-only; run in the Supabase SQL editor or as PostHog insights. They retu
 5. **A welcome for invited teammates:** a short checklist, covering "your jobs", how this team uses stages, and shortcuts. (R9)
 6. **A glossary,** then one name per concept. Decide "Shortlisted" stage vs "Shortlists" first. (R2)
 7. **Instrument** `share_opened`, `share_decision`, `profile_panel_used`, `interview_scheduled` and `placement_created`. (§4)
+
+---
+
+## References
+- Bauer, T. N., Bodner, T., Erdogan, B., Truxillo, D. M., & Tucker, J. S. (2007). Newcomer adjustment during organizational socialization: A meta-analytic review of antecedents, outcomes, and methods. *Journal of Applied Psychology, 92*(3), 707–721.
+- Bertrand, M., & Mullainathan, S. (2004). Are Emily and Greg more employable than Lakisha and Jamal? A field experiment on labor market discrimination. *American Economic Review, 94*(4), 991–1013.
+- European Parliament and Council (2024). Regulation (EU) 2024/1689 (Artificial Intelligence Act), Annex III, point 4(a).
+- Gilliland, S. W. (1993). The perceived fairness of selection systems: An organizational justice perspective. *Academy of Management Review, 18*(4), 694–734.
+- Hausknecht, J. P., Day, D. V., & Thomas, S. C. (2004). Applicant reactions to selection procedures: An updated model and meta-analysis. *Personnel Psychology, 57*(3), 639–683.
+- Hick, W. E. (1952). On the rate of gain of information. *Quarterly Journal of Experimental Psychology, 4*(1), 11–26.
+- Hyman, R. (1953). Stimulus information as a determinant of reaction time. *Journal of Experimental Psychology, 45*(3), 188–196.
+- Keiningham, T. L., Cooil, B., Andreassen, T. W., & Aksoy, L. (2007). A longitudinal examination of Net Promoter and firm revenue growth. *Journal of Marketing, 71*(3), 39–51.
+- Kivetz, R., Urminsky, O., & Zheng, Y. (2006). The goal-gradient hypothesis resurrected: Purchase acceleration, illusionary goal progress, and customer retention. *Journal of Marketing Research, 43*(1), 39–58.
+- Lee, J. D., & See, K. A. (2004). Trust in automation: Designing for appropriate reliance. *Human Factors, 46*(1), 50–80.
+- Lewis, J. R., Utesch, B. S., & Maher, D. E. (2013). UMUX-LITE: When there's no time for the SUS. *Proceedings of CHI 2013*, 2099–2102.
+- Nielsen, J. (1994). Enhancing the explanatory power of usability heuristics. *Proceedings of CHI '94*, 152–158.
+- Nielsen, J. (2006). Progressive disclosure. Nielsen Norman Group.
+- Nielsen, J., & Landauer, T. K. (1993). A mathematical model of the finding of usability problems. *Proceedings of INTERCHI '93*, 206–213. (Basis for the 5–8 participant sizes in §5.)
+- Nielsen, J., & Molich, R. (1990). Heuristic evaluation of user interfaces. *Proceedings of CHI '90*, 249–256.
+- Pirolli, P., & Card, S. (1999). Information foraging. *Psychological Review, 106*(4), 643–675.
+- Porter, S. R., Whitcomb, M. E., & Weitzer, W. H. (2004). Multiple surveys of students and survey fatigue. *New Directions for Institutional Research, 121*, 63–73.
+- Rodden, K., Hutchinson, H., & Fu, X. (2010). Measuring the user experience on a large scale: User-centered metrics for web applications. *Proceedings of CHI 2010*, 2395–2398.
+- UK General Data Protection Regulation, Article 5(1)(c) (data minimisation) and 5(1)(e) (storage limitation).
+- W3C (2023). Web Content Accessibility Guidelines 2.2, Success Criterion 2.5.8 Target Size (Minimum).
+- Wood, M., Hales, J., Purdon, S., Sejersen, T., & Hayllar, O. (2009). *A test for racial discrimination in recruitment practice in British cities*. Department for Work and Pensions Research Report No. 607.

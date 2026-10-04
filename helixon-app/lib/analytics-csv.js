@@ -20,7 +20,7 @@ export function analyticsCsvRows(snapshot, filterLabel) {
 
   add("Quality", "Average match score", snapshot.quality.avgScore);
   add("Quality", "Strong (80+)", snapshot.quality.strong);
-  add("Quality", "Moderate (60-79)", snapshot.quality.moderate);
+  add("Quality", "Worth reviewing (60-79)", snapshot.quality.moderate);
   add("Quality", "Weak (<60)", snapshot.quality.weak);
 
   add("Conversion", "Shortlist rate %", snapshot.conversion.shortlistRate);

@@ -48,7 +48,7 @@ function Row({ c, picked, disabled, onToggle }) {
           <span className="block text-[15px] font-semibold tabular-nums" style={{ color: tone.fg }}>
             {c.score ?? "–"}
           </span>
-          {c.score != null && <span className="block text-[10.5px] text-[var(--ink-faint)]">{tone.label.replace(" match", "").replace("Worth a look", "Moderate")}</span>}
+          {c.score != null && <span className="block text-[10.5px] text-[var(--ink-faint)]">{tone.label}</span>}
         </span>
       </button>
     </li>

@@ -243,7 +243,7 @@ export default function AnalyseWorkspace() {
   const roleReady = !!jobFile || jobText.trim().length >= 50;
   const activeFile = comparing ? compareFile : file;
   const missing = !roleReady
-    ? "Add the role - pick a job, build one, paste an advert or upload a spec."
+    ? "Add the job - pick a saved one, build one, paste an advert or upload a spec."
     : !activeFile
       ? "Add the candidate's CV."
       : !consent
@@ -504,16 +504,16 @@ export default function AnalyseWorkspace() {
             {inReport ? (
               <>
                 <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
-                  <Icon name="arrowLeft" size={14} /> New analysis
+                  <Icon name="arrowLeft" size={14} /> Screen another CV
                 </button>
                 <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
-                  Assessment
+                  Screening report
                 </h1>
               </>
             ) : (
               <>
                 <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
-                  {comparing ? "Compare a second candidate" : rerunning ? "Re-score candidate" : "Analyse"}
+                  {comparing ? "Compare a second candidate" : rerunning ? "Re-score candidate" : "Screen a CV"}
                 </h1>
                 <p className="text-[13.5px] text-[var(--ink-soft)] mt-1">
                   {mode === "bulk"
@@ -589,7 +589,7 @@ export default function AnalyseWorkspace() {
             <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start">
               {comparing ? (
                 <Card className="px-5 py-5">
-                  <p className="text-[12px] font-medium text-[var(--ink-soft)]">Role</p>
+                  <p className="text-[12px] font-medium text-[var(--ink-soft)]">Job</p>
                   <p className="text-[15px] font-semibold text-[var(--ink)] mt-1">{roleLabel || "Same role as before"}</p>
                   <p className="text-[13px] text-[var(--ink-soft)] mt-2">
                     Comparing against <span className="text-[var(--ink)] font-medium">{result?.blind_mode ? "the blind-screened candidate" : result?.name || "the first candidate"}</span> ({result?.match_score}/100).

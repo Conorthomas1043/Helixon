@@ -37,7 +37,7 @@ export default function CandidateCard({
       <div className="px-5 pt-4 pb-5 space-y-4">
         {rerunOf && (
           <Notice tone="info" onDismiss={onCancelRerun}>
-            Re-scoring <b className="font-semibold text-[var(--ink)]">{rerunOf}</b>. Change the role or must-haves, then analyse again - no need to re-upload.
+            Re-scoring <b className="font-semibold text-[var(--ink)]">{rerunOf}</b>. Change the job or must-haves, then screen again - no need to re-upload.
           </Notice>
         )}
 
@@ -133,7 +133,7 @@ export default function CandidateCard({
 
         <div className="pt-1">
           <Button variant="primary" size="lg" className="w-full" disabled={!canAnalyse} onClick={onAnalyse} iconRight="arrowRight">
-            {compare ? "Analyse and compare" : rerunOf ? "Re-score candidate" : "Analyse candidate"}
+            {compare ? "Screen and compare" : rerunOf ? "Re-score candidate" : "Screen candidate"}
           </Button>
           <p className="text-[12px] text-center mt-2 text-[var(--ink-faint)]">
             {missing ? (

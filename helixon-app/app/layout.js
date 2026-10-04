@@ -32,7 +32,7 @@ const fraunces = Fraunces({
 
 const TITLE = "Helixon - AI CV screening for recruitment agencies";
 const DESCRIPTION =
-  "Upload a CV and a job spec, get a match score, the evidence behind it, and what's missing - in under a minute. Built for recruiters who screen at volume.";
+  "AI CV screening and a recruitment CRM for agencies: score every CV against the job with the evidence behind it, then run shortlists, interviews, placements and invoices in one place.";
 
 export const metadata = {
   metadataBase: new URL("https://www.helixon.co.uk"),

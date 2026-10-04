@@ -103,7 +103,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
           {/* Any stage, Rejected included - the arrows only walk the funnel,
               so without this a card could only be rejected (or brought back
               from Rejected) by dragging, which touch and keyboard can't do. */}
-          <label className="relative w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--mist)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" title="Move to…">
+          <label className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--mist)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" title="Move to…">
             <span className="sr-only">Move {candidate.fullName} to</span>
             <span aria-hidden="true" className="text-[13px] leading-none" style={{ color: INK_MUTED }}>⋯</span>
             <select
@@ -349,7 +349,7 @@ function PipelineContent() {
               className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
-              + New analysis
+              + Screen a CV
             </Link>
           </div>
         </header>

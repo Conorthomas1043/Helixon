@@ -122,10 +122,10 @@ export default function ShortlistsPage() {
             Client submissions
           </p>
           <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
-            Shortlists
+            Client shortlists
           </h1>
           <p className="text-[13px] mt-1 max-w-2xl" style={{ color: INK_MUTED }}>
-            Group the people you&apos;re putting forward, add a line on why each one, and print a client-ready pack. Add
+            Not the same as the Shortlisted stage: a client shortlist is what you send. Group the people you&apos;re putting forward, add a line on why each one, and print a client-ready pack. Add
             people from their profile, or select several on{" "}
             <Link href="/dashboard/candidates" className="underline font-semibold" style={{ color: "var(--forest)" }}>
               Candidates
@@ -164,7 +164,7 @@ export default function ShortlistsPage() {
         {status === "ready" && lists.length === 0 && (
           <div className="rounded-[16px] py-12 px-6 text-center" style={CARD}>
             <p className="text-sm font-semibold mb-1" style={{ color: INK }}>No shortlists yet</p>
-            <p className="text-[13px]" style={{ color: INK_MUTED }}>Name one above, or use &quot;Add to shortlist&quot; on a candidate.</p>
+            <p className="text-[13px]" style={{ color: INK_MUTED }}>Name one above, or use &quot;Add to client shortlist&quot; on a candidate.</p>
           </div>
         )}
 

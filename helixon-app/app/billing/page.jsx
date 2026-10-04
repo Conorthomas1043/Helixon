@@ -25,6 +25,7 @@ const CANCEL_REASONS = [
 function CancelDialog({ plan, onClose, onContinue, busy }) {
   const [reason, setReason] = useState("");
   const [detail, setDetail] = useState("");
+  const [canTalk, setCanTalk] = useState(false);
   // The cheaper plan, or a conversation, can be the better outcome for
   // both sides - offered for the reasons they actually answer.
   const offer =
@@ -50,19 +51,25 @@ function CancelDialog({ plan, onClose, onContinue, busy }) {
         <span className="block text-[13px] mb-1" style={{ color: COLORS.muted }}>Anything else? (optional)</span>
         <textarea value={detail} onChange={(e) => setDetail(e.target.value)} maxLength={500} rows={3} className="w-full text-sm rounded-[10px] px-3 py-2" style={{ border: "1px solid var(--border)", color: COLORS.ink }} />
       </label>
+      {/* Exit interviews: a yes here lets someone from Helixon ask what
+          would have kept them. Opt-in, unticked by default. */}
+      <label className="flex items-start gap-2.5 mt-4 text-[13px] cursor-pointer" style={{ color: COLORS.ink }}>
+        <input type="checkbox" checked={canTalk} onChange={(e) => setCanTalk(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
+        I&apos;m happy for someone from Helixon to email me about a 15-minute chat about this.
+      </label>
       {offer && (
         <div className="mt-4 rounded-[12px] p-4 text-sm" style={{ background: "var(--mint)", color: COLORS.ink }}>
           <p>{offer.text}</p>
           {offer.href ? (
             <a href={offer.href} className="inline-block mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</a>
           ) : (
-            <button type="button" onClick={() => onContinue(reason, detail, "switch")} disabled={busy} className="mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</button>
+            <button type="button" onClick={() => onContinue(reason, detail, "switch", canTalk)} disabled={busy} className="mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</button>
           )}
         </div>
       )}
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
         <Button variant="secondary" onClick={onClose} disabled={busy}>Keep my subscription</Button>
-        <Button onClick={() => onContinue(reason, detail, "cancel")} loading={busy} disabled={!reason}>
+        <Button onClick={() => onContinue(reason, detail, "cancel", canTalk)} loading={busy} disabled={!reason}>
           Continue to cancel
         </Button>
       </div>
@@ -108,13 +115,13 @@ export default function BillingPage() {
     }
   }
 
-  async function continueCancel(reason, detail, outcome) {
+  async function continueCancel(reason, detail, outcome, canTalk = false) {
     track("cancellation_started", { reason, outcome });
     // Recorded server-side too; a failure here never blocks cancelling.
     await fetch("/api/billing/cancel-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason, detail: outcome === "switch" ? `[switching plan] ${detail}` : detail }),
+      body: JSON.stringify({ reason, canTalk, detail: outcome === "switch" ? `[switching plan] ${detail}` : detail }),
     }).catch(() => {});
     await openPortal();
   }

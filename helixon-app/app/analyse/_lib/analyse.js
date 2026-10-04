@@ -1,6 +1,6 @@
 // Shared constants and helpers for the /analyse workspace (single + bulk).
 
-import { STRONG_MATCH_MIN, REVIEW_MIN } from "@/lib/scoreBands";
+import { STRONG_MATCH_MIN, REVIEW_MIN, BAND_LABELS } from "@/lib/scoreBands";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MIN_LOADING_MS = 900;
@@ -27,7 +27,18 @@ export const RUN_STEPS = [
 // bands (lib/scoreBands.js), saved as feedback.expected_band.
 export const FEEDBACK_BANDS = ["Strong match", "Worth reviewing", "Not suitable"];
 
+// Why a recruiter disagrees. The first three name *where* the pipeline went
+// wrong (reading the CV, reading the job, citing evidence) - the failures
+// the old list couldn't express, so they all landed in "Other" or "Score
+// too high/low" and couldn't be fixed. Diagnostic categories over a bare
+// rating follow error-taxonomy practice in human-automation research:
+// people calibrate trust from *why* an aid fails, not only how often
+// (Lee & See, 2004, "Trust in automation: Designing for appropriate
+// reliance", Human Factors 46(1)).
 export const FEEDBACK_DOWN_REASONS = [
+  "Read the CV wrongly",
+  "Misunderstood the job",
+  "Quoted the wrong evidence",
   "Missed a key skill",
   "Got seniority wrong",
   "Missed a red flag",
@@ -156,9 +167,9 @@ export function savedJobText(job) {
 
 export function scoreTone(score) {
   if (score == null) return { fg: "var(--ink-faint)", bg: "var(--mist)", label: "No score" };
-  if (score >= STRONG_MATCH_MIN) return { fg: "var(--score-strong)", bg: "var(--mint)", label: "Strong match" };
-  if (score >= REVIEW_MIN) return { fg: "var(--score-mid)", bg: "#fdf6e9", label: "Worth a look" };
-  return { fg: "var(--score-low)", bg: "#fbefed", label: "Weak match" };
+  if (score >= STRONG_MATCH_MIN) return { fg: "var(--score-strong)", bg: "var(--mint)", label: BAND_LABELS.strong };
+  if (score >= REVIEW_MIN) return { fg: "var(--score-mid)", bg: "#fdf6e9", label: BAND_LABELS.review };
+  return { fg: "var(--score-low)", bg: "#fbefed", label: BAND_LABELS.weak };
 }
 
 // Role templates, job types and the role builder live in ./roles.js.

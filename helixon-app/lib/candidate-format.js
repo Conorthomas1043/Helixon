@@ -12,7 +12,7 @@
  * instead of forking a second, slightly-different palette.
  * ---------------------------------------------------------------------- */
 
-import { STRONG_MATCH_MIN, REVIEW_MIN } from "./scoreBands";
+import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "./scoreBands";
 
 export const INK = "var(--ink)";
 export const INK_MUTED = "var(--ink-soft)";
@@ -88,10 +88,7 @@ export function scoreColor(score) {
 }
 
 export function scoreLabel(score) {
-  if (score === null || score === undefined) return "No score";
-  if (score >= STRONG_MATCH_MIN) return "Strong match";
-  if (score >= REVIEW_MIN) return "Moderate match";
-  return "Weak match";
+  return scoreBandLabel(score);
 }
 
 export function scoreBandOf(score) {

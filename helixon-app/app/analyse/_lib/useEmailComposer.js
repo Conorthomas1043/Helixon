@@ -23,8 +23,10 @@ export function useEmailComposer({
   handleStatus = () => false,
   // Called after a successful send (e.g. to refresh an activity timeline).
   onSent,
+  // Which email to start on, e.g. "rejection" for a candidate just rejected.
+  initialPurpose = "invite_to_interview",
 }) {
-  const [purpose, setPurposeState] = useState("invite_to_interview");
+  const [purpose, setPurposeState] = useState(initialPurpose);
   const [draft, setDraft] = useState(null);
   const [edited, setEditedState] = useState("");
   const [loading, setLoading] = useState(false);

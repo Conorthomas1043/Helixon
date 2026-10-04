@@ -3,6 +3,7 @@
 // /dashboard/settings - one place for every workspace setting. Most are
 // for the owner and admins; each page says so when you can't change it.
 
+import { ResearchOptIn } from "@/components/dashboard/research";
 import Link from "next/link";
 import { Page, PageHeader, INK, INK_MUTED, INK_FAINT, CARD } from "@/components/dashboard/ui";
 
@@ -72,6 +73,7 @@ export default function SettingsPage() {
           </div>
         </section>
       ))}
+      <ResearchOptIn />
     </Page>
   );
 }

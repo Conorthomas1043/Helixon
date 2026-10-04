@@ -2,6 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { neutralizeUntrusted, shouldBlockChatMessage } from "@/lib/prompt-safety";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
+import { after } from "next/server";
+import { recordSignal } from "@/lib/research-signals";
+import { questionTopic } from "@/lib/assistant-topics";
 
 // Keep this on the server only - never expose GEMINI_API_KEY to the client.
 let genAI = null;
@@ -136,6 +139,15 @@ export async function POST(req) {
         },
         { status: 400 },
       );
+    }
+
+    // What visitors ask before buying is the clearest record of their
+    // objections, and it used to be discarded. Kept only for visitors who
+    // accepted optional cookies, with contact details stripped, tagged by
+    // topic (docs/ux-research-audit.md, R8).
+    const latest = [...contents].reverse().find((t) => t.role === "user")?.parts?.[0]?.text;
+    if (latest && /(?:^|;\s*)helixon_cookie_consent=all(?:;|$)/.test(req.headers.get("cookie") || "") && !shouldBlockChatMessage(latest)) {
+      after(() => recordSignal({ kind: "assistant_question", label: questionTopic(latest), body: latest, meta: { turn: contents.filter((t) => t.role === "user").length } }));
     }
 
     // Gemini requires the conversation to open on a "user" turn.
