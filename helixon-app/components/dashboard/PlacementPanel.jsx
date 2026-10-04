@@ -44,9 +44,9 @@ export default function PlacementPanel({ candidate, onChanged }) {
       }
     >
       {placements === null ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : placements.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           No offer yet. Recording one keeps the salary, fee and rebate period, moves them to Offer / Placed, and lets you raise the invoice.
         </p>
       ) : (

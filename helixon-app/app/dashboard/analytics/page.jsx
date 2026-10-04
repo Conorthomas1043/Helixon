@@ -23,7 +23,7 @@ function SectionHeading({ eyebrow, title, action }) {
   return (
     <div className="flex items-end justify-between gap-4 mb-4">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
           {eyebrow}
         </p>
         <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -42,7 +42,7 @@ function Delta({ value, unit = "", against }) {
   const arrow = value > 0 ? "▲" : value < 0 ? "▼" : "–";
   const amount = value === 0 ? "No change" : `${Math.abs(value).toLocaleString("en-GB")}${unit}`;
   return (
-    <p className="text-[11px] mt-1 tabular-nums" style={{ color: INK_MUTED }}>
+    <p className="text-[12px] mt-1 tabular-nums" style={{ color: INK_MUTED }}>
       <span aria-hidden="true" style={{ color: value > 0 ? "var(--forest)" : value < 0 ? RED : INK_FAINT }}>{arrow}</span>{" "}
       <span className="sr-only">{value > 0 ? "Up " : value < 0 ? "Down " : ""}</span>
       {amount} {against}
@@ -53,14 +53,14 @@ function Delta({ value, unit = "", against }) {
 function StatCard({ label, value, sub, delta }) {
   return (
     <div className="rounded-[14px] p-5" style={CARD}>
-      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
         {label}
       </p>
       <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>
         {value}
       </p>
       {sub && (
-        <p className="text-[11px] mt-1" style={{ color: INK_MUTED }}>
+        <p className="text-[12px] mt-1" style={{ color: INK_MUTED }}>
           {sub}
         </p>
       )}
@@ -74,7 +74,7 @@ const money = (n) => `£${Number(n || 0).toLocaleString("en-GB", { maximumFracti
 function TrendTooltip({ active, payload, label, format }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-[8px] px-3 py-2 text-[12px]" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+    <div className="rounded-[8px] px-3 py-2 text-[13px]" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
       <p style={{ color: INK_FAINT }}>{label}</p>
       <p className="font-semibold tabular-nums" style={{ color: INK }}>{format(payload[0].value)}</p>
     </div>
@@ -87,15 +87,15 @@ function TrendChart({ title, points, dataKey, format, total }) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2 mb-2">
-        <p className="text-[12px] font-semibold" style={{ color: INK }}>{title}</p>
-        <p className="text-[12px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>{format(total)}</p>
+        <p className="text-[13px] font-semibold" style={{ color: INK }}>{title}</p>
+        <p className="text-[13px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>{format(total)}</p>
       </div>
       <div style={{ height: 140 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={points} margin={{ top: 4, right: 0, bottom: 0, left: 0 }} barCategoryGap={2}>
             <CartesianGrid vertical={false} stroke="var(--border)" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: INK_FAINT }} interval="preserveStartEnd" minTickGap={16} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: INK_FAINT }} width={dataKey === "fees" ? 48 : 28} allowDecimals={false} tickFormatter={dataKey === "fees" ? (v) => (v >= 1000 ? `£${Math.round(v / 1000)}k` : `£${v}`) : undefined} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: INK_FAINT }} interval="preserveStartEnd" minTickGap={16} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: INK_FAINT }} width={dataKey === "fees" ? 48 : 28} allowDecimals={false} tickFormatter={dataKey === "fees" ? (v) => (v >= 1000 ? `£${Math.round(v / 1000)}k` : `£${v}`) : undefined} />
             <Tooltip cursor={{ fill: "rgba(var(--forest-rgb),0.06)" }} content={<TrendTooltip format={format} />} />
             <Bar dataKey={dataKey} fill="var(--forest)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
           </BarChart>
@@ -108,7 +108,7 @@ function TrendChart({ title, points, dataKey, format, total }) {
 function Trends({ trends }) {
   const points = trends?.points || [];
   if (points.length === 0) {
-    return <p className="text-[13px]" style={{ color: INK_MUTED }}>Nothing in this period yet.</p>;
+    return <p className="text-[14px]" style={{ color: INK_MUTED }}>Nothing in this period yet.</p>;
   }
   const sum = (k) => points.reduce((n, p) => n + (p[k] || 0), 0);
   const count = (n) => Number(n || 0).toLocaleString("en-GB");
@@ -120,7 +120,7 @@ function Trends({ trends }) {
         <TrendChart title="Placements" points={points} dataKey="placed" format={count} total={sum("placed")} />
         {hasFees && <TrendChart title="Fees placed" points={points} dataKey="fees" format={money} total={sum("fees")} />}
       </div>
-      <details className="mt-4 text-[12px]" style={{ color: INK_MUTED }}>
+      <details className="mt-4 text-[13px]" style={{ color: INK_MUTED }}>
         <summary className="cursor-pointer font-semibold" style={{ color: "var(--forest)" }}>Show as a table</summary>
         <div className="overflow-x-auto mt-2">
           <table className="w-full">
@@ -159,7 +159,7 @@ function FunnelChart({ funnel }) {
         const dropOff = i > 0 && prevCount > 0 ? Math.round(((prevCount - stage.count) / prevCount) * 100) : 0;
         return (
           <div key={stage.key} className="flex items-center gap-3">
-            <span className="text-[11px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
+            <span className="text-[12px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
               {stage.label}
             </span>
             <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
@@ -167,10 +167,10 @@ function FunnelChart({ funnel }) {
                 className="h-full rounded-[6px] flex items-center justify-end px-2"
                 style={{ width: `${pct}%`, background: stage.key === "Placed" ? "var(--forest)" : "#a9c4b5" }}
               >
-                <span className="text-[11px] font-semibold tabular-nums text-white">{stage.count}</span>
+                <span className="text-[12px] font-semibold tabular-nums text-white">{stage.count}</span>
               </div>
             </div>
-            <span className="text-[11px] w-16 text-right shrink-0" style={{ color: INK_FAINT }}>
+            <span className="text-[12px] w-16 text-right shrink-0" style={{ color: INK_FAINT }}>
               {i > 0 && dropOff > 0 ? `-${dropOff}%` : ""}
             </span>
           </div>
@@ -196,7 +196,7 @@ function QualityDistribution({ quality }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1.5">
         {segments.map((s) => (
-          <div key={s.key} className="flex items-center gap-1.5 text-[12px]" style={{ color: INK_MUTED }}>
+          <div key={s.key} className="flex items-center gap-1.5 text-[13px]" style={{ color: INK_MUTED }}>
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.color }} />
             {s.label} <span style={{ color: INK, fontFamily: "var(--font-mono)" }}>{s.count}</span>
           </div>
@@ -217,23 +217,23 @@ function RecruiterVerdicts({ verdicts }) {
   if (!verdicts) return null;
   return (
     <div className="mt-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
-      <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
         Recruiter verdicts
       </p>
       {verdicts.total === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           No verdicts yet. Use the thumbs up / down under each analysis to record whether it got the candidate right.
         </p>
       ) : (
         <>
-          <p className="text-[13px]" style={{ color: INK }}>
+          <p className="text-[14px]" style={{ color: INK }}>
             <span className="font-semibold tabular-nums">{verdicts.agreeRate}%</span> of rated analyses were marked
             accurate ({verdicts.up} of {verdicts.total}).
           </p>
           {verdicts.topReasons.length > 0 && (
             <ul className="mt-2 space-y-1">
               {verdicts.topReasons.map((r) => (
-                <li key={r.reason} className="text-[12.5px] flex justify-between gap-3" style={{ color: INK_MUTED }}>
+                <li key={r.reason} className="text-[13.5px] flex justify-between gap-3" style={{ color: INK_MUTED }}>
                   <span>{r.reason}</span>
                   <span className="tabular-nums">{r.count}</span>
                 </li>
@@ -249,7 +249,7 @@ function RecruiterVerdicts({ verdicts }) {
 function ScoreCalibration({ calibration }) {
   if (!calibration.hasEnoughData) {
     return (
-      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         Not enough resolved outcomes yet to check this ({calibration.sampleSize} of{" "}
         {calibration.minSample} needed). This fills in as candidates are marked Placed
         or Rejected - the numbers below will always be this agency&apos;s own history,
@@ -259,14 +259,14 @@ function ScoreCalibration({ calibration }) {
   }
   return (
     <div>
-      <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
         Of the {calibration.sampleSize} candidates who reached a final outcome (Placed
         or Rejected), how often did each score band actually get placed:
       </p>
       <div className="space-y-2.5">
         {calibration.bands.map((band) => (
           <div key={band.key} className="flex items-center gap-3">
-            <span className="text-[11px] w-16 shrink-0" style={{ color: INK_MUTED }}>
+            <span className="text-[12px] w-16 shrink-0" style={{ color: INK_MUTED }}>
               {band.label}
             </span>
             <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
@@ -275,13 +275,13 @@ function ScoreCalibration({ calibration }) {
                   className="h-full rounded-[6px] flex items-center justify-end px-2"
                   style={{ width: `${Math.max(4, band.placementRate)}%`, background: "var(--forest)" }}
                 >
-                  <span className="text-[11px] font-semibold tabular-nums text-white">
+                  <span className="text-[12px] font-semibold tabular-nums text-white">
                     {band.placementRate}%
                   </span>
                 </div>
               )}
             </div>
-            <span className="text-[11px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+            <span className="text-[12px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
               {band.total > 0 ? `${band.placed}/${band.total} placed` : "no data"}
             </span>
           </div>
@@ -326,7 +326,7 @@ function TimeInStage({ timeInStage }) {
   const withData = (timeInStage || []).filter((s) => s.count > 0);
   if (withData.length === 0) {
     return (
-      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         Fills in as candidates move through stages - this reads real stage-change history, not just current position.
       </p>
     );
@@ -336,7 +336,7 @@ function TimeInStage({ timeInStage }) {
     <div className="space-y-2.5">
       {withData.map((s) => (
         <div key={s.key} className="flex items-center gap-3">
-          <span className="text-[11px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
+          <span className="text-[12px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
             {s.label}
           </span>
           <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
@@ -344,10 +344,10 @@ function TimeInStage({ timeInStage }) {
               className="h-full rounded-[6px] flex items-center justify-end px-2"
               style={{ width: `${Math.max(4, Math.round(((s.medianDays || 0) / max) * 100))}%`, background: "#a9c4b5" }}
             >
-              <span className="text-[11px] font-semibold tabular-nums text-white">{s.medianDays}d</span>
+              <span className="text-[12px] font-semibold tabular-nums text-white">{s.medianDays}d</span>
             </div>
           </div>
-          <span className="text-[11px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
+          <span className="text-[12px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
             {s.count} sample{s.count === 1 ? "" : "s"}
           </span>
         </div>
@@ -361,7 +361,7 @@ function TimeInStage({ timeInStage }) {
 function RankedList({ items, emptyLabel, rateLabel }) {
   if (!items || items.length === 0) {
     return (
-      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         {emptyLabel}
       </p>
     );
@@ -374,7 +374,7 @@ function RankedList({ items, emptyLabel, rateLabel }) {
         const pct = Math.max(4, Math.round((value / max) * 100));
         return (
           <div key={item.key} className="flex items-center gap-3">
-            <span className="text-[12px] w-32 shrink-0 truncate" style={{ color: INK_MUTED }}>
+            <span className="text-[13px] w-32 shrink-0 truncate" style={{ color: INK_MUTED }}>
               {item.label}
             </span>
             <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
@@ -382,11 +382,11 @@ function RankedList({ items, emptyLabel, rateLabel }) {
                 className="h-full rounded-[6px] flex items-center justify-end px-2"
                 style={{ width: `${pct}%`, background: "#a9c4b5" }}
               >
-                <span className="text-[11px] font-semibold tabular-nums text-white">{value}</span>
+                <span className="text-[12px] font-semibold tabular-nums text-white">{value}</span>
               </div>
             </div>
             {rateLabel && item.placementRate !== null && item.placementRate !== undefined && (
-              <span className="text-[11px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+              <span className="text-[12px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
                 {item.placementRate}% {rateLabel}
               </span>
             )}
@@ -400,7 +400,7 @@ function RankedList({ items, emptyLabel, rateLabel }) {
 function OutreachRow({ outreach }) {
   if (!outreach || outreach.total === 0) {
     return (
-      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         No outreach logged yet - use &quot;Log a call/email/meeting&quot; on a candidate&apos;s profile.
       </p>
     );
@@ -417,14 +417,14 @@ function OutreachRow({ outreach }) {
 function AdvertisingTable({ advertising }) {
   if (!advertising || advertising.length === 0) {
     return (
-      <p className="text-[13px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         Log clicks/spend per channel on a job&apos;s page to see apply rate and cost per applicant here.
       </p>
     );
   }
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12px]">
+      <table className="w-full text-[13px]">
         <thead>
           <tr style={{ color: INK_FAINT }}>
             <th className="text-left font-semibold pb-2">Channel</th>
@@ -466,15 +466,15 @@ function FinancialRow({ financial }) {
         <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
           {financial.byRecruiter.map((r) => (
             <li key={r.name} className="flex items-center justify-between gap-3 py-2">
-              <span className="text-[13px] font-medium" style={{ color: INK }}>{r.name}</span>
-              <span className="text-[12px]" style={{ color: INK_MUTED }}>
+              <span className="text-[14px] font-medium" style={{ color: INK }}>{r.name}</span>
+              <span className="text-[13px]" style={{ color: INK_MUTED }}>
                 <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{fmt(r.total)}</strong> · {r.placements} placement{r.placements === 1 ? "" : "s"}
               </span>
             </li>
           ))}
         </ul>
       )}
-      <p className="text-[11px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] mt-3" style={{ color: INK_FAINT }}>
         Self-reported, entered per placement on the candidate&apos;s profile - Helixon has no independent way to verify these.
       </p>
     </>
@@ -543,7 +543,7 @@ function PipelineBar({ pipeline }) {
             <div className="w-full rounded-full mt-2 mb-2 flex items-end" style={{ height: 36, background: "var(--mist)" }}>
               <div className="w-full rounded-full" style={{ height: `${heightPct}%`, background: isPlaced ? "var(--forest)" : "#a9c4b5" }} />
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
+            <span className="text-[12px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
               {STAGE_LABELS[key]}
             </span>
           </div>
@@ -588,7 +588,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again
@@ -605,7 +605,7 @@ const PERIODS = [
   { value: "custom", label: "Custom range…" },
 ];
 
-const DATE_INPUT_CLASS = "text-[12.5px] px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+const DATE_INPUT_CLASS = "text-[13.5px] px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 function fmtDay(iso) {
   return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
@@ -617,7 +617,7 @@ function FilterSelect({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ border: `1px solid ${value !== "all" ? "var(--forest)" : "var(--border)"}`, color: INK }}
     >
       {options.map((o) => (
@@ -706,7 +706,7 @@ export default function AnalyticsPage() {
       <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Recruitment analytics
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -715,7 +715,7 @@ export default function AnalyticsPage() {
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             ← Dashboard
@@ -727,7 +727,7 @@ export default function AnalyticsPage() {
           {period === "custom" && (
             <>
               <input type="date" aria-label="From" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
-              <span className="text-[12px]" style={{ color: INK_FAINT }}>to</span>
+              <span className="text-[13px]" style={{ color: INK_FAINT }}>to</span>
               <input type="date" aria-label="To" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
             </>
           )}
@@ -777,7 +777,7 @@ export default function AnalyticsPage() {
                 setClientId("all");
                 setOfficeId("all");
               }}
-              className="text-[12.5px] font-semibold px-2"
+              className="text-[13.5px] font-semibold px-2"
               style={{ color: "var(--forest)" }}
             >
               Clear
@@ -787,7 +787,7 @@ export default function AnalyticsPage() {
             type="button"
             disabled={status !== "ready"}
             onClick={() => printSection("analytics-report")}
-            className="ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="ml-auto inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK_MUTED }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -801,7 +801,7 @@ export default function AnalyticsPage() {
             onClick={() =>
               downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, analyticsCsvRows(snapshot, filterLabel || "All time"))
             }
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK_MUTED }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -811,12 +811,12 @@ export default function AnalyticsPage() {
           </button>
         </div>
         {filtered && (
-          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-[13px] -mt-3" style={{ color: INK_FAINT }}>
             Showing candidates for {filterLabel}. Channel figures follow the job and client filters; client and candidate feedback is agency-wide.
           </p>
         )}
         {customPending && (
-          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-[13px] -mt-3" style={{ color: INK_FAINT }}>
             Pick a start or end date - showing all time until then.
           </p>
         )}
@@ -828,13 +828,13 @@ export default function AnalyticsPage() {
           <div id="analytics-report" className="space-y-6">
             <div className="hidden print:block">
               <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>Recruitment analytics</h2>
-              <p className="text-[12px]" style={{ color: INK_MUTED }}>
+              <p className="text-[13px]" style={{ color: INK_MUTED }}>
                 {filterLabel || "All time"} · generated {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
 
             {snapshot.truncated && (
-              <p role="status" className="rounded-[12px] px-4 py-3 text-[13px]" style={{ background: GREEN_BG, color: INK }}>
+              <p role="status" className="rounded-[12px] px-4 py-3 text-[14px]" style={{ background: GREEN_BG, color: INK }}>
                 This is more data than can be counted at once, so the oldest candidates are left out. Narrow the period or pick a job to see exact figures.
               </p>
             )}
@@ -872,7 +872,7 @@ export default function AnalyticsPage() {
                 title={snapshot.trends?.unit === "week" ? "Week by week" : "Month by month"}
                 action={
                   typeof snapshot.placedInPeriod === "number" && (
-                    <span className="text-[12px]" style={{ color: INK_MUTED }}>
+                    <span className="text-[13px]" style={{ color: INK_MUTED }}>
                       <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{snapshot.placedInPeriod}</strong> placed in this period
                     </span>
                   )
@@ -902,7 +902,7 @@ export default function AnalyticsPage() {
                   <StatCard label="Interview rate" value={`${snapshot.conversion.interviewRate}%`} delta={<Delta value={snapshot.deltas?.interviewRate} unit=" pts" against={against} />} />
                   <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} delta={<Delta value={snapshot.deltas?.offerRate} unit=" pts" against={against} />} />
                 </div>
-                <p className="text-[11px] mt-3" style={{ color: INK_FAINT }}>
+                <p className="text-[12px] mt-3" style={{ color: INK_FAINT }}>
                   Counts how far each candidate got, including those later rejected.
                 </p>
               </div>
@@ -920,7 +920,7 @@ export default function AnalyticsPage() {
                 title="Candidates by stage"
                 action={
                   snapshot.pipeline.stalled > 0 && (
-                    <span className="text-[12px] font-semibold" style={{ color: AMBER }}>
+                    <span className="text-[13px] font-semibold" style={{ color: AMBER }}>
                       {snapshot.pipeline.stalled} stalled 5+ days
                     </span>
                   )
@@ -939,13 +939,13 @@ export default function AnalyticsPage() {
                 eyebrow="Team"
                 title="Recruiter summary"
                 action={
-                  <Link href="/dashboard/team" className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
+                  <Link href="/dashboard/team" className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
                     Full team view →
                   </Link>
                 }
               />
               {snapshot.team.length === 0 && (
-                <p className="text-[13px]" style={{ color: INK_MUTED }}>No candidates assigned to anyone for these filters.</p>
+                <p className="text-[14px]" style={{ color: INK_MUTED }}>No candidates assigned to anyone for these filters.</p>
               )}
               <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
                 {snapshot.team.map((r) => (
@@ -953,7 +953,7 @@ export default function AnalyticsPage() {
                     <p className="text-sm font-semibold truncate" style={{ color: INK }}>
                       {r.name}
                     </p>
-                    <div className="flex items-center gap-4 text-[12px] shrink-0" style={{ color: INK_MUTED }}>
+                    <div className="flex items-center gap-4 text-[13px] shrink-0" style={{ color: INK_MUTED }}>
                       <span>
                         <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.activeCandidates}</strong> active
                       </span>
@@ -992,7 +992,7 @@ export default function AnalyticsPage() {
               {snapshot.timing?.financial ? (
                 <FinancialRow financial={snapshot.timing.financial} />
               ) : snapshot.timing?.financialsHidden ? (
-                <p className="text-[13px]" style={{ color: INK_MUTED }}>Fee income and margins are only visible to the owner and admins.</p>
+                <p className="text-[14px]" style={{ color: INK_MUTED }}>Fee income and margins are only visible to the owner and admins.</p>
               ) : null}
             </div>
 

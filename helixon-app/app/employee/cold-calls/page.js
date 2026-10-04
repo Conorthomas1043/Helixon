@@ -427,7 +427,7 @@ export default function ColdCallsPage() {
                                     <select
                                       value={call.outcome}
                                       onChange={(e) => setOutcome(call, e.target.value)}
-                                      className="text-[10px] font-semibold pl-2 pr-1 py-0.5 rounded-full"
+                                      className="text-[11px] font-semibold pl-2 pr-1 py-0.5 rounded-full"
                                       style={{ background: meta.bg, color: meta.color, border: "none" }}
                                     >
                                       {Object.entries(OUTCOME_META).map(([value, m]) => (
@@ -435,7 +435,7 @@ export default function ColdCallsPage() {
                                       ))}
                                     </select>
                                   ) : (
-                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
+                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
                                       {meta.label}
                                     </span>
                                   )}

@@ -267,7 +267,7 @@ function AlertsPanel({ alerts }) {
             <div className="mini-row" key={a.id}>
               <div style={{ minWidth: 0 }}>
                 <span className={`pill ${a.kind === "surge" ? "warn" : "bad"}`}>{ALERT_LABELS[a.kind] || a.kind}</span>
-                <div className="faint" style={{ fontSize: 12, marginTop: 4 }}>
+                <div className="faint" style={{ fontSize: 13, marginTop: 4 }}>
                   {a.message}
                   {a.details?.ip ? (
                     <>
@@ -279,7 +279,7 @@ function AlertsPanel({ alerts }) {
                   ) : null}
                 </div>
               </div>
-              <span className="faint" style={{ whiteSpace: "nowrap", fontSize: 12 }}>
+              <span className="faint" style={{ whiteSpace: "nowrap", fontSize: 13 }}>
                 {timeAgo(a.created_at)}
                 {a.emailed ? " · emailed" : ""}
               </span>
@@ -502,7 +502,7 @@ export default function TrafficPage() {
             Only {AUDIENCE_LABEL[audience]} ✕
           </button>
         )}
-        <span className="faint" style={{ fontSize: 12 }}>
+        <span className="faint" style={{ fontSize: 13 }}>
           {audience === "people" ? "Bots, crawlers, uptime checks and the admin area are left out." : audience === "all" ? "Everything, including bots and your own admin use." : ""}
         </span>
         <div className="page-controls" style={{ marginLeft: "auto" }}>
@@ -596,7 +596,7 @@ export default function TrafficPage() {
                     <Link className="mono panel-link" style={{ marginLeft: 0 }} href={`/admin/security/investigate?q=${encodeURIComponent(b.ip)}`}>
                       {b.ip}
                     </Link>
-                    <div className="faint truncate" style={{ fontSize: 12 }}>
+                    <div className="faint truncate" style={{ fontSize: 13 }}>
                       {b.reason || "Admin block"}{b.created_by ? ` · by ${b.created_by}` : ""}{b.expires_at ? ` · lifts ${new Date(b.expires_at).toLocaleString()}` : " · permanent"}
                     </div>
                   </div>

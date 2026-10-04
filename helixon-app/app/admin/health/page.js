@@ -21,7 +21,7 @@ function overallStatus(health) {
 // One tick per recorded run, oldest on the left.
 function HistoryStrip({ history }) {
   const runs = [...(history || [])].reverse();
-  if (!runs.length) return <div className="faint" style={{ fontSize: 12.5 }}>No runs recorded yet.</div>;
+  if (!runs.length) return <div className="faint" style={{ fontSize: 13.5 }}>No runs recorded yet.</div>;
   const incidents = (history || []).filter((h) => h.overall !== "ok").slice(0, 6);
   return (
     <>
@@ -34,7 +34,7 @@ function HistoryStrip({ history }) {
           />
         ))}
       </div>
-      <div className="faint" style={{ fontSize: 12, marginTop: 6 }}>
+      <div className="faint" style={{ fontSize: 13, marginTop: 6 }}>
         {runs.length} runs since {formatDateTime(runs[0].created_at)}. Recorded when an admin opens this page (or the mobile console), at most every 5 minutes unless something changes.
       </div>
       {incidents.length > 0 && (
@@ -45,7 +45,7 @@ function HistoryStrip({ history }) {
                 <span className={`pill ${h.overall === "critical" ? "bad" : "warn"}`} style={{ marginRight: 8 }}>{h.overall}</span>
                 {(h.failing || []).map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ") || "-"}
               </span>
-              <span className="faint" style={{ fontSize: 12 }}>{timeAgo(h.created_at)}</span>
+              <span className="faint" style={{ fontSize: 13 }}>{timeAgo(h.created_at)}</span>
             </div>
           ))}
         </div>
@@ -142,9 +142,9 @@ function ScoringPanel() {
                     <td>{r.currentAuc === null ? <span className="faint">-</span> : `now ${r.currentAuc.toFixed(2)}${r.fittedAuc !== null ? ` · fitted ${r.fittedAuc.toFixed(2)}` : ""}`}</td>
                     <td>
                       {r.ready ? (
-                        <span className="mono" style={{ fontSize: 12 }}>{Object.entries(r.suggested).map(([k, v]) => `${k} ${v}`).join(" · ")}</span>
+                        <span className="mono" style={{ fontSize: 13 }}>{Object.entries(r.suggested).map(([k, v]) => `${k} ${v}`).join(" · ")}</span>
                       ) : (
-                        <span className="faint" style={{ fontSize: 12 }}>{r.reason}</span>
+                        <span className="faint" style={{ fontSize: 13 }}>{r.reason}</span>
                       )}
                     </td>
                   </tr>
@@ -212,7 +212,7 @@ export default function HealthPage() {
             </span>
           )}
           {status.grade?.mutedFailing?.length > 0 && (
-            <span className="faint" style={{ fontSize: 12.5 }}>
+            <span className="faint" style={{ fontSize: 13.5 }}>
               Muted but failing: {status.grade.mutedFailing.map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ")}
             </span>
           )}
@@ -222,7 +222,7 @@ export default function HealthPage() {
       <div className="split section">
         <Panel title="History" sub="The overall status each time the checks ran.">
           {health?.history === null ? (
-            <div className="faint" style={{ fontSize: 12.5 }}>History needs the latest database migration (admin_granular_controls).</div>
+            <div className="faint" style={{ fontSize: 13.5 }}>History needs the latest database migration (admin_granular_controls).</div>
           ) : (
             <HistoryStrip history={health?.history} />
           )}

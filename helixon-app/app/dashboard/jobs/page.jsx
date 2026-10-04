@@ -23,7 +23,7 @@ function Stat({ label, value, accent }) {
       <p className="text-base font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -32,7 +32,7 @@ function Stat({ label, value, accent }) {
 
 function Chip({ children }) {
   return (
-    <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+    <span className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
       {children}
     </span>
   );
@@ -50,12 +50,12 @@ function JobCard({ job }) {
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {job.title}
             </p>
-            <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+            <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
               {job.company} · {job.location}
             </p>
           </div>
           <span
-            className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+            className="text-[12px] font-semibold px-2 py-0.5 rounded-full shrink-0"
             style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
           >
             {job.status === "open" ? "Open" : "Closed"}
@@ -64,14 +64,14 @@ function JobCard({ job }) {
 
         <div className="flex flex-wrap gap-1.5 mb-4">
           {(job.priority === "urgent" || job.priority === "high") && (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(192,57,43,0.10)", color: "var(--score-low)" }}>
+            <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(192,57,43,0.10)", color: "var(--score-low)" }}>
               {JOB_PRIORITIES[job.priority]}
             </span>
           )}
           {job.targetDate && job.status === "open" && (() => {
             const d = daysToTarget(job.targetDate);
             return (
-              <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: d != null && d < 0 ? "var(--score-low)" : INK_MUTED }}>
+              <span className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: d != null && d < 0 ? "var(--score-low)" : INK_MUTED }}>
                 {d == null ? null : d < 0 ? `${-d}d overdue` : d === 0 ? "Due today" : `${d}d to fill`}
               </span>
             );
@@ -92,7 +92,7 @@ function JobCard({ job }) {
 
       <Link
         href={`/analyse?jobId=${job.id}`}
-        className="inline-flex items-center text-[12px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+        className="inline-flex items-center text-[13px] font-semibold mt-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
         style={{ color: "var(--forest)" }}
       >
         Analyse a candidate for this role →
@@ -131,7 +131,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again
@@ -146,21 +146,21 @@ function EmptyState({ onNew }) {
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         No jobs yet
       </p>
-      <p className="text-[13px] max-w-sm mb-5" style={{ color: INK_MUTED }}>
+      <p className="text-[14px] max-w-sm mb-5" style={{ color: INK_MUTED }}>
         Add a role you&apos;re hiring for, or screen a CV against a job description and the role is saved for you.
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <button
           type="button"
           onClick={onNew}
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--forest)", color: "white" }}
         >
           Add a job
         </button>
         <Link
           href="/analyse"
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Screen a CV
@@ -179,9 +179,9 @@ function splitSkills(text) {
 function Field({ label, children, hint }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-semibold mb-1" style={{ color: INK }}>{label}</span>
+      <span className="block text-[13px] font-semibold mb-1" style={{ color: INK }}>{label}</span>
       {children}
-      {hint && <span className="block text-[11.5px] mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
+      {hint && <span className="block text-[12.5px] mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
     </label>
   );
 }
@@ -300,13 +300,13 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
             </Field>
           </div>
         </div>
-        {error && <p role="alert" className="text-[12px] mt-3" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low)" }}>{error}</p>}
         <div className="flex justify-end gap-2 mt-5">
           <button
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Cancel
@@ -314,7 +314,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Creating…" : "Create job"}
@@ -398,14 +398,14 @@ function JobsContent() {
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Job workspace
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
               Jobs
             </h1>
             {status === "ready" && (
-              <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>
+              <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>
                 {totalOpen} open role{totalOpen === 1 ? "" : "s"} · {totalCandidates} candidates in play
               </p>
             )}
@@ -413,7 +413,7 @@ function JobsContent() {
           <div className="flex items-center gap-2 self-start">
             <Link
               href="/dashboard"
-              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               ← Dashboard
@@ -421,7 +421,7 @@ function JobsContent() {
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               New job
@@ -441,7 +441,7 @@ function JobsContent() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title, client or location…"
                 aria-label="Search jobs"
-                className="text-[13px] px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-[14px] px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
               {[
@@ -457,11 +457,11 @@ function JobsContent() {
                     type="button"
                     onClick={() => setStatusFilter(o.value)}
                     aria-pressed={on}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                   >
                     {o.label}
-                    <span className="tabular-nums text-[11px] px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                    <span className="tabular-nums text-[12px] px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
                       {count}
                     </span>
                   </button>
@@ -471,7 +471,7 @@ function JobsContent() {
                 type="button"
                 onClick={() => setMineOnly((v) => !v)}
                 aria-pressed={mineOnly}
-                className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: mineOnly ? "var(--forest)" : "white", color: mineOnly ? "white" : INK_MUTED, border: `1px solid ${mineOnly ? "var(--forest)" : "var(--border)"}` }}
               >
                 My jobs
@@ -481,7 +481,7 @@ function JobsContent() {
                   value={officeFilter}
                   onChange={(e) => setOfficeFilter(e.target.value)}
                   aria-label="Office"
-                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white"
+                  className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white"
                   style={{ border: "1px solid var(--border)", color: officeFilter ? INK : INK_MUTED }}
                 >
                   <option value="">All offices</option>
@@ -513,7 +513,7 @@ function JobsContent() {
                     }))
                   )
                 }
-                className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK_MUTED }}
               >
                 Export CSV
@@ -522,7 +522,7 @@ function JobsContent() {
                 aria-label="Sort jobs"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="sm:ml-auto text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="sm:ml-auto text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 <option value="newest">Newest first</option>
@@ -535,7 +535,7 @@ function JobsContent() {
               </select>
             </div>
             {visibleJobs.length === 0 ? (
-              <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+              <div className="rounded-[14px] p-8 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
                 No {mineOnly ? "of your " : ""}{statusFilter === "all" ? "" : `${statusFilter} `}jobs match{search.trim() ? ` "${search.trim()}"` : ""}.
               </div>
             ) : (

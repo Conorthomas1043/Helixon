@@ -137,18 +137,18 @@ export default function InvoicePage({ params }) {
       />
       <ErrorText>{error}</ErrorText>
       {notice && (
-        <p role="status" className="text-[12px]" style={{ color: "var(--forest)" }}>
+        <p role="status" className="text-[13px]" style={{ color: "var(--forest)" }}>
           {notice}
         </p>
       )}
       {inAccounts && !notice && (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
           In {accounting.label}
           {inv.external_synced_at ? ` · checked ${longDate(inv.external_synced_at)}` : ""}
         </p>
       )}
       {missingDetails && (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
           Your address or bank details aren&apos;t on this invoice yet - add them in{" "}
           <a href="/dashboard/settings/invoicing" className="underline">
             Invoice settings
@@ -159,7 +159,7 @@ export default function InvoicePage({ params }) {
 
       <div ref={docRef} className="bg-white rounded-[14px] p-8 sm:p-12" style={{ border: "1px solid var(--border)", color: INK }}>
         <div className="flex flex-col sm:flex-row justify-between gap-6">
-          <div className="text-[13px] leading-relaxed">
+          <div className="text-[14px] leading-relaxed">
             <p className="text-lg font-semibold mb-1">{from.companyName}</p>
             <Lines text={from.address} />
             {from.email && <div>{from.email}</div>}
@@ -170,7 +170,7 @@ export default function InvoicePage({ params }) {
             <p className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
               {inv.status === "void" ? "VOID" : "Invoice"}
             </p>
-            <dl className="text-[13px] mt-2 space-y-0.5">
+            <dl className="text-[14px] mt-2 space-y-0.5">
               <div>
                 <dt className="inline" style={{ color: INK_MUTED }}>Number </dt>
                 <dd className="inline font-semibold">{inv.number}</dd>
@@ -189,8 +189,8 @@ export default function InvoicePage({ params }) {
           </div>
         </div>
 
-        <div className="mt-8 text-[13px] leading-relaxed">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <div className="mt-8 text-[14px] leading-relaxed">
+          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             Bill to
           </p>
           <p className="font-semibold">{inv.bill_to?.name}</p>
@@ -199,9 +199,9 @@ export default function InvoicePage({ params }) {
           {inv.bill_to?.email && <div>{inv.bill_to.email}</div>}
         </div>
 
-        <table className="w-full text-[13px] mt-8">
+        <table className="w-full text-[14px] mt-8">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT, borderBottom: "1px solid var(--border)" }}>
+            <tr className="text-left text-[12px] uppercase tracking-widest" style={{ color: INK_FAINT, borderBottom: "1px solid var(--border)" }}>
               <th className="py-2 font-semibold">Description</th>
               <th className="py-2 font-semibold text-right w-20">Qty</th>
               <th className="py-2 font-semibold text-right w-28">Rate</th>
@@ -220,7 +220,7 @@ export default function InvoicePage({ params }) {
           </tbody>
         </table>
 
-        <dl className="ml-auto mt-4 w-full max-w-[260px] text-[13px] space-y-1">
+        <dl className="ml-auto mt-4 w-full max-w-[260px] text-[14px] space-y-1">
           <div className="flex justify-between">
             <dt style={{ color: INK_MUTED }}>Subtotal</dt>
             <dd className="tabular-nums">{money(inv.subtotal, inv.currency)}</dd>
@@ -236,10 +236,10 @@ export default function InvoicePage({ params }) {
         </dl>
 
         {(from.bankDetails || inv.notes) && (
-          <div className="mt-10 text-[12px] leading-relaxed space-y-3" style={{ color: INK_MUTED }}>
+          <div className="mt-10 text-[13px] leading-relaxed space-y-3" style={{ color: INK_MUTED }}>
             {from.bankDetails && (
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+                <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
                   Payment details
                 </p>
                 <Lines text={from.bankDetails} />

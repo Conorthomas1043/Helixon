@@ -13,7 +13,7 @@ function Row({ left, right }) {
   return (
     <div className="mini-row">
       <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>{left}</span>
-      <span className="faint" style={{ whiteSpace: "nowrap", fontSize: 12 }}>{right}</span>
+      <span className="faint" style={{ whiteSpace: "nowrap", fontSize: 13 }}>{right}</span>
     </div>
   );
 }
@@ -133,7 +133,7 @@ export default function RecentPanels() {
                       <Avatar name={l.name} size={28} />
                       <span style={{ minWidth: 0 }}>
                         <div className="truncate" style={{ fontWeight: 600 }}>{l.name}</div>
-                        <div className="faint truncate" style={{ fontSize: 12 }}>{l.company || l.email}</div>
+                        <div className="faint truncate" style={{ fontSize: 13 }}>{l.company || l.email}</div>
                       </span>
                     </>
                   }
@@ -167,7 +167,7 @@ export default function RecentPanels() {
                       <Avatar name={a.name} size={28} />
                       <span style={{ minWidth: 0 }}>
                         <div className="truncate" style={{ fontWeight: 600 }}>{a.name}</div>
-                        <div className="faint" style={{ fontSize: 12 }}>
+                        <div className="faint" style={{ fontSize: 13 }}>
                           {a.subscriptionStatus === "active" ? "Paying" : "No plan"} &middot; {a.members} {a.members === 1 ? "member" : "members"}
                         </div>
                       </span>
@@ -201,7 +201,7 @@ export default function RecentPanels() {
                   left={
                     <span style={{ minWidth: 0 }}>
                       <div className="truncate" style={{ fontWeight: 600 }}>{e.action.replace(/_/g, " ")}</div>
-                      <div className="faint truncate" style={{ fontSize: 12 }}>by {e.admin}</div>
+                      <div className="faint truncate" style={{ fontSize: 13 }}>by {e.admin}</div>
                     </span>
                   }
                   right={timeAgo(e.at)}

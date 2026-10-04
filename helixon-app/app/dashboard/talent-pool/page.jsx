@@ -75,7 +75,7 @@ function Chip({ children, tone = "plain", title }) {
     miss: "bg-[#fbefed] text-[#a83226]",
   };
   return (
-    <span title={title} className={cx("inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full", styles[tone])}>
+    <span title={title} className={cx("inline-flex items-center gap-1 text-[12px] font-medium px-2 py-0.5 rounded-full", styles[tone])}>
       {tone === "match" && <Icon name="check" size={10} strokeWidth={2.4} />}
       {tone === "miss" && <Icon name="x" size={10} strokeWidth={2.4} />}
       {children}
@@ -96,11 +96,11 @@ function StatCard({ label, value, sub, accent, onClick, active }) {
         onClick && "hover:border-[var(--ink-mute)]"
       )}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
+      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
       <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
-      {sub && <p className="text-[11.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
+      {sub && <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
     </Tag>
   );
 }
@@ -126,11 +126,11 @@ function FitRing({ fit, size = 52 }) {
             strokeDashoffset={c * (1 - (fit ?? 0) / 100)}
           />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[13px] font-semibold tabular-nums" style={{ color: tone.fg }}>
+        <span className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold tabular-nums" style={{ color: tone.fg }}>
           {fit == null ? "–" : fit}
         </span>
       </div>
-      <span className="text-[10.5px] mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
+      <span className="text-[11.5px] mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
     </div>
   );
 }
@@ -140,7 +140,7 @@ function AvailabilityPicker({ value, onChange, disabled }) {
   const a = AVAILABILITY[value] || UNKNOWN;
   return (
     <label
-      className="relative inline-flex items-center gap-1.5 text-[11.5px] font-semibold pl-2 pr-6 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"
+      className="relative inline-flex items-center gap-1.5 text-[12.5px] font-semibold pl-2 pr-6 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"
       style={{ color: a.fg, background: a.bg, borderColor: value ? "transparent" : "var(--border)" }}
     >
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: a.dot }} aria-hidden="true" />
@@ -172,7 +172,7 @@ function CheckInPicker({ value, onChange, disabled }) {
     <span className="inline-flex items-center">
       <label
         className={cx(
-          "relative inline-flex items-center gap-1 text-[11.5px] font-medium px-2 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
+          "relative inline-flex items-center gap-1 text-[12.5px] font-medium px-2 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
           overdue
             ? "bg-[#fbefed] text-[#a83226] border-transparent font-semibold"
             : value
@@ -220,7 +220,7 @@ function NoteEditor({ note, onSave }) {
           maxLength={500}
           placeholder="Why keep them? e.g. great closer, wants remote, salary £60k+"
           aria-label="Why keep them"
-          className="flex-1 min-w-0 text-[12.5px] px-3 py-2 rounded-[10px] border border-[var(--border)] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)]"
+          className="flex-1 min-w-0 text-[13.5px] px-3 py-2 rounded-[10px] border border-[var(--border)] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)]"
         />
         <div className="flex flex-col gap-1">
           <button
@@ -232,7 +232,7 @@ function NoteEditor({ note, onSave }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-[12px] font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-white disabled:opacity-50"
+            className="text-[13px] font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-white disabled:opacity-50"
           >
             {saving ? "…" : "Save"}
           </button>
@@ -242,7 +242,7 @@ function NoteEditor({ note, onSave }) {
               setEditing(false);
               setText(note || "");
             }}
-            className="text-[12px] font-semibold px-3 py-1 text-[var(--ink-soft)]"
+            className="text-[13px] font-semibold px-3 py-1 text-[var(--ink-soft)]"
           >
             Cancel
           </button>
@@ -252,11 +252,11 @@ function NoteEditor({ note, onSave }) {
   }
   return note ? (
     <button type="button" onClick={() => setEditing(true)} className="group mt-2 flex items-start gap-1.5 text-left" title="Edit note">
-      <span className="text-[12.5px] text-[var(--ink)] italic leading-snug">“{note}”</span>
-      <span className="text-[11px] font-semibold not-italic text-[var(--ink-faint)] opacity-0 group-hover:opacity-100 transition-opacity">Edit</span>
+      <span className="text-[13.5px] text-[var(--ink)] italic leading-snug">“{note}”</span>
+      <span className="text-[12px] font-semibold not-italic text-[var(--ink-faint)] opacity-0 group-hover:opacity-100 transition-opacity">Edit</span>
     </button>
   ) : (
-    <button type="button" onClick={() => setEditing(true)} className="mt-1.5 text-[12px] font-medium text-[var(--ink-faint)] hover:text-[var(--forest)]">
+    <button type="button" onClick={() => setEditing(true)} className="mt-1.5 text-[13px] font-medium text-[var(--ink-faint)] hover:text-[var(--forest)]">
       + Add a note
     </button>
   );
@@ -271,13 +271,13 @@ function PoolExpiry({ expiresAt, onExtend, disabled }) {
   const date = new Date(expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   if (days > 30) {
     return (
-      <span className="text-[11px] text-[var(--ink-faint)]" title="Taken out of the pool on this date unless extended - your retention policy">
+      <span className="text-[12px] text-[var(--ink-faint)]" title="Taken out of the pool on this date unless extended - your retention policy">
         · kept until {date}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
+    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
       <Icon name="clock" size={11} />
       Leaves the pool {days <= 0 ? "today" : `in ${days} day${days === 1 ? "" : "s"}`}
       <button type="button" onClick={onExtend} disabled={disabled} className="underline underline-offset-2 disabled:opacity-50">
@@ -292,7 +292,7 @@ function RoleLink({ role }) {
   return (
     <Link
       href={`/dashboard/candidates/${role.candidateId}`}
-      className="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
+      className="inline-flex items-center gap-1.5 text-[12.5px] px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
       title={`Screened for ${role.jobTitle}`}
     >
       <span className="truncate max-w-[160px] text-[var(--ink-soft)]">{role.jobTitle}</span>
@@ -309,20 +309,20 @@ function RowStatus({ item, screened, screening }) {
   const status = screening?.status;
   if (status === "running")
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ink-soft)]">
+      <span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-soft)]">
         <Spinner size={12} /> Screening…
       </span>
     );
-  if (status === "queued") return <span className="text-[12px] text-[var(--ink-faint)]">Queued</span>;
-  if (status === "failed") return <span className="text-[12px] text-[#a83226] max-w-[200px] sm:text-right">{screening.error}</span>;
+  if (status === "queued") return <span className="text-[13px] text-[var(--ink-faint)]">Queued</span>;
+  if (status === "failed") return <span className="text-[13px] text-[#a83226] max-w-[200px] sm:text-right">{screening.error}</span>;
   if (screened)
     return (
-      <Link href={`/dashboard/candidates/${screened.candidateId}`} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--forest)] hover:underline">
+      <Link href={`/dashboard/candidates/${screened.candidateId}`} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--forest)] hover:underline">
         Screened{screened.score != null ? `: ${screened.score}` : ""}
         <Icon name="arrowRight" size={12} />
       </Link>
     );
-  if (!item.hasCv) return <span className="text-[11px] text-[var(--ink-faint)]">No CV text on file</span>;
+  if (!item.hasCv) return <span className="text-[12px] text-[var(--ink-faint)]">No CV text on file</span>;
   return null;
 }
 
@@ -355,7 +355,7 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
             <AvailabilityPicker value={item.status} disabled={busy} onChange={(v) => onUpdate(item, { status: v })} />
             <CheckInPicker value={item.checkIn} disabled={busy} onChange={(v) => onUpdate(item, { checkIn: v })} />
           </div>
-          <p className="text-[12.5px] text-[var(--ink-soft)] mt-1">
+          <p className="text-[13.5px] text-[var(--ink-soft)] mt-1">
             {[item.currentTitle, item.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
             <span className="text-[var(--ink-faint)]">
               {[item.location, item.yearsExperience != null && `${item.yearsExperience} yrs`]
@@ -387,7 +387,7 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
                 {item.skills.slice(0, 7).map((s) => (
                   <Chip key={s}>{s}</Chip>
                 ))}
-                {item.skills.length > 7 && <span className="text-[11px] text-[var(--ink-faint)] self-center">+{item.skills.length - 7}</span>}
+                {item.skills.length > 7 && <span className="text-[12px] text-[var(--ink-faint)] self-center">+{item.skills.length - 7}</span>}
               </div>
             )
           )}
@@ -397,7 +397,7 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
               <button
                 type="button"
                 onClick={() => onMatchJob(item.bestMatch.jobId)}
-                className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
+                className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
                 title="Their best fit among your open jobs - click to match the pool against it"
               >
                 <Icon name="sparkle" size={11} />
@@ -406,13 +406,13 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
             )}
             {item.roles.length > 0 && (
               <span className="inline-flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-[var(--ink-faint)]">Screened for</span>
+                <span className="text-[12px] text-[var(--ink-faint)]">Screened for</span>
                 {item.roles.map((r) => (
                   <RoleLink key={r.candidateId} role={r} />
                 ))}
               </span>
             )}
-            <span className="text-[11px] text-[var(--ink-faint)]">
+            <span className="text-[12px] text-[var(--ink-faint)]">
               Saved {formatRelativeTime(item.savedAt)}
               {item.savedBy ? ` by ${item.savedBy}` : ""}
             </span>
@@ -421,7 +421,7 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
 
           {/* Fit and status under the name on phones - the side column is too tight there. */}
           {job && (
-            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[12.5px]">
+            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[13.5px]">
               <span className="font-semibold tabular-nums" style={{ color: fitTone(item.fit).fg }}>
                 {item.fit == null ? "No fit score" : `${item.fit}% fit`}
               </span>
@@ -442,15 +442,15 @@ function PoolRow({ item, job, selected, onToggle, screening, onUpdate, onRemove,
                 <span aria-hidden="true" className="text-[16px] leading-none">⋯</span>
               </summary>
               <div className="absolute right-0 mt-1 w-48 rounded-[10px] p-1 z-20 bg-white border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
-                <Link href={`/dashboard/candidates/${item.id}`} className="block text-[12.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+                <Link href={`/dashboard/candidates/${item.id}`} className="block text-[13.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
                   Open profile
                 </Link>
                 {item.bestMatch && (
-                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-[12.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-[13.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
                     Match to {item.bestMatch.title}
                   </button>
                 )}
-                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-[12.5px] px-2.5 py-1.5 rounded-[8px] text-[#a83226] hover:bg-[#fbefed]">
+                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-[13.5px] px-2.5 py-1.5 rounded-[8px] text-[#a83226] hover:bg-[#fbefed]">
                   Remove from pool
                 </button>
               </div>
@@ -755,11 +755,11 @@ function TalentPoolContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
               Talent pool
             </h1>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1 max-w-2xl">
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-2xl">
               People worth keeping for future roles. When a new job comes in, match it against the pool and screen the best from
               the CVs you already have.
             </p>
@@ -796,7 +796,7 @@ function TalentPoolContent() {
               <Icon name="bookmark" size={20} />
             </span>
             <p className="text-[16px] font-semibold text-[var(--ink)]">Start building your talent pool</p>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1.5 max-w-md mx-auto">
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1.5 max-w-md mx-auto">
               Save strong candidates who weren&apos;t right this time - from their profile, the report after an analysis, or by selecting
               several on the Candidates list. When a new job comes in, they&apos;re matched to it automatically.
             </p>
@@ -810,8 +810,8 @@ function TalentPoolContent() {
                   <span className="text-[var(--forest)]">
                     <Icon name={icon} size={16} />
                   </span>
-                  <p className="text-[13px] font-semibold text-[var(--ink)] mt-1.5">{title}</p>
-                  <p className="text-[12px] text-[var(--ink-soft)] mt-0.5">{body}</p>
+                  <p className="text-[14px] font-semibold text-[var(--ink)] mt-1.5">{title}</p>
+                  <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">{body}</p>
                 </div>
               ))}
             </div>
@@ -861,7 +861,7 @@ function TalentPoolContent() {
                       <Icon name="briefcase" size={18} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
+                      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
                       <p className="text-[16px] font-semibold text-[var(--ink)] truncate">
                         {job.title}
                         {job.client && <span className="font-normal text-[var(--ink-soft)]"> · {job.client}</span>}
@@ -872,7 +872,7 @@ function TalentPoolContent() {
                         ))}
                         {job.minYearsExperience ? <Chip>{job.minYearsExperience}+ yrs</Chip> : null}
                         {job.requiredSkills.length === 0 && !job.minYearsExperience && (
-                          <span className="text-[12px] text-[var(--ink-soft)]">
+                          <span className="text-[13px] text-[var(--ink-soft)]">
                             No requirements listed on this job, so there&apos;s nothing to pre-check - screening still works.
                           </span>
                         )}
@@ -885,7 +885,7 @@ function TalentPoolContent() {
                       onChange={(e) => setJob(e.target.value)}
                       disabled={running}
                       aria-label="Change job"
-                      className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
+                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
                     >
                       {!jobs.some((j) => j.id === jobId) && <option value={jobId}>{job.title}</option>}
                       {jobs.map((j) => (
@@ -920,7 +920,7 @@ function TalentPoolContent() {
                 <section aria-labelledby="open-jobs-title">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-3 mb-2.5">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
+                      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
                       <h2 id="open-jobs-title" className="text-[15px] font-semibold text-[var(--ink)]">
                         Open jobs you could fill from the pool
                       </h2>
@@ -929,7 +929,7 @@ function TalentPoolContent() {
                       value=""
                       onChange={(e) => e.target.value && setJob(e.target.value)}
                       aria-label="Match against any job"
-                      className="self-start sm:self-auto text-[12px] font-semibold px-3 py-1.5 rounded-full border border-[var(--border)] bg-white"
+                      className="self-start sm:self-auto text-[13px] font-semibold px-3 py-1.5 rounded-full border border-[var(--border)] bg-white"
                     >
                       <option value="">Any job…</option>
                       {jobs.map((j) => (
@@ -949,17 +949,17 @@ function TalentPoolContent() {
                         className="snap-start shrink-0 w-[250px] text-left rounded-[14px] bg-white border border-[var(--border)] p-4 hover:border-[var(--forest)] hover:shadow-[0_6px_20px_-12px_rgba(19,32,27,0.35)] transition"
                       >
                         <p className="text-[14px] font-semibold text-[var(--ink)] truncate">{j.title}</p>
-                        <p className="text-[12px] text-[var(--ink-soft)] truncate">{j.client || "No client set"}</p>
+                        <p className="text-[13px] text-[var(--ink-soft)] truncate">{j.client || "No client set"}</p>
                         <div className="flex items-center justify-between mt-3">
                           {j.likely > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)]">
+                            <span className="inline-flex items-center gap-1 text-[13px] font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)]">
                               <Icon name="sparkle" size={11} />
                               {j.likely} likely fit{j.likely === 1 ? "" : "s"}
                             </span>
                           ) : (
-                            <span className="text-[12px] text-[var(--ink-faint)]">{j.requiredSkills.length ? "No likely fits yet" : "No requirements to check"}</span>
+                            <span className="text-[13px] text-[var(--ink-faint)]">{j.requiredSkills.length ? "No likely fits yet" : "No requirements to check"}</span>
                           )}
-                          <span className="text-[12px] font-semibold text-[var(--forest)] inline-flex items-center gap-1">
+                          <span className="text-[13px] font-semibold text-[var(--forest)] inline-flex items-center gap-1">
                             Match <Icon name="arrowRight" size={12} />
                           </span>
                         </div>
@@ -983,7 +983,7 @@ function TalentPoolContent() {
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search name, role, skill, location or note…"
                       aria-label="Search the talent pool"
-                      className="w-full text-[13.5px] pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
+                      className="w-full text-[14.5px] pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -991,7 +991,7 @@ function TalentPoolContent() {
                       value={skill}
                       onChange={(e) => setSkill(e.target.value)}
                       aria-label="Filter by skill"
-                      className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
+                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
                       style={{ border: `1px solid ${skill ? "var(--forest)" : "var(--border)"}` }}
                     >
                       <option value="">Any skill</option>
@@ -1005,7 +1005,7 @@ function TalentPoolContent() {
                       value={effectiveSort}
                       onChange={(e) => setSortBy(e.target.value)}
                       aria-label="Sort"
-                      className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
+                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
                     >
                       {Object.entries(SORTS)
                         .filter(([k]) => k !== "fit" || job)
@@ -1027,13 +1027,13 @@ function TalentPoolContent() {
                         onClick={() => setAvailability(k)}
                         aria-pressed={on}
                         className={cx(
-                          "shrink-0 inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full border transition-colors",
+                          "shrink-0 inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full border transition-colors",
                           on ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "bg-white border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
                         )}
                       >
                         {AVAILABILITY[k] && <span className="w-1.5 h-1.5 rounded-full" style={{ background: on ? "white" : AVAILABILITY[k].dot }} />}
                         {label}
-                        <span className={cx("text-[11px] tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
+                        <span className={cx("text-[12px] tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
                           {counts[k]}
                         </span>
                       </button>
@@ -1047,7 +1047,7 @@ function TalentPoolContent() {
                         setSkill("");
                         setAvailability("all");
                       }}
-                      className="shrink-0 text-[12px] font-semibold text-[var(--forest)] px-2"
+                      className="shrink-0 text-[13px] font-semibold text-[var(--forest)] px-2"
                     >
                       Clear filters
                     </button>
@@ -1055,7 +1055,7 @@ function TalentPoolContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-[12px] text-[var(--ink-soft)]">
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-[13px] text-[var(--ink-soft)]">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -1088,7 +1088,7 @@ function TalentPoolContent() {
               </div>
 
               {items.length === 0 ? (
-                <p className="p-10 text-center text-[13px] text-[var(--ink-soft)]">No one in the pool matches these filters.</p>
+                <p className="p-10 text-center text-[14px] text-[var(--ink-soft)]">No one in the pool matches these filters.</p>
               ) : (
                 <ul className="divide-y divide-[var(--border-soft)]">
                   {items.map((item) => (
@@ -1110,7 +1110,7 @@ function TalentPoolContent() {
             </Card>
 
             {job && (
-              <p className="text-[12px] text-[var(--ink-faint)]">
+              <p className="text-[13px] text-[var(--ink-faint)]">
                 Fit is a quick check of which of the job&apos;s requirements appear in each CV - free and instant, but only a guide. Screening
                 gives the real match score, and puts them in the pipeline under this job.
               </p>
@@ -1123,9 +1123,9 @@ function TalentPoolContent() {
       {(selected.length > 0 || running) && (
         <div className="fixed bottom-5 inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
           <div className="pointer-events-auto w-full max-w-[760px] flex flex-wrap items-center gap-2.5 rounded-[16px] bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
-            <span className="text-[13px] font-semibold">{running ? `Screening for ${job?.title}…` : `${selected.length} selected`}</span>
+            <span className="text-[14px] font-semibold">{running ? `Screening for ${job?.title}…` : `${selected.length} selected`}</span>
             {!running && (
-              <button type="button" onClick={() => setSelected([])} className="text-[12px] font-medium text-white/70 hover:text-white">
+              <button type="button" onClick={() => setSelected([])} className="text-[13px] font-medium text-white/70 hover:text-white">
                 Clear
               </button>
             )}
@@ -1137,7 +1137,7 @@ function TalentPoolContent() {
                     onClick={() => {
                       stopRef.current = true;
                     }}
-                    className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
+                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
                   >
                     Stop
                   </button>
@@ -1146,7 +1146,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={screenSelected}
                     disabled={selected.length === 0}
-                    className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
                   >
                     <Icon name="sparkle" size={13} />
                     Screen {selected.length} for {job.title}
@@ -1159,7 +1159,7 @@ function TalentPoolContent() {
                     disabled={bulkBusy}
                     onChange={(e) => bulkAvailability(e.target.value)}
                     aria-label="Set availability for the selected"
-                    className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
+                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
                   >
                     <option value="">Set availability…</option>
                     {Object.entries(AVAILABILITY).map(([k, v]) => (
@@ -1173,7 +1173,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={bulkRemove}
                     disabled={bulkBusy}
-                    className="text-[12.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
+                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
                   >
                     Remove from pool
                   </button>

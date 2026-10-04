@@ -37,7 +37,7 @@ function Row({ c, picked, disabled, onToggle }) {
         <Avatar name={c.name} />
         <span className="min-w-0 flex-1">
           <span className="block text-[14px] font-semibold text-[var(--ink)] truncate">{c.name}</span>
-          <span className="block text-[12.5px] text-[var(--ink-soft)] truncate">
+          <span className="block text-[13.5px] text-[var(--ink-soft)] truncate">
             {[c.currentTitle, c.jobTitle && `screened for ${c.jobTitle}`].filter(Boolean).join(" · ") || "No role on file"}
           </span>
         </span>
@@ -48,7 +48,7 @@ function Row({ c, picked, disabled, onToggle }) {
           <span className="block text-[15px] font-semibold tabular-nums" style={{ color: tone.fg }}>
             {c.score ?? "–"}
           </span>
-          {c.score != null && <span className="block text-[10.5px] text-[var(--ink-faint)]">{tone.label}</span>}
+          {c.score != null && <span className="block text-[11.5px] text-[var(--ink-faint)]">{tone.label}</span>}
         </span>
       </button>
     </li>
@@ -114,11 +114,11 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
         />
       </div>
 
-      {error && <p className="text-[12.5px] text-[#a83226]">{error}</p>}
+      {error && <p className="text-[13.5px] text-[#a83226]">{error}</p>}
 
       {poolRows.length > 0 && (
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-2 px-1">From this role</p>
+          <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-2 px-1">From this role</p>
           <ul className="divide-y divide-[var(--border-soft)] rounded-[14px] border border-[var(--border)] overflow-hidden">
             {poolRows.map((c) => (
               <Row key={c.id} c={c} picked={selected.includes(c.id)} disabled={full} onToggle={onToggle} />
@@ -129,14 +129,14 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
 
       <div>
         {poolRows.length > 0 && (
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-2 px-1">Everyone else</p>
+          <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mb-2 px-1">Everyone else</p>
         )}
         {results === null ? (
-          <div className="flex items-center gap-2 text-[13px] text-[var(--ink-soft)] py-4 px-1">
+          <div className="flex items-center gap-2 text-[14px] text-[var(--ink-soft)] py-4 px-1">
             <Spinner /> Loading candidates…
           </div>
         ) : otherRows.length === 0 ? (
-          <p className="text-[13px] text-[var(--ink-soft)] py-4 px-1">{query ? "No candidates match that name." : poolRows.length ? "No one else yet." : "No screened candidates yet."}</p>
+          <p className="text-[14px] text-[var(--ink-soft)] py-4 px-1">{query ? "No candidates match that name." : poolRows.length ? "No one else yet." : "No screened candidates yet."}</p>
         ) : (
           <ul className="divide-y divide-[var(--border-soft)] rounded-[14px] border border-[var(--border)] overflow-hidden max-h-[420px] overflow-y-auto">
             {otherRows.map((c) => (
@@ -150,10 +150,10 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-[var(--border-soft)]">
           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
             {selected.length === 0 ? (
-              <p className="text-[12.5px] text-[var(--ink-faint)]">Choose 2 to {max} candidates.</p>
+              <p className="text-[13.5px] text-[var(--ink-faint)]">Choose 2 to {max} candidates.</p>
             ) : (
               selected.map((id) => (
-                <span key={id} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-[var(--mint)] text-[12.5px] font-semibold text-[var(--forest-deep)]">
+                <span key={id} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-[var(--mint)] text-[13.5px] font-semibold text-[var(--forest-deep)]">
                   {nameOf(id)}
                   <button type="button" onClick={() => onToggle(id)} aria-label={`Remove ${nameOf(id)}`} className="p-0.5 rounded-full hover:bg-white/60">
                     <Icon name="x" size={12} />

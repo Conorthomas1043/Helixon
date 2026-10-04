@@ -72,7 +72,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
           Thanks for applying for {jobTitle}. A recruiter at {agencyName} will review your application
           {sentTo ? <> and contact you at <strong style={{ color: "var(--ink)" }}>{sentTo}</strong></> : " and contact you"} if it&apos;s a match for the role.
         </p>
-        <p className="text-[13px] mt-2" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-[14px] mt-2" style={{ color: "var(--ink-faint)" }}>
           {emailed
             ? "We've emailed you a confirmation. If it isn't in your inbox in a few minutes, check your spam folder. You can close this page."
             : "It's worth checking your spam folder in the next few days. You can close this page."}
@@ -86,24 +86,24 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
       <h2 className="text-lg font-semibold" style={{ color: "var(--ink)" }}>Apply for this job</h2>
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="block">
-          <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>Full name</span>
+          <span className="block text-[14px] font-medium mb-1" style={{ color: "var(--ink)" }}>Full name</span>
           <input name="name" required maxLength={200} autoComplete="name" className={input} style={inputStyle} />
         </label>
         <label className="block">
-          <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>Email</span>
+          <span className="block text-[14px] font-medium mb-1" style={{ color: "var(--ink)" }}>Email</span>
           <input name="email" type="email" required maxLength={254} autoComplete="email" className={input} style={inputStyle} />
         </label>
         <label className="block">
-          <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>Phone (optional)</span>
+          <span className="block text-[14px] font-medium mb-1" style={{ color: "var(--ink)" }}>Phone (optional)</span>
           <input name="phone" type="tel" maxLength={40} autoComplete="tel" className={input} style={inputStyle} />
         </label>
         <label className="block">
-          <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>LinkedIn (optional)</span>
+          <span className="block text-[14px] font-medium mb-1" style={{ color: "var(--ink)" }}>LinkedIn (optional)</span>
           <input name="linkedin" maxLength={200} placeholder="linkedin.com/in/…" className={input} style={inputStyle} />
         </label>
       </div>
       <label className="block">
-        <span className="block text-[13px] font-medium mb-1" style={{ color: "var(--ink)" }}>CV (PDF or Word, up to 10 MB)</span>
+        <span className="block text-[14px] font-medium mb-1" style={{ color: "var(--ink)" }}>CV (PDF or Word, up to 10 MB)</span>
         <input
           name="cv"
           type="file"
@@ -117,7 +117,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
         />
       </label>
       {cvError && (
-        <p id="apply-cv-error" className="text-[13px] -mt-2" style={{ color: "var(--score-low)" }}>
+        <p id="apply-cv-error" className="text-[14px] -mt-2" style={{ color: "var(--score-low)" }}>
           {cvError}
         </p>
       )}
@@ -127,7 +127,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
           <input name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
-      <label className="flex items-start gap-2.5 text-[13px]" style={{ color: "var(--ink-soft)" }}>
+      <label className="flex items-start gap-2.5 text-[14px]" style={{ color: "var(--ink-soft)" }}>
         <input name="consent" type="checkbox" required value="yes" className="mt-0.5 accent-[var(--forest)]" />
         <span>
           I&apos;ve read{" "}
@@ -138,7 +138,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
         </span>
       </label>
       {error && (
-        <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>
+        <p role="alert" className="text-[14px]" style={{ color: "var(--score-low)" }}>
           {error}
         </p>
       )}

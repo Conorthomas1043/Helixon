@@ -111,7 +111,7 @@ function CheckDialog({ candidateId, check, onClose, onSaved }) {
           <TextArea maxLength={2000} value={f.notes} onChange={set("notes")} />
         </Field>
         <Field label={check?.document ? `Replace document (${check.document.name})` : "Copy of the document (optional)"} hint="PDF, JPG or PNG, up to 10MB. Stored privately; removed if the candidate is deleted.">
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-[12px]" />
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-[13px]" />
         </Field>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
@@ -187,16 +187,16 @@ function ReferenceAnswers({ answers }) {
   if (!answers) return null;
   if (answers.method === "phone") {
     return (
-      <p className="text-[12px] whitespace-pre-wrap mt-1" style={{ color: INK }}>
+      <p className="text-[13px] whitespace-pre-wrap mt-1" style={{ color: INK }}>
         {answers.comments}
-        <span className="block text-[11px]" style={{ color: INK_FAINT }}>
+        <span className="block text-[12px]" style={{ color: INK_FAINT }}>
           Taken by phone by {answers.takenBy}
         </span>
       </p>
     );
   }
   return (
-    <dl className="mt-2 space-y-1.5 text-[12px]">
+    <dl className="mt-2 space-y-1.5 text-[13px]">
       {REFERENCE_QUESTIONS.filter((q) => answers[q.id] != null).map((q) => (
         <div key={q.id}>
           <dt style={{ color: INK_FAINT }}>{q.label}</dt>
@@ -205,7 +205,7 @@ function ReferenceAnswers({ answers }) {
           </dd>
         </div>
       ))}
-      <p className="text-[11px]" style={{ color: INK_FAINT }}>
+      <p className="text-[12px]" style={{ color: INK_FAINT }}>
         Completed by {answers.completedBy}
         {answers.completedByTitle ? `, ${answers.completedByTitle}` : ""}
       </p>
@@ -285,16 +285,16 @@ export default function CompliancePanel({ candidate, onChanged }) {
       {confirmDialog}
     <Card eyebrow="Compliance" title={rtw ? `Right to work: ${CHECK_STATUSES[rtw.status]}` : "Compliance"}>
       {!data ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : data.failed ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Compliance records couldn&apos;t be loaded.</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Compliance records couldn&apos;t be loaded.</p>
       ) : (
         <div className="space-y-5">
           <section>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
               Privacy
             </p>
-            <p className="text-[12px]" style={{ color: INK }}>
+            <p className="text-[13px]" style={{ color: INK }}>
               {p.consentGivenAt
                 ? `Consent given ${fmt(p.consentGivenAt)}${p.consentSource ? ` (${p.consentSource.replace(/_/g, " ")})` : ""}.`
                 : p.noticeSentAt
@@ -334,7 +334,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                 Checks
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "check" })}>
@@ -342,13 +342,13 @@ export default function CompliancePanel({ candidate, onChanged }) {
               </Button>
             </div>
             {data.checks.length === 0 ? (
-              <p className="text-[12px]" style={{ color: INK_MUTED }}>
+              <p className="text-[13px]" style={{ color: INK_MUTED }}>
                 No checks recorded. Add right to work before they start.
               </p>
             ) : (
               <ul className="space-y-2">
                 {data.checks.map((c) => (
-                  <li key={c.id} className="text-[12px]">
+                  <li key={c.id} className="text-[13px]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold" style={{ color: INK }}>
                         {c.label || CHECK_KINDS[c.kind]}
@@ -391,7 +391,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                 References
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "reference" })}>
@@ -399,13 +399,13 @@ export default function CompliancePanel({ candidate, onChanged }) {
               </Button>
             </div>
             {data.references.length === 0 ? (
-              <p className="text-[12px]" style={{ color: INK_MUTED }}>
+              <p className="text-[13px]" style={{ color: INK_MUTED }}>
                 None yet.
               </p>
             ) : (
               <ul className="space-y-2.5">
                 {data.references.map((r) => (
-                  <li key={r.id} className="text-[12px]">
+                  <li key={r.id} className="text-[13px]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold" style={{ color: INK }}>
                         {r.refereeName}
@@ -460,7 +460,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
           </section>
           <ErrorText>{error}</ErrorText>
           {notice && (
-            <p className="text-[12px]" role="status" style={{ color: "var(--forest)" }}>
+            <p className="text-[13px]" role="status" style={{ color: "var(--forest)" }}>
               {notice}
             </p>
           )}

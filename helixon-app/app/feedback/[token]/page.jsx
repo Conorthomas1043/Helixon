@@ -60,7 +60,7 @@ function TagPicker({ options, selected, onToggle }) {
             key={t.value}
             type="button"
             onClick={() => onToggle(t.value)}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-full transition"
+            className="text-[13px] font-medium px-3 py-1.5 rounded-full transition"
             style={
               active
                 ? { background: "var(--forest)", color: "white" }
@@ -84,7 +84,7 @@ function NpsScale({ value, onChange }) {
           type="button"
           onClick={() => onChange(n)}
           aria-label={`Score ${n}`}
-          className="aspect-square rounded-[8px] text-[12px] font-semibold transition flex items-center justify-center"
+          className="aspect-square rounded-[8px] text-[13px] font-semibold transition flex items-center justify-center"
           style={
             value === n
               ? { background: "var(--forest)", color: "white" }
@@ -224,21 +224,21 @@ export default function FeedbackPage({ params }) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             {isNps ? "How likely are you to recommend this agency to a friend? (0-10)" : "Overall fit for the role (1-5)"}
           </p>
           {isNps ? <NpsScale value={rating} onChange={setRating} /> : <StarScale value={rating} onChange={setRating} />}
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             What stood out? (optional)
           </p>
           <TagPicker options={isNps ? CANDIDATE_TAGS : CLIENT_TAGS} selected={tags} onToggle={toggleTag} />
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             Anything else? (optional)
           </p>
           <textarea
@@ -253,7 +253,7 @@ export default function FeedbackPage({ params }) {
         </div>
 
         {submitError && (
-          <p className="text-[13px] rounded-[10px] px-3 py-2" style={{ background: "#fef2f2", color: "#b91c1c" }}>
+          <p className="text-[14px] rounded-[10px] px-3 py-2" style={{ background: "#fef2f2", color: "#b91c1c" }}>
             {submitError}
           </p>
         )}

@@ -62,23 +62,23 @@ function Row({ item, canManage, onChanged }) {
     <li className="py-3.5 flex flex-wrap items-start justify-between gap-3">
       {confirmDialog}
       <div className="min-w-0">
-        <p className="text-[13px] font-semibold" style={{ color: INK }}>
+        <p className="text-[14px] font-semibold" style={{ color: INK }}>
           {item.label} {c ? <Pill color="var(--forest)" background="var(--mint)">Connected</Pill> : !item.configured ? <Pill>Not set up</Pill> : null}
         </p>
         {c ? (
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          <p className="text-[13px]" style={{ color: INK_MUTED }}>
             {c.accountName || c.accountId}
             {c.lastSyncedAt ? ` · synced ${fmt(c.lastSyncedAt)}` : " · not synced yet"}
           </p>
         ) : (
-          <p className="text-[12px]" style={{ color: INK_FAINT }}>
+          <p className="text-[13px]" style={{ color: INK_FAINT }}>
             {item.scope === "agency"
               ? "Send invoices to your accounts and mark them paid here when they're paid there."
               : "Emails to and from your candidates and client contacts are filed on their timelines. Read-only."}
           </p>
         )}
-        {c?.lastError && <p className="text-[11px]" style={{ color: "var(--score-low)" }}>{c.lastError}</p>}
-        {note && <p className="text-[11px]" style={{ color: "var(--forest)" }}>{note}</p>}
+        {c?.lastError && <p className="text-[12px]" style={{ color: "var(--score-low)" }}>{c.lastError}</p>}
+        {note && <p className="text-[12px]" style={{ color: "var(--forest)" }}>{note}</p>}
         <ErrorText>{error}</ErrorText>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -118,7 +118,7 @@ function Row({ item, canManage, onChanged }) {
           // A full page visit - the service's consent screen, then back here.
           <a
             href={`/api/integrations/oauth/${item.provider}/connect`}
-            className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full"
+            className="inline-flex items-center text-[12px] font-semibold px-2.5 py-1 rounded-full"
             style={{ background: "var(--forest)", color: "white", border: "1px solid var(--forest)" }}
           >
             Connect
@@ -164,7 +164,7 @@ export default function ConnectedApps() {
       {banner && (
         <p
           role="status"
-          className="text-[13px] rounded-[10px] px-3.5 py-2.5"
+          className="text-[14px] rounded-[10px] px-3.5 py-2.5"
           style={{ background: banner.ok ? "var(--mint)" : "#fef2f2", color: banner.ok ? "var(--forest)" : "#b42318" }}
         >
           {banner.ok ? `${label(banner.provider)} is connected.` : `${label(banner.provider)} ${ERRORS[banner.code] || "couldn't be connected - please try again."}`}
@@ -184,35 +184,35 @@ export default function ConnectedApps() {
           ))}
         </ul>
         {!data.canManage && (
-          <p className="text-[11px] mt-4" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] mt-4" style={{ color: INK_FAINT }}>
             The workspace owner or an admin connects the accounts package.
           </p>
         )}
       </Card>
       <Card title="Texting" eyebrow="Twilio">
         {data.sms.configured ? (
-          <div className="text-[12px] space-y-1.5" style={{ color: INK_MUTED }}>
+          <div className="text-[13px] space-y-1.5" style={{ color: INK_MUTED }}>
             <p>Text candidates from their profile; replies land on their timeline and notify whoever texted them.</p>
             <p>
               In Twilio, set the number&apos;s &quot;A message comes in&quot; webhook to <code style={{ color: INK }}>{data.sms.webhookUrl}</code> (HTTP POST).
             </p>
           </div>
         ) : (
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          <p className="text-[13px]" style={{ color: INK_MUTED }}>
             Not set up on this Helixon installation yet - it needs a Twilio account and number.
           </p>
         )}
       </Card>
       <Card title="Job boards" eyebrow="Feed">
         {feedUrl ? (
-          <div className="text-[12px] space-y-1.5" style={{ color: INK_MUTED }}>
+          <div className="text-[13px] space-y-1.5" style={{ color: INK_MUTED }}>
             <p>Your published jobs as an XML feed. Give this address to job boards and aggregators that take a feed (Indeed, Adzuna, Jooble and others), and each job page is already marked up for Google for Jobs.</p>
             <p>
               <code style={{ color: INK }}>{feedUrl}</code>
             </p>
           </div>
         ) : (
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          <p className="text-[13px]" style={{ color: INK_MUTED }}>
             Turn on your careers page (Settings → Careers page) to get a job feed for job boards.
           </p>
         )}

@@ -9,7 +9,7 @@ export function JobsHeader({ agency }) {
           {agency.name}
         </Link>
         {agency.careers_website && (
-          <a href={/^https?:\/\//.test(agency.careers_website) ? agency.careers_website : `https://${agency.careers_website}`} className="text-[13px] underline" style={{ color: "var(--ink-soft)" }} rel="noopener noreferrer">
+          <a href={/^https?:\/\//.test(agency.careers_website) ? agency.careers_website : `https://${agency.careers_website}`} className="text-[14px] underline" style={{ color: "var(--ink-soft)" }} rel="noopener noreferrer">
             Our website
           </a>
         )}
@@ -20,7 +20,7 @@ export function JobsHeader({ agency }) {
 
 export function JobsFooter({ agency }) {
   return (
-    <footer className="mx-auto max-w-[900px] px-4 sm:px-6 py-10 text-[12px] flex flex-wrap gap-x-4 gap-y-2" style={{ color: "var(--ink-faint)" }}>
+    <footer className="mx-auto max-w-[900px] px-4 sm:px-6 py-10 text-[13px] flex flex-wrap gap-x-4 gap-y-2" style={{ color: "var(--ink-faint)" }}>
       <Link href={`/jobs/${agency.careers_slug}/privacy`} className="underline">How we use your data</Link>
       <span>Jobs powered by Helixon</span>
     </footer>

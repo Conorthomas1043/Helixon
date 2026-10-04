@@ -59,7 +59,7 @@ export default function PhoneActions({ candidateId, phone, firstName, onLogged }
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && log()}
-            className="text-[12px] px-2 py-0.5 rounded-full bg-white"
+            className="text-[13px] px-2 py-0.5 rounded-full bg-white"
             style={{ border: "1px solid var(--border)", width: 150 }}
           />
           <button type="button" disabled={busy} onClick={log} className="font-semibold px-2" style={{ color: "var(--forest)" }}>

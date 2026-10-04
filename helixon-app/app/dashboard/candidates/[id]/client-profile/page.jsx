@@ -65,7 +65,7 @@ export default function ClientProfilePage({ params }) {
         {(status === "error" || status === "not-found") && (
           <div className="rounded-[14px] p-10 text-center" style={CARD}>
             <p className="font-semibold" style={{ color: INK }}>{status === "not-found" ? "Candidate not found" : "Unable to build the profile"}</p>
-            <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>{status === "not-found" ? "They may have been removed." : "Please try again."}</p>
+            <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>{status === "not-found" ? "They may have been removed." : "Please try again."}</p>
           </div>
         )}
         {status === "ready" && data && (

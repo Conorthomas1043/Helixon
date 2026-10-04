@@ -9,7 +9,7 @@ import { INK, INK_MUTED, CARD } from "@/lib/candidate-format";
 
 function Toggle({ checked, onChange, children }) {
   return (
-    <label className="inline-flex items-center gap-2 text-[12px] font-medium cursor-pointer" style={{ color: INK }}>
+    <label className="inline-flex items-center gap-2 text-[13px] font-medium cursor-pointer" style={{ color: INK }}>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-[var(--forest)]" />
       {children}
     </label>
@@ -20,7 +20,7 @@ export default function ClientProfileToolbar({ backHref, backLabel, options, onO
   const set = (key) => (value) => onOptions({ ...options, [key]: value });
   return (
     <div className="print-hide rounded-[14px] p-4 flex flex-wrap items-center gap-x-5 gap-y-3" style={CARD}>
-      <Link href={backHref} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
+      <Link href={backHref} className="text-[13px] font-semibold" style={{ color: INK_MUTED }}>
         ← {backLabel}
       </Link>
       <Toggle checked={options.blind} onChange={set("blind")}>Anonymise</Toggle>
@@ -30,13 +30,13 @@ export default function ClientProfileToolbar({ backHref, backLabel, options, onO
         type="button"
         onClick={onPrint}
         disabled={disabled || printing}
-        className="ml-auto text-[13px] font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="ml-auto text-[14px] font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Print / Save as PDF
       </button>
       {options.blind && (
-        <p className="w-full text-[11px]" style={{ color: INK_MUTED }}>
+        <p className="w-full text-[12px]" style={{ color: INK_MUTED }}>
           Names, employers, institutions and location are withheld, including where they appear in the text. A distinctive
           career history can still identify someone - read it through before sending.
         </p>

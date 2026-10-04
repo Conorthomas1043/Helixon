@@ -145,13 +145,13 @@ export default function EmployeeMobileApp({ employee }) {
       >
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-            <span className="text-white text-[11px] font-bold">H</span>
+            <span className="text-white text-[12px] font-bold">H</span>
           </div>
           <div className="leading-none">
-            <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>
+            <div className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
               Staff
             </div>
-            <div className="text-[10px]" style={{ color: "var(--ink-faint)" }}>
+            <div className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
               {employee?.display_name || employee?.full_name || employee?.username}
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function EmployeeMobileApp({ employee }) {
               aria-current={active ? "page" : undefined}
             >
               <Icon path={ICONS[t.icon]} size={20} strokeWidth={active ? 2.4 : 2} />
-              <span className="text-[10px] font-medium">{t.label}</span>
+              <span className="text-[11px] font-medium">{t.label}</span>
             </button>
           );
         })}
@@ -223,7 +223,7 @@ export default function EmployeeMobileApp({ employee }) {
 
 function SectionTitle({ children }) {
   return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-wide mb-2.5 mt-5 first:mt-0" style={{ color: "var(--ink-faint)" }}>
+    <h2 className="text-[12px] font-semibold uppercase tracking-wide mb-2.5 mt-5 first:mt-0" style={{ color: "var(--ink-faint)" }}>
       {children}
     </h2>
   );
@@ -232,7 +232,7 @@ function SectionTitle({ children }) {
 function ErrorNotice({ message }) {
   if (!message) return null;
   return (
-    <div className="text-[12px] rounded-[10px] px-3 py-2.5 mb-3" style={{ background: "#fdf1f0", color: RED, border: "1px solid #f6d6d3" }}>
+    <div className="text-[13px] rounded-[10px] px-3 py-2.5 mb-3" style={{ background: "#fdf1f0", color: RED, border: "1px solid #f6d6d3" }}>
       {message}
     </div>
   );
@@ -337,7 +337,7 @@ function TodosTab() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="What needs doing?"
-          className="flex-1 text-[13px] rounded-[10px] px-3 py-2.5"
+          className="flex-1 text-[14px] rounded-[10px] px-3 py-2.5"
           style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
         />
         <button
@@ -355,11 +355,11 @@ function TodosTab() {
 
       <SectionTitle>Open ({open.length})</SectionTitle>
       {loading ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Loading…
         </p>
       ) : open.length === 0 ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Nothing open. Nice.
         </p>
       ) : (
@@ -409,7 +409,7 @@ function TodoRow({ todo, onToggle, onDelete }) {
       />
       <div className="min-w-0 flex-1">
         <div
-          className="text-[13px] font-medium truncate"
+          className="text-[14px] font-medium truncate"
           style={{
             color: todo.done ? "var(--ink-faint)" : "var(--ink)",
             textDecoration: todo.done ? "line-through" : "none",
@@ -418,7 +418,7 @@ function TodoRow({ todo, onToggle, onDelete }) {
           {todo.title}
         </div>
         {todo.due_date && (
-          <div className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
+          <div className="text-[12px]" style={{ color: "var(--ink-faint)" }}>
             Due {new Date(todo.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </div>
         )}
@@ -551,7 +551,7 @@ function CalendarTab({ employee }) {
         <button
           type="button"
           onClick={showAddForm ? () => setShowAddForm(false) : openAdd}
-          className="text-[11px] font-semibold px-3 py-1.5 rounded-full"
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "var(--mint)", color: "var(--forest)" }}
         >
           {showAddForm ? "Cancel" : "+ New event"}
@@ -566,10 +566,10 @@ function CalendarTab({ employee }) {
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Event title"
-            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            className="text-[14px] rounded-[10px] px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
-          <label className="flex items-center gap-2 text-[12px] font-medium" style={{ color: "var(--ink-soft)" }}>
+          <label className="flex items-center gap-2 text-[13px] font-medium" style={{ color: "var(--ink-soft)" }}>
             <input type="checkbox" checked={form.all_day} onChange={(e) => setForm((f) => ({ ...f, all_day: e.target.checked }))} />
             All-day event
           </label>
@@ -578,24 +578,24 @@ function CalendarTab({ employee }) {
               type={form.all_day ? "date" : "datetime-local"}
               value={form.start_at}
               onChange={(e) => setForm((f) => ({ ...f, start_at: e.target.value }))}
-              className="text-[12px] rounded-[10px] px-2.5 py-2"
+              className="text-[13px] rounded-[10px] px-2.5 py-2"
               style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
             />
             <input
               type={form.all_day ? "date" : "datetime-local"}
               value={form.end_at}
               onChange={(e) => setForm((f) => ({ ...f, end_at: e.target.value }))}
-              className="text-[12px] rounded-[10px] px-2.5 py-2"
+              className="text-[13px] rounded-[10px] px-2.5 py-2"
               style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
             />
           </div>
           {formError && (
-            <p className="text-[11px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
+            <p className="text-[12px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
           )}
           <button
             type="submit"
             disabled={saving}
-            className="text-[13px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
+            className="text-[14px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Add event"}
@@ -606,14 +606,14 @@ function CalendarTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : grouped.length === 0 ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No events in the next few months.</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No events in the next few months.</p>
       ) : (
         <div className="flex flex-col gap-3.5">
           {grouped.map(([dayKey, dayEvents]) => (
             <div key={dayKey}>
-              <div className="text-[11px] font-semibold mb-1.5" style={{ color: "var(--ink-faint)" }}>
+              <div className="text-[12px] font-semibold mb-1.5" style={{ color: "var(--ink-faint)" }}>
                 {formatDayHeading(dayEvents[0].start_at)}
               </div>
               <div className="flex flex-col gap-2">
@@ -621,13 +621,13 @@ function CalendarTab({ employee }) {
                   const canDelete = ev.created_by === employee?.id;
                   return (
                     <div key={ev.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
-                      <span className="text-[11px] font-medium tabular-nums w-12 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                      <span className="text-[12px] font-medium tabular-nums w-12 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
                         {formatEventTime(ev.start_at, ev.all_day)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{ev.title}</div>
+                        <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{ev.title}</div>
                         {(ev.location || ev.creator?.full_name || ev.creator?.display_name) && (
-                          <div className="text-[11px] mt-0.5 truncate" style={{ color: "var(--ink-faint)" }}>
+                          <div className="text-[12px] mt-0.5 truncate" style={{ color: "var(--ink-faint)" }}>
                             {ev.location ? `${ev.location} · ` : ""}
                             {ev.creator?.full_name || ev.creator?.display_name || ""}
                           </div>
@@ -652,7 +652,7 @@ function CalendarTab({ employee }) {
         className="flex items-center justify-between px-3.5 py-3 rounded-[12px] mt-4"
         style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
-        <span className="text-[12px] font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
+        <span className="text-[13px] font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
         <Icon path={ICONS.chevronRight} size={16} />
       </Link>
     </div>
@@ -790,7 +790,7 @@ function CallsTab({ employee }) {
         <button
           type="button"
           onClick={showAddForm ? () => setShowAddForm(false) : () => setShowAddForm(true)}
-          className="text-[11px] font-semibold px-3 py-1.5 rounded-full"
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "var(--mint)", color: "var(--forest)" }}
         >
           {showAddForm ? "Cancel" : "+ Log call"}
@@ -799,8 +799,8 @@ function CallsTab({ employee }) {
 
       {me && (
         <div className="rounded-[14px] px-3.5 py-2.5 mb-3 flex items-center justify-between" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <span className="text-[12px] font-medium" style={{ color: "var(--ink-soft)" }}>Today</span>
-          <span className="text-[13px] font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{me.today} calls</span>
+          <span className="text-[13px] font-medium" style={{ color: "var(--ink-soft)" }}>Today</span>
+          <span className="text-[14px] font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{me.today} calls</span>
         </div>
       )}
 
@@ -812,7 +812,7 @@ function CallsTab({ employee }) {
             value={form.contact_name}
             onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
             placeholder="Contact name"
-            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            className="text-[14px] rounded-[10px] px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
           <input
@@ -820,13 +820,13 @@ function CallsTab({ employee }) {
             value={form.company}
             onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
             placeholder="Company (optional)"
-            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            className="text-[14px] rounded-[10px] px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
           <select
             value={form.outcome}
             onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
-            className="text-[13px] rounded-[10px] px-3 py-2.5"
+            className="text-[14px] rounded-[10px] px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           >
             {outcomes.map((o) => (
@@ -838,16 +838,16 @@ function CallsTab({ employee }) {
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             placeholder="Notes (optional)"
             rows={2}
-            className="text-[13px] rounded-[10px] px-3 py-2.5 resize-none"
+            className="text-[14px] rounded-[10px] px-3 py-2.5 resize-none"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
           {formError && (
-            <p className="text-[11px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
+            <p className="text-[12px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
           )}
           <button
             type="submit"
             disabled={saving}
-            className="text-[13px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
+            className="text-[14px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Log call"}
@@ -858,35 +858,35 @@ function CallsTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : calls.length === 0 ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged yet.</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged yet.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {calls.map((call) => (
             <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
               <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: OUTCOME_DOT[call.outcome] || GRAY }} />
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>
                   {call.contact_name || call.company || "Unnamed contact"}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <select
                     value={call.outcome}
                     onChange={(e) => setOutcome(call, e.target.value)}
-                    className="text-[10px] font-semibold pl-1.5 pr-1 py-0.5 rounded-full"
+                    className="text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-full"
                     style={{ background: "var(--mist)", color: "var(--ink-soft)", border: "1px solid var(--border)" }}
                   >
                     {outcomes.map((o) => (
                       <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
                     ))}
                   </select>
-                  <span className="text-[10px]" style={{ color: "var(--ink-faint)" }}>
+                  <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
                     {new Date(call.called_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
                 {call.notes && (
-                  <div className="text-[11px] mt-1" style={{ color: "var(--ink-soft)" }}>{call.notes}</div>
+                  <div className="text-[12px] mt-1" style={{ color: "var(--ink-soft)" }}>{call.notes}</div>
                 )}
               </div>
               <button type="button" onClick={() => handleDelete(call)} aria-label="Delete call" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
@@ -902,7 +902,7 @@ function CallsTab({ employee }) {
         className="flex items-center justify-between px-3.5 py-3 rounded-[12px] mt-4"
         style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
-        <span className="text-[12px] font-medium">Full team log & leaderboard</span>
+        <span className="text-[13px] font-medium">Full team log & leaderboard</span>
         <Icon path={ICONS.chevronRight} size={16} />
       </Link>
     </div>
@@ -1039,7 +1039,7 @@ function FilesTab({ employee }) {
           <button
             type="button"
             onClick={() => setShowNewFolder((v) => !v)}
-            className="text-[11px] font-semibold px-3 py-1.5 rounded-full"
+            className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
             style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
           >
             + Folder
@@ -1048,7 +1048,7 @@ function FilesTab({ employee }) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="text-[11px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50"
+            className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50"
             style={{ background: "var(--mint)", color: "var(--forest)" }}
           >
             {uploading ? "Uploading…" : "Upload"}
@@ -1057,7 +1057,7 @@ function FilesTab({ employee }) {
         </div>
       </div>
 
-      <div className="flex items-center flex-wrap gap-1 mb-2.5 text-[11px]" style={{ color: "var(--ink-faint)" }}>
+      <div className="flex items-center flex-wrap gap-1 mb-2.5 text-[12px]" style={{ color: "var(--ink-faint)" }}>
         <button onClick={() => setFolderId(null)} className="font-medium" style={{ color: folderId ? "var(--ink-soft)" : "var(--forest)" }}>
           Files
         </button>
@@ -1079,10 +1079,10 @@ function FilesTab({ employee }) {
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder="Folder name"
-            className="flex-1 text-[13px] rounded-[10px] px-3 py-2.5"
+            className="flex-1 text-[14px] rounded-[10px] px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
-          <button type="submit" className="text-[12px] font-semibold px-3 py-2 rounded-[10px]" style={{ background: "var(--forest)", color: "white" }}>
+          <button type="submit" className="text-[13px] font-semibold px-3 py-2 rounded-[10px]" style={{ background: "var(--forest)", color: "white" }}>
             Add
           </button>
         </form>
@@ -1091,9 +1091,9 @@ function FilesTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : folders.length === 0 && files.length === 0 ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file.</p>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {folders.map((folder) => {
@@ -1102,7 +1102,7 @@ function FilesTab({ employee }) {
               <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.folder} size={16} /></span>
                 <button onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
-                  <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</div>
+                  <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</div>
                 </button>
                 {canDelete && (
                   <button type="button" onClick={() => deleteFolder(folder)} aria-label="Delete folder" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
@@ -1118,8 +1118,8 @@ function FilesTab({ employee }) {
               <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.file} size={16} /></span>
                 <a href={`/api/employee/files/${file.id}/download`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</div>
-                  <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>{formatBytes(file.size_bytes)}</div>
+                  <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</div>
+                  <div className="text-[12px] mt-0.5" style={{ color: "var(--ink-faint)" }}>{formatBytes(file.size_bytes)}</div>
                 </a>
                 {canDelete && (
                   <button type="button" onClick={() => deleteFile(file)} aria-label="Delete file" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
@@ -1140,7 +1140,7 @@ function FilesTab({ employee }) {
 function Kpi({ label, value }) {
   return (
     <div className="rounded-[14px] p-3.5" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="text-[10px] font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
+      <div className="text-[11px] font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
         {label}
       </div>
       <div className="text-xl font-semibold tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -1188,7 +1188,7 @@ function TeamPresenceList() {
     <>
       <SectionTitle>Team</SectionTitle>
       {loading && team.length === 0 ? (
-        <p className="text-[12px] text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-[13px] text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : (
         <div className="rounded-[14px]" style={{ background: "white", border: "1px solid var(--border)" }}>
           {sorted.map((person, i) => (
@@ -1199,9 +1199,9 @@ function TeamPresenceList() {
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: PRESENCE_DOT[person.status] }} />
-                <span className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
+                <span className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
               </div>
-              <span className="text-[11px] shrink-0" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-[12px] shrink-0" style={{ color: "var(--ink-faint)" }}>
                 {PRESENCE_LABEL[person.status]}
                 {person.signedInSince ? ` · ${formatSignedIn(person.signedInSince)}` : ""}
               </span>
@@ -1242,7 +1242,7 @@ function StatsTab() {
       <SectionTitle>Platform snapshot, today</SectionTitle>
       <ErrorNotice message={error} />
       {loading && !stats ? (
-        <p className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Loading…
         </p>
       ) : (
@@ -1256,7 +1256,7 @@ function StatsTab() {
       <button
         type="button"
         onClick={load}
-        className="mt-4 w-full flex items-center justify-center gap-1.5 text-[12px] font-medium py-2.5 rounded-[10px]"
+        className="mt-4 w-full flex items-center justify-center gap-1.5 text-[13px] font-medium py-2.5 rounded-[10px]"
         style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
       >
         <Icon path={ICONS.refresh} size={14} />

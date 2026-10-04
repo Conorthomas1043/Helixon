@@ -85,8 +85,8 @@ export const BUTTON_BASE =
   "inline-flex items-center justify-center gap-1.5 font-medium rounded-[8px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)] whitespace-nowrap";
 
 export const BUTTON_SIZES = {
-  sm: "h-8 px-3 text-[12.5px]",
-  md: "h-9 px-3.5 text-[13px]",
+  sm: "h-8 px-3 text-[13.5px]",
+  md: "h-9 px-3.5 text-[14px]",
   lg: "h-11 px-5 text-[14px]",
 };
 
@@ -123,7 +123,7 @@ export function CardHeader({ title, description, action, className = "" }) {
         <h2 className="text-[15px] font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
           {title}
         </h2>
-        {description && <p className="text-[13px] mt-0.5 text-[var(--ink-soft)]">{description}</p>}
+        {description && <p className="text-[14px] mt-0.5 text-[var(--ink-soft)]">{description}</p>}
       </div>
       {action}
     </div>
@@ -133,14 +133,14 @@ export function CardHeader({ title, description, action, className = "" }) {
 export function Label({ htmlFor, children, hint }) {
   return (
     <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-2 mb-1.5">
-      <span className="text-[12.5px] font-medium text-[var(--ink)]">{children}</span>
-      {hint && <span className="text-[11.5px] text-[var(--ink-faint)]">{hint}</span>}
+      <span className="text-[13.5px] font-medium text-[var(--ink)]">{children}</span>
+      {hint && <span className="text-[12.5px] text-[var(--ink-faint)]">{hint}</span>}
     </label>
   );
 }
 
 const FIELD =
-  "w-full bg-white rounded-[8px] border border-[var(--border)] text-[13.5px] text-[var(--ink)] placeholder:text-[var(--ink-mute)] outline-none transition-shadow focus:border-[var(--forest)] focus:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] disabled:bg-[var(--mist)]";
+  "w-full bg-white rounded-[8px] border border-[var(--border)] text-[14.5px] text-[var(--ink)] placeholder:text-[var(--ink-mute)] outline-none transition-shadow focus:border-[var(--forest)] focus:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] disabled:bg-[var(--mist)]";
 
 export function Input({ className = "", ...props }) {
   return <input className={cx(FIELD, "h-9 px-3", className)} {...props} />;
@@ -173,13 +173,13 @@ export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) 
             onClick={() => onChange(o.value)}
             className={cx(
               "inline-flex items-center gap-1.5 rounded-[7px] font-medium transition-colors",
-              size === "sm" ? "h-7 px-2.5 text-[12px]" : "h-8 px-3 text-[12.5px]",
+              size === "sm" ? "h-7 px-2.5 text-[13px]" : "h-8 px-3 text-[13.5px]",
               active ? "bg-white text-[var(--ink)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
             )}
           >
             {o.icon && <Icon name={o.icon} size={14} />}
             {o.label}
-            {o.count != null && <span className="text-[11px] tabular-nums text-[var(--ink-faint)]">{o.count}</span>}
+            {o.count != null && <span className="text-[12px] tabular-nums text-[var(--ink-faint)]">{o.count}</span>}
           </button>
         );
       })}
@@ -199,7 +199,7 @@ export function Notice({ tone = "info", children, action, onDismiss, className =
   return (
     <div
       role={tone === "error" ? "alert" : undefined}
-      className={cx("flex items-start gap-2.5 rounded-[10px] px-3.5 py-2.5 text-[12.5px] leading-relaxed", className)}
+      className={cx("flex items-start gap-2.5 rounded-[10px] px-3.5 py-2.5 text-[13.5px] leading-relaxed", className)}
       style={{ background: t.bg, color: t.fg, border: `1px solid ${t.border}` }}
     >
       <Icon name={t.icon} size={15} className="mt-[2px]" />
@@ -223,8 +223,8 @@ export function Switch({ checked, onChange, label, description, id }) {
         <span className="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow transition-transform peer-checked:translate-x-[14px]" />
       </span>
       <span className="min-w-0">
-        <span className="block text-[13px] font-medium text-[var(--ink)]">{label}</span>
-        {description && <span className="block text-[12px] text-[var(--ink-soft)] mt-0.5">{description}</span>}
+        <span className="block text-[14px] font-medium text-[var(--ink)]">{label}</span>
+        {description && <span className="block text-[13px] text-[var(--ink-soft)] mt-0.5">{description}</span>}
       </span>
     </label>
   );
@@ -232,7 +232,7 @@ export function Switch({ checked, onChange, label, description, id }) {
 
 export function Kbd({ children }) {
   return (
-    <kbd className="inline-flex items-center h-5 px-1.5 rounded-[5px] border border-[var(--border)] bg-white text-[10.5px] font-medium text-[var(--ink-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
+    <kbd className="inline-flex items-center h-5 px-1.5 rounded-[5px] border border-[var(--border)] bg-white text-[11.5px] font-medium text-[var(--ink-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
       {children}
     </kbd>
   );
@@ -272,7 +272,7 @@ export function Toasts({ toasts, onDismiss }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[13px] font-medium text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
+          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[14px] font-medium text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
           style={{ background: t.tone === "error" ? "#a83226" : "var(--ink)" }}
         >
           <Icon name={t.tone === "error" ? "alert" : "check"} size={14} />

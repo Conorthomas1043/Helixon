@@ -23,11 +23,11 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
           <h2 className="text-[17px] font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
             {compare ? "Screening the second candidate" : "Screening candidate"}
           </h2>
-          <span className="ml-auto text-[12.5px] tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
+          <span className="ml-auto text-[13.5px] tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
             {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
           </span>
         </div>
-        <p className="text-[13px] text-[var(--ink-soft)] mt-2 truncate">
+        <p className="text-[14px] text-[var(--ink-soft)] mt-2 truncate">
           <span className="text-[var(--ink)] font-medium">{fileName}</span>
           {roleLabel ? <> against <span className="text-[var(--ink)] font-medium">{roleLabel}</span></> : null}
         </p>
@@ -52,15 +52,15 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
                   {i < RUN_STEPS.length - 1 && <span className="w-px flex-1 min-h-[22px] my-1" style={{ background: done ? "var(--forest)" : "var(--border)" }} />}
                 </div>
                 <div className="pb-5 -mt-0.5">
-                  <p className={cx("text-[13.5px]", current ? "font-semibold text-[var(--ink)]" : done ? "text-[var(--ink)]" : "text-[var(--ink-faint)]")}>{s.label}</p>
-                  <p className={cx("text-[12px] mt-0.5", current ? "text-[var(--ink-soft)]" : "text-[var(--ink-faint)]")}>{s.detail}</p>
+                  <p className={cx("text-[14.5px]", current ? "font-semibold text-[var(--ink)]" : done ? "text-[var(--ink)]" : "text-[var(--ink-faint)]")}>{s.label}</p>
+                  <p className={cx("text-[13px] mt-0.5", current ? "text-[var(--ink-soft)]" : "text-[var(--ink-faint)]")}>{s.detail}</p>
                 </div>
               </li>
             );
           })}
         </ol>
 
-        <p className="text-[12px] text-[var(--ink-faint)] border-t border-[var(--border-soft)] pt-4">
+        <p className="text-[13px] text-[var(--ink-faint)] border-t border-[var(--border-soft)] pt-4">
           {elapsed > 60
             ? "Longer CVs and detailed specs take a little more time. Keep this tab open."
             : "The candidate is saved to your pipeline as soon as the assessment finishes."}

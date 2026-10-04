@@ -58,14 +58,14 @@ function daysUntil(iso) {
 function StatCard({ label, value, sub, accent, icon }) {
   return (
     <div className="rounded-[14px] p-4 sm:p-5 bg-white border border-[var(--border)]">
-      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
+      <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {icon && <Icon name={icon} size={12} />}
         {label}
       </p>
       <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
-      {sub && <p className="text-[11.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
+      {sub && <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
     </div>
   );
 }
@@ -74,7 +74,7 @@ function SectionTitle({ eyebrow, title, action }) {
   return (
     <div className="flex items-start justify-between gap-3 mb-4">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{eyebrow}</p>
+        <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{eyebrow}</p>
         <h2 className="text-[16px] font-semibold text-[var(--ink)] mt-0.5">{title}</h2>
       </div>
       {action}
@@ -89,13 +89,13 @@ function Countdown({ iso, verb }) {
   return (
     <span className="text-right shrink-0">
       <span
-        className="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2 py-0.5 rounded-full"
+        className="inline-flex items-center gap-1 text-[12.5px] font-semibold px-2 py-0.5 rounded-full"
         style={{ background: urgent ? "#fbefed" : "#fdf6e9", color: urgent ? "#a83226" : "#8a5a12" }}
       >
         <Icon name="clock" size={11} />
         {days === 0 ? "Today" : `In ${days} day${days === 1 ? "" : "s"}`}
       </span>
-      <span className="hidden sm:block text-[11px] text-[var(--ink-faint)] mt-1">
+      <span className="hidden sm:block text-[12px] text-[var(--ink-faint)] mt-1">
         {verb} {fmt(iso)}
       </span>
     </span>
@@ -109,7 +109,7 @@ function AllClear({ children }) {
         <Icon name="check" size={20} strokeWidth={2.2} />
       </span>
       <p className="text-[14.5px] font-semibold text-[var(--ink)]">You&apos;re all clear</p>
-      <p className="text-[13px] text-[var(--ink-soft)] mt-1 max-w-sm">{children}</p>
+      <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-sm">{children}</p>
     </div>
   );
 }
@@ -205,11 +205,11 @@ function PrivacyContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
               Data &amp; privacy
             </h1>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1 max-w-2xl">
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-2xl">
               You&apos;re the data controller for your candidates; Helixon processes their data for you. Keep data no longer than you need
               it, and answer candidates&apos; requests - all from here.
             </p>
@@ -225,7 +225,7 @@ function PrivacyContent() {
         </header>
 
         {status === "loading" && (
-          <Card className="p-10 flex items-center justify-center gap-3 text-[13px] text-[var(--ink-soft)]">
+          <Card className="p-10 flex items-center justify-center gap-3 text-[14px] text-[var(--ink-soft)]">
             <Spinner /> Loading…
           </Card>
         )}
@@ -294,7 +294,7 @@ function PrivacyContent() {
                     <AllClear>No candidate reaches {months} months without activity in the next 30 days.</AllClear>
                   ) : (
                     <>
-                      <div className="flex flex-wrap items-center gap-3 px-5 sm:px-6 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-[12px] text-[var(--ink-soft)]">
+                      <div className="flex flex-wrap items-center gap-3 px-5 sm:px-6 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-[13px] text-[var(--ink-soft)]">
                         <input
                           type="checkbox"
                           checked={allSelected}
@@ -324,12 +324,12 @@ function PrivacyContent() {
                                 </Link>
                                 <StagePill stage={c.stage} />
                               </div>
-                              <p className="text-[12px] text-[var(--ink-faint)] truncate mt-0.5">
+                              <p className="text-[13px] text-[var(--ink-faint)] truncate mt-0.5">
                                 {[c.jobTitle, `last activity ${fmt(c.lastActiveAt)}`].filter(Boolean).join(" · ")}
                               </p>
                             </div>
                             <Countdown iso={c.deletesOn} verb="Deleted" />
-                            <PillButton onClick={() => keep([c.id])} disabled={busyId === c.id} className="!px-3 !py-1.5 !text-[12px] shrink-0">
+                            <PillButton onClick={() => keep([c.id])} disabled={busyId === c.id} className="!px-3 !py-1.5 !text-[13px] shrink-0">
                               {busyId === c.id ? "…" : "Keep"}
                             </PillButton>
                           </li>
@@ -352,10 +352,10 @@ function PrivacyContent() {
                             <Link href={`/dashboard/candidates/${c.id}`} className="text-[14px] font-semibold text-[var(--ink)] hover:underline truncate block">
                               {c.name}
                             </Link>
-                            <p className="text-[12px] text-[var(--ink-faint)]">In the talent pool - extending keeps them for another {months} months</p>
+                            <p className="text-[13px] text-[var(--ink-faint)]">In the talent pool - extending keeps them for another {months} months</p>
                           </div>
                           <Countdown iso={c.expiresAt} verb="Leaves" />
-                          <PillButton onClick={() => extend(c.id)} disabled={busyId === c.id} className="!px-3 !py-1.5 !text-[12px] shrink-0">
+                          <PillButton onClick={() => extend(c.id)} disabled={busyId === c.id} className="!px-3 !py-1.5 !text-[13px] shrink-0">
                             {busyId === c.id ? "…" : "Extend"}
                           </PillButton>
                         </li>
@@ -367,7 +367,7 @@ function PrivacyContent() {
               {/* Candidates' requests */}
               <section aria-labelledby="requests-title">
                 <div className="mb-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Candidates&apos; rights</p>
+                  <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Candidates&apos; rights</p>
                   <h2 id="requests-title" className="text-[16px] font-semibold text-[var(--ink)] mt-0.5">
                     When a candidate asks about their data
                   </h2>
@@ -378,13 +378,13 @@ function PrivacyContent() {
                       <span className="w-10 h-10 rounded-[11px] bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center">
                         <Icon name={r.icon} size={18} />
                       </span>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mt-4">{r.right}</p>
+                      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mt-4">{r.right}</p>
                       <p className="text-[14.5px] font-semibold text-[var(--ink)] mt-0.5">{r.title}</p>
-                      <p className="text-[12.5px] leading-relaxed text-[var(--ink-soft)] mt-2">{r.how}</p>
+                      <p className="text-[13.5px] leading-relaxed text-[var(--ink-soft)] mt-2">{r.how}</p>
                     </div>
                   ))}
                 </div>
-                <p className="text-[12px] text-[var(--ink-faint)] mt-3">You normally have one month to respond.</p>
+                <p className="text-[13px] text-[var(--ink-faint)] mt-3">You normally have one month to respond.</p>
               </section>
               </div>
 
@@ -407,7 +407,7 @@ function PrivacyContent() {
                           disabled={!manage || saving}
                           onClick={() => !on && save({ retentionMonths: m }, `Candidates are now kept for ${m} months without activity`)}
                           className={cx(
-                            "text-[13px] font-semibold py-2 rounded-full transition-colors disabled:cursor-not-allowed",
+                            "text-[14px] font-semibold py-2 rounded-full transition-colors disabled:cursor-not-allowed",
                             on ? "bg-[var(--forest)] text-white shadow-sm" : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
                           )}
                         >
@@ -416,14 +416,14 @@ function PrivacyContent() {
                       );
                     })}
                   </div>
-                  <ol className="mt-5 space-y-3 text-[12.5px] text-[var(--ink-soft)]">
+                  <ol className="mt-5 space-y-3 text-[13.5px] text-[var(--ink-soft)]">
                     {[
                       ["Any activity restarts the clock", "A stage change, note, tag or email."],
                       [`After ${months} months with none`, "The candidate is deleted - CV, analyses, notes and history."],
                       ["Talent pool is protected", `Entries last ${months} months, and can be extended.`],
                     ].map(([title, body], i) => (
                       <li key={title} className="flex gap-3">
-                        <span className="w-5 h-5 rounded-full bg-[var(--mint)] text-[var(--forest)] text-[11px] font-semibold flex items-center justify-center shrink-0">
+                        <span className="w-5 h-5 rounded-full bg-[var(--mint)] text-[var(--forest)] text-[12px] font-semibold flex items-center justify-center shrink-0">
                           {i + 1}
                         </span>
                         <span>
@@ -432,7 +432,7 @@ function PrivacyContent() {
                       </li>
                     ))}
                   </ol>
-                  <p className="text-[11.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
+                  <p className="text-[12.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
                     Checked every night. If your agency cancels, everything is deleted 90 days later.
                   </p>
                 </Card>
@@ -464,18 +464,18 @@ function PrivacyContent() {
                       </button>
                     }
                   />
-                  <p className="text-[12.5px] text-[var(--ink-soft)] leading-relaxed">
+                  <p className="text-[13.5px] text-[var(--ink-soft)] leading-relaxed">
                     Shows who&apos;s active, idle, busy or away on the Team page, and when anyone offline was last active. Only records when
                     people have Helixon open - never what they click or type.
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {["Anyone can hide theirs", "Off deletes what's recorded"].map((t) => (
-                      <span key={t} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
+                      <span key={t} className="text-[12px] font-medium px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
                         {t}
                       </span>
                     ))}
                   </div>
-                  <p className="text-[11.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
+                  <p className="text-[12.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
                     It&apos;s monitoring of staff - mention it in your staff privacy notice while it&apos;s on.
                   </p>
                 </Card>
@@ -487,11 +487,11 @@ function PrivacyContent() {
               <div className="grid lg:grid-cols-[340px_minmax(0,1fr)]">
                 <div className="p-5 sm:p-6 lg:border-r border-b lg:border-b-0 border-[var(--border-soft)] bg-[#fbfcfb]">
                   <SectionTitle eyebrow="Transparency" title="Privacy notice for candidates" />
-                  <p className="text-[13px] text-[var(--ink-soft)] leading-relaxed">
+                  <p className="text-[14px] text-[var(--ink-soft)] leading-relaxed">
                     Candidates must be told how their data is used - including that software helps assess CVs. Put this on your website or in
                     your first email.
                   </p>
-                  <ul className="mt-4 space-y-2 text-[12.5px] text-[var(--ink-soft)]">
+                  <ul className="mt-4 space-y-2 text-[13.5px] text-[var(--ink-soft)]">
                     {["Fill in the [bracketed] parts", `Set the retention to match yours (${months} months)`, "Add the email address candidates should use"].map((t) => (
                       <li key={t} className="flex gap-2">
                         <span className="text-[var(--forest)] mt-0.5">
@@ -515,7 +515,7 @@ function PrivacyContent() {
                           {para}
                         </h3>
                       ) : (
-                        <p key={i} className="text-[13px] leading-relaxed text-[var(--ink-soft)] mb-3 last:mb-0">
+                        <p key={i} className="text-[14px] leading-relaxed text-[var(--ink-soft)] mb-3 last:mb-0">
                           {para.split(/(\[[^\]]+\])/).map((part, j) =>
                             part.startsWith("[") ? (
                               <mark key={j} className="bg-[#fdf6e9] text-[#8a5a12] rounded px-0.5 font-semibold">
@@ -540,15 +540,15 @@ function PrivacyContent() {
       {selected.length > 0 && tab === "deletions" && (
         <div className="fixed bottom-5 inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
           <div className="pointer-events-auto w-full max-w-[560px] flex items-center gap-3 rounded-[16px] bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
-            <span className="text-[13px] font-semibold">{selected.length} selected</span>
-            <button type="button" onClick={() => setSelected([])} className="text-[12px] font-medium text-white/70 hover:text-white">
+            <span className="text-[14px] font-semibold">{selected.length} selected</span>
+            <button type="button" onClick={() => setSelected([])} className="text-[13px] font-medium text-white/70 hover:text-white">
               Clear
             </button>
             <button
               type="button"
               onClick={() => keep(selected)}
               disabled={busyId === "bulk"}
-              className="ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
+              className="ml-auto inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
             >
               <Icon name="check" size={13} />
               Keep {selected.length} for another {months} months

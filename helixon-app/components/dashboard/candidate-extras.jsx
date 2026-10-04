@@ -118,18 +118,18 @@ export function SelfServiceCard({ candidate }) {
     <>
       {confirmDialog}
     <Card title="Candidate self-service">
-      <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>
         A private link where they update their details and availability and upload documents like their right to work.
       </p>
       {state.loading ? (
-        <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>
       ) : link ? (
         <div className="space-y-2">
           <div className="flex gap-2">
             <TextInput readOnly value={link.url} aria-label="Self-service link" onFocus={(e) => e.target.select()} />
             <CopyButton size="sm" text={link.url}>Copy</CopyButton>
           </div>
-          <p className="text-[11px]" style={{ color: INK_FAINT }}>
+          <p className="text-[12px]" style={{ color: INK_FAINT }}>
             Works until {new Date(link.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             {link.lastUsedAt ? ` · last opened ${new Date(link.lastUsedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : " · not opened yet"}
           </p>
@@ -144,7 +144,7 @@ export function SelfServiceCard({ candidate }) {
           <Button size="sm" disabled={busy} onClick={() => create(false)}>Create link</Button>
         </div>
       )}
-      {note && <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>{note}</p>}
+      {note && <p className="text-[13px] mt-2" style={{ color: INK_MUTED }}>{note}</p>}
       <ErrorText>{error}</ErrorText>
     </Card>
     </>
@@ -179,7 +179,7 @@ function OfferTimesDialog({ candidate, onClose, onSaved }) {
   return (
     <Dialog title="Offer interview times" onClose={onClose} busy={busy}>
       <form onSubmit={submit} className="space-y-4">
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
           {candidate.fullName} picks one on a private link, and the interview is booked with calendar invites to them and the hiring contact.
         </p>
         <div className="space-y-2">
@@ -187,7 +187,7 @@ function OfferTimesDialog({ candidate, onClose, onSaved }) {
             <TextInput key={i} type="datetime-local" aria-label={`Time ${i + 1}`} value={s} onChange={(e) => setSlots((x) => x.map((v, j) => (j === i ? e.target.value : v)))} />
           ))}
           {slots.length < 12 && (
-            <button type="button" className="text-[12px] font-semibold" style={{ color: "var(--forest)" }} onClick={() => setSlots((x) => [...x, ""])}>
+            <button type="button" className="text-[13px] font-semibold" style={{ color: "var(--forest)" }} onClick={() => setSlots((x) => [...x, ""])}>
               + Another time
             </button>
           )}
@@ -214,7 +214,7 @@ function OfferTimesDialog({ candidate, onClose, onSaved }) {
             <TextInput maxLength={500} value={f.interviewers} onChange={(e) => setF((x) => ({ ...x, interviewers: e.target.value }))} />
           </Field>
         </div>
-        <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+        <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
           <input type="checkbox" checked={send && Boolean(candidate.email)} disabled={!candidate.email} onChange={(e) => setSend(e.target.checked)} />
           Email the times to {candidate.email || "the candidate (no email on file)"}
         </label>
@@ -256,15 +256,15 @@ export function BookingLinksCard({ candidate, onBooked }) {
   return (
     <Card title="Interview booking" action={<Button size="sm" onClick={() => setDialog(true)}>Offer times</Button>}>
       {links === null ? (
-        <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>
       ) : open.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Offer a few times and let {candidate.fullName.split(" ")[0]} pick - no back-and-forth emails.</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Offer a few times and let {candidate.fullName.split(" ")[0]} pick - no back-and-forth emails.</p>
       ) : (
         <ul className="space-y-3">
           {open.map((l) => (
-            <li key={l.id} className="text-[13px]">
+            <li key={l.id} className="text-[14px]">
               <p style={{ color: INK }}>{l.openSlots.length} time{l.openSlots.length === 1 ? "" : "s"} waiting for a pick</p>
-              <div className="flex gap-3 text-[11px] font-semibold mt-1">
+              <div className="flex gap-3 text-[12px] font-semibold mt-1">
                 <CopyButton plain text={l.url} style={{ color: "var(--forest)" }}>Copy link</CopyButton>
                 <button
                   type="button"
@@ -287,7 +287,7 @@ export function BookingLinksCard({ candidate, onBooked }) {
           ))}
         </ul>
       )}
-      {note && <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>{note}</p>}
+      {note && <p className="text-[13px] mt-2" style={{ color: INK_MUTED }}>{note}</p>}
       {dialog && (
         <OfferTimesDialog
           candidate={candidate}
@@ -359,17 +359,17 @@ export function MergeDuplicateCard({ candidate }) {
       {confirmDialog}
     <Card title="Duplicates" action={!open && <Button size="sm" onClick={() => setOpen(true)}>Find</Button>}>
       {!open ? (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>Same person on file twice? Merge the records or link them.</p>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>Same person on file twice? Merge the records or link them.</p>
       ) : (
         <div className="space-y-2">
           <TextInput autoFocus placeholder="Search by name or email" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search for the duplicate" />
           <ul className="space-y-1">
-            {query.trim().length >= 2 && results.length === 0 && <li className="text-[12px]" style={{ color: INK_FAINT }}>No matches.</li>}
+            {query.trim().length >= 2 && results.length === 0 && <li className="text-[13px]" style={{ color: INK_FAINT }}>No matches.</li>}
             {results.map((c) => (
               <li key={c.id}>
-                <button type="button" disabled={busy} onClick={() => pick(c)} className="w-full text-left rounded-[8px] px-2 py-1.5 text-[13px] hover:bg-[var(--mist)]">
+                <button type="button" disabled={busy} onClick={() => pick(c)} className="w-full text-left rounded-[8px] px-2 py-1.5 text-[14px] hover:bg-[var(--mist)]">
                   <span className="font-semibold" style={{ color: INK }}>{c.fullName}</span>
-                  <span className="block text-[11px]" style={{ color: INK_MUTED }}>
+                  <span className="block text-[12px]" style={{ color: INK_MUTED }}>
                     {c.jobTitle}
                     {(c.jobId ?? null) === (candidate.jobId ?? null) ? " · same job - merge" : " · different job - link"}
                   </span>
@@ -433,10 +433,10 @@ export function CallNotesCard({ candidate, onSaved }) {
   return (
     <Card title="Call notes (AI)" action={!open && <Button size="sm" onClick={() => setOpen(true)}>Summarise a call</Button>}>
       {!open ? (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>Paste rough notes or a transcript - get a clean summary, next steps and a follow-up.</p>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>Paste rough notes or a transcript - get a clean summary, next steps and a follow-up.</p>
       ) : (
         <div className="space-y-3">
-          <div className="flex gap-2 text-[12px]">
+          <div className="flex gap-2 text-[13px]">
             {["call", "meeting"].map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className="px-2.5 py-1 rounded-full font-semibold" style={kind === k ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK_MUTED }}>
                 {k === "call" ? "Call" : "Meeting"}
@@ -450,7 +450,7 @@ export function CallNotesCard({ candidate, onSaved }) {
             onChange={(e) => setNotes(e.target.value)}
             aria-label="Call notes"
             placeholder="e.g. spoke to her re the Acme role - keen, 1 month notice, wants 55k+, 2nd stage at another firm next week, call back Thu"
-            className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white"
+            className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white"
             style={{ border: "1px solid var(--border)", color: INK }}
           />
           <div className="flex gap-2">
@@ -460,17 +460,17 @@ export function CallNotesCard({ candidate, onSaved }) {
             <Button size="sm" variant="ghost" onClick={() => { setOpen(false); setResult(null); setDone(""); }}>Close</Button>
           </div>
           {result && (
-            <div className="rounded-[10px] p-3 text-[13px] space-y-2" style={{ background: "var(--mist)", color: INK }}>
+            <div className="rounded-[10px] p-3 text-[14px] space-y-2" style={{ background: "var(--mist)", color: INK }}>
               <p>{result.summary}</p>
               {result.keyPoints.length > 0 && (
-                <ul className="list-disc pl-5 text-[12px]" style={{ color: INK_MUTED }}>
+                <ul className="list-disc pl-5 text-[13px]" style={{ color: INK_MUTED }}>
                   {result.keyPoints.map((p) => <li key={p}>{p}</li>)}
                 </ul>
               )}
               {result.nextSteps.length > 0 && (
                 <>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>Next steps</p>
-                  <ul className="list-disc pl-5 text-[12px]" style={{ color: INK_MUTED }}>
+                  <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>Next steps</p>
+                  <ul className="list-disc pl-5 text-[13px]" style={{ color: INK_MUTED }}>
                     {result.nextSteps.map((p) => <li key={p}>{p}</li>)}
                   </ul>
                 </>
@@ -483,10 +483,10 @@ export function CallNotesCard({ candidate, onSaved }) {
                   </Button>
                 )}
               </div>
-              <p className="text-[11px]" style={{ color: INK_FAINT }}>Written by AI from your notes - check it before relying on it.</p>
+              <p className="text-[12px]" style={{ color: INK_FAINT }}>Written by AI from your notes - check it before relying on it.</p>
             </div>
           )}
-          {done && <p className="text-[12px]" style={{ color: "var(--forest)" }}>{done}</p>}
+          {done && <p className="text-[13px]" style={{ color: "var(--forest)" }}>{done}</p>}
           <ErrorText>{error}</ErrorText>
         </div>
       )}

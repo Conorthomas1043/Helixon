@@ -99,7 +99,7 @@ export default function AuditLogPage() {
         <Card padded={false}>
           <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
             {entries.map((e) => (
-              <li key={e.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 text-[13px]">
+              <li key={e.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 text-[14px]">
                 <span className="tabular-nums shrink-0 sm:w-40" style={{ color: INK_FAINT }}>
                   {new Date(e.at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </span>

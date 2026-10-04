@@ -47,7 +47,7 @@ export default function TrafficMapPanel({ points = [], summary, partial, onSelec
         <div className="map-side">
           <h3>Top places</h3>
           {top.length === 0 ? (
-            <div className="faint" style={{ fontSize: 12.5 }}>Nothing geolocated in this range.</div>
+            <div className="faint" style={{ fontSize: 13.5 }}>Nothing geolocated in this range.</div>
           ) : (
             top.map((p) => {
               const key = pointKey(p);

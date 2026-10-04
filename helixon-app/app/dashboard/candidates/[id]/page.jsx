@@ -271,10 +271,10 @@ function NewTagForm({ onCreate }) {
         maxLength={30}
         placeholder="New tag…"
         aria-label="New tag name"
-        className="min-w-0 flex-1 text-[12px] px-2 py-1 rounded-[6px] focus-visible:outline focus-visible:outline-2"
+        className="min-w-0 flex-1 text-[13px] px-2 py-1 rounded-[6px] focus-visible:outline focus-visible:outline-2"
         style={{ border: "1px solid var(--border)", color: INK }}
       />
-      <button type="submit" disabled={!label.trim() || saving} className="text-[11px] font-semibold px-2 py-1 rounded-[6px] disabled:opacity-40" style={{ color: "var(--forest)" }}>
+      <button type="submit" disabled={!label.trim() || saving} className="text-[12px] font-semibold px-2 py-1 rounded-[6px] disabled:opacity-40" style={{ color: "var(--forest)" }}>
         {saving ? "…" : "Add"}
       </button>
     </form>
@@ -286,7 +286,7 @@ function SectionHeading({ eyebrow, title, action }) {
     <div className="flex items-end justify-between gap-4 mb-4">
       <div>
         {eyebrow && (
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             {eyebrow}
           </p>
         )}
@@ -313,7 +313,7 @@ function Avatar({ name, size = 56 }) {
 
 function FieldLabel({ children }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
       {children}
     </p>
   );
@@ -342,30 +342,30 @@ function ShortcutsHint() {
   return (
     <details className="relative">
       <summary
-        className="list-none cursor-pointer text-[11px] font-semibold px-2.5 py-1.5 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="list-none cursor-pointer text-[12px] font-semibold px-2.5 py-1.5 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ border: "1px solid var(--border)", color: INK_MUTED }}
       >
         Shortcuts
       </summary>
       <div
-        className="absolute right-0 mt-2 w-60 rounded-[10px] p-3 z-20 text-[12px] space-y-2"
+        className="absolute right-0 mt-2 w-60 rounded-[10px] p-3 z-20 text-[13px] space-y-2"
         style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}
       >
         <div className="flex justify-between gap-3">
           <span style={{ color: INK_MUTED }}>Next / previous candidate</span>
-          <kbd className="font-mono text-[11px]" style={{ color: INK }}>J / K</kbd>
+          <kbd className="font-mono text-[12px]" style={{ color: INK }}>J / K</kbd>
         </div>
         <div className="flex justify-between gap-3">
           <span style={{ color: INK_MUTED }}>Shortlist</span>
-          <kbd className="font-mono text-[11px]" style={{ color: INK }}>S</kbd>
+          <kbd className="font-mono text-[12px]" style={{ color: INK }}>S</kbd>
         </div>
         <div className="flex justify-between gap-3">
           <span style={{ color: INK_MUTED }}>Focus note field</span>
-          <kbd className="font-mono text-[11px]" style={{ color: INK }}>N</kbd>
+          <kbd className="font-mono text-[12px]" style={{ color: INK }}>N</kbd>
         </div>
         <div className="flex justify-between gap-3">
           <span style={{ color: INK_MUTED }}>Close menus</span>
-          <kbd className="font-mono text-[11px]" style={{ color: INK }}>Esc</kbd>
+          <kbd className="font-mono text-[12px]" style={{ color: INK }}>Esc</kbd>
         </div>
       </div>
     </details>
@@ -390,7 +390,7 @@ function CopyButton({ text, label }) {
           setTimeout(() => setCopied(false), 1200);
         })
       }
-      className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
+      className="text-[12px] font-semibold px-1.5 py-0.5 rounded"
       style={{ background: "var(--mist)", color: copied ? "var(--forest)" : INK_FAINT }}
     >
       {copied ? "Copied" : "Copy"}
@@ -406,7 +406,7 @@ function CandidateFacts({ candidate }) {
   const stale = !contact || now - contact.at > 14 * 86400000;
   if (!contact && inStage == null) return null;
   return (
-    <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>
+    <p className="text-[12.5px] mt-2" style={{ color: INK_FAINT }}>
       <span style={{ color: stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "var(--score-mid)" : INK_FAINT }}>
         {contact ? `Last contacted ${agoLabel(contact.at, now)}` : "No contact logged yet"}
       </span>
@@ -426,7 +426,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
       <div className="flex items-center justify-between mb-6">
         <Link
           href="/dashboard/candidates"
-          className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
           style={{ color: "var(--forest)" }}
         >
           ← All candidates
@@ -435,7 +435,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           <Link
             href={prevId ? `/dashboard/candidates/${prevId}` : "#"}
             aria-disabled={!prevId}
-            className="text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: prevId ? INK : INK_FAINT, pointerEvents: prevId ? "auto" : "none" }}
           >
             ← Prev
@@ -443,7 +443,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           <Link
             href={nextId ? `/dashboard/candidates/${nextId}` : "#"}
             aria-disabled={!nextId}
-            className="text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: nextId ? INK : INK_FAINT, pointerEvents: nextId ? "auto" : "none" }}
           >
             Next →
@@ -463,11 +463,11 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
               {candidate.currentTitle}
               {candidate.currentCompany ? ` @ ${candidate.currentCompany}` : ""}
             </p>
-            <p className="text-[12px] mt-1" style={{ color: INK_FAINT }}>
+            <p className="text-[13px] mt-1" style={{ color: INK_FAINT }}>
               Assessed for {candidate.jobTitle}
               {candidate.company ? ` @ ${candidate.company}` : ""}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[12px]" style={{ color: INK_MUTED }}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[13px]" style={{ color: INK_MUTED }}>
               {candidate.location && <span>{candidate.location}</span>}
               {candidate.email && (
                 <span className="inline-flex items-center gap-1">
@@ -497,14 +497,14 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
               <p className="text-3xl font-semibold tabular-nums leading-none" style={{ fontFamily: "var(--font-mono)", color: scoreColor(score) }}>
                 {score}
               </p>
-              <p className="text-[11px] font-semibold mt-1" style={{ color: scoreColor(score) }}>
+              <p className="text-[12px] font-semibold mt-1" style={{ color: scoreColor(score) }}>
                 {scoreLabel(score)}
               </p>
             </div>
           ) : (
             <div className="text-right">
               <p
-                className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
                 style={{
                   background: candidate.status === "failed" ? RED_BG : AMBER_BG,
                   color: candidate.status === "failed" ? RED_STRONG : AMBER,
@@ -516,7 +516,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           )}
           {candidate.stage && (
             <span
-              className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+              className="text-[12px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
               style={{
                 background: candidate.stage === "Placed" ? GREEN_BG : "var(--mist)",
                 color: candidate.stage === "Placed" ? "var(--forest)" : INK_MUTED,
@@ -533,7 +533,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           <button
             type="button"
             onClick={onQuickShortlist}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             Shortlist
@@ -543,7 +543,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
           <button
             type="button"
             onClick={() => onMoveNext(upcomingStage)}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Move to {STAGE_LABELS[upcomingStage]} →
@@ -552,7 +552,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         <button
           type="button"
           onClick={onFocusNote}
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Add note
@@ -560,7 +560,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         {candidate.status === "completed" && (
           <Link
             href={`/analyse/compare?ids=${candidate.id}`}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Compare with others
@@ -571,13 +571,13 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
             candidateIds={[candidate.id]}
             jobId={candidate.jobId}
             defaultName={candidate.jobId ? `${candidate.jobTitle}${candidate.company ? ` - ${candidate.company}` : ""}` : ""}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           />
         )}
         {candidate.status === "completed" && (
           <Link
             href={`/dashboard/candidates/${candidate.id}/client-profile`}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
             title="A client-ready profile you can print or save as PDF - optionally anonymised"
           >
@@ -587,14 +587,14 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         {candidate.email && (
           <a
             href={`mailto:${candidate.email}`}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Email candidate
           </a>
         )}
         {candidate.nextAction && (
-          <span className="text-[12px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
+          <span className="text-[13px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
             {overdue ? "Overdue: " : "Next: "}
             {candidate.nextAction.label}
           </span>
@@ -606,7 +606,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Edit details
@@ -615,7 +615,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         <a
           href={`/api/candidates/${candidate.id}/export`}
           download
-          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: INK_MUTED }}
           title="Download everything held about this person (every job they've been screened for) - for a subject access or data portability request"
         >
@@ -624,7 +624,7 @@ function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onMoveNext
         <button
           type="button"
           onClick={onDelete}
-          className="inline-flex items-center text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: INK_FAINT }}
           title="Permanently erase this candidate's data - e.g. to fulfil a right-to-erasure request"
         >
@@ -660,11 +660,11 @@ function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Strengths</FieldLabel>
               {candidate.strengths.length === 0 ? (
-                <p className="text-[13px]" style={{ color: INK_FAINT }}>None recorded.</p>
+                <p className="text-[14px]" style={{ color: INK_FAINT }}>None recorded.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.strengths.map((s) => (
-                    <li key={s} className="text-[13px] flex items-start gap-2" style={{ color: INK }}>
+                    <li key={s} className="text-[14px] flex items-start gap-2" style={{ color: INK }}>
                       <span style={{ color: "var(--forest)" }}>✓</span>
                       {s}
                     </li>
@@ -675,11 +675,11 @@ function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Potential concerns</FieldLabel>
               {candidate.concerns.length === 0 ? (
-                <p className="text-[13px]" style={{ color: INK_FAINT }}>No concerns flagged.</p>
+                <p className="text-[14px]" style={{ color: INK_FAINT }}>No concerns flagged.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.concerns.map((c) => (
-                    <li key={c} className="text-[13px] flex items-start gap-2" style={{ color: INK }}>
+                    <li key={c} className="text-[14px] flex items-start gap-2" style={{ color: INK }}>
                       <span style={{ color: AMBER }}>△</span>
                       {c}
                     </li>
@@ -708,7 +708,7 @@ function ExperienceSection({ candidate }) {
           <FieldLabel>Skills</FieldLabel>
           <div className="flex flex-wrap gap-1.5">
             {candidate.skills.map((s) => (
-              <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+              <span key={s} className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
                 {s}
               </span>
             ))}
@@ -725,11 +725,11 @@ function ExperienceSection({ candidate }) {
                 <p className="text-sm font-semibold" style={{ color: INK }}>
                   {w.title} <span style={{ color: INK_MUTED, fontWeight: 500 }}>· {w.company}</span>
                 </p>
-                <p className="text-[11px]" style={{ color: INK_FAINT }}>
+                <p className="text-[12px]" style={{ color: INK_FAINT }}>
                   {w.start}{w.end ? ` – ${w.end}` : ""}
                 </p>
                 {w.description && (
-                  <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>
                     {w.description}
                   </p>
                 )}
@@ -744,7 +744,7 @@ function ExperienceSection({ candidate }) {
           <FieldLabel>Education</FieldLabel>
           <ul className="space-y-1.5">
             {candidate.education.map((e, i) => (
-              <li key={i} className="text-[13px]" style={{ color: INK }}>
+              <li key={i} className="text-[14px]" style={{ color: INK }}>
                 {e.degree}
                 {e.school && <span style={{ color: INK_MUTED }}> · {e.school}</span>}
                 {e.years && <span style={{ color: INK_FAINT }}> ({e.years})</span>}
@@ -755,7 +755,7 @@ function ExperienceSection({ candidate }) {
       )}
 
       {candidate.skills.length === 0 && candidate.workHistory.length === 0 && candidate.education.length === 0 && (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           No background details on file yet.
         </p>
       )}
@@ -767,6 +767,12 @@ function ExperienceSection({ candidate }) {
  * Documents
  * ---------------------------------------------------------------------- */
 
+const UNBLIND_CONFIRM = {
+  title: "Show who this candidate is?",
+  body: "This candidate was screened blind. The original CV shows their name and contact details.",
+  confirmLabel: "Open the original CV",
+};
+
 function DocumentsSection({ candidate }) {
   const [busy, setBusy] = useState(null); // "view" | "download" | "text"
   const [error, setError] = useState("");
@@ -776,15 +782,20 @@ function DocumentsSection({ candidate }) {
   const resume = candidate.resume;
   const isPdf = /\.pdf$/i.test(resume?.name || "");
 
+  const [ask, confirmDialog] = useConfirm();
+
   // A blind screen hid who the candidate is while scoring - opening the
   // original shows their name, so it's a deliberate step, not a stray click.
-  function confirmUnblind() {
+  // The tab below opens straight after the dialog's button click resolves
+  // this, still inside that click's user activation, so it isn't blocked as
+  // a pop-up.
+  async function confirmUnblind() {
     if (!candidate.screenedBlind) return true;
-    return confirm("This candidate was screened blind. The original CV shows their name and contact details. Open it anyway?");
+    return ask(UNBLIND_CONFIRM);
   }
 
   async function openFile(download) {
-    if (!confirmUnblind()) return;
+    if (!(await confirmUnblind())) return;
     setError("");
     setBusy(download ? "download" : "view");
     // Opened before the request so browsers don't treat it as a pop-up.
@@ -837,16 +848,17 @@ function DocumentsSection({ candidate }) {
   }
 
   const buttonClass =
-    "inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+    "inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
   return (
     <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Documents" title="CV & documents" />
+      {confirmDialog}
 
       {resume ? (
         <div className="flex flex-wrap items-center gap-4 rounded-[12px] p-4" style={{ background: "var(--mist)" }}>
           <span
-            className="w-10 h-12 rounded-[6px] flex items-center justify-center shrink-0 text-[11px] font-bold tracking-wide"
+            className="w-10 h-12 rounded-[6px] flex items-center justify-center shrink-0 text-[12px] font-bold tracking-wide"
             style={{ background: "white", border: "1px solid var(--border)", color: isPdf ? "#b42318" : "#1d4ed8" }}
             aria-hidden="true"
           >
@@ -856,7 +868,7 @@ function DocumentsSection({ candidate }) {
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {resume.name}
             </p>
-            <p className="text-[12px]" style={{ color: INK_MUTED }}>
+            <p className="text-[13px]" style={{ color: INK_MUTED }}>
               Uploaded {formatDateOnly(resume.uploadedAt)}
               {candidate.screenedBlind ? " · screened blind" : ""}
             </p>
@@ -884,7 +896,7 @@ function DocumentsSection({ candidate }) {
           </div>
         </div>
       ) : (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           {candidate.hasCvText
             ? "The original file wasn't kept for this candidate - they were analysed before Helixon stored CVs. The CV text is below."
             : "No CV on file."}
@@ -897,7 +909,7 @@ function DocumentsSection({ candidate }) {
             type="button"
             onClick={toggleText}
             disabled={busy === "text"}
-            className="text-[12px] font-semibold rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[13px] font-semibold rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ color: "var(--forest)" }}
             aria-expanded={showText}
           >
@@ -906,13 +918,13 @@ function DocumentsSection({ candidate }) {
           {showText && text != null && (
             <div className="mt-2 rounded-[10px]" style={{ border: "1px solid var(--border)" }}>
               <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <span className="text-[11px]" style={{ color: INK_FAINT }}>Text read from the CV - formatting isn&apos;t kept</span>
-                <button type="button" onClick={copyText} className="text-[11px] font-semibold" style={{ color: INK_MUTED }}>
+                <span className="text-[12px]" style={{ color: INK_FAINT }}>Text read from the CV - formatting isn&apos;t kept</span>
+                <button type="button" onClick={copyText} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
                   {copied ? "Copied" : "Copy text"}
                 </button>
               </div>
               <pre
-                className="max-h-[420px] overflow-auto whitespace-pre-wrap px-3 py-2.5 text-[12.5px] leading-relaxed"
+                className="max-h-[420px] overflow-auto whitespace-pre-wrap px-3 py-2.5 text-[13.5px] leading-relaxed"
                 style={{ color: INK, fontFamily: "inherit" }}
               >
                 {text}
@@ -923,7 +935,7 @@ function DocumentsSection({ candidate }) {
       )}
 
       {error && (
-        <p role="alert" className="text-[12px] mt-3" style={{ color: "var(--score-low)" }}>
+        <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low)" }}>
           {error}
         </p>
       )}
@@ -950,30 +962,30 @@ function ActivityTimeline({ activity }) {
     <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="History" title="Activity" />
       {groups.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           Activity will appear here as the team works this candidate.
         </p>
       ) : (
         <div className="space-y-5">
           {groups.map(([day, entries]) => (
             <div key={day}>
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: INK_FAINT }}>
+              <p className="text-[12px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: INK_FAINT }}>
                 {day}
               </p>
               <ul className="space-y-3">
                 {entries.map((entry) => (
                   <li key={entry.id} className="flex items-start gap-3">
                     <span
-                      className="text-[11px] tabular-nums shrink-0 w-11 pt-0.5"
+                      className="text-[12px] tabular-nums shrink-0 w-11 pt-0.5"
                       style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}
                     >
                       {formatTime(entry.timestamp)}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold" style={{ color: INK }}>
+                      <p className="text-[14px] font-semibold" style={{ color: INK }}>
                         {entry.meta?.sent_via === "helixon" ? "Email sent" : EVENT_LABELS[entry.type] ?? entry.type}
                       </p>
-                      <p className="text-[12px]" style={{ color: INK_MUTED }}>
+                      <p className="text-[13px]" style={{ color: INK_MUTED }}>
                         {activityDescription(entry)}
                         {entry.actor ? ` · ${entry.actor}` : ""}
                       </p>
@@ -1013,14 +1025,14 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
               type="button"
               onClick={() => onLogActivity(a.type)}
               disabled={loggingActivity === a.type}
-              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-[12px] font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
             >
               {loggingActivity === a.type ? "Logging…" : a.label}
             </button>
           ))}
         </div>
-        <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
+        <p className="text-[12px] mt-1.5" style={{ color: INK_FAINT }}>
           Records that you did this, for your own activity metrics - not sent from Helixon.
         </p>
       </div>
@@ -1065,7 +1077,7 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
             return (
               <span
                 key={tagId}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full"
+                className="inline-flex items-center gap-1 text-[12px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full"
                 style={{ background: "var(--mist)", color: INK_MUTED }}
               >
                 {t?.label ?? tagId}
@@ -1082,7 +1094,7 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
           })}
           <details className="relative">
             <summary
-              className="list-none cursor-pointer text-[11px] font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="list-none cursor-pointer text-[12px] font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px dashed var(--border)", color: "var(--forest)" }}
             >
               + Add tag
@@ -1094,7 +1106,7 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
                     key={t.id}
                     type="button"
                     onClick={() => onAddTag(t.id)}
-                    className="w-full text-left text-[12px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ color: INK }}
                   >
                     {t.label}
@@ -1112,10 +1124,10 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
         {candidate.nextAction ? (
           <div className="flex items-start justify-between gap-3 rounded-[10px] p-3" style={{ background: overdue ? RED_BG : "var(--mist)" }}>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold" style={{ color: INK }}>
+              <p className="text-[14px] font-semibold" style={{ color: INK }}>
                 {candidate.nextAction.label}
               </p>
-              <p className="text-[11px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
+              <p className="text-[12px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
                 {overdue ? "Overdue · " : "Due "}
                 {formatDateOnly(candidate.nextAction.dueAt)}
               </p>
@@ -1123,7 +1135,7 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
             <button
               type="button"
               onClick={onCompleteNextAction}
-              className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-[12px] font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
             >
               Mark done
@@ -1159,7 +1171,7 @@ function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange, onSubS
               <button
                 type="submit"
                 disabled={!nextActionLabel.trim()}
-                className="text-[12px] font-semibold px-3 py-2 rounded-[10px] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-[13px] font-semibold px-3 py-2 rounded-[10px] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: "var(--forest)", color: "white" }}
               >
                 Add
@@ -1214,7 +1226,7 @@ function RetentionToggle({ value, onChange }) {
           key={o.value}
           type="button"
           onClick={() => onChange(value === o.value ? null : o.value)}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="text-[13px] font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={
             value === o.value
               ? { background: o.value === "retained" ? "var(--forest)" : RED, color: "white" }
@@ -1225,7 +1237,7 @@ function RetentionToggle({ value, onChange }) {
         </button>
       ))}
       {!value && (
-        <span className="text-[11px]" style={{ color: INK_FAINT }}>
+        <span className="text-[12px]" style={{ color: INK_FAINT }}>
           Not checked yet
         </span>
       )}
@@ -1272,7 +1284,7 @@ function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
             onChange={(v) => onUpdateDetails({ rejectionReason: v || null })}
             options={REJECTION_REASON_OPTIONS}
           />
-          <p className="text-[11px] mt-1.5" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] mt-1.5" style={{ color: INK_FAINT }}>
             Feeds the &quot;why we lose candidates&quot; breakdown in Analytics - add detail in Notes if useful.
           </p>
         </div>
@@ -1312,7 +1324,7 @@ function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
               />
             </div>
           </div>
-          <p className="text-[11px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
             Feeds fee income/margin figures in Analytics. Recording the offer above fills in the fee for you.
           </p>
 
@@ -1360,23 +1372,23 @@ function FeedbackSendForm({ defaultTo, busy, onSend, onLinkOnly, onCancel }) {
         placeholder="name@example.com"
         aria-label="Send the link to"
         autoFocus
-        className="flex-1 min-w-[180px] text-[12px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2"
+        className="flex-1 min-w-[180px] text-[13px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2"
         style={{ border: "1px solid var(--border)", color: INK }}
       />
       <button
         type="submit"
         disabled={busy || !to.trim()}
-        className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         {busy ? "Sending…" : "Send email"}
       </button>
       {onLinkOnly && (
-        <button type="button" onClick={onLinkOnly} disabled={busy} className="text-[12px] font-semibold disabled:opacity-50" style={{ color: INK }}>
+        <button type="button" onClick={onLinkOnly} disabled={busy} className="text-[13px] font-semibold disabled:opacity-50" style={{ color: INK }}>
           Just create link
         </button>
       )}
-      <button type="button" onClick={onCancel} disabled={busy} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
+      <button type="button" onClick={onCancel} disabled={busy} className="text-[13px] font-semibold" style={{ color: INK_MUTED }}>
         Cancel
       </button>
     </form>
@@ -1404,7 +1416,7 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
   return (
     <div className="rounded-[14px] p-5 sm:p-6 space-y-4" style={CARD}>
       <SectionHeading eyebrow="Feedback" title="Request feedback" />
-      <p className="text-[12px] -mt-2" style={{ color: INK_FAINT }}>
+      <p className="text-[13px] -mt-2" style={{ color: INK_FAINT }}>
         Emails them a link to a one-question page - no account needed on their end. Feeds candidate NPS / client
         satisfaction figures in Analytics.
       </p>
@@ -1416,7 +1428,7 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
             type="button"
             onClick={() => setOpen(open === kind ? null : kind)}
             aria-expanded={open === kind}
-            className="text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: `1px solid ${open === kind ? "var(--forest)" : "var(--border)"}`, color: INK, background: "white" }}
           >
             {k.button}
@@ -1440,11 +1452,11 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
             <li key={req.id} className="py-3 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold" style={{ color: INK }}>
+                  <p className="text-[14px] font-semibold" style={{ color: INK }}>
                     {FEEDBACK_KINDS[req.kind]?.title ?? "Feedback"}
                     {req.recipientLabel && <span className="font-normal" style={{ color: INK_MUTED }}> · {req.recipientLabel}</span>}
                   </p>
-                  <p className="text-[11px]" style={{ color: INK_MUTED }}>
+                  <p className="text-[12px]" style={{ color: INK_MUTED }}>
                     {req.respondedAt
                       ? `Responded · rated ${req.rating}${req.kind === "candidate_nps" ? "/10" : "/5"}${req.comment ? ` · "${req.comment}"` : ""}`
                       : "Awaiting response"}
@@ -1455,7 +1467,7 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
                     <button
                       type="button"
                       onClick={() => setOpen(open === req.id ? null : req.id)}
-                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="text-[12px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
                     >
                       Email
@@ -1463,7 +1475,7 @@ function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, candidat
                     <button
                       type="button"
                       onClick={() => copy(req)}
-                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="text-[12px] font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
                     >
                       {copiedId === req.id ? "Copied" : "Copy link"}
@@ -1498,7 +1510,7 @@ function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
 
   if (editing) {
     return (
-      <li className="text-[13px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+      <li className="text-[14px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -1508,7 +1520,7 @@ function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
           style={{ border: "1px solid var(--border)", color: INK }}
         />
         <div className="flex justify-end gap-2 mt-2">
-          <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-[12px] font-semibold px-3 py-1 rounded-full" style={{ color: INK_MUTED }}>
+          <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-[13px] font-semibold px-3 py-1 rounded-full" style={{ color: INK_MUTED }}>
             Cancel
           </button>
           <button
@@ -1520,7 +1532,7 @@ function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-[12px] font-semibold px-3 py-1 rounded-full disabled:opacity-40"
+            className="text-[13px] font-semibold px-3 py-1 rounded-full disabled:opacity-40"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Save"}
@@ -1532,20 +1544,20 @@ function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
 
   return (
     <li
-      className="group text-[13px] rounded-[10px] p-3"
+      className="group text-[14px] rounded-[10px] p-3"
       style={{ background: note.pinnedAt ? "var(--mint)" : "var(--mist)", border: note.pinnedAt ? "1px solid var(--forest)" : "1px solid transparent" }}
     >
       {note.pinnedAt && (
-        <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
+        <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
           Pinned
         </p>
       )}
       <p className="whitespace-pre-wrap" style={{ color: INK }}>{note.body}</p>
       <div className="flex items-center justify-between gap-2 mt-1.5">
-        <p className="text-[11px]" style={{ color: INK_FAINT }}>
+        <p className="text-[12px]" style={{ color: INK_FAINT }}>
           - {note.author} · {formatRelativeTime(note.createdAt)}
         </p>
-        <span className="flex items-center gap-2 text-[11px] font-semibold">
+        <span className="flex items-center gap-2 text-[12px] font-semibold">
           <button type="button" onClick={() => onPin(note.id, !note.pinnedAt)} className="hover:underline" style={{ color: INK_MUTED }}>
             {note.pinnedAt ? "Unpin" : "Pin"}
           </button>
@@ -1606,7 +1618,7 @@ function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote,
           <button
             type="submit"
             disabled={!draft.trim() || saving}
-            className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-[13px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Add note"}
@@ -1615,7 +1627,7 @@ function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote,
       </form>
 
       {notes.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           No notes yet.
         </p>
       ) : (
@@ -1670,7 +1682,7 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
         eyebrow="Talent pool"
         title={pool ? "Saved for future roles" : "Keep for future roles"}
         action={
-          <Link href="/dashboard/talent-pool" className="text-[12px] font-semibold" style={{ color: "var(--forest)" }}>
+          <Link href="/dashboard/talent-pool" className="text-[13px] font-semibold" style={{ color: "var(--forest)" }}>
             Open pool →
           </Link>
         }
@@ -1678,21 +1690,21 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
 
       {pool ? (
         <div className="rounded-[10px] p-3 mb-4" style={{ background: "var(--mint)" }}>
-          <p className="text-[12.5px] font-semibold" style={{ color: "var(--forest-deep)" }}>
+          <p className="text-[13.5px] font-semibold" style={{ color: "var(--forest-deep)" }}>
             In the talent pool
           </p>
-          <p className="text-[11.5px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-[12.5px] mt-0.5" style={{ color: INK_MUTED }}>
             Saved {formatRelativeTime(new Date(pool.savedAt))}
             {pool.savedBy ? ` by ${pool.savedBy}` : ""}
           </p>
-          {pool.note && <p className="text-[12.5px] italic mt-1.5" style={{ color: INK }}>“{pool.note}”</p>}
+          {pool.note && <p className="text-[13.5px] italic mt-1.5" style={{ color: INK }}>“{pool.note}”</p>}
           <div className="grid grid-cols-2 gap-2 mt-2.5">
-            <label className="text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+            <label className="text-[11.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
               Availability
               <select
                 value={pool.status || ""}
                 onChange={(e) => onUpdate({ status: e.target.value || null })}
-                className="mt-1 w-full text-[12px] font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white"
+                className="mt-1 w-full text-[13px] font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 <option value="">Unknown</option>
@@ -1701,13 +1713,13 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
                 <option value="not_looking">Not looking</option>
               </select>
             </label>
-            <label className="text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+            <label className="text-[11.5px] font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
               Check in
               <input
                 type="date"
                 value={pool.checkIn || ""}
                 onChange={(e) => onUpdate({ checkIn: e.target.value || null })}
-                className="mt-1 w-full text-[12px] font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white"
+                className="mt-1 w-full text-[13px] font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
             </label>
@@ -1720,7 +1732,7 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
               setBusy(false);
             }}
             disabled={busy}
-            className="text-[11.5px] font-semibold mt-2 hover:underline disabled:opacity-50"
+            className="text-[12.5px] font-semibold mt-2 hover:underline disabled:opacity-50"
             style={{ color: INK_MUTED }}
           >
             Remove from pool
@@ -1735,14 +1747,14 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
             maxLength={500}
             placeholder="Why keep them? e.g. great fit for senior sales, wants remote (optional)"
             aria-label="Why keep them"
-            className="w-full text-[13px] p-2.5 rounded-[10px] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="w-full text-[14px] p-2.5 rounded-[10px] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           />
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={() => setNoting(false)} className="text-[12px] font-semibold px-3 py-1.5 rounded-full" style={{ color: INK_MUTED }}>
+            <button type="button" onClick={() => setNoting(false)} className="text-[13px] font-semibold px-3 py-1.5 rounded-full" style={{ color: INK_MUTED }}>
               Cancel
             </button>
-            <button type="button" onClick={save} disabled={busy} className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+            <button type="button" onClick={save} disabled={busy} className="text-[13px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
               {busy ? "Saving…" : "Save to pool"}
             </button>
           </div>
@@ -1752,12 +1764,12 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
           <button
             type="button"
             onClick={() => setNoting(true)}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-full"
+            className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full"
             style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
           >
             ☆ Save to talent pool
           </button>
-          <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>
+          <p className="text-[12.5px] mt-2" style={{ color: INK_FAINT }}>
             Not right for this role? Keep them - when a new job comes in, you can screen them against it without re-uploading.
           </p>
         </div>
@@ -1765,14 +1777,14 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
 
       <FieldLabel>Screened for</FieldLabel>
       <ul className="space-y-1.5 mb-4">
-        <li className="flex items-center justify-between gap-2 text-[12.5px]">
+        <li className="flex items-center justify-between gap-2 text-[13.5px]">
           <span className="truncate" style={{ color: INK }}>
             {candidate.jobTitle} <span style={{ color: INK_FAINT }}>(this page)</span>
           </span>
           <span className="tabular-nums font-semibold" style={{ color: scoreColor(candidate.score) }}>{candidate.score ?? "–"}</span>
         </li>
         {candidate.otherRoles.map((r) => (
-          <li key={r.candidateId} className="flex items-center justify-between gap-2 text-[12.5px]">
+          <li key={r.candidateId} className="flex items-center justify-between gap-2 text-[13.5px]">
             <Link href={`/dashboard/candidates/${r.candidateId}`} className="truncate hover:underline" style={{ color: "var(--forest)" }}>
               {r.jobTitle}
               {r.stage ? <span style={{ color: INK_FAINT }}> · {STAGE_LABELS[r.stage] || r.stage}</span> : null}
@@ -1790,7 +1802,7 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
             onChange={(e) => setJobId(e.target.value)}
             disabled={screening}
             aria-label="Job to screen them for"
-            className="min-w-0 flex-1 text-[12.5px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-w-0 flex-1 text-[13.5px] px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             <option value="">{availableJobs.length ? "Choose a job…" : "No other jobs yet"}</option>
@@ -1818,16 +1830,16 @@ function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, onRescre
               setScreening(false);
               if (ok) setJobId("");
             }}
-            className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40"
+            className="text-[13px] font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {screening ? "Screening…" : "Screen"}
           </button>
         </div>
       ) : (
-        <p className="text-[12px]" style={{ color: INK_FAINT }}>No CV text on file - upload their CV on Analyse to screen them for another job.</p>
+        <p className="text-[13px]" style={{ color: INK_FAINT }}>No CV text on file - upload their CV on Analyse to screen them for another job.</p>
       )}
-      {screening && <p className="text-[11.5px] mt-2" style={{ color: INK_FAINT }}>Running a full analysis - about 20–40 seconds.</p>}
+      {screening && <p className="text-[12.5px] mt-2" style={{ color: INK_FAINT }}>Running a full analysis - about 20–40 seconds.</p>}
     </div>
   );
 }
@@ -1885,7 +1897,7 @@ function StateMessage({ title, body, retryLabel, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {retryLabel ?? "Try again"}
@@ -1893,7 +1905,7 @@ function StateMessage({ title, body, retryLabel, onRetry }) {
         )}
         <Link
           href="/dashboard/candidates"
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Back to candidates
@@ -1936,7 +1948,7 @@ function FullAnalysis({ analysis, candidateName }) {
             <button
               type="button"
               onClick={print}
-              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: INK_MUTED }}
               title="Print, or choose Save as PDF to send it"
             >
@@ -1946,7 +1958,7 @@ function FullAnalysis({ analysis, candidateName }) {
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: "var(--forest)" }}
             >
               {open ? "Hide report" : "Show full report"}
@@ -1954,7 +1966,7 @@ function FullAnalysis({ analysis, candidateName }) {
           </span>
         }
       />
-      <p className="text-[12.5px]" style={{ color: INK_MUTED }}>
+      <p className="text-[13.5px]" style={{ color: INK_MUTED }}>
         Score breakdown, requirements met, skills, red flags, interview questions and salary estimate
         {role ? ` for ${role}` : ""}
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.
@@ -2076,13 +2088,13 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
         <h2 id="edit-details-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
           Edit candidate details
         </h2>
-        <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+        <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
           Fix anything the CV reader got wrong. The change is noted on their timeline.
         </p>
         <div className="space-y-3">
           {CONTACT_FIELDS.map((f, i) => (
             <label key={f.key} className="block">
-              <span className="block text-[12px] font-semibold mb-1" style={{ color: INK }}>{f.label}</span>
+              <span className="block text-[13px] font-semibold mb-1" style={{ color: INK }}>{f.label}</span>
               <input
                 ref={i === 0 ? firstRef : undefined}
                 type={f.type || "text"}
@@ -2095,13 +2107,13 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
             </label>
           ))}
         </div>
-        {error && <p role="alert" className="text-[12px] mt-3" style={{ color: RED_STRONG }}>{error}</p>}
+        {error && <p role="alert" className="text-[13px] mt-3" style={{ color: RED_STRONG }}>{error}</p>}
         <div className="flex justify-end gap-2 mt-5">
           <button
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Cancel
@@ -2109,7 +2121,7 @@ function EditDetailsDialog({ candidate, onCancel, onSaved }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Save"}
@@ -2146,7 +2158,7 @@ function PanelGroup({ id, title, summary, defaultOpen = false, children }) {
       <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-[12px] px-4 py-3 min-h-[44px] bg-white border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
           <span className="block text-[14px] font-semibold" style={{ color: "var(--ink)" }}>{title}</span>
-          {summary && <span className="block text-[12px] group-open/panel:hidden" style={{ color: "var(--ink-faint)" }}>{summary}</span>}
+          {summary && <span className="block text-[13px] group-open/panel:hidden" style={{ color: "var(--ink-faint)" }}>{summary}</span>}
         </span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 transition-transform group-open/panel:rotate-180" style={{ color: "var(--ink-faint)" }}>
           <path d="M6 9l6 6 6-6" />

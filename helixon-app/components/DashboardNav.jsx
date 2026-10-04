@@ -116,7 +116,7 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
         >
           {MORE.map((g) => (
             <div key={g.group}>
-              <p className="text-[11px] font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-[12px] font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
                 {g.group}
               </p>
               {g.links.map((l) => (
@@ -126,15 +126,15 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
                   onClick={() => setOpen(false)}
                   className="block px-2 py-2 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
                 >
-                  <span className="flex items-center gap-1.5 text-[13px]" style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)", fontWeight: 500 }}>
+                  <span className="flex items-center gap-1.5 text-[14px]" style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)", fontWeight: 500 }}>
                     {l.label}
                     {l.team && plan && plan !== "agency" && (
-                      <span className="text-[10.5px] font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                      <span className="text-[11.5px] font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                         Agency plan
                       </span>
                     )}
                   </span>
-                  <span className="block text-[12px] leading-snug mt-0.5" style={{ color: "var(--ink-faint)" }}>{l.hint}</span>
+                  <span className="block text-[13px] leading-snug mt-0.5" style={{ color: "var(--ink-faint)" }}>{l.hint}</span>
                 </Link>
               ))}
             </div>
@@ -173,7 +173,7 @@ function TeammateStack({ teammates }) {
       {shown.map((t) => (
         <span key={t.id} className="relative">
           <span
-            className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white ring-2 ring-white"
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold text-white ring-2 ring-white"
             style={{ background: "var(--forest)", opacity: t.presence?.online ? 1 : 0.55 }}
           >
             {initials(t.name)}
@@ -182,7 +182,7 @@ function TeammateStack({ teammates }) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
           +{overflow}
         </span>
       )}
@@ -300,7 +300,7 @@ function DashboardNavContent() {
           </div>
           <span className="flex flex-col leading-none min-w-0">
             <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:block text-[11px] font-medium mt-0.5 truncate max-w-[220px]" style={{ color: "var(--ink-soft)" }}>
+            <span className="hidden sm:block text-[12px] font-medium mt-0.5 truncate max-w-[220px]" style={{ color: "var(--ink-soft)" }}>
               {workspaceLabel}
             </span>
           </span>
@@ -337,18 +337,18 @@ function DashboardNavContent() {
             style={{ border: "1px solid var(--border)" }}
           >
             <span className="relative">
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: "var(--forest)" }}>
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold text-white" style={{ background: "var(--forest)" }}>
                 {initialsLabel}
               </span>
               {myPresence && myPresence.state !== "hidden" && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
             </span>
-            <span className="text-[11px] font-medium hidden sm:block" style={{ color: "var(--ink)" }}>{userName || userEmail}</span>
+            <span className="text-[12px] font-medium hidden sm:block" style={{ color: "var(--ink)" }}>{userName || userEmail}</span>
           </button>
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-[12px] p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
               {myPresence && (
                 <div className="pb-1.5 mb-1.5" style={{ borderBottom: "1px solid var(--border)" }}>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
+                  <p className="text-[12px] font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
                   {[
                     [null, "active", "Automatic", "Active or idle, from what you're doing"],
                     ["busy", "busy", "Busy", "Heads down - teammates see you're busy"],
@@ -370,7 +370,7 @@ function DashboardNavContent() {
                       </button>
                     );
                   })}
-                  <Link href="/dashboard/team#my-status" className="block text-[11px] px-3 pt-1 hover:underline" style={{ color: "var(--forest)" }} onClick={() => setMenuOpen(false)}>
+                  <Link href="/dashboard/team#my-status" className="block text-[12px] px-3 pt-1 hover:underline" style={{ color: "var(--forest)" }} onClick={() => setMenuOpen(false)}>
                     Add a message or end time →
                   </Link>
                 </div>
@@ -459,7 +459,7 @@ function SignedOutBanner() {
   if (!signedOut) return null;
   return (
     <div role="alert" className="border-t" style={{ background: "#fff8e6", borderColor: "#f3d48a" }}>
-      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]" style={{ color: "var(--ink)" }}>
+      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
         <span>
           <strong style={{ color: "#92620f" }}>You&apos;ve been signed out, so changes can&apos;t be saved.</strong>{" "}
           Sign in again in a new tab, then come back and try again. Anything you&apos;ve typed here stays put.
@@ -480,7 +480,7 @@ function PaymentIssueBanner({ issue }) {
   const stopped = issue.status === "unpaid";
   return (
     <div role="alert" className="border-t" style={{ background: "#fff7f7", borderColor: "#fecaca" }}>
-      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]" style={{ color: "var(--ink)" }}>
+      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
         <span>
           <strong style={{ color: "var(--score-low)" }}>Your last Helixon payment didn&apos;t go through.</strong>{" "}
           {stopped

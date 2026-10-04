@@ -141,7 +141,7 @@ function Pill({ active, onClick, children, count }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
+      className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
       style={{
         background: active ? "var(--forest)" : "white",
         color: active ? "white" : INK_MUTED,
@@ -151,7 +151,7 @@ function Pill({ active, onClick, children, count }) {
       {children}
       {typeof count === "number" && (
         <span
-          className="text-[11px] font-semibold px-1.5 rounded-full tabular-nums"
+          className="text-[12px] font-semibold px-1.5 rounded-full tabular-nums"
           style={{
             background: active ? "rgba(255,255,255,0.25)" : "var(--mist)",
             color: active ? "white" : INK_FAINT,
@@ -170,7 +170,7 @@ function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ border: "1px solid var(--border)", color: INK }}
     >
       {options.map((o) => (
@@ -195,7 +195,7 @@ function TagChip({ label, active, onClick, onDelete }) {
         type="button"
         onClick={onClick}
         aria-pressed={active}
-        className={`text-[11px] font-semibold py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${onDelete ? "pl-2.5 pr-1" : "px-2.5"}`}
+        className={`text-[12px] font-semibold py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${onDelete ? "pl-2.5 pr-1" : "px-2.5"}`}
       >
         {label}
       </button>
@@ -205,7 +205,7 @@ function TagChip({ label, active, onClick, onDelete }) {
           onClick={onDelete}
           aria-label={`Delete the tag ${label}`}
           title="Delete this tag"
-          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-[11px] hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
+          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-[12px] hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
         >
           ×
         </button>
@@ -221,7 +221,7 @@ function ScorePill({ score }) {
       <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span className="text-[11px] whitespace-nowrap" style={{ color: INK_FAINT }}>
+      <span className="text-[12px] whitespace-nowrap" style={{ color: INK_FAINT }}>
         {score === null || score === undefined ? "" : scoreLabel(score).split(" ")[0]}
       </span>
     </div>
@@ -231,21 +231,21 @@ function ScorePill({ score }) {
 function StageBadge({ stage, status }) {
   if (status === "failed") {
     return (
-      <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
+      <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
         Failed
       </span>
     );
   }
   if (status === "processing") {
     return (
-      <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
+      <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
         Processing
       </span>
     );
   }
   if (!stage || !STAGE_LABELS[stage]) {
     return (
-      <span className="text-[11px]" style={{ color: INK_FAINT }}>
+      <span className="text-[12px]" style={{ color: INK_FAINT }}>
         No stage
       </span>
     );
@@ -253,7 +253,7 @@ function StageBadge({ stage, status }) {
   const isPlaced = stage === STAGE_ORDER[STAGE_ORDER.length - 1];
   return (
     <span
-      className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: isPlaced ? GREEN_BG : "var(--mist)", color: isPlaced ? "var(--forest)" : INK_MUTED }}
     >
       {STAGE_LABELS[stage]}
@@ -264,7 +264,7 @@ function StageBadge({ stage, status }) {
 function Avatar({ name }) {
   return (
     <div
-      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[12px] font-semibold"
+      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold"
       style={{ background: "var(--mist)", color: "var(--forest)" }}
       aria-hidden="true"
     >
@@ -307,12 +307,12 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {candidate.fullName}
               {candidate.inTalentPool && (
-                <span className="ml-1.5 align-middle text-[11px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
+                <span className="ml-1.5 align-middle text-[12px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
                   ☆ Pool
                 </span>
               )}
             </p>
-            <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+            <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
               {candidate.jobTitle}
               {candidate.company ? ` · ${candidate.company}` : ""}
               {candidate.location ? ` · ${candidate.location}` : ""}
@@ -321,7 +321,7 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           </div>
 
           {show("currentRole") && (
-            <div className="hidden lg:block w-40 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden lg:block w-40 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
               {[candidate.currentTitle, candidate.currentCompany].filter(Boolean).join(" at ") || "-"}
             </div>
           )}
@@ -329,7 +329,7 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           {show("skills") && (
             <div className="hidden lg:flex flex-wrap gap-1 w-40 shrink-0">
               {candidate.skills.slice(0, 3).map((s) => (
-                <span key={s} className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                <span key={s} className="text-[12px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
                   {s}
                 </span>
               ))}
@@ -337,13 +337,13 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("recruiter") && (
-            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
               {candidate.recruiterName ?? "Unassigned"}
             </div>
           )}
 
           {show("source") && (
-            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
               {candidate.source || "-"}
             </div>
           )}
@@ -355,19 +355,19 @@ function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("lastActivity") && (
-            <div className="hidden md:block w-24 shrink-0 text-[11px] truncate" style={{ color: INK_FAINT }} title="Last activity">
+            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_FAINT }} title="Last activity">
               {candidate.lastActivityAt ? formatRelativeTime(candidate.lastActivityAt) : "-"}
             </div>
           )}
 
           {show("added") && (
-            <div className="hidden md:block w-16 shrink-0 text-[11px]" style={{ color: INK_FAINT }} title="Added">
+            <div className="hidden md:block w-16 shrink-0 text-[12px]" style={{ color: INK_FAINT }} title="Added">
               {shortDate(candidate.createdAt)}
             </div>
           )}
 
           {show("nextAction") && (
-            <div className="hidden xl:block w-40 shrink-0 text-[11px] truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
+            <div className="hidden xl:block w-40 shrink-0 text-[12px] truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
               {candidate.nextAction ? `${overdue ? "Overdue: " : "Next: "}${candidate.nextAction.label}` : ""}
             </div>
           )}
@@ -384,14 +384,14 @@ function ColumnsMenu({ columns, onChange }) {
   return (
     <details className="relative">
       <summary
-        className="list-none cursor-pointer text-[12px] font-semibold px-3 py-1.5 rounded-full select-none"
+        className="list-none cursor-pointer text-[13px] font-semibold px-3 py-1.5 rounded-full select-none"
         style={{ border: "1px solid var(--border)", color: INK_MUTED }}
       >
         Columns
       </summary>
       <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-[10px] bg-white p-2 shadow-lg" style={{ border: "1px solid var(--border)" }}>
         {CANDIDATE_COLUMNS.map((c) => (
-          <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-[12px] rounded hover:bg-[var(--mist)]" style={{ color: INK }}>
+          <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-[13px] rounded hover:bg-[var(--mist)]" style={{ color: INK }}>
             <input
               type="checkbox"
               className="w-3.5 h-3.5 accent-[var(--forest)]"
@@ -409,7 +409,7 @@ function ColumnsMenu({ columns, onChange }) {
         <button
           type="button"
           onClick={() => onChange(new Set(CANDIDATE_COLUMNS.filter((c) => c.default).map((c) => c.key)))}
-          className="w-full text-left px-1.5 pt-1.5 mt-1 text-[11px] font-semibold"
+          className="w-full text-left px-1.5 pt-1.5 mt-1 text-[12px] font-semibold"
           style={{ color: INK_MUTED, borderTop: "1px solid var(--border)" }}
         >
           Reset to default
@@ -443,7 +443,7 @@ function EmptyState({ hasFilters, onClear }) {
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         {hasFilters ? "No candidates match these filters" : "No candidates yet"}
       </p>
-      <p className="text-[13px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-[14px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
         {hasFilters
           ? "Try widening your search or clearing a filter."
           : "Candidates will appear here once you start screening CVs against your roles."}
@@ -452,7 +452,7 @@ function EmptyState({ hasFilters, onClear }) {
         <button
           type="button"
           onClick={onClear}
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Clear filters
@@ -460,7 +460,7 @@ function EmptyState({ hasFilters, onClear }) {
       ) : (
         <Link
           href="/analyse"
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--forest)", color: "white" }}
         >
           Screen a CV
@@ -476,13 +476,13 @@ function ErrorState({ onRetry, message }) {
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         Unable to load candidates
       </p>
-      <p className="text-[13px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-[14px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
         {message || "Something went wrong while loading the candidate database."}
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again
@@ -779,7 +779,7 @@ function CandidateDatabaseContent() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate database
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -789,14 +789,14 @@ function CandidateDatabaseContent() {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               ← Dashboard
             </Link>
             <Link
               href="/analyse"
-              className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               + Screen a CV
@@ -816,7 +816,7 @@ function CandidateDatabaseContent() {
               style={{ border: "1px solid var(--border)", color: INK }}
               aria-label="Search candidates, jobs or recruiters"
             />
-            <p className="text-[11px] mt-1.5 px-2" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] mt-1.5 px-2" style={{ color: INK_FAINT }}>
               {result?.searchMode === "boolean" ? (
                 <span style={{ color: "var(--forest)" }}>Boolean search across CVs and profiles. </span>
               ) : null}
@@ -844,7 +844,7 @@ function CandidateDatabaseContent() {
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
               aria-expanded={filtersOpen}
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
+              className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
               style={{
                 background: activeFilterCount > 0 ? "var(--mint)" : "white",
                 color: activeFilterCount > 0 ? "var(--forest)" : INK_MUTED,
@@ -856,7 +856,7 @@ function CandidateDatabaseContent() {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-[11px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
+                <span className="text-[12px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
                   {activeFilterCount}
                 </span>
               )}
@@ -879,7 +879,7 @@ function CandidateDatabaseContent() {
               type="button"
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
               style={{ background: "white", color: INK_MUTED, border: "1px solid var(--border)" }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -890,7 +890,7 @@ function CandidateDatabaseContent() {
           </div>
 
           {exportError && (
-            <p role="alert" className="text-[12px]" style={{ color: RED }}>{exportError}</p>
+            <p role="alert" className="text-[13px]" style={{ color: RED }}>{exportError}</p>
           )}
 
           {filtersOpen && (
@@ -923,7 +923,7 @@ function CandidateDatabaseContent() {
                   placeholder="Near town or postcode"
                   aria-label="Near a town or postcode"
                   maxLength={100}
-                  className="text-[12px] px-3 py-1.5 rounded-full w-44 bg-white"
+                  className="text-[13px] px-3 py-1.5 rounded-full w-44 bg-white"
                   style={{ border: "1px solid var(--border)", color: INK }}
                 />
                 <Select
@@ -951,7 +951,7 @@ function CandidateDatabaseContent() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-[12px] font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  className="text-[13px] font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
                   style={{ color: "var(--forest)" }}
                 >
                   Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
@@ -964,7 +964,7 @@ function CandidateDatabaseContent() {
         {/* Bulk action bar */}
         {selectedIds.size > 0 && (
           <div className="rounded-[14px] p-3.5 sm:p-4 flex flex-wrap items-center gap-3" style={{ ...CARD, background: "var(--mist)" }}>
-            <span className="text-[13px] font-semibold" style={{ color: INK }}>
+            <span className="text-[14px] font-semibold" style={{ color: INK }}>
               {selectedIds.size} selected
             </span>
             <Select
@@ -983,7 +983,7 @@ function CandidateDatabaseContent() {
               type="button"
               onClick={() => runBulk({ action: "pool" })}
               disabled={bulkBusy}
-              className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+              className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
               style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
             >
               ☆ Save to talent pool
@@ -993,7 +993,7 @@ function CandidateDatabaseContent() {
                 type="button"
                 onClick={() => runBulk({ action: "unpool" }, { clearSelection: true })}
                 disabled={bulkBusy}
-                className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                 style={{ color: INK_MUTED }}
               >
                 Remove from pool
@@ -1002,7 +1002,7 @@ function CandidateDatabaseContent() {
             <button
               type="button"
               onClick={() => setComposing(true)}
-              className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               Email…
@@ -1023,33 +1023,33 @@ function CandidateDatabaseContent() {
             {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-[13px] font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 Compare side by side
               </Link>
             ) : selectedIds.size > 4 ? (
-              <span className="text-[12px]" style={{ color: INK_MUTED }}>Select up to 4 to compare</span>
+              <span className="text-[13px]" style={{ color: INK_MUTED }}>Select up to 4 to compare</span>
             ) : null}
             <button
               type="button"
               onClick={bulkDelete}
               disabled={bulkBusy}
-              className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: RED }}
             >
               Delete…
             </button>
-            {bulkBusy && <span className="text-[12px]" style={{ color: INK_MUTED }}>Working…</span>}
+            {bulkBusy && <span className="text-[13px]" style={{ color: INK_MUTED }}>Working…</span>}
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-[12px] font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-[13px] font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: INK_MUTED }}
             >
               Clear selection
             </button>
             {bulkNotice && (
-              <p role="status" className="w-full text-[12px]" style={{ color: INK_MUTED }}>
+              <p role="status" className="w-full text-[13px]" style={{ color: INK_MUTED }}>
                 {bulkNotice}
               </p>
             )}
@@ -1061,7 +1061,7 @@ function CandidateDatabaseContent() {
               />
             )}
             {bulkError && (
-              <p role="alert" className="w-full text-[12px]" style={{ color: RED }}>{bulkError}</p>
+              <p role="alert" className="w-full text-[13px]" style={{ color: RED }}>{bulkError}</p>
             )}
           </div>
         )}
@@ -1069,12 +1069,12 @@ function CandidateDatabaseContent() {
         {/* Results */}
         <div className="rounded-[14px] p-4 sm:p-5" style={CARD}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[12px]" style={{ color: INK_MUTED }}>
+            <p className="text-[13px]" style={{ color: INK_MUTED }}>
               {status === "ready" && result ? `Showing ${result.items.length === 0 ? 0 : (result.page - 1) * result.pageSize + 1}–${Math.min(result.page * result.pageSize, result.total)} of ${result.total}` : "\u00A0"}
             </p>
             <div className="flex items-center gap-2">
               {status === "ready" && result && result.items.length > 0 && (
-                <label className="flex items-center gap-1.5 text-[12px] font-semibold mr-2" style={{ color: INK_MUTED }}>
+                <label className="flex items-center gap-1.5 text-[13px] font-semibold mr-2" style={{ color: INK_MUTED }}>
                   <input
                     type="checkbox"
                     className="w-4 h-4 accent-[var(--forest)]"
@@ -1110,19 +1110,19 @@ function CandidateDatabaseContent() {
                 type="button"
                 disabled={result.page <= 1}
                 onClick={() => setPage(result.page - 1)}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 ← Previous
               </button>
-              <span className="text-[12px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>
+              <span className="text-[13px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>
                 Page {result.page} of {result.totalPages}
               </span>
               <button
                 type="button"
                 disabled={result.page >= result.totalPages}
                 onClick={() => setPage(result.page + 1)}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 Next →

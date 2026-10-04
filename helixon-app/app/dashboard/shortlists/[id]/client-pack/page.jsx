@@ -79,13 +79,13 @@ export default function ClientPackPage({ params }) {
           </div>
         )}
         {status === "ready" && profiles.length === 0 && (
-          <div className="rounded-[14px] p-10 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+          <div className="rounded-[14px] p-10 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
             Nobody on this shortlist yet.
           </div>
         )}
         {status === "ready" && profiles.length > 0 && (
           <div ref={docRef} className="space-y-6">
-            <p className="print-hide text-[12px]" style={{ color: INK_MUTED }}>
+            <p className="print-hide text-[13px]" style={{ color: INK_MUTED }}>
               {shortlist.name} · {profiles.length} {profiles.length === 1 ? "profile" : "profiles"}, one per printed page
             </p>
             {profiles.map((p) => (

@@ -211,14 +211,14 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
         {loading && !detail ? (
           <div className="skeleton" style={{ height: 40 }} />
         ) : sessions.length === 0 ? (
-          <div className="faint" style={{ fontSize: 12.5 }}>Not signed in anywhere.</div>
+          <div className="faint" style={{ fontSize: 13.5 }}>Not signed in anywhere.</div>
         ) : (
           <div className="mini-list">
             {sessions.map((s) => (
               <div className="mini-row" key={s.id}>
                 <div style={{ minWidth: 0 }}>
                   <div>{s.impersonated_by ? `Admin ${s.impersonated_by} (viewing as them)` : "Session"}</div>
-                  <div className="faint" style={{ fontSize: 12 }}>Started {timeAgo(s.created_at)} · expires {timeAgo(s.expires_at)}</div>
+                  <div className="faint" style={{ fontSize: 13 }}>Started {timeAgo(s.created_at)} · expires {timeAgo(s.expires_at)}</div>
                 </div>
                 <button type="button" className="btn small" disabled={busy} onClick={() => run("revoke_session", { sessionId: s.id }, "Session signed out")}>
                   Sign out
@@ -232,14 +232,14 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
       <section className="drawer-section">
         <h3>Recent sign-in attempts</h3>
         {attempts.length === 0 ? (
-          <div className="faint" style={{ fontSize: 12.5 }}>{loading && !detail ? "Loading…" : "No sign-in attempts on record."}</div>
+          <div className="faint" style={{ fontSize: 13.5 }}>{loading && !detail ? "Loading…" : "No sign-in attempts on record."}</div>
         ) : (
           <div className="mini-list">
             {attempts.map((a) => (
               <div className="mini-row" key={a.id}>
                 <div style={{ minWidth: 0 }}>
                   <div className="mono">{a.ip || "unknown IP"}</div>
-                  <div className="faint" style={{ fontSize: 12 }}>{formatDateTime(a.ts)}</div>
+                  <div className="faint" style={{ fontSize: 13 }}>{formatDateTime(a.ts)}</div>
                 </div>
                 <span className={`pill ${a.success ? "good" : "bad"}`}>{a.success ? "Signed in" : "Failed"}</span>
               </div>
@@ -255,7 +255,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
             {onboarding.map((t) => (
               <div className="mini-row" key={t.key}>
                 <span style={{ minWidth: 0 }}>{t.label}</span>
-                {t.completedAt ? <span className="pill good bare">{timeAgo(t.completedAt)}</span> : <span className="faint" style={{ fontSize: 12 }}>To do</span>}
+                {t.completedAt ? <span className="pill good bare">{timeAgo(t.completedAt)}</span> : <span className="faint" style={{ fontSize: 13 }}>To do</span>}
               </div>
             ))}
           </div>
@@ -267,21 +267,21 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
         <dl className="kv">
           <dt>Created</dt><dd>{formatDateTime(employee.created_at)}</dd>
           <dt>Last sign-in</dt><dd>{employee.last_login ? `${formatDateTime(employee.last_login)} (${timeAgo(employee.last_login)})` : "Never"}</dd>
-          <dt>Employee ID</dt><dd className="mono" style={{ fontSize: 12 }}>{employee.id}</dd>
+          <dt>Employee ID</dt><dd className="mono" style={{ fontSize: 13 }}>{employee.id}</dd>
         </dl>
       </section>
 
       <section className="drawer-section">
         <h3>Admin history</h3>
         {history.length === 0 ? (
-          <div className="faint" style={{ fontSize: 12.5 }}>{loading && !detail ? "Loading…" : "No admin changes recorded."}</div>
+          <div className="faint" style={{ fontSize: 13.5 }}>{loading && !detail ? "Loading…" : "No admin changes recorded."}</div>
         ) : (
           <div className="mini-list">
             {history.map((h) => (
               <div className="mini-row" key={h.id}>
                 <div style={{ minWidth: 0 }}>
                   <div>{ACTION_LABELS[h.action] || h.action}</div>
-                  <div className="faint" style={{ fontSize: 12 }}>by {h.admin_username} · {formatDateTime(h.created_at)}</div>
+                  <div className="faint" style={{ fontSize: 13 }}>by {h.admin_username} · {formatDateTime(h.created_at)}</div>
                 </div>
               </div>
             ))}

@@ -42,8 +42,8 @@ function Quotes({ rows, empty, meta }) {
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 10 }}>
       {rows.map((r, i) => (
         <li key={i} style={{ borderLeft: "2px solid var(--border-strong, rgba(127,127,127,0.3))", paddingLeft: 10 }}>
-          <div style={{ fontSize: 13, lineHeight: 1.5 }}>&ldquo;{r.body || r.comment || r.message}&rdquo;</div>
-          <div style={{ fontSize: 11.5, opacity: 0.65, marginTop: 2 }}>
+          <div style={{ fontSize: 14, lineHeight: 1.5 }}>&ldquo;{r.body || r.comment || r.message}&rdquo;</div>
+          <div style={{ fontSize: 12.5, opacity: 0.65, marginTop: 2 }}>
             {[meta ? meta(r) : null, r.agency || r.company, formatDateTime(r.created_at)].filter(Boolean).join(" · ")}
           </div>
         </li>
@@ -115,7 +115,7 @@ export default function VoiceOfCustomerPage() {
           </Panel>
           <Panel title="Happy to take part in research" sub="Recruit interview and usability participants from here">
             {data.optIns.length ? (
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6, fontSize: 13 }}>
+              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6, fontSize: 14 }}>
                 {data.optIns.map((o, i) => (
                   <li key={i}>
                     <b>{o.person}</b>

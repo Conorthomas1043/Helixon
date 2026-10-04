@@ -9,7 +9,7 @@ import PublicCard, { RatingPicker, PublicCardLoading } from "@/components/public
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
-const input = "w-full text-[13px] px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2";
+const input = "w-full text-[14px] px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2";
 const inputStyle = { border: "1px solid var(--border)", color: INK };
 
 export default function ScorecardPage({ params }) {
@@ -86,16 +86,16 @@ export default function ScorecardPage({ params }) {
       <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
         Interview scorecard: {info.candidateName}
       </h1>
-      <p className="text-[13px] mt-1 mb-6" style={{ color: MUTED }}>
+      <p className="text-[14px] mt-1 mb-6" style={{ color: MUTED }}>
         {[info.jobTitle, info.client, info.when, info.round > 1 ? `Round ${info.round}` : null].filter(Boolean).join(" · ")}
       </p>
       <form onSubmit={submit} className="space-y-5">
         <div>
-          <p className="text-[13px] font-semibold mb-2" style={{ color: INK }}>Overall (1 = poor, 5 = excellent)</p>
+          <p className="text-[14px] font-semibold mb-2" style={{ color: INK }}>Overall (1 = poor, 5 = excellent)</p>
           <RatingPicker value={overall} onChange={setOverall} label="Overall rating" />
         </div>
         <div>
-          <p className="text-[13px] font-semibold mb-2" style={{ color: INK }}>Recommendation</p>
+          <p className="text-[14px] font-semibold mb-2" style={{ color: INK }}>Recommendation</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(info.recommendations).map(([v, l]) => (
               <button
@@ -103,7 +103,7 @@ export default function ScorecardPage({ params }) {
                 type="button"
                 aria-pressed={recommendation === v}
                 onClick={() => setRecommendation(v)}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                className="text-[13px] font-semibold px-3 py-1.5 rounded-full"
                 style={recommendation === v ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
               >
                 {l}
@@ -114,7 +114,7 @@ export default function ScorecardPage({ params }) {
         <div className="space-y-3">
           {info.criteria.map((name) => (
             <div key={name} className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[13px]" style={{ color: INK }}>{name}</span>
+              <span className="text-[14px]" style={{ color: INK }}>{name}</span>
               <RatingPicker value={ratings[name] ?? null} onChange={(n) => setRatings((r) => ({ ...r, [name]: n }))} label={name} />
             </div>
           ))}
@@ -125,15 +125,15 @@ export default function ScorecardPage({ params }) {
           ["comments", "Anything else"],
         ].map(([k, l]) => (
           <label key={k} className="block">
-            <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>{l}</span>
+            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>{l}</span>
             <textarea rows={3} maxLength={3000} value={text[k]} onChange={(e) => setText((t) => ({ ...t, [k]: e.target.value }))} className={input} style={inputStyle} />
           </label>
         ))}
         <label className="block">
-          <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
+          <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
           <input maxLength={200} value={text.reviewerName} onChange={(e) => setText((t) => ({ ...t, reviewerName: e.target.value }))} className={input} style={inputStyle} />
         </label>
-        {error && <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
         <button
           type="submit"
           disabled={saving || !overall || !recommendation}

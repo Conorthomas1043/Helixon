@@ -58,7 +58,7 @@ export function RatingPicker({ value, onChange, label, max = 5 }) {
           role="radio"
           aria-checked={value === n}
           onClick={() => onChange(n)}
-          className="w-9 h-9 rounded-full text-[13px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-9 h-9 rounded-full text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={value === n ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: "var(--ink)", background: "white" }}
         >
           {n}

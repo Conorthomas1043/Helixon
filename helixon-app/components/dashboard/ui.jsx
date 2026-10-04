@@ -31,12 +31,12 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {back && (
-          <Link href={back.href} className="inline-block text-[12px] font-semibold mb-2" style={{ color: INK_MUTED }}>
+          <Link href={back.href} className="inline-block text-[13px] font-semibold mb-2" style={{ color: INK_MUTED }}>
             ← {back.label}
           </Link>
         )}
         {eyebrow && (
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             {eyebrow}
           </p>
         )}
@@ -44,7 +44,7 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
           {title}
         </h1>
         {subtitle && (
-          <div className="text-[13px] mt-1 max-w-3xl" style={{ color: INK_MUTED }}>
+          <div className="text-[14px] mt-1 max-w-3xl" style={{ color: INK_MUTED }}>
             {subtitle}
           </div>
         )}
@@ -61,7 +61,7 @@ export function Card({ title, eyebrow, action, children, className = "", padded 
         <div className="flex items-end justify-between gap-3 mb-4">
           <div className="min-w-0">
             {eyebrow && (
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+              <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
                 {eyebrow}
               </p>
             )}
@@ -89,7 +89,7 @@ const BUTTON = {
 
 export function Button({ variant = "secondary", size = "md", href, className = "", style, children, ...props }) {
   const cls = `inline-flex items-center justify-center gap-1.5 font-semibold rounded-full transition-colors disabled:opacity-50 ${FOCUS} ${
-    size === "sm" ? "text-[12px] px-3 py-1 min-h-[28px]" : "text-[12px] px-3.5 py-1.5 min-h-[32px]"
+    size === "sm" ? "text-[13px] px-3 py-1 min-h-[28px]" : "text-[13px] px-3.5 py-1.5 min-h-[32px]"
   } ${className}`;
   const s = { ...BUTTON[variant], ...style };
   if (href) {
@@ -118,12 +118,12 @@ export function Field({ label, hint, children, className = "" }) {
     : children;
   return (
     <label className={`block ${className}`}>
-      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+      <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
         {label}
       </span>
       {control}
       {hint && (
-        <span id={hintId} className="block text-[11px] mt-1" style={{ color: INK_FAINT }}>
+        <span id={hintId} className="block text-[12px] mt-1" style={{ color: INK_FAINT }}>
           {hint}
         </span>
       )}
@@ -132,7 +132,7 @@ export function Field({ label, hint, children, className = "" }) {
 }
 
 // 16px on phones: iOS Safari zooms the page into any field smaller than that.
-const INPUT_CLS = `w-full text-[16px] sm:text-[13px] px-3 py-2 rounded-[8px] bg-white ${FOCUS}`;
+const INPUT_CLS = `w-full text-[16px] sm:text-[14px] px-3 py-2 rounded-[8px] bg-white ${FOCUS}`;
 const INPUT_STYLE = { border: "1px solid var(--border)", color: INK };
 
 export function TextInput(props) {
@@ -157,7 +157,7 @@ export function Select({ options, ...props }) {
 
 export function Pill({ children, color = INK_MUTED, background = "var(--mist)" }) {
   return (
-    <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ color, background }}>
+    <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ color, background }}>
       {children}
     </span>
   );
@@ -184,7 +184,7 @@ export function EmptyState({ title, body, action }) {
         {title}
       </p>
       {body && (
-        <p className="text-[13px] max-w-md mx-auto" style={{ color: INK_MUTED }}>
+        <p className="text-[14px] max-w-md mx-auto" style={{ color: INK_MUTED }}>
           {body}
         </p>
       )}
@@ -200,7 +200,7 @@ export function ErrorState({ title = "Something went wrong", body, onRetry }) {
         {title}
       </p>
       {body && (
-        <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+        <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
           {body}
         </p>
       )}
@@ -216,7 +216,7 @@ export function ErrorState({ title = "Something went wrong", body, onRetry }) {
 export function ErrorText({ children }) {
   if (!children) return null;
   return (
-    <p className="text-[12px]" role="alert" style={{ color: "var(--score-low)" }}>
+    <p className="text-[13px]" role="alert" style={{ color: "var(--score-low)" }}>
       {children}
     </p>
   );

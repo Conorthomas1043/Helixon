@@ -95,11 +95,11 @@ export function PulseSurvey({ analysesCount }) {
           <h2 id="pulse-title" className="text-[16px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Two quick questions about Helixon
           </h2>
-          <p className="text-[13px] mt-1" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-[14px] mt-1" style={{ color: "var(--ink-soft)" }}>
             About 20 seconds. We ask at most every few months.
           </p>
         </div>
-        <button type="button" onClick={snooze} className="text-[13px] underline shrink-0 min-h-[32px]" style={{ color: "var(--ink-soft)" }}>
+        <button type="button" onClick={snooze} className="text-[14px] underline shrink-0 min-h-[32px]" style={{ color: "var(--ink-soft)" }}>
           Not now
         </button>
       </div>
@@ -110,7 +110,7 @@ export function PulseSurvey({ analysesCount }) {
               {item.text}
             </legend>
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[12px] w-full sm:w-auto sm:mr-1" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-[13px] w-full sm:w-auto sm:mr-1" style={{ color: "var(--ink-faint)" }}>
                 Strongly disagree
               </span>
               {SCALE.map((n) => (
@@ -131,7 +131,7 @@ export function PulseSurvey({ analysesCount }) {
                   </span>
                 </label>
               ))}
-              <span className="text-[12px] sm:ml-1" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-[13px] sm:ml-1" style={{ color: "var(--ink-faint)" }}>
                 Strongly agree
               </span>
             </div>
@@ -144,7 +144,7 @@ export function PulseSurvey({ analysesCount }) {
           <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} maxLength={2000} className="w-full text-[14px] px-3 py-2 rounded-[10px]" style={{ border: "1px solid var(--border)", color: "var(--ink)" }} />
         </label>
         {error && (
-          <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>
+          <p role="alert" className="text-[14px]" style={{ color: "var(--score-low)" }}>
             {error}
           </p>
         )}
@@ -200,7 +200,7 @@ export function ResearchOptIn() {
       <h2 className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
         Help shape Helixon
       </h2>
-      <p className="text-[13px] mt-1 max-w-xl" style={{ color: "var(--ink-soft)" }}>
+      <p className="text-[14px] mt-1 max-w-xl" style={{ color: "var(--ink-soft)" }}>
         Now and then we ask a few recruiters to try an idea or talk us through how they work, for about 30 minutes. Turn this on and we may email you an
         invitation. You can say no to any of them, and turn this off whenever you like.
       </p>

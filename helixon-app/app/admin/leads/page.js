@@ -110,7 +110,7 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
                 </button>
               ))}
             </div>
-            {lead.contactedAt && <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>First contacted {formatDateTime(lead.contactedAt)}</p>}
+            {lead.contactedAt && <p className="faint" style={{ fontSize: 13, marginTop: 8 }}>First contacted {formatDateTime(lead.contactedAt)}</p>}
           </section>
 
           <section className="drawer-section">

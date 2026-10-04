@@ -252,11 +252,11 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
             </table>
           </div>
           {preview.contacts.length > 5 && (
-            <p className="text-[11px] mt-1.5" style={{ color: "var(--ink-faint)" }}>…and {preview.contacts.length - 5} more</p>
+            <p className="text-[12px] mt-1.5" style={{ color: "var(--ink-faint)" }}>…and {preview.contacts.length - 5} more</p>
           )}
           <div className="mt-3 flex flex-col sm:flex-row sm:items-end gap-2">
             <label className="flex-1">
-              <span className="block text-[11px] font-medium mb-1" style={{ color: "var(--ink-soft)" }}>List name (optional)</span>
+              <span className="block text-[12px] font-medium mb-1" style={{ color: "var(--ink-soft)" }}>List name (optional)</span>
               <input
                 type="text"
                 value={preview.batchLabel}
@@ -332,10 +332,10 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                         {row.contact_name || row.company || "Unnamed contact"}
                       </p>
                       {mine && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>You&apos;re calling</span>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>You&apos;re calling</span>
                       )}
                       {takenByOther && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fdf5e9", color: "#b8791f" }}>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fdf5e9", color: "#b8791f" }}>
                           {personName(row.claimer)} is calling
                         </span>
                       )}

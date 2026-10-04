@@ -148,21 +148,21 @@ function ScorePill({ score }) {
       <span style={{ fontFamily: "var(--font-mono)", color, fontSize: 14, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span style={{ color: TEXT_FAINT, fontSize: 11 }}>{scoreLabel(score)}</span>
+      <span style={{ color: TEXT_FAINT, fontSize: 12 }}>{scoreLabel(score)}</span>
     </div>
   );
 }
 
 function StageBadge({ stage }) {
   if (!stage || !STAGE_LABELS[stage]) {
-    return <span style={{ color: TEXT_FAINT, fontSize: 11 }}>No stage</span>;
+    return <span style={{ color: TEXT_FAINT, fontSize: 12 }}>No stage</span>;
   }
   const isPlaced = stage === FUNNEL_ORDER[FUNNEL_ORDER.length - 1];
   return (
     <span style={{
       display: "inline-flex",
       alignItems: "center",
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: 600,
       padding: "2px 8px",
       borderRadius: 9999,
@@ -180,7 +180,7 @@ function SectionHeading({ eyebrow, title, action }) {
     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
       <div>
         {eyebrow && (
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 4 }}>
             {eyebrow}
           </p>
         )}
@@ -202,12 +202,12 @@ function EmptyState({ title, body, actionLabel, actionHref }) {
         </svg>
       </div>
       <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginBottom: 4 }}>{title}</p>
-      <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 16 }}>{body}</p>
+      <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 320, marginBottom: 16 }}>{body}</p>
       {actionLabel && actionHref && (
         <Link href={actionHref} style={{
           display: "inline-flex",
           alignItems: "center",
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 600,
           padding: "8px 16px",
           borderRadius: 9999,
@@ -245,12 +245,12 @@ function GettingStarted({ hasJob, showTeam }) {
     <section style={{ ...CARD, padding: "24px 28px" }} aria-labelledby="getting-started-title">
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>Getting started</p>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>Getting started</p>
           <h2 id="getting-started-title" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: TEXT, margin: 0 }}>
             Get your first shortlist in a few minutes
           </h2>
         </div>
-        <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0 }}>{doneCount} of {steps.length} done</p>
+        <p style={{ fontSize: 14, color: TEXT_SUB, margin: 0 }}>{doneCount} of {steps.length} done</p>
       </div>
       <div role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={doneCount}
         style={{ height: 4, borderRadius: 9999, background: BORDER2, overflow: "hidden", marginBottom: 8 }}>
@@ -271,11 +271,11 @@ function GettingStarted({ hasJob, showTeam }) {
               <p style={{ fontSize: 14, fontWeight: 600, color: st.done ? TEXT_FAINT : TEXT, margin: 0, textDecoration: st.done ? "line-through" : "none" }}>
                 {st.title}<span className="sr-only">{st.done ? " (done)" : ""}</span>
               </p>
-              {!st.done && <p style={{ fontSize: 13, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>}
+              {!st.done && <p style={{ fontSize: 14, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>}
             </div>
             {!st.done && st.href && (
               <Link href={st.href} onClick={() => track("onboarding_step_clicked", { step: st.key })} style={{
-                flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
+                flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 14, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
                 background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
               }}>
                 {st.cta}
@@ -309,26 +309,26 @@ function TeamWelcome({ agencyName, onDismiss }) {
     <section style={{ ...CARD, padding: "22px 26px" }} aria-labelledby="team-welcome-title">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>New to the team</p>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>New to the team</p>
           <h2 id="team-welcome-title" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: TEXT, margin: 0 }}>
             Welcome to {agencyName || "your agency's"} Helixon
           </h2>
-          <p style={{ fontSize: 13, color: TEXT_SUB, margin: "4px 0 0" }}>Three places to start. Press <kbd style={{ fontFamily: "var(--font-mono)", fontSize: 12, padding: "1px 5px", border: `1px solid ${BORDER}`, borderRadius: 4 }}>?</kbd> anywhere for keyboard shortcuts.</p>
+          <p style={{ fontSize: 14, color: TEXT_SUB, margin: "4px 0 0" }}>Three places to start. Press <kbd style={{ fontFamily: "var(--font-mono)", fontSize: 13, padding: "1px 5px", border: `1px solid ${BORDER}`, borderRadius: 4 }}>?</kbd> anywhere for keyboard shortcuts.</p>
         </div>
-        <button type="button" onClick={onDismiss} style={{ fontSize: 13, color: TEXT_SUB, textDecoration: "underline", background: "none", border: 0, cursor: "pointer", minHeight: 32 }}>
+        <button type="button" onClick={onDismiss} style={{ fontSize: 14, color: TEXT_SUB, textDecoration: "underline", background: "none", border: 0, cursor: "pointer", minHeight: 32 }}>
           Got it
         </button>
       </div>
       <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {steps.map((st, i) => (
           <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: `1px solid ${BORDER2}` }}>
-            <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: ACCENT_BG, color: ACCENT_FG }}>{i + 1}</span>
+            <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: ACCENT_BG, color: ACCENT_FG }}>{i + 1}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0 }}>{st.title}</p>
-              <p style={{ fontSize: 13, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>
+              <p style={{ fontSize: 14, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>
             </div>
             <Link href={st.href} onClick={() => track("team_welcome_step_clicked", { step: st.key })} style={{
-              flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 13, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
+              flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 14, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
               background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
             }}>
               {st.cta}
@@ -376,7 +376,7 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
             <span style={{
               display: "inline-flex",
               alignItems: "center",
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
@@ -395,27 +395,27 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
           {greetingName ? <>, <span style={{ color: ACCENT_FG }}>{greetingName}</span></> : null}
         </h1>
         {agencyName && (
-          <p style={{ fontSize: 13, color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>{agencyName}</p>
+          <p style={{ fontSize: 14, color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>{agencyName}</p>
         )}
         <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 520, marginBottom: 10, marginTop: 0 }}>{subtitle}</p>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 20 }} aria-live="polite">
           {isRefreshing && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: TEXT_FAINT }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: TEXT_FAINT }}>
               <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN_FG, display: "inline-block" }} aria-hidden="true" />
               Refreshing…
             </span>
           )}
           {!isRefreshing && refreshError && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, color: RED }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, color: RED }}>
               Couldn&apos;t refresh - showing last data.
-              <button type="button" onClick={onRefresh} style={{ color: RED, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 11 }}>
+              <button type="button" onClick={onRefresh} style={{ color: RED, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 12 }}>
                 Retry
               </button>
             </span>
           )}
           {!isRefreshing && !refreshError && (
-            <button type="button" onClick={onRefresh} style={{ fontSize: 11, color: TEXT_FAINT, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <button type="button" onClick={onRefresh} style={{ fontSize: 12, color: TEXT_FAINT, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
               Refresh ↺
             </button>
           )}
@@ -424,21 +424,21 @@ function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRefreshin
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <Link href="/dashboard/candidates" style={{
-          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999, border: `1px solid ${BORDER}`,
           color: TEXT, textDecoration: "none", background: SURFACE,
         }}>
           Browse candidates
         </Link>
         <Link href="/dashboard/pipeline" style={{
-          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999, border: `1px solid ${BORDER}`,
           color: TEXT, textDecoration: "none", background: SURFACE,
         }}>
           Pipeline
         </Link>
         <Link href="/analyse" style={{
-          display: "inline-flex", alignItems: "center", fontSize: 13, fontWeight: 600,
+          display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999,
           background: ACCENT, color: "#fff", textDecoration: "none",
         }}>
@@ -466,7 +466,7 @@ function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
       className="fade-up-in lift-on-hover"
       style={{ ...CARD, padding: 20, "--stagger-delay": `${index * 70}ms` }}
     >
-      <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
+      <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
         {label}
       </p>
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
@@ -485,7 +485,7 @@ function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
           />
         </div>
       )}
-      {sub && <p style={{ fontSize: 12, color: TEXT_FAINT, marginTop: typeof meter === "number" ? 2 : 8, marginBottom: 0 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: 13, color: TEXT_FAINT, marginTop: typeof meter === "number" ? 2 : 8, marginBottom: 0 }}>{sub}</p>}
     </div>
   );
 }
@@ -526,7 +526,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
         eyebrow="Candidate pipeline"
         title="Where candidates stand"
         action={
-          <Link href="/dashboard/pipeline" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
+          <Link href="/dashboard/pipeline" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
             Open pipeline →
           </Link>
         }
@@ -544,8 +544,8 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
                 <div key={stageKey} className="flex items-stretch gap-1.5 flex-1 min-w-[92px]">
                   {conversion !== null && (
                     <div className="flex flex-col items-center justify-center shrink-0 w-9" title={`${conversion}% of candidates who reached ${STAGE_LABELS[stageOrder[i - 1]]} got to ${STAGE_LABELS[stageKey]}`}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>{conversion}%</span>
-                      <span aria-hidden="true" style={{ fontSize: 12, color: TEXT_FAINT, lineHeight: 1 }}>→</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>{conversion}%</span>
+                      <span aria-hidden="true" style={{ fontSize: 13, color: TEXT_FAINT, lineHeight: 1 }}>→</span>
                     </div>
                   )}
                   <Link
@@ -568,7 +568,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
                         }}
                       />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
                       {STAGE_LABELS[stageKey]}
                     </span>
                   </Link>
@@ -576,7 +576,7 @@ function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
               );
             })}
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3" style={{ fontSize: 12, color: TEXT_SUB }}>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3" style={{ fontSize: 13, color: TEXT_SUB }}>
             <span>
               <b style={{ color: TEXT, fontVariantNumeric: "tabular-nums" }}>{formatNumber(active)}</b> active
             </span>
@@ -616,19 +616,19 @@ function UsageSummary({ plan, analyses }) {
 
   return (
     <div style={{ ...CARD, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
-      <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
+      <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
       <p style={{ fontSize: 18, fontWeight: 600, color: TEXT, margin: 0, fontFamily: "var(--font-display)" }}>{plan?.name ? `${plan.name}` : "No active plan"}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
         <div>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: 0, fontVariantNumeric: "tabular-nums" }}>{formatNumber(thisMonth)}</p>
-          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "2px 0 0" }}>analyses this month</p>
+          <p style={{ fontSize: 13, color: TEXT_FAINT, margin: "2px 0 0" }}>analyses this month</p>
         </div>
         <div>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: TEXT, margin: 0, fontVariantNumeric: "tabular-nums" }}>{formatNumber(last30)}</p>
-          <p style={{ fontSize: 12, color: TEXT_FAINT, margin: "2px 0 0" }}>in the last 30 days</p>
+          <p style={{ fontSize: 13, color: TEXT_FAINT, margin: "2px 0 0" }}>in the last 30 days</p>
         </div>
       </div>
-      <Link href="/billing" style={{ fontSize: 12, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: ACCENT_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <Link href="/billing" style={{ fontSize: 13, fontWeight: 600, marginTop: "auto", paddingTop: 16, color: ACCENT_FG, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
         {plan?.name ? "Manage plan →" : "Choose a plan →"}
       </Link>
     </div>
@@ -664,16 +664,16 @@ function AttentionPanel({ items: firstItems, allItems, total }) {
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.candidateName}</p>
-                  <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.jobTitle}</p>
+                  <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.jobTitle}</p>
                 </div>
                 <span style={{
-                  display: "inline-flex", alignItems: "center", fontSize: 11, fontWeight: 600,
+                  display: "inline-flex", alignItems: "center", fontSize: 12, fontWeight: 600,
                   padding: "3px 10px", borderRadius: 9999, whiteSpace: "nowrap",
                   background: item.tone.bg, color: item.tone.fg,
                 }}>
                   {item.reasonLabel}
                 </span>
-                <span style={{ fontSize: 11, color: TEXT_FAINT, whiteSpace: "nowrap", flexShrink: 0 }}>{formatRelativeTime(item.createdAt)}</span>
+                <span style={{ fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap", flexShrink: 0 }}>{formatRelativeTime(item.createdAt)}</span>
                 {item.score !== null && (
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(item.score), flexShrink: 0, width: 32, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{item.score}</span>
                 )}
@@ -687,7 +687,7 @@ function AttentionPanel({ items: firstItems, allItems, total }) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
+          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 13, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
         >
           {expanded ? "Show fewer" : `Show ${hiddenCount} more ${hiddenCount === 1 ? "item" : "items"} needing attention`}
         </button>
@@ -747,7 +747,7 @@ function FollowUpsPanel() {
   const due = state.items.filter((i) => i.when === "overdue" || i.when === "today").length;
   const shown = expanded ? state.items : state.items.slice(0, 7);
   const tabStyle = (on) => ({
-    fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, cursor: "pointer",
+    fontSize: 13, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, cursor: "pointer",
     border: `1px solid ${on ? ACCENT : BORDER}`, background: on ? ACCENT : SURFACE, color: on ? "#fff" : TEXT_SUB,
   });
 
@@ -766,7 +766,7 @@ function FollowUpsPanel() {
       {loading ? (
         <div className="animate-pulse motion-reduce:animate-none" style={{ height: 120, borderRadius: 10, background: SURFACE2 }} aria-busy="true" />
       ) : state.error ? (
-        <p style={{ fontSize: 13, color: TEXT_SUB }}>Couldn&apos;t load follow-ups.</p>
+        <p style={{ fontSize: 14, color: TEXT_SUB }}>Couldn&apos;t load follow-ups.</p>
       ) : state.items.length === 0 ? (
         <EmptyState
           title="No follow-ups"
@@ -783,16 +783,16 @@ function FollowUpsPanel() {
                   style={{ minWidth: 0, flex: 1, textDecoration: "none" }}
                   className="hover:underline"
                 >
-                  <p style={{ fontSize: 13, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {item.label}
                   </p>
-                  <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {item.candidateName}
                     {item.jobTitle ? ` · ${item.jobTitle}` : ""}
                     {scope === "all" && item.recruiterName ? ` · ${item.recruiterName}` : ""}
                   </p>
                 </Link>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, whiteSpace: "nowrap", background: w.bg, color: w.fg }}>
+                <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, whiteSpace: "nowrap", background: w.bg, color: w.fg }}>
                   {item.dueAt ? formatDue(item.dueAt) : w.label}
                 </span>
                 {item.kind === "action" && (
@@ -802,7 +802,7 @@ function FollowUpsPanel() {
                     disabled={completing === item.id}
                     title="Mark done"
                     aria-label={`Mark "${item.label}" for ${item.candidateName} done`}
-                    style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, border: `1px solid ${BORDER}`, background: SURFACE, color: ACCENT_FG, cursor: "pointer", opacity: completing === item.id ? 0.5 : 1 }}
+                    style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, border: `1px solid ${BORDER}`, background: SURFACE, color: ACCENT_FG, cursor: "pointer", opacity: completing === item.id ? 0.5 : 1 }}
                   >
                     Done
                   </button>
@@ -817,7 +817,7 @@ function FollowUpsPanel() {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
+          style={{ display: "block", width: "100%", textAlign: "center", fontSize: 13, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}
         >
           {expanded ? "Show fewer" : `Show all ${state.items.length}${state.truncated ? "+" : ""}`}
         </button>
@@ -850,13 +850,13 @@ function TopCandidates({ candidates, total }) {
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: ACCENT_BG, color: ACCENT_FG, fontSize: 12, fontWeight: 700,
+                  background: ACCENT_BG, color: ACCENT_FG, fontSize: 13, fontWeight: 700,
                 }}>
                   {c.candidateName[0]}
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.candidateName}</p>
-                  <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {c.jobTitle}{c.company ? ` · ${c.company}` : ""}
                   </p>
                 </div>
@@ -868,7 +868,7 @@ function TopCandidates({ candidates, total }) {
         </ul>
       )}
       {hiddenCount > 0 && (
-        <Link href="/dashboard/candidates?scoreBand=80%2B" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
+        <Link href="/dashboard/candidates?scoreBand=80%2B" style={{ display: "block", textAlign: "center", fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none", paddingTop: 12, marginTop: 4, borderTop: `1px solid ${BORDER}` }}>
           {hiddenCount} more strong {hiddenCount === 1 ? "candidate" : "candidates"} →
         </Link>
       )}
@@ -934,7 +934,7 @@ function ActivityOverview({ analyses }) {
           <div style={{ display: "inline-flex", borderRadius: 9999, padding: 2, background: SURFACE2, border: `1px solid ${BORDER}` }}>
             {[7, 30].map((d) => (
               <button key={d} type="button" onClick={() => setWindowDays(d)} aria-pressed={windowDays === d} style={{
-                fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 9999,
+                fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 9999,
                 background: windowDays === d ? ACCENT : "transparent",
                 color: windowDays === d ? "#fff" : TEXT_FAINT,
                 border: "none", cursor: "pointer",
@@ -947,9 +947,9 @@ function ActivityOverview({ analyses }) {
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 600, color: TEXT, fontVariantNumeric: "tabular-nums" }}>
           <CountUp value={stats.currentCount} format={formatNumber} />
         </span>
-        <span style={{ fontSize: 12, color: TEXT_SUB }}>in the last {windowDays} days</span>
+        <span style={{ fontSize: 13, color: TEXT_SUB }}>in the last {windowDays} days</span>
       </div>
-      <p style={{ fontSize: 12, marginBottom: 16, color: delta >= 0 ? GREEN_FG : RED }}>
+      <p style={{ fontSize: 13, marginBottom: 16, color: delta >= 0 ? GREEN_FG : RED }}>
         {delta === 0 ? `Same as previous ${windowDays} days` : `${delta > 0 ? "+" : ""}${delta} vs. previous ${windowDays} days`}
       </p>
 
@@ -962,12 +962,12 @@ function ActivityOverview({ analyses }) {
               background: ACCENT, opacity: d.count === 0 ? 0.15 : 0.85,
               transition: `height 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 20}ms`,
             }} />
-            <span style={{ fontSize: 11, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
+            <span style={{ fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{d.label}</span>
           </div>
         ))}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, paddingTop: 12, borderTop: `1px solid ${BORDER}`, color: TEXT_SUB }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 13, paddingTop: 12, borderTop: `1px solid ${BORDER}`, color: TEXT_SUB }}>
         <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}><CountUp value={stats.strong} format={formatNumber} /></strong> strong matches</span>
         <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{stats.avgScore ?? "-"}</strong> avg score</span>
       </div>
@@ -988,7 +988,7 @@ function ActiveJobs({ jobs, total, statsByJob }) {
       <SectionHeading
         eyebrow="Roles"
         title="Open jobs"
-        action={<Link href="/dashboard/jobs" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > jobs.length ? `All ${total} →` : "All jobs →"}</Link>}
+        action={<Link href="/dashboard/jobs" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > jobs.length ? `All ${total} →` : "All jobs →"}</Link>}
       />
       {jobs.length === 0 ? (
         <EmptyState title="No open jobs" body="Add a job to start building its pipeline." actionLabel="New job" actionHref="/dashboard/jobs?new=1" />
@@ -1011,9 +1011,9 @@ function ActiveJobs({ jobs, total, statsByJob }) {
                     </p>
                     <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                       {PRIORITY_LABEL[job.priority] && (job.priority === "urgent" || job.priority === "high") && (
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
                       )}
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: TEXT_SUB }}>{formatNumber(job.candidates)}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: TEXT_SUB }}>{formatNumber(job.candidates)}</span>
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1022,7 +1022,7 @@ function ActiveJobs({ jobs, total, statsByJob }) {
                         seg.pct > 0 ? <div key={seg.key} title={`${STAGE_LABELS[seg.key]}: ${seg.pct}%`} style={{ width: `${seg.pct}%`, background: STAGE_COLORS[seg.key] }} /> : null
                       )}
                     </div>
-                    <span style={{ fontSize: 11, color: late ? RED : TEXT_FAINT, flexShrink: 0 }}>
+                    <span style={{ fontSize: 12, color: late ? RED : TEXT_FAINT, flexShrink: 0 }}>
                       {job.interviewing ? `${job.interviewing} interviewing · ` : ""}
                       {job.offers ? `${job.offers} offer${job.offers === 1 ? "" : "s"} · ` : ""}
                       {job.targetDate ? `fill by ${new Date(`${job.targetDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}` : `${formatNumber(stats?.strongMatches ?? 0)} strong`}
@@ -1047,7 +1047,7 @@ function RecruiterPerformance({ recruiters }) {
       <SectionHeading
         eyebrow="Team"
         title="Recruiter performance"
-        action={<Link href="/dashboard/analytics" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Full analytics →</Link>}
+        action={<Link href="/dashboard/analytics" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Full analytics →</Link>}
       />
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {recruiters.map((r, i) => (
@@ -1063,12 +1063,12 @@ function RecruiterPerformance({ recruiters }) {
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
             >
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: ACCENT_FG, flexShrink: 0 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: ACCENT_FG, flexShrink: 0 }}>
                 {r.name[0]}
               </div>
               <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.name}>{r.name}</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, color: TEXT_SUB, flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 13, color: TEXT_SUB, flexShrink: 0 }}>
               <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{formatNumber(r.completed)}</strong> analysed</span>
               <span><strong style={{ color: TEXT, fontFamily: "var(--font-mono)" }}>{r.avgScore ?? "-"}</strong> avg</span>
               <span><strong style={{ color: GREEN_FG, fontFamily: "var(--font-mono)" }}>{formatNumber(r.placements)}</strong> placed</span>
@@ -1091,7 +1091,7 @@ function RecentAnalyses({ analyses }) {
         eyebrow="Activity feed"
         title="Recent analyses"
         action={
-          <Link href="/dashboard/candidates?sortBy=newest" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
+          <Link href="/dashboard/candidates?sortBy=newest" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>
             View all →
           </Link>
         }
@@ -1108,7 +1108,7 @@ function RecentAnalyses({ analyses }) {
                   <th key={h} scope="col" style={{
                     padding: h === "Date" ? "8px 0 8px 12px" : "8px 12px 8px 0",
                     textAlign: h === "Score" || h === "Date" ? "right" : "left",
-                    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
+                    fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
                     borderBottom: `1px solid ${BORDER}`,
                   }}>
                     {h}
@@ -1129,15 +1129,15 @@ function RecentAnalyses({ analyses }) {
                     <td style={{ padding: "12px 12px 12px 0", minWidth: 0 }}>
                       <Link href={href} onClick={(e) => e.stopPropagation()} title={`${a.candidateName} - ${a.jobTitle}`} style={{ textDecoration: "none", display: "block" }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.candidateName}</p>
-                        <p style={{ fontSize: 12, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.jobTitle}{a.company ? ` · ${a.company}` : ""}</p>
+                        <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.jobTitle}{a.company ? ` · ${a.company}` : ""}</p>
                       </Link>
                     </td>
-                    <td style={{ padding: "12px 12px 12px 0", fontSize: 13, color: TEXT_SUB, whiteSpace: "nowrap" }}>{a.recruiterName ?? "Unassigned"}</td>
+                    <td style={{ padding: "12px 12px 12px 0", fontSize: 14, color: TEXT_SUB, whiteSpace: "nowrap" }}>{a.recruiterName ?? "Unassigned"}</td>
                     <td style={{ padding: "12px 12px 12px 0" }}><StageBadge stage={a.stage} /></td>
                     <td style={{ padding: "12px 12px 12px 0", textAlign: "right" }}>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(a.score), fontVariantNumeric: "tabular-nums" }}>{a.score ?? "-"}</span>
                     </td>
-                    <td style={{ padding: "12px 0 12px 12px", textAlign: "right", fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{formatDate(a.createdAt)}</td>
+                    <td style={{ padding: "12px 0 12px 12px", textAlign: "right", fontSize: 13, color: TEXT_FAINT, whiteSpace: "nowrap" }}>{formatDate(a.createdAt)}</td>
                   </tr>
                 );
               })}
@@ -1153,7 +1153,7 @@ function RecentAnalyses({ analyses }) {
 
 function DashboardFooter() {
   return (
-    <footer style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 20, fontSize: 12, color: TEXT_FAINT, borderTop: `1px solid ${BORDER}` }}>
+    <footer style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 20, fontSize: 13, color: TEXT_FAINT, borderTop: `1px solid ${BORDER}` }}>
       <span>Helixon - recruiter dashboard</span>
       <nav style={{ display: "flex", alignItems: "center", gap: 20 }} aria-label="Support links">
         {[["FAQ", "/faq"], ["Contact", "/contact"], ["Privacy", "/privacy"]].map(([label, href]) => (
@@ -1202,8 +1202,8 @@ function DashboardError({ onRetry }) {
   return (
     <div style={{ ...CARD, padding: 40, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       <p style={{ fontSize: 15, fontWeight: 600, color: TEXT, marginBottom: 6 }}>Unable to load dashboard</p>
-      <p style={{ fontSize: 13, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
-      <button type="button" onClick={onRetry} style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: ACCENT, color: "#fff", border: "none", cursor: "pointer" }}>
+      <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
+      <button type="button" onClick={onRetry} style={{ fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: ACCENT, color: "#fff", border: "none", cursor: "pointer" }}>
         Try again
       </button>
     </div>
@@ -1240,11 +1240,11 @@ function BusinessKpis({ kpis }) {
           className="fade-up-in lift-on-hover"
           style={{ ...CARD, padding: 18, textDecoration: "none", display: "block", "--stagger-delay": `${i * 60}ms` }}
         >
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
             {typeof it.value === "number" ? formatNumber(it.value) : it.value}
           </p>
-          <p style={{ fontSize: 12, color: it.tone || TEXT_FAINT, margin: "8px 0 0" }}>{it.sub}</p>
+          <p style={{ fontSize: 13, color: it.tone || TEXT_FAINT, margin: "8px 0 0" }}>{it.sub}</p>
         </Link>
       ))}
     </div>
@@ -1276,11 +1276,11 @@ function RisksPanel({ alerts }) {
                   <Link href={a.href} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: tone.fg, flexShrink: 0 }} />
                     <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{a.title}</span>
-                      {a.detail && <span style={{ display: "block", fontSize: 12, color: TEXT_SUB, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.detail}</span>}
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{a.title}</span>
+                      {a.detail && <span style={{ display: "block", fontSize: 13, color: TEXT_SUB, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.detail}</span>}
                     </span>
                     {typeof a.amount === "number" && (
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: tone.fg, flexShrink: 0 }}>{formatMoneyShort(a.amount)}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: tone.fg, flexShrink: 0 }}>{formatMoneyShort(a.amount)}</span>
                     )}
                   </Link>
                 </li>
@@ -1288,7 +1288,7 @@ function RisksPanel({ alerts }) {
             })}
           </ul>
           {alerts.length > 6 && (
-            <button type="button" onClick={() => setExpanded((v) => !v)} style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <button type="button" onClick={() => setExpanded((v) => !v)} style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: ACCENT_FG, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
               {expanded ? "Show fewer" : `Show all ${alerts.length}`}
             </button>
           )}
@@ -1314,7 +1314,7 @@ function AgendaPanel({ interviews, total, clientFollowUps }) {
       <SectionHeading
         eyebrow="Next 7 days"
         title="Agenda"
-        action={<Link href="/dashboard/interviews" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > interviews.length ? `All ${total} →` : "Interviews →"}</Link>}
+        action={<Link href="/dashboard/interviews" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>{total > interviews.length ? `All ${total} →` : "Interviews →"}</Link>}
       />
       {interviews.length === 0 && clientFollowUps.length === 0 ? (
         <EmptyState title="Nothing booked" body="No interviews in the next week and no client follow-ups due." />
@@ -1323,13 +1323,13 @@ function AgendaPanel({ interviews, total, clientFollowUps }) {
           {interviews.map((i) => (
             <li key={i.id} style={{ borderTop: `1px solid ${BORDER}` }}>
               <Link href={`/dashboard/candidates/${i.candidateId}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
-                <span style={{ width: 78, flexShrink: 0, fontSize: 12, color: TEXT_SUB }}>
+                <span style={{ width: 78, flexShrink: 0, fontSize: 13, color: TEXT_SUB }}>
                   <span style={{ display: "block", fontWeight: 600, color: TEXT }}>{dayLabel(i.startsAt)}</span>
                   {new Date(i.startsAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                 </span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{i.candidateName}</span>
-                  <span style={{ display: "block", fontSize: 12, color: TEXT_SUB }}>
+                  <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{i.candidateName}</span>
+                  <span style={{ display: "block", fontSize: 13, color: TEXT_SUB }}>
                     {i.round > 1 ? `Round ${i.round} · ` : ""}
                     {i.jobTitle || "Interview"}
                   </span>
@@ -1340,10 +1340,10 @@ function AgendaPanel({ interviews, total, clientFollowUps }) {
           {clientFollowUps.map((c) => (
             <li key={`client-${c.id}`} style={{ borderTop: `1px solid ${BORDER}` }}>
               <Link href={`/dashboard/clients/${c.id}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
-                <span style={{ width: 78, flexShrink: 0, fontSize: 12, fontWeight: 600, color: c.overdue ? RED : TEXT }}>{c.overdue ? "Overdue" : "Today"}</span>
+                <span style={{ width: 78, flexShrink: 0, fontSize: 13, fontWeight: 600, color: c.overdue ? RED : TEXT }}>{c.overdue ? "Overdue" : "Today"}</span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: TEXT }}>{c.label}</span>
-                  <span style={{ display: "block", fontSize: 12, color: TEXT_SUB }}>Client · {c.name}</span>
+                  <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{c.label}</span>
+                  <span style={{ display: "block", fontSize: 13, color: TEXT_SUB }}>Client · {c.name}</span>
                 </span>
               </Link>
             </li>
@@ -1368,7 +1368,7 @@ function readScope() {
 
 function ScopeToggle({ scope, onChange }) {
   const tab = (active) => ({
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
     padding: "6px 14px",
     borderRadius: 9999,
@@ -1380,7 +1380,7 @@ function ScopeToggle({ scope, onChange }) {
   });
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-      <p style={{ fontSize: 12, color: TEXT_FAINT, margin: 0 }}>
+      <p style={{ fontSize: 13, color: TEXT_FAINT, margin: 0 }}>
         {scope === "mine" ? "Showing candidates assigned to you." : "Showing the whole team's candidates."}
       </p>
       <div role="group" aria-label="Whose numbers to show" style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: 9999, background: BORDER2 }}>
@@ -1393,7 +1393,7 @@ function ScopeToggle({ scope, onChange }) {
 
 function TruncatedNotice() {
   return (
-    <div role="status" style={{ ...CARD, padding: "12px 16px", fontSize: 13, color: AMBER_FG, background: AMBER_BG, borderColor: "transparent" }}>
+    <div role="status" style={{ ...CARD, padding: "12px 16px", fontSize: 14, color: AMBER_FG, background: AMBER_BG, borderColor: "transparent" }}>
       Your agency has more candidates than the Overview can load at once, so these numbers leave out the oldest ones.
       {" "}<Link href="/dashboard/analytics" style={{ color: AMBER_FG, fontWeight: 600 }}>Analytics</Link> counts everything.
     </div>
@@ -1442,12 +1442,12 @@ function TargetsCard({ scope }) {
       <SectionHeading
         eyebrow="This month"
         title={scope === "mine" ? "Your targets" : "Team targets"}
-        action={<Link href="/dashboard/performance" style={{ fontSize: 12, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Leaderboard →</Link>}
+        action={<Link href="/dashboard/performance" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Leaderboard →</Link>}
       />
       {state.status === "loading" ? (
         <div style={{ height: 96, borderRadius: 10, background: SURFACE2 }} />
       ) : rows.length === 0 ? (
-        <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0 }}>
+        <p style={{ fontSize: 14, color: TEXT_SUB, margin: 0 }}>
           No targets set{scope === "mine" ? " for you" : ""} yet.{" "}
           <Link href="/dashboard/settings/targets" style={{ color: ACCENT_FG, fontWeight: 600 }}>Set targets</Link>
         </p>
@@ -1455,7 +1455,7 @@ function TargetsCard({ scope }) {
         <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 14 }}>
           {rows.map((r) => (
             <li key={r.key}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 14 }}>
                 <span style={{ color: TEXT }}>{r.label}</span>
                 <span style={{ fontFamily: "var(--font-mono)", color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>
                   {formatMetric(r.key, r.actual)} / {formatMetric(r.key, r.target)}
@@ -1666,7 +1666,7 @@ function AgencyDashboardPage() {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
+                <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
                 <DashboardKpis totals={model.totals} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">

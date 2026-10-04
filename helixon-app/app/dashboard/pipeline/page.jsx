@@ -41,7 +41,7 @@ function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ border: "1px solid var(--border)", color: INK }}
     >
       {options.map((o) => (
@@ -74,20 +74,20 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         draggable={false}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: INK }}>
+          <p className="text-[14px] font-semibold truncate leading-tight" style={{ color: INK }}>
             {candidate.fullName}
           </p>
-          <p className="text-[11px] truncate mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-[12px] truncate mt-0.5" style={{ color: INK_MUTED }}>
             {candidate.jobTitle}
           </p>
           {subStage && (
-            <span className="inline-block text-[11px] font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="inline-block text-[12px] font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
               {subStage}
             </span>
           )}
         </div>
         <span
-          className="text-[12px] font-semibold tabular-nums shrink-0 px-1.5 py-0.5 rounded-md"
+          className="text-[13px] font-semibold tabular-nums shrink-0 px-1.5 py-0.5 rounded-md"
           style={{ fontFamily: "var(--font-mono)", color: scoreColor(candidate.score), background: scoreBg(candidate.score) }}
           aria-label={candidate.score == null ? "No score" : `Score ${candidate.score}`}
         >
@@ -95,7 +95,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         </span>
       </Link>
       <div className="flex items-center justify-between mt-2.5 gap-2">
-        <span className="text-[11px] truncate" style={{ color: INK_FAINT }}>
+        <span className="text-[12px] truncate" style={{ color: INK_FAINT }}>
           {candidate.recruiterName ?? "Unassigned"}
           {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
         </span>
@@ -105,7 +105,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
               from Rejected) by dragging, which touch and keyboard can't do. */}
           <label className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--mist)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" title="Move to…">
             <span className="sr-only">Move {candidate.fullName} to</span>
-            <span aria-hidden="true" className="text-[13px] leading-none" style={{ color: INK_MUTED }}>⋯</span>
+            <span aria-hidden="true" className="text-[14px] leading-none" style={{ color: INK_MUTED }}>⋯</span>
             <select
               value=""
               disabled={pending}
@@ -125,7 +125,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
             disabled={!canGoBack || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx - 1])}
             aria-label={`Move ${candidate.fullName} back to ${FUNNEL_ORDER[stageIdx - 1] ?? "previous stage"}`}
-            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] disabled:opacity-25 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] disabled:opacity-25 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: INK_MUTED }}
           >
             ←
@@ -135,7 +135,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
             disabled={!canGoForward || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx + 1])}
             aria-label={`Move ${candidate.fullName} forward to ${FUNNEL_ORDER[stageIdx + 1] ?? "next stage"}`}
-            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] disabled:opacity-25 hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] disabled:opacity-25 hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: "var(--forest)" }}
           >
             →
@@ -176,7 +176,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again
@@ -201,7 +201,7 @@ function FunnelStrip({ byStage }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-3">
         {BOARD_STAGES.map((s) => (
-          <span key={s} className="flex items-center gap-1.5 text-[11px]" style={{ color: INK_MUTED }}>
+          <span key={s} className="flex items-center gap-1.5 text-[12px]" style={{ color: INK_MUTED }}>
             <span className="w-2 h-2 rounded-full" style={{ background: STAGE_ACCENT[s] }} />
             {STAGE_LABELS[s]} <b className="tabular-nums" style={{ color: INK }}>{byStage[s].length}</b>
           </span>
@@ -313,13 +313,13 @@ function PipelineContent() {
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-5">
         <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate pipeline
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
               Pipeline {status === "ready" && <span className="text-base font-medium tabular-nums" style={{ color: INK_FAINT }}>· {total}</span>}
             </h1>
-            <p className="text-[12px] mt-1 hidden lg:block" style={{ color: INK_FAINT }}>
+            <p className="text-[13px] mt-1 hidden lg:block" style={{ color: INK_FAINT }}>
               Drag a card to another column, use the arrows to move it a stage, or ⋯ to move it anywhere (including Rejected).
             </p>
           </div>
@@ -330,7 +330,7 @@ function PipelineContent() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search candidate or role"
               aria-label="Search pipeline"
-              className="text-[12px] px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2"
+              className="text-[13px] px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             />
             <Select ariaLabel="Filter by job" value={jobId} onChange={(v) => { setStatus("loading"); setJobId(v); }} options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]} />
@@ -340,13 +340,13 @@ function PipelineContent() {
               onChange={(v) => { setStatus("loading"); setRecruiterId(v); }}
               options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
             />
-            <label className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer" style={{ border: "1px solid var(--border)", color: INK_MUTED }}>
+            <label className="flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer" style={{ border: "1px solid var(--border)", color: INK_MUTED }}>
               <input type="checkbox" checked={hideRejected} onChange={(e) => setHideRejected(e.target.checked)} className="accent-[var(--forest)]" />
               Hide rejected
             </label>
             <Link
               href="/analyse"
-              className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-[13px] font-semibold px-3.5 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               + Screen a CV
@@ -355,7 +355,7 @@ function PipelineContent() {
         </header>
 
         {moveError && (
-          <div role="alert" className="rounded-[12px] px-4 py-2.5 text-[13px] flex items-center justify-between gap-3" style={{ background: "#fdf1f0", color: "#c0392b", border: "1px solid #f4d4d2" }}>
+          <div role="alert" className="rounded-[12px] px-4 py-2.5 text-[14px] flex items-center justify-between gap-3" style={{ background: "#fdf1f0", color: "#c0392b", border: "1px solid #f4d4d2" }}>
             {moveError}
             <button type="button" onClick={() => setMoveError("")} aria-label="Dismiss" className="font-semibold">×</button>
           </div>
@@ -370,7 +370,7 @@ function PipelineContent() {
               <div className="rounded-[16px] p-10 text-center" style={CARD}>
                 <p className="text-base font-semibold mb-1" style={{ color: INK }}>No candidates yet</p>
                 <p className="text-sm mb-5" style={{ color: INK_MUTED }}>Analyse a CV and the candidate will land in Screened.</p>
-                <Link href="/analyse" className="inline-flex text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "white" }}>
+                <Link href="/analyse" className="inline-flex text-[14px] font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "white" }}>
                   Analyse a CV
                 </Link>
               </div>
@@ -407,19 +407,19 @@ function PipelineContent() {
                       }}
                     >
                       <div className="flex items-center justify-between mb-2.5 px-1.5 pt-0.5">
-                        <span className="text-[12px] font-semibold" style={{ color: highlighted ? "var(--forest)" : INK }}>
+                        <span className="text-[13px] font-semibold" style={{ color: highlighted ? "var(--forest)" : INK }}>
                           {STAGE_LABELS[key]}
                           <span className="ml-1.5 tabular-nums font-medium" style={{ color: INK_FAINT }}>{items.length}</span>
                         </span>
                         {avg !== null && (
-                          <span className="text-[11px] tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
+                          <span className="text-[12px] tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
                             avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
                           </span>
                         )}
                       </div>
                       <div className="space-y-2 min-h-[64px] max-h-[70vh] overflow-y-auto">
                         {items.length === 0 ? (
-                          <p className="text-[11px] text-center py-6 rounded-[10px]" style={{ color: INK_FAINT, border: "1px dashed var(--border)" }}>
+                          <p className="text-[12px] text-center py-6 rounded-[10px]" style={{ color: INK_FAINT, border: "1px dashed var(--border)" }}>
                             {over ? "Drop here" : "No candidates"}
                           </p>
                         ) : (

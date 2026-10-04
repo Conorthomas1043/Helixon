@@ -70,12 +70,12 @@ function PolicyPanel({ policy, onSaved }) {
             <div className="field">
               <label htmlFor="fw-block">Auto-block at score</label>
               <input id="fw-block" type="number" min={10} max={200} value={value.blockThreshold} onChange={(e) => set({ blockThreshold: Number(e.target.value) })} />
-              <span className="faint" style={{ fontSize: 12 }}>30 blocks on one clear attack signal (e.g. a SQL injection probe).</span>
+              <span className="faint" style={{ fontSize: 13 }}>30 blocks on one clear attack signal (e.g. a SQL injection probe).</span>
             </div>
             <div className="field">
               <label htmlFor="fw-alert">Alert at score</label>
               <input id="fw-alert" type="number" min={5} max={200} value={value.alertThreshold} onChange={(e) => set({ alertThreshold: Number(e.target.value) })} />
-              <span className="faint" style={{ fontSize: 12 }}>Flag weaker signals (scanners, probes for /.git) without blocking.</span>
+              <span className="faint" style={{ fontSize: 13 }}>Flag weaker signals (scanners, probes for /.git) without blocking.</span>
             </div>
           </div>
           <Switch id="fw-auto" label="Block automatically" description="Off: suspicious IPs are only flagged, and a person decides." checked={value.autoBlock} onChange={(on) => set({ autoBlock: on })} />
@@ -142,11 +142,11 @@ function AlertsPanel({ alerts, onSaved }) {
           <label htmlFor="alert-recipients">Email addresses (comma-separated, up to 10)</label>
           <textarea id="alert-recipients" rows={2} value={text} onChange={(e) => setDraft(e.target.value)} placeholder="security@helixon.co.uk" disabled={!alerts} />
           {alerts?.envFallback && (
-            <span className="faint" style={{ fontSize: 12 }}>
+            <span className="faint" style={{ fontSize: 13 }}>
               None set here, so alerts go to SECURITY_ALERT_EMAIL ({(alerts.effective || []).join(", ")}).
             </span>
           )}
-          {alerts && !alerts.effective?.length && <span className="faint" style={{ fontSize: 12 }}>Nobody gets alerts yet.</span>}
+          {alerts && !alerts.effective?.length && <span className="faint" style={{ fontSize: 13 }}>Nobody gets alerts yet.</span>}
         </div>
         {draft !== null && draft !== current && (
           <div className="actions">
@@ -313,7 +313,7 @@ export default function SecurityPage() {
                 <div className="mini-row" key={r.id}>
                   <div style={{ minWidth: 0 }}>
                     <div className="mono">{r.value}{r.value === myIp && <span className="pill good bare" style={{ marginLeft: 6 }}>You</span>}</div>
-                    <div className="faint truncate" style={{ fontSize: 12 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
+                    <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
                   <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
                 </div>
@@ -374,8 +374,8 @@ export default function SecurityPage() {
               {countryBlocks.map((r) => (
                 <div className="mini-row" key={r.id}>
                   <div style={{ minWidth: 0 }}>
-                    <div><b>{r.value}</b> <span className="faint" style={{ fontSize: 12 }}>· <Expiry at={r.expires_at} /></span></div>
-                    <div className="faint truncate" style={{ fontSize: 12 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
+                    <div><b>{r.value}</b> <span className="faint" style={{ fontSize: 13 }}>· <Expiry at={r.expires_at} /></span></div>
+                    <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
                   <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Unblock</button>
                 </div>
@@ -443,11 +443,11 @@ export default function SecurityPage() {
                 <div className="mini-row" key={r.id}>
                   <div style={{ minWidth: 0 }}>
                     <div>
-                      <span className="faint" style={{ fontSize: 12 }}>{{ block_path: "Path ", block_ua: "User agent ", block_cidr: "Range " }[r.kind]}</span>
+                      <span className="faint" style={{ fontSize: 13 }}>{{ block_path: "Path ", block_ua: "User agent ", block_cidr: "Range " }[r.kind]}</span>
                       <b className="mono">{r.value}</b>
-                      <span className="faint" style={{ fontSize: 12 }}> · <Expiry at={r.expires_at} /></span>
+                      <span className="faint" style={{ fontSize: 13 }}> · <Expiry at={r.expires_at} /></span>
                     </div>
-                    <div className="faint truncate" style={{ fontSize: 12 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
+                    <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
                   <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
                 </div>

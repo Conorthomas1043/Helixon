@@ -44,9 +44,9 @@ export default function InterviewsPanel({ candidate, onChanged }) {
       }
     >
       {interviews === null ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : interviews.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           No interviews yet. Scheduling one sends calendar invites to the candidate and the client.
         </p>
       ) : (

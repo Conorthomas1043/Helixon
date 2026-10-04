@@ -79,7 +79,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
     <section className="rounded-[16px] bg-white" style={{ border: "1px solid var(--border)" }} aria-labelledby="team-presence-title">
       <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>Team</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>Team</p>
           <h2 id="team-presence-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             {loading && team.length === 0 ? "Who's around" : `${onlineCount} of ${team.length} online`}
           </h2>
@@ -118,7 +118,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
               <li key={person.id} className="px-5 py-1.5 flex items-center gap-3">
                 <span className="relative shrink-0">
                   <span
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-semibold"
                     style={person.status === "offline" ? { background: "var(--mist)", color: "var(--ink-faint)" } : { background: "var(--mint)", color: "var(--forest)" }}
                     aria-hidden="true"
                   >

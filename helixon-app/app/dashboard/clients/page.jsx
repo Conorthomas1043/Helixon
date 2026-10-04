@@ -69,7 +69,7 @@ function NewClientDialog({ onClose, onCreated }) {
             <TextInput type="number" min={0} max={100} step="0.5" value={f.feePercent} onChange={set("feePercent")} />
           </Field>
           <Field label="Status">
-            <select value={f.status} onChange={set("status")} className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white" style={{ border: "1px solid var(--border)", color: INK }}>
+            <select value={f.status} onChange={set("status")} className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white" style={{ border: "1px solid var(--border)", color: INK }}>
               <option value="active">Active</option>
               <option value="prospect">Prospect</option>
               <option value="inactive">Inactive</option>
@@ -205,7 +205,7 @@ export default function ClientsPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients, industries or owners…"
               aria-label="Search clients"
-              className="text-[13px] px-4 py-2 rounded-full bg-white w-full sm:w-72"
+              className="text-[14px] px-4 py-2 rounded-full bg-white w-full sm:w-72"
               style={{ border: "1px solid var(--border)", color: INK }}
             />
             {[
@@ -220,7 +220,7 @@ export default function ClientsPage() {
                 type="button"
                 onClick={() => setFilter(v)}
                 aria-pressed={filter === v}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                className="text-[13px] font-semibold px-3 py-1.5 rounded-full"
                 style={{ background: filter === v ? "var(--forest)" : "white", color: filter === v ? "white" : INK_MUTED, border: `1px solid ${filter === v ? "var(--forest)" : "var(--border)"}` }}
               >
                 {l}
@@ -230,7 +230,7 @@ export default function ClientsPage() {
               aria-label="Sort clients"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="sm:ml-auto text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white"
+              className="sm:ml-auto text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               <option value="name">Name A–Z</option>
@@ -241,14 +241,14 @@ export default function ClientsPage() {
           </div>
 
           {visible.length === 0 ? (
-            <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+            <div className="rounded-[14px] p-8 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
               No clients match.
             </div>
           ) : (
             <div className="rounded-[14px] overflow-x-auto" style={CARD}>
-              <table className="w-full text-[13px]">
+              <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[12px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                     <th className="px-5 py-3 font-semibold">Client</th>
                     <th className="px-3 py-3 font-semibold hidden md:table-cell">Owner</th>
                     <th className="px-3 py-3 font-semibold text-right">Open jobs</th>
@@ -267,9 +267,9 @@ export default function ClientsPage() {
                             {c.name}
                           </Link>{" "}
                           {c.status !== "active" && <Pill color={st.color} background={st.background}>{st.label}</Pill>}
-                          {c.industry && <p className="text-[12px]" style={{ color: INK_MUTED }}>{c.industry}</p>}
+                          {c.industry && <p className="text-[13px]" style={{ color: INK_MUTED }}>{c.industry}</p>}
                           {c.nextAction && (
-                            <p className="text-[11.5px]" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
+                            <p className="text-[12.5px]" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
                               Follow-up: {c.nextAction.label}
                               {c.nextAction.dueAt ? ` · ${new Date(c.nextAction.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""}
                             </p>

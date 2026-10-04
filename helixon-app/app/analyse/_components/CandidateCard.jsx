@@ -47,8 +47,8 @@ export default function CandidateCard({
               <Icon name="file" size={18} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[13.5px] font-medium text-[var(--ink)] truncate">{file.name}</span>
-              <span className="block text-[12px] text-[var(--ink-faint)]">{formatBytes(file.size)}</span>
+              <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{file.name}</span>
+              <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(file.size)}</span>
             </span>
             {!rerunOf && (
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
@@ -79,7 +79,7 @@ export default function CandidateCard({
               <Icon name="upload" size={18} />
             </span>
             <span className="text-[14px] font-medium text-[var(--ink)]">Drop a CV here, or browse</span>
-            <span className="text-[12px] text-[var(--ink-faint)]">PDF or Word (.docx) · up to 10 MB</span>
+            <span className="text-[13px] text-[var(--ink-faint)]">PDF or Word (.docx) · up to 10 MB</span>
           </button>
         )}
         <input
@@ -126,7 +126,7 @@ export default function CandidateCard({
             onChange={(e) => setConsent(e.target.checked)}
             className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]"
           />
-          <span className="text-[12.5px] leading-relaxed text-[var(--ink-soft)]">
+          <span className="text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
             I have a lawful basis (for example the candidate&apos;s consent or legitimate interest under UK GDPR) to screen this CV.
           </span>
         </label>
@@ -135,7 +135,7 @@ export default function CandidateCard({
           <Button variant="primary" size="lg" className="w-full" disabled={!canAnalyse} onClick={onAnalyse} iconRight="arrowRight">
             {compare ? "Screen and compare" : rerunOf ? "Re-score candidate" : "Screen candidate"}
           </Button>
-          <p className="text-[12px] text-center mt-2 text-[var(--ink-faint)]">
+          <p className="text-[13px] text-center mt-2 text-[var(--ink-faint)]">
             {missing ? (
               missing
             ) : (

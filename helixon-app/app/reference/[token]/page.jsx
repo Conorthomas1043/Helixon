@@ -9,7 +9,7 @@ import PublicCard, { RatingPicker, PublicCardLoading } from "@/components/public
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
-const input = "w-full text-[13px] px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2";
+const input = "w-full text-[14px] px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2";
 const inputStyle = { border: "1px solid var(--border)", color: INK };
 
 export default function ReferencePage({ params }) {
@@ -87,7 +87,7 @@ export default function ReferencePage({ params }) {
       <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
         Reference for {info.candidateName}
       </h1>
-      <p className="text-[13px] mt-1 mb-6" style={{ color: MUTED }}>
+      <p className="text-[14px] mt-1 mb-6" style={{ color: MUTED }}>
         {info.agencyName || "A recruitment agency"} has asked you for a reference. Answer what you can - it&apos;s shared with the agency and may be passed to the employer considering {info.candidateName}.
       </p>
       <form
@@ -99,7 +99,7 @@ export default function ReferencePage({ params }) {
       >
         {info.questions.map((q) => (
           <div key={q.id}>
-            <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>{q.label}</span>
+            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>{q.label}</span>
             {q.type === "rating" ? (
               <RatingPicker value={answers[q.id] ?? null} onChange={(n) => set(q.id, n)} label={q.label} />
             ) : q.type === "choice" ? (
@@ -110,7 +110,7 @@ export default function ReferencePage({ params }) {
                     type="button"
                     aria-pressed={answers[q.id] === o}
                     onClick={() => set(q.id, o)}
-                    className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                    className="text-[13px] font-semibold px-3 py-1.5 rounded-full"
                     style={answers[q.id] === o ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
                   >
                     {o}
@@ -126,36 +126,36 @@ export default function ReferencePage({ params }) {
         ))}
         <div className="grid sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
+            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
             <input required maxLength={200} value={who.completedBy} onChange={(e) => setWho((w) => ({ ...w, completedBy: e.target.value }))} className={input} style={inputStyle} />
           </label>
           <label className="block">
-            <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>Your job title</span>
+            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>Your job title</span>
             <input maxLength={200} value={who.completedByTitle} onChange={(e) => setWho((w) => ({ ...w, completedByTitle: e.target.value }))} className={input} style={inputStyle} />
           </label>
         </div>
-        <label className="flex items-start gap-2 text-[13px]" style={{ color: INK }}>
+        <label className="flex items-start gap-2 text-[14px]" style={{ color: INK }}>
           <input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-0.5" />
           <span>To the best of my knowledge this reference is accurate, and I&apos;m happy for it to be shared with a prospective employer.</span>
         </label>
-        {error && <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
         <button type="submit" disabled={saving || !confirm} className="w-full text-[14px] font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
           {saving ? "Sending…" : "Send reference"}
         </button>
         {declining ? (
           <div className="rounded-[12px] p-4 space-y-3" style={{ border: "1px solid var(--border)", background: "var(--mist)" }} role="group" aria-label="Decline the reference">
-            <p className="text-[13px]" style={{ color: INK }}>Let the agency know you won&apos;t be giving a reference?</p>
+            <p className="text-[14px]" style={{ color: INK }}>Let the agency know you won&apos;t be giving a reference?</p>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[14px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
                 Go back
               </button>
-              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
+              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-[14px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
                 {saving ? "Sending…" : "Yes, let them know"}
               </button>
             </div>
           </div>
         ) : (
-          <button type="button" disabled={saving} onClick={() => setDeclining(true)} className="w-full text-[12px] underline" style={{ color: MUTED }}>
+          <button type="button" disabled={saving} onClick={() => setDeclining(true)} className="w-full text-[13px] underline" style={{ color: MUTED }}>
             I can&apos;t give a reference
           </button>
         )}

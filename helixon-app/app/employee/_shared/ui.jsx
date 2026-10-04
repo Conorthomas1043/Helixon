@@ -20,12 +20,12 @@ export function CardHeader({ title, eyebrow, count, action, id }) {
     <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>{eyebrow}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>{eyebrow}</p>
         )}
         <h2 id={id} className="text-[15px] font-semibold flex items-center gap-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           {title}
           {typeof count === "number" && count > 0 && (
-            <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums" style={{ background: "var(--mist)", color: "var(--ink-soft)", fontFamily: "var(--font-body)" }}>
+            <span className="text-[12px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums" style={{ background: "var(--mist)", color: "var(--ink-soft)", fontFamily: "var(--font-body)" }}>
               {count}
             </span>
           )}
@@ -53,7 +53,7 @@ const CHIP_TONES = {
 
 export function Chip({ tone = "neutral", children, className = "" }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${className}`} style={CHIP_TONES[tone]}>
+    <span className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${className}`} style={CHIP_TONES[tone]}>
       {children}
     </span>
   );
@@ -78,7 +78,7 @@ export function ProgressBar({ pct, tone = "var(--forest)", label }) {
 export function Kpi({ label, value, sub, tone, index = 0, href }) {
   const body = (
     <>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-2.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
       <p className="text-[28px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: tone || "var(--ink)" }}>
         {typeof value === "number" ? <CountUp value={value} /> : value ?? "-"}
       </p>

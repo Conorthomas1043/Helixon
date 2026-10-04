@@ -32,7 +32,7 @@ function NewDocumentDialog(props) {
   if (!agency.loaded) {
     return (
       <Dialog title="Send for signature" onClose={props.onClose}>
-        <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>
       </Dialog>
     );
   }
@@ -74,7 +74,7 @@ function NewDocumentForm({ kinds, signer, template, clientId, candidateId, place
   if (done) {
     return (
       <Dialog title="Sent for signature" onClose={onSaved}>
-        <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>
+        <p className="text-[14px] mb-3" style={{ color: INK_MUTED }}>
           {done.emailError ? `The email couldn't be sent (${done.emailError}). Share this link instead:` : send && f.signerEmail ? `We've emailed ${f.signerEmail} a link to sign. You can also share it yourself:` : "Share this private link with the signer:"}
         </p>
         <TextInput readOnly value={done.link} onFocus={(e) => e.target.select()} aria-label="Signing link" />
@@ -108,7 +108,7 @@ function NewDocumentForm({ kinds, signer, template, clientId, candidateId, place
         <Field label="Wording" hint="A starting point from what's on file - check it, and take your own legal advice on terms.">
           <TextArea required rows={14} maxLength={60000} value={f.body} onChange={set("body")} />
         </Field>
-        <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+        <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
           <input type="checkbox" checked={send && Boolean(f.signerEmail)} disabled={!f.signerEmail} onChange={(e) => setSend(e.target.checked)} />
           Email the signing link {f.signerEmail ? `to ${f.signerEmail}` : "(add an email first)"}
         </label>
@@ -131,14 +131,14 @@ function ViewDialog({ id, onClose }) {
   return (
     <Dialog title={doc?.title || "Document"} onClose={onClose} width={720}>
       {error && <ErrorText>{error}</ErrorText>}
-      {!doc && !error && <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>}
+      {!doc && !error && <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>}
       {doc && (
         <>
-          <article className="rounded-[10px] p-4 text-[13px] whitespace-pre-wrap max-h-[50vh] overflow-y-auto" style={{ background: "var(--mist)", color: INK }}>
+          <article className="rounded-[10px] p-4 text-[14px] whitespace-pre-wrap max-h-[50vh] overflow-y-auto" style={{ background: "var(--mist)", color: INK }}>
             {doc.body}
           </article>
           {doc.audit ? (
-            <dl className="mt-4 text-[12px] grid grid-cols-[auto_1fr] gap-x-4 gap-y-1" style={{ color: INK_MUTED }}>
+            <dl className="mt-4 text-[13px] grid grid-cols-[auto_1fr] gap-x-4 gap-y-1" style={{ color: INK_MUTED }}>
               <dt>Signed by</dt>
               <dd style={{ color: INK }}>{doc.audit.signedName}</dd>
               <dt>When</dt>
@@ -151,7 +151,7 @@ function ViewDialog({ id, onClose }) {
               <dd className="break-all">{doc.audit.documentHash}</dd>
             </dl>
           ) : (
-            <p className="mt-3 text-[12px]" style={{ color: INK_MUTED }}>
+            <p className="mt-3 text-[13px]" style={{ color: INK_MUTED }}>
               {SIGNATURE_STATUSES[doc.status]}
               {doc.viewedAt ? ` · opened ${new Date(doc.viewedAt).toLocaleString("en-GB")}` : " · not opened yet"}
               {doc.declinedReason ? ` · "${doc.declinedReason}"` : ""}
@@ -223,21 +223,21 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
       {confirmDialog}
     <Card title={title} action={!unavailable && <Button size="sm" onClick={() => setCreating(true)}>+ Send</Button>}>
       {list === null ? (
-        <p className="text-[13px]" style={{ color: INK_FAINT }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>
       ) : unavailable ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>E-signatures need a database update (migration 20261003010000).</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>E-signatures need a database update (migration 20261003010000).</p>
       ) : list.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Nothing sent yet. Send a document to be signed online - no printing or scanning.</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Nothing sent yet. Send a document to be signed online - no printing or scanning.</p>
       ) : (
         <ul className="space-y-3">
           {list.map((r) => {
             const [fg, bg] = STATUS_STYLE[r.status] || STATUS_STYLE.sent;
             return (
-              <li key={r.id} className="text-[13px]">
+              <li key={r.id} className="text-[14px]">
                 <div className="flex items-start justify-between gap-2">
                   <button type="button" className="min-w-0 text-left" onClick={() => setViewing(r.id)}>
                     <span className="block font-semibold truncate" style={{ color: INK }}>{r.title}</span>
-                    <span className="block text-[12px]" style={{ color: INK_MUTED }}>
+                    <span className="block text-[13px]" style={{ color: INK_MUTED }}>
                       {r.signerName}
                       {r.status === "signed" && r.signedAt ? ` · signed ${formatDateOnly(r.signedAt)}` : ` · sent ${formatDateOnly(r.createdAt)}`}
                     </span>
@@ -245,7 +245,7 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
                   <Pill color={fg} background={bg}>{r.status === "sent" ? "Waiting" : SIGNATURE_STATUSES[r.status]}</Pill>
                 </div>
                 {r.status === "sent" && (
-                  <div className="flex gap-3 mt-1 text-[11px] font-semibold">
+                  <div className="flex gap-3 mt-1 text-[12px] font-semibold">
                     {r.link && (
                       <CopyButton plain text={r.link} style={{ color: "var(--forest)" }}>
                         Copy link

@@ -19,7 +19,7 @@ function fmt(d) {
 
 function Code({ children }) {
   return (
-    <pre className="text-[11px] leading-relaxed p-3 rounded-[10px] overflow-x-auto whitespace-pre" style={{ background: "var(--mist)", color: INK, fontFamily: "var(--font-mono)" }}>
+    <pre className="text-[12px] leading-relaxed p-3 rounded-[10px] overflow-x-auto whitespace-pre" style={{ background: "var(--mist)", color: INK, fontFamily: "var(--font-mono)" }}>
       {children}
     </pre>
   );
@@ -82,16 +82,16 @@ function ApiKeys({ origin }) {
     <>
       {confirmDialog}
     <Card title="API keys" eyebrow="REST API">
-      <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>
         A key lets a script, Zapier or the LinkedIn extension read and add candidates, jobs and clients in this workspace, acting as you. Keep it secret - anyone with it can see your candidates.
       </p>
       {fresh && (
         <div className="rounded-[10px] p-3 mb-3" style={{ background: "#e5f4ea" }}>
-          <p className="text-[12px] font-semibold mb-1" style={{ color: "#1f6f43" }}>
+          <p className="text-[13px] font-semibold mb-1" style={{ color: "#1f6f43" }}>
             Copy your key now - it won&apos;t be shown again.
           </p>
           <div className="flex gap-2 items-center">
-            <code className="text-[12px] break-all flex-1" style={{ color: INK }}>
+            <code className="text-[13px] break-all flex-1" style={{ color: INK }}>
               {fresh}
             </code>
             <CopyButton size="sm" text={fresh}>
@@ -108,19 +108,19 @@ function ApiKeys({ origin }) {
       </form>
       <ErrorText>{error}</ErrorText>
       {keys === null ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : keys.length === 0 ? null : (
         <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
           {keys.map((k) => (
-            <li key={k.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[13px]">
+            <li key={k.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
               <span className="font-semibold" style={{ color: k.revokedAt ? INK_FAINT : INK }}>
                 {k.name}
               </span>
-              <code className="text-[11px]" style={{ color: INK_MUTED }}>
+              <code className="text-[12px]" style={{ color: INK_MUTED }}>
                 {k.prefix}…
               </code>
               {k.revokedAt ? <Pill>Revoked</Pill> : null}
-              <span className="text-[11px] flex-1" style={{ color: INK_FAINT }}>
+              <span className="text-[12px] flex-1" style={{ color: INK_FAINT }}>
                 {k.createdBy ? `by ${k.createdBy} · ` : ""}
                 {k.lastUsedAt ? `last used ${fmt(k.lastUsedAt)}` : "never used"}
               </span>
@@ -134,10 +134,10 @@ function ApiKeys({ origin }) {
         </ul>
       )}
       <details className="mt-4">
-        <summary className="text-[12px] font-semibold cursor-pointer" style={{ color: "var(--forest)" }}>
+        <summary className="text-[13px] font-semibold cursor-pointer" style={{ color: "var(--forest)" }}>
           How to use it
         </summary>
-        <div className="mt-2 space-y-2 text-[12px]" style={{ color: INK_MUTED }}>
+        <div className="mt-2 space-y-2 text-[13px]" style={{ color: INK_MUTED }}>
           <p>Send the key in an Authorization header. Lists are paged (?page=, ?pageSize= up to 100) and take the same filters as the Candidates page.</p>
           <Code>{`curl ${origin}/api/v1/candidates?stage=Interview \\
   -H "Authorization: Bearer hx_..."
@@ -202,7 +202,7 @@ function Webhooks() {
     <>
       {confirmDialog}
     <Card title="Webhooks" eyebrow="Zapier, Make, your own systems">
-      <p className="text-[12px] mb-3" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>
         When something happens here, Helixon POSTs it as JSON to your address - in Zapier, use &quot;Webhooks by Zapier → Catch Hook&quot; and paste its URL. Each delivery is signed: check the Helixon-Signature header (t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot; with the signing secret).
       </p>
       <form
@@ -221,16 +221,16 @@ function Webhooks() {
         </Field>
         {data && (
           <fieldset>
-            <legend className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <legend className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
               Events (none ticked = all)
             </legend>
             <div className="grid sm:grid-cols-2 gap-1">
               {Object.entries(data.events).map(([key, label]) => (
-                <label key={key} className="flex items-start gap-2 text-[12px]" style={{ color: INK }}>
+                <label key={key} className="flex items-start gap-2 text-[13px]" style={{ color: INK }}>
                   <input type="checkbox" className="mt-0.5" checked={events.includes(key)} onChange={(e) => setEvents((list) => (e.target.checked ? [...list, key] : list.filter((x) => x !== key)))} />
                   <span>
-                    <code className="text-[11px]">{key}</code>
-                    <span className="block text-[11px]" style={{ color: INK_FAINT }}>
+                    <code className="text-[12px]">{key}</code>
+                    <span className="block text-[12px]" style={{ color: INK_FAINT }}>
                       {label}
                     </span>
                   </span>
@@ -245,14 +245,14 @@ function Webhooks() {
       </form>
       <ErrorText>{error}</ErrorText>
       {notice && (
-        <p className="text-[12px] mb-2" role="status" style={{ color: "var(--forest)" }}>
+        <p className="text-[13px] mb-2" role="status" style={{ color: "var(--forest)" }}>
           {notice}
         </p>
       )}
       {data?.endpoints.length > 0 && (
         <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
           {data.endpoints.map((e) => (
-            <li key={e.id} className="py-3 text-[12px] space-y-1">
+            <li key={e.id} className="py-3 text-[13px] space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <code className="break-all font-semibold" style={{ color: e.active ? INK : INK_FAINT }}>
                   {e.url}
@@ -280,7 +280,7 @@ function Webhooks() {
                 </button>
               </div>
               {shown === e.id && (
-                <code className="block text-[11px] break-all p-2 rounded" style={{ background: "var(--mist)", color: INK }}>
+                <code className="block text-[12px] break-all p-2 rounded" style={{ background: "var(--mist)", color: INK }}>
                   {e.secret}
                 </code>
               )}
@@ -320,7 +320,7 @@ export default function IntegrationsPage() {
       {allowed === null ? (
         <LoadingCard rows={4} />
       ) : allowed === false ? (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
           API keys, webhooks and the LinkedIn extension are managed by the workspace owner or an admin.
         </p>
       ) : (
@@ -328,7 +328,7 @@ export default function IntegrationsPage() {
           <ApiKeys origin={origin} />
           <Webhooks />
           <Card title="LinkedIn extension" eyebrow="Chrome / Edge">
-            <div className="text-[12px] space-y-2" style={{ color: INK_MUTED }}>
+            <div className="text-[13px] space-y-2" style={{ color: INK_MUTED }}>
               <p>Save the LinkedIn profile you&apos;re looking at to Helixon in one click - name, headline, location and profile link, with a note and the job to add them to. People already on file aren&apos;t duplicated.</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>

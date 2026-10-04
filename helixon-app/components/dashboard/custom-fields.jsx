@@ -154,10 +154,10 @@ export function CustomFieldsCard({ entity, recordId, values: initial, onSaved })
             const shown = formatFieldValue(d, values[d.id]);
             return (
               <div key={d.id} className={d.type === "longtext" ? "sm:col-span-2" : ""}>
-                <dt className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                <dt className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                   {d.label}
                 </dt>
-                <dd className="text-[13px] whitespace-pre-wrap break-words" style={{ color: shown ? INK : INK_FAINT }}>
+                <dd className="text-[14px] whitespace-pre-wrap break-words" style={{ color: shown ? INK : INK_FAINT }}>
                   {!shown ? (
                     "-"
                   ) : d.type === "url" ? (
@@ -174,7 +174,7 @@ export function CustomFieldsCard({ entity, recordId, values: initial, onSaved })
         </dl>
       )}
       {c?.canManage && (
-        <p className="text-[11px] mt-3" style={{ color: INK_MUTED }}>
+        <p className="text-[12px] mt-3" style={{ color: INK_MUTED }}>
           <Link href="/dashboard/settings/pipeline" className="underline">
             Change these fields
           </Link>

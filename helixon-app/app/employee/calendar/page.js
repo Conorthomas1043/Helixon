@@ -460,7 +460,7 @@ function CalendarPageContent() {
                       readOnly
                       value={feedUrl}
                       onFocus={(e) => e.target.select()}
-                      className="flex-1 min-w-0 text-[11px] rounded-lg px-2.5 py-2 font-mono"
+                      className="flex-1 min-w-0 text-[12px] rounded-lg px-2.5 py-2 font-mono"
                       style={{ border: "1px solid var(--border)", color: "var(--ink-soft)", background: "var(--mist)" }}
                     />
                     <button onClick={copyFeedUrl} className="text-xs font-semibold px-3 py-2 rounded-lg shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>

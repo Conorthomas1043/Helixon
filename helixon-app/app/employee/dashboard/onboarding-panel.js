@@ -77,7 +77,7 @@ export default function OnboardingPanel() {
     <section className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-labelledby="onboarding-title">
       <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border-soft)" }}>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--forest)" }}>Getting started</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--forest)" }}>Getting started</p>
           <h2 id="onboarding-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Onboarding
           </h2>

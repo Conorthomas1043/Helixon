@@ -100,7 +100,7 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
         aria-haspopup="true"
         className={
           className ||
-          "text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          "text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         }
         style={className ? undefined : { border: "1px solid var(--border)", color: INK }}
       >
@@ -113,13 +113,13 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
           className="absolute z-40 mt-2 w-72 rounded-[12px] bg-white p-3 shadow-xl right-0 sm:left-0 sm:right-auto"
           style={{ border: "1px solid var(--border)" }}
         >
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
             {candidateIds.length === 1 ? "Client shortlists" : `Add ${candidateIds.length} people to`}
           </p>
           {lists === null ? (
-            <p className="text-[12px] py-2" style={{ color: INK_MUTED }}>Loading…</p>
+            <p className="text-[13px] py-2" style={{ color: INK_MUTED }}>Loading…</p>
           ) : lists.length === 0 ? (
-            <p className="text-[12px] py-1" style={{ color: INK_MUTED }}>No client shortlists yet - name one below. A shortlist is what you send a client to decide on.</p>
+            <p className="text-[13px] py-1" style={{ color: INK_MUTED }}>No client shortlists yet - name one below. A shortlist is what you send a client to decide on.</p>
           ) : (
             <ul className="max-h-56 overflow-y-auto -mx-1">
               {lists.map((l) => (
@@ -130,12 +130,12 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
                     onClick={() => toggle(l)}
                     className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-[8px] hover:bg-[var(--mist)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2"
                   >
-                    <span className="w-4 text-[12px]" style={{ color: "var(--forest)" }} aria-hidden="true">
+                    <span className="w-4 text-[13px]" style={{ color: "var(--forest)" }} aria-hidden="true">
                       {l.containsCandidate ? "✓" : ""}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[13px] font-medium truncate" style={{ color: INK }}>{l.name}</span>
-                      <span className="block text-[11px] truncate" style={{ color: INK_FAINT }}>
+                      <span className="block text-[14px] font-medium truncate" style={{ color: INK }}>{l.name}</span>
+                      <span className="block text-[12px] truncate" style={{ color: INK_FAINT }}>
                         {[l.jobTitle, `${l.count} ${l.count === 1 ? "person" : "people"}`].filter(Boolean).join(" · ")}
                       </span>
                     </span>
@@ -152,21 +152,21 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
               maxLength={120}
               placeholder="New shortlist name"
               aria-label="New shortlist name"
-              className="flex-1 min-w-0 text-[12px] px-2.5 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2"
+              className="flex-1 min-w-0 text-[13px] px-2.5 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             />
             <button
               type="submit"
               disabled={busy || !newName.trim()}
-              className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               Create
             </button>
           </form>
           <div className="flex items-center justify-between mt-2">
-            <p className="text-[11px] min-h-[16px]" role="status" style={{ color: INK_MUTED }}>{message}</p>
-            <Link href="/dashboard/shortlists" className="text-[11px] font-semibold underline shrink-0" style={{ color: "var(--forest)" }}>
+            <p className="text-[12px] min-h-[16px]" role="status" style={{ color: INK_MUTED }}>{message}</p>
+            <Link href="/dashboard/shortlists" className="text-[12px] font-semibold underline shrink-0" style={{ color: "var(--forest)" }}>
               All shortlists
             </Link>
           </div>

@@ -269,7 +269,7 @@ export function BarList({ items = [], limit = 8, emptyLabel = "No data yet.", on
             </span>
             <span className="bar-value">
               {item.count.toLocaleString()}
-              {note?.(item) ? <span className="faint" style={{ marginLeft: 6, fontSize: 11 }}>{note(item)}</span> : null}
+              {note?.(item) ? <span className="faint" style={{ marginLeft: 6, fontSize: 12 }}>{note(item)}</span> : null}
             </span>
             <div className="bar-track">
               <div className="bar-fill" style={{ width: `${Math.max(4, (item.count / max) * 100)}%` }} />

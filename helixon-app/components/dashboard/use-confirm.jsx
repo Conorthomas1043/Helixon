@@ -51,7 +51,7 @@ export function useConfirm() {
   const dialog = request ? (
     <Dialog title={request.title} onClose={() => finish(dismissValue)} width={460}>
       {request.body && (
-        <div className="text-[13.5px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+        <div className="text-[14.5px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
           {request.body}
         </div>
       )}

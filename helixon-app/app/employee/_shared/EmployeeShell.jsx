@@ -117,7 +117,7 @@ function EmployeeNav({ employee }) {
           <LogoMark />
           <span className="flex items-center gap-2 leading-none">
             <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "var(--mint)", color: "var(--forest)" }}>
               Staff
             </span>
           </span>
@@ -129,7 +129,7 @@ function EmployeeNav({ employee }) {
               <Link
                 href={s.href}
                 aria-current={isActive(s.href) ? "page" : undefined}
-                className={`nav-link text-[13px] font-medium ${isActive(s.href) ? "nav-link--active" : ""}`}
+                className={`nav-link text-[14px] font-medium ${isActive(s.href) ? "nav-link--active" : ""}`}
                 style={{ color: "var(--ink-soft)" }}
               >
                 {s.label}
@@ -148,10 +148,10 @@ function EmployeeNav({ employee }) {
               aria-label="Account menu"
               className="flex items-center gap-2 rounded-full pl-1 pr-2.5 py-1 transition hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
             >
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold text-white" style={{ background: "var(--forest)" }} aria-hidden="true">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold text-white" style={{ background: "var(--forest)" }} aria-hidden="true">
                 {initialsOf(name)}
               </span>
-              <span className="hidden sm:block text-[13px] font-medium max-w-[120px] truncate" style={{ color: "var(--ink)" }}>
+              <span className="hidden sm:block text-[14px] font-medium max-w-[120px] truncate" style={{ color: "var(--ink)" }}>
                 {name.split(/\s+/)[0] || "Account"}
               </span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="hidden sm:block">
@@ -236,7 +236,7 @@ function AdminBanner({ employee }) {
 
   const who = employee.fullName || employee.username;
   return (
-    <div role="status" className="w-full text-[13px]" style={{ background: employee.impersonatedBy ? "#fff4d6" : "var(--mint)", borderBottom: "1px solid var(--border)", color: "var(--ink)" }}>
+    <div role="status" className="w-full text-[14px]" style={{ background: employee.impersonatedBy ? "#fff4d6" : "var(--mint)", borderBottom: "1px solid var(--border)", color: "var(--ink)" }}>
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
         <span>
           {employee.impersonatedBy ? (
@@ -289,7 +289,7 @@ export default function EmployeeShell({ employee: employeeProp, section, childre
       <main id="main-content">
         {readOnly && (
           <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-5">
-            <p className="text-[13px] rounded-[10px] px-3.5 py-2.5" style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+            <p className="text-[14px] rounded-[10px] px-3.5 py-2.5" style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
               <b style={{ color: "var(--ink)" }}>View only.</b> You can look around {meta?.label ? `in ${meta.label}` : "here"}, but changes are turned off for your account.
             </p>
           </div>

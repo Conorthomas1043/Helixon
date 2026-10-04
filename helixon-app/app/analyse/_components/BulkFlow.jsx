@@ -457,8 +457,8 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                   <Icon name={bulkJobFileName ? "file" : "upload"} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[13px] font-medium text-[var(--ink)] truncate">{bulkJobFileName || "Choose the job spec"}</span>
-                  <span className="block text-[11.5px] text-[var(--ink-faint)]">{bulkJobFileName ? "Click to replace" : "PDF, Word or .txt · up to 10 MB"}</span>
+                  <span className="block text-[14px] font-medium text-[var(--ink)] truncate">{bulkJobFileName || "Choose the job spec"}</span>
+                  <span className="block text-[12.5px] text-[var(--ink-faint)]">{bulkJobFileName ? "Click to replace" : "PDF, Word or .txt · up to 10 MB"}</span>
                 </span>
               </button>
               <input ref={jobInputRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { handleBulkJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
@@ -477,7 +477,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
             <Switch id="bulk-blind" checked={bulkBlind} onChange={setBulkBlind} label="Blind screening" description="Hide names, contact details and institutions when scoring." />
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]" />
-              <span className="text-[12.5px] leading-relaxed text-[var(--ink-soft)]">I have a lawful basis (for example consent or legitimate interest under UK GDPR) to screen these CVs.</span>
+              <span className="text-[13.5px] leading-relaxed text-[var(--ink-soft)]">I have a lawful basis (for example consent or legitimate interest under UK GDPR) to screen these CVs.</span>
             </label>
           </div>
         </div>
@@ -511,7 +511,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                   Discard it
                 </Button>
               </span>
-              {queue.length > 0 && <span className="block text-[12px] mt-1">Clear the CVs below to pick it up.</span>}
+              {queue.length > 0 && <span className="block text-[13px] mt-1">Clear the CVs below to pick it up.</span>}
             </Notice>
           )}
           {!running && queue.length < BULK_MAX_FILES && (
@@ -535,17 +535,17 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
               )}
             >
               <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
-              <span className="text-[13.5px] font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
-              <span className="text-[12px] text-[var(--ink-faint)]">PDF or Word, up to 10 MB each, or a .zip of them</span>
+              <span className="text-[14.5px] font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
+              <span className="text-[13px] text-[var(--ink-faint)]">PDF or Word, up to 10 MB each, or a .zip of them</span>
             </button>
           )}
           <input ref={cvInputRef} type="file" multiple accept={`${CV_ACCEPT},.zip,application/zip`} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
-          {unzipping && <p className="text-[12.5px] text-[var(--ink-soft)]" role="status">Opening zip…</p>}
+          {unzipping && <p className="text-[13.5px] text-[var(--ink-soft)]" role="status">Opening zip…</p>}
           {queueError && <Notice tone="warn" onDismiss={() => setQueueError(null)}>{queueError}</Notice>}
 
           {(running || settledCount > 0) && (
             <div>
-              <div className="flex justify-between text-[12.5px] mb-1.5">
+              <div className="flex justify-between text-[13.5px] mb-1.5">
                 <span className="text-[var(--ink-soft)]">{running ? "Analysing…" : allSettled ? "Run complete" : "Paused"}</span>
                 <span className="tabular-nums text-[var(--ink)]">
                   {settledCount} / {queue.length}
@@ -564,7 +564,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
           )}
           {doneCount >= 2 && !running && (
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--mist)] px-3 py-2">
-              <span className="text-[12.5px] text-[var(--ink-soft)]">
+              <span className="text-[13.5px] text-[var(--ink-soft)]">
                 {compareIds.length ? `${compareIds.length} of 4 ticked to compare` : "Tick 2-4 candidates to compare them side by side"}
               </span>
               <span className="flex gap-2">
@@ -622,25 +622,25 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                       <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13.5px] text-[var(--ink)] truncate">{item.name || item.file.name}</p>
-                      <p className={cx("text-[12px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
+                      <p className="text-[14.5px] text-[var(--ink)] truncate">{item.name || item.file.name}</p>
+                      <p className={cx("text-[13px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
                         {item.status === "failed" || item.status === "rate_limited" ? item.errorMessage : item.name ? item.file.name : formatBytes(item.file.size)}
                       </p>
                       {item.duplicate && (
-                        <p className="text-[11.5px] truncate" style={{ color: item.duplicate.sameJobCandidateId ? "var(--score-mid)" : "var(--forest)" }}>
+                        <p className="text-[12.5px] truncate" style={{ color: item.duplicate.sameJobCandidateId ? "var(--score-mid)" : "var(--forest)" }}>
                           {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}
                         </p>
                       )}
                     </div>
                     {item.status === "done" ? (
                       <a href={`/dashboard/candidates/${item.candidateId}`} className="flex items-center gap-2 group" aria-label={`Open ${item.name || item.file.name}, score ${item.score}`}>
-                        <span className="h-6 min-w-[36px] px-1.5 rounded-[6px] text-[12.5px] font-semibold tabular-nums flex items-center justify-center" style={{ background: tone.bg, color: tone.fg }}>
+                        <span className="h-6 min-w-[36px] px-1.5 rounded-[6px] text-[13.5px] font-semibold tabular-nums flex items-center justify-center" style={{ background: tone.bg, color: tone.fg }}>
                           {item.score ?? "–"}
                         </span>
                         <Icon name="arrowRight" size={14} className="text-[var(--ink-faint)] group-hover:text-[var(--ink)]" />
                       </a>
                     ) : item.status === "processing" ? (
-                      <span className="text-[12px] text-[var(--forest)] flex items-center gap-1.5">
+                      <span className="text-[13px] text-[var(--forest)] flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> Analysing
                       </span>
                     ) : (item.status === "failed" || item.status === "rate_limited") && !running ? (
@@ -649,7 +649,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                       </Button>
                     ) : (
                       <span className="flex items-center gap-1">
-                        <span className="text-[12px] text-[var(--ink-faint)]">{STATUS_LABEL[item.status]}</span>
+                        <span className="text-[13px] text-[var(--ink-faint)]">{STATUS_LABEL[item.status]}</span>
                         {item.status === "queued" && !running && (
                           <button type="button" onClick={() => setQueue((q) => q.filter((it) => it.id !== item.id))} aria-label={`Remove ${item.file.name}`} className="p-1 rounded text-[var(--ink-faint)] hover:text-[var(--ink)]">
                             <Icon name="x" size={13} />
@@ -667,7 +667,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
             <Button variant="primary" size="lg" className="w-full" disabled={!canStart} onClick={startBulk}>
               {running ? `Screening ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Screen ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
             </Button>
-            {missing && !running && <p className="text-[12px] text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
+            {missing && !running && <p className="text-[13px] text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
           </div>
         </div>
       </Card>

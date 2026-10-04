@@ -119,11 +119,11 @@ export function FormField({ id, label, error, hint, children }) {
       </label>
       {children}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-[11px] mt-1.5 font-medium" style={{ color: COLORS.dangerTextDark }}>
+        <p id={`${id}-error`} role="alert" className="text-[12px] mt-1.5 font-medium" style={{ color: COLORS.dangerTextDark }}>
           {error}
         </p>
       ) : hint ? (
-        <p className="text-[11px] mt-1.5" style={{ color: COLORS.faint }}>
+        <p className="text-[12px] mt-1.5" style={{ color: COLORS.faint }}>
           {hint}
         </p>
       ) : null}

@@ -54,13 +54,13 @@ export default function AdminMobileApp({ username }) {
             className="w-7 h-7 rounded-[8px] flex items-center justify-center"
             style={{ background: "var(--forest)" }}
           >
-            <span className="text-white text-[11px] font-bold">H</span>
+            <span className="text-white text-[12px] font-bold">H</span>
           </div>
           <div className="leading-none">
-            <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>
+            <div className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
               Admin
             </div>
-            <div className="text-[10px]" style={{ color: "var(--ink-faint)" }}>
+            <div className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
               {username}
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function AdminMobileApp({ username }) {
               aria-current={active ? "page" : undefined}
             >
               <Icon name={t.icon} size={20} strokeWidth={active ? 2.4 : 2} />
-              <span className="text-[10px] font-medium">{t.label}</span>
+              <span className="text-[11px] font-medium">{t.label}</span>
             </button>
           );
         })}
@@ -127,7 +127,7 @@ export default function AdminMobileApp({ username }) {
 function SectionTitle({ children, right }) {
   return (
     <div className="flex items-center justify-between mb-2.5 mt-5 first:mt-0">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
+      <h2 className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
         {children}
       </h2>
       {right}
@@ -146,7 +146,7 @@ function RangeControl({ value, onChange }) {
           key={r.id}
           type="button"
           onClick={() => onChange(r.id)}
-          className="text-[11px] font-semibold px-2.5 py-1 rounded-[8px] transition-colors"
+          className="text-[12px] font-semibold px-2.5 py-1 rounded-[8px] transition-colors"
           style={{
             background: value === r.id ? "white" : "transparent",
             color: value === r.id ? "var(--forest)" : "var(--ink-faint)",
@@ -162,7 +162,7 @@ function RangeControl({ value, onChange }) {
 function Kpi({ label, value, tone }) {
   return (
     <div className="rounded-[14px] p-3.5" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="text-[10px] font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
+      <div className="text-[11px] font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
         {label}
       </div>
       <div
@@ -185,7 +185,7 @@ function Card({ children }) {
 
 function EmptyRow({ children }) {
   return (
-    <div className="text-[12px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+    <div className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
       {children}
     </div>
   );
@@ -195,7 +195,7 @@ function ErrorNotice({ message }) {
   if (!message) return null;
   return (
     <div
-      className="text-[12px] rounded-[10px] px-3 py-2.5 mb-3"
+      className="text-[13px] rounded-[10px] px-3 py-2.5 mb-3"
       style={{ background: "#fdf1f0", color: RED, border: "1px solid #f6d6d3" }}
     >
       {message}
@@ -235,7 +235,7 @@ function OverviewTab() {
       <button
         type="button"
         onClick={reload}
-        className="mt-4 w-full flex items-center justify-center gap-1.5 text-[12px] font-medium py-2.5 rounded-[10px]"
+        className="mt-4 w-full flex items-center justify-center gap-1.5 text-[13px] font-medium py-2.5 rounded-[10px]"
         style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
       >
         <Icon name="refresh" size={14} />
@@ -257,10 +257,10 @@ function StatusRow({ label, snapshot, ok, note, first }) {
 
   return (
     <div className="flex items-center justify-between gap-3 px-3.5 py-3" style={{ borderTop: first ? "none" : "1px solid var(--border)" }}>
-      <span className="text-[13px] font-medium" style={{ color: "var(--ink)" }}>
+      <span className="text-[14px] font-medium" style={{ color: "var(--ink)" }}>
         {label}
       </span>
-      <span className="flex items-center gap-1.5 text-[11px] font-medium truncate" style={{ color: tone, maxWidth: "60%" }}>
+      <span className="flex items-center gap-1.5 text-[12px] font-medium truncate" style={{ color: tone, maxWidth: "60%" }}>
         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: tone }} />
         <span className="truncate">{text}</span>
       </span>
@@ -294,7 +294,7 @@ function HealthTab() {
           {overall && (
             <div className="flex items-center gap-2.5 rounded-[14px] p-3.5 mb-4" style={{ background: "white", border: "1px solid var(--border)" }}>
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: overall.tone }} />
-              <span className="text-[13px] font-semibold" style={{ color: overall.tone }}>
+              <span className="text-[14px] font-semibold" style={{ color: overall.tone }}>
                 {overall.label}
               </span>
             </div>
@@ -366,7 +366,7 @@ function HealthTab() {
           <button
             type="button"
             onClick={reload}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 text-[12px] font-medium py-2.5 rounded-[10px]"
+            className="mt-4 w-full flex items-center justify-center gap-1.5 text-[13px] font-medium py-2.5 rounded-[10px]"
             style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
           >
             <Icon name="refresh" size={14} />
@@ -430,10 +430,10 @@ function SecurityTab() {
                   style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
                 >
                   <div className="min-w-0">
-                    <div className="text-[13px] font-medium tabular-nums truncate" style={{ color: "var(--ink)" }}>
+                    <div className="text-[14px] font-medium tabular-nums truncate" style={{ color: "var(--ink)" }}>
                       {entry.ip}
                     </div>
-                    <div className="text-[11px] truncate" style={{ color: "var(--ink-faint)" }}>
+                    <div className="text-[12px] truncate" style={{ color: "var(--ink-faint)" }}>
                       {entry.reason || "No reason given"} · {timeAgo(entry.created_at)}
                     </div>
                   </div>
@@ -441,7 +441,7 @@ function SecurityTab() {
                     type="button"
                     disabled={busy}
                     onClick={() => unblock(entry.ip)}
-                    className="text-[11px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
+                    className="text-[12px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
                     style={{ background: "var(--mint)", color: "var(--forest)" }}
                   >
                     Unblock
@@ -463,10 +463,10 @@ function SecurityTab() {
                   style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
                 >
                   <div className="min-w-0">
-                    <div className="text-[13px] font-medium tabular-nums truncate" style={{ color: "var(--ink)" }}>
+                    <div className="text-[14px] font-medium tabular-nums truncate" style={{ color: "var(--ink)" }}>
                       {entry.ip}
                     </div>
-                    <div className="text-[11px] truncate" style={{ color: "var(--ink-faint)" }}>
+                    <div className="text-[12px] truncate" style={{ color: "var(--ink-faint)" }}>
                       {entry.count} requests{entry.blocked ? `, ${entry.blocked} already blocked` : ""}
                       {entry.country ? ` · ${entry.country}` : ""}
                     </div>
@@ -475,7 +475,7 @@ function SecurityTab() {
                     type="button"
                     disabled={busy}
                     onClick={() => block(entry.ip)}
-                    className="text-[11px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
+                    className="text-[12px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
                     style={{ background: "#fdf1f0", color: RED }}
                   >
                     Block
@@ -488,7 +488,7 @@ function SecurityTab() {
           <button
             type="button"
             onClick={reload}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 text-[12px] font-medium py-2.5 rounded-[10px]"
+            className="mt-4 w-full flex items-center justify-center gap-1.5 text-[13px] font-medium py-2.5 rounded-[10px]"
             style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
           >
             <Icon name="refresh" size={14} />
@@ -515,8 +515,8 @@ function SwitchRow({ label, sub, on, onToggle, disabled, danger }) {
       style={{ borderColor: "var(--border)" }}
     >
       <span className="min-w-0">
-        <span className="block text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{label}</span>
-        {sub && <span className="block text-[11px]" style={{ color: "var(--ink-faint)" }}>{sub}</span>}
+        <span className="block text-[14px] font-semibold" style={{ color: "var(--ink)" }}>{label}</span>
+        {sub && <span className="block text-[12px]" style={{ color: "var(--ink-faint)" }}>{sub}</span>}
       </span>
       <span className="shrink-0 w-10 h-6 rounded-full relative transition" style={{ background: on ? (danger ? RED : GREEN) : "#d8dedb" }} aria-hidden="true">
         <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all" style={{ left: on ? 18 : 2 }} />
@@ -588,7 +588,7 @@ function SiteTab() {
             ))}
           </Card>
           {settings.announcement?.enabled && (
-            <p className="text-[11px] mt-3" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-[12px] mt-3" style={{ color: "var(--ink-faint)" }}>
               Banner showing: “{settings.announcement.text}”. Edit it on desktop under Site controls.
             </p>
           )}
@@ -632,7 +632,7 @@ function UsersTab() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by name or email…"
-          className="w-full text-[13px] rounded-[10px] pl-9 pr-3 py-2.5"
+          className="w-full text-[14px] rounded-[10px] pl-9 pr-3 py-2.5"
           style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
         />
       </div>
@@ -640,7 +640,7 @@ function UsersTab() {
       <ErrorNotice message={error} />
       {clerkWarning && (
         <div
-          className="text-[12px] rounded-[10px] px-3 py-2.5 mb-3"
+          className="text-[13px] rounded-[10px] px-3 py-2.5 mb-3"
           style={{ background: "#fdf5e9", color: AMBER, border: "1px solid #f2e3c2" }}
         >
           {clerkWarning}
@@ -664,10 +664,10 @@ function UsersTab() {
                   style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
                 >
                   <div className="min-w-0">
-                    <div className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                    <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>
                       {user.email || name || user.id}
                     </div>
-                    <div className="text-[11px] truncate flex items-center gap-1.5" style={{ color: "var(--ink-faint)" }}>
+                    <div className="text-[12px] truncate flex items-center gap-1.5" style={{ color: "var(--ink-faint)" }}>
                       <span
                         className="inline-block w-1.5 h-1.5 rounded-full"
                         style={{ background: banned ? RED : GREEN }}
@@ -679,7 +679,7 @@ function UsersTab() {
                     type="button"
                     disabled={busy}
                     onClick={() => toggleLockout(user)}
-                    className="text-[11px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
+                    className="text-[12px] font-semibold px-3 py-1.5 rounded-[8px] shrink-0"
                     style={{
                       background: banned ? "var(--mint)" : "#fdf1f0",
                       color: banned ? "var(--forest)" : RED,
@@ -694,7 +694,7 @@ function UsersTab() {
         </Card>
       )}
       {users.length > 50 && (
-        <p className="text-[11px] text-center mt-2" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-[12px] text-center mt-2" style={{ color: "var(--ink-faint)" }}>
           Showing first 50 - narrow your search for more.
         </p>
       )}

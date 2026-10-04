@@ -82,7 +82,7 @@ export default function NotificationsInfo() {
             />
           </>
         )}
-        {error && <p className="mt-2 text-[13px] text-[#b42318]">{error}</p>}
+        {error && <p className="mt-2 text-[14px] text-[#b42318]">{error}</p>}
       </div>
 
       <h3 className="mt-8 text-[17px] font-semibold text-[#10221d]">Everything else</h3>

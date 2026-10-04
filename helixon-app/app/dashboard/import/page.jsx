@@ -111,7 +111,7 @@ export default function ImportPage() {
             </Button>
           ))}
         </div>
-        <p className="text-[12px] mt-3" style={{ color: INK_MUTED }}>
+        <p className="text-[13px] mt-3" style={{ color: INK_MUTED }}>
           {type === "candidates" && "People with their contact details, current role and skills. Notes become notes on their profile. They can be screened against a job later from the talent pool (once their CV is uploaded)."}
           {type === "clients" && "Companies, each with an optional contact on the same row. Several rows for the same company add several contacts."}
           {type === "jobs" && "Roles with their client - clients are matched to, or added to, your clients. Jobs need a description before CVs can be screened against them."}
@@ -119,9 +119,9 @@ export default function ImportPage() {
       </Card>
 
       <Card title="2. Upload the CSV">
-        <input type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" disabled={Boolean(progress)} onChange={(e) => load(e.target.files?.[0] || null)} className="text-[13px]" style={{ color: INK }} />
+        <input type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" disabled={Boolean(progress)} onChange={(e) => load(e.target.files?.[0] || null)} className="text-[14px]" style={{ color: INK }} />
         {file && table && (
-          <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>
+          <p className="text-[13px] mt-2" style={{ color: INK_MUTED }}>
             {file.name}: {table.rows.length.toLocaleString()} rows, {table.headers.length} columns.
           </p>
         )}
@@ -133,7 +133,7 @@ export default function ImportPage() {
           <Card title="3. Match the columns" eyebrow="Matched automatically - change anything that's wrong">
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
               {fields.map((f) => (
-                <label key={f.key} className="flex items-center gap-2 text-[13px]">
+                <label key={f.key} className="flex items-center gap-2 text-[14px]">
                   <span className="w-40 shrink-0" style={{ color: INK }}>
                     {f.label}
                     {f.required && <span style={{ color: "var(--score-low)" }}> *</span>}
@@ -146,7 +146,7 @@ export default function ImportPage() {
                       else next[f.key] = Number(e.target.value);
                       return next;
                     })}
-                    className="flex-1 min-w-0 text-[12px] px-2 py-1.5 rounded-[8px] bg-white"
+                    className="flex-1 min-w-0 text-[13px] px-2 py-1.5 rounded-[8px] bg-white"
                     style={{ border: "1px solid var(--border)", color: INK }}
                   >
                     <option value="">Not imported</option>
@@ -156,14 +156,14 @@ export default function ImportPage() {
                       </option>
                     ))}
                   </select>
-                  <span className="hidden sm:block w-28 truncate text-[11px]" style={{ color: INK_FAINT }} title={sample(mapping[f.key])}>
+                  <span className="hidden sm:block w-28 truncate text-[12px]" style={{ color: INK_FAINT }} title={sample(mapping[f.key])}>
                     {sample(mapping[f.key])}
                   </span>
                 </label>
               ))}
             </div>
             {type === "candidates" && (
-              <label className="flex items-center gap-2 text-[13px] mt-4" style={{ color: INK }}>
+              <label className="flex items-center gap-2 text-[14px] mt-4" style={{ color: INK }}>
                 <input type="checkbox" checked={talentPool} onChange={(e) => setTalentPool(e.target.checked)} className="accent-[var(--forest)]" />
                 Save everyone to the talent pool, so they come up when jobs open
               </label>
@@ -176,7 +176,7 @@ export default function ImportPage() {
             action={preview.bad.length > 0 && <Pill color="#92620f" background="#fdf6e9">Rows with problems are skipped</Pill>}
           >
             <div className="overflow-x-auto">
-              <table className="w-full text-[12px]">
+              <table className="w-full text-[13px]">
                 <thead>
                   <tr className="text-left" style={{ color: INK_FAINT }}>
                     <th className="py-1.5 pr-3 font-semibold">Row</th>
@@ -226,13 +226,13 @@ export default function ImportPage() {
 
       {result && (
         <Card title="Done">
-          <p className="text-[13px]" style={{ color: INK }}>
+          <p className="text-[14px]" style={{ color: INK }}>
             Created {result.created.toLocaleString()} {type === "clients" ? "clients" : type}
             {type === "clients" ? ` and ${result.contacts.toLocaleString()} contacts` : ""} · skipped {result.skipped.toLocaleString()} already on file
             {result.errors.length ? ` · ${result.errors.length} rows not imported` : ""}.
           </p>
           {result.errors.length > 0 && (
-            <ul className="mt-3 max-h-60 overflow-y-auto text-[12px] space-y-1" style={{ color: INK_MUTED }}>
+            <ul className="mt-3 max-h-60 overflow-y-auto text-[13px] space-y-1" style={{ color: INK_MUTED }}>
               {result.errors.slice(0, 200).map((e, i) => (
                 <li key={i}>
                   {e.row ? `Row ${e.row}: ` : ""}

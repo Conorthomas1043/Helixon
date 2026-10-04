@@ -66,7 +66,7 @@ function ChannelRow({ channelKey, value, onSave }) {
 
   return (
     <div className="flex items-center gap-3 py-2">
-      <span className="text-[13px] font-medium w-32 shrink-0" style={{ color: INK }}>
+      <span className="text-[14px] font-medium w-32 shrink-0" style={{ color: INK }}>
         {CHANNEL_LABELS[channelKey]}
       </span>
       <div className="flex items-center gap-1.5">
@@ -77,10 +77,10 @@ function ChannelRow({ channelKey, value, onSave }) {
           onChange={(e) => setClicks(e.target.value)}
           onBlur={save}
           aria-label={`${CHANNEL_LABELS[channelKey]} clicks/applicants seen`}
-          className="w-20 text-[13px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-20 text-[14px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
-        <span className="text-[11px]" style={{ color: INK_FAINT }}>clicks</span>
+        <span className="text-[12px]" style={{ color: INK_FAINT }}>clicks</span>
       </div>
       <div className="flex items-center gap-1.5">
         <input
@@ -91,10 +91,10 @@ function ChannelRow({ channelKey, value, onSave }) {
           onChange={(e) => setSpend(e.target.value)}
           onBlur={save}
           aria-label={`${CHANNEL_LABELS[channelKey]} spend`}
-          className="w-24 text-[13px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-24 text-[14px] px-2 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
-        <span className="text-[11px]" style={{ color: INK_FAINT }}>spend {saving ? "· saving…" : ""}</span>
+        <span className="text-[12px]" style={{ color: INK_FAINT }}>spend {saving ? "· saving…" : ""}</span>
       </div>
     </div>
   );
@@ -107,7 +107,7 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
       <h2 className="text-base font-semibold mb-1" style={{ fontFamily: "var(--font-display)", color: INK }}>
         Sourcing channels
       </h2>
-      <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
         Self-reported - whatever your job board/LinkedIn campaign dashboard shows. Combined with each candidate&apos;s
         source (set on their profile) for apply rate and cost per applicant in Analytics.
       </p>
@@ -122,7 +122,7 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
 
 function FieldLabel({ children }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
       {children}
     </p>
   );
@@ -134,7 +134,7 @@ function Stat({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[11px] uppercase tracking-wide mt-0.5" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] uppercase tracking-wide mt-0.5" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -144,7 +144,7 @@ function Stat({ label, value, accent }) {
 function Avatar({ name }) {
   return (
     <div
-      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[11px] font-semibold"
+      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[12px] font-semibold"
       style={{ background: "var(--mist)", color: "var(--forest)" }}
       aria-hidden="true"
     >
@@ -156,7 +156,7 @@ function Avatar({ name }) {
 function StageBadge({ stage, status }) {
   if (status !== "completed") {
     return (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_FAINT }}>
+      <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_FAINT }}>
         {status === "failed" ? "Failed" : "Processing"}
       </span>
     );
@@ -165,7 +165,7 @@ function StageBadge({ stage, status }) {
   const isPlaced = stage === "Placed";
   return (
     <span
-      className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: isPlaced ? GREEN_BG : "var(--mist)", color: isPlaced ? "var(--forest)" : INK_MUTED }}
     >
       {STAGE_LABELS[stage]}
@@ -180,7 +180,7 @@ function RankedCandidateRow({ candidate, rank }) {
         href={`/dashboard/candidates/${candidate.id}`}
         className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <span className="w-5 text-[12px] tabular-nums text-right shrink-0" style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}>
+        <span className="w-5 text-[13px] tabular-nums text-right shrink-0" style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}>
           {rank}
         </span>
         <Avatar name={candidate.fullName} />
@@ -188,7 +188,7 @@ function RankedCandidateRow({ candidate, rank }) {
           <p className="text-sm font-semibold truncate" style={{ color: INK }}>
             {candidate.fullName}
           </p>
-          <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+          <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
             {candidate.recruiterName ?? "Unassigned"}
           </p>
         </div>
@@ -239,7 +239,7 @@ function StateMessage({ title, body, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             Try again
@@ -247,7 +247,7 @@ function StateMessage({ title, body, onRetry }) {
         )}
         <Link
           href="/dashboard/jobs"
-          className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Back to jobs
@@ -260,10 +260,10 @@ function StateMessage({ title, body, onRetry }) {
 function TextField({ label, ...props }) {
   return (
     <label className="block">
-      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
       <input
         {...props}
-        className="w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ border: "1px solid var(--border)", color: INK }}
       />
     </label>
@@ -275,12 +275,12 @@ function TextField({ label, ...props }) {
 // seniority, employment type, minimum experience, skills) - not the raw job spec text, which every future
 // analysis against this job re-parses fresh rather than reading back from
 // here (see api/jobs/[id]'s PATCH handler comment).
-const SELECT_CLASS = "w-full text-[13px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+const SELECT_CLASS = "w-full text-[14px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 function SelectField({ label, children, ...props }) {
   return (
     <label className="block">
-      <span className="block text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
       <select {...props} className={SELECT_CLASS} style={{ border: "1px solid var(--border)", color: INK }}>
         {children}
       </select>
@@ -429,14 +429,14 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
       />
 
       {error && (
-        <p className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>
+        <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
       )}
 
       <div className="flex items-center gap-2 pt-1">
         <button
           type="submit"
           disabled={saving}
-          className="text-[12px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {saving ? "Saving…" : "Save changes"}
@@ -445,7 +445,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="text-[12px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="text-[13px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Cancel
@@ -594,27 +594,27 @@ export default function JobDetailPage({ params }) {
         {status === "ready" && job && (
           <>
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <Link href="/dashboard/jobs" className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
+              <Link href="/dashboard/jobs" className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
                 ← All jobs
               </Link>
               <div className="flex items-center gap-4">
                 <Link
                   href={`/dashboard/candidates?jobId=${job.id}`}
-                  className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
                   style={{ color: "var(--forest)" }}
                 >
                   Open in candidate database →
                 </Link>
                 <Link
                   href={`/analyse?jobId=${job.id}&mode=bulk`}
-                  className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
                   style={{ color: "var(--forest)" }}
                 >
                   Bulk screen candidates →
                 </Link>
                 <Link
                   href={`/analyse?jobId=${job.id}`}
-                  className="inline-flex items-center text-[12px] font-semibold px-3.5 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline-flex items-center text-[13px] font-semibold px-3.5 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{ background: "var(--forest)", color: "white" }}
                 >
                   Analyse a candidate →
@@ -642,7 +642,7 @@ export default function JobDetailPage({ params }) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                   <span
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                    className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
                   >
                     {job.status === "open" ? "Open" : "Closed"}
@@ -651,7 +651,7 @@ export default function JobDetailPage({ params }) {
                     type="button"
                     onClick={handleToggleStatus}
                     disabled={updatingStatus}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                    className="text-[12px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
                     style={{ border: "1px solid var(--border)", color: INK_MUTED }}
                   >
                     {updatingStatus ? "Updating…" : job.status === "open" ? "Mark as closed" : "Reopen role"}
@@ -660,7 +660,7 @@ export default function JobDetailPage({ params }) {
                     <button
                       type="button"
                       onClick={() => setEditing(true)}
-                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="text-[12px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={{ border: "1px solid var(--border)", color: INK_MUTED }}
                     >
                       Edit
@@ -670,7 +670,7 @@ export default function JobDetailPage({ params }) {
                     type="button"
                     onClick={handleDuplicate}
                     disabled={duplicating}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
+                    className="text-[12px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
                     style={{ border: "1px solid var(--border)", color: INK_MUTED }}
                   >
                     {duplicating ? "Duplicating…" : "Duplicate"}
@@ -680,7 +680,7 @@ export default function JobDetailPage({ params }) {
                     onClick={handleDelete}
                     disabled={deleting || job.candidateCount > 0}
                     title={job.candidateCount > 0 ? "Candidates are attached to this role - mark it closed instead of deleting it." : undefined}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
+                    className="text-[12px] font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
                     style={{ border: "1px solid var(--border)", color: "var(--score-low)" }}
                   >
                     {deleting ? "Deleting…" : "Delete role"}
@@ -689,7 +689,7 @@ export default function JobDetailPage({ params }) {
               </div>
 
               {deleteError && (
-                <p className="text-[12px] mb-4" style={{ color: "var(--score-low)" }}>{deleteError}</p>
+                <p className="text-[13px] mb-4" style={{ color: "var(--score-low)" }}>{deleteError}</p>
               )}
 
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
@@ -709,7 +709,7 @@ export default function JobDetailPage({ params }) {
                 <div className="grid sm:grid-cols-2 gap-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
                   <div>
                     <FieldLabel>Role details</FieldLabel>
-                    <ul className="text-[13px] space-y-1" style={{ color: INK }}>
+                    <ul className="text-[14px] space-y-1" style={{ color: INK }}>
                       {(job.seniority || job.employmentType) && <li>{[job.seniority, job.employmentType].filter(Boolean).join(" · ")}</li>}
                       {job.salaryRange && <li>{job.salaryRange}</li>}
                       {job.minYearsExperience != null && <li>{job.minYearsExperience}+ years&apos; experience</li>}
@@ -717,7 +717,7 @@ export default function JobDetailPage({ params }) {
                       <li>
                         Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span style={{ color: INK_FAINT }}>not assigned</span>}
                         {job.priority && job.priority !== "normal" && (
-                          <span className="ml-2 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
+                          <span className="ml-2 text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
                             {JOB_PRIORITIES[job.priority]}
                           </span>
                         )}
@@ -749,7 +749,7 @@ export default function JobDetailPage({ params }) {
                     <FieldLabel>Required skills</FieldLabel>
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {job.requiredSkills.map((s) => (
-                        <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                        <span key={s} className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
                           {s}
                         </span>
                       ))}
@@ -759,7 +759,7 @@ export default function JobDetailPage({ params }) {
                         <FieldLabel>Preferred skills</FieldLabel>
                         <div className="flex flex-wrap gap-1.5">
                           {job.preferredSkills.map((s) => (
-                            <span key={s} className="text-[11px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
+                            <span key={s} className="text-[12px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
                               {s}
                             </span>
                           ))}
@@ -779,7 +779,7 @@ export default function JobDetailPage({ params }) {
                 <div className="flex flex-wrap items-center justify-end gap-2">
                 <Link
                   href={`/dashboard/talent-pool?jobId=${job.id}`}
-                  className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{ border: "1px solid var(--forest)", color: "var(--forest)", background: "white" }}
                   title="See who in your talent pool fits this job, and screen them without re-uploading CVs"
                 >
@@ -788,7 +788,7 @@ export default function JobDetailPage({ params }) {
                 {(data?.candidates?.length ?? 0) >= 2 && (
                   <Link
                     href={`/analyse/compare?jobId=${job.id}`}
-                    className="inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
                   >
                     Compare candidates
@@ -798,7 +798,7 @@ export default function JobDetailPage({ params }) {
                   aria-label="Filter by stage"
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value)}
-                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{ border: "1px solid var(--border)", color: INK }}
                 >
                   <option value="all">All stages</option>
@@ -812,7 +812,7 @@ export default function JobDetailPage({ params }) {
               </div>
 
               {filteredCandidates.length === 0 ? (
-                <p className="text-[13px] py-6 text-center" style={{ color: INK_MUTED }}>
+                <p className="text-[14px] py-6 text-center" style={{ color: INK_MUTED }}>
                   {candidates.length === 0 ? (
                     <>
                       No candidates yet.{" "}

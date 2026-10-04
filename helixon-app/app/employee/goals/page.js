@@ -362,7 +362,7 @@ export default function EmployeeGoalsPage() {
                                 value={goal.status}
                                 onChange={(e) => setStatus(goal, e.target.value)}
                                 disabled={!canEdit}
-                                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-full disabled:opacity-60"
+                                className="text-[12px] font-semibold px-2.5 py-1.5 rounded-full disabled:opacity-60"
                                 style={{ background: meta.bg, color: meta.color, border: "none" }}
                               >
                                 {STATUS_ORDER.map((s) => (
@@ -380,7 +380,7 @@ export default function EmployeeGoalsPage() {
                           {/* Micro-goals */}
                           <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
+                              <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
                                 Micro-goals {goal.items.length > 0 ? `· ${doneItems}/${goal.items.length}` : ""}
                               </p>
                             </div>
@@ -408,7 +408,7 @@ export default function EmployeeGoalsPage() {
                                     {canEdit && (
                                       <button
                                         onClick={() => deleteItem(goal, item)}
-                                        className="text-[11px] opacity-0 group-hover:opacity-100 transition"
+                                        className="text-[12px] opacity-0 group-hover:opacity-100 transition"
                                         style={{ color: "#e0554f" }}
                                       >
                                         Remove

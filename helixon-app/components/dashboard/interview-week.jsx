@@ -75,10 +75,10 @@ export function InterviewWeek({ scope }) {
                 className="rounded-lg p-2 min-h-[90px]"
                 style={{ background: isToday ? "var(--mint)" : "var(--mist)" }}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: isToday ? "var(--forest)" : INK_MUTED }}>
+                <p className="text-[12px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: isToday ? "var(--forest)" : INK_MUTED }}>
                   {day.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" })}
                 </p>
-                {byDay[index].length === 0 && <p className="text-[11px]" style={{ color: INK_FAINT }}>-</p>}
+                {byDay[index].length === 0 && <p className="text-[12px]" style={{ color: INK_FAINT }}>-</p>}
                 <ul className="space-y-1.5">
                   {byDay[index].map((i) => (
                     <li
@@ -86,17 +86,17 @@ export function InterviewWeek({ scope }) {
                       className="rounded-md bg-white px-2 py-1.5"
                       style={{ borderLeft: `3px solid ${STATUS_COLOUR[i.status] || INK_MUTED}`, opacity: i.status === "cancelled" ? 0.6 : 1 }}
                     >
-                      <p className="text-[11px] font-semibold" style={{ color: INK_MUTED }}>
+                      <p className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
                         {time(i.startsAt)} · {i.durationMinutes}m
                       </p>
                       <Link
                         href={`/dashboard/candidates/${i.candidateId}`}
-                        className="block text-[12px] font-semibold truncate hover:underline"
+                        className="block text-[13px] font-semibold truncate hover:underline"
                         style={{ color: INK, textDecoration: i.status === "cancelled" ? "line-through" : undefined }}
                       >
                         {i.candidateName}
                       </Link>
-                      <p className="text-[11px] truncate" style={{ color: INK_FAINT }}>
+                      <p className="text-[12px] truncate" style={{ color: INK_FAINT }}>
                         {[i.jobTitle, i.client].filter(Boolean).join(" · ") || INTERVIEW_KINDS[i.kind]}
                       </p>
                     </li>

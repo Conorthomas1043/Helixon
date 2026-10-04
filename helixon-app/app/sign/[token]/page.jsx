@@ -85,15 +85,15 @@ export default function SignPage({ params }) {
   if (state === "signed") {
     return (
       <PublicCard agencyName={doc.agencyName} width={720}>
-        <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--forest)" }}>Signed</p>
+        <p className="text-[13px] font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--forest)" }}>Signed</p>
         <h1 className="text-xl font-semibold mb-4" style={{ color: INK, fontFamily: "var(--font-display)" }}>{doc.title}</h1>
         {document}
-        <div className="mt-5 pt-4 text-[13px]" style={{ borderTop: "1px solid var(--border)", color: MUTED }}>
+        <div className="mt-5 pt-4 text-[14px]" style={{ borderTop: "1px solid var(--border)", color: MUTED }}>
           <p style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive", fontSize: 28, color: INK }}>{doc.signedName}</p>
           <p>Signed electronically by {doc.signedName}{doc.signedAt ? ` on ${formatWhen(doc.signedAt)}` : ""}.</p>
-          {doc.documentHash && <p className="text-[11px] mt-1 break-all">Document fingerprint (SHA-256): {doc.documentHash}</p>}
+          {doc.documentHash && <p className="text-[12px] mt-1 break-all">Document fingerprint (SHA-256): {doc.documentHash}</p>}
         </div>
-        <button type="button" onClick={() => window.print()} className="mt-4 text-[13px] font-semibold underline print:hidden" style={{ color: "var(--forest)" }}>
+        <button type="button" onClick={() => window.print()} className="mt-4 text-[14px] font-semibold underline print:hidden" style={{ color: "var(--forest)" }}>
           Print or save a copy
         </button>
       </PublicCard>
@@ -102,9 +102,9 @@ export default function SignPage({ params }) {
 
   return (
     <PublicCard agencyName={doc.agencyName} width={720}>
-      <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: MUTED }}>{doc.kind}</p>
+      <p className="text-[13px] font-semibold uppercase tracking-widest mb-1" style={{ color: MUTED }}>{doc.kind}</p>
       <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>{doc.title}</h1>
-      <p className="text-[13px] mt-1 mb-4" style={{ color: MUTED }}>
+      <p className="text-[14px] mt-1 mb-4" style={{ color: MUTED }}>
         {doc.agencyName || "The agency"} has asked {doc.signerName} to read and sign this. Please read it all before signing.
       </p>
       {document}
@@ -116,17 +116,17 @@ export default function SignPage({ params }) {
         }}
       >
         <label className="block">
-          <span className="block text-[13px] font-semibold mb-1.5" style={{ color: INK }}>Type your full name to sign</span>
+          <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>Type your full name to sign</span>
           <input required minLength={2} maxLength={200} value={name} onChange={(e) => setName(e.target.value)} className={input} style={inputStyle} autoComplete="name" />
         </label>
         {name.trim().length > 1 && (
           <p aria-hidden="true" style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive", fontSize: 30, color: INK, lineHeight: 1.1 }}>{name}</p>
         )}
-        <label className="flex items-start gap-2 text-[13px]" style={{ color: INK }}>
+        <label className="flex items-start gap-2 text-[14px]" style={{ color: INK }}>
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
           <span>I&apos;ve read this document and agree to it. I understand typing my name here is my electronic signature.</span>
         </label>
-        {error && <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
         <button type="submit" disabled={saving || !agree || name.trim().length < 2} className="w-full text-[14px] font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
           {saving ? "Signing…" : "Sign"}
         </button>
@@ -134,7 +134,7 @@ export default function SignPage({ params }) {
             looks like a browser warning, and is easy to dismiss by mistake. */}
         {declining ? (
           <div className="rounded-[12px] p-4 space-y-3" style={{ border: "1px solid var(--border)", background: "var(--mist)" }}>
-            <label className="block text-[13px]" style={{ color: INK }}>
+            <label className="block text-[14px]" style={{ color: INK }}>
               <span className="block font-semibold mb-1">Why aren&apos;t you signing? (optional)</span>
               <textarea
                 rows={3}
@@ -146,10 +146,10 @@ export default function SignPage({ params }) {
               />
             </label>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[14px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
                 Go back
               </button>
-              <button type="button" disabled={saving} onClick={() => send({ decline: true, reason: declineReason.trim() })} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
+              <button type="button" disabled={saving} onClick={() => send({ decline: true, reason: declineReason.trim() })} className="flex-1 text-[14px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
                 {saving ? "Sending…" : "Tell the agency I won't sign"}
               </button>
             </div>
@@ -159,7 +159,7 @@ export default function SignPage({ params }) {
             type="button"
             disabled={saving}
             onClick={() => setDeclining(true)}
-            className="w-full text-[12px] underline"
+            className="w-full text-[13px] underline"
             style={{ color: MUTED }}
           >
             I don&apos;t want to sign this

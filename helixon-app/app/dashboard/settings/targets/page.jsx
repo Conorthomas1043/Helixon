@@ -9,7 +9,7 @@ import { getPerformanceSettings, savePerformanceSettings } from "@/lib/dashboard
 import { METRICS, METRIC_KEYS } from "@/lib/performance";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, Field, LoadingCard, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
-const cell = "w-full text-[12px] px-2 py-1.5 rounded-[6px] bg-white text-right tabular-nums";
+const cell = "w-full text-[13px] px-2 py-1.5 rounded-[6px] bg-white text-right tabular-nums";
 const cellStyle = { border: "1px solid var(--border)", color: INK, minWidth: 70 };
 
 export default function TargetsSettingsPage() {
@@ -92,9 +92,9 @@ export default function TargetsSettingsPage() {
         <>
           <Card title="Monthly targets">
             <div className="overflow-x-auto -mx-5 sm:-mx-6">
-              <table className="w-full text-[13px]">
+              <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[12px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
                     <th className="px-5 sm:px-6 py-2 font-semibold" />
                     {METRIC_KEYS.map((k) => (
                       <th key={k} className="px-1.5 py-2 font-semibold text-right whitespace-nowrap">
@@ -134,7 +134,7 @@ export default function TargetsSettingsPage() {
           </Card>
 
           <Card title="Commission">
-            <label className="flex items-center gap-2 text-[13px] mb-4" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px] mb-4" style={{ color: INK }}>
               <input type="checkbox" checked={plan.enabled} onChange={(e) => setPlan((p) => ({ ...p, enabled: e.target.checked }))} />
               Work out commission on the Performance page
             </label>
@@ -155,12 +155,12 @@ export default function TargetsSettingsPage() {
                 </Field>
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+                <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
                   Rates above the threshold
                 </p>
                 <ul className="space-y-2 max-w-xl">
                   {plan.tiers.map((t, i) => (
-                    <li key={i} className="flex items-center gap-2 text-[13px]" style={{ color: INK_MUTED }}>
+                    <li key={i} className="flex items-center gap-2 text-[14px]" style={{ color: INK_MUTED }}>
                       <span className="whitespace-nowrap">From</span>
                       <TextInput
                         type="number"
@@ -193,7 +193,7 @@ export default function TargetsSettingsPage() {
                 </ul>
                 <button
                   type="button"
-                  className="text-[12px] font-semibold mt-2"
+                  className="text-[13px] font-semibold mt-2"
                   style={{ color: "var(--forest)" }}
                   onClick={() => setPlan((p) => ({ ...p, tiers: [...p.tiers, { from: (Number(p.tiers[p.tiers.length - 1]?.from) || 0) + 20000, rate: 15 }] }))}
                 >
@@ -202,12 +202,12 @@ export default function TargetsSettingsPage() {
               </div>
               {people.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+                  <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
                     Personal thresholds (optional)
                   </p>
                   <ul className="grid sm:grid-cols-2 gap-2 max-w-xl">
                     {people.map((p) => (
-                      <li key={p.id} className="flex items-center gap-2 text-[13px]">
+                      <li key={p.id} className="flex items-center gap-2 text-[14px]">
                         <span className="flex-1 truncate" style={{ color: INK }}>
                           {p.name}
                         </span>
@@ -228,14 +228,14 @@ export default function TargetsSettingsPage() {
                 </div>
               )}
             </fieldset>
-            <p className="text-[11px] mt-4" style={{ color: INK_MUTED }}>
+            <p className="text-[12px] mt-4" style={{ color: INK_MUTED }}>
               Recruiters see their own commission; you see everyone&apos;s. It&apos;s an estimate to track against - payroll stays with you.
             </p>
           </Card>
 
           <ErrorText>{error}</ErrorText>
           {notice && (
-            <p className="text-[12px]" role="status" style={{ color: "var(--forest)" }}>
+            <p className="text-[13px]" role="status" style={{ color: "var(--forest)" }}>
               {notice}
             </p>
           )}

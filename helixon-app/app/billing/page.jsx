@@ -48,12 +48,12 @@ function CancelDialog({ plan, onClose, onContinue, busy }) {
         </div>
       </fieldset>
       <label className="block mt-4">
-        <span className="block text-[13px] mb-1" style={{ color: COLORS.muted }}>Anything else? (optional)</span>
+        <span className="block text-[14px] mb-1" style={{ color: COLORS.muted }}>Anything else? (optional)</span>
         <textarea value={detail} onChange={(e) => setDetail(e.target.value)} maxLength={500} rows={3} className="w-full text-sm rounded-[10px] px-3 py-2" style={{ border: "1px solid var(--border)", color: COLORS.ink }} />
       </label>
       {/* Exit interviews: a yes here lets someone from Helixon ask what
           would have kept them. Opt-in, unticked by default. */}
-      <label className="flex items-start gap-2.5 mt-4 text-[13px] cursor-pointer" style={{ color: COLORS.ink }}>
+      <label className="flex items-start gap-2.5 mt-4 text-[14px] cursor-pointer" style={{ color: COLORS.ink }}>
         <input type="checkbox" checked={canTalk} onChange={(e) => setCanTalk(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
         I&apos;m happy for someone from Helixon to email me about a 15-minute chat about this.
       </label>
@@ -207,7 +207,7 @@ export default function BillingPage() {
                     {portalLoading ? "Opening…" : "Manage billing"}
                   </Button>
                   {status !== "canceled" && (
-                    <button type="button" onClick={() => setCancelOpen(true)} className="text-[13px] underline min-h-[32px]" style={{ color: COLORS.muted }}>
+                    <button type="button" onClick={() => setCancelOpen(true)} className="text-[14px] underline min-h-[32px]" style={{ color: COLORS.muted }}>
                       Cancel subscription
                     </button>
                   )}

@@ -128,7 +128,7 @@ function EmployeeLoginForm() {
           <h1 className="text-lg font-semibold tracking-tight mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Employee sign in
           </h1>
-          <p className="text-[13px] leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-[14px] leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>
             Use your Helixon employee account.
           </p>
 
@@ -141,7 +141,7 @@ function EmployeeLoginForm() {
               <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
               </svg>
-              <p className="text-[13px]" style={{ color: "var(--forest)" }}>
+              <p className="text-[14px]" style={{ color: "var(--forest)" }}>
                 Password updated. Sign in with your new password.
               </p>
             </div>
@@ -189,7 +189,7 @@ function EmployeeLoginForm() {
                 <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
-                <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
+                <p className="text-[14px]" style={{ color: "var(--score-low)" }}>{error}</p>
               </div>
             )}
 

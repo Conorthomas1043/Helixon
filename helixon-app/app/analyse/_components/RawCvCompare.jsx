@@ -14,6 +14,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, Icon, Spinner, Switch, cx } from "./ui";
 import { Avatar, LETTERS, StagePicker, openOriginalCv } from "./compareBits";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { CV_SECTIONS, parseCvSections, resolveSection, sectionLabel, sectionRange } from "../_lib/cvSections";
 
 // id -> { status: "ready", text } | { status: "error", error }. No entry
@@ -70,6 +71,7 @@ function Highlighted({ line, re, current }) {
 function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, revealed, onReveal, onRemove, onStageChanged, registerScroller, onScroll }) {
   const scrollerRef = useRef(null);
   const [opening, setOpening] = useState(false);
+  const [ask, confirmDialog] = useConfirm();
 
   useEffect(() => {
     registerScroller(c.id, scrollerRef.current);
@@ -96,18 +98,19 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
 
   async function openFile() {
     setOpening(true);
-    await openOriginalCv(c);
+    await openOriginalCv(c, ask);
     setOpening(false);
   }
 
   return (
     <div className="min-w-0 flex flex-col border-l first:border-l-0 border-[var(--border)]">
+      {confirmDialog}
       <div className="px-4 py-3.5 border-b border-[var(--border)] bg-white space-y-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Avatar letter={letter} size={32} />
           <div className="min-w-0 flex-1">
             <p className="text-[14px] font-semibold text-[var(--ink)] truncate">{hidden ? `Candidate ${letter}` : name}</p>
-            <p className={cx("text-[12px] truncate", find.re && parsed && !hidden && !matchLines.length ? "text-[#8a5a12]" : "text-[var(--ink-soft)]")}>{status}</p>
+            <p className={cx("text-[13px] truncate", find.re && parsed && !hidden && !matchLines.length ? "text-[#8a5a12]" : "text-[var(--ink-soft)]")}>{status}</p>
           </div>
           {onRemove && (
             <button
@@ -123,7 +126,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
         <div className="flex items-center justify-between gap-2">
           <StagePicker candidateId={c.id} stage={c.stage} onChanged={(stage) => onStageChanged?.(c.id, stage)} />
           {c.hasCv && (
-            <button type="button" onClick={openFile} disabled={opening} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--forest)] hover:underline disabled:opacity-50">
+            <button type="button" onClick={openFile} disabled={opening} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--forest)] hover:underline disabled:opacity-50">
               <Icon name="external" size={12} />
               {opening ? "Opening…" : "Original file"}
             </button>
@@ -133,28 +136,28 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
 
       <div ref={scrollerRef} onScroll={() => onScroll(c.id)} className="relative h-[68vh] print:h-auto overflow-y-auto bg-white px-4 py-3">
         {!entry ? (
-          <div className="flex items-center gap-2 text-[13px] text-[var(--ink-soft)] py-6">
+          <div className="flex items-center gap-2 text-[14px] text-[var(--ink-soft)] py-6">
             <Spinner /> Loading CV…
           </div>
         ) : entry.status === "error" ? (
-          <p className="text-[13px] text-[var(--ink-soft)] py-6">{entry.error}</p>
+          <p className="text-[14px] text-[var(--ink-soft)] py-6">{entry.error}</p>
         ) : hidden ? (
           <div className="py-12 text-center">
             <span className="mx-auto w-10 h-10 rounded-full bg-[var(--mist)] border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
               <Icon name="eyeOff" size={18} />
             </span>
-            <p className="text-[13.5px] text-[var(--ink)] font-semibold mt-3">Screened blind</p>
-            <p className="text-[12.5px] text-[var(--ink-soft)] mt-1 max-w-[240px] mx-auto">Their CV shows their name and contact details.</p>
+            <p className="text-[14.5px] text-[var(--ink)] font-semibold mt-3">Screened blind</p>
+            <p className="text-[13.5px] text-[var(--ink-soft)] mt-1 max-w-[240px] mx-auto">Their CV shows their name and contact details.</p>
             <button
               type="button"
               onClick={onReveal}
-              className="mt-4 inline-flex items-center text-[13px] font-semibold px-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--mist)]"
+              className="mt-4 inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--mist)]"
             >
               Show the CV
             </button>
           </div>
         ) : (
-          <div className="text-[12.5px] leading-[1.6] text-[var(--ink)]">
+          <div className="text-[13.5px] leading-[1.6] text-[var(--ink)]">
             {parsed.lines.map((line, i) => {
               const isHeading = parsed.headings.has(i);
               const inSection = range && i >= range.start && i <= range.end;
@@ -165,7 +168,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
                   data-line={i}
                   className={cx(
                     "px-1.5 -mx-1.5 rounded-[4px] whitespace-pre-wrap break-words min-h-[1.6em] transition-colors",
-                    isHeading && "font-semibold text-[13px] mt-2",
+                    isHeading && "font-semibold text-[14px] mt-2",
                     inSection && "bg-[#f4faf7]",
                     target && i === target.line && "bg-[var(--mint)] text-[var(--forest-deep)]",
                     contact && "bg-[var(--mint)]",
@@ -328,7 +331,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
             />
             {findRe && (
               <>
-                <span className="hidden sm:inline text-[12.5px] text-[var(--ink-soft)] whitespace-nowrap tabular-nums">
+                <span className="hidden sm:inline text-[13.5px] text-[var(--ink-soft)] whitespace-nowrap tabular-nums">
                   {totalMatches ? `${totalMatches} in ${cvsWithMatches} of ${n} CVs` : "No matches"}
                 </span>
                 <button
@@ -358,9 +361,9 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-2">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Jump every CV to</p>
+            <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Jump every CV to</p>
             {active && (
-              <button type="button" onClick={() => chooseSection(null)} className="text-[12px] font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]">
+              <button type="button" onClick={() => chooseSection(null)} className="text-[13px] font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]">
                 Back to top
               </button>
             )}
@@ -378,13 +381,13 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
                   aria-pressed={on}
                   title={count === 0 ? `No ${s.label} section in these CVs` : `Found in ${count} of ${n}`}
                   className={cx(
-                    "inline-flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
+                    "inline-flex items-center gap-1.5 text-[14px] font-semibold px-3.5 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
                     on ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "bg-white border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
                   )}
                 >
                   {s.label}
                   {loaded > 0 && (
-                    <span className={cx("text-[11px] font-medium px-1.5 rounded-full tabular-nums", on ? "bg-white/20 text-white" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
+                    <span className={cx("text-[12px] font-medium px-1.5 rounded-full tabular-nums", on ? "bg-white/20 text-white" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
                       {count}
                     </span>
                   )}
@@ -420,7 +423,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
           </div>
         </div>
       </Card>
-      <p className="text-[12px] text-[var(--ink-faint)] px-1">
+      <p className="text-[13px] text-[var(--ink-faint)] px-1">
         The text as read from each uploaded CV - layout from the original file (columns, tables) may not carry over. Use &ldquo;Original file&rdquo; to see it exactly.
       </p>
     </div>

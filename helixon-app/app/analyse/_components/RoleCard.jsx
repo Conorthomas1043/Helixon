@@ -49,8 +49,8 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                   {active && <Icon name="check" size={10} strokeWidth={3} className="text-white" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[13.5px] font-medium text-[var(--ink)] truncate">{job.title}</span>
-                  <span className="block text-[12px] text-[var(--ink-faint)] truncate">
+                  <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{job.title}</span>
+                  <span className="block text-[13px] text-[var(--ink-faint)] truncate">
                     {[job.company, job.candidateCount ? `${job.candidateCount} candidate${job.candidateCount === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ") || "No client set"}
                   </span>
                 </span>
@@ -58,7 +58,7 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
             </li>
           );
         })}
-        {visible.length === 0 && <li className="px-3 py-6 text-center text-[13px] text-[var(--ink-faint)]">No jobs match.</li>}
+        {visible.length === 0 && <li className="px-3 py-6 text-center text-[14px] text-[var(--ink-faint)]">No jobs match.</li>}
       </ul>
     </div>
   );
@@ -134,11 +134,11 @@ export default function RoleCard({
             <div className="mt-3 space-y-2">
               <SpecChecklist text={jobText} />
               <div className="flex items-center justify-between">
-                <span className={cx("text-[11.5px] tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
+                <span className={cx("text-[12.5px] tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
                   {charCount > 0 && charCount < MIN_JOB_CHARS ? `${MIN_JOB_CHARS - charCount} more characters needed` : charCount > 0 ? `${charCount.toLocaleString()} characters` : ""}
                 </span>
                 {charCount >= MIN_JOB_CHARS && (
-                  <button type="button" onClick={onSaveTemplate} className="text-[12px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
+                  <button type="button" onClick={onSaveTemplate} className="text-[13px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
                     Save as template
                   </button>
                 )}
@@ -154,8 +154,8 @@ export default function RoleCard({
                 <Icon name="file" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
-                <span className="block text-[12px] text-[var(--ink-faint)]">{formatBytes(jobFile.size)} · read when you analyse</span>
+                <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
+                <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(jobFile.size)} · read when you analyse</span>
               </span>
               <Button size="sm" variant="ghost" onClick={() => onJobFile(null)}>
                 Remove
@@ -181,8 +181,8 @@ export default function RoleCard({
               )}
             >
               <Icon name="upload" size={20} className="text-[var(--ink-soft)]" />
-              <span className="text-[13.5px] font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
-              <span className="text-[12px] text-[var(--ink-faint)]">PDF, Word or .txt · up to 10 MB · a photo of a printed advert won&apos;t work - paste the text instead</span>
+              <span className="text-[14.5px] font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
+              <span className="text-[13px] text-[var(--ink-faint)]">PDF, Word or .txt · up to 10 MB · a photo of a printed advert won&apos;t work - paste the text instead</span>
             </button>
           ))}
         <input ref={fileRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { onJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
@@ -213,10 +213,10 @@ export default function RoleCard({
           <div>
             <Label htmlFor="client-email" hint="Optional">Client email</Label>
             <Input id="client-email" type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="hiring.manager@client.com" />
-            <p className="text-[11.5px] text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
+            <p className="text-[12.5px] text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
           </div>
         ) : (
-          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
+          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
             <Icon name="plus" size={14} /> Add client email
           </button>
         )}

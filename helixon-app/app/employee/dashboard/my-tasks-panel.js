@@ -260,7 +260,7 @@ function TaskRow({ todo, todayKey, bucket, onToggle, onEdit, onReschedule, onDel
         {(!todo.done || due) && (
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
             {!todo.done && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: "var(--ink-soft)" }}>
+              <span className="inline-flex items-center gap-1 text-[12px] font-medium" style={{ color: "var(--ink-soft)" }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: pm.dot }} aria-hidden="true" />
                 {pm.label}
               </span>
@@ -459,7 +459,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             className="flex-1 min-w-0 text-sm py-1.5 bg-transparent focus:outline-none"
             style={{ color: "var(--ink)" }}
           />
-          <kbd className="hidden sm:inline text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>N</kbd>
+          <kbd className="hidden sm:inline text-[11px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>N</kbd>
           <button
             type="submit"
             disabled={!draft.title.trim() || adding}
@@ -533,7 +533,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             if (list.length === 0) return null;
             return (
               <section key={s.key} aria-labelledby={`tasks-${s.key}`}>
-                <h3 id={`tasks-${s.key}`} className="flex items-center gap-2 px-5 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: s.key === "overdue" ? "#a83226" : "var(--ink-faint)" }}>
+                <h3 id={`tasks-${s.key}`} className="flex items-center gap-2 px-5 pt-3 pb-1 text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: s.key === "overdue" ? "#a83226" : "var(--ink-faint)" }}>
                   {s.title}
                   <span className="tabular-nums">{list.length}</span>
                 </h3>
@@ -550,7 +550,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
                   id="tasks-done"
                   onClick={() => setDoneOpen((v) => !v)}
                   aria-expanded={showDone}
-                  className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em]"
+                  className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em]"
                   style={{ color: "var(--ink-faint)" }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ transform: showDone ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>

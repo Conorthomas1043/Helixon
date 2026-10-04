@@ -55,11 +55,11 @@ export default function SmsPanel({ candidate, onSent }) {
           {state.messages.map((m) => (
             <li key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
               <div
-                className="max-w-[85%] rounded-[12px] px-3 py-2 text-[13px]"
+                className="max-w-[85%] rounded-[12px] px-3 py-2 text-[14px]"
                 style={{ background: m.direction === "out" ? "var(--mint)" : "var(--mist)", color: INK }}
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
-                <p className="text-[11px] mt-1" style={{ color: INK_FAINT }}>
+                <p className="text-[12px] mt-1" style={{ color: INK_FAINT }}>
                   {when(m.createdAt)}
                   {m.direction === "out" && m.status ? ` · ${m.status}` : ""}
                 </p>
@@ -73,7 +73,7 @@ export default function SmsPanel({ candidate, onSent }) {
           <form onSubmit={send} className="space-y-2">
             <TextArea rows={2} maxLength={MAX} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Write a text…" aria-label="Text message" />
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px]" style={{ color: INK_FAINT }}>
+              <span className="text-[12px]" style={{ color: INK_FAINT }}>
                 {draft.length}/{MAX}
               </span>
               <Button type="submit" variant="primary" disabled={busy || !draft.trim()}>
@@ -83,12 +83,12 @@ export default function SmsPanel({ candidate, onSent }) {
             {error && <ErrorText>{error}</ErrorText>}
           </form>
         ) : (
-          <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          <p className="text-[14px]" style={{ color: INK_MUTED }}>
             Add a mobile number to their details to text them.
           </p>
         )
       ) : (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-[13px]" style={{ color: INK_MUTED }}>
           Texting is switched off.
         </p>
       )}

@@ -106,13 +106,13 @@ export default function PipelineSettingsPage() {
       {status === "ready" && (
         <>
           {!canManage && (
-            <p className="text-[13px]" style={{ color: INK_MUTED }}>
+            <p className="text-[14px]" style={{ color: INK_MUTED }}>
               Only the workspace owner or an admin can change these.
             </p>
           )}
 
           <Card title="Sub-stages">
-            <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+            <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
               Steps inside a stage - &quot;CV sent to client&quot; under Shortlisted, &quot;2nd interview&quot; and &quot;Final&quot; under Interview. The six stages stay the same, so the funnel and analytics keep working; sub-stages show on the pipeline board and each profile.
             </p>
             <div className="space-y-5">
@@ -120,7 +120,7 @@ export default function PipelineSettingsPage() {
                 const items = subStages.filter((s) => s.stage === stage);
                 return (
                   <div key={stage}>
-                    <p className="text-[12px] font-semibold mb-2 flex items-center gap-2" style={{ color: INK }}>
+                    <p className="text-[13px] font-semibold mb-2 flex items-center gap-2" style={{ color: INK }}>
                       <span className="w-2.5 h-2.5 rounded-full" style={{ background: STAGE_COLORS[stage] }} />
                       {STAGE_LABELS[stage]}
                     </p>
@@ -145,7 +145,7 @@ export default function PipelineSettingsPage() {
                           <button
                             type="button"
                             disabled={locked}
-                            className="text-[12px] font-semibold"
+                            className="text-[13px] font-semibold"
                             style={{ color: "var(--forest)" }}
                             onClick={() => setSubStages((list) => [...list, { key: newKey(), label: "", stage }])}
                           >
@@ -170,11 +170,11 @@ export default function PipelineSettingsPage() {
               )
             }
           >
-            <p className="text-[12px] mb-4" style={{ color: INK_MUTED }}>
+            <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
               Extra details in a &quot;Your fields&quot; card on each profile - notice period, day rate, clearance level, hiring budget. Removing a field hides it; values already entered are kept.
             </p>
             {fields.length === 0 ? (
-              <p className="text-[13px]" style={{ color: INK_FAINT }}>
+              <p className="text-[14px]" style={{ color: INK_FAINT }}>
                 No custom fields yet.
               </p>
             ) : (
@@ -218,7 +218,7 @@ export default function PipelineSettingsPage() {
 
           <ErrorText>{error}</ErrorText>
           {notice && (
-            <p className="text-[12px]" role="status" style={{ color: "var(--forest)" }}>
+            <p className="text-[13px]" role="status" style={{ color: "var(--forest)" }}>
               {notice}
             </p>
           )}

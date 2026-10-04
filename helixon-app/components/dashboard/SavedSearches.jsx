@@ -55,7 +55,7 @@ export default function SavedSearches({ currentQuery, onApply }) {
     }
   }
 
-  const btn = "inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  const btn = "inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
   return (
     <div ref={ref} className="relative shrink-0">
       <button
@@ -73,9 +73,9 @@ export default function SavedSearches({ currentQuery, onApply }) {
       {open && (
         <div className="absolute z-40 mt-2 w-80 right-0 rounded-[12px] bg-white p-3 shadow-xl" style={{ border: "1px solid var(--border)" }}>
           {list === null ? (
-            <p className="text-[12px]" style={{ color: INK_MUTED }}>Loading…</p>
+            <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
           ) : list.length === 0 ? (
-            <p className="text-[12px]" style={{ color: INK_MUTED }}>Nothing saved yet - set up filters or a search, then save it.</p>
+            <p className="text-[13px]" style={{ color: INK_MUTED }}>Nothing saved yet - set up filters or a search, then save it.</p>
           ) : (
             <ul className="max-h-72 overflow-y-auto -mx-1">
               {list.map((s) => (
@@ -88,19 +88,19 @@ export default function SavedSearches({ currentQuery, onApply }) {
                       onApply(new URLSearchParams(s.params).toString());
                     }}
                   >
-                    <span className="block text-[13px] font-medium truncate" style={{ color: INK }}>
-                      {s.name} {s.count != null && <span className="text-[11px] tabular-nums" style={{ color: INK_FAINT }}>({s.count})</span>}
+                    <span className="block text-[14px] font-medium truncate" style={{ color: INK }}>
+                      {s.name} {s.count != null && <span className="text-[12px] tabular-nums" style={{ color: INK_FAINT }}>({s.count})</span>}
                     </span>
-                    <span className="block text-[11px]" style={{ color: INK_FAINT }}>
+                    <span className="block text-[12px]" style={{ color: INK_FAINT }}>
                       {[s.mine ? null : "Shared by a teammate", s.shared && s.mine ? "Shared" : null, s.alert && s.mine ? "Daily email" : null].filter(Boolean).join(" · ")}
                     </span>
                   </button>
                   {s.mine && (
                     <>
-                      <button type="button" className="text-[11px] font-semibold px-1" style={{ color: "var(--forest)" }} title={s.alert ? "Stop the daily email" : "Email me new matches each weekday"} onClick={() => act(() => updateSavedSearch(s.id, { alert: !s.alert }))}>
+                      <button type="button" className="text-[12px] font-semibold px-1" style={{ color: "var(--forest)" }} title={s.alert ? "Stop the daily email" : "Email me new matches each weekday"} onClick={() => act(() => updateSavedSearch(s.id, { alert: !s.alert }))}>
                         {s.alert ? "🔔" : "🔕"}
                       </button>
-                      <button type="button" className="text-[11px] font-semibold px-1" style={{ color: INK_FAINT }} aria-label={`Delete ${s.name}`} onClick={() => act(() => deleteSavedSearch(s.id))}>
+                      <button type="button" className="text-[12px] font-semibold px-1" style={{ color: INK_FAINT }} aria-label={`Delete ${s.name}`} onClick={() => act(() => deleteSavedSearch(s.id))}>
                         ✕
                       </button>
                     </>
@@ -123,15 +123,15 @@ export default function SavedSearches({ currentQuery, onApply }) {
             <Field label="Name">
               <TextInput required maxLength={120} value={f.name} onChange={(e) => setF((v) => ({ ...v, name: e.target.value }))} placeholder="e.g. Senior Java devs near Leeds" />
             </Field>
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
               <input type="checkbox" checked={f.shared} onChange={(e) => setF((v) => ({ ...v, shared: e.target.checked }))} className="accent-[var(--forest)]" />
               Share with my team
             </label>
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
               <input type="checkbox" checked={f.alert} onChange={(e) => setF((v) => ({ ...v, alert: e.target.checked }))} className="accent-[var(--forest)]" />
               Email me new matches each weekday morning
             </label>
-            <p className="text-[11px]" style={{ color: INK_FAINT }}>
+            <p className="text-[12px]" style={{ color: INK_FAINT }}>
               <Pill>{currentQuery.replace(/&/g, " · ").slice(0, 120)}</Pill>
             </p>
             <ErrorText>{error}</ErrorText>

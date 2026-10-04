@@ -184,7 +184,7 @@ export default function EmployeesPage() {
               {e.full_name || e.display_name || e.username}
               {e.admin_username && <span className="pill warn bare" style={{ marginLeft: 6 }}>Admin</span>}
             </div>
-            <div className="faint truncate" style={{ fontSize: 12 }}>@{e.username}{e.email ? ` · ${e.email}` : ""}</div>
+            <div className="faint truncate" style={{ fontSize: 13 }}>@{e.username}{e.email ? ` · ${e.email}` : ""}</div>
           </div>
         </div>
       ),
@@ -266,7 +266,7 @@ export default function EmployeesPage() {
                   <button key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>{label}</button>
                 ))}
               </div>
-              <span className="faint" style={{ marginLeft: "auto", fontSize: 12.5 }}>{rows.length} of {employees.length}</span>
+              <span className="faint" style={{ marginLeft: "auto", fontSize: 13.5 }}>{rows.length} of {employees.length}</span>
             </div>
 
             {!loading && employees.length === 0 ? (

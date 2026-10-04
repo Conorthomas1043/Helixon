@@ -90,7 +90,7 @@ export function RolePicker({ value, onChange, disabled, id = "role" }) {
           <option key={r.key} value={r.key}>{r.label}</option>
         ))}
       </select>
-      {role && <span className="faint" style={{ fontSize: 12 }}>{role.description}</span>}
+      {role && <span className="faint" style={{ fontSize: 13 }}>{role.description}</span>}
     </div>
   );
 }

@@ -33,7 +33,7 @@ const RISKY_OFF = {
 function Updated({ meta }) {
   if (!meta?.updatedAt) return null;
   return (
-    <span className="faint" style={{ fontSize: 12 }} title={formatDateTime(meta.updatedAt)}>
+    <span className="faint" style={{ fontSize: 13 }} title={formatDateTime(meta.updatedAt)}>
       Changed {timeAgo(meta.updatedAt)}{meta.updatedBy ? ` by ${meta.updatedBy}` : ""}
     </span>
   );

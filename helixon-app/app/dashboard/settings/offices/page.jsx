@@ -67,8 +67,8 @@ export default function OfficesPage() {
       {state && (
         <>
           <Card title="Offices">
-            {!canManage && <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>Only the workspace owner or an admin can change these.</p>}
-            {state.offices.length === 0 && <p className="text-[13px] mb-3" style={{ color: INK_MUTED }}>No offices yet - the whole workspace is one.</p>}
+            {!canManage && <p className="text-[14px] mb-3" style={{ color: INK_MUTED }}>Only the workspace owner or an admin can change these.</p>}
+            {state.offices.length === 0 && <p className="text-[14px] mb-3" style={{ color: INK_MUTED }}>No offices yet - the whole workspace is one.</p>}
             <ul className="space-y-2 mb-3">
               {state.offices.map((o, i) => (
                 <li key={o.id || `new-${i}`} className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function OfficesPage() {
               <ul className="divide-y -my-3" style={{ borderColor: "var(--border)" }}>
                 {team.map((m) => (
                   <li key={m.id} className="py-2.5 flex items-center justify-between gap-3">
-                    <span className="text-[13px]" style={{ color: INK }}>
+                    <span className="text-[14px]" style={{ color: INK }}>
                       {m.name}
                     </span>
                     <div className="w-56">
@@ -136,7 +136,7 @@ export default function OfficesPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-[11px] mt-4" style={{ color: INK_FAINT }}>
+              <p className="text-[12px] mt-4" style={{ color: INK_FAINT }}>
                 Save new offices first to put people in them.
               </p>
             </Card>
@@ -147,7 +147,7 @@ export default function OfficesPage() {
               <Button variant="primary" onClick={save} disabled={saving}>
                 {saving ? "Saving…" : "Save"}
               </Button>
-              {saved && <span className="text-[12px]" style={{ color: "var(--forest)" }}>Saved</span>}
+              {saved && <span className="text-[13px]" style={{ color: "var(--forest)" }}>Saved</span>}
             </div>
           )}
         </>

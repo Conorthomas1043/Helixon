@@ -322,7 +322,7 @@ function Neighbours({ neighbours, blockedRange, onBlockRange, working }) {
               <Link className="mono panel-link" style={{ marginLeft: 0 }} href={`/admin/security/investigate?q=${encodeURIComponent(n.ip)}`}>
                 {n.ip}
               </Link>
-              <span className="muted" style={{ fontSize: 12, textAlign: "right" }}>
+              <span className="muted" style={{ fontSize: 13, textAlign: "right" }}>
                 {Number(n.requests).toLocaleString()} requests
                 {Number(n.blocked) ? ` · ${Number(n.blocked).toLocaleString()} blocked` : ""} · {timeAgo(n.last_seen)}
               </span>
@@ -466,7 +466,7 @@ function IpDossier({ ip }) {
         <div className="dossier-head">
           <div style={{ minWidth: 0 }}>
             <h2 className="ip-title">{ip}</h2>
-            <div className="muted" style={{ fontSize: 12.5, marginTop: 4 }}>
+            <div className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>
               {activity
                 ? `${Number(activity.requests).toLocaleString()} requests · ${Number(activity.paths).toLocaleString()} different paths · ${Number(activity.user_agents).toLocaleString()} user agents`
                 : "No requests from this address are in the log."}
@@ -601,7 +601,7 @@ function SearchResults({ query }) {
                   <Link className="mono panel-link" style={{ marginLeft: 0 }} href={`/admin/security/investigate?q=${encodeURIComponent(s.ip)}`}>
                     {s.ip}
                   </Link>
-                  <div className="faint truncate" style={{ fontSize: 12 }}>
+                  <div className="faint truncate" style={{ fontSize: 13 }}>
                     {s.requests} requests{s.blocked ? ` · ${s.blocked} blocked` : ""}
                     {s.countries?.length ? ` · ${s.countries.join(", ")}` : ""}
                     {s.signals?.length ? ` · ${s.signals.join(", ")}` : ""}

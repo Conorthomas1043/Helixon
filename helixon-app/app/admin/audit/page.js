@@ -114,7 +114,7 @@ function Details({ entry }) {
         {entry.userAgent && (
           <>
             <dt>Browser</dt>
-            <dd className="faint" style={{ fontSize: 11.5 }}>{entry.userAgent}</dd>
+            <dd className="faint" style={{ fontSize: 12.5 }}>{entry.userAgent}</dd>
           </>
         )}
       </dl>

@@ -128,7 +128,7 @@ export default function EmployeeOpsPage() {
               </div>
             </div>
 
-            <p className="text-[11px] mt-8" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-[12px] mt-8" style={{ color: "var(--ink-faint)" }}>
               Signed in as {data.employee.display_name || data.employee.username}. This view
               excludes revenue, per-agency detail, IP/security data, and audit logs - see the admin console for those.
             </p>

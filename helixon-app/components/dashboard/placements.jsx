@@ -86,7 +86,7 @@ function SplitEditor({ splits, onChange }) {
     return (
       <button
         type="button"
-        className="text-[12px] font-semibold"
+        className="text-[13px] font-semibold"
         style={{ color: "var(--forest)" }}
         onClick={() => onChange([{ recruiterId: "", percent: "50" }, { recruiterId: "", percent: "50" }])}
       >
@@ -96,7 +96,7 @@ function SplitEditor({ splits, onChange }) {
   }
   return (
     <fieldset className="space-y-2">
-      <legend className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+      <legend className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
         Fee split
       </legend>
       {splits.map((s, i) => (
@@ -108,15 +108,15 @@ function SplitEditor({ splits, onChange }) {
             options={[{ value: "", label: "Choose…" }, ...team.map((m) => ({ value: m.id, label: m.name }))]}
           />
           <TextInput aria-label={`Share for person ${i + 1}`} type="number" min="1" max="100" step="1" value={s.percent} onChange={(e) => update(i, { percent: e.target.value })} style={{ maxWidth: 90 }} />
-          <span className="text-[12px]" style={{ color: INK_MUTED }}>%</span>
+          <span className="text-[13px]" style={{ color: INK_MUTED }}>%</span>
           {splits.length > 2 && (
-            <button type="button" aria-label={`Remove person ${i + 1}`} className="text-[12px]" style={{ color: INK_FAINT }} onClick={() => onChange(splits.filter((_, j) => j !== i))}>
+            <button type="button" aria-label={`Remove person ${i + 1}`} className="text-[13px]" style={{ color: INK_FAINT }} onClick={() => onChange(splits.filter((_, j) => j !== i))}>
               Remove
             </button>
           )}
         </div>
       ))}
-      <div className="flex items-center gap-3 text-[12px]">
+      <div className="flex items-center gap-3 text-[13px]">
         {splits.length < 5 && (
           <button type="button" className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => onChange([...splits, { recruiterId: "", percent: "" }])}>
             + Add person
@@ -202,7 +202,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
         </div>
 
         {moneyHidden ? (
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>Fees, salary and rates are only visible to the owner and admins.</p>
+          <p className="text-[13px]" style={{ color: INK_MUTED }}>Fees, salary and rates are only visible to the owner and admins.</p>
         ) : contract ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Field label="Rate per">
@@ -225,7 +225,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
               <TextInput type="date" value={f.endDate} onChange={set("endDate")} />
             </Field>
             {margin && (
-              <p className="col-span-full text-[12px]" style={{ color: INK_MUTED }}>
+              <p className="col-span-full text-[13px]" style={{ color: INK_MUTED }}>
                 Margin {formatMoney(margin.margin, f.currency)} per {f.rateUnit}
                 {margin.percent != null ? ` (${margin.percent}% of charge)` : ""}.
               </p>
@@ -310,13 +310,13 @@ function Timesheets({ placement, timesheets, onChanged }) {
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         Timesheets
       </p>
       {timesheets.length > 0 && (
         <ul className="space-y-1">
           {timesheets.map((t) => (
-            <li key={t.id} className="flex flex-wrap items-center gap-2 text-[12px]" style={{ color: INK }}>
+            <li key={t.id} className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: INK }}>
               <span className="min-w-[110px]">w/c {formatDate(t.weekStarting)}</span>
               <span className="tabular-nums">
                 {t.quantity} {unit}
@@ -431,7 +431,7 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           {showCandidate && (
-            <p className="text-[13px] font-semibold" style={{ color: INK }}>
+            <p className="text-[14px] font-semibold" style={{ color: INK }}>
               {p.candidateId ? (
                 <Link href={`/dashboard/candidates/${p.candidateId}`} className="hover:underline">
                   {p.candidateName}
@@ -447,14 +447,14 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
           )}
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
             <PlacementStatusPill status={p.status} />
-            <span className="text-[12px]" style={{ color: INK_MUTED }}>
+            <span className="text-[13px]" style={{ color: INK_MUTED }}>
               {p.kind === "contract" ? "Contract" : "Permanent"}
               {p.startDate ? ` · starts ${formatDate(p.startDate)}` : ""}
               {p.endDate ? ` · ends ${formatDate(p.endDate)}` : ""}
             </span>
             {inRebate && <Pill color="#8a5a00" background="#fdf3dc">Rebate period to {formatDate(p.rebateUntil)}</Pill>}
           </div>
-          <p className="text-[12px] mt-1" style={{ color: INK }}>
+          <p className="text-[13px] mt-1" style={{ color: INK }}>
             {p.kind === "contract" ? (
               <>
                 Pay {formatMoney(p.payRate, p.currency)} · charge {formatMoney(p.chargeRate, p.currency)} per {p.rateUnit || "hour"}
@@ -470,7 +470,7 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
             )}
           </p>
           {p.notes && (
-            <p className="text-[12px] mt-1 whitespace-pre-wrap" style={{ color: INK_MUTED }}>
+            <p className="text-[13px] mt-1 whitespace-pre-wrap" style={{ color: INK_MUTED }}>
               {p.notes}
             </p>
           )}
@@ -490,7 +490,7 @@ export function PlacementItem({ placement: initial, showCandidate = false, onCha
       {invoices.length > 0 && (
         <ul className="mt-2 space-y-1">
           {invoices.map((i) => (
-            <li key={i.id} className="flex flex-wrap items-center gap-2 text-[12px]">
+            <li key={i.id} className="flex flex-wrap items-center gap-2 text-[13px]">
               <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                 {i.number}
               </Link>

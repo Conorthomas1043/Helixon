@@ -86,7 +86,7 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
   return (
     <Dialog title={title || (many ? `Email ${candidateIds.length} candidates` : "Email candidate")} onClose={onClose} busy={busy} width={680}>
       {result ? (
-        <div className="space-y-3 text-[13px]" style={{ color: INK }}>
+        <div className="space-y-3 text-[14px]" style={{ color: INK }}>
           <p>
             Sent {result.sent} email{result.sent === 1 ? "" : "s"}
             {result.failed ? `, ${result.failed} failed` : ""}.
@@ -98,7 +98,7 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
         </div>
       ) : preview ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-[12px]" style={{ color: INK_MUTED }}>
+          <div className="flex items-center justify-between text-[13px]" style={{ color: INK_MUTED }}>
             <span>
               {current.name} {current.email ? `<${current.email}>` : "- no email address, won't be sent"}
             </span>
@@ -110,17 +110,17 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
               </span>
             )}
           </div>
-          <div className="rounded-[10px] p-4 text-[13px] whitespace-pre-wrap" style={{ border: "1px solid var(--border)", color: INK }}>
+          <div className="rounded-[10px] p-4 text-[14px] whitespace-pre-wrap" style={{ border: "1px solid var(--border)", color: INK }}>
             <p className="font-semibold mb-3">{current.subject}</p>
             {current.body}
           </div>
           {current.missing.length > 0 && (
-            <p className="text-[12px]" style={{ color: "#92620f" }}>
+            <p className="text-[13px]" style={{ color: "#92620f" }}>
               Empty for {current.name}: {current.missing.map((m) => `{{${m}}}`).join(", ")}
             </p>
           )}
           {missingCount > 0 && preview.emails.length > 1 && (
-            <p className="text-[12px]" style={{ color: "#92620f" }}>
+            <p className="text-[13px]" style={{ color: "#92620f" }}>
               {missingCount} of {preview.emails.length} emails have an empty merge field - check them before sending.
             </p>
           )}
@@ -146,10 +146,10 @@ export default function ComposeEmail({ candidateIds, onClose, onSent, title }) {
             <TextArea ref={bodyRef} rows={10} maxLength={20000} value={body} onChange={(e) => setBody(e.target.value)} />
           </Field>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert</p>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(fields).map(([k, label]) => (
-                <button key={k} type="button" onClick={() => insertField(k)} title={`{{${k}}}`} className="text-[11px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
+                <button key={k} type="button" onClick={() => insertField(k)} title={`{{${k}}}`} className="text-[12px] px-2 py-0.5 rounded-full" style={{ border: "1px dashed var(--border)", color: INK_MUTED }}>
                   {label}
                 </button>
               ))}

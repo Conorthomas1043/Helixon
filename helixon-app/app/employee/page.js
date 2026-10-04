@@ -48,7 +48,7 @@ export default function EmployeeLanding() {
               </svg>
             </span>
             <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "var(--mint)", color: "var(--forest)" }}>Staff</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "var(--mint)", color: "var(--forest)" }}>Staff</span>
           </Link>
           <Link href="/" className="nav-link text-sm font-medium" style={{ color: "var(--ink-soft)" }}>
             Helixon website
@@ -84,7 +84,7 @@ export default function EmployeeLanding() {
                 </span>
                 <span>
                   <span className="block text-sm font-semibold" style={{ color: "var(--ink)" }}>{f.title}</span>
-                  <span className="block text-[13px] mt-0.5 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.body}</span>
+                  <span className="block text-[14px] mt-0.5 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.body}</span>
                 </span>
               </li>
             ))}

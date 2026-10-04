@@ -206,7 +206,7 @@ function InfoCard({ icon, eyebrow, title, text }) {
       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6f3ef] text-[#087a5b]">
         {icon}
       </div>
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#709188]">
+      <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#709188]">
         {eyebrow}
       </p>
       <h2 className="text-[17px] font-semibold tracking-[-0.02em]">{title}</h2>

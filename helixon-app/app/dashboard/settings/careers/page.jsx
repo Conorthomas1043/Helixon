@@ -70,7 +70,7 @@ export default function CareersSettingsPage() {
       {status === "error" && <ErrorState title="Unable to load your jobs page settings" onRetry={retry} />}
       {status === "ready" && (
         <>
-          {locked && <p className="text-[13px]" style={{ color: INK_MUTED }}>Only the workspace owner or an admin can change these.</p>}
+          {locked && <p className="text-[14px]" style={{ color: INK_MUTED }}>Only the workspace owner or an admin can change these.</p>}
           <Card title="Page">
             <fieldset disabled={locked || saving} className="space-y-3">
               <Field label="Address" hint={`Your page will be at ${typeof window !== "undefined" ? window.location.origin : ""}/jobs/${f.slug || "…"}`}>
@@ -86,7 +86,7 @@ export default function CareersSettingsPage() {
           </Card>
           <Card title="Privacy notice for applicants">
             <fieldset disabled={locked || saving} className="space-y-3">
-              <p className="text-[12px]" style={{ color: INK_MUTED }}>
+              <p className="text-[13px]" style={{ color: INK_MUTED }}>
                 Applicants must agree to it before applying; it&apos;s published at <code>/jobs/{f.slug || "…"}/privacy</code>. Leave the custom notice
                 empty to use the standard one, filled in with your agency name and retention period.
               </p>
@@ -99,7 +99,7 @@ export default function CareersSettingsPage() {
             </fieldset>
           </Card>
           <ErrorText>{error}</ErrorText>
-          {notice && <p className="text-[13px]" role="status" style={{ color: INK }}>{notice}</p>}
+          {notice && <p className="text-[14px]" role="status" style={{ color: INK }}>{notice}</p>}
           {!locked && (
             <div className="flex flex-wrap gap-2">
               <Button variant="primary" disabled={saving} onClick={() => save()}>{saving ? "Saving…" : "Save"}</Button>

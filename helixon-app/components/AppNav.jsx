@@ -97,7 +97,7 @@ export default function AppNav({ active }) {
                 Helixon
               </span>
               {me?.agencyName && (
-                <span className="hidden sm:block text-[10px] font-medium mt-0.5 truncate max-w-[180px]" style={{ color: COLORS.muted }}>
+                <span className="hidden sm:block text-[11px] font-medium mt-0.5 truncate max-w-[180px]" style={{ color: COLORS.muted }}>
                   {me.agencyName}
                 </span>
               )}

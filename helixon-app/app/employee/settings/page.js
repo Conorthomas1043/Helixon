@@ -135,19 +135,19 @@ export default function EmployeeSettingsPage() {
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <dt className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Name</dt>
+              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Name</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.fullName || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Username</dt>
+              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Username</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.username}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Role</dt>
+              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Role</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{ROLE_LABELS[employee?.role] || employee?.role || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Last signed in</dt>
+              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Last signed in</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{formatDateTime(employee?.lastLogin)}</dd>
             </div>
           </dl>
@@ -208,7 +208,7 @@ export default function EmployeeSettingsPage() {
                   className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
                   style={{ color: "var(--ink)", ...fieldStyle() }}
                 />
-                <p className="text-[11px] mt-1" style={{ color: "var(--ink-faint)" }}>
+                <p className="text-[12px] mt-1" style={{ color: "var(--ink-faint)" }}>
                   At least {MIN_PASSWORD_LENGTH} characters.
                 </p>
               </div>
@@ -232,7 +232,7 @@ export default function EmployeeSettingsPage() {
                   <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
-                  <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
+                  <p className="text-[14px]" style={{ color: "var(--score-low)" }}>{error}</p>
                 </div>
               )}
 

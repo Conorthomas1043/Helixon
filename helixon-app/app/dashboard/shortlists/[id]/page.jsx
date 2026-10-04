@@ -26,7 +26,7 @@ import { useConfirm } from "@/components/dashboard/use-confirm";
 function Avatar({ name }) {
   return (
     <span
-      className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-semibold text-white shrink-0"
+      className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-white shrink-0"
       style={{ background: "var(--forest)" }}
       aria-hidden="true"
     >
@@ -55,7 +55,7 @@ function NoteEditor({ value, onSave }) {
       <button
         type="button"
         onClick={() => { setDraft(value || ""); setEditing(true); }}
-        className="text-left text-[12px] mt-1 rounded focus-visible:outline focus-visible:outline-2"
+        className="text-left text-[13px] mt-1 rounded focus-visible:outline focus-visible:outline-2"
         style={{ color: value ? INK_MUTED : INK_FAINT }}
       >
         {value ? `“${value}”` : "+ Why are they on this list?"}
@@ -72,7 +72,7 @@ function NoteEditor({ value, onSave }) {
         autoFocus
         aria-label="Shortlist note"
         placeholder="e.g. Strongest on stakeholder management; available in 4 weeks"
-        className="w-full text-[12px] px-2.5 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2"
+        className="w-full text-[13px] px-2.5 py-1.5 rounded-[8px] focus-visible:outline focus-visible:outline-2"
         style={{ border: "1px solid var(--border)", color: INK }}
       />
       <div className="flex gap-2">
@@ -80,12 +80,12 @@ function NoteEditor({ value, onSave }) {
           type="button"
           onClick={save}
           disabled={saving}
-          className="text-[11px] font-semibold px-3 py-1 rounded-full disabled:opacity-50"
+          className="text-[12px] font-semibold px-3 py-1 rounded-full disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {saving ? "Saving…" : "Save"}
         </button>
-        <button type="button" onClick={() => { setDraft(value || ""); setEditing(false); }} className="text-[11px] font-semibold" style={{ color: INK_MUTED }}>
+        <button type="button" onClick={() => { setDraft(value || ""); setEditing(false); }} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
           Cancel
         </button>
       </div>
@@ -190,7 +190,7 @@ export default function ShortlistDetailPage({ params }) {
 
   const shortlist = data?.shortlist;
   const candidates = data?.candidates ?? [];
-  const pill = "inline-flex items-center text-[12px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  const pill = "inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
   return (
     <>
@@ -198,7 +198,7 @@ export default function ShortlistDetailPage({ params }) {
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
       <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
-        <Link href="/dashboard/shortlists" className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>
+        <Link href="/dashboard/shortlists" className="text-[13px] font-semibold" style={{ color: INK_MUTED }}>
           ← All shortlists
         </Link>
 
@@ -206,7 +206,7 @@ export default function ShortlistDetailPage({ params }) {
         {status === "not-found" && (
           <div className="rounded-[14px] p-10 text-center" style={CARD}>
             <p className="font-semibold" style={{ color: INK }}>Shortlist not found</p>
-            <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>It may have been deleted.</p>
+            <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>It may have been deleted.</p>
           </div>
         )}
         {status === "error" && (
@@ -221,7 +221,7 @@ export default function ShortlistDetailPage({ params }) {
             <header className="rounded-[14px] p-5 sm:p-6 space-y-4" style={CARD}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>Shortlist</p>
+                  <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>Shortlist</p>
                   {renaming ? (
                     <form onSubmit={saveName} className="flex items-center gap-2">
                       <input
@@ -234,7 +234,7 @@ export default function ShortlistDetailPage({ params }) {
                         style={{ border: "1px solid var(--border)", color: INK }}
                       />
                       <button type="submit" className={pill} style={{ background: "var(--forest)", color: "white" }}>Save</button>
-                      <button type="button" onClick={() => setRenaming(false)} className="text-[12px] font-semibold" style={{ color: INK_MUTED }}>Cancel</button>
+                      <button type="button" onClick={() => setRenaming(false)} className="text-[13px] font-semibold" style={{ color: INK_MUTED }}>Cancel</button>
                     </form>
                   ) : (
                     <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -242,14 +242,14 @@ export default function ShortlistDetailPage({ params }) {
                       <button
                         type="button"
                         onClick={() => { setNameDraft(shortlist.name); setRenaming(true); }}
-                        className="text-[12px] font-semibold align-middle"
+                        className="text-[13px] font-semibold align-middle"
                         style={{ color: INK_MUTED }}
                       >
                         Rename
                       </button>
                     </h1>
                   )}
-                  <p className="text-[13px] mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>
                     {candidates.length} {candidates.length === 1 ? "person" : "people"}
                     {shortlist.jobId && (
                       <>
@@ -260,7 +260,7 @@ export default function ShortlistDetailPage({ params }) {
                     )}
                   </p>
                 </div>
-                <button type="button" onClick={handleDelete} className="text-[12px] font-semibold" style={{ color: "var(--score-low)" }}>
+                <button type="button" onClick={handleDelete} className="text-[13px] font-semibold" style={{ color: "var(--score-low)" }}>
                   Delete list
                 </button>
               </div>
@@ -270,7 +270,7 @@ export default function ShortlistDetailPage({ params }) {
                   aria-label="Job this shortlist is for"
                   value={shortlist.jobId || ""}
                   onChange={(e) => changeJob(e.target.value)}
-                  className="text-[12px] font-semibold px-3 py-1.5 rounded-full bg-white"
+                  className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white"
                   style={{ border: "1px solid var(--border)", color: INK }}
                 >
                   <option value="">Not linked to a job</option>
@@ -298,18 +298,18 @@ export default function ShortlistDetailPage({ params }) {
                 )}
               </div>
               {shortlist.jobId && !shortlist.clientEmail && candidates.length > 0 && (
-                <p className="text-[12px]" style={{ color: INK_FAINT }}>
+                <p className="text-[13px]" style={{ color: INK_FAINT }}>
                   The job has no client contact email -{" "}
                   <Link href={`/dashboard/jobs/${shortlist.jobId}`} className="underline font-semibold" style={{ color: "var(--forest)" }}>add one</Link>{" "}
                   to address the email automatically.
                 </p>
               )}
-              {error && <p className="text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+              {error && <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
             </header>
 
             <section className="rounded-[14px] p-5 sm:p-6" style={CARD}>
               {candidates.length === 0 ? (
-                <p className="text-[13px] text-center py-6" style={{ color: INK_MUTED }}>
+                <p className="text-[14px] text-center py-6" style={{ color: INK_MUTED }}>
                   Nobody on this list yet. Use &quot;Add to client shortlist&quot; on a candidate&apos;s profile, or select people on{" "}
                   <Link href={shortlist.jobId ? `/dashboard/candidates?jobId=${shortlist.jobId}` : "/dashboard/candidates"} className="underline font-semibold" style={{ color: "var(--forest)" }}>
                     Candidates
@@ -325,15 +325,15 @@ export default function ShortlistDetailPage({ params }) {
                         <Link href={`/dashboard/candidates/${c.id}`} className="text-sm font-semibold hover:underline" style={{ color: INK }}>
                           {c.fullName}
                         </Link>
-                        <p className="text-[12px] truncate" style={{ color: INK_MUTED }}>
+                        <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
                           {[[c.currentTitle, c.currentCompany].filter(Boolean).join(" at "), c.location].filter(Boolean).join(" · ") || "-"}
                         </p>
                         {c.jobTitle && c.jobId !== shortlist.jobId && (
-                          <p className="text-[11px]" style={{ color: INK_FAINT }}>Screened for {c.jobTitle}</p>
+                          <p className="text-[12px]" style={{ color: INK_FAINT }}>Screened for {c.jobTitle}</p>
                         )}
                         <NoteEditor value={c.note} onSave={(note) => saveNote(c.id, note)} />
                         {c.clientDecision && (
-                          <p className="text-[12px] mt-1.5 rounded-[8px] px-2.5 py-1.5" style={{ background: c.clientDecision === "reject" ? "#fef2f2" : c.clientDecision === "interview" ? "var(--mint)" : "#fdf6e9", color: INK }}>
+                          <p className="text-[13px] mt-1.5 rounded-[8px] px-2.5 py-1.5" style={{ background: c.clientDecision === "reject" ? "#fef2f2" : c.clientDecision === "interview" ? "var(--mint)" : "#fdf6e9", color: INK }}>
                             <strong>{c.clientDecidedBy || "Client"}: {CLIENT_DECISIONS[c.clientDecision]}</strong>
                             {c.clientComment ? ` - "${c.clientComment}"` : ""}
                           </p>
@@ -344,11 +344,11 @@ export default function ShortlistDetailPage({ params }) {
                           {c.score ?? "-"}
                         </span>
                         {c.stage && (
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: STAGE_COLORS[c.stage] || INK_MUTED }}>
+                          <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: STAGE_COLORS[c.stage] || INK_MUTED }}>
                             {STAGE_LABELS[c.stage] ?? c.stage}
                           </span>
                         )}
-                        <div className="flex gap-2 text-[11px] font-semibold">
+                        <div className="flex gap-2 text-[12px] font-semibold">
                           <Link href={`/dashboard/candidates/${c.id}/client-profile`} style={{ color: "var(--forest)" }}>Client profile</Link>
                           <button type="button" onClick={() => remove(c.id)} style={{ color: INK_MUTED }}>Remove</button>
                         </div>

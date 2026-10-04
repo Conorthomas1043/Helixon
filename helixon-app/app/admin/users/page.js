@@ -78,14 +78,14 @@ function UserHistory({ userId }) {
   const { data, loading } = useAdminData(`/api/admin/users?history=${encodeURIComponent(userId)}`);
   const rows = data?.history || [];
   if (loading && !data) return <div className="skeleton" style={{ height: 40 }} />;
-  if (!rows.length) return <div className="faint" style={{ fontSize: 12.5 }}>No admin changes recorded.</div>;
+  if (!rows.length) return <div className="faint" style={{ fontSize: 13.5 }}>No admin changes recorded.</div>;
   return (
     <div className="mini-list">
       {rows.map((h) => (
         <div className="mini-row" key={h.id}>
           <div style={{ minWidth: 0 }}>
             <div>{HISTORY_LABELS[h.action] || h.action}{h.reason ? ` - ${h.reason}` : ""}</div>
-            <div className="faint" style={{ fontSize: 12 }}>by {h.admin} · {formatDateTime(h.at)}</div>
+            <div className="faint" style={{ fontSize: 13 }}>by {h.admin} · {formatDateTime(h.at)}</div>
           </div>
         </div>
       ))}
@@ -144,7 +144,7 @@ function UserDrawer({ user, busy, onClose, run }) {
             )}
             {user.isTestUser && <span className="pill warn" style={{ marginLeft: 6 }}>{user.testLabel || "Test"}</span>}
             {user.subscription?.demoExpiresAt && (
-              <div className="faint" style={{ fontSize: 12, marginTop: 4 }}>
+              <div className="faint" style={{ fontSize: 13, marginTop: 4 }}>
                 Demo access {user.subscription.status === "active" ? "ends" : "ended"} {formatDateTime(user.subscription.demoExpiresAt)}
               </div>
             )}
@@ -224,7 +224,7 @@ function UserDrawer({ user, busy, onClose, run }) {
         <section className="drawer-section">
           <h3>Agency</h3>
           <AgencyPicker user={user} busy={busy} run={run} />
-          <p className="faint" style={{ marginTop: 8, fontSize: 12 }}>Moving someone changes which workspace, candidates and plan they see. Their own subscription (if any) moves with them.</p>
+          <p className="faint" style={{ marginTop: 8, fontSize: 13 }}>Moving someone changes which workspace, candidates and plan they see. Their own subscription (if any) moves with them.</p>
         </section>
       )}
 
@@ -529,7 +529,7 @@ export default function UsersPage() {
         </div>
       ) : (
         rows.length > 0 && (
-          <div className="faint" style={{ fontSize: 12, marginBottom: 8 }}>
+          <div className="faint" style={{ fontSize: 13, marginBottom: 8 }}>
             Tick accounts for bulk actions, or{" "}
             <button className="panel-link" style={{ marginLeft: 0 }} onClick={() => setPicked(new Set(rows.map((u) => u.id)))}>
               select all {rows.length} shown

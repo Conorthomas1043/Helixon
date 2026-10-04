@@ -61,7 +61,7 @@ export default function DangerZone() {
         <li>If you pay for Helixon, cancel your subscription first - deleting your account doesn&apos;t stop billing.</li>
       </ul>
 
-      <label htmlFor="delete-confirm" className="mt-6 block text-[13px] font-semibold text-[#10221d]">
+      <label htmlFor="delete-confirm" className="mt-6 block text-[14px] font-semibold text-[#10221d]">
         Type <span className="font-mono">DELETE</span> to confirm
       </label>
       <input

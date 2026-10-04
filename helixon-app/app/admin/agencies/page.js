@@ -170,7 +170,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
           </Section>
 
           <Section title="Screening limit">
-            <p className="faint" style={{ margin: "0 0 8px", fontSize: 12.5 }}>
+            <p className="faint" style={{ margin: "0 0 8px", fontSize: 13.5 }}>
               {formatNumber(agency.screeningsThisMonth)} CVs screened this month{agency.screeningCap ? ` of ${formatNumber(agency.screeningCap)}` : ""}. With a cap, screening stops for the rest of the month once it&rsquo;s reached.
             </p>
             {agency.screeningCap ? <Progress value={agency.screeningsThisMonth} max={agency.screeningCap} /> : null}
@@ -201,7 +201,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
                       <Avatar name={m.name} size={28} />
                       <span style={{ minWidth: 0 }}>
                         <span className="truncate" style={{ display: "block" }}>{m.name}</span>
-                        <span className="faint" style={{ fontSize: 12 }}>Joined {formatDate(m.joinedAt)}</span>
+                        <span className="faint" style={{ fontSize: 13 }}>Joined {formatDate(m.joinedAt)}</span>
                       </span>
                     </span>
                     <span className="actions" style={{ gap: 6 }}>
@@ -250,14 +250,14 @@ function AgencyDrawer({ id, onClose, onChanged }) {
 
           <Section title="History">
             {(data.history || []).length === 0 ? (
-              <div className="faint" style={{ fontSize: 12.5 }}>No admin changes recorded.</div>
+              <div className="faint" style={{ fontSize: 13.5 }}>No admin changes recorded.</div>
             ) : (
               <div className="mini-list">
                 {data.history.map((h) => (
                   <div className="mini-row" key={h.id}>
                     <div style={{ minWidth: 0 }}>
                       <div>{HISTORY_LABELS[h.action] || h.action}{historyDetail(h) ? ` - ${historyDetail(h)}` : ""}</div>
-                      <div className="faint" style={{ fontSize: 12 }}>by {h.admin} · {formatDateTime(h.at)}</div>
+                      <div className="faint" style={{ fontSize: 13 }}>by {h.admin} · {formatDateTime(h.at)}</div>
                     </div>
                   </div>
                 ))}

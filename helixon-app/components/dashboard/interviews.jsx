@@ -131,24 +131,24 @@ export function ScheduleInterviewDialog({ candidate, interview, onClose, onSaved
         {!editing ? (
           <fieldset className="space-y-2 rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
             <legend className="sr-only">Calendar invites</legend>
-            <p className="text-[12px] font-semibold" style={{ color: INK }}>Send calendar invites to</p>
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: candidate?.email ? INK : INK_FAINT }}>
+            <p className="text-[13px] font-semibold" style={{ color: INK }}>Send calendar invites to</p>
+            <label className="flex items-center gap-2 text-[14px]" style={{ color: candidate?.email ? INK : INK_FAINT }}>
               <input type="checkbox" disabled={!candidate?.email} checked={inviteCandidate} onChange={(e) => setInviteCandidate(e.target.checked)} className="accent-[var(--forest)]" />
               The candidate {candidate?.email ? `(${candidate.email})` : "- no email on file"}
             </label>
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
               <input type="checkbox" checked={inviteContact} onChange={(e) => setInviteContact(e.target.checked)} className="accent-[var(--forest)]" />
               The job&apos;s hiring contact (if it has one with an email)
             </label>
             <TextInput value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="Other interviewers' emails, comma separated" aria-label="Other invitees" />
-            <label className="flex items-center gap-2 text-[13px] pt-1" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px] pt-1" style={{ color: INK }}>
               <input type="checkbox" checked={moveStage} onChange={(e) => setMoveStage(e.target.checked)} className="accent-[var(--forest)]" />
               Move them to the Interview stage
             </label>
           </fieldset>
         ) : (
           interview.invitedAt && (
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+            <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
               <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="accent-[var(--forest)]" />
               Send the updated invite to everyone invited
             </label>
@@ -200,12 +200,12 @@ export function ScorecardDialog({ interview, onClose, onSaved }) {
     <Dialog title={`Scorecard - ${interview.candidateName}, round ${interview.round}`} onClose={onClose} busy={saving} width={600}>
       <form onSubmit={submit} className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[13px] font-semibold" style={{ color: INK }}>Overall</span>
+          <span className="text-[14px] font-semibold" style={{ color: INK }}>Overall</span>
           <RatingPicker value={overall} onChange={setOverall} label="Overall rating" />
         </div>
         {DEFAULT_CRITERIA.map((name) => (
           <div key={name} className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[13px]" style={{ color: INK }}>{name}</span>
+            <span className="text-[14px]" style={{ color: INK }}>{name}</span>
             <RatingPicker value={ratings[name] ?? null} onChange={(n) => setRatings((r) => ({ ...r, [name]: n }))} label={name} />
           </div>
         ))}
@@ -267,7 +267,7 @@ export function RequestScorecardDialog({ interview, onClose, onSaved }) {
   return (
     <Dialog title="Ask an interviewer for a scorecard" onClose={onClose} busy={saving}>
       {result ? (
-        <div className="space-y-3 text-[13px]" style={{ color: INK }}>
+        <div className="space-y-3 text-[14px]" style={{ color: INK }}>
           <p>{result.emailed ? `Sent to ${f.reviewerEmail}.` : result.sendError ? `The link was created, but ${result.sendError.toLowerCase()} Copy it below.` : "Here's their private link:"}</p>
           <TextInput readOnly value={result.url} onFocus={(e) => e.target.select()} aria-label="Scorecard link" />
           <div className="flex gap-2">
@@ -277,7 +277,7 @@ export function RequestScorecardDialog({ interview, onClose, onSaved }) {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          <p className="text-[14px]" style={{ color: INK_MUTED }}>
             They get a private link to rate {interview.candidateName} - no account needed. Their scorecard appears here when they send it.
           </p>
           <Field label="Interviewer's name">
@@ -310,7 +310,7 @@ function ScorecardSummary({ interview, onRemove }) {
   return (
     <div className="mt-2 space-y-1.5">
       {interview.scorecards.map((c) => (
-        <div key={c.id} className="text-[12px] flex items-start justify-between gap-2" style={{ color: INK_MUTED }}>
+        <div key={c.id} className="text-[13px] flex items-start justify-between gap-2" style={{ color: INK_MUTED }}>
           <span className="min-w-0">
             <span className="font-semibold" style={{ color: INK }}>{c.reviewerName || c.reviewerEmail || "Interviewer"}</span>
             {c.submittedAt ? (
@@ -329,14 +329,14 @@ function ScorecardSummary({ interview, onRemove }) {
             )}
           </span>
           {!c.submittedAt && onRemove && (
-            <button type="button" className="text-[11px] font-semibold shrink-0" style={{ color: INK_FAINT }} onClick={() => onRemove(c)}>
+            <button type="button" className="text-[12px] font-semibold shrink-0" style={{ color: INK_FAINT }} onClick={() => onRemove(c)}>
               Withdraw
             </button>
           )}
         </div>
       ))}
       {s.submitted > 1 && (
-        <p className="text-[11px]" style={{ color: INK_FAINT }}>
+        <p className="text-[12px]" style={{ color: INK_FAINT }}>
           Average {s.averageRating}/5 from {s.submitted} scorecards
         </p>
       )}
@@ -390,7 +390,7 @@ export function InterviewItem({ interview, onChanged, showCandidate = false }) {
     <li className="py-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold" style={{ color: INK }}>
+          <p className="text-[14px] font-semibold" style={{ color: INK }}>
             {showCandidate ? (
               <Link href={`/dashboard/candidates/${interview.candidateId}`} className="hover:underline">
                 {interview.candidateName}
@@ -401,18 +401,18 @@ export function InterviewItem({ interview, onChanged, showCandidate = false }) {
             <InterviewStatusPill status={interview.status} />{" "}
             {interview.outcome && <Pill>{INTERVIEW_OUTCOMES[interview.outcome]}</Pill>}
           </p>
-          <p className="text-[12px]" style={{ color: INK_MUTED }}>
+          <p className="text-[13px]" style={{ color: INK_MUTED }}>
             {formatInterviewTime(interview.startsAt, interview.durationMinutes, TZ)} · {INTERVIEW_KINDS[interview.kind]}
             {showCandidate && interview.round > 1 ? ` · round ${interview.round}` : ""}
             {showCandidate && interview.jobTitle ? ` · ${interview.jobTitle}${interview.client ? ` at ${interview.client}` : ""}` : ""}
           </p>
           {(interview.location || interview.interviewers) && (
-            <p className="text-[12px] truncate" style={{ color: INK_FAINT }}>
+            <p className="text-[13px] truncate" style={{ color: INK_FAINT }}>
               {[interview.interviewers, interview.location].filter(Boolean).join(" · ")}
             </p>
           )}
           {!interview.invitedAt && interview.status === "scheduled" && (
-            <p className="text-[11px]" style={{ color: INK_FAINT }}>No calendar invite sent</p>
+            <p className="text-[12px]" style={{ color: INK_FAINT }}>No calendar invite sent</p>
           )}
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -452,7 +452,7 @@ export function InterviewItem({ interview, onChanged, showCandidate = false }) {
               value={interview.outcome ?? ""}
               disabled={busy}
               onChange={(e) => patch({ outcome: e.target.value || null })}
-              className="text-[11px] font-semibold px-2 py-1 rounded-full bg-white"
+              className="text-[12px] font-semibold px-2 py-1 rounded-full bg-white"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               <option value="">Outcome…</option>
@@ -470,7 +470,7 @@ export function InterviewItem({ interview, onChanged, showCandidate = false }) {
       {dialog === "edit" && <ScheduleInterviewDialog interview={interview} onClose={close} onSaved={saved} />}
       {dialog === "cancel" && (
         <Dialog title="Cancel this interview?" onClose={close}>
-          <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+          <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
             A calendar invite went out for it. Sending a cancellation removes it from everyone&apos;s calendar.
           </p>
           <div className="flex flex-wrap gap-2">

@@ -91,7 +91,7 @@ export default function BookPage({ params }) {
       <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
         {info.firstName ? `${info.firstName}, pick` : "Pick"} a time for your interview
       </h1>
-      <p className="text-[13px] mt-1 mb-5" style={{ color: MUTED }}>
+      <p className="text-[14px] mt-1 mb-5" style={{ color: MUTED }}>
         {info.jobTitle ? `${info.jobTitle} · ` : ""}
         {info.kind} · {info.durationMinutes} minutes{info.location ? ` · ${info.location}` : ""}
         {zone ? ` · times shown in your time zone (${zone})` : ""}
@@ -99,7 +99,7 @@ export default function BookPage({ params }) {
       <div className="space-y-4" role="radiogroup" aria-label="Interview times">
         {Object.entries(byDay).map(([day, list]) => (
           <div key={day}>
-            <p className="text-[13px] font-semibold mb-2" style={{ color: INK }}>{day}</p>
+            <p className="text-[14px] font-semibold mb-2" style={{ color: INK }}>{day}</p>
             <div className="flex flex-wrap gap-2">
               {list.map((s) => (
                 <button
@@ -118,11 +118,11 @@ export default function BookPage({ params }) {
           </div>
         ))}
       </div>
-      {error && <p role="alert" className="mt-4 text-[12px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p role="alert" className="mt-4 text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
       <button type="button" onClick={book} disabled={!pick || saving} className="mt-6 w-full text-[14px] font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
         {saving ? "Booking…" : pick ? `Book ${dayKey(pick)} at ${time(pick)}` : "Choose a time"}
       </button>
-      <p className="mt-3 text-[11px] text-center" style={{ color: MUTED }}>None of these work? Reply to the email and the agency will suggest others.</p>
+      <p className="mt-3 text-[12px] text-center" style={{ color: MUTED }}>None of these work? Reply to the email and the agency will suggest others.</p>
     </PublicCard>
   );
 }

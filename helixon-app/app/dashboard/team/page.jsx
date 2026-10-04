@@ -112,13 +112,13 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
       <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
         <div className="flex-1">
           <p className="text-sm font-semibold" style={{ color: INK }}>Add your team</p>
-          <p className="text-[13px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>
             Team seats are part of the Agency plan - up to 5 people sharing one workspace, jobs and pipeline.
           </p>
         </div>
         <Link
           href="/billing"
-          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--forest)", color: "white" }}
         >
           Upgrade to Agency
@@ -132,12 +132,12 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
       <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
         <div className="flex-1">
           <p className="text-sm font-semibold" style={{ color: INK }}>Couldn&apos;t load team seats</p>
-          <p className="text-[13px] mt-0.5" style={{ color: INK_MUTED }}>{loadError}</p>
+          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>{loadError}</p>
         </div>
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Try again
@@ -156,14 +156,14 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-sm font-semibold" style={{ color: INK }}>{canManage ? "Add a team member" : "Team seats"}</p>
-          <p className="text-[12.5px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-[13.5px] mt-0.5" style={{ color: INK_MUTED }}>
             {canManage
               ? "They'll get an email with a link to join your workspace."
               : "Only the workspace owner can invite or remove people."}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[12px] font-semibold tabular-nums" style={{ color: INK }}>
+          <p className="text-[13px] font-semibold tabular-nums" style={{ color: INK }}>
             {usage.used} of {usage.limit} seats
           </p>
           <div className="w-24 h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "var(--mist)" }} aria-hidden="true">
@@ -187,7 +187,7 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
         <button
           type="submit"
           disabled={full || sending || !email.trim()}
-          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {sending ? "Sending…" : "Send invite"}
@@ -196,25 +196,25 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
       )}
 
       {canManage && full && (
-        <p className="text-[12px] mt-2" style={{ color: INK_MUTED }}>
+        <p className="text-[13px] mt-2" style={{ color: INK_MUTED }}>
           All {usage.limit} seats are in use or pending. Cancel a pending invite or remove someone to free a seat.
         </p>
       )}
-      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
-      {notice && <p role="status" className="text-[12px] mt-2" style={{ color: "var(--forest)" }}>{notice}</p>}
+      {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {notice && <p role="status" className="text-[13px] mt-2" style={{ color: "var(--forest)" }}>{notice}</p>}
 
       {usage.pendingInvites.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: INK_FAINT }}>
             Waiting to accept
           </p>
           <ul className="space-y-1">
             {usage.pendingInvites.map((inv) => (
-              <li key={inv.id} className="flex items-center justify-between gap-3 text-[13px] py-1.5">
+              <li key={inv.id} className="flex items-center justify-between gap-3 text-[14px] py-1.5">
                 <span className="min-w-0">
                   <span className="block truncate" style={{ color: INK }}>{inv.email}</span>
                   {inv.createdAt && (
-                    <span className="block text-[11.5px]" style={{ color: INK_FAINT }}>
+                    <span className="block text-[12.5px]" style={{ color: INK_FAINT }}>
                       Invited {new Date(inv.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
                   )}
@@ -225,7 +225,7 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
                     type="button"
                     onClick={() => handleResend(inv)}
                     disabled={busyId === inv.id}
-                    className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                     style={{ color: "var(--forest)" }}
                   >
                     Resend
@@ -234,7 +234,7 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
                     type="button"
                     onClick={() => handleCancel(inv)}
                     disabled={busyId === inv.id}
-                    className="text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                     style={{ color: INK_FAINT }}
                   >
                     {busyId === inv.id ? "Working…" : "Cancel"}
@@ -253,21 +253,21 @@ function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removi
 
       {canManage && outside.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
             Holding a seat elsewhere
           </p>
-          <p className="text-[12px] mb-2" style={{ color: INK_MUTED }}>
+          <p className="text-[13px] mb-2" style={{ color: INK_MUTED }}>
             These people accepted an invite but already have their own Helixon workspace, so they aren&apos;t in yours. They still use a seat.
           </p>
           <ul className="space-y-1">
             {outside.map((m) => (
-              <li key={m.userId} className="flex items-center justify-between gap-3 text-[13px] py-1.5">
+              <li key={m.userId} className="flex items-center justify-between gap-3 text-[14px] py-1.5">
                 <span className="min-w-0 block truncate" style={{ color: INK }}>{m.name || m.email || "Unknown user"}</span>
                 <button
                   type="button"
                   onClick={() => onRemoveSeat({ id: m.userId, name: m.name || m.email || "this person" })}
                   disabled={removingId === m.userId}
-                  className="text-[12px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                  className="text-[13px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                   style={{ color: INK_FAINT }}
                 >
                   {removingId === m.userId ? "Removing…" : "Free seat"}
@@ -304,10 +304,10 @@ function UnassignedCandidates({ count, members, onAssigned }) {
 
   return (
     <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-      <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
         Unassigned candidates
       </p>
-      <p className="text-[12px] mb-2" style={{ color: INK_MUTED }}>
+      <p className="text-[13px] mb-2" style={{ color: INK_MUTED }}>
         {count} candidate{count === 1 ? " isn't" : "s aren't"} assigned to anyone on the team, so {count === 1 ? "it doesn't" : "they don't"} show in anyone&apos;s workload.
       </p>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -326,13 +326,13 @@ function UnassignedCandidates({ count, members, onAssigned }) {
           type="button"
           onClick={assign}
           disabled={busy || !to}
-          className="inline-flex items-center justify-center text-[13px] font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {busy ? "Assigning…" : `Assign ${count === 1 ? "it" : `all ${count}`}`}
         </button>
       </div>
-      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
     </div>
   );
 }
@@ -363,13 +363,13 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
         <h2 id="remove-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
           Remove {target.name}?
         </h2>
-        <p className="text-[13px] mb-4" style={{ color: INK_MUTED }}>
+        <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
           They&apos;ll lose access to this workspace immediately, and their seat is freed.
         </p>
 
         {owns > 0 && (
           <label className="block mb-5">
-            <span className="block text-[12.5px] font-semibold mb-1.5" style={{ color: INK }}>
+            <span className="block text-[13.5px] font-semibold mb-1.5" style={{ color: INK }}>
               Hand their {owns} candidate{owns === 1 ? "" : "s"} to
             </span>
             <select
@@ -392,7 +392,7 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Cancel
@@ -401,7 +401,7 @@ function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) 
             type="button"
             onClick={() => onConfirm(owns > 0 ? to || null : undefined)}
             disabled={busy}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ background: RED_STRONG, color: "white" }}
           >
             {busy ? "Removing…" : "Remove"}
@@ -448,7 +448,7 @@ function Metric({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[11px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -464,14 +464,14 @@ function SummaryTile({ label, value, sub, dot, active, onClick }) {
       className="text-left rounded-[14px] p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
       style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
     >
-      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         {dot && <PresenceDot state={dot} size={8} />}
         {label}
       </p>
       <p className="text-[24px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
         {value}
       </p>
-      {sub && <p className="text-[11.5px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
+      {sub && <p className="text-[12.5px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
     </button>
   );
 }
@@ -491,30 +491,30 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
               {member.name}
               {isYou && <span className="font-normal" style={{ color: INK_FAINT }}> (you)</span>}
             </p>
-            <span className="text-[11px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="text-[12px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
               {ROLE_LABELS[member.role] || "Member"}
             </span>
           </div>
           {presence && (
-            <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
+            <p className="flex items-center gap-1.5 text-[13.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
               {state !== "offline" && state !== "hidden" && <PresenceDot state={state} size={7} ring="transparent" />}
               {line}
             </p>
           )}
           {presence?.message && (
-            <p className="text-[12.5px] mt-1 italic" style={{ color: INK }}>
+            <p className="text-[13.5px] mt-1 italic" style={{ color: INK }}>
               “{presence.message}”
             </p>
           )}
         </div>
         {member.overdue > 0 && (
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
+          <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
             {member.overdue} overdue
           </span>
         )}
       </div>
 
-      <p className="text-[11.5px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-[12.5px] mt-3" style={{ color: INK_FAINT }}>
         {member.lastWorkedAt ? `Last worked on a candidate ${timeAgo(member.lastWorkedAt, now)}` : "No candidate activity yet"}
         {member.screenedToday > 0 ? ` · ${member.screenedToday} screened today` : ""}
       </p>
@@ -529,7 +529,7 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
       <div className="flex items-center justify-between mt-4 pt-1">
         <Link
           href={`/dashboard/candidates?recruiterId=${encodeURIComponent(member.id)}`}
-          className="inline-flex items-center text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          className="inline-flex items-center text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
           style={{ color: "var(--forest)" }}
         >
           {isYou ? "Your candidates →" : `${member.name.split(" ")[0]}'s candidates →`}
@@ -542,7 +542,7 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
               onClick={() => onChangeRole(member, member.role === "admin" ? "member" : "admin")}
               disabled={changingRole}
               title={member.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
-              className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: INK_MUTED }}
             >
               {changingRole ? "Saving…" : member.role === "admin" ? "Make member" : "Make admin"}
@@ -553,7 +553,7 @@ function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, ch
               type="button"
               onClick={() => onRemove(member)}
               disabled={removing}
-              className="text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: INK_FAINT }}
             >
               {removing ? "Removing…" : "Remove"}
@@ -595,10 +595,10 @@ function MyStatusCard({ me, presence, enabled, onSaved }) {
   if (!enabled) {
     return (
       <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
           Presence
         </p>
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           Showing who&apos;s online is switched off for this workspace, so nothing about when people use Helixon is recorded.{" "}
           <Link href="/dashboard/privacy" className="font-semibold underline" style={{ color: "var(--forest)" }}>
             Data &amp; privacy settings
@@ -654,14 +654,14 @@ function MyStatusEditor({ me, presence, onSaved }) {
 
   return (
     <div id="my-status" className="rounded-[14px] p-5 scroll-mt-24" style={CARD}>
-      <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
         Your status
       </p>
       <p className="flex items-center gap-2 text-[14px] font-semibold" style={{ color: INK }}>
         <PresenceDot state={presence?.state === "offline" ? "active" : presence?.state || "active"} size={9} ring="transparent" />
         {presence ? (presence.state === "offline" ? "Active now" : presenceLine(presence)) : "Active now"}
       </p>
-      {presence?.message && <p className="text-[12.5px] italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
+      {presence?.message && <p className="text-[13.5px] italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
 
       <div className="grid grid-cols-3 gap-1.5 mt-4" role="radiogroup" aria-label="Status">
         {STATUS_CHOICES.map((c) => {
@@ -677,7 +677,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
                 setStatus(c.value);
                 if (!c.value) save(null);
               }}
-              className="flex items-center justify-center gap-1.5 text-[12.5px] font-semibold px-2 py-2 rounded-[10px] border transition-colors"
+              className="flex items-center justify-center gap-1.5 text-[13.5px] font-semibold px-2 py-2 rounded-[10px] border transition-colors"
               style={{
                 borderColor: on ? "var(--forest)" : "var(--border)",
                 background: on ? "var(--mint)" : "white",
@@ -699,7 +699,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
             maxLength={80}
             placeholder={status === "busy" ? "What are you busy with? (optional)" : "Where are you? (optional)"}
             aria-label="Status message"
-            className="w-full text-[13px] px-3.5 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="w-full text-[14px] px-3.5 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           />
           <div className="flex flex-wrap gap-1.5">
@@ -708,7 +708,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
                 key={m}
                 type="button"
                 onClick={() => setMessage(m)}
-                className="text-[11.5px] px-2.5 py-1 rounded-full hover:bg-[var(--mint)]"
+                className="text-[12.5px] px-2.5 py-1 rounded-full hover:bg-[var(--mint)]"
                 style={{ background: message === m ? "var(--mint)" : "var(--mist)", color: INK_MUTED }}
               >
                 {m}
@@ -720,7 +720,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
               value={clearAfter}
               onChange={(e) => setClearAfter(e.target.value)}
               aria-label="Clear status"
-              className="flex-1 text-[12.5px] font-semibold px-3 py-2 rounded-full bg-white"
+              className="flex-1 text-[13.5px] font-semibold px-3 py-2 rounded-full bg-white"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               {CLEAR_AFTER.map((o) => (
@@ -733,7 +733,7 @@ function MyStatusEditor({ me, presence, onSaved }) {
               type="button"
               onClick={() => save()}
               disabled={saving}
-              className="text-[12.5px] font-semibold px-4 py-2 rounded-full disabled:opacity-50"
+              className="text-[13.5px] font-semibold px-4 py-2 rounded-full disabled:opacity-50"
               style={{ background: "var(--forest)", color: "white" }}
             >
               {saving ? "Saving…" : saved ? "Saved ✓" : "Set status"}
@@ -741,9 +741,9 @@ function MyStatusEditor({ me, presence, onSaved }) {
           </div>
         </div>
       )}
-      {!status && saved && <p className="text-[12px] mt-2" style={{ color: "var(--forest)" }}>Back to automatic ✓</p>}
-      {error && <p role="alert" className="text-[12px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
-      <p className="text-[11.5px] mt-3" style={{ color: INK_FAINT }}>
+      {!status && saved && <p className="text-[13px] mt-2" style={{ color: "var(--forest)" }}>Back to automatic ✓</p>}
+      {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      <p className="text-[12.5px] mt-3" style={{ color: INK_FAINT }}>
         Teammates see you as active while you&apos;re using Helixon, idle after 5 minutes without touching it, and offline once it&apos;s closed.
         Only those times are kept - not what you click or type.
       </p>
@@ -755,9 +755,9 @@ function MyStatusEditor({ me, presence, onSaved }) {
           onChange={(e) => toggleHidden(!e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-[var(--forest)]"
         />
-        <span className="text-[12.5px]" style={{ color: INK }}>
+        <span className="text-[13.5px]" style={{ color: INK }}>
           Share my presence with the team
-          <span className="block text-[11.5px]" style={{ color: INK_FAINT }}>
+          <span className="block text-[12.5px]" style={{ color: INK_FAINT }}>
             {hidden ? "Hidden - nothing about when you use Helixon is being recorded." : "Untick to hide it and delete what's been recorded."}
           </span>
         </span>
@@ -795,7 +795,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again
@@ -965,14 +965,14 @@ export default function TeamPage() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Team workspace
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
               Team
             </h1>
             {status === "ready" && (
-              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] mt-1" style={{ color: INK_MUTED }}>
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] mt-1" style={{ color: INK_MUTED }}>
                 {presenceOn && (
                 <span className="inline-flex items-center gap-1.5">
                   <PresenceDot state="active" size={8} ring="transparent" />
@@ -993,7 +993,7 @@ export default function TeamPage() {
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-[13px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
+            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
             style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
           >
             ← Dashboard
@@ -1010,7 +1010,7 @@ export default function TeamPage() {
         )}
 
         {removeError && (
-          <p role="alert" className="text-[12px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
+          <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
@@ -1030,17 +1030,17 @@ export default function TeamPage() {
                       type="button"
                       onClick={() => setFilter(k)}
                       aria-pressed={on}
-                      className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                     >
                       {label}
-                      <span className="text-[11px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                      <span className="text-[12px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
                         {count}
                       </span>
                     </button>
                   );
                 })}
-                <span className="ml-auto text-[11.5px]" style={{ color: INK_FAINT }}>
+                <span className="ml-auto text-[12.5px]" style={{ color: INK_FAINT }}>
                   Updates live
                 </span>
               </div>
@@ -1049,7 +1049,7 @@ export default function TeamPage() {
             {status === "loading" && <TeamSkeleton />}
             {status === "error" && <ErrorState onRetry={retry} />}
             {status === "ready" && shown.length === 0 && (
-              <div className="rounded-[14px] p-8 text-center text-[13px]" style={{ ...CARD, color: INK_MUTED }}>
+              <div className="rounded-[14px] p-8 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
                 No one is {filter === "online" ? "online" : filter === "busy" ? "busy or away" : "offline"} right now.
               </div>
             )}

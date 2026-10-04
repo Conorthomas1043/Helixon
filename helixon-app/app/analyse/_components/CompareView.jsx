@@ -16,6 +16,7 @@ import CandidateChooser from "./CandidateChooser";
 import RawCvCompare from "./RawCvCompare";
 import { LETTERS, PillButton, PillTabs, StagePicker, openOriginalCv } from "./compareBits";
 import { printSection } from "@/lib/print";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
 
@@ -68,8 +69,8 @@ function gridStyle(n) {
 function RowLabel({ children, hint }) {
   return (
     <div className="sticky left-0 z-[1] bg-white px-4 py-3 border-t border-[var(--border-soft)]">
-      <p className="text-[12.5px] font-medium text-[var(--ink)] leading-snug">{children}</p>
-      {hint && <p className="text-[11px] text-[var(--ink-faint)] mt-0.5">{hint}</p>}
+      <p className="text-[13.5px] font-medium text-[var(--ink)] leading-snug">{children}</p>
+      {hint && <p className="text-[12px] text-[var(--ink-faint)] mt-0.5">{hint}</p>}
     </div>
   );
 }
@@ -84,10 +85,10 @@ function SectionRow({ n, title, extra }) {
   return (
     <div className="contents">
       <div className="sticky left-0 z-[1] bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)]">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-soft)]">{title}</p>
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--ink-soft)]">{title}</p>
       </div>
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)] text-[11.5px] text-[var(--ink-soft)] tabular-nums">
+        <div key={i} className="bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)] text-[12.5px] text-[var(--ink-soft)] tabular-nums">
           {extra?.[i] ?? ""}
         </div>
       ))}
@@ -96,11 +97,11 @@ function SectionRow({ n, title, extra }) {
 }
 
 function BestTag() {
-  return <span className="ml-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--forest)]">Best</span>;
+  return <span className="ml-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--forest)]">Best</span>;
 }
 
 function ScoreBar({ value, best }) {
-  if (value == null) return <span className="text-[13px] text-[var(--ink-faint)]">–</span>;
+  if (value == null) return <span className="text-[14px] text-[var(--ink-faint)]">–</span>;
   const tone = scoreTone(value);
   return (
     <div>
@@ -117,7 +118,7 @@ function ScoreBar({ value, best }) {
 
 function Pill({ className, icon, children, title }) {
   return (
-    <span title={title} className={cx("inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[11.5px] font-medium", className)}>
+    <span title={title} className={cx("inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[12.5px] font-medium", className)}>
       {icon && <Icon name={icon} size={11} strokeWidth={2.4} />}
       {children}
     </span>
@@ -125,11 +126,11 @@ function Pill({ className, icon, children, title }) {
 }
 
 function Bullets({ items, tone }) {
-  if (!items.length) return <span className="text-[12.5px] text-[var(--ink-faint)]">None noted</span>;
+  if (!items.length) return <span className="text-[13.5px] text-[var(--ink-faint)]">None noted</span>;
   return (
     <ul className="space-y-1.5">
       {items.slice(0, 4).map((t, i) => (
-        <li key={i} className="flex gap-1.5 text-[12.5px] leading-snug text-[var(--ink-soft)]">
+        <li key={i} className="flex gap-1.5 text-[13.5px] leading-snug text-[var(--ink-soft)]">
           <span className={cx("mt-[6px] w-1.5 h-1.5 rounded-full shrink-0", tone === "bad" ? "bg-[var(--score-low)]" : "bg-[var(--forest)]")} />
           <span>{t}</span>
         </li>
@@ -143,22 +144,24 @@ function Bullets({ items, tone }) {
 function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onStageChanged }) {
   const tone = scoreTone(c.matchScore);
   const [opening, setOpening] = useState(false);
+  const [ask, confirmDialog] = useConfirm();
 
   async function openCv() {
     setOpening(true);
-    await openOriginalCv(c);
+    await openOriginalCv(c, ask);
     setOpening(false);
   }
 
   return (
     <div className={cx("px-4 pt-4 pb-4 min-w-0 relative", isLeader && "bg-[#f4faf7]")}>
+      {confirmDialog}
       <div className="flex items-start gap-2.5">
-        <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
+        <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-white text-[13px] font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
         <div className="min-w-0 flex-1">
           <Link href={`/dashboard/candidates/${c.id}`} className="block text-[14px] font-semibold text-[var(--ink)] truncate hover:underline" title={label}>
             {label}
           </Link>
-          <p className="text-[11.5px] text-[var(--ink-faint)] truncate">
+          <p className="text-[12.5px] text-[var(--ink-faint)] truncate">
             {c.blind ? "Screened blind" : [c.currentTitle, c.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
           </p>
         </div>
@@ -173,12 +176,12 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
           <span className="text-[30px] leading-none font-semibold tabular-nums" style={{ color: tone.fg, fontFamily: "var(--font-display)" }}>
             {c.matchScore ?? "–"}
           </span>
-          <span className="text-[12px] text-[var(--ink-faint)] ml-1">/100</span>
+          <span className="text-[13px] text-[var(--ink-faint)] ml-1">/100</span>
         </div>
         {isLeader && <Pill className="bg-[var(--forest)] text-white border-[var(--forest)]" icon="check">Top match</Pill>}
       </div>
-      <p className="text-[12px] font-medium mt-1.5" style={{ color: tone.fg }}>{c.recommendation || tone.label}</p>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[12px]">
+      <p className="text-[13px] font-medium mt-1.5" style={{ color: tone.fg }}>{c.recommendation || tone.label}</p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[13px]">
         <Link href={`/dashboard/candidates/${c.id}`} className="font-semibold text-[var(--forest)] hover:underline">Profile</Link>
         {c.hasCv && (
           <button type="button" onClick={openCv} disabled={opening} className="font-semibold text-[var(--forest)] hover:underline disabled:opacity-50">
@@ -189,8 +192,8 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
       <div className="mt-3">
         <StagePicker candidateId={c.id} stage={c.stage} onChanged={(stage) => onStageChanged(c.id, stage)} />
       </div>
-      {c.otherRole && <p className="text-[11px] mt-2 text-[#8a5a12]">Scored against a different role</p>}
-      {!c.analysed && <p className="text-[11px] mt-2 text-[#8a5a12]">No saved analysis</p>}
+      {c.otherRole && <p className="text-[12px] mt-2 text-[#8a5a12]">Scored against a different role</p>}
+      {!c.analysed && <p className="text-[12px] mt-2 text-[#8a5a12]">No saved analysis</p>}
     </div>
   );
 }
@@ -308,11 +311,11 @@ export default function CompareWorkspace() {
       <div id="compare-print" className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
+            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
               {job && n >= 2 ? job.title : "Side by side"}
             </h1>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1">
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1">
               {status === "ready" && n >= 2
                 ? [job?.client, `${n} candidates`].filter(Boolean).join(" · ")
                 : "Put 2 to 4 screened candidates next to each other - their scores, or their CVs."}
@@ -351,14 +354,14 @@ export default function CompareWorkspace() {
                 { value: "raw", label: "Raw CVs", icon: "file" },
               ]}
             />
-            <p className="text-[12.5px] text-[var(--ink-faint)]">
+            <p className="text-[13.5px] text-[var(--ink-faint)]">
               {view === "raw" ? "Each CV as it was uploaded - jump them all to the same section." : "Scored against the role - best in each row highlighted."}
             </p>
           </div>
         )}
 
         {status === "loading" && (
-          <Card className="p-10 flex items-center justify-center gap-3 text-[13px] text-[var(--ink-soft)]">
+          <Card className="p-10 flex items-center justify-center gap-3 text-[14px] text-[var(--ink-soft)]">
             <Spinner /> Loading the comparison…
           </Card>
         )}
@@ -368,7 +371,7 @@ export default function CompareWorkspace() {
         {status === "ready" && n < 2 && (
           <Card className="p-5 sm:p-6">
             <p className="text-[15px] font-semibold text-[var(--ink)]">Choose who to compare</p>
-            <p className="text-[13px] text-[var(--ink-soft)] mt-1 mb-4">
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1 mb-4">
               Pick two to four candidates you&apos;ve already screened - then compare their scores, or their CVs side by side.
             </p>
             <CandidateChooser
@@ -393,7 +396,7 @@ export default function CompareWorkspace() {
             <div className="flex items-start justify-between gap-3 mb-4">
               <div>
                 <p className="text-[15px] font-semibold text-[var(--ink)]">Add a candidate</p>
-                <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">Anyone you&apos;ve screened - up to {data.max || 4} side by side.</p>
+                <p className="text-[14px] text-[var(--ink-soft)] mt-0.5">Anyone you&apos;ve screened - up to {data.max || 4} side by side.</p>
               </div>
               <button type="button" onClick={() => setAdding(false)} aria-label="Close" className="p-1.5 rounded-full text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)]">
                 <Icon name="x" size={16} />
@@ -431,13 +434,13 @@ export default function CompareWorkspace() {
                 </div>
                 <ul className="space-y-1.5">
                   {lines.map((l, i) => (
-                    <li key={i} className="flex gap-2 text-[13.5px] leading-relaxed text-[var(--ink)]">
+                    <li key={i} className="flex gap-2 text-[14.5px] leading-relaxed text-[var(--ink)]">
                       <span className="mt-[9px] w-1 h-1 rounded-full bg-[var(--ink-faint)] shrink-0" />
                       {l}
                     </li>
                   ))}
                 </ul>
-                <p className="text-[11.5px] text-[var(--ink-faint)] mt-3">A summary of the numbers below - use it alongside your own judgement, not instead of it.</p>
+                <p className="text-[12.5px] text-[var(--ink-faint)] mt-3">A summary of the numbers below - use it alongside your own judgement, not instead of it.</p>
               </Card>
             )}
 
@@ -446,7 +449,7 @@ export default function CompareWorkspace() {
                 <div className="grid w-full" style={gridStyle(n)}>
                   {/* Header */}
                   <div className="sticky left-0 z-[1] bg-white px-4 pt-4 pb-4 flex items-end">
-                    <p className="text-[11.5px] text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
+                    <p className="text-[12.5px] text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
                   </div>
                   {candidates.map((c, i) => (
                     <CandidateHeader
@@ -505,7 +508,7 @@ export default function CompareWorkspace() {
                                 {cell.stale ? " · a while ago" : ""}
                               </Pill>
                               {cell.evidence && (
-                                <p className="text-[11.5px] italic text-[var(--ink-faint)] mt-1.5 line-clamp-2">“{cell.evidence}”</p>
+                                <p className="text-[12.5px] italic text-[var(--ink-faint)] mt-1.5 line-clamp-2">“{cell.evidence}”</p>
                               )}
                             </Cell>
                           ))}
@@ -552,7 +555,7 @@ export default function CompareWorkspace() {
                               {status ? (
                                 <Pill className={MUST_HAVE[status]?.cls} icon={MUST_HAVE[status]?.icon}>{MUST_HAVE[status]?.label || status}</Pill>
                               ) : (
-                                <span className="text-[12.5px] text-[var(--ink-faint)]">Not checked</span>
+                                <span className="text-[13.5px] text-[var(--ink-faint)]">Not checked</span>
                               )}
                             </Cell>
                           ))}
@@ -571,12 +574,12 @@ export default function CompareWorkspace() {
                         <RowLabel hint={job?.minYears ? `Role asks for ${job.minYears}+` : undefined}>Relevant experience</RowLabel>
                         {candidates.map((c, i) => (
                           <Cell key={c.id} best={best.includes(i)}>
-                            <p className="text-[13.5px] text-[var(--ink)]" title={c.rationale?.experience || undefined}>
+                            <p className="text-[14.5px] text-[var(--ink)]" title={c.rationale?.experience || undefined}>
                               {c.relevantYears != null ? `${c.relevantYears} yrs` : "–"}
                               {best.includes(i) && <BestTag />}
                             </p>
                             {c.totalYears != null && c.totalYears !== c.relevantYears && (
-                              <p className="text-[11.5px] text-[var(--ink-faint)]">{c.totalYears} yrs in total</p>
+                              <p className="text-[12.5px] text-[var(--ink-faint)]">{c.totalYears} yrs in total</p>
                             )}
                           </Cell>
                         ))}
@@ -586,7 +589,7 @@ export default function CompareWorkspace() {
                   <RowLabel>Career</RowLabel>
                   {candidates.map((c) => (
                     <Cell key={c.id}>
-                      <p className="text-[13px] text-[var(--ink)]" title={c.rationale?.career || undefined}>
+                      <p className="text-[14px] text-[var(--ink)]" title={c.rationale?.career || undefined}>
                         {c.career === "Positive" ? "Progressing" : c.career === "Regression" ? "Stepped down" : c.career === "Static" ? "Steady" : "Not enough history"}
                       </p>
                     </Cell>
@@ -594,7 +597,7 @@ export default function CompareWorkspace() {
                   <RowLabel hint="A rough guide, not an offer">Pay guide</RowLabel>
                   {candidates.map((c) => (
                     <Cell key={c.id}>
-                      <p className="text-[13px] text-[var(--ink)] tabular-nums">{fmtPay(c.salary) || "–"}</p>
+                      <p className="text-[14px] text-[var(--ink)] tabular-nums">{fmtPay(c.salary) || "–"}</p>
                     </Cell>
                   ))}
 
@@ -616,7 +619,7 @@ export default function CompareWorkspace() {
               </div>
             </Card>
 
-            <p className="text-[12px] text-[var(--ink-faint)]">Hover a score for the reasoning behind it. Skill quotes are taken word for word from each CV.</p>
+            <p className="text-[13px] text-[var(--ink-faint)]">Hover a score for the reasoning behind it. Skill quotes are taken word for word from each CV.</p>
           </>
         )}
       </div>

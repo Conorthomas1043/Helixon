@@ -62,7 +62,7 @@ export default function BillingPage() {
       render: (s) => (
         <div style={{ minWidth: 0 }}>
           <div className="truncate" style={{ fontWeight: 600 }}>{s.agencyName || s.customer}</div>
-          <div className="faint truncate" style={{ fontSize: 12 }}>{s.agencyName ? s.customer : ""}</div>
+          <div className="faint truncate" style={{ fontSize: 13 }}>{s.agencyName ? s.customer : ""}</div>
         </div>
       ),
     },

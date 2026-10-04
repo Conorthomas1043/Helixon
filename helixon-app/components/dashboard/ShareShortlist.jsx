@@ -54,7 +54,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
   }
 
   const check = (k, label) => (
-    <label className="flex items-center gap-2 text-[13px]" style={{ color: INK }}>
+    <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
       <input type="checkbox" checked={f[k]} onChange={(e) => setF((v) => ({ ...v, [k]: e.target.checked }))} className="accent-[var(--forest)]" />
       {label}
     </label>
@@ -63,7 +63,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
   return (
     <Dialog title="Share with the client" onClose={onClose} busy={busy} width={620}>
       {created ? (
-        <div className="space-y-3 text-[13px]" style={{ color: INK }}>
+        <div className="space-y-3 text-[14px]" style={{ color: INK }}>
           <p>{created.emailed ? `Sent to ${created.share.recipientEmail}.` : created.sendError ? `Link made, but ${created.sendError.toLowerCase()} Copy it below.` : "Here's the link:"}</p>
           <TextInput readOnly value={created.share.url} onFocus={(e) => e.target.select()} aria-label="Review link" />
           <div className="flex gap-2">
@@ -73,7 +73,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          <p className="text-[14px]" style={{ color: INK_MUTED }}>
             They get a private page with a client-ready profile of each person and can answer Interview / Maybe / Not for us with a comment. No login needed; their answers appear on this shortlist.
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -102,10 +102,10 @@ export default function ShareShortlist({ shortlist, onClose }) {
 
       {shares?.length > 0 && (
         <div className="mt-6 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>Links</p>
+          <p className="text-[12px] font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>Links</p>
           <ul className="space-y-2">
             {shares.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-2 text-[12px]" style={{ color: INK }}>
+              <li key={s.id} className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: INK }}>
                 <span className="flex-1 min-w-0 truncate">
                   {s.recipientName || s.recipientEmail || "Link"} {s.blind && <Pill>Anonymised</Pill>}{" "}
                   {!s.active && <Pill color="#b42318" background="#fef2f2">{s.revokedAt ? "Revoked" : "Expired"}</Pill>}

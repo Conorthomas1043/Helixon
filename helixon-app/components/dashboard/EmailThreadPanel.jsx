@@ -17,19 +17,19 @@ function Message({ m }) {
     <li className="py-2.5">
       <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left" aria-expanded={open}>
         <span className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-semibold truncate" style={{ color: INK }}>
+          <span className="text-[14px] font-semibold truncate" style={{ color: INK }}>
             {inbound ? "↩ " : ""}
             {m.subject || "(no subject)"}
           </span>
-          <span className="text-[11px] shrink-0" style={{ color: INK_FAINT }}>{formatDate(m.at)}</span>
+          <span className="text-[12px] shrink-0" style={{ color: INK_FAINT }}>{formatDate(m.at)}</span>
         </span>
-        <span className="block text-[11px]" style={{ color: INK_MUTED }}>
+        <span className="block text-[12px]" style={{ color: INK_MUTED }}>
           {inbound ? `From ${m.from}` : `To ${m.to}`}
           {m.viaSequence ? " · sequence" : ""}
         </span>
       </button>
       {open && (
-        <p className="mt-2 text-[12px] whitespace-pre-wrap rounded-[8px] p-3" style={{ background: inbound ? "var(--mint)" : "var(--mist)", color: INK }}>
+        <p className="mt-2 text-[13px] whitespace-pre-wrap rounded-[8px] p-3" style={{ background: inbound ? "var(--mint)" : "var(--mist)", color: INK }}>
           {m.body || "(empty)"}
         </p>
       )}
@@ -112,7 +112,7 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
       }
     >
       {active.map((e) => (
-        <div key={e.id} className="flex items-center justify-between gap-2 mb-3 rounded-[10px] px-3 py-2 text-[12px]" style={{ background: "var(--mist)", color: INK }}>
+        <div key={e.id} className="flex items-center justify-between gap-2 mb-3 rounded-[10px] px-3 py-2 text-[13px]" style={{ background: "var(--mist)", color: INK }}>
           <span>
             <Pill color="#5b4bc4" background="#f1effc">Sequence</Pill> {e.sequenceName} · email {Math.min(e.nextStep + 1, e.steps)} of {e.steps}
             {e.nextSendAt ? ` on ${formatDate(e.nextSendAt)}` : ""}
@@ -124,9 +124,9 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
       ))}
 
       {data === null ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : data.messages.length === 0 ? (
-        <p className="text-[13px]" style={{ color: INK_MUTED }}>
+        <p className="text-[14px]" style={{ color: INK_MUTED }}>
           {candidate.email ? "Nothing sent from Helixon yet." : "No email address on file - add one with Edit details."}
         </p>
       ) : (

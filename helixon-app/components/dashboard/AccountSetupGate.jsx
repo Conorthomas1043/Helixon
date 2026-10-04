@@ -35,7 +35,7 @@ function SetupNeeded({ email }) {
           <span
             style={{
               display: "inline-block",
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
@@ -76,7 +76,7 @@ function SetupNeeded({ email }) {
           <div style={{ display: "grid", gap: 12, marginBottom: 22 }}>
             <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>New to Helixon?</div>
-              <p style={{ fontSize: 13.5, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
+              <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
                 Pick a plan and your workspace is created as part of checkout.
               </p>
               <Link
@@ -100,7 +100,7 @@ function SetupNeeded({ email }) {
 
             <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>Already paid or signed up?</div>
-              <p style={{ fontSize: 13.5, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
+              <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
                 Linking a new subscription can take a minute. Refresh in a moment - and if it still isn&apos;t connected,
                 tell us the email you used and we&apos;ll link it for you.
               </p>
