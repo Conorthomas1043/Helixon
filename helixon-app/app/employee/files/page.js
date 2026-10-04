@@ -10,6 +10,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 import EmployeeShell from "../_shared/EmployeeShell";
+import { formatDate as fmtDate } from "@/lib/format";
+
+const formatDate = (iso) => fmtDate(iso);
 
 function formatBytes(bytes) {
   if (bytes === null || bytes === undefined) return "";
@@ -17,10 +20,6 @@ function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const FOLDER_ICON = (

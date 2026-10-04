@@ -11,6 +11,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 import EmployeeShell from "../_shared/EmployeeShell";
+import { formatDate as fmtDate } from "@/lib/format";
+
+const formatDate = (iso) => fmtDate(iso, { empty: null });
 
 const STATUS_META = {
   not_started: { label: "Not started", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
@@ -19,11 +22,6 @@ const STATUS_META = {
   done: { label: "Done", dot: "#0b6e4f", bg: "var(--mint)", color: "var(--forest)" },
 };
 const STATUS_ORDER = ["not_started", "in_progress", "blocked", "done"];
-
-function formatDate(iso) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 function isOverdue(deadline, status) {
   if (!deadline || status === "done") return false;

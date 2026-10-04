@@ -2,6 +2,9 @@
 // recruiter listing their follow-ups that are overdue or due today
 // (lib/follow-ups.js). Pure, so the content is tested without sending.
 
+import { escapeHtml } from "@/lib/format";
+
+export { escapeHtml };
 export const MAX_LISTED = 15;
 
 // Recruiters can turn the reminder off (Account > Notifications). Stored
@@ -10,15 +13,6 @@ export const REMINDER_PREF_KEY = "followUpReminders";
 
 export function remindersEnabled(privateMetadata) {
   return privateMetadata?.[REMINDER_PREF_KEY] !== false;
-}
-
-export function escapeHtml(str = "") {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function dueText(item, timeZone) {

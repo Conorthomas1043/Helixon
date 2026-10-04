@@ -12,6 +12,7 @@ import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 import { SIGNED_OUT_EVENT } from "@/lib/api-errors";
+import { initials } from "@/lib/format";
 
 // The everyday screens are tabs; everything else sits under "More",
 // grouped, so the bar fits without scrolling on a laptop.
@@ -143,16 +144,6 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
       )}
     </div>
   );
-}
-
-function initials(name) {
-  return (name || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("") || "?";
 }
 
 // Small stack of teammate initials, Agency-plan only - a quiet, constant

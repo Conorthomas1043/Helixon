@@ -18,6 +18,9 @@ import {
 } from "@/lib/dashboard-api";
 import { PLACEMENT_STATUSES, INVOICE_STATUSES, computeFee, contractMargin, weekStarting } from "@/lib/placements";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { formatDate as fmtDate } from "@/lib/format";
+
+const formatDate = (d) => fmtDate(d, { dateOnly: true, empty: null });
 
 const STATUS_OPTIONS = Object.entries(PLACEMENT_STATUSES).map(([value, label]) => ({ value, label }));
 const STATUS_COLORS = {
@@ -47,11 +50,6 @@ export function InvoiceStatusPill({ invoice }) {
       {overdue ? "Overdue" : INVOICE_STATUSES[invoice.status] || invoice.status}
     </Pill>
   );
-}
-
-function formatDate(d) {
-  if (!d) return null;
-  return new Date(`${String(d).slice(0, 10)}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 const blankForm = (p) => ({

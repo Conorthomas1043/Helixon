@@ -4,19 +4,11 @@
 
 import "server-only";
 import { Resend } from "resend";
+import { escapeHtml } from "@/lib/format";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Helixon Security <noreply@helixon.co.uk>";
-
-function escapeHtml(str = "") {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 // `to`: the recipients set on the admin Security page (lib/site-settings.js
 // alertRecipients); falls back to SECURITY_ALERT_EMAIL.

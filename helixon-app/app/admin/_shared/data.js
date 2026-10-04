@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { formatDate as fmtDate, initials, timeAgo as fmtTimeAgo } from "@/lib/format";
+
+export const formatDate = (value) => fmtDate(value);
+export const timeAgo = (value, now = Date.now()) => fmtTimeAgo(value, { now, style: "long" });
+export { initials };
 
 // Generic GET hook for the console's read-only views.
 //
@@ -68,14 +73,6 @@ export function formatNumber(n) {
   return Number(n || 0).toLocaleString();
 }
 
-export function formatDate(value) {
-  if (!value) return "-";
-  const d = new Date(value);
-  return Number.isNaN(d.getTime())
-    ? "-"
-    : d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
-
 export function formatDateTime(value) {
   if (!value) return "-";
   const d = new Date(value);
@@ -84,29 +81,3 @@ export function formatDateTime(value) {
     : d.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-// "3 hours ago" / "in 2 days". Falls back to the date for anything over a month.
-export function timeAgo(value, now = Date.now()) {
-  if (!value) return "never";
-  const t = new Date(value).getTime();
-  if (Number.isNaN(t)) return "-";
-  const seconds = Math.round((now - t) / 1000);
-  const abs = Math.abs(seconds);
-  if (abs < 45) return "just now";
-  if (abs >= 86400 * 30) return formatDate(value);
-  const [size, unit] = abs < 3600 ? [60, "minute"] : abs < 86400 ? [3600, "hour"] : [86400, "day"];
-  const count = Math.max(1, Math.round(abs / size));
-  const label = `${count} ${unit}${count === 1 ? "" : "s"}`;
-  return seconds >= 0 ? `${label} ago` : `in ${label}`;
-}
-
-export function initials(name = "") {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0])
-      .join("") || "?"
-  );
-}

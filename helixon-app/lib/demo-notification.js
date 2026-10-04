@@ -3,18 +3,12 @@
 // form (app/api/demo-request) and the admin Leads page's "Resend
 // notification", so a resend looks exactly like the original.
 
+import { escapeHtml } from "@/lib/format";
+
+export { escapeHtml };
 export const SALES_EMAIL = "sales@helixon.co.uk";
 // Resend requires sending from a domain you've verified with them.
 export const FROM_EMAIL = "Helixon <noreply@helixon.co.uk>";
-
-export function escapeHtml(str = "") {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 /** Resend payload for the sales notification about one demo request. */
 export function salesNotificationEmail({ name, email, company, message, utm_source, utm_medium, utm_campaign, referrer }, { resent = false } = {}) {

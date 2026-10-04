@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
+import { escapeHtml } from "@/lib/format";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -181,11 +182,3 @@ function autoReplyHtml({ name }) {
   return emailShell({ preheader: "We usually reply within a day.", bodyHtml: body });
 }
 
-function escapeHtml(str = "") {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

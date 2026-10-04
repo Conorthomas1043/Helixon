@@ -14,6 +14,9 @@ import { computeCandidateStats } from "@/lib/dashboard-model";
 import { getFollowUps, completeNextAction, getPerformance } from "@/lib/dashboard-api";
 import { METRICS, METRIC_KEYS } from "@/lib/performance";
 import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "@/lib/scoreBands";
+import { formatDate as fmtDate } from "@/lib/format";
+
+const formatDate = (date) => fmtDate(date, { withTime: true });
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
@@ -97,11 +100,6 @@ function normalizeAnalysis(raw, index) {
 }
 
 /* ─── Helpers ───────────────────────────────────────────────────────────── */
-
-function formatDate(date) {
-  if (!date) return "-";
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
 
 function formatRelativeTime(date) {
   if (!date) return "-";

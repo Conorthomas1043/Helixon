@@ -6,6 +6,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { timeAgo as fmtTimeAgo } from "@/lib/format";
+
+const timeAgo = (iso) => fmtTimeAgo(iso, { style: "compact" });
 
 const KIND_LABEL = { candidate: "Candidate", job: "Job", client: "Client", contact: "Contact" };
 
@@ -268,15 +271,6 @@ export function SearchPalette() {
       )}
     </>
   );
-}
-
-function timeAgo(iso) {
-  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return "now";
-  if (mins < 60) return `${mins}m`;
-  const h = Math.round(mins / 60);
-  if (h < 24) return `${h}h`;
-  return `${Math.round(h / 24)}d`;
 }
 
 export function NotificationsBell() {

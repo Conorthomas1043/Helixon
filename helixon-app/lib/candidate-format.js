@@ -13,6 +13,10 @@
  * ---------------------------------------------------------------------- */
 
 import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "./scoreBands";
+import { formatDate as fmtDate, initials } from "@/lib/format";
+
+export const formatDate = (date) => fmtDate(date, { withTime: true, empty: "Unknown date" });
+export { initials };
 
 export const INK = "var(--ink)";
 export const INK_MUTED = "var(--ink-soft)";
@@ -28,18 +32,6 @@ export const CARD = {
   background: "var(--bg)",
   border: "1px solid var(--border)",
 };
-
-export function formatDate(date) {
-  if (!date) return "Unknown date";
-  const d = date instanceof Date ? date : new Date(date);
-  if (Number.isNaN(d.getTime())) return "Unknown date";
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function formatDateOnly(date) {
   if (!date) return "Unknown date";
@@ -101,15 +93,6 @@ export function scoreBandOf(score) {
 export function truncate(text, max = 42) {
   if (!text) return text;
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
-}
-
-export function initials(name) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  return parts
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
 }
 
 /** Human label + tone for an activity-log event type. Only covers event

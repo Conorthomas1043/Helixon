@@ -8,6 +8,9 @@
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { contactsFromCsv, downloadCsv } from "@/lib/csv";
+import { timeAgo as fmtTimeAgo } from "@/lib/format";
+
+const timeAgo = (iso, now) => fmtTimeAgo(iso, { now, style: "short" });
 
 const CLAIM_TTL_MS = 30 * 60 * 1000; // keep in sync with lib/employee-call-list.js
 const PAGE = 100;
@@ -20,15 +23,6 @@ function personName(p) {
 
 function activeClaim(row, now) {
   return row.claimed_by && row.claimed_at && now - new Date(row.claimed_at).getTime() < CLAIM_TTL_MS;
-}
-
-function timeAgo(iso, now) {
-  const mins = Math.round((now - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 async function post(body) {

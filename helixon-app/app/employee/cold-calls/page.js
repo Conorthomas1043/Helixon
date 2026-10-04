@@ -11,6 +11,9 @@ import { useRouter } from "next/navigation";
 import { useHeartbeat } from "../_shared/useHeartbeat";
 import CallListPanel from "./CallListPanel";
 import EmployeeShell from "../_shared/EmployeeShell";
+import { formatDate as fmtDate } from "@/lib/format";
+
+const formatDate = (iso) => fmtDate(iso, { withYear: false, empty: null });
 
 const OUTCOME_META = {
   no_answer: { label: "No answer", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
@@ -39,11 +42,6 @@ function formatDayHeading(iso) {
 
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
-
-function formatDate(iso) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 function toLocalInputValue(date) {

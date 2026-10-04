@@ -12,6 +12,9 @@
 // Open tabs send a heartbeat every minute, so "online" allows a little over
 // two missed beats before someone counts as gone.
 
+import { timeAgo as fmtTimeAgo } from "@/lib/format";
+
+export const timeAgo = (iso, now = Date.now()) => fmtTimeAgo(iso, { now, style: "relative" });
 export const HEARTBEAT_MS = 60_000;
 export const ONLINE_WINDOW_MS = 150_000;
 export const IDLE_AFTER_MS = 5 * 60_000;
@@ -58,21 +61,6 @@ export function computePresence(p = {}, now = Date.now()) {
     message: manual ? p.message || null : null,
     until: manual && until !== null ? new Date(until).toISOString() : null,
   };
-}
-
-// "just now", "12 min ago", "3 h ago", "yesterday", "4 days ago", "12 Sept"
-export function timeAgo(iso, now = Date.now()) {
-  const t = time(iso);
-  if (t === null) return null;
-  const mins = Math.max(0, Math.round((now - t) / 60_000));
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} h ago`;
-  const days = Math.round(hours / 24);
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
-  return new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 // One line describing someone's presence for the Team page.
