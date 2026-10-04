@@ -2,6 +2,7 @@
 // 20261003050000). Tokens are sealed with lib/secret-box.js; accessToken()
 // refreshes them when they're about to expire.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { open, seal, secretBoxReady } from "@/lib/secret-box";
 import { fetchTokens, providerConfigured, providerFor } from "@/lib/integrations/providers";

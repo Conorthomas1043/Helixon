@@ -10,6 +10,7 @@
 // update/delete below filters explicitly rather than relying on the
 // database to enforce it.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const SELECT_WITH_NAMES =

@@ -3,6 +3,7 @@
 // owner and admins on /dashboard/settings/audit. logAudit() never throws -
 // a log entry failing to save mustn't undo or block the action itself.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { getClientIp } from "@/lib/ratelimit";

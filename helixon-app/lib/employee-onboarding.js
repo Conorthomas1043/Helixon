@@ -3,6 +3,7 @@
 // onboarding checklist items (see lib/onboarding-tasks.js) a given
 // employee has completed, and when.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { ONBOARDING_TASKS, onboardingTaskKeys } from "@/lib/onboarding-tasks";
 

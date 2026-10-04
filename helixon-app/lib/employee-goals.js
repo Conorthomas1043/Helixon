@@ -5,6 +5,7 @@
 // the creator can delete it. Service-role client, so every query below
 // filters explicitly rather than relying on RLS to enforce it.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const GOAL_SELECT =

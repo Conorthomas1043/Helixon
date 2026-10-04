@@ -1,3 +1,4 @@
+import "server-only";
 import Stripe from "stripe";
 
 // Single Stripe client, pinned to one API version - this used to be

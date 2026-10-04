@@ -1,3 +1,4 @@
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { ACCESS_STATUSES, grantsAccess } from "@/lib/subscription-status";
 

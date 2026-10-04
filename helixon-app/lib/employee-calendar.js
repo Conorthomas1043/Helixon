@@ -7,6 +7,7 @@
 // (app/api/employee/calendar/feed/[token]/route.js) and looks up which
 // employee a feed token belongs to.
 
+import "server-only";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { can } from "@/lib/employee-permissions";

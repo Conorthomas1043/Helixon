@@ -4,6 +4,7 @@
 // `shortlist_candidates` (one row per candidate on the list, with an
 // optional note on why they're on it).
 
+import "server-only";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";

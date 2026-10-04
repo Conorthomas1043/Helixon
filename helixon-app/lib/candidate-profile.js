@@ -6,6 +6,7 @@
 // `auth` is a requireCustomerContext() result; everything is scoped to its
 // agency and to what this member may see (lib/permissions.js).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { agencyDb } from "@/lib/agency-db";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";

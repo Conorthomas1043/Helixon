@@ -2,6 +2,7 @@
 // reference request to a referee. Plain text, from the agency, replies to
 // the recruiter (lib/mailer.js).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidate-activity";
 import { agencyNotice } from "@/lib/public-jobs";

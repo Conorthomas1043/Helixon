@@ -19,6 +19,7 @@
 // a crash) when they're unset, so the rest of the app works today and
 // this switches on the moment those env vars exist.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const SCOPE = "https://www.googleapis.com/auth/calendar";

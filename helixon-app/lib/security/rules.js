@@ -8,6 +8,7 @@
 // CACHE_MS and fails open (no rules) if the database can't be reached - a
 // rules hiccup must never block visitors.
 
+import "server-only";
 import { BlockList, isIP } from "node:net";
 import { supabase } from "@/lib/supabase";
 

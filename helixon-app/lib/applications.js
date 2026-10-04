@@ -11,6 +11,7 @@
 // agency has no active subscription, has hit its monthly screening cap, or
 // screening isn't configured.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";

@@ -4,6 +4,7 @@
 // onRequestError). proxy.ts passes the log line's id to the app in the
 // x-helixon-log-uid request header. Best effort; never throws.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 export const LOG_UID_HEADER = "x-helixon-log-uid";

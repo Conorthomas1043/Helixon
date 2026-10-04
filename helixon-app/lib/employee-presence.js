@@ -11,6 +11,7 @@
 // marked them offline. Deriving it from staleness means a closed tab
 // silently becomes "offline" within one missed heartbeat window with no
 // disconnect handler required.
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 // Slightly more than 2x the client heartbeat interval (see

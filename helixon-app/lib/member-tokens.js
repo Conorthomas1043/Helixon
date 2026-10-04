@@ -5,6 +5,7 @@
 //              their own inbox and it's filed against the candidate or
 //              client contact it went to (app/api/webhooks/resend-inbound)
 
+import "server-only";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { inboundDomain } from "@/lib/tracked-email";

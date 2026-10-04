@@ -12,6 +12,7 @@
 //               placed are left out
 //   stage, status, recruiterId, jobId, scoreBand, dateRange, tagIds, pool
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { buildCandidateSearchFilter, cleanSearchTerm, likePattern, matchingRecruiterIds, quoted } from "@/lib/candidate-search";

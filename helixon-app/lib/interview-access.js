@@ -1,6 +1,7 @@
 // Loading an interview (with its candidate, job and contact) for the
 // interview API routes, scoped to the caller's agency.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
 import { summariseScorecards, toInterview, toScorecard } from "@/lib/interviews";

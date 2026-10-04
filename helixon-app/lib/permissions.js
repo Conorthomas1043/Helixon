@@ -8,6 +8,7 @@
 //
 // Owners and admins (lib/workspace-admin.js) are never restricted.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { canManageWorkspace } from "@/lib/workspace-admin";
 

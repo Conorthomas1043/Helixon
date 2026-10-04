@@ -1,6 +1,7 @@
 // Sharing a shortlist with a client through a private link - see
 // supabase/migrations/20261001040000_shortlist_sharing.sql.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { buildClientProfile, blindLabel } from "@/lib/client-profile";
 

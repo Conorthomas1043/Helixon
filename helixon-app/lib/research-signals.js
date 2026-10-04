@@ -1,3 +1,4 @@
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 // Writes to public.research_signals (supabase/migrations/20261004090000).

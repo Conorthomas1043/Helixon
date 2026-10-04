@@ -9,6 +9,7 @@
 // so a sufficiently severe first request from a brand-new IP is blocked
 // immediately, not just on the IP's next attempt.
 
+import "server-only";
 import { scoreRequest } from "./threat-score";
 import { getRedis } from "@/lib/redis";
 import { sendFirewallAlert } from "./alert-email";

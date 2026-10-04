@@ -1,6 +1,7 @@
 // Server helpers shared by the compliance routes (app/api/candidates/[id]/
 // compliance, references, privacy-notice).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
 

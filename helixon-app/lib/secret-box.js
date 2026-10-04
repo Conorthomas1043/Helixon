@@ -4,6 +4,7 @@
 // "v1.<iv>.<tag>.<ciphertext>" in base64url. Without the key, integrations
 // that store tokens report themselves as not set up.
 
+import "server-only";
 import crypto from "crypto";
 
 function key() {

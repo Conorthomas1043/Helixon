@@ -11,6 +11,7 @@
 // { configured, ok, error } shape and getFullHealthSnapshot() Promise.all's
 // them all in parallel.
 
+import "server-only";
 import { getAdminSupabase } from "@/lib/admin-supabase";
 import { isAdminRouteHidden } from "@/lib/admin-auth";
 

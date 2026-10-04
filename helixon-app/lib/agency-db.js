@@ -16,6 +16,7 @@
 // project's JWT secret (Supabase > Project Settings > JWT Keys > legacy JWT
 // secret), then SUPABASE_AGENCY_RLS=1. See docs/runbook.md.
 
+import "server-only";
 import crypto from "crypto";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";

@@ -17,6 +17,7 @@
 // DEFAULTS: a database hiccup must never take the site down or switch a
 // feature off.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { HEALTH_CHECK_KEYS } from "@/lib/ops/health-grade";
 

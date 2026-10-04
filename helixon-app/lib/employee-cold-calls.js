@@ -8,6 +8,7 @@
 // than relying on RLS to enforce it (same caveat as the other employee-*
 // lib files).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 export const OUTCOMES = [

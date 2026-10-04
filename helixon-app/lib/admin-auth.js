@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";

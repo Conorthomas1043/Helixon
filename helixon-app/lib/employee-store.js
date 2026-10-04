@@ -12,6 +12,7 @@
 // fake numbers - there's no uptime monitor or support-ticket table backing
 // either of them yet. Add them back for real once those exist.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 // Paths that aren't a real person looking at the product - admin panel

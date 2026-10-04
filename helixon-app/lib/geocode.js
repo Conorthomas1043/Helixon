@@ -4,6 +4,7 @@
 // place name ("Leeds", "Hebden Bridge, West Yorkshire"). Results - found or
 // not - are cached in geocode_cache so each place is only looked up once.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const POSTCODE_RE = /^([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})?$/i;

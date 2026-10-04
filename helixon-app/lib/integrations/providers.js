@@ -13,6 +13,7 @@
 //
 // Every app's redirect URI is <NEXT_PUBLIC_SITE_URL>/api/integrations/oauth/<provider>/callback.
 
+import "server-only";
 export const PROVIDERS = {
   xero: {
     label: "Xero",

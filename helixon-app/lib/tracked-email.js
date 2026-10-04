@@ -6,6 +6,7 @@
 // and are forwarded on to the recruiter. Without it, replies go straight to
 // the recruiter as before.
 
+import "server-only";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidate-activity";

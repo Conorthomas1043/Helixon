@@ -1,3 +1,4 @@
+import "server-only";
 import { getAdminSupabase } from "@/lib/admin-supabase";
 
 export async function writeAdminAudit({

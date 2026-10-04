@@ -3,6 +3,7 @@
 // is locked down. Path: <agency>/<candidate>/compliance/<random>.<ext>,
 // without the original filename (which is kept in compliance_checks).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { DOCUMENT_TYPES, MAX_DOCUMENT_BYTES, documentExtension } from "@/lib/compliance";
 

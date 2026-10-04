@@ -12,6 +12,7 @@
 // turns that into a friendly error rather than needing its own
 // pre-delete "is it empty" query.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const BUCKET = "employee-files";

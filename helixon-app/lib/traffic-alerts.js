@@ -6,6 +6,7 @@
 // Vercel plan. Each kind alerts at most once an hour. Alerts are listed on
 // admin Traffic and emailed to the Security page's alert recipients.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 import { alertRecipients } from "@/lib/site-settings";

@@ -2,6 +2,7 @@
 // 20261003010000). notify() never throws - a notification failing to save
 // mustn't break whatever it's telling someone about.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 // userId: who it's for (a Clerk user id), or null for everyone in the agency.

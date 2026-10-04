@@ -2,6 +2,7 @@
 // owner or an admin of the agency's Clerk organisation. With no team yet,
 // the only member is the owner. Same rule as /dashboard/privacy.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { getOrgMemberRole } from "@/lib/clerk-org";
 

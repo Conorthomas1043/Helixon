@@ -4,6 +4,7 @@
 // checks Twilio's signature. Until the env vars are set, texting reports
 // itself as not set up and nothing else changes.
 
+import "server-only";
 import crypto from "crypto";
 
 export const SMS_MAX = 640; // four segments - long enough, short enough to stay a text

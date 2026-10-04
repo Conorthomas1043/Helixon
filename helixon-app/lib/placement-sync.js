@@ -2,6 +2,7 @@
 // placement status implies (lib/placements.js stageForStatus), and the
 // placement fee/cost on the candidate row that Analytics' financials read.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidate-activity";
 import { stageForStatus } from "@/lib/placements";

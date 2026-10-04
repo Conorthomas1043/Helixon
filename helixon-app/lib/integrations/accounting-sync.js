@@ -1,5 +1,6 @@
 // Invoices <-> the agency's connected accounts package (Xero or QuickBooks).
 
+import "server-only";
 import { after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { emitWebhook } from "@/lib/webhooks";

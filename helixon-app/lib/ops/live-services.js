@@ -1,3 +1,4 @@
+import "server-only";
 import Stripe from "stripe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Resend } from "resend";

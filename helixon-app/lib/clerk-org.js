@@ -1,3 +1,4 @@
+import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { AGENCY_SEATS } from "@/lib/plan-features";

@@ -18,6 +18,7 @@
 // verify against bcrypt.compare and those accounts will need to be
 // re-issued a password via hashEmployeePassword() below.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import crypto from "crypto";

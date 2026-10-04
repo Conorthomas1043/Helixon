@@ -9,6 +9,7 @@
 // employee_id, or it becomes an IDOR (one employee could read/edit/delete
 // another's to-dos just by guessing/incrementing an id).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 export async function getTodos(employeeId) {

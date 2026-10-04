@@ -8,6 +8,7 @@
 // Headers: Helixon-Event, Helixon-Delivery, Helixon-Signature: t=<unix>,v1=<hex>
 // where v1 = HMAC-SHA256(secret, `${t}.${body}`).
 
+import "server-only";
 import crypto from "node:crypto";
 import dns from "node:dns/promises";
 import net from "node:net";

@@ -1,6 +1,7 @@
 // Candidates to email, with what the merge fields need (lib/email-merge.js):
 // their job, the job's hiring contact. Scoped to the agency.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 export async function loadEmailTargets(agencyId, candidateIds) {

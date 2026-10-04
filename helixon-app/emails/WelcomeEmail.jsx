@@ -66,11 +66,11 @@ export default function WelcomeEmail({ firstName, planLabel, isAgency = false, a
             overflow: "hidden",
           }}
         >
-          {/* ── Logo - same nested-table mark as VerifyEmail (two bars +
+          {/* ── Logo - same nested-table mark as the other emails (two bars +
               signal dot on a forest square). Drawn with tables rather
               than an <Img>, so it never depends on an externally-hosted
               asset existing or NEXT_PUBLIC_SITE_URL being set correctly -
-              renders identically to VerifyEmail in every client. ── */}
+              renders identically in every client. ── */}
           <Section style={{ padding: "32px 32px 0" }}>
             <Row>
               <Column>
@@ -125,7 +125,7 @@ export default function WelcomeEmail({ firstName, planLabel, isAgency = false, a
               few of the CVs you&apos;ve had for it.
             </Text>
 
-            {/* ── Primary CTA - same forest button as VerifyEmail, keeps
+            {/* ── Primary CTA - same forest button as the other emails, keeps
                 the two emails visually part of one sequence. ── */}
             <table role="presentation" cellPadding="0" cellSpacing="0" style={{ marginBottom: "28px" }}>
               <tr>

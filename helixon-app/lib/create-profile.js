@@ -1,3 +1,4 @@
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { after } from "next/server";
 import { sendWelcomeEmail } from "@/lib/lifecycle-email";

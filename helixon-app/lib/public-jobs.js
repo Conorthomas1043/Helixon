@@ -1,6 +1,7 @@
 // Server-side loading for the public jobs pages (/jobs/<slug>...). Only
 // agencies with their jobs page switched on, and only published, open jobs.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
 import { isLive, toPublicJob, validSlug } from "@/lib/careers";

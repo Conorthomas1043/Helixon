@@ -6,6 +6,7 @@
 // database's row limit (1,000 by default) without saying so, and a single
 // .in() with thousands of ids is too long a request to send.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
 import { placedAt, resolveRange } from "@/lib/analytics-snapshot";

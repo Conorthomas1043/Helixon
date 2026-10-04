@@ -5,6 +5,7 @@
 // Read on customer requests, so failures fail open: a lookup error must
 // never lock a paying customer out.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 export const SUSPENDED_MESSAGE =

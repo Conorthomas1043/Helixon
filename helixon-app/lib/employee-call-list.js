@@ -10,6 +10,7 @@
 // Service-role client, so every write filters explicitly (same caveat as the
 // other employee-* lib files).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { phoneKey } from "@/lib/csv";
 

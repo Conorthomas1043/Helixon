@@ -1,3 +1,4 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { scoreRequest } from "../security/threat-score";
 import { classifyAcquisition, groupBy } from "./attribution";

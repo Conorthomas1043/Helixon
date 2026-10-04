@@ -1,6 +1,7 @@
 // Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`. Fails closed: no
 // secret configured means every request is refused.
 
+import "server-only";
 import crypto from "crypto";
 
 export function cronAuthorized(request) {

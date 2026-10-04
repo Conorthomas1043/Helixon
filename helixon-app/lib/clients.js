@@ -5,6 +5,7 @@
 // jobs.client_id / jobs.contact_id here, so everything that already reads
 // those text columns (lists, emails, exports, analytics) keeps working.
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanEmail, cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
 

@@ -1,3 +1,4 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 // Falls back to NEXT_PUBLIC_SUPABASE_URL when SUPABASE_URL isn't set - the

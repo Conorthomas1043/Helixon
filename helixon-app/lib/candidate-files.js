@@ -15,6 +15,7 @@
 // The display name lives in candidates.cv_filename; the storage path in
 // candidates.cv_file_url (an existing, previously unused column - it holds
 // a bucket path, not a URL).
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 const BUCKET = "cvs";

@@ -2,6 +2,7 @@
 // Never throws - a notification failure must never affect request logging
 // or blocking, which is why every call site here wraps this in .catch(() => {}).
 
+import "server-only";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);

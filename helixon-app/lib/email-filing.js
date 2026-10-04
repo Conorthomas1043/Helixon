@@ -11,6 +11,7 @@
 //
 // Resolves { duplicate } | { candidates, clients } (counts filed).
 
+import "server-only";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidate-activity";
 import { logClientActivity } from "@/lib/clients";

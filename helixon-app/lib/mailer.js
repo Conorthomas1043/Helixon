@@ -3,6 +3,7 @@
 // the Helixon sending address (RESEND_FROM_EMAIL); replies go to the
 // recruiter who sent it.
 
+import "server-only";
 import { Resend } from "resend";
 import { currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";

@@ -3,6 +3,7 @@
 // teammate who made it; only its SHA-256 hash is stored (migration
 // 20261001085000), so a key can be shown once and never again.
 
+import "server-only";
 import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import { getAgencyControls } from "@/lib/agency-controls";

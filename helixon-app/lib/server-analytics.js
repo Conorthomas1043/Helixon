@@ -1,3 +1,4 @@
+import "server-only";
 import { supabase } from "@/lib/supabase";
 
 // Product events that happen outside a browser - billing changes from the
