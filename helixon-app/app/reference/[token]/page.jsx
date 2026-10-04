@@ -5,7 +5,7 @@
 // only credential.
 
 import { use, useEffect, useState } from "react";
-import PublicCard, { RatingPicker } from "@/components/public/PublicCard";
+import PublicCard, { RatingPicker, PublicCardLoading } from "@/components/public/PublicCard";
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
@@ -21,6 +21,7 @@ export default function ReferencePage({ params }) {
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [declining, setDeclining] = useState(false);
 
   useEffect(() => {
     fetch(`/api/references/${token}`)
@@ -58,7 +59,7 @@ export default function ReferencePage({ params }) {
 
   const set = (id, v) => setAnswers((a) => ({ ...a, [id]: v }));
 
-  if (state === "loading") return <PublicCard><p className="text-sm" style={{ color: MUTED }}>Loading…</p></PublicCard>;
+  if (state === "loading") return <PublicCardLoading label="Loading the reference request…" />;
   if (state === "error" || state === "expired" || state === "answered") {
     const title = state === "error" ? "Link not available" : state === "expired" ? "This link has expired" : "Already answered";
     const body =
@@ -141,15 +142,23 @@ export default function ReferencePage({ params }) {
         <button type="submit" disabled={saving || !confirm} className="w-full text-[14px] font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
           {saving ? "Sending…" : "Send reference"}
         </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => window.confirm("Let the agency know you won't be giving a reference?") && send({ decline: true }, "declined")}
-          className="w-full text-[12px] underline"
-          style={{ color: MUTED }}
-        >
-          I can&apos;t give a reference
-        </button>
+        {declining ? (
+          <div className="rounded-[12px] p-4 space-y-3" style={{ border: "1px solid var(--border)", background: "var(--mist)" }} role="group" aria-label="Decline the reference">
+            <p className="text-[13px]" style={{ color: INK }}>Let the agency know you won&apos;t be giving a reference?</p>
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+                Go back
+              </button>
+              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-[13px] font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
+                {saving ? "Sending…" : "Yes, let them know"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" disabled={saving} onClick={() => setDeclining(true)} className="w-full text-[12px] underline" style={{ color: MUTED }}>
+            I can&apos;t give a reference
+          </button>
+        )}
       </form>
     </PublicCard>
   );

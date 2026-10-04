@@ -16,6 +16,7 @@ import AdvertisePanel from "@/components/dashboard/AdvertisePanel";
 import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { useOffices } from "@/components/dashboard/use-offices";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel, initials } from "@/lib/candidate-format";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
@@ -455,6 +456,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
 }
 
 export default function JobDetailPage({ params }) {
+  const [ask, confirmDialog] = useConfirm();
   const offices = useOffices();
   const { id } = use(params);
   const router = useRouter();
@@ -550,17 +552,17 @@ export default function JobDetailPage({ params }) {
   const handleDelete = useCallback(async () => {
     if (!data?.job) return;
     if (data.job.candidateCount > 0) return;
-    if (!window.confirm(`Delete "${data.job.title}"? This can't be undone.`)) return;
+    if (!(await ask({ title: `Delete "${data.job.title}"?`, body: "This can't be undone.", confirmLabel: "Delete job", danger: true }))) return;
     setDeleting(true);
     setDeleteError(null);
     try {
       await deleteJob(data.job.id);
       router.push("/dashboard/jobs");
     } catch (err) {
-      setDeleteError(err?.message || "Failed to delete this role. Please try again.");
+      setDeleteError(err?.message || "Couldn't delete this job. Please try again.");
       setDeleting(false);
     }
-  }, [data, router]);
+  }, [data, router, ask]);
 
   const handleSaveChannel = useCallback(
     async (channel, { clicks, spend }) => {
@@ -580,6 +582,8 @@ export default function JobDetailPage({ params }) {
   const filteredCandidates = stageFilter === "all" ? candidates : candidates.filter((c) => c.stage === stageFilter);
 
   return (
+    <>
+      {confirmDialog}
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
       <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
@@ -843,6 +847,7 @@ export default function JobDetailPage({ params }) {
         )}
       </div>
     </main>
+    </>
   );
 }
 

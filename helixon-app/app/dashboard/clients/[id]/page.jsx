@@ -41,6 +41,7 @@ import { InvoiceStatusPill } from "@/components/dashboard/placements";
 import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/opportunities";
 import SignaturesCard from "@/components/dashboard/SignaturesCard";
 import { termsOfBusinessText } from "@/lib/signatures-shared";
+import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const ACTIVITY_LABELS = {
   client_created: "Client added",
@@ -252,6 +253,7 @@ function LogActivity({ clientId, onLogged }) {
 }
 
 export default function ClientDetailPage({ params }) {
+  const [ask, confirmDialog] = useConfirm();
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -282,7 +284,7 @@ export default function ClientDetailPage({ params }) {
   const closeContact = useCallback(() => setContactDialog(null), []);
 
   async function removeContact(contact) {
-    if (!window.confirm(`Remove ${contact.name}?`)) return;
+    if (!(await ask({ title: `Remove ${contact.name}?`, body: "They're removed from this client's contacts.", confirmLabel: "Remove contact", danger: true }))) return;
     try {
       await removeClientContact(id, contact.id);
       reload();
@@ -292,7 +294,7 @@ export default function ClientDetailPage({ params }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Delete ${data.client.name}? This can't be undone.`)) return;
+    if (!(await ask({ title: `Delete ${data.client.name}?`, body: "This can't be undone.", confirmLabel: "Delete client", danger: true }))) return;
     try {
       await deleteClient(id);
       router.push("/dashboard/clients");
@@ -327,6 +329,8 @@ export default function ClientDetailPage({ params }) {
   const openJobs = jobs.filter((j) => j.status === "open");
 
   return (
+    <>
+      {confirmDialog}
     <Page width={1100}>
       <PageHeader
         back={{ href: "/dashboard/clients", label: "All clients" }}
@@ -585,5 +589,6 @@ export default function ClientDetailPage({ params }) {
         />
       )}
     </Page>
+    </>
   );
 }

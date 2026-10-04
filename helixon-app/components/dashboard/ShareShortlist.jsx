@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getShortlistShares, createShortlistShare, revokeShortlistShare } from "@/lib/dashboard-api";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDate } from "@/lib/candidate-format";
+import CopyButton from "@/components/dashboard/CopyButton";
 
 export default function ShareShortlist({ shortlist, onClose }) {
   const [shares, setShares] = useState(null);
@@ -66,7 +67,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
           <p>{created.emailed ? `Sent to ${created.share.recipientEmail}.` : created.sendError ? `Link made, but ${created.sendError.toLowerCase()} Copy it below.` : "Here's the link:"}</p>
           <TextInput readOnly value={created.share.url} onFocus={(e) => e.target.select()} aria-label="Review link" />
           <div className="flex gap-2">
-            <Button onClick={() => navigator.clipboard?.writeText(created.share.url)}>Copy link</Button>
+            <CopyButton text={created.share.url}>Copy link</CopyButton>
             <Button variant="primary" onClick={() => setCreated(null)}>Done</Button>
           </div>
         </div>
@@ -115,7 +116,7 @@ export default function ShareShortlist({ shortlist, onClose }) {
                 </span>
                 {s.active && (
                   <>
-                    <Button size="sm" onClick={() => navigator.clipboard?.writeText(s.url)}>Copy</Button>
+                    <CopyButton size="sm" text={s.url}>Copy</CopyButton>
                     <Button size="sm" variant="ghost" onClick={() => revoke(s.id)}>Revoke</Button>
                   </>
                 )}

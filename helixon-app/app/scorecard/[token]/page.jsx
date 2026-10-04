@@ -5,7 +5,7 @@
 // URL is the only credential.
 
 import { use, useEffect, useState } from "react";
-import PublicCard, { RatingPicker } from "@/components/public/PublicCard";
+import PublicCard, { RatingPicker, PublicCardLoading } from "@/components/public/PublicCard";
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
@@ -63,7 +63,7 @@ export default function ScorecardPage({ params }) {
     }
   }
 
-  if (state === "loading") return <PublicCard><p className="text-sm" style={{ color: MUTED }}>Loading…</p></PublicCard>;
+  if (state === "loading") return <PublicCardLoading label="Loading the scorecard…" />;
   if (state === "error") {
     return (
       <PublicCard>

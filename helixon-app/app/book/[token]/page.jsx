@@ -5,7 +5,7 @@
 // is booked with calendar invites.
 
 import { use, useEffect, useState } from "react";
-import PublicCard from "@/components/public/PublicCard";
+import PublicCard, { PublicCardLoading } from "@/components/public/PublicCard";
 
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
@@ -57,7 +57,7 @@ export default function BookPage({ params }) {
     }
   }
 
-  if (state === "loading") return <PublicCard><p className="text-sm" style={{ color: MUTED }}>Loading…</p></PublicCard>;
+  if (state === "loading") return <PublicCardLoading label="Loading the available times…" />;
   if (state === "error" || state === "closed") {
     return (
       <PublicCard agencyName={info?.agencyName}>
