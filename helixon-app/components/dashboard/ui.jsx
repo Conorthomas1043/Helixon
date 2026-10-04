@@ -1,19 +1,32 @@
 "use client";
 
-// Small shared building blocks for dashboard pages, in the same look the
-// Jobs / Candidates / Shortlists pages already use (CSS tokens from
-// app/globals.css via lib/candidate-format.js). Newer pages use these
-// rather than each re-declaring their own card, button and field styles.
+// The dashboard's view of the UI kit (components/ui): the shared building
+// blocks, plus the page frame (nav + width) and the titled card the
+// dashboard pages are laid out with.
 
-import { Children, cloneElement, Fragment, isValidElement, useEffect, useId, useRef } from "react";
 import Link from "next/link";
-import { trapTab } from "@/lib/focus-trap";
 import DashboardNav from "@/components/DashboardNav";
 import { INK, INK_MUTED, INK_FAINT, CARD } from "@/lib/candidate-format";
+import { trapTab } from "@/lib/focus-trap";
+import { Card as SurfaceCard, cx } from "@/components/ui";
+
+export {
+  Button,
+  Dialog,
+  EmptyState,
+  ErrorState,
+  ErrorText,
+  Field,
+  LoadingCard,
+  Pill,
+  Select,
+  Skeleton,
+  TextArea,
+  TextInput,
+  formatMoney,
+} from "@/components/ui";
 
 export { INK, INK_MUTED, INK_FAINT, CARD, trapTab };
-
-const FOCUS = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export function Page({ children, width = 1200 }) {
   return (
@@ -54,9 +67,10 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
   );
 }
 
+// A padded card with an optional eyebrow, title and action in its header.
 export function Card({ title, eyebrow, action, children, className = "", padded = true }) {
   return (
-    <section className={`rounded-[14px] ${padded ? "p-5 sm:p-6" : ""} ${className}`} style={CARD}>
+    <SurfaceCard className={cx(padded && "p-5 sm:p-6", className)}>
       {(title || eyebrow || action) && (
         <div className="flex items-end justify-between gap-3 mb-4">
           <div className="min-w-0">
@@ -75,201 +89,6 @@ export function Card({ title, eyebrow, action, children, className = "", padded 
         </div>
       )}
       {children}
-    </section>
+    </SurfaceCard>
   );
-}
-
-const BUTTON = {
-  primary: { background: "var(--forest)", color: "white", border: "1px solid var(--forest)" },
-  secondary: { background: "white", color: INK, border: "1px solid var(--border)" },
-  outline: { background: "white", color: "var(--forest)", border: "1px solid var(--forest)" },
-  ghost: { background: "transparent", color: INK_MUTED, border: "1px solid transparent" },
-  danger: { background: "white", color: "var(--score-low)", border: "1px solid var(--border)" },
-};
-
-export function Button({ variant = "secondary", size = "md", href, className = "", style, children, ...props }) {
-  const cls = `inline-flex items-center justify-center gap-1.5 font-semibold rounded-full transition-colors disabled:opacity-50 ${FOCUS} ${
-    size === "sm" ? "text-[13px] px-3 py-1 min-h-[28px]" : "text-[13px] px-3.5 py-1.5 min-h-[32px]"
-  } ${className}`;
-  const s = { ...BUTTON[variant], ...style };
-  if (href) {
-    return (
-      <Link href={href} className={cls} style={s} {...props}>
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <button type="button" className={cls} style={s} {...props}>
-      {children}
-    </button>
-  );
-}
-
-export function Field({ label, hint, children, className = "" }) {
-  const hintId = useId();
-  // The label wraps the control, so its name comes for free; the hint is
-  // tied on with aria-describedby so screen readers read it too.
-  const only = hint && Children.count(children) === 1 && isValidElement(children) && children.type !== Fragment ? children : null;
-  const control = only
-    ? cloneElement(only, {
-        "aria-describedby": [only.props["aria-describedby"], hintId].filter(Boolean).join(" "),
-      })
-    : children;
-  return (
-    <label className={`block ${className}`}>
-      <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
-        {label}
-      </span>
-      {control}
-      {hint && (
-        <span id={hintId} className="block text-[12px] mt-1" style={{ color: INK_FAINT }}>
-          {hint}
-        </span>
-      )}
-    </label>
-  );
-}
-
-// 16px on phones: iOS Safari zooms the page into any field smaller than that.
-const INPUT_CLS = `w-full text-[16px] sm:text-[14px] px-3 py-2 rounded-[8px] bg-white ${FOCUS}`;
-const INPUT_STYLE = { border: "1px solid var(--border)", color: INK };
-
-export function TextInput(props) {
-  return <input {...props} className={`${INPUT_CLS} ${props.className || ""}`} style={{ ...INPUT_STYLE, ...props.style }} />;
-}
-
-export function TextArea(props) {
-  return <textarea rows={3} {...props} className={`${INPUT_CLS} ${props.className || ""}`} style={{ ...INPUT_STYLE, ...props.style }} />;
-}
-
-export function Select({ options, ...props }) {
-  return (
-    <select {...props} className={`${INPUT_CLS} ${props.className || ""}`} style={{ ...INPUT_STYLE, ...props.style }}>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-export function Pill({ children, color = INK_MUTED, background = "var(--mist)" }) {
-  return (
-    <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ color, background }}>
-      {children}
-    </span>
-  );
-}
-
-export function Skeleton({ className = "" }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-[10px] ${className}`} style={{ background: "var(--mist)" }} />;
-}
-
-export function LoadingCard({ rows = 3 }) {
-  return (
-    <div className="rounded-[14px] p-5 space-y-3" style={CARD} aria-busy="true">
-      {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} className="h-4 w-full" />
-      ))}
-    </div>
-  );
-}
-
-export function EmptyState({ title, body, action }) {
-  return (
-    <div className="rounded-[14px] py-12 px-6 text-center" style={CARD}>
-      <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
-        {title}
-      </p>
-      {body && (
-        <p className="text-[14px] max-w-md mx-auto" style={{ color: INK_MUTED }}>
-          {body}
-        </p>
-      )}
-      {action && <div className="mt-4 flex justify-center">{action}</div>}
-    </div>
-  );
-}
-
-export function ErrorState({ title = "Something went wrong", body, onRetry }) {
-  return (
-    <div className="rounded-[14px] p-10 text-center" style={CARD}>
-      <p className="font-semibold mb-1" style={{ color: INK }}>
-        {title}
-      </p>
-      {body && (
-        <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
-          {body}
-        </p>
-      )}
-      {onRetry && (
-        <Button variant="primary" onClick={onRetry}>
-          Try again
-        </Button>
-      )}
-    </div>
-  );
-}
-
-export function ErrorText({ children }) {
-  if (!children) return null;
-  return (
-    <p className="text-[13px]" role="alert" style={{ color: "var(--score-low)" }}>
-      {children}
-    </p>
-  );
-}
-
-// A modal dialog: Escape and the backdrop close it; focus starts inside.
-export function Dialog({ title, onClose, children, width = 560, busy = false }) {
-  const ref = useRef(null);
-  // Focus goes back to whatever opened the dialog when it closes; it used
-  // to drop to the top of the page, losing a keyboard user's place.
-  useEffect(() => {
-    const opener = document.activeElement;
-    return () => {
-      if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
-    };
-  }, []);
-  useEffect(() => {
-    const first = ref.current?.querySelector("input, select, textarea, button");
-    first?.focus();
-    const onKey = (e) => {
-      if (e.key === "Escape" && !busy) onClose();
-      if (e.key === "Tab") trapTab(e, ref.current);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, busy]);
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(19,32,27,0.45)" }}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !busy) onClose();
-      }}
-    >
-      <div
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="w-full max-h-[92vh] overflow-y-auto rounded-[16px] p-6 bg-white shadow-xl"
-        style={{ maxWidth: width }}
-      >
-        <h2 className="text-base font-semibold mb-4" style={{ color: INK }}>
-          {title}
-        </h2>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// "£12,500" style money, in the given currency (GBP by default).
-export function formatMoney(value, currency = "GBP") {
-  if (value == null || value === "" || !Number.isFinite(Number(value))) return "-";
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(value));
 }

@@ -1,19 +1,15 @@
 "use client";
 // app/employee/_shared/ui.jsx
-// Visual building blocks for the employee portal, in the same language as
-// the customer dashboard (app/dashboard/page.js): white cards on mist,
-// small uppercase eyebrows, Outfit headings, mono numbers.
+// The staff portal's view of the UI kit (components/ui): Card, Chip and
+// Spinner are the shared ones; the rest are this portal's own layouts, in
+// the same language as the customer dashboard: white cards on mist, small
+// uppercase eyebrows, Outfit headings, mono numbers.
 
 import Link from "next/link";
 import CountUp from "@/components/dashboard/CountUp";
+import { Card as KitCard, Pill, Spinner as KitSpinner } from "@/components/ui";
 
-export function Card({ as: Tag = "section", className = "", children, ...props }) {
-  return (
-    <Tag className={`rounded-[16px] bg-white ${className}`} style={{ border: "1px solid var(--border)" }} {...props}>
-      {children}
-    </Tag>
-  );
-}
+export const Card = KitCard;
 
 export function CardHeader({ title, eyebrow, count, action, id }) {
   return (
@@ -25,9 +21,7 @@ export function CardHeader({ title, eyebrow, count, action, id }) {
         <h2 id={id} className="text-[15px] font-semibold flex items-center gap-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           {title}
           {typeof count === "number" && count > 0 && (
-            <span className="text-[12px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums" style={{ background: "var(--mist)", color: "var(--ink-soft)", fontFamily: "var(--font-body)" }}>
-              {count}
-            </span>
+            <Pill>{count}</Pill>
           )}
         </h2>
       </div>
@@ -44,18 +38,11 @@ export function HeaderLink({ href, children }) {
   );
 }
 
-const CHIP_TONES = {
-  neutral: { background: "var(--mist)", color: "var(--ink-soft)" },
-  green: { background: "var(--mint)", color: "var(--forest)" },
-  amber: { background: "#fdf5e9", color: "#8a5a12" },
-  red: { background: "#fbefed", color: "#a83226" },
-};
-
 export function Chip({ tone = "neutral", children, className = "" }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${className}`} style={CHIP_TONES[tone]}>
+    <Pill tone={tone} className={className}>
       {children}
-    </span>
+    </Pill>
   );
 }
 
@@ -107,14 +94,7 @@ export function EmptyLine({ children, action }) {
 }
 
 export function Spinner({ size = 32 }) {
-  return (
-    <div
-      className="rounded-full animate-spin"
-      role="status"
-      aria-label="Loading"
-      style={{ width: size, height: size, border: `${Math.max(2, size / 8)}px solid var(--border)`, borderTopColor: "var(--forest)" }}
-    />
-  );
+  return <KitSpinner size={size} label="Loading" />;
 }
 
 export function FullPageSpinner() {

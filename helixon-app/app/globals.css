@@ -47,6 +47,25 @@
   --font-display: var(--font-outfit), system-ui, sans-serif;
   --font-body:    var(--font-inter), system-ui, sans-serif;
   --font-mono:    var(--font-geist-mono), monospace;
+
+  /* Theme tokens for the UI kit (components/ui). Components use these
+     rather than the palette above, so a surface with its own theme (the
+     admin console, app/admin/_shared/styles.js) only redefines --ui-*. */
+  --ui-surface:        var(--bg);
+  --ui-surface-muted:  var(--mist);
+  --ui-border:         var(--border);
+  --ui-border-strong:  #7f948a; /* 3.3:1 on white: switch tracks, WCAG 1.4.11 */
+  --ui-text:           var(--ink);
+  --ui-text-soft:      var(--ink-soft);
+  --ui-text-faint:     var(--ink-faint);
+  --ui-accent:         var(--forest);
+  --ui-accent-hover:   var(--forest-deep);
+  --ui-accent-soft:    var(--mint);
+  --ui-on-accent:      #ffffff;
+  --ui-danger:         var(--score-low);
+  --ui-danger-soft:    #fbefed;
+  --ui-warn:           #8a5a12;
+  --ui-warn-soft:      #fdf6e9;
 }
 
 /* ── Tailwind v4 theme mapping ────────────────────────────────────────────

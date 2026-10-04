@@ -28,6 +28,23 @@ export const css = `
   --accent-line:rgba(61,220,151,.32);
   --on-accent:#04140c;
 
+  /* The shared UI kit (components/ui) in this console's colours. */
+  --ui-surface:var(--surface);
+  --ui-surface-muted:var(--surface-raised);
+  --ui-border:var(--border);
+  --ui-border-strong:rgba(255,255,255,.24);
+  --ui-text:var(--text);
+  --ui-text-soft:var(--text-muted);
+  --ui-text-faint:var(--text-faint);
+  --ui-accent:var(--accent);
+  --ui-accent-hover:var(--accent-strong);
+  --ui-accent-soft:var(--accent-soft);
+  --ui-on-accent:var(--on-accent);
+  --ui-danger:var(--critical);
+  --ui-danger-soft:var(--critical-soft);
+  --ui-warn:var(--warn);
+  --ui-warn-soft:var(--warn-soft);
+
   --ok:#3ddc97;
   --ok-soft:rgba(61,220,151,.11);
   --warn:#f0b35a;

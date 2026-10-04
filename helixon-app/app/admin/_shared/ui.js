@@ -1,7 +1,12 @@
 "use client";
 
+// The admin console's view of the UI kit (components/ui): Switch, Skeleton
+// and EmptyState are the shared ones in this console's dark theme (the --ui-*
+// tokens in ./styles.js); the rest are console-specific layouts and charts.
+
 import { useEffect } from "react";
 import { Icon } from "./icons";
+import { EmptyState as KitEmptyState, Skeleton as KitSkeleton, Switch as KitSwitch } from "@/components/ui";
 
 export function PageHeader({ title, description, children }) {
   return (
@@ -102,19 +107,11 @@ export function Sparkline({ data = [], tone = "var(--accent)", height = 34 }) {
 }
 
 export function Skeleton({ width = "100%", height = 14, style }) {
-  return <span className="skeleton" style={{ width, height, ...style }} aria-hidden="true" />;
+  return <KitSkeleton width={width} height={height} style={style} />;
 }
 
 export function EmptyState({ icon = "inbox", title, children }) {
-  return (
-    <div className="empty-state">
-      <span className="icon">
-        <Icon name={icon} />
-      </span>
-      <b>{title}</b>
-      {children && <span>{children}</span>}
-    </div>
-  );
+  return <KitEmptyState framed={false} icon={<Icon name={icon} />} title={title}>{children}</KitEmptyState>;
 }
 
 export function Progress({ value = 0, max = 100, warnAt = 0.8, badAt = 0.95 }) {
@@ -201,27 +198,13 @@ export function ServiceStatus({ label, snapshot, ok, note }) {
   );
 }
 
-// Accessible on/off switch (a checkbox styled as a toggle). `description`
-// sits under the label; `disabled` greys it out and blocks changes.
+// The kit's on/off switch as a settings row: text first, switch on the
+// right, a divider between rows. `disabled` greys it out and blocks changes.
 export function Switch({ checked, onChange, label, description, disabled, id }) {
-  const inputId = id || `sw-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <label className={`switch-row ${disabled ? "is-disabled" : ""}`} htmlFor={inputId}>
-      <span className="switch-text">
-        <span className="switch-label">{label}</span>
-        {description && <span className="switch-desc">{description}</span>}
-      </span>
-      <input
-        id={inputId}
-        type="checkbox"
-        role="switch"
-        className="switch-input"
-        checked={!!checked}
-        disabled={disabled}
-        onChange={(e) => onChange?.(e.target.checked)}
-      />
-      <span className="switch-track" aria-hidden="true"><span className="switch-thumb" /></span>
-    </label>
+    <div className="py-3 border-b border-[var(--ui-border)] last:border-b-0">
+      <KitSwitch align="end" checked={checked} onChange={onChange} label={label} description={description} disabled={disabled} id={id} />
+    </div>
   );
 }
 
