@@ -14,6 +14,7 @@ import { buildReport, matchHighlights } from "@/lib/analysis-report";
 import { NextResponse, after } from "next/server";
 import { candidatePayload, emitWebhook } from "@/lib/webhooks";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // A single analysis makes 2-3 Claude calls (candidate + job extraction in
 // parallel - the job one skipped for a saved job - then the fit judgement),
@@ -298,7 +299,7 @@ export async function POST(request) {
      */
     let existingJob = null;
     if (existingJobId) {
-      const { data, error: existingJobError } = await supabase
+      const { data, error: existingJobError } = await (await agencyDb())
         .from("jobs")
         .select("*")
         .eq("id", existingJobId)
@@ -345,7 +346,7 @@ export async function POST(request) {
     // until its first screening. Keep them, so later CVs against the same
     // description reuse them instead of re-reading it every time.
     if (existingJob && !knownJobParsed && sameJobText && requirements.length === 0 && jobParsed && !existingJob.parsed?.required_skills) {
-      const { error: parsedError } = await supabase
+      const { error: parsedError } = await (await agencyDb())
         .from("jobs")
         .update({ parsed: jobParsed })
         .eq("id", existingJob.id)
@@ -381,7 +382,7 @@ export async function POST(request) {
     const {
       data: candidate,
       error: candidateError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("candidates")
       .insert({
         agency_id: agencyId,
@@ -416,8 +417,8 @@ export async function POST(request) {
     // fails, so a half-finished analysis never shows up in the pipeline.
     let createdJobId = null;
     const cleanup = async () => {
-      await supabase.from("candidates").delete().eq("id", candidate.id);
-      if (createdJobId) await supabase.from("jobs").delete().eq("id", createdJobId);
+      await (await agencyDb()).from("candidates").delete().eq("id", candidate.id);
+      if (createdJobId) await (await agencyDb()).from("jobs").delete().eq("id", createdJobId);
     };
 
     let job;
@@ -427,7 +428,7 @@ export async function POST(request) {
       const {
         data: newJob,
         error: jobError,
-      } = await supabase
+      } = await (await agencyDb())
         .from("jobs")
         .insert({
           agency_id: agencyId,
@@ -485,7 +486,7 @@ export async function POST(request) {
     const {
       data: score,
       error: scoreError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("scores")
       .insert({
         agency_id: agencyId,
@@ -558,7 +559,7 @@ export async function POST(request) {
       reportError("[run] Failed to store CV file:", err?.message);
     }
 
-    const { error: candidateUpdateError } = await supabase
+    const { error: candidateUpdateError } = await (await agencyDb())
       .from("candidates")
       .update({
         stage: "Screened",
@@ -610,7 +611,7 @@ export async function POST(request) {
     // second record for the very same job.
     let duplicate = null;
     if (existingPerson) {
-      const { data: sameJobRow } = await supabase
+      const { data: sameJobRow } = await (await agencyDb())
         .from("candidates")
         .select("id")
         .eq("agency_id", agencyId)

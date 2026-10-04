@@ -5,6 +5,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanLine } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH { label, dueAt } to set a new next action.
 // PATCH { completed: true } to complete the existing one.
@@ -19,7 +20,7 @@ export async function PATCH(request, { params }) {
   const { id } = await params;
   const actor = recruiterDisplayName(profile) || userId;
 
-  const { data: existing } = await supabase
+  const { data: existing } = await (await agencyDb())
     .from("candidates")
     .select("next_action")
     .eq("id", id)
@@ -34,7 +35,7 @@ export async function PATCH(request, { params }) {
   if (body.completed === true) {
     const label = existing.next_action?.label;
 
-    const { error } = await supabase.from("candidates").update({ next_action: null }).eq("id", id).eq("agency_id", agencyId);
+    const { error } = await (await agencyDb()).from("candidates").update({ next_action: null }).eq("id", id).eq("agency_id", agencyId);
     if (error) {
       return NextResponse.json({ error: "Failed to complete next action" }, { status: 500 });
     }
@@ -59,7 +60,7 @@ export async function PATCH(request, { params }) {
   }
 
   const nextAction = { label, dueAt, completed: false };
-  const { error } = await supabase.from("candidates").update({ next_action: nextAction }).eq("id", id).eq("agency_id", agencyId);
+  const { error } = await (await agencyDb()).from("candidates").update({ next_action: nextAction }).eq("id", id).eq("agency_id", agencyId);
   if (error) {
     return NextResponse.json({ error: "Failed to set next action" }, { status: 500 });
   }

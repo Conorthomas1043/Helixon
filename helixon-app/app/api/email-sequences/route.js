@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
+import { agencyDb } from "@/lib/agency-db";
 
 // Email sequences (lib/sequences.js).
 //
@@ -13,8 +14,8 @@ export async function GET() {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const [{ data, error }, { data: enrollments }] = await Promise.all([
-    supabase.from("email_sequences").select("*").eq("agency_id", auth.agencyId).order("name"),
-    supabase.from("sequence_enrollments").select("sequence_id, status, stopped_reason").eq("agency_id", auth.agencyId).limit(20000),
+    (await agencyDb()).from("email_sequences").select("*").eq("agency_id", auth.agencyId).order("name"),
+    (await agencyDb()).from("sequence_enrollments").select("sequence_id, status, stopped_reason").eq("agency_id", auth.agencyId).limit(20000),
   ]);
   if (error) return NextResponse.json({ error: "Failed to load sequences." }, { status: 500 });
   const stats = new Map();
@@ -35,7 +36,7 @@ export async function POST(request) {
   if (!name) return NextResponse.json({ error: "Name the sequence." }, { status: 400 });
   const steps = cleanSequenceSteps(body.steps);
   if (steps.error) return NextResponse.json({ error: steps.error }, { status: 400 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("email_sequences")
     .insert({ agency_id: auth.agencyId, name, steps: steps.steps, created_by: auth.userId })
     .select("*")

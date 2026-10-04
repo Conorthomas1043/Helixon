@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH / DELETE one of your own saved searches.
 
@@ -13,7 +14,7 @@ export async function PATCH(request, { params }) {
   const fields = cleanSavedSearch(await request.json().catch(() => ({})), { partial: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (!id || Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("saved_searches")
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -31,7 +32,7 @@ export async function DELETE(request, { params }) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { error } = await supabase.from("saved_searches").delete().eq("id", id).eq("agency_id", auth.agencyId).eq("user_id", auth.userId);
+  const { error } = await (await agencyDb()).from("saved_searches").delete().eq("id", id).eq("agency_id", auth.agencyId).eq("user_id", auth.userId);
   if (error) return NextResponse.json({ error: "Failed to delete." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

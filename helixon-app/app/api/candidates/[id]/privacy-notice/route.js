@@ -7,6 +7,7 @@ import { cleanLine } from "@/lib/sanitize";
 import { loadCandidate } from "@/lib/compliance-server";
 import { sendPrivacyNotices } from "@/lib/compliance-email";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { action: "send" }   email them the agency's privacy notice
 // POST { action: "consent", source }   record consent given another way
@@ -32,13 +33,13 @@ export async function POST(request, { params }) {
   if (body.action === "consent") {
     const source = cleanLine(body.source, 60) || "recorded by recruiter";
     const at = new Date().toISOString();
-    const { error } = await supabase.from("candidates").update({ consent_given_at: at, consent_source: source }).eq("id", c.id).eq("agency_id", auth.agencyId);
+    const { error } = await (await agencyDb()).from("candidates").update({ consent_given_at: at, consent_source: source }).eq("id", c.id).eq("agency_id", auth.agencyId);
     if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
     await logActivity(supabase, c.id, "consent_recorded", actor, { note: source });
     return NextResponse.json({ ok: true, consentGivenAt: at, consentSource: source });
   }
   if (body.action === "withdraw") {
-    const { error } = await supabase.from("candidates").update({ consent_given_at: null, consent_source: null }).eq("id", c.id).eq("agency_id", auth.agencyId);
+    const { error } = await (await agencyDb()).from("candidates").update({ consent_given_at: null, consent_source: null }).eq("id", c.id).eq("agency_id", auth.agencyId);
     if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
     await logActivity(supabase, c.id, "consent_withdrawn", actor, { note: "Consent withdrawn" });
     return NextResponse.json({ ok: true });

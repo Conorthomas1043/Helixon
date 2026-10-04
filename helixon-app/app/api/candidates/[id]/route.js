@@ -10,6 +10,7 @@ import { personCandidateIds } from "@/lib/candidate-person";
 import { candidateHidden, getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
 // helper, no agency scoping). `.eq("agency_id", agencyId)` here is what
@@ -40,7 +41,8 @@ function toWorkHistory(extracted) {
 // Notes, newest first, with when they were pinned - falling back to the
 // columns from before pinning (20261003040000) if it isn't applied.
 async function loadNotes(candidateId) {
-  const query = (cols) => supabase.from("candidate_notes").select(cols).eq("candidate_id", candidateId).order("created_at", { ascending: false });
+  const db = await agencyDb();
+  const query = (cols) => db.from("candidate_notes").select(cols).eq("candidate_id", candidateId).order("created_at", { ascending: false });
   const res = await query("id, author_id, author_name, note, created_at, pinned_at");
   if (res.error?.code === "42703") return query("id, author_id, author_name, note, created_at");
   return res;
@@ -56,7 +58,7 @@ export async function GET(request, { params }) {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const { data: candidate, error } = await supabase
+  const { data: candidate, error } = await (await agencyDb())
     .from("candidates")
     .select("*, jobs(*)")
     .eq("id", id)
@@ -78,7 +80,7 @@ export async function GET(request, { params }) {
     // The latest analysis: the full report on the profile, and whether it
     // was a blind screen (the documents panel asks before opening the
     // original CV, which shows who they are).
-    supabase
+    (await agencyDb())
       .from("scores")
       .select("id, job_id, created_at, result, jobs(title, client)")
       .eq("candidate_id", id)
@@ -96,8 +98,8 @@ export async function GET(request, { params }) {
   const [{ data: root }, { data: related }] = await Promise.all([
     rootId === candidate.id
       ? { data: candidate }
-      : supabase.from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, talent_pool_expires_at, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
-    supabase
+      : (await agencyDb()).from("candidates").select("id, talent_pool_at, talent_pool_by, talent_pool_note, talent_pool_status, talent_pool_check_in, talent_pool_expires_at, job_id, match_score, stage, jobs(title, client)").eq("id", rootId).eq("agency_id", agencyId).maybeSingle(),
+    (await agencyDb())
       .from("candidates")
       .select("id, job_id, match_score, stage, created_at, jobs(title, client)")
       .eq("agency_id", agencyId)
@@ -246,7 +248,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .update(update)
     .eq("id", id)
@@ -292,7 +294,7 @@ export async function DELETE(request, { params }) {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const { data: candidate, error: lookupError } = await supabase
+  const { data: candidate, error: lookupError } = await (await agencyDb())
     .from("candidates")
     .select("id")
     .eq("id", id)

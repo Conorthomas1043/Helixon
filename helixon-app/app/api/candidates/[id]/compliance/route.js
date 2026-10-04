@@ -7,6 +7,7 @@ import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
 import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance";
 import { storeComplianceDocument } from "@/lib/compliance-files";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // A candidate's compliance record (lib/compliance.js).
 //
@@ -22,8 +23,8 @@ export async function GET(request, { params }) {
   const c = await loadCandidate(auth.agencyId, (await params).id, "id, created_at, source, consent_given_at, consent_source, privacy_notice_sent_at");
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const [{ data: checks }, { data: refs }] = await Promise.all([
-    supabase.from("compliance_checks").select("*").eq("candidate_id", c.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }),
-    supabase.from("candidate_references").select("*").eq("candidate_id", c.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }),
+    (await agencyDb()).from("compliance_checks").select("*").eq("candidate_id", c.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }),
+    (await agencyDb()).from("candidate_references").select("*").eq("candidate_id", c.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }),
   ]);
   return NextResponse.json({
     checks: (checks ?? []).map(toCheck),
@@ -55,7 +56,7 @@ export async function POST(request, { params }) {
     doc = await storeComplianceDocument({ agencyId: auth.agencyId, candidateId: c.id, file });
     if (doc.error) return NextResponse.json({ error: doc.error }, { status: 400 });
   }
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("compliance_checks")
     .insert({
       ...fields,

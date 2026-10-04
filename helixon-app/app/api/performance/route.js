@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { canManageWorkspace } from "@/lib/workspace-admin";
 import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRange, placementInPeriod, scaleTargets } from "@/lib/performance";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET ?period=this_month|last_month|this_quarter|... - each recruiter's
 // activity and revenue for the period against their targets
@@ -28,24 +29,25 @@ async function rows(query, fallback) {
 export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const db = await agencyDb();
   const agencyId = auth.agencyId;
   const period = periodRange(new URL(request.url).searchParams.get("period"));
   const fromTs = `${period.from}T00:00:00Z`;
   const toTs = `${period.to}T00:00:00Z`;
   const placementQuery = (cols) =>
-    supabase
+    db
       .from("placements")
       .select(cols)
       .eq("agency_id", agencyId)
       .or(`and(offer_date.gte.${period.from},offer_date.lt.${period.to}),and(offer_date.is.null,created_at.gte.${fromTs},created_at.lt.${toTs})`)
       .limit(LIMIT);
   const invoiceQuery = (cols) =>
-    supabase.from("invoices").select(cols).eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to).limit(LIMIT);
+    db.from("invoices").select(cols).eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to).limit(LIMIT);
 
   const [{ data: agency }, members, candidates, activity, interviews, placements, invoices, canManage] = await Promise.all([
     supabase.from("agencies").select("settings").eq("id", agencyId).maybeSingle(),
     rows(supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", agencyId)),
-    rows(supabase.from("candidates").select("recruiter_id").eq("agency_id", agencyId).is("pooled_from_id", null).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
+    rows(db.from("candidates").select("recruiter_id").eq("agency_id", agencyId).is("pooled_from_id", null).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
     rows(
       supabase
         .from("candidate_activity")
@@ -56,7 +58,7 @@ export async function GET(request) {
         .lt("created_at", toTs)
         .limit(LIMIT)
     ),
-    rows(supabase.from("interviews").select("created_by").eq("agency_id", agencyId).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
+    rows(db.from("interviews").select("created_by").eq("agency_id", agencyId).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
     // splits (shared placements) came later - without the column, every
     // placement is credited to its one recruiter.
     rows(placementQuery("recruiter_id, splits, status, kind, fee_amount, offer_date, created_at"), () =>

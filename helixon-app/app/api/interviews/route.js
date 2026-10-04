@@ -11,6 +11,7 @@ import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } fro
 import { sendInterviewInvites } from "@/lib/interview-invites";
 import { FUNNEL_ORDER } from "@/lib/stage-labels";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // Interviews (lib/interviews.js).
 //
@@ -28,7 +29,7 @@ export async function GET(request) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const params = new URL(request.url).searchParams;
 
-  let query = supabase
+  let query = (await agencyDb())
     .from("interviews")
     .select(`${INTERVIEW_SELECT}, interview_feedback(*)`)
     .eq("agency_id", auth.agencyId)
@@ -60,7 +61,7 @@ export async function POST(request) {
 
   const candidateId = cleanUuid(body.candidateId);
   if (!candidateId) return NextResponse.json({ error: "Which candidate?" }, { status: 400 });
-  const { data: candidate } = await supabase
+  const { data: candidate } = await (await agencyDb())
     .from("candidates")
     .select("id, stage, job_id, jobs(id, client_id, contact_id)")
     .eq("id", candidateId)
@@ -73,16 +74,16 @@ export async function POST(request) {
   // The hiring contact defaults to the job's; one given must be the agency's.
   if (fields.contact_id === undefined) fields.contact_id = candidate.jobs?.contact_id ?? null;
   if (fields.contact_id) {
-    const { data: c } = await supabase.from("client_contacts").select("id").eq("id", fields.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
+    const { data: c } = await (await agencyDb()).from("client_contacts").select("id").eq("id", fields.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
     if (!c) return NextResponse.json({ error: "That contact wasn't found." }, { status: 400 });
   }
   if (fields.round === undefined) {
-    const { count } = await supabase.from("interviews").select("id", { count: "exact", head: true }).eq("candidate_id", candidateId).neq("status", "cancelled");
+    const { count } = await (await agencyDb()).from("interviews").select("id", { count: "exact", head: true }).eq("candidate_id", candidateId).neq("status", "cancelled");
     fields.round = Math.min(20, (count ?? 0) + 1);
   }
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
-  const { data: created, error } = await supabase
+  const { data: created, error } = await (await agencyDb())
     .from("interviews")
     .insert({ ...fields, agency_id: auth.agencyId, candidate_id: candidateId, job_id: candidate.job_id, created_by: auth.userId })
     .select("id")
@@ -102,7 +103,7 @@ export async function POST(request) {
   const stageIdx = FUNNEL_ORDER.indexOf(candidate.stage);
   const interviewIdx = FUNNEL_ORDER.indexOf("Interview");
   if (body.moveToInterview !== false && candidate.stage !== "Rejected" && stageIdx < interviewIdx) {
-    await supabase.from("candidates").update({ stage: "Interview" }).eq("id", candidateId).eq("agency_id", auth.agencyId);
+    await (await agencyDb()).from("candidates").update({ stage: "Interview" }).eq("id", candidateId).eq("agency_id", auth.agencyId);
     await logActivity(supabase, candidateId, "stage_changed", actor, { from: candidate.stage, to: "Interview" });
   }
 
@@ -113,12 +114,12 @@ export async function POST(request) {
   if (recipients.length && body.sendInvites !== false) {
     invites = await sendInterviewInvites({ auth, interview, candidate: interview.candidates, job: interview.jobs, recipients });
     if (invites.sent.length) {
-      await supabase.from("interviews").update({ invited_at: new Date().toISOString() }).eq("id", interview.id);
+      await (await agencyDb()).from("interviews").update({ invited_at: new Date().toISOString() }).eq("id", interview.id);
       await logActivity(supabase, candidateId, "interview_invite_sent", actor, { note: `Invite sent to ${invites.sent.join(", ")}` });
     }
   }
 
-  const fresh = await supabase.from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
+  const fresh = await (await agencyDb()).from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
   const shaped = shapeInterview(fresh.data);
   after(() => emitWebhook(auth.agencyId, "interview.scheduled", shaped));
   return NextResponse.json({ interview: shaped, invites }, { status: 201 });

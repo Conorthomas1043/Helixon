@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 export async function PATCH(request, { params }) {
   const auth = await requireCustomerContext();
@@ -17,7 +18,7 @@ export async function PATCH(request, { params }) {
 
   const { recruiterId } = await request.json();
 
-  const { data: before } = await supabase
+  const { data: before } = await (await agencyDb())
     .from("candidates")
     .select("recruiter_id")
     .eq("id", id)
@@ -42,7 +43,7 @@ export async function PATCH(request, { params }) {
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .update({ recruiter_id: recruiterId ?? null })
     .eq("id", id)

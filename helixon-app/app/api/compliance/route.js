@@ -6,6 +6,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { EXPIRING_DAYS, checkState, privacyNoticeStatus, toCheck } from "@/lib/compliance";
 import { sendPrivacyNotices } from "@/lib/compliance-email";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // The agency's compliance to-do list (/dashboard/compliance).
 //
@@ -23,16 +24,16 @@ export async function GET() {
   const horizon = new Date(Date.now() + EXPIRING_DAYS * 86400000).toISOString().slice(0, 10);
 
   const [checksRes, placedRes, rtwRes, noticeRes, refsRes] = await Promise.all([
-    supabase
+    (await agencyDb())
       .from("compliance_checks")
       .select("*, candidates(id, full_name, name, stage)")
       .eq("agency_id", agencyId)
       .or(`status.in.(pending,failed),expires_on.lte.${horizon},follow_up_on.lte.${horizon}`)
       .order("expires_on", { ascending: true, nullsFirst: false })
       .limit(500),
-    supabase.from("candidates").select("id, full_name, name, stage, jobs(title, client)").eq("agency_id", agencyId).in("stage", ["Offer", "Placed"]).limit(1000),
-    supabase.from("compliance_checks").select("candidate_id").eq("agency_id", agencyId).eq("kind", "right_to_work").eq("status", "verified").limit(5000),
-    supabase
+    (await agencyDb()).from("candidates").select("id, full_name, name, stage, jobs(title, client)").eq("agency_id", agencyId).in("stage", ["Offer", "Placed"]).limit(1000),
+    (await agencyDb()).from("compliance_checks").select("candidate_id").eq("agency_id", agencyId).eq("kind", "right_to_work").eq("status", "verified").limit(5000),
+    (await agencyDb())
       .from("candidates")
       .select("id, full_name, name, email, source, created_at, consent_given_at, consent_source, privacy_notice_sent_at")
       .eq("agency_id", agencyId)
@@ -41,7 +42,7 @@ export async function GET() {
       .is("pooled_from_id", null)
       .order("created_at", { ascending: true })
       .limit(500),
-    supabase
+    (await agencyDb())
       .from("candidate_references")
       .select("id, candidate_id, referee_name, referee_company, requested_at, expires_at, candidates(full_name, name)")
       .eq("agency_id", agencyId)
@@ -83,7 +84,7 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   const ids = [...new Set((Array.isArray(body.candidateIds) ? body.candidateIds : []).map(cleanUuid).filter(Boolean))].slice(0, 50);
   if (!ids.length) return NextResponse.json({ error: "Pick some candidates." }, { status: 400 });
-  const { data: candidates } = await supabase.from("candidates").select("id, full_name, name, email").eq("agency_id", auth.agencyId).in("id", ids);
+  const { data: candidates } = await (await agencyDb()).from("candidates").select("id, full_name, name, email").eq("agency_id", auth.agencyId).in("id", ids);
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const result = await sendPrivacyNotices({ agencyId: auth.agencyId, profile: auth.profile, actor, recruiterName: recruiterDisplayName(auth.profile), candidates: candidates ?? [] });
   return NextResponse.json(result);

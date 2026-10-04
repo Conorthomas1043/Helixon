@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { agencyDb } from "@/lib/agency-db";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -13,12 +14,12 @@ export async function GET(request, { params }) {
 
   // Confirm the job belongs to this agency before listing its candidates -
   // job_id alone isn't enough to trust, since it's just a path param.
-  const { data: job } = await supabase.from("jobs").select("id").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data: job } = await (await agencyDb()).from("jobs").select("id").eq("id", id).eq("agency_id", agencyId).maybeSingle();
   if (!job) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .select("id, full_name, name, processing_status, stage, match_score, recruiter_id, created_at")
     .eq("job_id", id)

@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { payrollRows, quickbooksInvoiceRows, xeroInvoiceRows } from "@/lib/accounting-export";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET ?format=xero|quickbooks|payroll&from=YYYY-MM-DD&to=YYYY-MM-DD
 // Invoices (by issue date, drafts and void ones left out) in Xero's or
@@ -24,7 +25,7 @@ export async function GET(request) {
 
   let rows;
   if (format === "xero" || format === "quickbooks") {
-    let q = supabase
+    let q = (await agencyDb())
       .from("invoices")
       .select("number, status, currency, issued_on, due_on, subtotal, vat_rate, vat_amount, total, bill_to, lines")
       .eq("agency_id", auth.agencyId)
@@ -37,7 +38,7 @@ export async function GET(request) {
     if (error) return NextResponse.json({ error: "Failed to load invoices." }, { status: 500 });
     rows = format === "xero" ? xeroInvoiceRows(data ?? []) : quickbooksInvoiceRows(data ?? []);
   } else if (format === "payroll") {
-    let q = supabase
+    let q = (await agencyDb())
       .from("timesheets")
       .select("week_starting, quantity, status, placements(candidate_name, client_name, rate_unit, pay_rate, charge_rate, currency)")
       .eq("agency_id", auth.agencyId)

@@ -8,6 +8,7 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { addDays, invoiceTotals, nextInvoiceNumber } from "@/lib/placements";
 import { normaliseInvoicing } from "@/lib/invoicing-settings";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { timesheetIds?, notes? } - raise an invoice for a placement.
 // Permanent: one line, the placement fee. Contract: a line per approved
@@ -21,16 +22,16 @@ export async function POST(request, { params }) {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const { data: p } = id
-    ? await supabase.from("placements").select("*, clients(name, address, payment_terms_days)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
+    ? await (await agencyDb()).from("placements").select("*, clients(name, address, payment_terms_days)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
     : { data: null };
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const body = await request.json().catch(() => ({}));
 
   const [{ data: agency }, { data: numbers }, { data: contact }] = await Promise.all([
     supabase.from("agencies").select("name, settings").eq("id", auth.agencyId).maybeSingle(),
-    supabase.from("invoices").select("number").eq("agency_id", auth.agencyId).limit(10000),
+    (await agencyDb()).from("invoices").select("number").eq("agency_id", auth.agencyId).limit(10000),
     p.client_id
-      ? supabase.from("client_contacts").select("name, email").eq("client_id", p.client_id).order("is_primary", { ascending: false }).limit(1).maybeSingle()
+      ? (await agencyDb()).from("client_contacts").select("name, email").eq("client_id", p.client_id).order("is_primary", { ascending: false }).limit(1).maybeSingle()
       : { data: null },
   ]);
   const settings = normaliseInvoicing(agency?.settings);
@@ -39,13 +40,13 @@ export async function POST(request, { params }) {
   let timesheetIds = [];
   if (p.kind === "permanent") {
     if (!p.fee_amount) return NextResponse.json({ error: "Add the fee (or salary and fee %) first." }, { status: 400 });
-    const { count } = await supabase.from("invoices").select("id", { count: "exact", head: true }).eq("placement_id", p.id).neq("status", "void");
+    const { count } = await (await agencyDb()).from("invoices").select("id", { count: "exact", head: true }).eq("placement_id", p.id).neq("status", "void");
     if (count) return NextResponse.json({ error: "This placement has already been invoiced - void that invoice to raise a new one." }, { status: 409 });
     const basis = p.salary && p.fee_percent ? ` (${p.fee_percent}% of ${Number(p.salary).toLocaleString("en-GB")} salary)` : "";
     lines = [{ description: `Permanent placement: ${p.candidate_name} as ${p.job_title || "role"}${p.start_date ? `, starting ${p.start_date}` : ""}${basis}`, quantity: 1, unitPrice: Number(p.fee_amount) }];
   } else {
     if (!p.charge_rate) return NextResponse.json({ error: "Add the charge rate first." }, { status: 400 });
-    let q = supabase.from("timesheets").select("id, week_starting, quantity").eq("placement_id", p.id).eq("status", "approved").order("week_starting");
+    let q = (await agencyDb()).from("timesheets").select("id, week_starting, quantity").eq("placement_id", p.id).eq("status", "approved").order("week_starting");
     const wanted = (Array.isArray(body.timesheetIds) ? body.timesheetIds : []).map(cleanUuid).filter(Boolean);
     if (wanted.length) q = q.in("id", wanted);
     const { data: sheets } = await q;
@@ -61,7 +62,7 @@ export async function POST(request, { params }) {
   const totals = invoiceTotals(lines, settings.vatRate);
   const today = new Date().toISOString().slice(0, 10);
   const terms = p.clients?.payment_terms_days ?? settings.paymentTermsDays;
-  const { data: invoice, error } = await supabase
+  const { data: invoice, error } = await (await agencyDb())
     .from("invoices")
     .insert({
       agency_id: auth.agencyId,
@@ -85,7 +86,7 @@ export async function POST(request, { params }) {
     .single();
   if (error) return NextResponse.json({ error: error.code === "23505" ? "Another invoice took that number - try again." : "Failed to raise the invoice." }, { status: 500 });
 
-  if (timesheetIds.length) await supabase.from("timesheets").update({ status: "invoiced", invoice_id: invoice.id }).in("id", timesheetIds);
+  if (timesheetIds.length) await (await agencyDb()).from("timesheets").update({ status: "invoiced", invoice_id: invoice.id }).in("id", timesheetIds);
   if (p.client_id) {
     await logClientActivity(auth.agencyId, p.client_id, "invoice_sent", recruiterDisplayName(auth.profile) || auth.userId, { note: `${invoice.number}: ${invoice.total}` });
   }

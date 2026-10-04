@@ -44,7 +44,7 @@ The rules:
 
 `lib/security/tenant-isolation.test.js` enforces rule 2 as a ratchet: it fails if any API file gains an unfiltered query on an agency table. Crons, webhooks, admin tools and token links are in its baseline because they legitimately work across agencies.
 
-The longer-term step is defence in depth: a per-request Supabase client carrying the member's Clerk JWT, and RLS policies of the form `agency_id = (auth.jwt() ->> 'agency_id')::uuid`, keeping the service-role key for crons and webhooks.
+A second, independent check sits in the database: customer API routes run their agency-table queries through `agencyDb()` (`lib/agency-db.js`). When `SUPABASE_AGENCY_RLS=1`, that client uses a short-lived JWT the server signs for the `agency_member` role with the member's `agency_id`, and the policies from migration `20261005000000_agency_member_rls` only show or accept that agency's rows. Browsers can't get such a token, so `anon` and `authenticated` still have no access through the REST API. `supabase/agency-rls.test.js` runs the migration on a real Postgres engine (PGlite) and checks the isolation. How to switch it on is in the runbook.
 
 ## CV screening pipeline
 

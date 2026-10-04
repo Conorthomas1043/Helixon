@@ -6,6 +6,7 @@ import { getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { providerFor } from "@/lib/integrations/providers";
 import { accountingConnection, syncInvoice } from "@/lib/integrations/accounting-sync";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST   send this invoice to the connected Xero / QuickBooks, or - if it's
 //        already there - check whether it's been paid
@@ -18,7 +19,7 @@ export async function POST(request, { params }) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
-  const { data: invoice } = id ? await supabase.from("invoices").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null };
+  const { data: invoice } = id ? await (await agencyDb()).from("invoices").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null };
   if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const conn = await accountingConnection(auth.agencyId);

@@ -8,6 +8,7 @@ import { candidateHidden } from "@/lib/permissions";
 import { findMentions } from "@/lib/mentions";
 import { notify } from "@/lib/notifications";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Team notes on a candidate. The text lives in candidate_notes.note - this
 // route used to write a `body` column that doesn't exist (and no
@@ -28,7 +29,7 @@ async function context(params) {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return { response: hidden };
   const { id } = await params;
-  const { data: candidate } = await supabase
+  const { data: candidate } = await (await agencyDb())
     .from("candidates")
     .select("id")
     .eq("id", id)
@@ -41,7 +42,7 @@ async function context(params) {
 // The caller's own note on this candidate, or an error response.
 async function ownNote(auth, candidateId, noteId) {
   if (!noteId) return { response: NextResponse.json({ error: "Which note?" }, { status: 400 }) };
-  const { data: note } = await supabase
+  const { data: note } = await (await agencyDb())
     .from("candidate_notes")
     .select("id, author_id")
     .eq("id", noteId)
@@ -67,7 +68,7 @@ export async function POST(request, { params }) {
   }
 
   const authorName = recruiterDisplayName(auth.profile) || auth.userId;
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidate_notes")
     .insert({ agency_id: auth.agencyId, candidate_id: id, author_id: auth.userId, author_name: authorName, note: noteBody })
     .select()
@@ -84,7 +85,7 @@ export async function POST(request, { params }) {
   if (noteBody.includes("@")) {
     const { data: team } = await supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", auth.agencyId);
     const members = (team ?? []).map((m) => ({ id: m.clerk_user_id, name: recruiterDisplayName(m) })).filter((m) => m.id && m.name);
-    const { data: who } = await supabase.from("candidates").select("full_name, name").eq("id", id).maybeSingle();
+    const { data: who } = await (await agencyDb()).from("candidates").select("full_name, name").eq("id", id).maybeSingle();
     for (const userId of findMentions(noteBody, members)) {
       if (userId === auth.userId) continue;
       await notify({
@@ -111,7 +112,7 @@ export async function PATCH(request, { params }) {
   if (typeof payload?.pinned === "boolean") {
     const noteId = cleanUuid(payload.noteId);
     if (!noteId) return NextResponse.json({ error: "Which note?" }, { status: 400 });
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("candidate_notes")
       .update(payload.pinned ? { pinned_at: new Date().toISOString(), pinned_by: auth.userId } : { pinned_at: null, pinned_by: null })
       .eq("id", noteId)
@@ -134,7 +135,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "A note can't be empty - delete it instead." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidate_notes")
     .update({ note: noteBody })
     .eq("id", own.note.id)
@@ -156,7 +157,7 @@ export async function DELETE(request, { params }) {
   const own = await ownNote(auth, id, noteId);
   if (own.response) return own.response;
 
-  const { error } = await supabase.from("candidate_notes").delete().eq("id", own.note.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("candidate_notes").delete().eq("id", own.note.id).eq("agency_id", auth.agencyId);
   if (error) {
     return NextResponse.json({ error: "Failed to delete note" }, { status: 500 });
   }

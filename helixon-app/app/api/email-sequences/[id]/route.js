@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH { name?, steps?, active? } / DELETE one sequence. Pausing
 // (active: false) holds every enrolment where it is; deleting removes the
@@ -25,7 +26,7 @@ export async function PATCH(request, { params }) {
   }
   if (body.active !== undefined) update.active = body.active === true;
   if (!id || Object.keys(update).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("email_sequences")
     .update({ ...update, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -42,7 +43,7 @@ export async function DELETE(request, { params }) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { error } = await supabase.from("email_sequences").delete().eq("id", id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("email_sequences").delete().eq("id", id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete the sequence." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

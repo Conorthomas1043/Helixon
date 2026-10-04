@@ -7,6 +7,7 @@ import { STAGE_LABELS } from "@/lib/stage-labels";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { normaliseCustomisation } from "@/lib/custom-fields";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH { stage?, subStage? } - move a candidate to a core stage and/or one
 // of the agency's sub-stages (lib/custom-fields.js). A sub-stage on its own
@@ -34,7 +35,7 @@ export async function PATCH(request, { params }) {
     stage = subStage.stage;
   }
 
-  const { data: before } = await supabase
+  const { data: before } = await (await agencyDb())
     .from("candidates")
     .select("stage")
     .eq("id", id)
@@ -54,9 +55,9 @@ export async function PATCH(request, { params }) {
   // still changes on a database without the sub_stage column yet.
   if (wantsSubStage || stage !== before.stage) update.sub_stage = subStage?.id ?? null;
 
-  let { data, error } = await supabase.from("candidates").update(update).eq("id", id).eq("agency_id", agencyId).select().single();
+  let { data, error } = await (await agencyDb()).from("candidates").update(update).eq("id", id).eq("agency_id", agencyId).select().single();
   if (error?.code === "42703" && !subStage) {
-    ({ data, error } = await supabase.from("candidates").update({ stage }).eq("id", id).eq("agency_id", agencyId).select().single());
+    ({ data, error } = await (await agencyDb()).from("candidates").update({ stage }).eq("id", id).eq("agency_id", agencyId).select().single());
   }
 
   if (error) {

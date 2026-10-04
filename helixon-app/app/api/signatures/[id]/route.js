@@ -5,6 +5,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { siteUrl } from "@/lib/mailer";
 import { toSignatureRequest } from "@/lib/signatures";
 import { logAudit } from "@/lib/agency-audit";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET              one request, with the full text and audit trail
 // PATCH { void }   withdraw one that hasn't been signed yet
@@ -12,7 +13,7 @@ import { logAudit } from "@/lib/agency-audit";
 async function load(agencyId, rawId) {
   const id = cleanUuid(rawId);
   if (!id) return null;
-  const { data } = await supabase.from("signature_requests").select("*").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("signature_requests").select("*").eq("id", id).eq("agency_id", agencyId).maybeSingle();
   return data;
 }
 
@@ -38,7 +39,7 @@ export async function PATCH(request, { params }) {
   const body = (await request.json().catch(() => null)) ?? {};
   if (body.void !== true) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   if (row.status !== "sent") return NextResponse.json({ error: "Only a document that hasn't been signed can be withdrawn." }, { status: 409 });
-  const { data, error } = await supabase.from("signature_requests").update({ status: "void" }).eq("id", row.id).eq("status", "sent").select("*").maybeSingle();
+  const { data, error } = await (await agencyDb()).from("signature_requests").update({ status: "void" }).eq("id", row.id).eq("status", "sent").select("*").maybeSingle();
   if (error || !data) return NextResponse.json({ error: "Couldn't withdraw it." }, { status: 500 });
   await logAudit({ auth, request, action: "signature.withdrawn", targetType: "signature", targetId: data.id, summary: `Withdrew "${data.title}"` });
   return NextResponse.json({ request: toSignatureRequest(data) });

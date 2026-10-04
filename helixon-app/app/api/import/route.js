@@ -8,6 +8,7 @@ import { getAgencyPrivacy, addMonths } from "@/lib/privacy-settings";
 import { linkedInHandle } from "@/lib/candidate-duplicates";
 import { ensureClient } from "@/lib/clients";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { type, mapping, rows: [[cells]], firstRow, options? } - one batch
 // (up to IMPORT_BATCH rows) of a CSV import from /dashboard/import. Every
@@ -56,12 +57,12 @@ async function importCandidates(items, { auth, actor, options }) {
   const handles = new Set(items.map((i) => linkedInHandle(i.record.linkedin)).filter(Boolean));
   const existingEmails = new Set();
   if (emails.length) {
-    const { data } = await supabase.from("candidates").select("email").eq("agency_id", auth.agencyId).in("email", emails);
+    const { data } = await (await agencyDb()).from("candidates").select("email").eq("agency_id", auth.agencyId).in("email", emails);
     for (const r of data ?? []) existingEmails.add(String(r.email).toLowerCase());
   }
   const existingHandles = new Set();
   if (handles.size) {
-    const { data } = await supabase.from("candidates").select("linkedin").eq("agency_id", auth.agencyId).not("linkedin", "is", null).ilike("linkedin", "%linkedin.com/in/%").limit(20000);
+    const { data } = await (await agencyDb()).from("candidates").select("linkedin").eq("agency_id", auth.agencyId).not("linkedin", "is", null).ilike("linkedin", "%linkedin.com/in/%").limit(20000);
     for (const r of data ?? []) {
       const h = linkedInHandle(r.linkedin);
       if (h && handles.has(h)) existingHandles.add(h);
@@ -116,7 +117,7 @@ async function importCandidates(items, { auth, actor, options }) {
   }
 
   if (!rows.length) return { created: 0, skipped };
-  const { data: created, error } = await supabase.from("candidates").insert(rows).select("id");
+  const { data: created, error } = await (await agencyDb()).from("candidates").insert(rows).select("id");
   if (error) {
     reportError("[import] Candidates insert failed:", error.message);
     return { created: 0, skipped, errors: [{ row: null, error: "This batch couldn't be saved." }] };
@@ -126,14 +127,14 @@ async function importCandidates(items, { auth, actor, options }) {
   const noteRows = ids
     .map((id, i) => (notes[i] ? { agency_id: auth.agencyId, candidate_id: id, note: notes[i], author_id: auth.userId, author_name: `${actor} (imported)` } : null))
     .filter(Boolean);
-  if (noteRows.length) await supabase.from("candidate_notes").insert(noteRows);
+  if (noteRows.length) await (await agencyDb()).from("candidate_notes").insert(noteRows);
   return { created: ids.length, skipped };
 }
 
 async function importClients(items, { auth }) {
-  const { data: existingClients } = await supabase.from("clients").select("id, name").eq("agency_id", auth.agencyId).limit(10000);
+  const { data: existingClients } = await (await agencyDb()).from("clients").select("id, name").eq("agency_id", auth.agencyId).limit(10000);
   const byName = new Map((existingClients ?? []).map((c) => [c.name.trim().toLowerCase(), c.id]));
-  const { data: existingContacts } = await supabase.from("client_contacts").select("client_id, email, name").eq("agency_id", auth.agencyId).limit(20000);
+  const { data: existingContacts } = await (await agencyDb()).from("client_contacts").select("client_id, email, name").eq("agency_id", auth.agencyId).limit(20000);
   const contactKeys = new Set((existingContacts ?? []).map((c) => `${c.client_id}:${(c.email || c.name || "").toLowerCase()}`));
 
   let created = 0;
@@ -144,7 +145,7 @@ async function importClients(items, { auth }) {
     const key = record.name.trim().toLowerCase();
     let clientId = byName.get(key);
     if (!clientId) {
-      const { data, error } = await supabase
+      const { data, error } = await (await agencyDb())
         .from("clients")
         .insert({
           agency_id: auth.agencyId,
@@ -171,7 +172,7 @@ async function importClients(items, { auth }) {
     if (record.contact_name || record.contact_email) {
       const ck = `${clientId}:${(record.contact_email || record.contact_name).toLowerCase()}`;
       if (contactKeys.has(ck)) continue;
-      const { error } = await supabase.from("client_contacts").insert({
+      const { error } = await (await agencyDb()).from("client_contacts").insert({
         agency_id: auth.agencyId,
         client_id: clientId,
         name: record.contact_name || record.contact_email,
@@ -191,7 +192,7 @@ async function importClients(items, { auth }) {
 }
 
 async function importJobs(items, { auth }) {
-  const { data: existing } = await supabase.from("jobs").select("title, client").eq("agency_id", auth.agencyId).limit(20000);
+  const { data: existing } = await (await agencyDb()).from("jobs").select("title, client").eq("agency_id", auth.agencyId).limit(20000);
   const keys = new Set((existing ?? []).map((j) => `${(j.title || "").toLowerCase()}|${(j.client || "").toLowerCase()}`));
   const clients = new Map();
   let created = 0;
@@ -209,7 +210,7 @@ async function importJobs(items, { auth }) {
       if (!clients.has(ck)) clients.set(ck, await ensureClient(auth.agencyId, record.client));
       client = clients.get(ck);
     }
-    const { error } = await supabase.from("jobs").insert({
+    const { error } = await (await agencyDb()).from("jobs").insert({
       agency_id: auth.agencyId,
       user_id: auth.userId,
       title: record.title,

@@ -7,6 +7,7 @@ import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { logActivity } from "@/lib/candidate-activity";
 import { logClientActivity } from "@/lib/clients";
 import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/signatures";
+import { agencyDb } from "@/lib/agency-db";
 
 // Documents sent for e-signature (lib/signatures.js).
 //
@@ -23,7 +24,7 @@ export async function GET(request) {
   const candidateId = cleanUuid(params.get("candidateId"));
   if (!clientId && !candidateId) return NextResponse.json({ error: "Which client or candidate?" }, { status: 400 });
 
-  let q = supabase.from("signature_requests").select("*").eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100);
+  let q = (await agencyDb()).from("signature_requests").select("*").eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100);
   if (clientId) q = q.eq("client_id", clientId);
   if (candidateId) q = q.eq("candidate_id", candidateId);
   const { data, error } = await q;
@@ -52,7 +53,7 @@ export async function POST(request) {
 
   const now = new Date();
   const send = body.send === true && fields.signerEmail;
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("signature_requests")
     .insert({
       agency_id: auth.agencyId,
@@ -101,7 +102,7 @@ export async function POST(request) {
       ].join("\n"),
     });
     emailError = res.error || null;
-    if (emailError) await supabase.from("signature_requests").update({ sent_at: null }).eq("id", data.id);
+    if (emailError) await (await agencyDb()).from("signature_requests").update({ sent_at: null }).eq("id", data.id);
   }
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;

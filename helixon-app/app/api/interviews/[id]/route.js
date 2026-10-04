@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews";
 import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
 import { sendInterviewInvites } from "@/lib/interview-invites";
+import { agencyDb } from "@/lib/agency-db";
 
 // One interview.
 //
@@ -24,7 +25,7 @@ export async function GET(request, { params }) {
   const { id } = await params;
   const interview = await loadInterview(auth.agencyId, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { data } = await supabase.from("interview_feedback").select("*").eq("interview_id", interview.id).order("created_at");
+  const { data } = await (await agencyDb()).from("interview_feedback").select("*").eq("interview_id", interview.id).order("created_at");
   return NextResponse.json({ interview: shapeInterview({ ...interview, interview_feedback: data ?? [] }, new Map(), { includeTokens: true }) });
 }
 
@@ -39,7 +40,7 @@ export async function PATCH(request, { params }) {
   const fields = cleanInterviewFields(body);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (fields.contact_id) {
-    const { data: c } = await supabase.from("client_contacts").select("id").eq("id", fields.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
+    const { data: c } = await (await agencyDb()).from("client_contacts").select("id").eq("id", fields.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
     if (!c) return NextResponse.json({ error: "That contact wasn't found." }, { status: 400 });
   }
   if (Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
@@ -50,7 +51,7 @@ export async function PATCH(request, { params }) {
   const update = { ...fields, updated_at: new Date().toISOString() };
   if (notify) update.ics_sequence = (interview.ics_sequence ?? 0) + 1;
 
-  const { error } = await supabase.from("interviews").update(update).eq("id", interview.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("interviews").update(update).eq("id", interview.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to update the interview." }, { status: 500 });
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
@@ -71,6 +72,6 @@ export async function PATCH(request, { params }) {
     invites = await sendInterviewInvites({ auth, interview: fresh, candidate: fresh.candidates, job: fresh.jobs, recipients, method: cancelling ? "CANCEL" : "UPDATE" });
   }
 
-  const { data } = await supabase.from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
+  const { data } = await (await agencyDb()).from("interviews").select(`${INTERVIEW_SELECT}, interview_feedback(*)`).eq("id", interview.id).single();
   return NextResponse.json({ interview: shapeInterview(data, new Map(), { includeTokens: true }), invites });
 }

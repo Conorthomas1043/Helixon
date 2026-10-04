@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanSearchTerm, likePattern, quoted } from "@/lib/candidate-search";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/search?q= - the search box in the nav (⌘K / Ctrl+K): candidates,
 // jobs, clients and client contacts matching the term, a few of each.
@@ -20,7 +21,7 @@ export async function GET(request) {
 
   const [candidates, jobs, clients, contacts] = await Promise.all([
     scopeCandidateQuery(
-      supabase
+      (await agencyDb())
         .from("candidates")
         .select("id, full_name, name, email, current_title, stage, jobs(title)")
         .eq("agency_id", auth.agencyId)
@@ -30,9 +31,9 @@ export async function GET(request) {
       access,
       auth
     ),
-    supabase.from("jobs").select("id, title, client, status").eq("agency_id", auth.agencyId).or(`title.ilike.${p},client.ilike.${p}`).order("created_at", { ascending: false }).limit(PER_KIND),
-    supabase.from("clients").select("id, name, status").eq("agency_id", auth.agencyId).ilike("name", likePattern(term)).order("name").limit(PER_KIND),
-    supabase.from("client_contacts").select("id, client_id, name, email, job_title, clients(name)").eq("agency_id", auth.agencyId).or(`name.ilike.${p},email.ilike.${p}`).limit(PER_KIND),
+    (await agencyDb()).from("jobs").select("id, title, client, status").eq("agency_id", auth.agencyId).or(`title.ilike.${p},client.ilike.${p}`).order("created_at", { ascending: false }).limit(PER_KIND),
+    (await agencyDb()).from("clients").select("id, name, status").eq("agency_id", auth.agencyId).ilike("name", likePattern(term)).order("name").limit(PER_KIND),
+    (await agencyDb()).from("client_contacts").select("id, client_id, name, email, job_title, clients(name)").eq("agency_id", auth.agencyId).or(`name.ilike.${p},email.ilike.${p}`).limit(PER_KIND),
   ]);
 
   const results = [

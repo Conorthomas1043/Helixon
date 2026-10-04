@@ -9,6 +9,7 @@ import { loadCandidate } from "@/lib/compliance-server";
 import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { refereeName, refereeEmail?, refereeCompany?, refereeTitle?,
 //        refereePhone?, relationship?, send? } - add a referee and, when
@@ -30,7 +31,7 @@ export async function POST(request, { params }) {
   const send = body.send !== false && Boolean(referee.referee_email);
   const now = new Date();
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidate_references")
     .insert({
       ...referee,
@@ -58,7 +59,7 @@ export async function POST(request, { params }) {
     });
     const res = await sendAgencyEmail({ agencyId: auth.agencyId, profile: auth.profile, to: data.referee_email, subject: mail.subject, text: mail.text });
     emailError = res.error || null;
-    if (emailError) await supabase.from("candidate_references").update({ requested_at: null }).eq("id", data.id);
+    if (emailError) await (await agencyDb()).from("candidate_references").update({ requested_at: null }).eq("id", data.id);
   }
   await logActivity(supabase, c.id, "reference_requested", actor, {
     note: `${data.referee_name}${data.referee_company ? `, ${data.referee_company}` : ""}${send && !emailError ? " (emailed)" : ""}`,

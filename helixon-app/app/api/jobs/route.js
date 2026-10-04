@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns, logClientActivity } from "@/lib/clients";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { agencyDb } from "@/lib/agency-db";
 
 // See app/api/candidates/route.js for why this was rewritten - Clerk auth
 // instead of the dead Supabase-Auth bearer-token check, and agency_id
@@ -15,7 +16,7 @@ export async function GET() {
   }
   const { agencyId } = auth;
 
-  const { data: jobs, error } = await supabase
+  const { data: jobs, error } = await (await agencyDb())
     .from("jobs")
     .select("*, candidates(id, processing_status, stage, match_score)")
     .eq("agency_id", agencyId)
@@ -73,7 +74,7 @@ export async function POST(request) {
   });
   if (clientCols.error) return NextResponse.json({ error: clientCols.error }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("jobs")
     .insert({
       agency_id: agencyId,

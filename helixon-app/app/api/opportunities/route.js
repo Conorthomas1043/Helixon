@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { loadClient, logClientActivity } from "@/lib/clients";
 import { cleanOpportunity, toOpportunity } from "@/lib/opportunities";
+import { agencyDb } from "@/lib/agency-db";
 
 // Business-development deals (lib/opportunities.js).
 //
@@ -17,7 +18,7 @@ export async function GET(request) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const clientId = cleanUuid(new URL(request.url).searchParams.get("clientId"));
 
-  let q = supabase
+  let q = (await agencyDb())
     .from("client_opportunities")
     .select("*, clients(name)")
     .eq("agency_id", auth.agencyId)
@@ -45,11 +46,11 @@ export async function POST(request) {
 
   const contactId = cleanUuid(body.contactId);
   if (contactId) {
-    const { data: contact } = await supabase.from("client_contacts").select("id").eq("id", contactId).eq("client_id", client.id).maybeSingle();
+    const { data: contact } = await (await agencyDb()).from("client_contacts").select("id").eq("id", contactId).eq("client_id", client.id).maybeSingle();
     if (!contact) return NextResponse.json({ error: "That contact isn't at this client." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("client_opportunities")
     .insert({
       ...fields,

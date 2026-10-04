@@ -9,6 +9,7 @@ import { getAgencyTags } from "@/lib/agency-tags";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET - everything the agency holds about one person, as a JSON file, for
 // a subject access or data portability request (UK GDPR Arts. 15 and 20).
@@ -36,7 +37,7 @@ export async function GET(request, { params }) {
   }
 
   const [candidates, scores, notes, activity, artifacts, feedbackRequests, shortlists, tags] = await Promise.all([
-    supabase
+    (await agencyDb())
       .from("candidates")
       .select(
         "id, full_name, name, email, phone, linkedin, location, current_title, current_company, years_experience, created_at, cv_filename, cv_text, extracted, " +
@@ -45,11 +46,11 @@ export async function GET(request, { params }) {
       )
       .eq("agency_id", auth.agencyId)
       .in("id", ids),
-    supabase.from("scores").select("id, candidate_id, created_at, match_score, recommendation, result, recruiter_feedback, jobs(title, client)").in("candidate_id", ids),
-    supabase.from("candidate_notes").select("candidate_id, created_at, author_name, note").eq("agency_id", auth.agencyId).in("candidate_id", ids),
+    (await agencyDb()).from("scores").select("id, candidate_id, created_at, match_score, recommendation, result, recruiter_feedback, jobs(title, client)").in("candidate_id", ids),
+    (await agencyDb()).from("candidate_notes").select("candidate_id, created_at, author_name, note").eq("agency_id", auth.agencyId).in("candidate_id", ids),
     supabase.from("candidate_activity").select("candidate_id, created_at, type, actor, meta").in("candidate_id", ids).order("created_at"),
-    supabase.from("artifacts").select("candidate_id, created_at, kind, content").eq("agency_id", auth.agencyId).in("candidate_id", ids),
-    supabase.from("feedback_requests").select("candidate_id, created_at, kind, recipient_label, rating, comment, tags, responded_at").eq("agency_id", auth.agencyId).in("candidate_id", ids),
+    (await agencyDb()).from("artifacts").select("candidate_id, created_at, kind, content").eq("agency_id", auth.agencyId).in("candidate_id", ids),
+    (await agencyDb()).from("feedback_requests").select("candidate_id, created_at, kind, recipient_label, rating, comment, tags, responded_at").eq("agency_id", auth.agencyId).in("candidate_id", ids),
     supabase.from("shortlist_candidates").select("candidate_id, created_at, note").in("candidate_id", ids),
     getAgencyTags(supabase, auth.agencyId).catch(() => []),
   ]);
@@ -68,31 +69,31 @@ export async function GET(request, { params }) {
   };
   const [extra, interviews, emails, enrollments, placements, checks, references, clientDecisions, signatures, extraDetails] = await Promise.all([
     optional(
-      supabase
+      (await agencyDb())
         .from("candidates")
         .select("id, sub_stage, custom_fields, consent_given_at, consent_source, privacy_notice_sent_at, applied_at, source_detail")
         .eq("agency_id", auth.agencyId)
         .in("id", ids)
     ),
     optional(
-      supabase
+      (await agencyDb())
         .from("interviews")
         .select("candidate_id, round, kind, starts_at, duration_minutes, location, interviewers, notes, status, outcome, jobs(title), interview_feedback(reviewer_name, overall_rating, recommendation, criteria, strengths, concerns, comments, submitted_at)")
         .eq("agency_id", auth.agencyId)
         .in("candidate_id", ids)
     ),
-    optional(supabase.from("email_messages").select("candidate_id, created_at, direction, from_email, to_email, subject, body_text").eq("agency_id", auth.agencyId).in("candidate_id", ids).order("created_at")),
-    optional(supabase.from("sequence_enrollments").select("candidate_id, created_at, status, stopped_reason, email_sequences(name)").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional((await agencyDb()).from("email_messages").select("candidate_id, created_at, direction, from_email, to_email, subject, body_text").eq("agency_id", auth.agencyId).in("candidate_id", ids).order("created_at")),
+    optional((await agencyDb()).from("sequence_enrollments").select("candidate_id, created_at, status, stopped_reason, email_sequences(name)").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
     optional(
-      supabase
+      (await agencyDb())
         .from("placements")
         .select("candidate_id, kind, status, job_title, client_name, offer_date, start_date, end_date, salary, rate_unit, pay_rate, currency, notes")
         .eq("agency_id", auth.agencyId)
         .in("candidate_id", ids)
     ),
-    optional(supabase.from("compliance_checks").select("candidate_id, kind, label, status, document_type, checked_on, expires_on, follow_up_on, notes, document_name, checked_by").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional((await agencyDb()).from("compliance_checks").select("candidate_id, kind, label, status, document_type, checked_on, expires_on, follow_up_on, notes, document_name, checked_by").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
     optional(
-      supabase
+      (await agencyDb())
         .from("candidate_references")
         .select("candidate_id, referee_name, referee_company, referee_title, relationship, status, answers, requested_at, received_at")
         .eq("agency_id", auth.agencyId)
@@ -101,8 +102,8 @@ export async function GET(request, { params }) {
     optional(supabase.from("shortlist_candidates").select("candidate_id, client_decision, client_comment, client_decided_at, client_decided_by").in("candidate_id", ids).not("client_decided_at", "is", null)),
     // Documents sent to them to sign, and what they told us on their
     // self-service link (migration 20261003010000).
-    optional(supabase.from("signature_requests").select("candidate_id, kind, title, body, status, sent_at, signed_at, signed_name, signed_ip, declined_reason").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
-    optional(supabase.from("candidates").select("id, notice_period, salary_expectation, available_from").eq("agency_id", auth.agencyId).in("id", ids)),
+    optional((await agencyDb()).from("signature_requests").select("candidate_id, kind, title, body, status, sent_at, signed_at, signed_name, signed_ip, declined_reason").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional((await agencyDb()).from("candidates").select("id, notice_period, salary_expectation, available_from").eq("agency_id", auth.agencyId).in("id", ids)),
   ]);
   const detailsById = new Map(extraDetails.map((e) => [e.id, e]));
   const extraById = new Map(extra.map((e) => [e.id, e]));

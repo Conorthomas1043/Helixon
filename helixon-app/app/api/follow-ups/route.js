@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { followUpItems, interviewFollowUpItems, sortFollowUps } from "@/lib/follow-ups";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET ?scope=mine|all&tz= - open follow-ups (lib/follow-ups.js): candidates'
 // next actions, talent-pool check-ins and this week's interviews, most
@@ -31,7 +32,7 @@ export async function GET(request) {
   const mine = params.get("scope") !== "all";
   const timeZone = validTimeZone(params.get("tz")) || "UTC";
 
-  let query = supabase
+  let query = (await agencyDb())
     .from("candidates")
     .select("id, full_name, name, recruiter_id, next_action, talent_pool_at, talent_pool_check_in, jobs(title)")
     .eq("agency_id", auth.agencyId)
@@ -44,7 +45,7 @@ export async function GET(request) {
   const now = new Date();
   const [{ data, error }, { data: interviews }] = await Promise.all([
     query,
-    supabase
+    (await agencyDb())
       .from("interviews")
       .select("id, candidate_id, round, status, starts_at, duration_minutes, created_by, candidates(full_name, name, recruiter_id), jobs(title)")
       .eq("agency_id", auth.agencyId)

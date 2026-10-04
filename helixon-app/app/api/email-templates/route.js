@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { MERGE_FIELDS } from "@/lib/email-merge";
 import { cleanTemplate, toTemplate } from "@/lib/email-templates";
 import { inboundDomain } from "@/lib/tracked-email";
+import { agencyDb } from "@/lib/agency-db";
 
 // The agency's email templates (lib/email-merge.js for merge fields).
 //
@@ -13,7 +14,7 @@ import { inboundDomain } from "@/lib/tracked-email";
 export async function GET() {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const { data, error } = await supabase.from("email_templates").select("*").eq("agency_id", auth.agencyId).order("name");
+  const { data, error } = await (await agencyDb()).from("email_templates").select("*").eq("agency_id", auth.agencyId).order("name");
   if (error) return NextResponse.json({ error: "Failed to load templates." }, { status: 500 });
   return NextResponse.json({
     templates: (data ?? []).map(toTemplate),
@@ -28,7 +29,7 @@ export async function POST(request) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const fields = cleanTemplate(await request.json().catch(() => ({})));
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("email_templates")
     .insert({ ...fields, agency_id: auth.agencyId, created_by: auth.userId })
     .select("*")

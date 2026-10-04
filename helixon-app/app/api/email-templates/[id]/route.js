@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { cleanTemplate, toTemplate } from "@/lib/email-templates";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH / DELETE one of the agency's email templates.
 
@@ -13,7 +14,7 @@ export async function PATCH(request, { params }) {
   const fields = cleanTemplate(await request.json().catch(() => ({})), { partial: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (!id || Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("email_templates")
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -30,7 +31,7 @@ export async function DELETE(request, { params }) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { error } = await supabase.from("email_templates").delete().eq("id", id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("email_templates").delete().eq("id", id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete the template." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

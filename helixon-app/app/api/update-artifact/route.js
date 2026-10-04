@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Records the text a recruiter finally sent after editing an AI-drafted email,
 // and whether they kept the draft largely as written (see draft-email).
@@ -27,7 +28,7 @@ export async function POST(request) {
   }
 
   // Fetch the original draft - scoped to the caller's agency.
-  const { data: artifact, error: fetchError } = await supabase
+  const { data: artifact, error: fetchError } = await (await agencyDb())
     .from("artifacts")
     .select("content")
     .eq("id", artifactId)
@@ -60,7 +61,7 @@ export async function POST(request) {
     rewrite_count: (artifact.content?.rewrite_count || 0) + 1,
   };
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await (await agencyDb())
     .from("artifacts")
     .update({ content: updated })
     .eq("id", artifactId)

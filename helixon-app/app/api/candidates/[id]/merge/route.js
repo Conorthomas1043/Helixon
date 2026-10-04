@@ -8,6 +8,7 @@ import { removeCandidateCvs } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { otherId } - the same person recorded twice.
 //
@@ -36,7 +37,7 @@ export async function POST(request, { params }) {
   const otherId = cleanUuid(body.otherId);
   if (!keepId || !otherId || keepId === otherId) return NextResponse.json({ error: "Pick a different candidate." }, { status: 400 });
 
-  const { data: rows } = await supabase.from("candidates").select(COLUMNS).eq("agency_id", auth.agencyId).in("id", [keepId, otherId]);
+  const { data: rows } = await (await agencyDb()).from("candidates").select(COLUMNS).eq("agency_id", auth.agencyId).in("id", [keepId, otherId]);
   const keep = rows?.find((r) => r.id === keepId);
   const other = rows?.find((r) => r.id === otherId);
   if (!keep || !other) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -60,7 +61,7 @@ export async function POST(request, { params }) {
   const keepRoot = poolRootId(keep);
   const otherRoot = poolRootId(other);
   if (keepRoot === otherRoot) return NextResponse.json({ ok: true, mode: "linked", already: true });
-  const { error } = await supabase
+  const { error } = await (await agencyDb())
     .from("candidates")
     .update({ pooled_from_id: keepRoot })
     .eq("agency_id", auth.agencyId)

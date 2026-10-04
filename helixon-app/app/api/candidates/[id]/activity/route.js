@@ -18,6 +18,7 @@ import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 const ACTIVITY_TYPES = new Set(["call_logged", "email_logged", "meeting_logged", "cv_sent_logged", "sms_logged", "whatsapp_logged"]);
 
@@ -38,7 +39,7 @@ export async function POST(request, { params }) {
   }
   const note = cleanText(body?.note, { max: 500 }) || null;
 
-  const { data: candidate } = await supabase
+  const { data: candidate } = await (await agencyDb())
     .from("candidates")
     .select("id")
     .eq("id", id)

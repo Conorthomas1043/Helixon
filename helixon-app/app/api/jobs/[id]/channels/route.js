@@ -10,11 +10,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 const CHANNEL_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 
 async function assertOwnsJob(agencyId, jobId) {
-  const { data } = await supabase.from("jobs").select("id").eq("id", jobId).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("jobs").select("id").eq("id", jobId).eq("agency_id", agencyId).maybeSingle();
   return !!data;
 }
 
@@ -30,7 +31,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("job_channels")
     .select("id, channel, clicks, spend, updated_at")
     .eq("job_id", id)
@@ -67,7 +68,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Clicks and spend must be non-negative numbers." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("job_channels")
     .upsert(
       {

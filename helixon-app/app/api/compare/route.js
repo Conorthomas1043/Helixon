@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/compare?ids=a,b,c&jobId=j
 //
@@ -62,7 +63,7 @@ export async function GET(request) {
 
   let candidates = [];
   if (ids.length) {
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("candidates")
       .select("id, full_name, name, current_title, current_company, location, stage, job_id, cv_file_url, extracted")
       .in("id", ids)
@@ -73,7 +74,7 @@ export async function GET(request) {
   }
 
   const { data: scoreRows, error: scoresError } = ids.length
-    ? await supabase
+    ? await (await agencyDb())
         .from("scores")
         .select("candidate_id, job_id, result, created_at")
         .in("candidate_id", candidates.map((c) => c.id))
@@ -92,7 +93,7 @@ export async function GET(request) {
 
   let job = null;
   if (jobId) {
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("jobs")
       .select("id, title, client, parsed")
       .eq("id", jobId)
@@ -139,7 +140,7 @@ export async function GET(request) {
   // The role's other scored candidates, for the "add a candidate" picker.
   let pool = [];
   if (jobId) {
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("candidates")
       .select("id, full_name, name, match_score, stage, current_title")
       .eq("agency_id", agencyId)
@@ -151,7 +152,7 @@ export async function GET(request) {
 
     const poolIds = (data || []).map((c) => c.id);
     const { data: poolScores } = poolIds.length
-      ? await supabase
+      ? await (await agencyDb())
           .from("scores")
           .select("candidate_id, result->blind_mode")
           .in("candidate_id", poolIds)

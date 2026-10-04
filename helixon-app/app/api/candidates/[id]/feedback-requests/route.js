@@ -24,6 +24,7 @@ import { agencyDisplayName } from "@/lib/agency-display";
 import { feedbackRequestEmail } from "@/lib/feedback-request-email";
 import { candidateHidden } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 const MAX_EMAILS_PER_HOUR = 40;
 
@@ -58,7 +59,7 @@ export async function GET(request, { params }) {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("feedback_requests")
     .select("id, kind, recipient_label, rating, comment, tags, token, created_at, responded_at")
     .eq("candidate_id", id)
@@ -129,7 +130,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "That email address doesn't look right." }, { status: 400 });
   }
 
-  const { data: candidate, error: candidateError } = await supabase
+  const { data: candidate, error: candidateError } = await (await agencyDb())
     .from("candidates")
     .select("id, job_id, full_name, name, jobs(title)")
     .eq("id", id)
@@ -144,7 +145,7 @@ export async function POST(request, { params }) {
   if (body?.requestId) {
     const requestId = cleanUuid(body.requestId);
     if (!requestId || !sendTo) return NextResponse.json({ error: "Which request, and who to?" }, { status: 400 });
-    const { data: row } = await supabase
+    const { data: row } = await (await agencyDb())
       .from("feedback_requests")
       .select("id, kind, recipient_label, rating, comment, tags, token, created_at, responded_at")
       .eq("id", requestId)
@@ -166,7 +167,7 @@ export async function POST(request, { params }) {
 
   const token = crypto.randomBytes(24).toString("hex");
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("feedback_requests")
     .insert({
       agency_id: agencyId,

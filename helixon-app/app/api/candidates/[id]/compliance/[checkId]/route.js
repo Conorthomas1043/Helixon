@@ -8,6 +8,7 @@ import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, toCheck } from "@/lib/complian
 import { complianceDocumentUrl, removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance-files";
 import { readCheckBody } from "@/lib/compliance-server";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // One compliance check.
 // GET     a one-minute download link for its document: { url }
@@ -20,7 +21,7 @@ async function load(auth, params) {
   const candidateId = cleanUuid(id);
   const cid = cleanUuid(checkId);
   if (!candidateId || !cid) return null;
-  const { data } = await supabase.from("compliance_checks").select("*").eq("id", cid).eq("candidate_id", candidateId).eq("agency_id", auth.agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("compliance_checks").select("*").eq("id", cid).eq("candidate_id", candidateId).eq("agency_id", auth.agencyId).maybeSingle();
   return data;
 }
 
@@ -63,7 +64,7 @@ export async function PATCH(request, { params }) {
   }
   if (!Object.keys(fields).length) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("compliance_checks")
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", check.id)
@@ -85,7 +86,7 @@ export async function DELETE(request, { params }) {
   if (hidden) return hidden;
   const check = await load(auth, params);
   if (!check) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { error } = await supabase.from("compliance_checks").delete().eq("id", check.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("compliance_checks").delete().eq("id", check.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete." }, { status: 500 });
   if (check.document_path) await removeComplianceDocuments([check.document_path]);
   return NextResponse.json({ ok: true });

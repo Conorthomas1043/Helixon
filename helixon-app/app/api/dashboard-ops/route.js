@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { buildOps } from "@/lib/dashboard-ops";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/dashboard-ops?scope=mine|team - the Overview's business view
 // (lib/dashboard-ops.js): open jobs, interviews this week, offers out,
@@ -29,14 +30,15 @@ async function rows(query, fallback) {
 export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const db = await agencyDb();
   const { agencyId, userId } = auth;
   const mine = new URL(request.url).searchParams.get("scope") === "mine";
   const now = Date.now();
   const soon = new Date(now + 31 * 86400000).toISOString().slice(0, 10);
 
-  const jobQuery = (cols) => supabase.from("jobs").select(cols).eq("agency_id", agencyId).eq("status", "open").limit(LIMIT);
+  const jobQuery = (cols) => db.from("jobs").select(cols).eq("agency_id", agencyId).eq("status", "open").limit(LIMIT);
   const placementQuery = (cols) =>
-    supabase
+    db
       .from("placements")
       .select(cols)
       .eq("agency_id", agencyId)
@@ -51,7 +53,7 @@ export async function GET(request) {
       () => jobQuery("id, title, client, status, user_id, created_at, candidates(stage)")
     ),
     rows(
-      supabase
+      db
         .from("interviews")
         .select("id, starts_at, status, round, kind, created_by, candidate_id, candidates(full_name, name, recruiter_id), jobs(title)")
         .eq("agency_id", agencyId)
@@ -62,10 +64,10 @@ export async function GET(request) {
         .limit(200)
     ),
     rows(placementQuery(`${placementCols}, splits`), () => placementQuery(placementCols)),
-    rows(supabase.from("invoices").select("id, number, status, total, currency, due_on, client_id, bill_to").eq("agency_id", agencyId).eq("status", "sent").limit(LIMIT)),
-    rows(supabase.from("timesheets").select("id, status, week_starting, placement_id, placements(candidate_name)").eq("agency_id", agencyId).eq("status", "submitted").limit(500)),
+    rows(db.from("invoices").select("id, number, status, total, currency, due_on, client_id, bill_to").eq("agency_id", agencyId).eq("status", "sent").limit(LIMIT)),
+    rows(db.from("timesheets").select("id, status, week_starting, placement_id, placements(candidate_name)").eq("agency_id", agencyId).eq("status", "submitted").limit(500)),
     rows(
-      supabase
+      db
         .from("compliance_checks")
         .select("id, kind, label, status, expires_on, candidate_id, candidates(full_name, name)")
         .eq("agency_id", agencyId)
@@ -74,13 +76,13 @@ export async function GET(request) {
         .neq("status", "failed")
         .limit(500)
     ),
-    rows(supabase.from("clients").select("id, name, owner_id, next_action").eq("agency_id", agencyId).not("next_action", "is", null).limit(2000)),
+    rows(db.from("clients").select("id, name, owner_id, next_action").eq("agency_id", agencyId).not("next_action", "is", null).limit(2000)),
   ]);
 
   // Only the latest check of each kind per candidate matters - a renewed
   // right-to-work replaces the one that's expiring.
   const { data: renewals } = checks.length
-    ? await supabase
+    ? await db
         .from("compliance_checks")
         .select("candidate_id, kind, expires_on")
         .eq("agency_id", agencyId)

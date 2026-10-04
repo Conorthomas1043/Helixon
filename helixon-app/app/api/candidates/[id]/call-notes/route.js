@@ -9,6 +9,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/permissions";
 import { CALL_NOTES_SCHEMA, MAX_NOTES, SYSTEM_PROMPT, buildPrompt, cleanCallNotes, noteText } from "@/lib/call-notes";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { notes, kind?: "call" | "meeting", save?: true }
 // Rough call notes or a transcript in, a tidy summary out (lib/call-notes.js):
@@ -27,7 +28,7 @@ export async function POST(request, { params }) {
   if (hidden) return hidden;
   const id = cleanUuid((await params).id);
   const { data: candidate } = id
-    ? await supabase.from("candidates").select("id, full_name, name, jobs(title)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
+    ? await (await agencyDb()).from("candidates").select("id, full_name, name, jobs(title)").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()
     : { data: null };
   if (!candidate) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -80,7 +81,7 @@ export async function POST(request, { params }) {
 
   if (body.save === true) {
     const author = recruiterDisplayName(auth.profile) || auth.userId;
-    const { error } = await supabase
+    const { error } = await (await agencyDb())
       .from("candidate_notes")
       .insert({ agency_id: auth.agencyId, candidate_id: candidate.id, author_id: auth.userId, author_name: author, note: noteText(parsed, kind) });
     if (error) return NextResponse.json({ error: "Summarised, but the note couldn't be saved." }, { status: 500 });

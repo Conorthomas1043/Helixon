@@ -9,6 +9,7 @@ import { eraseCandidates } from "@/lib/candidate-erasure";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
+import { agencyDb } from "@/lib/agency-db";
 
 // POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
@@ -23,6 +24,7 @@ export async function POST(request) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const db = await agencyDb();
   const { agencyId, userId, profile } = auth;
   const actor = recruiterDisplayName(profile) || userId;
 
@@ -40,7 +42,7 @@ export async function POST(request) {
     const access = await getAccess(auth);
     let deletable = ids;
     if (!access.seesAllCandidates) {
-      const { data: visible } = await scopeCandidateQuery(supabase.from("candidates").select("id").eq("agency_id", agencyId).in("id", ids), access, auth);
+      const { data: visible } = await scopeCandidateQuery(db.from("candidates").select("id").eq("agency_id", agencyId).in("id", ids), access, auth);
       deletable = (visible || []).map((r) => r.id);
     }
     const { erased, failedStep } = await eraseCandidates(supabase, agencyId, deletable);
@@ -57,7 +59,7 @@ export async function POST(request) {
   }
 
   const { data: rows, error: lookupError } = await scopeCandidateQuery(
-    supabase.from("candidates").select("id, stage, tags, pooled_from_id").eq("agency_id", agencyId).in("id", ids),
+    db.from("candidates").select("id, stage, tags, pooled_from_id").eq("agency_id", agencyId).in("id", ids),
     await getAccess(auth),
     auth
   );
@@ -73,7 +75,7 @@ export async function POST(request) {
     }
     const moving = (rows || []).filter((r) => r.stage !== stage);
     if (moving.length) {
-      const { error } = await supabase
+      const { error } = await db
         .from("candidates")
         .update({ stage, last_activity_at: now })
         .eq("agency_id", agencyId)
@@ -99,7 +101,7 @@ export async function POST(request) {
     for (let i = 0; i < tagging.length; i += 20) {
       const results = await Promise.all(
         tagging.slice(i, i + 20).map((r) =>
-          supabase
+          db
             .from("candidates")
             .update({ tags: [...(r.tags ?? []), tag.id], last_activity_at: now })
             .eq("id", r.id)
@@ -123,7 +125,7 @@ export async function POST(request) {
     const adding = body.action === "pool";
     const roots = [...new Set((rows || []).map((r) => r.pooled_from_id || r.id))];
     if (roots.length) {
-      let query = supabase
+      let query = db
         .from("candidates")
         .update(
           adding

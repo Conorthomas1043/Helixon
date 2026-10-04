@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET - the emails sent to and received from this candidate through
 // Helixon (email_messages), oldest first, and any sequences they're in.
@@ -14,18 +15,18 @@ export async function GET(request, { params }) {
   if (hidden) return hidden;
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { data: candidate } = await supabase.from("candidates").select("id").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
+  const { data: candidate } = await (await agencyDb()).from("candidates").select("id").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
   if (!candidate) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const [{ data: messages }, { data: enrollments }] = await Promise.all([
-    supabase
+    (await agencyDb())
       .from("email_messages")
       .select("id, direction, from_email, to_email, subject, body_text, created_at, enrollment_id")
       .eq("candidate_id", id)
       .eq("agency_id", auth.agencyId)
       .order("created_at", { ascending: true })
       .limit(200),
-    supabase
+    (await agencyDb())
       .from("sequence_enrollments")
       .select("id, status, next_step, next_send_at, stopped_reason, created_at, email_sequences(id, name, steps)")
       .eq("candidate_id", id)

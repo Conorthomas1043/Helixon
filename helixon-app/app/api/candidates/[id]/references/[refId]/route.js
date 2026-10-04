@@ -8,6 +8,7 @@ import { toReference } from "@/lib/compliance";
 import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // One reference.
 // GET     { reference, link } - the link, to copy and send yourself
@@ -21,7 +22,7 @@ async function load(auth, params) {
   const candidateId = cleanUuid(id);
   const rid = cleanUuid(refId);
   if (!candidateId || !rid) return null;
-  const { data } = await supabase
+  const { data } = await (await agencyDb())
     .from("candidate_references")
     .select("*, candidates(full_name, name)")
     .eq("id", rid)
@@ -81,7 +82,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from("candidate_references").update(update).eq("id", ref.id).eq("agency_id", auth.agencyId).select("*").single();
+  const { data, error } = await (await agencyDb()).from("candidate_references").update(update).eq("id", ref.id).eq("agency_id", auth.agencyId).select("*").single();
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logActivity(supabase, ref.candidate_id, body.action === "resend" ? "reference_requested" : "reference_received", actor, { note });
   return NextResponse.json({ reference: toReference(data) });
@@ -94,6 +95,6 @@ export async function DELETE(request, { params }) {
   if (hidden) return hidden;
   const ref = await load(auth, params);
   if (!ref) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await supabase.from("candidate_references").delete().eq("id", ref.id).eq("agency_id", auth.agencyId);
+  await (await agencyDb()).from("candidate_references").delete().eq("id", ref.id).eq("agency_id", auth.agencyId);
   return NextResponse.json({ ok: true });
 }

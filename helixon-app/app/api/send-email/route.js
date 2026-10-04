@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidate-activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Sends real email through Resend, so cap how many one account can fire off
 // even though each draft can only be sent once.
@@ -93,7 +94,7 @@ export async function POST(request) {
     const {
       data: artifact,
       error: artifactError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("artifacts")
       .select("*")
       .eq("id", artifactId)
@@ -245,7 +246,7 @@ export async function POST(request) {
       );
     }
 
-    await supabase
+    await (await agencyDb())
       .from("artifacts")
       .update({
         content: {

@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanOffices, normaliseOffices } from "@/lib/offices";
 import { logAudit } from "@/lib/agency-audit";
+import { agencyDb } from "@/lib/agency-db";
 
 // Offices or brands (lib/offices.js).
 // GET  { offices, memberOffices, canManage }
@@ -38,7 +39,7 @@ export async function PUT(request) {
 
   const kept = new Set(cleaned.offices.map((o) => o.id));
   const removed = before.filter((o) => !kept.has(o.id)).map((o) => o.id);
-  if (removed.length) await supabase.from("jobs").update({ office_id: null }).eq("agency_id", auth.agencyId).in("office_id", removed);
+  if (removed.length) await (await agencyDb()).from("jobs").update({ office_id: null }).eq("agency_id", auth.agencyId).in("office_id", removed);
   await logAudit({ auth, request, action: "settings.offices", summary: `Offices: ${cleaned.offices.map((o) => o.name).join(", ") || "none"}` });
   return NextResponse.json({ ...cleaned, canManage: true });
 }

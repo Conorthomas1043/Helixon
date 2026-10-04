@@ -5,6 +5,7 @@ import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidate-query";
 import { distanceMiles } from "@/lib/geocode";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // Rebuilt against Clerk auth and scoped to the caller's agency_id - the
 // previous version authenticated via a Supabase-Auth bearer token nothing
@@ -30,6 +31,7 @@ export async function GET(request) {
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+  const db = await agencyDb();
   const { agencyId } = auth;
 
   const params = new URL(request.url).searchParams;
@@ -55,7 +57,7 @@ export async function GET(request) {
   // column), just without distances and sub-stages.
   let withGeo = true;
   const build = (broadSearch) => {
-    let query = supabase
+    let query = db
       .from("candidates")
       .select(withGeo ? `${COLUMNS}, lat, lng, sub_stage` : COLUMNS, { count: "exact" })
       .eq("agency_id", agencyId);
@@ -88,7 +90,7 @@ export async function GET(request) {
   const rootIds = [...new Set((data ?? []).map((c) => c.pooled_from_id).filter(Boolean))];
   const pooledRoots = new Set();
   if (rootIds.length) {
-    const { data: roots } = await supabase
+    const { data: roots } = await db
       .from("candidates")
       .select("id")
       .eq("agency_id", agencyId)

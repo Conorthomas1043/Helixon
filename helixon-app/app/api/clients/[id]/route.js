@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // One client (lib/clients.js).
 //
@@ -19,15 +20,15 @@ export async function GET(request, { params }) {
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const [{ data: contacts }, { data: jobs }, { data: activity }, { data: invoices }] = await Promise.all([
-    supabase.from("client_contacts").select("*").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("is_primary", { ascending: false }).order("name"),
-    supabase
+    (await agencyDb()).from("client_contacts").select("*").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("is_primary", { ascending: false }).order("name"),
+    (await agencyDb())
       .from("jobs")
       .select("id, title, status, location, salary_range, created_at, contact_id, candidates(id, full_name, name, stage, match_score, placement_fee, last_activity_at)")
       .eq("agency_id", auth.agencyId)
       .eq("client_id", client.id)
       .order("created_at", { ascending: false }),
-    supabase.from("client_activity").select("id, type, actor, meta, created_at").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100),
-    supabase
+    (await agencyDb()).from("client_activity").select("id, type, actor, meta, created_at").eq("client_id", client.id).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100),
+    (await agencyDb())
       .from("invoices")
       .select("id, number, status, total, currency, issued_on, due_on, paid_on")
       .eq("client_id", client.id)
@@ -84,7 +85,7 @@ export async function PATCH(request, { params }) {
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("clients")
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", client.id)
@@ -96,7 +97,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Failed to update client." }, { status: 500 });
   }
   if (fields.name && fields.name !== client.name) {
-    await supabase.from("jobs").update({ client: fields.name }).eq("client_id", client.id).eq("agency_id", auth.agencyId);
+    await (await agencyDb()).from("jobs").update({ client: fields.name }).eq("client_id", client.id).eq("agency_id", auth.agencyId);
   }
   await logClientActivity(auth.agencyId, client.id, "client_updated", recruiterDisplayName(auth.profile) || auth.userId, {
     fields: Object.keys(fields),
@@ -111,11 +112,11 @@ export async function DELETE(request, { params }) {
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { count } = await supabase.from("jobs").select("id", { count: "exact", head: true }).eq("client_id", client.id).eq("agency_id", auth.agencyId);
+  const { count } = await (await agencyDb()).from("jobs").select("id", { count: "exact", head: true }).eq("client_id", client.id).eq("agency_id", auth.agencyId);
   if (count) {
     return NextResponse.json({ error: "This client has jobs, so it can't be deleted. Mark it inactive instead." }, { status: 409 });
   }
-  const { error } = await supabase.from("clients").delete().eq("id", client.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("clients").delete().eq("id", client.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete client." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

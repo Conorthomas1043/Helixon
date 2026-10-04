@@ -7,6 +7,7 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { poolRootId } from "@/lib/rescreen";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // Save someone to the agency's talent pool for future roles, or take them
 // out. The pool holds one entry per person: the flag goes on their first
@@ -49,7 +50,7 @@ async function load(params) {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return { response: hidden };
   const { id } = await params;
-  const { data: candidate } = await supabase
+  const { data: candidate } = await (await agencyDb())
     .from("candidates")
     .select("id, pooled_from_id")
     .eq("id", cleanUuid(id) || "")
@@ -67,7 +68,7 @@ export async function POST(request, { params }) {
   const note = cleanText(body?.note, { max: 500 }) || null;
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .update({ talent_pool_at: new Date().toISOString(), talent_pool_by: actor, talent_pool_note: note, talent_pool_expires_at: await expiryFor(auth.agencyId) })
     .eq("id", rootId)
@@ -109,7 +110,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .update(update)
     .eq("id", rootId)
@@ -131,7 +132,7 @@ export async function DELETE(request, { params }) {
   if (ctx.response) return ctx.response;
   const { auth, id, rootId } = ctx;
 
-  const { error } = await supabase
+  const { error } = await (await agencyDb())
     .from("candidates")
     .update({ talent_pool_at: null, talent_pool_by: null, talent_pool_note: null, talent_pool_status: null, talent_pool_check_in: null, talent_pool_expires_at: null })
     .eq("id", rootId)

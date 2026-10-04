@@ -5,6 +5,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { candidateHaystack, quickFit } from "@/lib/talent-pool-match";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET ?jobId= - the agency's talent pool: everyone saved for future roles
 // (app/api/candidates/[id]/talent-pool), with their availability, check-in
@@ -52,7 +53,7 @@ export async function GET(request) {
 
   const JOB_COLUMNS = "id, title, client, status, created_at, required_skills, preferred_skills, min_years_experience, parsed";
   const [{ data: openJobRows, error: jobsError }, { data: selected }] = await Promise.all([
-    supabase
+    (await agencyDb())
       .from("jobs")
       .select(JOB_COLUMNS)
       .eq("agency_id", agencyId)
@@ -60,7 +61,7 @@ export async function GET(request) {
       .order("created_at", { ascending: false })
       .limit(MAX_OPEN_JOBS),
     jobId
-      ? supabase.from("jobs").select(JOB_COLUMNS).eq("id", jobId).eq("agency_id", agencyId).maybeSingle()
+      ? (await agencyDb()).from("jobs").select(JOB_COLUMNS).eq("id", jobId).eq("agency_id", agencyId).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
   if (jobsError) {
@@ -73,7 +74,7 @@ export async function GET(request) {
   const access = await getAccess(auth);
   const rows = [];
   for (let from = 0; from < MAX_POOL; from += PAGE) {
-    const { data, error } = await scopeCandidateQuery(supabase
+    const { data, error } = await scopeCandidateQuery((await agencyDb())
       .from("candidates")
       .select(
         "id, full_name, name, current_title, current_company, location, years_experience, job_id, match_score, stage, cv_text, " +
@@ -96,7 +97,7 @@ export async function GET(request) {
   // re-screened from it.
   const linked = [];
   for (const ids of chunks(rows.map((r) => r.id))) {
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("candidates")
       .select("id, pooled_from_id, job_id, match_score, stage")
       .eq("agency_id", agencyId)
@@ -110,7 +111,7 @@ export async function GET(request) {
   const jobTitles = new Map([...(openJobRows || []), ...(selected ? [selected] : [])].map((j) => [j.id, j.title]));
   const missingTitles = [...new Set([...rows, ...linked].map((r) => r.job_id).filter((id) => id && !jobTitles.has(id)))];
   for (const ids of chunks(missingTitles)) {
-    const { data } = await supabase.from("jobs").select("id, title").eq("agency_id", agencyId).in("id", ids);
+    const { data } = await (await agencyDb()).from("jobs").select("id, title").eq("agency_id", agencyId).in("id", ids);
     for (const j of data || []) jobTitles.set(j.id, j.title);
   }
 

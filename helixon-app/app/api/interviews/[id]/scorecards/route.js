@@ -8,6 +8,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, formatInterviewTime, toScorecard } from "@/lib/interviews";
 import { loadInterview } from "@/lib/interview-access";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
+import { agencyDb } from "@/lib/agency-db";
 
 // Scorecards on an interview (lib/interviews.js).
 //
@@ -35,7 +36,7 @@ export async function POST(request, { params }) {
   if (body.mode === "submit") {
     const card = cleanScorecard(body, DEFAULT_CRITERIA);
     if (card.error) return NextResponse.json({ error: card.error }, { status: 400 });
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("interview_feedback")
       .insert({ ...card, reviewer_name: card.reviewer_name || actor, agency_id: auth.agencyId, interview_id: interview.id, submitted_at: new Date().toISOString(), created_by: auth.userId })
       .select("*")
@@ -51,7 +52,7 @@ export async function POST(request, { params }) {
     const reviewer = cleanReviewer(body);
     if (reviewer.error) return NextResponse.json({ error: reviewer.error }, { status: 400 });
     const token = crypto.randomBytes(24).toString("hex");
-    const { data, error } = await supabase
+    const { data, error } = await (await agencyDb())
       .from("interview_feedback")
       .insert({ ...reviewer, agency_id: auth.agencyId, interview_id: interview.id, token, criteria: DEFAULT_CRITERIA.map((name) => ({ name, rating: null, comment: null })), created_by: auth.userId })
       .select("*")
@@ -98,7 +99,7 @@ export async function DELETE(request, { params }) {
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const scorecardId = cleanUuid(new URL(request.url).searchParams.get("scorecardId"));
   if (!scorecardId) return NextResponse.json({ error: "Which scorecard?" }, { status: 400 });
-  const { error } = await supabase.from("interview_feedback").delete().eq("id", scorecardId).eq("interview_id", interview.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("interview_feedback").delete().eq("id", scorecardId).eq("interview_id", interview.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to remove it." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

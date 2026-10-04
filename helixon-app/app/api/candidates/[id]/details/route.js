@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { candidateHidden, getAccess } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 const REJECTION_REASON_VALUES = new Set([
@@ -100,7 +101,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidates")
     .update(update)
     .eq("id", id)

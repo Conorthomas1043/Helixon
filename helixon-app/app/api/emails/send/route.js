@@ -8,6 +8,7 @@ import { mergeContext, renderTemplate } from "@/lib/email-merge";
 import { loadEmailTargets } from "@/lib/email-targets";
 import { agencyFromName, mailConfigured, senderEmail } from "@/lib/mailer";
 import { sendTrackedEmail } from "@/lib/tracked-email";
+import { agencyDb } from "@/lib/agency-db";
 
 // Email one or many candidates, each with the merge fields filled in for
 // them (lib/email-merge.js). Every email is sent separately - nobody sees
@@ -81,8 +82,8 @@ export async function POST(request) {
     (res.error ? failed : sent).push(r.candidateId);
   }
   if (templateId && sent.length) {
-    const { data: t } = await supabase.from("email_templates").select("uses").eq("id", templateId).eq("agency_id", auth.agencyId).maybeSingle();
-    if (t) await supabase.from("email_templates").update({ uses: (t.uses ?? 0) + sent.length }).eq("id", templateId).eq("agency_id", auth.agencyId);
+    const { data: t } = await (await agencyDb()).from("email_templates").select("uses").eq("id", templateId).eq("agency_id", auth.agencyId).maybeSingle();
+    if (t) await (await agencyDb()).from("email_templates").update({ uses: (t.uses ?? 0) + sent.length }).eq("id", templateId).eq("agency_id", auth.agencyId);
   }
   return NextResponse.json({
     sent: sent.length,

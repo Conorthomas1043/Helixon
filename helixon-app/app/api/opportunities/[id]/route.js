@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logClientActivity } from "@/lib/clients";
 import { OPPORTUNITY_STAGES, cleanOpportunity, toOpportunity } from "@/lib/opportunities";
+import { agencyDb } from "@/lib/agency-db";
 
 // PATCH { title?, stage?, value?, probability?, expectedClose?, ownerId?,
 //         notes?, lostReason?, jobId? }   update a deal
@@ -13,7 +14,7 @@ import { OPPORTUNITY_STAGES, cleanOpportunity, toOpportunity } from "@/lib/oppor
 async function load(agencyId, rawId) {
   const id = cleanUuid(rawId);
   if (!id) return null;
-  const { data } = await supabase.from("client_opportunities").select("*").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("client_opportunities").select("*").eq("id", id).eq("agency_id", agencyId).maybeSingle();
   return data;
 }
 
@@ -32,7 +33,7 @@ export async function PATCH(request, { params }) {
   if (body.jobId !== undefined) {
     const jobId = cleanUuid(body.jobId);
     if (jobId) {
-      const { data: job } = await supabase.from("jobs").select("id").eq("id", jobId).eq("agency_id", auth.agencyId).maybeSingle();
+      const { data: job } = await (await agencyDb()).from("jobs").select("id").eq("id", jobId).eq("agency_id", auth.agencyId).maybeSingle();
       if (!job) return NextResponse.json({ error: "Unknown job." }, { status: 400 });
     }
     update.job_id = jobId;
@@ -43,7 +44,7 @@ export async function PATCH(request, { params }) {
   if (closing) update.closed_at = update.stage === "won" || update.stage === "lost" ? new Date().toISOString() : null;
   update.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("client_opportunities")
     .update(update)
     .eq("id", current.id)
@@ -66,7 +67,7 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
   const current = await load(auth.agencyId, id);
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { error } = await supabase.from("client_opportunities").delete().eq("id", current.id).eq("agency_id", auth.agencyId);
+  const { error } = await (await agencyDb()).from("client_opportunities").delete().eq("id", current.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to delete the deal." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

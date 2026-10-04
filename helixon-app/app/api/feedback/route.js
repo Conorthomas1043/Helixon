@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Thumbs up/down on an analysis (see the feedback buttons in app/analyse).
 //
@@ -45,7 +46,7 @@ export async function POST(request) {
   let scoreId = cleanUuid(body?.scoreId);
   let expectedBand = BANDS.has(body?.expectedBand) ? body.expectedBand : null;
   if (scoreId) {
-    const { data: score } = await supabase
+    const { data: score } = await (await agencyDb())
       .from("scores")
       .select("id, recommendation")
       .eq("id", scoreId)

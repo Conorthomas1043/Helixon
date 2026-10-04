@@ -5,6 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { candidateCvUrl } from "@/lib/candidate-files";
 import { candidateHidden } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/candidates/[id]/cv
 //   ?format=text        -> { text } - the extracted CV text (every analysed
@@ -32,7 +33,7 @@ export async function GET(request, { params }) {
   const format = url.searchParams.get("format");
   const download = url.searchParams.get("download") === "1";
 
-  const { data: candidate, error } = await supabase
+  const { data: candidate, error } = await (await agencyDb())
     .from("candidates")
     .select("id, cv_file_url, cv_filename, cv_text")
     .eq("id", id)

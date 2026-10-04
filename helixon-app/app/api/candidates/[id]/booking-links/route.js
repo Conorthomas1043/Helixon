@@ -9,6 +9,7 @@ import { newToken } from "@/lib/signatures";
 import { cleanBookingRequest, openSlots } from "@/lib/interview-booking";
 import { formatInterviewTime } from "@/lib/interviews";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // Interview booking links for one candidate (lib/interview-booking.js).
 // GET                    the candidate's open and recent links
@@ -20,7 +21,7 @@ import { candidateHidden } from "@/lib/permissions";
 async function loadCandidate(agencyId, rawId) {
   const id = cleanUuid(rawId);
   if (!id) return null;
-  const { data } = await supabase.from("candidates").select("id, full_name, name, email, job_id, jobs(title, contact_id)").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("candidates").select("id, full_name, name, email, job_id, jobs(title, contact_id)").eq("id", id).eq("agency_id", agencyId).maybeSingle();
   return data;
 }
 
@@ -45,7 +46,7 @@ export async function GET(request, { params }) {
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { data, error } = await supabase.from("interview_booking_links").select("*").eq("candidate_id", c.id).order("created_at", { ascending: false }).limit(10);
+  const { data, error } = await (await agencyDb()).from("interview_booking_links").select("*").eq("candidate_id", c.id).order("created_at", { ascending: false }).limit(10);
   if (error) return NextResponse.json({ links: [], unavailable: true });
   return NextResponse.json({ links: (data ?? []).map(toLink) });
 }
@@ -61,11 +62,11 @@ export async function POST(request, { params }) {
   const offer = cleanBookingRequest(body);
   if (offer.error) return NextResponse.json({ error: offer.error }, { status: 400 });
   if (offer.contact_id) {
-    const { data: contact } = await supabase.from("client_contacts").select("id").eq("id", offer.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
+    const { data: contact } = await (await agencyDb()).from("client_contacts").select("id").eq("id", offer.contact_id).eq("agency_id", auth.agencyId).maybeSingle();
     if (!contact) return NextResponse.json({ error: "That contact wasn't found." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("interview_booking_links")
     .insert({
       ...offer,
@@ -124,6 +125,6 @@ export async function DELETE(request, { params }) {
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const linkId = cleanUuid(new URL(request.url).searchParams.get("linkId"));
   if (!linkId) return NextResponse.json({ error: "Which link?" }, { status: 400 });
-  await supabase.from("interview_booking_links").update({ status: "cancelled" }).eq("id", linkId).eq("candidate_id", c.id).eq("status", "open");
+  await (await agencyDb()).from("interview_booking_links").update({ status: "cancelled" }).eq("id", linkId).eq("candidate_id", c.id).eq("status", "open");
   return NextResponse.json({ ok: true });
 }

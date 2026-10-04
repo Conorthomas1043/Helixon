@@ -7,6 +7,7 @@ import { agencyDisplayName } from "@/lib/agency-display";
 import { buildClientProfile } from "@/lib/client-profile";
 import { cleanLine } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // The client-ready profile for one candidate (lib/client-profile.js).
 //
@@ -16,7 +17,7 @@ import { candidateHidden } from "@/lib/permissions";
 //                                  agency belongs in the candidate's history)
 
 async function loadCandidate(agencyId, id) {
-  const { data } = await supabase
+  const { data } = await (await agencyDb())
     .from("candidates")
     .select(
       "id, full_name, name, current_title, current_company, location, years_experience, match_score, match_summary, strengths, concerns, extracted, processing_status, jobs(title, client)"
@@ -43,7 +44,7 @@ export async function GET(request, { params }) {
   const label = cleanLine(search.get("label"), 40) || "Candidate";
 
   const [{ data: latest }, { data: agency }] = await Promise.all([
-    supabase.from("scores").select("result").eq("candidate_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    (await agencyDb()).from("scores").select("result").eq("candidate_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("agencies").select("name").eq("id", auth.agencyId).maybeSingle(),
   ]);
 

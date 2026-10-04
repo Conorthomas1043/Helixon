@@ -5,6 +5,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { neutralizeUntrusted, UNTRUSTED_CONTENT_RULES } from "@/lib/prompt-safety";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -80,7 +81,7 @@ export async function POST(request) {
     const {
       data: candidate,
       error: candidateError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("candidates")
       .select("*")
       .eq("id", candidateId)
@@ -100,7 +101,7 @@ export async function POST(request) {
     const {
       data: job,
       error: jobError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("jobs")
       .select("*")
       .eq("id", jobId)
@@ -127,7 +128,7 @@ export async function POST(request) {
 
     const {
       data: score,
-    } = await supabase
+    } = await (await agencyDb())
       .from("scores")
       .select("*")
       .eq("candidate_id", candidateId)
@@ -241,7 +242,7 @@ Do not include a preamble.
     const {
       data: artifact,
       error: artifactError,
-    } = await supabase
+    } = await (await agencyDb())
       .from("artifacts")
       .insert({
         agency_id: agencyId,

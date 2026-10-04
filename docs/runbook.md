@@ -23,6 +23,19 @@ Never paste migration SQL into the dashboard editor: the migration history then 
 
 Some routes still fall back when a column is missing (Postgres error `42703`). Once every migration is confirmed applied in production, those fallbacks can be removed.
 
+## Switching on database-level agency separation
+
+Customer API routes query agency tables through `lib/agency-db.js`. While it is off (the default), that is the service-role client, as before. Switched on, those queries run as the `agency_member` database role with a token the server signs for the member's agency, and Postgres refuses any other agency's rows even if a query forgets its `agency_id` filter. Browsers can't obtain that token, so the Supabase REST API stays closed to them.
+
+1. Apply migration `20261005000000_agency_member_rls.sql` (the migrations workflow above).
+2. In the Supabase SQL editor, check no rows would be hidden: `select * from public.agency_rls_readiness() where rows_without_agency > 0;` must return nothing. Fill in any `agency_id`s it reports first.
+3. In Vercel, add `SUPABASE_JWT_SECRET` (Supabase → Project Settings → JWT Keys → legacy JWT secret) and `SUPABASE_ANON_KEY` if it isn't set, then `SUPABASE_AGENCY_RLS=1`, and redeploy.
+4. Smoke-test the dashboard, a candidate profile, jobs, clients and placements. Errors mentioning `row-level security` or `permission denied` in Sentry mean a query needs looking at.
+
+To switch off, remove `SUPABASE_AGENCY_RLS` and redeploy. The migration can stay.
+
+After adding a table with an `agency_id` column, re-run the migration's policy block (or the whole migration, which is safe to repeat) so the new table gets the policy.
+
 ## Environment variables
 
 `helixon-app/.env.example` lists every variable, with comments. Set them in Vercel (Project → Settings → Environment Variables). The app needs at least Supabase, Clerk, Stripe and Resend to work. AI, Redis and integration keys switch individual features on.

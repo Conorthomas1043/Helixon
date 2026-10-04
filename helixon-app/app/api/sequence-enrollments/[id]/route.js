@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidate-activity";
 import { cleanUuid } from "@/lib/sanitize";
+import { agencyDb } from "@/lib/agency-db";
 
 // DELETE - take a candidate off a sequence (no more emails).
 export async function DELETE(request, { params }) {
@@ -11,7 +12,7 @@ export async function DELETE(request, { params }) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const id = cleanUuid((await params).id);
   if (!id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("sequence_enrollments")
     .update({ status: "stopped", stopped_reason: "Stopped by hand", next_send_at: null, updated_at: new Date().toISOString() })
     .eq("id", id)

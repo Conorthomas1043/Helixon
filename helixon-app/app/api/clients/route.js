@@ -4,6 +4,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients";
 import { getAccess } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // The agency's clients (lib/clients.js).
 //
@@ -16,9 +17,9 @@ export async function GET() {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const [{ data: clients, error }, { data: contacts }, { data: jobs }] = await Promise.all([
-    supabase.from("clients").select("*").eq("agency_id", auth.agencyId).order("name").limit(2000),
-    supabase.from("client_contacts").select("client_id").eq("agency_id", auth.agencyId).limit(10000),
-    supabase
+    (await agencyDb()).from("clients").select("*").eq("agency_id", auth.agencyId).order("name").limit(2000),
+    (await agencyDb()).from("client_contacts").select("client_id").eq("agency_id", auth.agencyId).limit(10000),
+    (await agencyDb())
       .from("jobs")
       .select("id, client_id, status, candidates(stage, placement_fee)")
       .eq("agency_id", auth.agencyId)
@@ -67,7 +68,7 @@ export async function POST(request) {
   const fields = cleanClientFields(body, { requireName: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("clients")
     .insert({ ...fields, agency_id: auth.agencyId, owner_id: fields.owner_id ?? auth.userId })
     .select("*")

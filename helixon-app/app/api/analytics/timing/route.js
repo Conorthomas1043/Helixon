@@ -6,6 +6,7 @@ import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics-data";
 import { getAccess } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Everything the main funnel/quality/conversion numbers in
 // getAnalyticsSnapshot() (lib/dashboard-api.js) don't cover: speed
@@ -116,7 +117,7 @@ export async function GET(request) {
     "id, job_id, created_at, stage, email, recruiter_id, source, rejection_reason, placement_fee, placement_cost, retention_30d, retention_90d",
     { jobIds: clientJobIds }
   );
-  let channelQuery = supabase.from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId);
+  let channelQuery = (await agencyDb()).from("job_channels").select("channel, clicks, spend").eq("agency_id", agencyId);
   if (filters.jobId) channelQuery = channelQuery.eq("job_id", filters.jobId);
   if (clientJobIds) channelQuery = channelQuery.in("job_id", clientJobIds.length ? clientJobIds : ["00000000-0000-0000-0000-000000000000"]);
 
@@ -128,9 +129,9 @@ export async function GET(request) {
     { data: verdicts, error: verdictError },
   ] = await Promise.all([
     candidateQuery,
-    supabase.from("jobs").select("id, created_at").eq("agency_id", agencyId),
+    (await agencyDb()).from("jobs").select("id, created_at").eq("agency_id", agencyId),
     channelQuery,
-    supabase.from("feedback_requests").select("kind, rating").eq("agency_id", agencyId).not("responded_at", "is", null),
+    (await agencyDb()).from("feedback_requests").select("kind, rating").eq("agency_id", agencyId).not("responded_at", "is", null),
     // Recruiters' thumbs up/down on individual analyses (app/analyse).
     supabase.from("feedback").select("rating, comment").eq("agency_id", agencyId),
   ]);

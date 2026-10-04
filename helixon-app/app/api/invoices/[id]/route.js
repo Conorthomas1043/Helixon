@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/agency-audit";
 import { getAccess } from "@/lib/permissions";
 import { accountingConnection } from "@/lib/integrations/accounting-sync";
 import { providerFor } from "@/lib/integrations/providers";
+import { agencyDb } from "@/lib/agency-db";
 
 // GET   one invoice with the agency's invoice details (for printing) and
 //       the connected accounts package, if any
@@ -21,7 +22,7 @@ export async function GET(request, { params }) {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
   const id = cleanUuid((await params).id);
   const [{ data: invoice }, { data: agency }] = await Promise.all([
-    id ? supabase.from("invoices").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null },
+    id ? (await agencyDb()).from("invoices").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null },
     supabase.from("agencies").select("name, settings").eq("id", auth.agencyId).maybeSingle(),
   ]);
   if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -40,7 +41,7 @@ export async function PATCH(request, { params }) {
   const body = await request.json().catch(() => ({}));
   if (!id || !INVOICE_STATUSES[body.status] || body.status === "draft") return NextResponse.json({ error: "Mark it sent, paid or void." }, { status: 400 });
   const paidOn = body.status === "paid" ? (/^\d{4}-\d{2}-\d{2}$/.test(body.paidOn || "") ? body.paidOn : new Date().toISOString().slice(0, 10)) : null;
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("invoices")
     .update({ status: body.status, paid_on: paidOn })
     .eq("id", id)
@@ -51,7 +52,7 @@ export async function PATCH(request, { params }) {
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (body.status === "paid") after(() => emitWebhook(auth.agencyId, "invoice.paid", data));
   if (body.status === "void") {
-    await supabase.from("timesheets").update({ status: "approved", invoice_id: null }).eq("invoice_id", id).eq("agency_id", auth.agencyId);
+    await (await agencyDb()).from("timesheets").update({ status: "approved", invoice_id: null }).eq("invoice_id", id).eq("agency_id", auth.agencyId);
   }
   await logAudit({ auth, request, action: "invoice.status", targetType: "invoice", targetId: data.id, summary: `Invoice ${data.number || ""} marked ${body.status}` });
   return NextResponse.json({ invoice: data });

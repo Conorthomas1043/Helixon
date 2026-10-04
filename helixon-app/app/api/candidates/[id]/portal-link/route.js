@@ -8,6 +8,7 @@ import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { newToken } from "@/lib/signatures";
 import { PORTAL_LINK_DAYS } from "@/lib/candidate-portal";
 import { candidateHidden } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // A candidate's private self-service link (lib/candidate-portal.js).
 // GET               the current link, if there is one
@@ -18,7 +19,7 @@ import { candidateHidden } from "@/lib/permissions";
 async function loadCandidate(agencyId, rawId) {
   const id = cleanUuid(rawId);
   if (!id) return null;
-  const { data } = await supabase.from("candidates").select("id, full_name, name, email").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("candidates").select("id, full_name, name, email").eq("id", id).eq("agency_id", agencyId).maybeSingle();
   return data;
 }
 
@@ -26,7 +27,7 @@ const toLink = (row) =>
   row ? { url: `${siteUrl()}/portal/${row.token}`, expiresAt: row.expires_at, lastUsedAt: row.last_used_at, createdAt: row.created_at } : null;
 
 async function activeLink(candidateId) {
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("candidate_portal_links")
     .select("*")
     .eq("candidate_id", candidateId)
@@ -60,8 +61,8 @@ export async function POST(request, { params }) {
   const body = (await request.json().catch(() => null)) ?? {};
 
   const now = new Date();
-  await supabase.from("candidate_portal_links").update({ revoked_at: now.toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
-  const { data, error } = await supabase
+  await (await agencyDb()).from("candidate_portal_links").update({ revoked_at: now.toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
+  const { data, error } = await (await agencyDb())
     .from("candidate_portal_links")
     .insert({ agency_id: auth.agencyId, candidate_id: c.id, token: newToken(), expires_at: new Date(now.getTime() + PORTAL_LINK_DAYS * 86400000).toISOString(), created_by: auth.userId })
     .select("*")
@@ -108,6 +109,6 @@ export async function DELETE(request, { params }) {
   if (hidden) return hidden;
   const c = await loadCandidate(auth.agencyId, (await params).id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await supabase.from("candidate_portal_links").update({ revoked_at: new Date().toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
+  await (await agencyDb()).from("candidate_portal_links").update({ revoked_at: new Date().toISOString() }).eq("candidate_id", c.id).is("revoked_at", null);
   return NextResponse.json({ ok: true });
 }

@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/permissions";
 import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/sms";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // Texts with a candidate (lib/sms.js, Twilio).
 // GET            the conversation, oldest first, and whether texting is set up
@@ -19,7 +20,7 @@ async function context(params) {
   const { id } = await params;
   const hidden = await candidateHidden(auth, id);
   if (hidden) return { response: hidden };
-  const { data: candidate } = await supabase.from("candidates").select("id, phone, full_name, name").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
+  const { data: candidate } = await (await agencyDb()).from("candidates").select("id, phone, full_name, name").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
   if (!candidate) return { response: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   return { auth, candidate };
 }
@@ -31,7 +32,7 @@ function toMessage(row) {
 export async function GET(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("sms_messages")
     .select("id, direction, body, status, created_at")
     .eq("candidate_id", ctx.candidate.id)
@@ -60,7 +61,7 @@ export async function POST(request, { params }) {
   if (!(await rateLimit(`sms:${auth.userId}`, 200))) return NextResponse.json({ error: "That's a lot of texts this hour - try again shortly." }, { status: 429 });
 
   // Respect STOP: the newest STOP/START from this number decides.
-  const { data: inbound } = await supabase
+  const { data: inbound } = await (await agencyDb())
     .from("sms_messages")
     .select("body")
     .eq("agency_id", auth.agencyId)
@@ -77,7 +78,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: err.message }, { status: 502 });
   }
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await (await agencyDb())
     .from("sms_messages")
     .insert({
       agency_id: auth.agencyId,

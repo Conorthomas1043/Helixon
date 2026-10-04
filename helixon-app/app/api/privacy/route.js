@@ -8,6 +8,7 @@ import { RETENTION_CHOICES, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { upcomingRetention } from "@/lib/data-retention";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+import { agencyDb } from "@/lib/agency-db";
 
 // The workspace's Data & privacy settings (/dashboard/privacy).
 //
@@ -93,13 +94,13 @@ export async function POST(request) {
   const ids = Array.isArray(body.ids) ? [...new Set(body.ids.map(cleanUuid).filter(Boolean))].slice(0, 200) : [];
   if (!ids.length) return NextResponse.json({ error: "Choose who to keep." }, { status: 400 });
 
-  const { data: owned } = await supabase.from("candidates").select("id").eq("agency_id", auth.agencyId).in("id", ids);
+  const { data: owned } = await (await agencyDb()).from("candidates").select("id").eq("agency_id", auth.agencyId).in("id", ids);
   const keep = (owned || []).map((r) => r.id);
   if (!keep.length) return NextResponse.json({ ok: true, kept: 0 });
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const now = new Date().toISOString();
-  await supabase.from("candidates").update({ last_activity_at: now }).eq("agency_id", auth.agencyId).in("id", keep);
+  await (await agencyDb()).from("candidates").update({ last_activity_at: now }).eq("agency_id", auth.agencyId).in("id", keep);
   await supabase.from("candidate_activity").insert(keep.map((id) => ({ candidate_id: id, type: "retention_extended", actor, meta: { note: "Kept past the retention period" } })));
   return NextResponse.json({ ok: true, kept: keep.length });
 }

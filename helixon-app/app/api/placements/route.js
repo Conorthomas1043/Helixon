@@ -9,6 +9,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
 import { getAccess, redactPlacement } from "@/lib/permissions";
+import { agencyDb } from "@/lib/agency-db";
 
 // Offers and placements (lib/placements.js).
 //
@@ -23,7 +24,7 @@ export async function GET(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const params = new URL(request.url).searchParams;
-  let query = supabase.from("placements").select(`*, invoices(${INVOICE_COLS})`).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(2000);
+  let query = (await agencyDb()).from("placements").select(`*, invoices(${INVOICE_COLS})`).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(2000);
   const candidateId = cleanUuid(params.get("candidateId"));
   if (candidateId) query = query.eq("candidate_id", candidateId);
   if (PLACEMENT_STATUSES[params.get("status")]) query = query.eq("status", params.get("status"));
@@ -46,7 +47,7 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   const candidateId = cleanUuid(body.candidateId);
   const { data: candidate } = candidateId
-    ? await supabase
+    ? await (await agencyDb())
         .from("candidates")
         .select("id, full_name, name, recruiter_id, job_id, jobs(id, title, client, client_id, clients(name, fee_percent, rebate_days))")
         .eq("id", candidateId)
@@ -60,7 +61,7 @@ export async function POST(request) {
   // standard terms. Read separately so a database without those columns
   // yet still records the placement.
   const { data: jobTerms } = candidate.job_id
-    ? await supabase.from("jobs").select("fee_percent, fee_amount").eq("id", candidate.job_id).eq("agency_id", auth.agencyId).maybeSingle()
+    ? await (await agencyDb()).from("jobs").select("fee_percent, fee_amount").eq("id", candidate.job_id).eq("agency_id", auth.agencyId).maybeSingle()
     : { data: null };
   const jobFee =
     jobTerms?.fee_amount != null && body.feeAmount === undefined && body.feePercent === undefined
@@ -84,7 +85,7 @@ export async function POST(request) {
   }
 
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
-  const { data, error } = await supabase
+  const { data, error } = await (await agencyDb())
     .from("placements")
     .insert({
       ...fields,

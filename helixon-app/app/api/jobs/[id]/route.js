@@ -5,6 +5,7 @@ import { cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns } from "@/lib/clients";
 import { cleanJobDetails } from "@/lib/job-details";
 import { normaliseOffices } from "@/lib/offices";
+import { agencyDb } from "@/lib/agency-db";
 
 export async function GET(request, { params }) {
   const auth = await requireCustomerContext();
@@ -14,7 +15,7 @@ export async function GET(request, { params }) {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const { data: job, error } = await supabase
+  const { data: job, error } = await (await agencyDb())
     .from("jobs")
     .select("*, candidates(id, processing_status, stage, match_score)")
     .eq("id", id)
@@ -212,7 +213,7 @@ export async function PATCH(request, { params }) {
   if (update.published) {
     let description = update.public_description;
     if (description === undefined) {
-      const { data: current } = await supabase.from("jobs").select("public_description").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+      const { data: current } = await (await agencyDb()).from("jobs").select("public_description").eq("id", id).eq("agency_id", agencyId).maybeSingle();
       description = current?.public_description;
     }
     if (!description) return NextResponse.json({ error: "Write the advert before publishing." }, { status: 400 });
@@ -222,7 +223,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
-  const { data: job, error } = await supabase
+  const { data: job, error } = await (await agencyDb())
     .from("jobs")
     .update(update)
     .eq("id", id)
@@ -255,7 +256,7 @@ export async function DELETE(request, { params }) {
   const { agencyId } = auth;
   const { id } = await params;
 
-  const { data: job, error: fetchError } = await supabase
+  const { data: job, error: fetchError } = await (await agencyDb())
     .from("jobs")
     .select("id, candidates(id)")
     .eq("id", id)
@@ -275,7 +276,7 @@ export async function DELETE(request, { params }) {
     );
   }
 
-  const { error: deleteError } = await supabase.from("jobs").delete().eq("id", id).eq("agency_id", agencyId);
+  const { error: deleteError } = await (await agencyDb()).from("jobs").delete().eq("id", id).eq("agency_id", agencyId);
   if (deleteError) {
     return NextResponse.json({ error: "Failed to delete job." }, { status: 500 });
   }
