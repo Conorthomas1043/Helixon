@@ -4,22 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
-import { PLAN_FEATURES } from "@/lib/plan-features";
+import { PLAN_FEATURES, PLAN_FOR, PLAN_PRICES, agencyPerSeatNote, placementFeeExample } from "@/lib/plan-features";
 import { startCheckout } from "@/lib/start-checkout";
 
 const PLANS = [
   {
     id: "individual",
     name: "Individual",
-    price: 249,
-    description: "For a recruiter screening candidates on their own desk.",
+    price: PLAN_PRICES.individual,
+    description: PLAN_FOR.individual,
     features: PLAN_FEATURES.individual,
   },
   {
     id: "agency",
     name: "Agency",
-    price: 349,
-    description: "For agencies running recruitment across a team.",
+    price: PLAN_PRICES.agency,
+    description: PLAN_FOR.agency,
+    note: agencyPerSeatNote(),
     highlight: true,
     features: PLAN_FEATURES.agency,
   },
@@ -79,6 +80,9 @@ export default function PricingPage() {
           </h1>
           <p className="text-[15px] leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
             Unlimited screening on both plans. Monthly billing, no contract, cancel anytime.
+          </p>
+          <p className="mt-3 text-[13px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-faint)" }}>
+            {placementFeeExample()}
           </p>
         </div>
 
@@ -147,6 +151,9 @@ export default function PricingPage() {
                     / month
                   </span>
                 </div>
+                {plan.note && (
+                  <p className="text-[12px] mt-1.5" style={{ color: "rgba(255,255,255,0.85)" }}>{plan.note}</p>
+                )}
 
                 <p className="text-xs leading-relaxed mt-3 sm:min-h-[2.5rem]" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-soft)" }}>
                   {plan.description}
@@ -189,6 +196,23 @@ export default function PricingPage() {
         <p className="mt-7 max-w-lg mx-auto text-center text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
           Payment is handled securely by Stripe. No account needed first: you&rsquo;ll set one up straight after checkout.
         </p>
+
+        {/* What happens after paying, said before it. An unknown next step is
+            a reason to wait; a short, known one isn't (uncertainty and
+            deferral: Tversky & Shafir, 1992). */}
+        <ol className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[860px] mx-auto">
+          {[
+            ["Pay securely", "Checkout is handled by Stripe. Card details never touch Helixon."],
+            ["Set up your account", "Create your login straight after paying. On Agency, invite your team."],
+            ["Screen your first CV", "Paste a job spec, drop in CVs, and get a ranked shortlist with the reasons."],
+          ].map(([title, body], i) => (
+            <li key={title} className="rounded-[14px] p-5 bg-white" style={{ border: "1px solid var(--border)" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>Step {i + 1}</p>
+              <p className="text-[14px] font-semibold mb-1" style={{ color: "var(--ink)" }}>{title}</p>
+              <p className="text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{body}</p>
+            </li>
+          ))}
+        </ol>
 
         {/* A way forward for anyone not ready to pay today, instead of a dead end. */}
         <div className="max-w-2xl mx-auto mt-10 rounded-[16px] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: "white", border: "1px solid var(--border)" }}>

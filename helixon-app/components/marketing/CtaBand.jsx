@@ -11,6 +11,10 @@ export default function CtaBand({
   ctaLabel = "Get a demo",
   ctaHref = "/demo",
   showArrow = true,
+  // An optional second route for people already decided, so the last
+  // thing on the page doesn't send a ready buyer the long way round.
+  secondaryLabel,
+  secondaryHref,
 }) {
   return (
     <section className="max-w-[1100px] mx-auto px-6 pb-24">
@@ -32,6 +36,11 @@ export default function CtaBand({
               </svg>
             )}
           </Button>
+          {secondaryLabel && secondaryHref && (
+            <a href={secondaryHref} className="text-[14px] font-semibold underline underline-offset-4" style={{ color: "white" }}>
+              {secondaryLabel}
+            </a>
+          )}
         </div>
       </div>
     </section>
