@@ -11,7 +11,7 @@ import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs } from "@/lib/dashboard-api";
 import RoleCard from "./_components/RoleCard";

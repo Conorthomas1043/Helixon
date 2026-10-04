@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { isTextualBody, stripSecretHeaders } from "@/lib/request-capture";
 import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/site-gate";
+import { buildCsp, createNonce } from "@/lib/csp";
 import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
@@ -44,6 +45,18 @@ const HIDE_ADMIN = /^[A-Za-z0-9_-]{8,}$/.test(ADMIN_LOGIN_SLUG);
 
 // Rewriting to a path that has no route makes Next render the site's normal
 // 404 page with a 404 status.
+// This page's Content-Security-Policy with a fresh nonce (lib/csp.js). The
+// policy also goes on the *request*: Next reads the nonce from there and adds
+// it to every script it renders.
+function applyCsp(requestHeaders: Headers) {
+  const nonce = createNonce();
+  const policy = buildCsp(nonce, { isDev: process.env.NODE_ENV === "development" });
+  requestHeaders.set("Content-Security-Policy", policy);
+  // For components that add scripts of their own (ClerkProvider).
+  requestHeaders.set("x-nonce", nonce);
+  return policy;
+}
+
 function notFoundResponse(request: NextRequest) {
   return NextResponse.rewrite(new URL("/_not-found-hidden", request.url), { status: 404 });
 }
@@ -338,7 +351,11 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   if (HIDE_ADMIN) {
     // The only public entrance is /<slug>, served by the real login page.
     if (pathname === `/${ADMIN_LOGIN_SLUG}`) {
-      return NextResponse.rewrite(new URL(ADMIN_LOGIN_PATH, request.url));
+      const requestHeaders = new Headers(request.headers);
+      const policy = applyCsp(requestHeaders);
+      const response = NextResponse.rewrite(new URL(ADMIN_LOGIN_PATH, request.url), { request: { headers: requestHeaders } });
+      response.headers.set("Content-Security-Policy", policy);
+      return response;
     }
     // The default URL no longer exists.
     if (pathname === ADMIN_LOGIN_PATH) {
@@ -383,7 +400,10 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   // here - a value the client sent is dropped.
   requestHeaders.delete(LOG_UID_HEADER);
   if (logged) requestHeaders.set(LOG_UID_HEADER, uid);
+  // Overwrites any policy the client sent, so its nonce is never trusted.
+  const policy = applyCsp(requestHeaders);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Content-Security-Policy", policy);
   response.headers.set("x-client-ip", ip);
   return response;
 });

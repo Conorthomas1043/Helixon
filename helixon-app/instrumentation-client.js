@@ -3,7 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
-import posthog from "posthog-js";
+import posthog, { loadPosthog } from "@/lib/posthog";
 
 // ── Cookie consent ──────────────────────────────────────────────────────────
 // The banner (components/CookieConsentBanner.jsx) stores the visitor's choice in
@@ -38,22 +38,24 @@ if (!posthogToken) {
     );
   }
 } else if (typeof window !== "undefined") {
-  // PostHog is not even started until the visitor has opted in: initialising it
-  // (even opted out) still fetches feature flags and surveys from PostHog with a
-  // throwaway identifier, which is more than "Essential only" should allow.
-  // Code elsewhere already checks `posthog.__loaded` before using it, so leaving
-  // it un-initialised is safe.
+  // PostHog is not even downloaded until the visitor has opted in: initialising
+  // it (even opted out) still fetches feature flags and surveys from PostHog
+  // with a throwaway identifier, which is more than "Essential only" should
+  // allow, and the library itself is weight nobody else needs. lib/posthog.js
+  // stands in for it until then (calls are dropped, `__loaded` is false).
   let posthogStarted = false;
 
   const startPosthog = () => {
     if (posthogStarted) return;
     posthogStarted = true;
-    posthog.init(posthogToken, {
-      api_host: posthogHost,
-      defaults: "2026-01-30",
-      capture_exceptions: true,
-      debug: process.env.NODE_ENV === "development",
-    });
+    loadPosthog((client) =>
+      client.init(posthogToken, {
+        api_host: posthogHost,
+        defaults: "2026-01-30",
+        capture_exceptions: true,
+        debug: process.env.NODE_ENV === "development",
+      })
+    );
   };
 
   if (consented) startPosthog();
@@ -74,9 +76,9 @@ Sentry.init({
   dsn: "https://1fa4e4a3f6cc154682501e16738d3cfb@o4511588978130944.ingest.de.sentry.io/4511588993073232",
 
   // Session Replay records what people do on the page, so it's optional
-  // tracking: only added once the visitor has consented (see the listener below
-  // for when they consent after page load). Plain error reporting is unaffected.
-  integrations: consented ? [Sentry.replayIntegration()] : [],
+  // tracking: only fetched and added once the visitor has consented (see
+  // startReplay below). Plain error reporting is unaffected.
+  integrations: [],
 
   // Every request traced in development; one in ten in production, which is
   // plenty for performance trends and keeps the Sentry bill in proportion.
@@ -99,11 +101,26 @@ Sentry.init({
   sendDefaultPii: consented,
 });
 
-if (typeof window !== "undefined" && !consented) {
+// Replay (rrweb) is the largest part of Sentry's browser code, so it isn't in
+// the bundle at all: Sentry's loader fetches it from browser.sentry-cdn.com
+// (allowed in the CSP) for consenting visitors only.
+let replayStarted = false;
+
+function startReplay() {
+  if (replayStarted) return;
+  replayStarted = true;
+  Sentry.lazyLoadIntegration("replayIntegration")
+    .then((replayIntegration) => Sentry.addIntegration(replayIntegration()))
+    .catch(() => {
+      // Blocked or offline: replay is optional, so carry on without it.
+      replayStarted = false;
+    });
+}
+
+if (typeof window !== "undefined") {
+  if (consented) startReplay();
   window.addEventListener("helixon-cookie-consent", () => {
-    if (optionalTrackingAllowed() && !Sentry.getReplay?.()) {
-      Sentry.addIntegration(Sentry.replayIntegration());
-    }
+    if (optionalTrackingAllowed()) startReplay();
   });
 }
 

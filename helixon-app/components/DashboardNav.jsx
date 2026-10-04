@@ -3,7 +3,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SignOutButton, useUser } from "@clerk/nextjs";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import { useAnalyticsIdentity } from "@/lib/analytics";
 import PresenceDot from "@/components/PresenceDot";
 import { usePresenceHeartbeat } from "@/lib/hooks/usePresenceHeartbeat";

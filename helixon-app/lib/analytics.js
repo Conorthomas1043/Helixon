@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 
 // One way to send product events. PostHog only starts once the visitor has
 // accepted optional cookies (instrumentation-client.js), so every call is a

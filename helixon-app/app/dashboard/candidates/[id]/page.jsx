@@ -14,7 +14,7 @@ import { useNow } from "@/lib/hooks/useNow";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trapTab } from "@/lib/focus-trap";
 import Link from "next/link";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import DashboardNav from "@/components/DashboardNav";

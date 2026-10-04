@@ -2,7 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import NextError from "next/error";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import { useEffect } from "react";
 
 export default function GlobalError({ error }) {

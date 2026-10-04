@@ -9,7 +9,7 @@
 // `reset()` to clear the draft when the candidate/job changes.
 
 import { useCallback, useRef, useState } from "react";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import { EMAIL_PURPOSES, EMAIL_RE } from "./analyse";
 
 export function useEmailComposer({

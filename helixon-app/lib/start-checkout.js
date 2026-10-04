@@ -1,4 +1,4 @@
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 
 // Shared by the homepage pricing section and /pricing, which had drifted:
 // one crashed on a non-JSON error response, the other didn't. Resolves to

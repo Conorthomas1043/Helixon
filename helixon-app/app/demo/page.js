@@ -3,7 +3,7 @@
 import { track } from "@/lib/analytics";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import posthog from "posthog-js";
+import posthog from "@/lib/posthog";
 import Logo from "@/components/marketing/Logo";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";

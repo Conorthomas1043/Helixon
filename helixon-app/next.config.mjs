@@ -40,35 +40,8 @@ const apiHeaders = [
 // robots.txt (which would advertise where they are).
 const noIndexHeaders = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 
-// Content-Security-Policy, enforced. The sources are the third parties the
-// app actually loads: Clerk (auth), Stripe, PostHog, Mapbox, Sentry, Vercel
-// analytics and Google Fonts. 'unsafe-inline'/'unsafe-eval' are needed for
-// Next.js today; replacing them with nonces is the stronger follow-up.
-//
-// This ran in Report-Only for a while first (violations went to
-// /api/csp-report -> Vercel logs, never stored anywhere queryable). Flipped
-// to enforced: every source here maps to a real, installed dependency, and
-// both 'unsafe-inline' directives are already permissive enough to cover
-// Next.js's own inline requirements. Not validated against live browser
-// traffic from this environment - watch the browser console and Vercel
-// logs after the next deploy for any surprise blocked-uri, and loosen the
-// specific directive if something legitimate breaks.
-const cspPolicy = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.helixon.co.uk https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://us-assets.i.posthog.com https://va.vercel-scripts.com https://js.stripe.com",
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
-  "img-src 'self' data: blob: https://img.clerk.com https://us.i.posthog.com",
-  "connect-src 'self' https://clerk.helixon.co.uk https://*.clerk.accounts.dev https://*.clerk.com https://us.i.posthog.com https://us-assets.i.posthog.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://vitals.vercel-insights.com https://va.vercel-scripts.com https://api.stripe.com",
-  "frame-src 'self' https://js.stripe.com https://challenges.cloudflare.com https://*.clerk.accounts.dev https://clerk.helixon.co.uk",
-  "worker-src 'self' blob:",
-  "child-src 'self' blob:",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self' https://checkout.stripe.com",
-  "frame-ancestors 'self'",
-  "report-uri /api/csp-report",
-].join("; ");
+// Content-Security-Policy: set per request by proxy.ts, with a fresh nonce
+// (lib/csp.js).
 
 const nextConfig = {
   turbopack: { root: appRoot },
@@ -91,7 +64,6 @@ const nextConfig = {
         headers: [
           ...securityHeaders,
           ...corsHeaders,
-          { key: "Content-Security-Policy", value: cspPolicy },
         ],
       },
       { source: "/api/:path*", headers: apiHeaders },

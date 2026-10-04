@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import SiteAnnouncement from "@/components/SiteAnnouncement";
+import { connection } from "next/server";
 import "./globals.css";
 
 // Every font the site uses, self-hosted through next/font. They used to come
@@ -53,9 +54,17 @@ export const metadata = {
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // Every page renders per request (it already did: ClerkProvider reads the
+  // request), so Next can put the CSP nonce from proxy.ts on its scripts.
+  // A prerendered page's scripts would have no nonce and be blocked.
+  await connection();
   return (
     <ClerkProvider
+      // Reads this request's CSP nonce (set by proxy.ts) and puts it on
+      // Clerk's own <script> tags; without it the strict policy blocks them
+      // and sign-in never loads.
+      dynamic
       // Application paths, mirroring the Clerk dashboard (Configure >
       // Paths). Set here as well so the app doesn't depend on the dashboard
       // values staying in sync - these win when they differ.
