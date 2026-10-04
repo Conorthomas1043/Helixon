@@ -52,15 +52,11 @@ export async function listCandidates(auth, params) {
   // skills:extracted->skills pulls just that key - selecting the whole
   // parsed-CV `extracted` JSON per row made every list/board load heavy.
   const COLUMNS =
-    "id, full_name, name, current_title, current_company, location, processing_status, stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, source, skills:extracted->skills, jobs(id, title, client)";
-  // lat/lng (search migration) and sub_stage (custom stages migration):
-  // until those are applied the list still loads (42703 = undefined
-  // column), just without distances and sub-stages.
-  let withGeo = true;
+    "id, full_name, name, current_title, current_company, location, processing_status, stage, sub_stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, source, lat, lng, skills:extracted->skills, jobs(id, title, client)";
   const build = (broadSearch) => {
     let query = db
       .from("candidates")
-      .select(withGeo ? `${COLUMNS}, lat, lng, sub_stage` : COLUMNS, { count: "exact" })
+      .select(COLUMNS, { count: "exact" })
       .eq("agency_id", agencyId);
     query = applyFilters(query, resolved, { broadSearch });
     query = scopeCandidateQuery(query, access, auth);
@@ -73,10 +69,6 @@ export async function listCandidates(auth, params) {
   };
 
   let { data, count, error } = await build(true);
-  if (error?.code === "42703" && !resolved.box && !resolved.tsquery) {
-    withGeo = false;
-    ({ data, count, error } = await build(true));
-  }
   // If the combined search is ever rejected, still answer with the
   // name-only search rather than an error.
   if (error && filters.search && !resolved.tsquery) ({ data, count, error } = await build(false));

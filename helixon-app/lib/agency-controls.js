@@ -20,8 +20,7 @@ export async function getAgencyControls(agencyId) {
     .eq("id", agencyId)
     .maybeSingle();
   if (error) {
-    // 42703: before migration 20260929030000.
-    if (error.code !== "42703") reportError("[agency-controls] lookup failed:", error.message);
+    reportError("[agency-controls] lookup failed:", error.message);
     return { suspended: false, screeningCap: null };
   }
   return { suspended: Boolean(data?.suspended_at), screeningCap: data?.screening_cap || null };

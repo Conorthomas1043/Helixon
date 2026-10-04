@@ -51,15 +51,12 @@ export async function GET(request) {
 
     const agencyQuery = (columns) =>
       supabase.from("agencies").select(columns).order("created_at", { ascending: false }).limit(2000);
-    let [agencies, profiles, subscriptions, counts] = await Promise.all([
+    const [agencies, profiles, subscriptions, counts] = await Promise.all([
       agencyQuery("id,name,created_at,plan_name,analyses_limit,analyses_used,intake_email,clerk_org_id,settings,suspended_at,screening_cap"),
       supabase.from("profiles").select("id,agency_id").limit(ROW_CAP),
       supabase.from("subscriptions").select("user_id,plan,status,stripe_subscription_id,updated_at,demo_expires_at").limit(ROW_CAP),
       supabase.rpc("admin_agency_counts"),
     ]);
-    if (agencies.error?.code === "42703") {
-      agencies = await agencyQuery("id,name,created_at,plan_name,analyses_limit,analyses_used,intake_email,clerk_org_id,settings");
-    }
 
     for (const result of [agencies, profiles, subscriptions]) {
       if (result.error) return adminDbError("agencies", result.error);
@@ -173,12 +170,9 @@ async function detail(supabase, id) {
   if (!id) return json({ error: "A valid agency id is required." }, 400);
 
   const agencyQuery = (columns) => supabase.from("agencies").select(columns).eq("id", id).maybeSingle();
-  let { data: agency, error } = await agencyQuery(
+  const { data: agency, error } = await agencyQuery(
     "id,name,created_at,plan_name,analyses_limit,analyses_used,intake_email,clerk_org_id,settings,suspended_at,suspended_reason,screening_cap",
   );
-  if (error?.code === "42703") {
-    ({ data: agency, error } = await agencyQuery("id,name,created_at,plan_name,analyses_limit,analyses_used,intake_email,clerk_org_id,settings"));
-  }
   if (error) return adminDbError("agencies", error);
   if (!agency) return json({ error: "Agency not found." }, 404);
 
@@ -344,7 +338,6 @@ export async function PATCH(request) {
 
     if (update) {
       const { error: updateError } = await supabase.from("agencies").update(update).eq("id", id);
-      if (updateError?.code === "42703") return json({ error: "Agency controls need the latest database migration (admin_granular_controls)." }, 409);
       if (updateError) return adminDbError("agencies", updateError);
     }
 

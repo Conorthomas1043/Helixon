@@ -239,8 +239,6 @@ export async function loginEmployee({ username, password, ip }) {
 // ── Get current session ──────────────────────────────────────────────────
 const SESSION_SELECT =
   "id, employee_id, created_at, expires_at, impersonated_by, employees(id, username, role, full_name, display_name, is_active, last_login, permissions, admin_username)";
-const LEGACY_SESSION_SELECT =
-  "id, employee_id, created_at, expires_at, employees(id, username, role, full_name, display_name, is_active, last_login)";
 
 // Re-checks is_active on every call (not just at login), so deactivating an
 // employee immediately invalidates any session they're still holding.
@@ -258,21 +256,14 @@ export async function getEmployeeSession({ refresh = true } = {}) {
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return null;
 
-    let { data: session, error } = await supabase
+    const { data: session, error } = await supabase
       .from("employee_sessions")
       .select(SESSION_SELECT)
       .eq("token", token)
       .maybeSingle();
-
-    // Before migration 20260929020000 (permissions, admin access) is
-    // applied those columns don't exist; fall back rather than signing
-    // everyone out.
-    if (error && error.code === "42703") {
-      ({ data: session } = await supabase
-        .from("employee_sessions")
-        .select(LEGACY_SESSION_SELECT)
-        .eq("token", token)
-        .maybeSingle());
+    if (error) {
+      reportError("[employee-auth] Session lookup failed:", error.message);
+      return null;
     }
 
     if (!session) return null;

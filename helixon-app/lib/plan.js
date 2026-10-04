@@ -35,10 +35,11 @@ export async function getAgencyPlan(agencyId) {
   // re-subscribe, or a second member's own subscription), and
   // maybeSingle() errors on more than one row - which threw here and took
   // the Team page's invite panel down with a 500. An Agency-plan row wins.
-  const query = (columns) => supabase.from("subscriptions").select(columns).in("user_id", profileIds).in("status", [...ACCESS_STATUSES]);
-  let { data: subscriptions, error: subError } = await query("plan,status,stripe_subscription_id,demo_expires_at");
-  // demo_expires_at arrives with migration 20260929030200.
-  if (subError?.code === "42703") ({ data: subscriptions, error: subError } = await query("plan,status"));
+  const { data: subscriptions, error: subError } = await supabase
+    .from("subscriptions")
+    .select("plan,status,stripe_subscription_id,demo_expires_at")
+    .in("user_id", profileIds)
+    .in("status", [...ACCESS_STATUSES]);
   if (subError) throw new Error(subError.message);
 
   // Demo access that has reached its end date no longer grants a plan.

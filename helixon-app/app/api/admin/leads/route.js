@@ -51,10 +51,7 @@ export async function GET(request) {
       if (RANGE_DAYS[range]) query = query.gte("created_at", new Date(Date.now() - RANGE_DAYS[range] * DAY).toISOString());
       return query;
     };
-    let { data, error } = await build(`${BASE_COLUMNS},${PIPELINE_COLUMNS}`);
-    // Pipeline columns arrive with migration 20260929030000.
-    const migrated = error?.code !== "42703";
-    if (!migrated) ({ data, error } = await build(BASE_COLUMNS));
+    const { data, error } = await build(`${BASE_COLUMNS},${PIPELINE_COLUMNS}`);
     if (error) return adminDbError("leads", error);
 
     let rows = (data || []).map((row) => ({
@@ -90,7 +87,6 @@ export async function GET(request) {
 
     return json({
       admin: { username: admin.username },
-      migrated,
       summary: {
         total: real.length,
         last7d: real.filter((r) => now - Date.parse(r.createdAt) < 7 * DAY).length,
@@ -182,7 +178,6 @@ export async function PATCH(request) {
     update.updated_at = new Date().toISOString();
 
     const { error: updateError } = await supabase.from("demo_requests").update(update).eq("id", leadId);
-    if (updateError?.code === "42703") return json({ error: "The leads pipeline needs the latest database migration (admin_granular_controls)." }, 409);
     if (updateError) return adminDbError("leads", updateError);
     // contacted_at is when they were *first* contacted: set once, kept after.
     if (update.status === "contacted") {

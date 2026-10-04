@@ -34,20 +34,15 @@ import { classifyUserAgent } from "@/lib/traffic-class";
 import { maybeCheckTraffic } from "@/lib/traffic-alerts";
 import { reportError } from "@/lib/report-error";
 
-// blocked_ips.expires_at arrives with migration 20260929030000; until then
-// every block is permanent, as before.
 async function findBlock(ip) {
-  let result = await supabase.from("blocked_ips").select("ip,expires_at").eq("ip", ip).maybeSingle();
-  if (result.error?.code === "42703") result = await supabase.from("blocked_ips").select("ip").eq("ip", ip).maybeSingle();
-  return result.data || null;
+  const { data } = await supabase.from("blocked_ips").select("ip,expires_at").eq("ip", ip).maybeSingle();
+  return data || null;
 }
 
 const INTERNAL_HEADER = "x-internal-secret";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const OUTCOMES = new Set(["allowed", "blocked", "redirected", "not_found"]);
 const RULES = new Set(["allow_list", "country", "ip_range", "path", "user_agent", "ip_block", "firewall", "maintenance", "sign_in", "admin"]);
-// Columns added by migration 20260929040000 (request inspector).
-const DETAIL_COLUMNS = ["uid", "host", "protocol", "query", "headers", "payload", "outcome", "status_code", "location", "rule", "threat_score", "signals", "region", "postal", "timezone", "edge_id"];
 
 function authorised(request) {
   const expected = process.env.INTERNAL_EDGE_LOG_SECRET;
@@ -72,24 +67,8 @@ function decode(value) {
   }
 }
 
-const missingColumn = (error) => error && (error.code === "42703" || error.code === "PGRST204");
-
-// Inserts the log line. If newer columns don't exist yet (a migration not
-// applied), retries without them rather than losing the line: first
-// without traffic_class (20261001100000), then without the inspector's
-// detail columns (20260929040000).
 async function insertLog(row) {
-  let { error } = await supabase.from("request_logs").insert(row);
-  if (missingColumn(error)) {
-    const withoutClass = { ...row };
-    delete withoutClass.traffic_class;
-    ({ error } = await supabase.from("request_logs").insert(withoutClass));
-    if (missingColumn(error)) {
-      const basic = { ...withoutClass };
-      for (const column of DETAIL_COLUMNS) delete basic[column];
-      ({ error } = await supabase.from("request_logs").insert(basic));
-    }
-  }
+  const { error } = await supabase.from("request_logs").insert(row);
   if (error) reportError("[edge-log] insert failed:", error.message);
 }
 

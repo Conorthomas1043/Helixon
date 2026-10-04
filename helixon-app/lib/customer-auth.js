@@ -10,12 +10,8 @@ const SUBSCRIPTION_COLUMNS = "id,user_id,stripe_customer_id,stripe_subscription_
 // Same set grantsAccess() uses, so the query and the check can't disagree.
 export const ACTIVE_SUBSCRIPTION_STATUSES = ACCESS_STATUSES;
 
-// demo_expires_at arrives with migration 20260929030200; before that every
-// demo is open-ended, as it always was.
-async function selectSubscriptions(build) {
-  let result = await build(`${SUBSCRIPTION_COLUMNS},demo_expires_at`);
-  if (result.error?.code === "42703") result = await build(SUBSCRIPTION_COLUMNS);
-  return result;
+function selectSubscriptions(build) {
+  return build(`${SUBSCRIPTION_COLUMNS},demo_expires_at`);
 }
 
 // Identity comes from Clerk (auth() reads the session Clerk's middleware

@@ -47,14 +47,10 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   }
 
   const update = { stage };
-  // A new stage drops the old sub-stage. Left alone otherwise, so the stage
-  // still changes on a database without the sub_stage column yet.
+  // A new stage drops the old sub-stage; otherwise it's left alone.
   if (wantsSubStage || stage !== before.stage) update.sub_stage = subStage?.id ?? null;
 
-  let { data, error } = await (await agencyDb()).from("candidates").update(update).eq("id", id).eq("agency_id", agencyId).select().single();
-  if (error?.code === "42703" && !subStage) {
-    ({ data, error } = await (await agencyDb()).from("candidates").update({ stage }).eq("id", id).eq("agency_id", agencyId).select().single());
-  }
+  const { data, error } = await (await agencyDb()).from("candidates").update(update).eq("id", id).eq("agency_id", agencyId).select().single();
 
   if (error) {
     return NextResponse.json({ error: "Failed to update stage" }, { status: 500 });

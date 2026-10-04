@@ -19,8 +19,6 @@ import { cleanUuid } from "@/lib/sanitize";
 // Both are audited. The admin's own account gets a random password nobody
 // knows, so it can only be reached from here.
 
-const MIGRATION_NEEDED = "Admin portal access needs the latest database migration (admin_controls).";
-
 function portalUsernameFor(adminUsername) {
   const base = `admin.${String(adminUsername).toLowerCase().replace(/[^a-z0-9._-]/g, "")}`.slice(0, 56);
   return base.length >= 3 ? base : `admin.${crypto.randomBytes(3).toString("hex")}`;
@@ -75,12 +73,7 @@ export async function POST(request) {
       if (!employee) return json({ error: "Employee not found." }, 404);
       if (!employee.is_active) return json({ error: "That account is deactivated. Activate it first to view the portal as them." }, 409);
 
-      try {
-        await startEmployeeSession(employee.id, { impersonatedBy: admin.username });
-      } catch (e) {
-        if (String(e.message).includes("impersonated_by")) return json({ error: MIGRATION_NEEDED }, 409);
-        throw e;
-      }
+      await startEmployeeSession(employee.id, { impersonatedBy: admin.username });
       await writeAdminAudit({
         adminUsername: admin.username,
         action: "employee_view_as",
@@ -93,7 +86,6 @@ export async function POST(request) {
     }
 
     const { employee, created, error } = await ownPortalAccount(supabase, admin.username);
-    if (error?.code === "42703") return json({ error: MIGRATION_NEEDED }, 409);
     if (error) return adminDbError("employees/portal", error);
     if (!employee.is_active) return json({ error: "Your portal account has been deactivated. Activate it on the Employees page first." }, 409);
 

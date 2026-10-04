@@ -117,9 +117,6 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
       subtitle={`@${employee.username} · ${roleLabel(employee.role)}${employee.admin_username ? ` · linked to admin ${employee.admin_username}` : ""}`}
     >
       {error && <div className="notice error">{error}</div>}
-      {detail && !detail.migrated && (
-        <div className="notice">Permissions and portal access need the latest database migration (admin_controls). Everything else works.</div>
-      )}
 
       <div className="drawer-actions">
         <span className={`pill ${employee.is_active ? "good" : "bad"}`}>{employee.is_active ? "Active" : "Deactivated"}</span>
@@ -190,7 +187,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
         <p className="perm-desc" style={{ margin: "0 0 6px" }}>
           None hides the section, View makes it read-only, Edit is full use. Applies immediately, even to open tabs.
         </p>
-        <PermissionMatrix role={employee.role} value={permissions} onChange={(next) => setDraft({ permissions: next })} disabled={busy || (detail && !detail.migrated)} />
+        <PermissionMatrix role={employee.role} value={permissions} onChange={(next) => setDraft({ permissions: next })} disabled={busy} />
         {permsDirty && (
           <div className="actions" style={{ marginTop: 12 }}>
             <button type="button" className="btn small primary" disabled={busy} onClick={() => run("set_permissions", { permissions }, "Permissions saved")}>

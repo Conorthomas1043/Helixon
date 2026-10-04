@@ -120,10 +120,7 @@ export async function PATCH(request, { params }) {
       .eq("agency_id", auth.agencyId)
       .select()
       .maybeSingle();
-    if (error) {
-      const missing = error.code === "42703" || error.code === "PGRST204";
-      return NextResponse.json({ error: missing ? "Pinning isn't set up yet." : "Failed to pin note" }, { status: missing ? 503 : 500 });
-    }
+    if (error) return NextResponse.json({ error: "Failed to pin note" }, { status: 500 });
     if (!data) return NextResponse.json({ error: "Note not found." }, { status: 404 });
     return NextResponse.json(toNote(data));
   }

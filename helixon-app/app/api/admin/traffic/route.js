@@ -11,7 +11,7 @@ import { getFirewallPolicy } from "@/lib/security/firewall";
 import { blockIsActive } from "@/lib/security/rules";
 import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
-import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow, aggregateTrafficRows } from "@/lib/admin-traffic";
+import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow } from "@/lib/admin-traffic";
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -110,8 +110,6 @@ const LOG_LIMIT = 2000;
 // The log list: everything but the heavy detail (headers, bodies), which
 // the inspector fetches per request.
 const LOG_COLUMNS = "id,ip,user_agent,method,path,query,host,country,city,lat,lon,referer,blocked,ts,outcome,status_code,location,rule,threat_score,signals,traffic_class";
-const LOG_COLUMNS_INSPECTOR = "id,ip,user_agent,method,path,query,host,country,city,lat,lon,referer,blocked,ts,outcome,status_code,location,rule,threat_score,signals";
-const LOG_COLUMNS_BASIC = "id,ip,user_agent,method,path,country,city,lat,lon,referer,blocked,ts";
 const OUTCOMES = new Set(["allowed", "blocked", "redirected", "not_found"]);
 const METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
 // Who the numbers are about (lib/traffic-class.js). "people" also leaves
@@ -120,7 +118,6 @@ const AUDIENCES = new Set(["all", "people", "automated", "crawler", "monitor", "
 // Whole-range breakdowns (admin_traffic_top).
 const BREAKDOWNS = ["path", "referrer", "user_agent", "country", "class", "api", "not_found", "server_error"];
 // 42883 / PGRST202: the function isn't there yet (migration not applied).
-const missingFunction = (error) => error && (error.code === "42883" || error.code === "PGRST202" || /function .* does not exist|Could not find the function/i.test(error.message || ""));
 
 export async function GET(request) {
   try {
@@ -178,7 +175,7 @@ export async function GET(request) {
     const bucket = rangeHours(range) > 24 * 7 ? "day" : "hour";
     const blockedQuery = (columns) => supabase.from("blocked_ips").select(columns).order("created_at", { ascending: false });
 
-    let [logResult, blockedIpsResult, summaryResult, previousResult, geoResult, timelineResult, topIpsResult, settings, alertsResult, ...breakdownResults] = await Promise.all([
+    const [logResult, blockedIpsResult, summaryResult, previousResult, geoResult, timelineResult, topIpsResult, settings, alertsResult, ...breakdownResults] = await Promise.all([
       rpcLog(),
       blockedQuery("ip,reason,created_at,created_by,expires_at"),
       supabase.rpc("admin_traffic_summary_f", { p_since: sliceSince, p_until: sliceUntil, p_filters: pFilters }),
@@ -192,17 +189,8 @@ export async function GET(request) {
         supabase.rpc("admin_traffic_top", { p_since: sliceSince, p_until: sliceUntil, p_filters: pFilters, p_dimension: dimension, p_limit: 10 })
       ),
     ]);
-    // expires_at arrives with migration 20260929030000.
-    if (blockedIpsResult.error?.code === "42703") blockedIpsResult = await blockedQuery("ip,reason,created_at,created_by");
     if (blockedIpsResult.error) return adminDbError("traffic", blockedIpsResult.error);
 
-    // Before migration 20261001100000 the filtered functions don't exist:
-    // answer the way the page always did (unfiltered aggregates, log
-    // filters applied directly), and say so.
-    const legacy = missingFunction(logResult.error) || missingFunction(summaryResult.error);
-    if (legacy) {
-      return json(await legacyTraffic({ supabase, admin, range, since, settings, blockedIps: blockedIpsResult.data || [], filters: { country, ipFilter, outcome, flagged, methodFilter, pathFilter, uaFilter, lower, upper } }));
-    }
     if (logResult.error) return adminDbError("traffic", logResult.error);
 
     const rows = (logResult.data || []).map((row) => {
@@ -280,84 +268,6 @@ export async function GET(request) {
   } catch (error) {
     return adminErrorResponse("traffic", error);
   }
-}
-
-// The page's original behaviour, for a database without migration
-// 20261001100000: unfiltered whole-range aggregates, filters on the log only.
-async function legacyTraffic({ supabase, admin, range, since, settings, blockedIps, filters }) {
-  const { country, ipFilter, outcome, flagged, methodFilter, pathFilter, uaFilter, lower, upper } = filters;
-  const like = (value) => `%${value.replace(/[\\%_]/g, "\\$&")}%`;
-  const buildLog = (columns) => {
-    let query = supabase.from("request_logs").select(columns).gte("ts", lower).order("ts", { ascending: false }).limit(LOG_LIMIT);
-    if (upper) query = query.lt("ts", upper);
-    if (country) query = query.eq("country", country);
-    if (ipFilter) query = query.eq("ip", ipFilter);
-    if (methodFilter) query = query.eq("method", methodFilter);
-    if (pathFilter) query = query.ilike("path", like(pathFilter));
-    if (uaFilter) query = query.ilike("user_agent", like(uaFilter));
-    if (outcome === "blocked") query = query.eq("blocked", true);
-    else if (outcome === "allowed") query = query.or("outcome.eq.allowed,and(outcome.is.null,blocked.is.false)");
-    else if (outcome) query = query.eq("outcome", outcome);
-    if (flagged) query = query.gte("threat_score", 20);
-    return query;
-  };
-  let [log, geo, sum, timeline, topIps] = await Promise.all([
-    buildLog(LOG_COLUMNS_INSPECTOR),
-    supabase.rpc("admin_traffic_geo", { p_since: since }),
-    supabase.rpc("admin_traffic_summary", { p_since: since }),
-    supabase.rpc("admin_traffic_timeline", { p_since: since, p_bucket: rangeHours(range) > 24 * 7 ? "day" : "hour" }),
-    supabase.rpc("admin_top_ips", { p_since: since, p_limit: 15 }),
-  ]);
-  if (log.error?.code === "42703") log = await buildLog(LOG_COLUMNS_BASIC);
-  if (log.error) throw log.error;
-  const rows = (log.data || []).map((row) => {
-    const out = { ...row, city: decodePlace(row.city) };
-    if (row.threat_score === null || row.threat_score === undefined) {
-      const threat = scoreRequest(row);
-      out.threat_score = threat.score;
-      out.signals = threat.signals;
-    }
-    return out;
-  });
-  let globe;
-  let summary;
-  let partial = false;
-  if (!geo.error && !sum.error) {
-    globe = (geo.data || []).map(geoPointFromRow);
-    const s = (sum.data || [])[0] || {};
-    summary = { requests: Number(s.requests || 0), blocked: Number(s.blocked || 0), uniqueIps: Number(s.unique_ips || 0), geolocated: Number(s.geolocated || 0), countries: Number(s.countries || 0) };
-  } else {
-    const agg = aggregateTrafficRows(rows);
-    globe = agg.points;
-    summary = agg.summary;
-    partial = rows.length >= LOG_LIMIT;
-  }
-  return {
-    ok: true,
-    legacy: true,
-    admin: { username: admin.username },
-    range,
-    since,
-    audience: "all",
-    rows,
-    logLimit: LOG_LIMIT,
-    filters: {},
-    blockedIps: blockedIps.filter((row) => blockIsActive(row)),
-    cursor: rows.length === LOG_LIMIT ? rows[rows.length - 1].ts : null,
-    timeline: timeline.error
-      ? null
-      : { bucket: rangeHours(range) > 24 * 7 ? "day" : "hour", points: (timeline.data || []).map((p) => ({ at: p.bucket, requests: Number(p.requests), blocked: Number(p.blocked), flagged: Number(p.flagged) })) },
-    topIps: topIps.error ? null : topIps.data || [],
-    capture: settings.traffic,
-    globe,
-    summary,
-    previous: null,
-    breakdowns: null,
-    alerts: [],
-    partial,
-    geolocation: { source: "vercel-edge-headers", resolvedIps: summary.geolocated, unresolvedIps: Math.max(0, summary.requests - summary.geolocated) },
-    firewallPolicy: getFirewallPolicy(settings.firewall, alertRecipients(settings)),
-  };
 }
 
 export async function POST(

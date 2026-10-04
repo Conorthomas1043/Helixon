@@ -56,7 +56,7 @@ async function patchLead(body) {
   return data;
 }
 
-function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
+function LeadDrawer({ lead, me, onClose, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [drafts, setDrafts] = useState({});
   const draft = drafts[lead?.id] || {};
@@ -92,7 +92,6 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
     <Drawer open={Boolean(lead)} onClose={onClose} title={lead?.name || "Lead"} subtitle={lead ? `${lead.company || "No company given"} · ${timeAgo(lead.createdAt)}` : ""}>
       {lead && (
         <>
-          {!migrated && <div className="notice">Status, owner and notes need the latest database migration (admin_granular_controls).</div>}
 
           <section className="drawer-section">
             <h3>Status</h3>
@@ -103,7 +102,7 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
                   role="radio"
                   aria-checked={lead.status === s.key}
                   className={lead.status === s.key ? "active" : ""}
-                  disabled={busy || !migrated}
+                  disabled={busy}
                   onClick={() => lead.status !== s.key && save({ status: s.key }, `Marked ${s.label.toLowerCase()}`)}
                 >
                   {s.label}
@@ -117,13 +116,13 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
             <h3>Owner and notes</h3>
             <div className="stack" style={{ gap: 10 }}>
               <div className="inline-form">
-                <input className="search-input no-icon" placeholder="Who's handling it" value={owner} onChange={(e) => setDraft({ owner: e.target.value })} aria-label="Owner" disabled={!migrated} />
+                <input className="search-input no-icon" placeholder="Who's handling it" value={owner} onChange={(e) => setDraft({ owner: e.target.value })} aria-label="Owner" />
                 {me && owner !== me && (
-                  <button type="button" className="btn small ghost" onClick={() => setDraft({ owner: me })} disabled={!migrated}>Assign to me</button>
+                  <button type="button" className="btn small ghost" onClick={() => setDraft({ owner: me })}>Assign to me</button>
                 )}
               </div>
               <div className="field">
-                <textarea rows={4} maxLength={4000} placeholder="Call notes, next steps…" value={notes} onChange={(e) => setDraft({ notes: e.target.value })} aria-label="Notes" disabled={!migrated} />
+                <textarea rows={4} maxLength={4000} placeholder="Call notes, next steps…" value={notes} onChange={(e) => setDraft({ notes: e.target.value })} aria-label="Notes" />
               </div>
               {dirty && (
                 <div className="actions">
@@ -192,7 +191,7 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
             <a
               className="btn primary"
               href={`mailto:${lead.email}?subject=${encodeURIComponent("Your Helixon demo request")}`}
-              onClick={() => lead.status === "new" && migrated && save({ status: "contacted" }, "Marked contacted")}
+              onClick={() => lead.status === "new" && save({ status: "contacted" }, "Marked contacted")}
             >
               <Icon name="mail" /> Reply
             </a>
@@ -205,7 +204,7 @@ function LeadDrawer({ lead, me, migrated, onClose, onChanged }) {
               </button>
             )}
             {lead.status !== "spam" && (
-              <button className="btn ghost" disabled={busy || !migrated} onClick={() => save({ status: "spam" }, "Marked as spam")}>
+              <button className="btn ghost" disabled={busy} onClick={() => save({ status: "spam" }, "Marked as spam")}>
                 Mark spam
               </button>
             )}
@@ -356,7 +355,7 @@ export default function LeadsPage() {
         </Panel>
       </div>
 
-      <LeadDrawer lead={selected} me={data?.admin?.username} migrated={data?.migrated !== false} onClose={() => setSelectedId(null)} onChanged={reload} />
+      <LeadDrawer lead={selected} me={data?.admin?.username} onClose={() => setSelectedId(null)} onChanged={reload} />
     </>
   );
 }

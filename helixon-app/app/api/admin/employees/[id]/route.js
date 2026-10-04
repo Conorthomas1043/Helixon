@@ -12,7 +12,6 @@ import { ONBOARDING_TASKS } from "@/lib/onboarding-tasks";
 // through PATCH /api/admin/employees.
 
 const COLUMNS = "id,username,display_name,full_name,email,role,is_active,created_at,updated_at,last_login,presence_status,presence_updated_at,permissions,admin_username";
-const LEGACY_COLUMNS = "id,username,display_name,full_name,email,role,is_active,created_at,updated_at,last_login,presence_status,presence_updated_at";
 
 export async function GET(request, { params }) {
   try {
@@ -22,9 +21,7 @@ export async function GET(request, { params }) {
     const employeeId = cleanUuid(id);
     if (!employeeId) return json({ error: "A valid employee id is required." }, 400);
 
-    let { data: employee, error } = await supabase.from("employees").select(COLUMNS).eq("id", employeeId).maybeSingle();
-    const migrated = error?.code !== "42703";
-    if (!migrated) ({ data: employee, error } = await supabase.from("employees").select(LEGACY_COLUMNS).eq("id", employeeId).maybeSingle());
+    const { data: employee, error } = await supabase.from("employees").select(COLUMNS).eq("id", employeeId).maybeSingle();
     if (error) return adminDbError("employees", error);
     if (!employee) return json({ error: "Employee not found." }, 404);
 
@@ -32,7 +29,7 @@ export async function GET(request, { params }) {
     const [sessions, attempts, onboarding, audit] = await Promise.all([
       supabase
         .from("employee_sessions")
-        .select(migrated ? "id,created_at,expires_at,impersonated_by" : "id,created_at,expires_at")
+        .select("id,created_at,expires_at,impersonated_by")
         .eq("employee_id", employeeId)
         .gt("expires_at", now)
         .order("created_at", { ascending: false })
@@ -57,7 +54,6 @@ export async function GET(request, { params }) {
 
     return json({
       ok: true,
-      migrated,
       employee,
       access: {
         role: rolePreset(employee.role),

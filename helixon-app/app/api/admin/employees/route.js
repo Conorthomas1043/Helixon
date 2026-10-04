@@ -24,19 +24,14 @@ const PASSWORD_ERROR = `Password must be at least ${MIN_PASSWORD_LENGTH} charact
 
 const ROLES = new Set(ROLE_LIST.map((r) => r.key));
 
-// permissions/admin_username arrive with migration 20260929020000; until it
-// is applied the list still loads, just without them.
 const COLUMNS = "id,username,display_name,full_name,email,role,is_active,created_at,last_login,presence_status,presence_updated_at,permissions,admin_username";
-const LEGACY_COLUMNS = "id,username,display_name,full_name,email,role,is_active,created_at,last_login,presence_status,presence_updated_at";
 
 function withAccess(employee) {
   return employee ? { ...employee, effective_permissions: effectivePermissions(employee) } : employee;
 }
 
-async function selectEmployees(build) {
-  let result = await build(COLUMNS);
-  if (result.error?.code === "42703") result = await build(LEGACY_COLUMNS);
-  return result;
+function selectEmployees(build) {
+  return build(COLUMNS);
 }
 
 // Ends login sessions for an employee: all of them, or just one. Called

@@ -41,14 +41,14 @@ function toWorkHistory(extracted) {
   }));
 }
 
-// Notes, newest first, with when they were pinned - falling back to the
-// columns from before pinning (20261003040000) if it isn't applied.
+// Notes, newest first, with when they were pinned.
 async function loadNotes(candidateId) {
   const db = await agencyDb();
-  const query = (cols) => db.from("candidate_notes").select(cols).eq("candidate_id", candidateId).order("created_at", { ascending: false });
-  const res = await query("id, author_id, author_name, note, created_at, pinned_at");
-  if (res.error?.code === "42703") return query("id, author_id, author_name, note, created_at");
-  return res;
+  return db
+    .from("candidate_notes")
+    .select("id, author_id, author_name, note, created_at, pinned_at")
+    .eq("candidate_id", candidateId)
+    .order("created_at", { ascending: false });
 }
 
 // { status: 200, body } or { status: 404, error }.
