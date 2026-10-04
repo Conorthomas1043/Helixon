@@ -55,6 +55,9 @@ const invoice = await import("./invoices/[id]/route");
 const clients = await import("./clients/route");
 const client = await import("./clients/[id]/route");
 const candidate = await import("./candidates/[id]/route");
+const { listCandidates, countCandidateStages } = await import("@/lib/candidate-list");
+const { listJobs } = await import("@/lib/job-list");
+const { loadDashboardStats } = await import("@/lib/dashboard-stats");
 
 const call = (handler, { method = "GET", body, id, query = "" } = {}) =>
   handler(
@@ -82,6 +85,15 @@ beforeEach(() => {
       { id: ids.clientA, agency_id: A, name: "Acme (A)", status: "active" },
       { id: ids.clientB, agency_id: B, name: "Bravo (B)", status: "active" },
     ],
+    jobs: [
+      { id: "job-a", agency_id: A, title: "Engineer (A)", candidates: [] },
+      { id: "job-b", agency_id: B, title: "Designer (B)", candidates: [] },
+    ],
+    agencies: [
+      { id: A, name: "Agency A" },
+      { id: B, name: "Agency B" },
+    ],
+    subscriptions: [],
     profiles: [],
   });
 });
@@ -170,5 +182,24 @@ describe("candidates", () => {
     const res = await call(candidate.DELETE, { method: "DELETE", id: ids.candA });
     expect(res.status).toBe(200);
     expect(row("candidates", ids.candA)).toBeUndefined();
+  });
+});
+
+// The loaders the server-rendered pages (dashboard home, candidate list,
+// jobs) share with their API routes.
+describe("server-side page loaders", () => {
+  it("list only the member's own agency", async () => {
+    const list = await listCandidates(state.auth, new URLSearchParams());
+    expect(list.status).toBe(200);
+    expect(list.body.items.map((c) => c.id)).toEqual([ids.candA]);
+
+    const counts = await countCandidateStages(state.auth, new URLSearchParams());
+    expect(counts.body).toMatchObject({ all: 1, Screened: 1 });
+
+    expect((await listJobs(state.auth)).map((j) => j.id)).toEqual(["job-a"]);
+
+    const stats = await loadDashboardStats({ user: { id: "user_a" }, agencyId: A, profile: { id: "p1" } });
+    expect(stats.analyses.map((a) => a.id)).toEqual([ids.candA]);
+    expect(stats.agencyName).toBe("Agency A");
   });
 });

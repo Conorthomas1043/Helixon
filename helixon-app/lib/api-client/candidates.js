@@ -2,37 +2,18 @@
 
 // Dashboard API calls: candidates (re-exported by lib/dashboard-api.js).
 
-import { STAGE_LABELS } from "@/lib/stage-labels";
 import { shapeCandidate } from "@/lib/candidate-shape";
 import { apiFetch } from "./core";
+import { buildCandidatesQuery } from "@/lib/candidate-list-params";
 
-export function buildCandidatesQuery(query = {}) {
-  const params = new URLSearchParams();
-  if (query.search) params.set("search", query.search);
-  if (query.near) {
-    params.set("near", query.near);
-    params.set("radius", String(query.radius || 25));
-  }
-  if (query.stage && query.stage !== "all") params.set("stage", query.stage);
-  if (query.status && query.status !== "all") params.set("status", query.status);
-  if (query.recruiterId && query.recruiterId !== "all") params.set("recruiterId", query.recruiterId);
-  if (query.jobId && query.jobId !== "all") params.set("jobId", query.jobId);
-  if (query.scoreBand && query.scoreBand !== "all") params.set("scoreBand", query.scoreBand);
-  if (query.dateRange && query.dateRange !== "all") params.set("dateRange", query.dateRange);
-  if (query.pool) params.set("pool", "1");
-  if (query.tagIds && query.tagIds.length > 0) params.set("tagIds", query.tagIds.join(","));
-  if (query.sortBy) params.set("sortBy", query.sortBy);
-  params.set("page", String(query.page || 1));
-  params.set("pageSize", String(query.pageSize || 8));
-  return params;
-}
+export { buildCandidatesQuery };
 
 export async function getCandidates(query = {}) {
   return apiFetch(`/api/candidates?${buildCandidatesQuery(query).toString()}`);
 }
 
 // The API caps pageSize at 200 (app/api/candidates/route.js), so callers
-// that need "every matching candidate" (stage counts, analytics, pipeline,
+// that need "every matching candidate" (analytics, pipeline board,
 // CSV export) page through the whole result using totalPages from each
 // real response. 200 per page keeps a large agency to a handful of
 // requests (it was 50, i.e. 100 sequential requests for 5,000 candidates).
@@ -53,19 +34,11 @@ export async function getAllCandidates(query = {}) {
   return all;
 }
 
-/**
- * getStageCounts - there's no dedicated facets endpoint, so this fetches
- * every candidate matching the current filters (ignoring `stage` itself
- * and pagination) and counts client-side.
- */
+// Candidates per stage for the current filters (the stage tabs), counted
+// on the server in one request. This used to fetch every matching candidate
+// page by page and count them here.
 export async function getStageCounts(query = {}) {
-  const { stage, page, pageSize, ...rest } = query;
-  const items = await getAllCandidates({ ...rest, stage: "all" });
-  const counts = { all: items.length };
-  Object.keys(STAGE_LABELS).forEach((s) => {
-    counts[s] = items.filter((c) => c.stage === s).length;
-  });
-  return counts;
+  return apiFetch(`/api/candidates/stage-counts?${buildCandidatesQuery(query).toString()}`);
 }
 
 // Every candidate for the pipeline board - the board used to ask for

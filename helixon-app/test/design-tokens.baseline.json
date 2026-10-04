@@ -211,6 +211,34 @@
     "hex": 21,
     "inlineStyles": 42
   },
+  "app/dashboard/DashboardHome.jsx": {
+    "hex": 0,
+    "inlineStyles": 6
+  },
+  "app/dashboard/_components/attention.jsx": {
+    "hex": 1,
+    "inlineStyles": 49
+  },
+  "app/dashboard/_components/header.jsx": {
+    "hex": 4,
+    "inlineStyles": 55
+  },
+  "app/dashboard/_components/jobs-team.jsx": {
+    "hex": 0,
+    "inlineStyles": 27
+  },
+  "app/dashboard/_components/kpis.jsx": {
+    "hex": 0,
+    "inlineStyles": 30
+  },
+  "app/dashboard/_components/pipeline.jsx": {
+    "hex": 1,
+    "inlineStyles": 56
+  },
+  "app/dashboard/_components/states.jsx": {
+    "hex": 1,
+    "inlineStyles": 15
+  },
   "app/dashboard/analytics/page.jsx": {
     "hex": 4,
     "inlineStyles": 95
@@ -218,6 +246,10 @@
   "app/dashboard/business-development/page.jsx": {
     "hex": 0,
     "inlineStyles": 26
+  },
+  "app/dashboard/candidates/CandidateList.jsx": {
+    "hex": 0,
+    "inlineStyles": 37
   },
   "app/dashboard/candidates/[id]/CandidateProfile.jsx": {
     "hex": 0,
@@ -267,9 +299,17 @@
     "hex": 0,
     "inlineStyles": 3
   },
-  "app/dashboard/candidates/page.jsx": {
+  "app/dashboard/candidates/_components/filters.jsx": {
+    "hex": 0,
+    "inlineStyles": 7
+  },
+  "app/dashboard/candidates/_components/row.jsx": {
     "hex": 2,
-    "inlineStyles": 64
+    "inlineStyles": 17
+  },
+  "app/dashboard/candidates/_components/states.jsx": {
+    "hex": 0,
+    "inlineStyles": 3
   },
   "app/dashboard/clients/[id]/page.jsx": {
     "hex": 0,
@@ -299,17 +339,13 @@
     "hex": 0,
     "inlineStyles": 16
   },
-  "app/dashboard/jobs/[id]/page.jsx": {
-    "hex": 0,
-    "inlineStyles": 60
-  },
-  "app/dashboard/jobs/page.jsx": {
+  "app/dashboard/jobs/JobsList.jsx": {
     "hex": 0,
     "inlineStyles": 34
   },
-  "app/dashboard/page.js": {
-    "hex": 7,
-    "inlineStyles": 238
+  "app/dashboard/jobs/[id]/page.jsx": {
+    "hex": 0,
+    "inlineStyles": 60
   },
   "app/dashboard/performance/page.jsx": {
     "hex": 0,
@@ -379,13 +415,45 @@
     "hex": 0,
     "inlineStyles": 20
   },
+  "app/dashboard/talent-pool/_components/pickers.jsx": {
+    "hex": 4,
+    "inlineStyles": 2
+  },
+  "app/dashboard/talent-pool/_components/row.jsx": {
+    "hex": 7,
+    "inlineStyles": 4
+  },
+  "app/dashboard/talent-pool/_components/shared.jsx": {
+    "hex": 2,
+    "inlineStyles": 0
+  },
+  "app/dashboard/talent-pool/_components/summary.jsx": {
+    "hex": 0,
+    "inlineStyles": 1
+  },
   "app/dashboard/talent-pool/page.jsx": {
-    "hex": 15,
-    "inlineStyles": 10
+    "hex": 2,
+    "inlineStyles": 3
+  },
+  "app/dashboard/team/_components/invite.jsx": {
+    "hex": 0,
+    "inlineStyles": 40
+  },
+  "app/dashboard/team/_components/members.jsx": {
+    "hex": 1,
+    "inlineStyles": 20
+  },
+  "app/dashboard/team/_components/states.jsx": {
+    "hex": 0,
+    "inlineStyles": 3
+  },
+  "app/dashboard/team/_components/status.jsx": {
+    "hex": 0,
+    "inlineStyles": 17
   },
   "app/dashboard/team/page.jsx": {
-    "hex": 1,
-    "inlineStyles": 90
+    "hex": 0,
+    "inlineStyles": 10
   },
   "app/demo/page.js": {
     "hex": 2,
@@ -456,8 +524,32 @@
     "inlineStyles": 18
   },
   "app/employee/mobile/EmployeeMobileApp.jsx": {
-    "hex": 14,
-    "inlineStyles": 90
+    "hex": 0,
+    "inlineStyles": 11
+  },
+  "app/employee/mobile/_components/calendar.jsx": {
+    "hex": 2,
+    "inlineStyles": 17
+  },
+  "app/employee/mobile/_components/calls.jsx": {
+    "hex": 4,
+    "inlineStyles": 21
+  },
+  "app/employee/mobile/_components/files.jsx": {
+    "hex": 0,
+    "inlineStyles": 18
+  },
+  "app/employee/mobile/_components/shared.jsx": {
+    "hex": 5,
+    "inlineStyles": 5
+  },
+  "app/employee/mobile/_components/stats.jsx": {
+    "hex": 3,
+    "inlineStyles": 8
+  },
+  "app/employee/mobile/_components/todos.jsx": {
+    "hex": 0,
+    "inlineStyles": 10
   },
   "app/employee/ops/page.js": {
     "hex": 3,

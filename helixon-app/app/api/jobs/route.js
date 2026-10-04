@@ -1,43 +1,21 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JobInput } from "@/lib/api/schemas";
 import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
 import { jobClientColumns, logClientActivity } from "@/lib/clients";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDb } from "@/lib/agency-db";
+import { listJobs } from "@/lib/job-list";
+import { reportError } from "@/lib/report-error";
 
-// See app/api/candidates/route.js for why this was rewritten - Clerk auth
-// instead of the dead Supabase-Auth bearer-token check, and agency_id
-// scoping that was previously missing entirely.
+// GET /api/jobs - the agency's jobs with screening counts (lib/job-list.js).
 export const GET = customerRoute(async (_request, _context, auth) => {
-  const { agencyId } = auth;
-
-  const { data: jobs, error } = await (await agencyDb())
-    .from("jobs")
-    .select("*, candidates(id, processing_status, stage, match_score)")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
+  try {
+    return NextResponse.json(await listJobs(auth));
+  } catch (err) {
+    reportError("[jobs] List failed:", err);
     return NextResponse.json({ error: "Failed to load jobs" }, { status: 500 });
   }
-
-  return NextResponse.json(
-    jobs.map((job) => {
-      const completed = job.candidates.filter((c) => c.processing_status === "completed");
-      return {
-        ...job,
-        candidates: undefined,
-        candidateCount: job.candidates.length,
-        strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,
-        shortlisted: completed.filter((c) => c.stage === "Shortlisted").length,
-        interviewing: completed.filter((c) => c.stage === "Interview").length,
-        offers: completed.filter((c) => c.stage === "Offer").length,
-        placed: completed.filter((c) => c.stage === "Placed").length,
-      };
-    })
-  );
 });
 
 export const POST = customerRoute(async (request, _context, auth, input) => {
