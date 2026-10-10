@@ -6,6 +6,7 @@ import { canManageWorkspace } from "@/lib/workspace-admin";
 import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRange, placementInPeriod, scaleTargets } from "@/lib/performance";
 import { getAccess } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+import { fetchAll } from "@/lib/fetch-all";
 
 // GET ?period=this_month|last_month|this_quarter|... - each recruiter's
 // activity and revenue for the period against their targets
@@ -14,11 +15,14 @@ import { agencyDb } from "@/lib/agency-db";
 
 const LIMIT = 20000;
 
-// Tables from later migrations may not exist yet: count nothing for them.
-// `fallback` is the same query without newer columns, tried before giving up.
-async function rows(query, fallback) {
-  let { data, error } = await query;
-  if (error && fallback) ({ data, error } = await fallback());
+// Every matching row, a page at a time (one select stops at 1,000 rows,
+// which undercounted commission and targets). `page(from, to)` builds the
+// query. Tables from later migrations may not exist yet: count nothing for
+// them. `fallback` is the same query without newer columns, tried before
+// giving up.
+async function rows(page, fallback) {
+  let { data, error } = await fetchAll(page, { cap: LIMIT });
+  if (error && fallback) ({ data, error } = await fetchAll(fallback, { cap: LIMIT }));
   if (error) {
     console.warn("[performance] Query skipped:", error.message);
     return [];
@@ -37,32 +41,33 @@ export const GET = customerRoute(async (request, _context, auth) => {
       .from("placements")
       .select(cols)
       .eq("agency_id", agencyId)
-      .or(`and(offer_date.gte.${period.from},offer_date.lt.${period.to}),and(offer_date.is.null,created_at.gte.${fromTs},created_at.lt.${toTs})`)
-      .limit(LIMIT);
+      .or(`and(offer_date.gte.${period.from},offer_date.lt.${period.to}),and(offer_date.is.null,created_at.gte.${fromTs},created_at.lt.${toTs})`);
   const invoiceQuery = (cols) =>
-    db.from("invoices").select(cols).eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to).limit(LIMIT);
+    db.from("invoices").select(cols).eq("agency_id", agencyId).eq("status", "paid").gte("paid_on", period.from).lt("paid_on", period.to);
+  const paged = (build) => (from, to) => build().order("id").range(from, to);
 
   const [{ data: agency }, members, candidates, activity, interviews, placements, invoices, canManage] = await Promise.all([
     supabase.from("agencies").select("settings").eq("id", agencyId).maybeSingle(),
-    rows(supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", agencyId)),
-    rows(db.from("candidates").select("recruiter_id").eq("agency_id", agencyId).is("pooled_from_id", null).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
+    rows(paged(() => supabase.from("profiles").select("id, clerk_user_id, first_name, last_name, username").eq("agency_id", agencyId))),
+    rows(paged(() => db.from("candidates").select("id, recruiter_id").eq("agency_id", agencyId).is("pooled_from_id", null).gte("created_at", fromTs).lt("created_at", toTs))),
     rows(
-      supabase
-        .from("candidate_activity")
-        .select("type, actor, candidates!inner(agency_id)")
-        .eq("candidates.agency_id", agencyId)
-        .in("type", ["call_logged", "cv_sent_logged"])
-        .gte("created_at", fromTs)
-        .lt("created_at", toTs)
-        .limit(LIMIT)
+      paged(() =>
+        supabase
+          .from("candidate_activity")
+          .select("id, type, actor, candidates!inner(agency_id)")
+          .eq("candidates.agency_id", agencyId)
+          .in("type", ["call_logged", "cv_sent_logged"])
+          .gte("created_at", fromTs)
+          .lt("created_at", toTs)
+      )
     ),
-    rows(db.from("interviews").select("created_by").eq("agency_id", agencyId).gte("created_at", fromTs).lt("created_at", toTs).limit(LIMIT)),
+    rows(paged(() => db.from("interviews").select("id, created_by").eq("agency_id", agencyId).gte("created_at", fromTs).lt("created_at", toTs))),
     // splits (shared placements) came later - without the column, every
     // placement is credited to its one recruiter.
-    rows(placementQuery("recruiter_id, splits, status, kind, fee_amount, offer_date, created_at"), () =>
-      placementQuery("recruiter_id, status, kind, fee_amount, offer_date, created_at")
-    ),
-    rows(invoiceQuery("total, vat_amount, placements(recruiter_id, splits)"), () => invoiceQuery("total, vat_amount, placements(recruiter_id)")),
+    rows(paged(() => placementQuery("id, recruiter_id, splits, status, kind, fee_amount, offer_date, created_at")), paged(() =>
+      placementQuery("id, recruiter_id, status, kind, fee_amount, offer_date, created_at")
+    )),
+    rows(paged(() => invoiceQuery("id, total, vat_amount, placements(recruiter_id, splits)")), paged(() => invoiceQuery("id, total, vat_amount, placements(recruiter_id)"))),
     canManageWorkspace(auth),
   ]);
 

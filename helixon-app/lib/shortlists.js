@@ -11,6 +11,7 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 export const MAX_NAME_LEN = 120;
 export const MAX_NOTE_LEN = 1000;
@@ -71,8 +72,10 @@ export async function addToShortlist(auth, shortlistId, rawIds, note, shortlistN
   if (ids.length === 0) return { error: "Choose who to add.", status: 400 };
   if (ids.length > MAX_ADD) return { error: `Add up to ${MAX_ADD} people at a time.`, status: 400 };
 
+  // Only candidates this member can see ("own candidates only").
+  const access = await getAccess(auth);
   const [{ data: owned, error: ownErr }, { data: existing, error: exErr }] = await Promise.all([
-    supabase.from("candidates").select("id").eq("agency_id", auth.agencyId).in("id", ids),
+    scopeCandidateQuery(supabase.from("candidates").select("id").eq("agency_id", auth.agencyId).in("id", ids), access, auth),
     supabase.from("shortlist_candidates").select("candidate_id").eq("shortlist_id", shortlistId).in("candidate_id", ids),
   ]);
   if (ownErr || exErr) return { error: "Failed to add to shortlist.", status: 500 };

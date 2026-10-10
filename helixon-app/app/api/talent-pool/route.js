@@ -80,6 +80,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
       .eq("agency_id", agencyId)
       .not("talent_pool_at", "is", null)
       .order("talent_pool_at", { ascending: false })
+      .order("id")
       .range(from, from + PAGE - 1), access, auth);
     if (error) {
       reportError("[talent-pool] Load failed:", error.message);

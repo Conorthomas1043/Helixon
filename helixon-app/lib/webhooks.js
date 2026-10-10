@@ -12,6 +12,7 @@ import "server-only";
 import crypto from "node:crypto";
 import dns from "node:dns/promises";
 import net from "node:net";
+import https from "node:https";
 import { supabase } from "@/lib/supabase";
 import { reportError } from "@/lib/report-error";
 
@@ -76,30 +77,62 @@ export function checkWebhookUrl(raw) {
   return { url: u.toString() };
 }
 
-async function resolvesPublic(hostname) {
-  if (net.isIP(hostname)) return !isPrivateAddress(hostname);
-  try {
-    const addrs = await dns.lookup(hostname, { all: true });
-    return addrs.length > 0 && addrs.every((a) => !isPrivateAddress(a.address));
-  } catch {
-    return false;
-  }
+// A dns.lookup for the delivery's own connection that only ever returns
+// public addresses. Checking the name first and then letting fetch resolve
+// it again left a window in which the name could be re-pointed at an
+// internal address (DNS rebinding); here the address that's checked is the
+// one connected to.
+function publicLookup(hostname, options, callback) {
+  const opts = typeof options === "object" && options ? options : {};
+  dns.lookup(hostname, { all: true, family: opts.family || 0 }).then(
+    (addrs) => {
+      if (!addrs.length || addrs.some((a) => isPrivateAddress(a.address))) {
+        const err = Object.assign(new Error("The address doesn't resolve to a public server."), { code: "ENOTPUBLIC" });
+        return callback(err);
+      }
+      if (opts.all) return callback(null, addrs);
+      callback(null, addrs[0].address, addrs[0].family);
+    },
+    (err) => callback(err)
+  );
+}
+
+// One HTTPS POST over a connection to a checked public address. Resolves
+// to the status code; never follows redirects.
+function postOnce(url, headers, body, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      url,
+      {
+        method: "POST",
+        headers: { ...headers, "Content-Length": Buffer.byteLength(body) },
+        lookup: publicLookup,
+        signal: AbortSignal.timeout(timeoutMs),
+      },
+      (res) => {
+        res.resume();
+        res.on("end", () => resolve(res.statusCode ?? 0));
+        res.on("error", reject);
+      }
+    );
+    req.on("error", reject);
+    req.end(body);
+  });
 }
 
 // POSTs one delivery. Returns { status } or { error }.
 export async function deliver(endpoint, event, data) {
   const checked = checkWebhookUrl(endpoint.url);
   if (checked.error) return { error: checked.error };
-  if (!(await resolvesPublic(new URL(checked.url).hostname))) return { error: "The address doesn't resolve to a public server." };
+  const host = new URL(checked.url).hostname.replace(/^\[|\]$/g, "");
+  if (net.isIP(host) && isPrivateAddress(host)) return { error: "The address doesn't resolve to a public server." };
   const id = crypto.randomUUID();
   const body = JSON.stringify({ id, event, createdAt: new Date().toISOString(), data });
   const t = Math.floor(Date.now() / 1000);
   try {
-    const res = await fetch(checked.url, {
-      method: "POST",
-      redirect: "manual",
-      signal: AbortSignal.timeout(8000),
-      headers: {
+    const status = await postOnce(
+      checked.url,
+      {
         "Content-Type": "application/json",
         "User-Agent": "Helixon-Webhooks/1.0",
         "Helixon-Event": event,
@@ -107,10 +140,12 @@ export async function deliver(endpoint, event, data) {
         "Helixon-Signature": `t=${t},v1=${signWebhook(endpoint.secret, t, body)}`,
       },
       body,
-    });
-    return res.ok ? { status: res.status } : { status: res.status, error: `Responded ${res.status}` };
+      8000
+    );
+    return status >= 200 && status < 300 ? { status } : { status, error: `Responded ${status}` };
   } catch (err) {
-    return { error: err?.name === "TimeoutError" ? "Timed out after 8 seconds" : "Couldn't connect" };
+    if (err?.code === "ENOTPUBLIC" || err?.cause?.code === "ENOTPUBLIC") return { error: "The address doesn't resolve to a public server." };
+    return { error: err?.name === "TimeoutError" || err?.name === "AbortError" ? "Timed out after 8 seconds" : "Couldn't connect" };
   }
 }
 

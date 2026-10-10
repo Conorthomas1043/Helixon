@@ -10,6 +10,10 @@ import { linkedInHandle } from "@/lib/candidates/duplicates";
 import { ensureClient } from "@/lib/clients";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fetchAll } from "@/lib/fetch-all";
+
+// How many existing rows de-duplication reads per table.
+const MAX_EXISTING = 200000;
 
 // POST { type, mapping, rows: [[cells]], firstRow, options? } - one batch
 // (up to IMPORT_BATCH rows) of a CSV import from /dashboard/import. Every
@@ -53,14 +57,18 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
 async function importCandidates(items, { auth, actor, options }) {
   const emails = [...new Set(items.map((i) => i.record.email).filter(Boolean))];
   const handles = new Set(items.map((i) => linkedInHandle(i.record.linkedin)).filter(Boolean));
+  // Every existing email, compared without case (John@X.com on file is the
+  // same person as john@x.com in the file), read a page at a time - one
+  // select stops at 1,000 rows and a long .in() list is too long to send.
+  const db = await agencyDb();
   const existingEmails = new Set();
   if (emails.length) {
-    const { data } = await (await agencyDb()).from("candidates").select("email").eq("agency_id", auth.agencyId).in("email", emails);
-    for (const r of data ?? []) existingEmails.add(String(r.email).toLowerCase());
+    const { data } = await fetchAll((from, to) => db.from("candidates").select("id, email").eq("agency_id", auth.agencyId).not("email", "is", null).order("id").range(from, to), { cap: MAX_EXISTING });
+    for (const r of data ?? []) existingEmails.add(String(r.email).trim().toLowerCase());
   }
   const existingHandles = new Set();
   if (handles.size) {
-    const { data } = await (await agencyDb()).from("candidates").select("linkedin").eq("agency_id", auth.agencyId).not("linkedin", "is", null).ilike("linkedin", "%linkedin.com/in/%").limit(20000);
+    const { data } = await fetchAll((from, to) => db.from("candidates").select("id, linkedin").eq("agency_id", auth.agencyId).not("linkedin", "is", null).ilike("linkedin", "%linkedin.com/in/%").order("id").range(from, to), { cap: MAX_EXISTING });
     for (const r of data ?? []) {
       const h = linkedInHandle(r.linkedin);
       if (h && handles.has(h)) existingHandles.add(h);
@@ -80,8 +88,9 @@ async function importCandidates(items, { auth, actor, options }) {
   const now = new Date().toISOString();
   for (const { record } of items) {
     const handle = linkedInHandle(record.linkedin);
-    const key = record.email || (handle ? `li:${handle}` : null);
-    if ((record.email && existingEmails.has(record.email)) || (handle && existingHandles.has(handle)) || (key && seen.has(key))) {
+    const email = record.email ? String(record.email).trim().toLowerCase() : null;
+    const key = email || (handle ? `li:${handle}` : null);
+    if ((email && existingEmails.has(email)) || (handle && existingHandles.has(handle)) || (key && seen.has(key))) {
       skipped += 1;
       continue;
     }
@@ -130,9 +139,10 @@ async function importCandidates(items, { auth, actor, options }) {
 }
 
 async function importClients(items, { auth }) {
-  const { data: existingClients } = await (await agencyDb()).from("clients").select("id, name").eq("agency_id", auth.agencyId).limit(10000);
+  const db = await agencyDb();
+  const { data: existingClients } = await fetchAll((from, to) => db.from("clients").select("id, name").eq("agency_id", auth.agencyId).order("id").range(from, to), { cap: MAX_EXISTING });
   const byName = new Map((existingClients ?? []).map((c) => [c.name.trim().toLowerCase(), c.id]));
-  const { data: existingContacts } = await (await agencyDb()).from("client_contacts").select("client_id, email, name").eq("agency_id", auth.agencyId).limit(20000);
+  const { data: existingContacts } = await fetchAll((from, to) => db.from("client_contacts").select("id, client_id, email, name").eq("agency_id", auth.agencyId).order("id").range(from, to), { cap: MAX_EXISTING });
   const contactKeys = new Set((existingContacts ?? []).map((c) => `${c.client_id}:${(c.email || c.name || "").toLowerCase()}`));
 
   let created = 0;
@@ -190,7 +200,8 @@ async function importClients(items, { auth }) {
 }
 
 async function importJobs(items, { auth }) {
-  const { data: existing } = await (await agencyDb()).from("jobs").select("title, client").eq("agency_id", auth.agencyId).limit(20000);
+  const db = await agencyDb();
+  const { data: existing } = await fetchAll((from, to) => db.from("jobs").select("id, title, client").eq("agency_id", auth.agencyId).order("id").range(from, to), { cap: MAX_EXISTING });
   const keys = new Set((existing ?? []).map((j) => `${(j.title || "").toLowerCase()}|${(j.client || "").toLowerCase()}`));
   const clients = new Map();
   let created = 0;

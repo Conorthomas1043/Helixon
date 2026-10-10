@@ -46,3 +46,14 @@ describe("signWebhook", () => {
     expect(signWebhook("s3cret", 1700000000, '{"a":1}')).toBe(expected);
   });
 });
+
+describe("deliver", () => {
+  it("won't connect to a name that resolves to a private address", async () => {
+    vi.resetModules();
+    vi.doMock("node:dns/promises", () => ({ default: { lookup: async () => [{ address: "10.0.0.5", family: 4 }] } }));
+    const { deliver } = await import("@/lib/webhooks");
+    const result = await deliver({ url: "https://hooks.example.com/x", secret: "s" }, "candidate.created", {});
+    expect(result.error).toBe("The address doesn't resolve to a public server.");
+    vi.doUnmock("node:dns/promises");
+  });
+});

@@ -8,6 +8,7 @@ import { agencyFromName, mailConfigured } from "@/lib/mailer";
 import { sendTrackedEmail } from "@/lib/tracked-email";
 import { logActivity } from "@/lib/candidates/activity";
 import { reportError } from "@/lib/report-error";
+import { agencyHasActiveSubscription } from "@/lib/customer-auth";
 
 // Sends the sequence emails that are due (lib/sequences.js). For each due
 // enrolment: stop it if the candidate has no email or has been rejected or
@@ -19,6 +20,10 @@ import { reportError } from "@/lib/report-error";
 // CRON_SECRET, fail-closed - same as the other crons.
 
 const BATCH = 300;
+// A workspace whose subscription has lapsed sends nothing; its due emails
+// wait this long before being looked at again, so they don't sit at the
+// head of every batch.
+const LAPSED_RETRY_MS = 24 * 60 * 60 * 1000;
 
 export async function GET(request) {
   const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
@@ -30,9 +35,12 @@ export async function GET(request) {
   const now = new Date();
   const { data: due, error } = await supabase
     .from("sequence_enrollments")
-    .select("id, agency_id, candidate_id, next_step, enrolled_by, email_sequences!inner(id, name, steps, active), agencies(suspended_at)")
+    .select("id, agency_id, candidate_id, next_step, enrolled_by, email_sequences!inner(id, name, steps, active), agencies!inner(suspended_at)")
     .eq("status", "active")
     .eq("email_sequences.active", true)
+    // Suspended workspaces are left out by the query itself: filtered
+    // afterwards, they filled the batch and starved everyone else.
+    .is("agencies.suspended_at", null)
     .lte("next_send_at", now.toISOString())
     .order("next_send_at")
     .limit(BATCH);
@@ -41,7 +49,22 @@ export async function GET(request) {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 
-  const rows = (due ?? []).filter((r) => !r.agencies?.suspended_at);
+  // Only workspaces with an active subscription send; the rest are put
+  // back a day.
+  const subscribed = new Map();
+  for (const agencyId of new Set((due ?? []).map((r) => r.agency_id))) {
+    subscribed.set(agencyId, await agencyHasActiveSubscription(agencyId).catch(() => false));
+  }
+  const lapsed = (due ?? []).filter((r) => !subscribed.get(r.agency_id)).map((r) => r.id);
+  // 200 ids at a time keeps each request URL a safe length.
+  for (let i = 0; i < lapsed.length; i += 200) {
+    await supabase
+      .from("sequence_enrollments")
+      .update({ next_send_at: new Date(now.getTime() + LAPSED_RETRY_MS).toISOString(), updated_at: now.toISOString() })
+      .in("id", lapsed.slice(i, i + 200))
+      .eq("status", "active");
+  }
+  const rows = (due ?? []).filter((r) => !r.agencies?.suspended_at && subscribed.get(r.agency_id));
   const candidateIds = [...new Set(rows.map((r) => r.candidate_id))];
   const enrollerIds = [...new Set(rows.map((r) => r.enrolled_by).filter(Boolean))];
   const [{ data: candidates }, { data: profiles }] = await Promise.all([

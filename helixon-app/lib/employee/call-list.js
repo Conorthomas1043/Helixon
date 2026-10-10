@@ -14,6 +14,7 @@ import "server-only";
 import { supabase } from "@/lib/supabase";
 import { phoneKey } from "@/lib/csv";
 import { reportError } from "@/lib/report-error";
+import { fetchAll } from "@/lib/fetch-all";
 
 export const MAX_IMPORT_ROWS = 2000;
 const CLAIM_TTL_MS = 30 * 60 * 1000;
@@ -35,7 +36,7 @@ function clean(value, max) {
 // bottom), then the most recent completed/skipped ones for context.
 export async function getCallList({ doneLimit = 50 } = {}) {
   const [pending, done] = await Promise.all([
-    supabase.from("employee_call_list").select(ROW_SELECT).eq("status", "pending").order("created_at", { ascending: true }).limit(MAX_IMPORT_ROWS),
+    fetchAll((from, to) => supabase.from("employee_call_list").select(ROW_SELECT).eq("status", "pending").order("created_at", { ascending: true }).order("id").range(from, to), { cap: MAX_IMPORT_ROWS }),
     supabase.from("employee_call_list").select(ROW_SELECT).neq("status", "pending").order("completed_at", { ascending: false }).limit(doneLimit),
   ]);
   if (pending.error || done.error) {
@@ -60,11 +61,11 @@ export async function importContacts(employeeId, contacts, batchLabel) {
 
   if (!rows.length) return { inserted: 0, alreadyListed: 0 };
 
-  const { data: existing, error: existingError } = await supabase
-    .from("employee_call_list")
-    .select("phone")
-    .eq("status", "pending")
-    .limit(10000);
+  // Every pending number, a page at a time - one select stops at 1,000
+  // rows, so numbers past that were imported again.
+  const { data: existing, error: existingError } = await fetchAll((from, to) =>
+    supabase.from("employee_call_list").select("id, phone").eq("status", "pending").order("id").range(from, to)
+  );
   if (existingError) throw new Error(existingError.message);
 
   const listed = new Set((existing || []).map((r) => phoneKey(r.phone)));

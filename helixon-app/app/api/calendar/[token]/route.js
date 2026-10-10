@@ -4,6 +4,8 @@ import { memberForToken } from "@/lib/member-tokens";
 import { buildFeed } from "@/lib/ics";
 import { INTERVIEW_KINDS } from "@/lib/interviews";
 import { siteUrl } from "@/lib/mailer";
+import { fetchAll } from "@/lib/fetch-all";
+import { canSeeCandidate, getAccess } from "@/lib/permissions";
 
 // GET /api/calendar/<token>.ics - a person's interviews as a calendar feed
 // (lib/member-tokens.js). Calendar apps poll it without signing in, so the
@@ -18,17 +20,27 @@ export async function GET(request, { params }) {
   const team = new URL(request.url).searchParams.get("scope") === "team";
 
   const now = Date.now();
-  const { data } = await supabase
-    .from("interviews")
-    .select("id, starts_at, duration_minutes, kind, location, interviewers, status, round, ics_sequence, created_by, candidate_id, candidates(full_name, name, recruiter_id), jobs(title, client)")
-    .eq("agency_id", member.agency_id)
-    .gte("starts_at", new Date(now - 60 * 86400000).toISOString())
-    .lte("starts_at", new Date(now + 365 * 86400000).toISOString())
-    .order("starts_at")
-    .limit(2000);
+  // A page at a time (one select stops at 1,000 rows), up to 5,000.
+  const { data } = await fetchAll((from, to) =>
+    supabase
+      .from("interviews")
+      .select("id, starts_at, duration_minutes, kind, location, interviewers, status, round, ics_sequence, created_by, candidate_id, candidates(full_name, name, recruiter_id), jobs(title, client)")
+      .eq("agency_id", member.agency_id)
+      .gte("starts_at", new Date(now - 60 * 86400000).toISOString())
+      .lte("starts_at", new Date(now + 365 * 86400000).toISOString())
+      .order("starts_at")
+      .order("id")
+      .range(from, to),
+    { cap: 5000 }
+  );
 
   const site = siteUrl();
-  const rows = (data ?? []).filter((i) => team || i.created_by === member.user_id || i.candidates?.recruiter_id === member.user_id);
+  // The team feed still follows "own candidates only" for a member it limits.
+  const viewer = { agencyId: member.agency_id, userId: member.user_id };
+  const access = team ? await getAccess(viewer) : null;
+  const rows = (data ?? []).filter((i) =>
+    team ? canSeeCandidate(access, viewer, i.candidates) : i.created_by === member.user_id || i.candidates?.recruiter_id === member.user_id
+  );
   const body = buildFeed({
     name: team ? "Helixon - team interviews" : "Helixon - my interviews",
     events: rows.map((i) => {

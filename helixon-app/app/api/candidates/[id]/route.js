@@ -7,7 +7,7 @@ import { eraseCandidates } from "@/lib/candidates/erasure";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { personCandidateIds } from "@/lib/candidates/person";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden, canSeeCandidate, getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
@@ -135,6 +135,17 @@ export const DELETE = customerRoute(async (request, { params }, auth) => {
   // request needs all of them; plain removal from one job doesn't.
   const everyRecord = new URL(request.url).searchParams.get("all") === "1";
   const ids = everyRecord ? await personCandidateIds(supabase, agencyId, id).catch(() => [id]) : [id];
+  // A member limited to their own candidates can't erase records assigned
+  // to colleagues - an admin can erase them all.
+  if (ids.length > 1) {
+    const access = await getAccess(auth);
+    if (!access.seesAllCandidates) {
+      const { data: owners } = await (await agencyDb()).from("candidates").select("id, recruiter_id").eq("agency_id", agencyId).in("id", ids);
+      if ((owners ?? []).some((c) => !canSeeCandidate(access, auth, c))) {
+        return NextResponse.json({ error: "Some of this person's records are assigned to colleagues. Ask the workspace owner or an admin to erase them all." }, { status: 403 });
+      }
+    }
+  }
 
   const { erased, failedStep } = await eraseCandidates(supabase, agencyId, ids);
   if (erased) await logAudit({ auth, request, action: "candidate.deleted", targetType: "candidate", targetId: id, summary: everyRecord ? `Erased every record for a person (${erased})` : "Deleted a candidate" });

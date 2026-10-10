@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { agencyDb } from "@/lib/agency-db";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // GET /api/compare?ids=a,b,c&jobId=j
 //
@@ -57,13 +58,19 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const ids = [...new Set((url.searchParams.get("ids") || "").split(",").map((s) => s.trim()).filter(Boolean))].slice(0, MAX_COMPARE);
   let jobId = url.searchParams.get("jobId") || null;
 
+  // "Own candidates only" applies to the comparison and the picker.
+  const access = await getAccess(auth);
   let candidates = [];
   if (ids.length) {
-    const { data, error } = await (await agencyDb())
-      .from("candidates")
-      .select("id, full_name, name, current_title, current_company, location, stage, job_id, cv_file_url, extracted")
-      .in("id", ids)
-      .eq("agency_id", agencyId);
+    const { data, error } = await scopeCandidateQuery(
+      (await agencyDb())
+        .from("candidates")
+        .select("id, full_name, name, current_title, current_company, location, stage, job_id, cv_file_url, extracted")
+        .in("id", ids)
+        .eq("agency_id", agencyId),
+      access,
+      auth
+    );
     if (error) return NextResponse.json({ error: "Failed to load candidates." }, { status: 500 });
     // Keep the order the ids were asked for.
     candidates = ids.map((id) => (data || []).find((c) => c.id === id)).filter(Boolean);
@@ -136,12 +143,16 @@ export const GET = customerRoute(async (request, _context, auth) => {
   // The role's other scored candidates, for the "add a candidate" picker.
   let pool = [];
   if (jobId) {
-    const { data, error } = await (await agencyDb())
-      .from("candidates")
-      .select("id, full_name, name, match_score, stage, current_title")
-      .eq("agency_id", agencyId)
-      .eq("job_id", jobId)
-      .not("match_score", "is", null)
+    const { data, error } = await scopeCandidateQuery(
+      (await agencyDb())
+        .from("candidates")
+        .select("id, full_name, name, match_score, stage, current_title")
+        .eq("agency_id", agencyId)
+        .eq("job_id", jobId)
+        .not("match_score", "is", null),
+      access,
+      auth
+    )
       .order("match_score", { ascending: false })
       .limit(MAX_POOL);
     if (error) return NextResponse.json({ error: "Failed to load the role's candidates." }, { status: 500 });

@@ -6,6 +6,12 @@ import { cleanUuid } from "@/lib/sanitize";
 import { neutralizeUntrusted, UNTRUSTED_CONTENT_RULES } from "@/lib/prompt-safety";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { rateLimit } from "@/lib/ratelimit";
+import { candidateHidden } from "@/lib/permissions";
+
+// Each draft is a model call, so an account gets a generous hourly allowance
+// rather than none at all.
+const MAX_DRAFTS_PER_HOUR = 120;
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -73,6 +79,17 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    if (!(await rateLimit(`draft-email:${userId}`, MAX_DRAFTS_PER_HOUR))) {
+      return Response.json(
+        { ok: false, error: "Too many drafts in the last hour. Please try again later." },
+        { status: 429 }
+      );
+    }
+
+    // "Own candidates only": the draft carries the candidate's email.
+    const hidden = await candidateHidden(auth, candidateId);
+    if (hidden) return hidden;
 
     const instruction =
       PURPOSES[purpose] ||
@@ -292,7 +309,6 @@ Do not include a preamble.
       {
         ok: false,
         error:
-          error?.message ||
           "Unable to create email draft.",
       },
       { status: 500 }

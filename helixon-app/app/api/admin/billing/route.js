@@ -3,6 +3,7 @@ import { getAdminSupabase } from "@/lib/admin/supabase";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { PLAN_MONTHLY_GBP, planLabel } from "@/lib/plans";
 import { demoExpired } from "@/lib/subscription-status";
+import { fetchAll, inChunks } from "@/lib/fetch-all";
 
 // Billing for /admin/billing: every subscription with who it belongs to,
 // revenue from paying Stripe subscriptions only (demo access granted from
@@ -20,22 +21,28 @@ export async function GET(request) {
     const range = RANGE_DAYS[searchParams.get("range")] ? searchParams.get("range") : "30d";
     const since = Date.now() - RANGE_DAYS[range] * 86400e3;
 
-    const { data: subs, error } = await supabase
-      .from("subscriptions")
-      .select("id,user_id,plan,status,stripe_customer_id,stripe_subscription_id,created_at,updated_at,demo_expires_at")
-      .order("created_at", { ascending: false })
-      .limit(5000);
+    // Every subscription, a page at a time - one select stops at 1,000
+    // rows, which left revenue short; profiles and agencies are looked up in
+    // chunks (one long .in() list is too long a URL).
+    const { data: subs, error } = await fetchAll((from, to) =>
+      supabase
+        .from("subscriptions")
+        .select("id,user_id,plan,status,stripe_customer_id,stripe_subscription_id,created_at,updated_at,demo_expires_at")
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to)
+    );
     if (error) return adminDbError("billing", error);
 
     const profileIds = [...new Set((subs || []).map((s) => s.user_id).filter(Boolean))];
     const { data: profiles, error: profileError } = profileIds.length
-      ? await supabase.from("profiles").select("id,first_name,last_name,username,agency_id").in("id", profileIds)
+      ? await inChunks(profileIds, (chunk) => supabase.from("profiles").select("id,first_name,last_name,username,agency_id").in("id", chunk))
       : { data: [], error: null };
     if (profileError) return adminDbError("billing", profileError);
 
     const agencyIds = [...new Set((profiles || []).map((p) => p.agency_id).filter(Boolean))];
     const { data: agencies, error: agencyError } = agencyIds.length
-      ? await supabase.from("agencies").select("id,name").in("id", agencyIds)
+      ? await inChunks(agencyIds, (chunk) => supabase.from("agencies").select("id,name").in("id", chunk))
       : { data: [], error: null };
     if (agencyError) return adminDbError("billing", agencyError);
 

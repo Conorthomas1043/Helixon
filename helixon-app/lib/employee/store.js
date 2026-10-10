@@ -15,6 +15,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { reportError } from "@/lib/report-error";
+import { fetchAll } from "@/lib/fetch-all";
 
 // Paths that aren't a real person looking at the product - admin panel
 // traffic, the internal logging endpoint itself, static assets - excluded
@@ -31,11 +32,9 @@ export async function getStats() {
 
   const [{ count: totalUsers }, { data: rows, error }] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
-    supabase
-      .from("request_logs")
-      .select("ip,path,blocked")
-      .gte("ts", since)
-      .limit(20000),
+    // A page at a time - one select stops at 1,000 rows, so every figure
+    // topped out there on a busy day.
+    fetchAll((from, to) => supabase.from("request_logs").select("id,ip,path,blocked").gte("ts", since).order("id").range(from, to), { cap: 20000 }),
   ]);
 
   if (error) {

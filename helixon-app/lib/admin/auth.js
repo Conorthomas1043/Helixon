@@ -172,12 +172,14 @@ export async function destroyAdminSession() {
 // ── Reads the current admin session, if any ──────────────────────────────────
 // Returns { username, expiresAt, absoluteExpiresAt } or null.
 //
-// Unless { refresh: false } is passed, using the console counts as activity:
-// the idle expiry is pushed 30 minutes out again (never past the 8-hour hard
-// limit) by re-issuing the cookie. That needs a Route Handler or Server Action
-// - in a Server Component the cookie can't be written, so the refresh is
-// skipped there and the session simply isn't extended by that render.
-export async function getAdminSession({ refresh = true } = {}) {
+// With { refresh: true } the idle expiry is pushed 30 minutes out again
+// (never past the 8-hour hard limit) by re-issuing the cookie. Only POST
+// /api/admin/session asks for that - the console calls it when the admin is
+// actually using it (mouse, keyboard). Refreshing on every API call meant an
+// open page that reloads its data on a timer kept an abandoned console signed
+// in until the hard limit. Refreshing needs a Route Handler or Server Action
+// - in a Server Component the cookie can't be written, so it's skipped there.
+export async function getAdminSession({ refresh = false } = {}) {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;

@@ -7,6 +7,7 @@ import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/create-profile";
 import { reportError } from "@/lib/report-error";
+import { BILLING_STATUSES } from "@/lib/subscription-status";
 
 // Customers now sign in through Clerk, so real accounts live in Clerk (mirrored
 // in `profiles` by clerk_user_id). This route used to manage ONLY Supabase Auth
@@ -575,6 +576,19 @@ async function grantDemoAccess({ client, supabase, userId, plan, days }) {
   if (!profile) return { status: 404, error: "This account has no profile yet." };
   if (!profile.agency_id) {
     return { status: 409, error: "This account has no agency yet - use “Set up agency” first." };
+  }
+
+  // Never over a live Stripe subscription: that would detach it
+  // (stripe_subscription_id = null), so Stripe's later webhooks would match
+  // nothing and the paying customer's billing state would be lost.
+  const { data: current, error: currentError } = await supabase
+    .from("subscriptions")
+    .select("stripe_subscription_id, status")
+    .eq("user_id", profile.id)
+    .maybeSingle();
+  if (currentError) throw new Error(currentError.message);
+  if (current?.stripe_subscription_id && BILLING_STATUSES.has(current.status)) {
+    return { status: 409, error: "This account has a live Stripe subscription. Demo access would replace it - cancel it in Stripe first if that's intended." };
   }
 
   const { error } = await supabase.from("subscriptions").upsert(

@@ -5,7 +5,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
 import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance";
-import { storeComplianceDocument } from "@/lib/compliance-files";
+import { removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance-files";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -63,7 +63,11 @@ export const POST = customerRoute(async (request, { params }, auth) => {
     })
     .select("*")
     .single();
-  if (error) return NextResponse.json({ error: "Failed to save the check." }, { status: 500 });
+  if (error) {
+    // Don't keep a stored document no check points at.
+    if (doc?.path) await removeComplianceDocuments([doc.path]);
+    return NextResponse.json({ error: "Failed to save the check." }, { status: 500 });
+  }
   await logActivity(supabase, c.id, "compliance_check", actor, {
     note: `${data.label || CHECK_KINDS[data.kind]}: ${CHECK_STATUSES[data.status]}${data.expires_on ? ` (expires ${data.expires_on})` : ""}`,
   });

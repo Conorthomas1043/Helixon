@@ -7,6 +7,7 @@ import { logClientActivity } from "@/lib/clients";
 import { loadShortlist, shortlistAuth } from "@/lib/shortlists";
 import { toShare } from "@/lib/shortlist-shares";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
+import { canSeeCandidate, getAccess } from "@/lib/permissions";
 
 // Client review links for a shortlist (lib/shortlist-shares.js).
 //
@@ -48,6 +49,21 @@ export async function POST(request, { params }) {
   const recipientEmail = body.recipientEmail ? cleanEmail(body.recipientEmail) : null;
   if (body.recipientEmail && !recipientEmail) return NextResponse.json({ error: "That email address doesn't look right." }, { status: 400 });
   const recipientName = cleanLine(body.recipientName, 200) || null;
+
+  // A link shows everyone on the list, so a member limited to their own
+  // candidates can only share a list that holds nobody else's.
+  const access = await getAccess(auth);
+  if (!access.seesAllCandidates) {
+    const { data: members, error: membersError } = await supabase
+      .from("shortlist_candidates")
+      .select("candidate_id, candidates!inner(agency_id, recruiter_id)")
+      .eq("shortlist_id", loaded.shortlist.id)
+      .eq("candidates.agency_id", auth.agencyId);
+    if (membersError) return NextResponse.json({ error: "Failed to create the link." }, { status: 500 });
+    if ((members ?? []).some((m) => !canSeeCandidate(access, auth, m.candidates))) {
+      return NextResponse.json({ error: "This shortlist includes candidates assigned to someone else, so only an admin can share it." }, { status: 403 });
+    }
+  }
   const token = crypto.randomBytes(24).toString("hex");
 
   const { data: share, error } = await supabase

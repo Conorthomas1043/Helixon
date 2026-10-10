@@ -49,11 +49,13 @@ export const PATCH = customerRoute(async (request, { params }, auth) => {
   if (fields.status === "verified" && check.status !== "verified" && fields.checked_by === undefined) fields.checked_by = actor;
 
   let oldPath = null;
+  let newPath = null;
   if (file) {
     const doc = await storeComplianceDocument({ agencyId: auth.agencyId, candidateId: check.candidate_id, file });
     if (doc.error) return NextResponse.json({ error: doc.error }, { status: 400 });
     Object.assign(fields, { document_path: doc.path, document_name: doc.name, document_mime: doc.mime });
     oldPath = check.document_path;
+    newPath = doc.path;
   } else if (body.removeDocument === true || body.removeDocument === "true") {
     Object.assign(fields, { document_path: null, document_name: null, document_mime: null });
     oldPath = check.document_path;
@@ -67,7 +69,12 @@ export const PATCH = customerRoute(async (request, { params }, auth) => {
     .eq("agency_id", auth.agencyId)
     .select("*")
     .single();
-  if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  if (error) {
+    // The replacement was stored but never attached - don't keep a copy of
+    // an identity document nothing points at.
+    if (newPath) await removeComplianceDocuments([newPath]);
+    return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  }
   if (oldPath) await removeComplianceDocuments([oldPath]);
   if (fields.status && fields.status !== check.status) {
     await logActivity(supabase, check.candidate_id, "compliance_check", actor, { note: `${data.label || CHECK_KINDS[data.kind]}: ${CHECK_STATUSES[data.status]}` });

@@ -5,6 +5,7 @@ import "server-only";
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
 import { summariseScorecards, toInterview, toScorecard } from "@/lib/interviews";
+import { canSeeCandidate, getAccess } from "@/lib/permissions";
 
 export const INTERVIEW_SELECT =
   "*, candidates(id, full_name, name, email, stage, recruiter_id, job_id), jobs(id, title, client, client_id), client_contacts(id, name, email)";
@@ -14,6 +15,15 @@ export async function loadInterview(agencyId, rawId) {
   if (!id) return null;
   const { data } = await supabase.from("interviews").select(INTERVIEW_SELECT).eq("id", id).eq("agency_id", agencyId).maybeSingle();
   return data;
+}
+
+// loadInterview for a signed-in member: null too when "own candidates only"
+// hides the interview's candidate from them.
+export async function loadVisibleInterview(auth, rawId) {
+  const interview = await loadInterview(auth.agencyId, rawId);
+  if (!interview) return null;
+  const access = await getAccess(auth);
+  return canSeeCandidate(access, auth, interview.candidates) ? interview : null;
 }
 
 // Who gets the invite: the candidate and the hiring contact (when asked

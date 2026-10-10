@@ -5,6 +5,7 @@ import { cronAuthorized } from "@/lib/cron-auth";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { searchHref } from "@/lib/saved-searches";
 import { sendAgencyEmail, mailConfigured, siteUrl } from "@/lib/mailer";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // Weekday-morning "new matches" emails for saved searches with alerts on:
 // for each, the candidates added since the last alert that match it. One
@@ -26,13 +27,27 @@ export async function GET(request) {
 
   const now = new Date().toISOString();
   const byUser = new Map();
+  // Each person's view of the agency, so "own candidates only" holds in
+  // the email as it does on the Candidates page.
+  const members = new Map();
+  const memberAuth = (s) => {
+    const key = `${s.agency_id}:${s.user_id}`;
+    if (!members.has(key)) members.set(key, { agencyId: s.agency_id, userId: s.user_id });
+    return members.get(key);
+  };
   for (const s of searches ?? []) {
     if (s.agencies?.suspended_at) continue;
     const since = s.last_alerted_at || s.created_at;
     const { resolved, error: e } = await resolveFilters(s.agency_id, readFilters(s.params || {}));
     if (e) continue;
+    const auth = memberAuth(s);
+    const access = await getAccess(auth);
     const { data: rows, count } = await applyFilters(
-      supabase.from("candidates").select("id, full_name, name, current_title, location", { count: "exact" }).eq("agency_id", s.agency_id).gt("created_at", since),
+      scopeCandidateQuery(
+        supabase.from("candidates").select("id, full_name, name, current_title, location", { count: "exact" }).eq("agency_id", s.agency_id).gt("created_at", since),
+        access,
+        auth
+      ),
       resolved
     )
       .order("created_at", { ascending: false })

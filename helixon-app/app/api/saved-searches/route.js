@@ -5,6 +5,7 @@ import { JsonObject } from "@/lib/api/schemas";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { agencyDb } from "@/lib/agency-db";
+import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 
 // Saved Candidates searches (lib/saved-searches.js): your own plus ones
 // teammates shared.
@@ -23,11 +24,13 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const searches = (data ?? []).map((r) => toSavedSearch(r, auth.userId));
 
   if (new URL(request.url).searchParams.get("counts") === "1") {
+    // Counted as this member sees the list ("own candidates only").
+    const access = await getAccess(auth);
     await Promise.all(
       searches.slice(0, 40).map(async (s) => {
         const { resolved, error: e } = await resolveFilters(auth.agencyId, readFilters(s.params));
         if (e) return;
-        const { count } = await applyFilters((await agencyDb()).from("candidates").select("id", { count: "exact", head: true }).eq("agency_id", auth.agencyId), resolved);
+        const { count } = await applyFilters(scopeCandidateQuery((await agencyDb()).from("candidates").select("id", { count: "exact", head: true }).eq("agency_id", auth.agencyId), access, auth), resolved);
         s.count = count ?? 0;
       })
     );

@@ -38,8 +38,11 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const jobId = cleanUuid(params.get("jobId"));
   if (candidateId) query = query.eq("candidate_id", candidateId);
   if (jobId) query = query.eq("job_id", jobId);
-  const from = params.get("from");
   const to = params.get("to");
+  // With no start date (and no one candidate or job to narrow it), the last
+  // 60 days onwards - the same window as the Interviews page. Before, the
+  // soonest-first 500 were the agency's oldest interviews.
+  const from = params.get("from") || (candidateId || jobId ? null : new Date(Date.now() - 60 * 86400000).toISOString());
   if (from && !Number.isNaN(Date.parse(from))) query = query.gte("starts_at", new Date(from).toISOString());
   if (to && !Number.isNaN(Date.parse(to))) query = query.lt("starts_at", new Date(to).toISOString());
 

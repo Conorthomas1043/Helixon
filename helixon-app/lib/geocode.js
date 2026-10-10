@@ -25,15 +25,16 @@ export function isPlaceless(text) {
   return !text || /^(remote|anywhere|flexible|hybrid|wfh|home ?based|various|multiple|n\/a|na|tbc)$/i.test(text);
 }
 
+// null for "no such place" (404); throws when the lookup service couldn't
+// answer (down, timed out, rate limited) - that's never cached or recorded.
 async function fetchJson(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 5000);
   try {
     const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Helixon recruitment software" } });
-    if (!res.ok) return null;
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Geocoding service answered ${res.status}`);
     return await res.json();
-  } catch {
-    return null;
   } finally {
     clearTimeout(timer);
   }
@@ -61,15 +62,27 @@ async function lookup(query) {
   return best?.latitude != null ? { lat: best.latitude, lng: best.longitude } : null;
 }
 
+// { point, unavailable }: point is { lat, lng } or null (no such place);
+// unavailable means the lookup service couldn't answer, so nothing was
+// cached and the caller should try again later. Never throws.
+export async function geocodeResult(text) {
+  const query = normaliseLocation(text);
+  if (isPlaceless(query) || query.length < 2) return { point: null, unavailable: false };
+  const { data: cached } = await supabase.from("geocode_cache").select("lat, lng, found").eq("query", query).maybeSingle();
+  if (cached) return { point: cached.found ? { lat: cached.lat, lng: cached.lng } : null, unavailable: false };
+  let found;
+  try {
+    found = await lookup(query);
+  } catch {
+    return { point: null, unavailable: true };
+  }
+  await supabase.from("geocode_cache").upsert({ query, lat: found?.lat ?? null, lng: found?.lng ?? null, found: Boolean(found) });
+  return { point: found, unavailable: false };
+}
+
 // { lat, lng } or null. Never throws.
 export async function geocode(text) {
-  const query = normaliseLocation(text);
-  if (isPlaceless(query) || query.length < 2) return null;
-  const { data: cached } = await supabase.from("geocode_cache").select("lat, lng, found").eq("query", query).maybeSingle();
-  if (cached) return cached.found ? { lat: cached.lat, lng: cached.lng } : null;
-  const found = await lookup(query);
-  await supabase.from("geocode_cache").upsert({ query, lat: found?.lat ?? null, lng: found?.lng ?? null, found: Boolean(found) });
-  return found;
+  return (await geocodeResult(text)).point;
 }
 
 // A lat/lng box around a point - radius search filters on it in the

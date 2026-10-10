@@ -10,7 +10,9 @@ export default async function DashboardPage() {
   let initialStats = null;
   try {
     const context = await getCustomerContext();
-    if (context.user) initialStats = await loadDashboardStats(context);
+    // A suspended workspace gets nothing here; the browser's own request is
+    // refused with the suspension message.
+    if (context.user && !context.agencySuspended) initialStats = await loadDashboardStats(context);
   } catch {
     // Fall back to loading in the browser.
   }

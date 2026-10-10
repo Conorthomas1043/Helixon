@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { cleanLine } from "@/lib/sanitize";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { MAX_NAME_LEN, loadShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/shortlists";
+import { canSeeCandidate, getAccess } from "@/lib/permissions";
 
 // One shortlist (lib/shortlists.js).
 //
@@ -26,7 +27,9 @@ export async function GET(request, { params }) {
     .eq("candidates.agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to load shortlist." }, { status: 500 });
 
-  const rows = members ?? [];
+  // Members limited to their own candidates only see theirs on the list.
+  const access = await getAccess(auth);
+  const rows = (members ?? []).filter((m) => canSeeCandidate(access, auth, m.candidates));
   const recruiterNames = await resolveRecruiterNames(supabase, rows.map((m) => m.candidates?.recruiter_id));
 
   const candidates = rows

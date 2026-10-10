@@ -16,6 +16,8 @@ import { candidatePayload, emitWebhook } from "@/lib/webhooks";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
+const MAX_JOB_TEXT = 50000;
+
 // A single analysis makes 2-3 Claude calls (candidate + job extraction in
 // parallel - the job one skipped for a saved job - then the fit judgement),
 // each with its own retry-with-backoff on transient failures
@@ -271,6 +273,19 @@ export async function POST(request) {
           ok: false,
           error:
             "The job description must contain at least 50 characters.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // The same ceiling the public API puts on a job description: it's sent
+    // to the model with every screening and stored on the job.
+    if (jobText.length > MAX_JOB_TEXT) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "The job description is too long - keep it under 50,000 characters.",
         },
         { status: 400 }
       );

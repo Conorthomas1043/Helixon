@@ -6,7 +6,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { personCandidateIds } from "@/lib/candidates/person";
 import { getAgencyTags } from "@/lib/agency-tags";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden, canSeeCandidate, getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
@@ -27,9 +27,19 @@ export const GET = customerRoute(async (request, { params }, auth) => {
   if (hidden) return hidden;
   const { id } = await params;
   const candidateId = cleanUuid(id);
-  const ids = candidateId ? await personCandidateIds(supabase, auth.agencyId, candidateId).catch(() => []) : [];
+  let ids = candidateId ? await personCandidateIds(supabase, auth.agencyId, candidateId).catch(() => []) : [];
   if (ids.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  // A member limited to their own candidates gets only the records they
+  // can see; the export says how many were left out, for an admin to run.
+  let withheld = 0;
+  const access = await getAccess(auth);
+  if (!access.seesAllCandidates && ids.length > 1) {
+    const { data: owners } = await (await agencyDb()).from("candidates").select("id, recruiter_id").eq("agency_id", auth.agencyId).in("id", ids);
+    const visible = new Set((owners ?? []).filter((c) => canSeeCandidate(access, auth, c)).map((c) => c.id));
+    withheld = ids.filter((x) => !visible.has(x)).length;
+    ids = ids.filter((x) => visible.has(x));
   }
 
   const [candidates, scores, notes, activity, artifacts, feedbackRequests, shortlists, tags] = await Promise.all([
@@ -115,6 +125,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
       exportedBy: recruiterDisplayName(auth.profile) || null,
       name: person.full_name || person.name || null,
       records: ids.length,
+      ...(withheld ? { recordsLeftOut: withheld, recordsLeftOutNote: "Other records for this person are assigned to colleagues. Ask the workspace owner or an admin to run the export for the complete file." } : {}),
       note:
         "Each record is this person's application or screening for one job. The original CV file is listed under cvFile, and copies of compliance documents under complianceChecks[].documentKept; both can be downloaded from their profile.",
     },

@@ -62,7 +62,11 @@ export async function listCandidates(auth, params) {
     query = scopeCandidateQuery(query, access, auth);
 
     const sort = SORTS[sortBy] ?? SORTS.score_desc;
-    query = query.order(sort.column, { ascending: sort.ascending, nullsFirst: false });
+    // id breaks ties: scores and stages repeat, and without a unique last
+    // column Postgres can order equal rows differently from one page to the
+    // next, so paging through (the CSV export, the pipeline board) repeated
+    // some candidates and skipped others.
+    query = query.order(sort.column, { ascending: sort.ascending, nullsFirst: false }).order("id");
 
     const from = (page - 1) * pageSize;
     return query.range(from, from + pageSize - 1);

@@ -5,7 +5,7 @@ import { InterviewInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews";
-import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
+import { INTERVIEW_SELECT, inviteRecipients, loadInterview, loadVisibleInterview, shapeInterview } from "@/lib/interview-access";
 import { sendInterviewInvites } from "@/lib/interview-invites";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -22,7 +22,7 @@ const TIMING = ["starts_at", "duration_minutes", "location", "kind"];
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
-  const interview = await loadInterview(auth.agencyId, id);
+  const interview = await loadVisibleInterview(auth, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { data } = await (await agencyDb()).from("interview_feedback").select("*").eq("interview_id", interview.id).order("created_at");
   return NextResponse.json({ interview: shapeInterview({ ...interview, interview_feedback: data ?? [] }, new Map(), { includeTokens: true }) });
@@ -30,7 +30,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
-  const interview = await loadInterview(auth.agencyId, id);
+  const interview = await loadVisibleInterview(auth, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const fields = cleanInterviewFields(body);

@@ -3,11 +3,10 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { rateLimit } from "@/lib/ratelimit";
 import { reportError } from "@/lib/report-error";
 
-// Wires up the password-change form on app/account/security/page.jsx.
-// (Note: this endpoint didn't exist before this migration either - the
-// security page called it but nothing served it, a pre-existing 404. This
-// makes it a real, working route using Clerk's backend API instead of
-// Supabase Auth's password update call.)
+// POST /api/account/password { currentPassword, newPassword } - changes the
+// signed-in person's password through Clerk's backend API, after Clerk
+// re-verifies the current one. (It used to sit at app/api/route.js, which
+// served it at /api itself.)
 export async function POST(request) {
   const { userId } = await auth();
 

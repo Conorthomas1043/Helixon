@@ -26,7 +26,8 @@ export const GET = withApiKey(async (ctx, request) => {
   q = applyFilters(q, resolved);
   const since = sinceParam(params.get("updatedSince"));
   if (since) q = q.gte("last_activity_at", since);
-  const { data, count, error } = await q.order("created_at", { ascending: false }).range(pg.from, pg.to);
+  // id breaks created_at ties so pages never repeat or skip a candidate.
+  const { data, count, error } = await q.order("created_at", { ascending: false }).order("id").range(pg.from, pg.to);
   if (error) return apiError(400, "That search couldn't be run.");
   return apiJson({ data: (data ?? []).map(toApiCandidate), ...pageMeta(pg, count) });
 });

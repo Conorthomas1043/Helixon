@@ -35,6 +35,10 @@ export const POST = customerRoute(async (request, { params }, auth, input) => {
   const body = input;
   const otherId = cleanUuid(body.otherId);
   if (!keepId || !otherId || keepId === otherId) return NextResponse.json({ error: "Pick a different candidate." }, { status: 400 });
+  // Both records: merging a hidden record into a visible one would hand it
+  // to a member limited to their own candidates.
+  const otherHidden = await candidateHidden(auth, otherId);
+  if (otherHidden) return otherHidden;
 
   const { data: rows } = await (await agencyDb()).from("candidates").select(COLUMNS).eq("agency_id", auth.agencyId).in("id", [keepId, otherId]);
   const keep = rows?.find((r) => r.id === keepId);

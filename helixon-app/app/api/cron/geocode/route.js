@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cronAuthorized } from "@/lib/cron-auth";
-import { geocode, normaliseLocation } from "@/lib/geocode";
+import { geocodeResult, normaliseLocation } from "@/lib/geocode";
 
 // Places candidates on the map for radius search (lib/geocode.js): every
 // candidate whose location hasn't been looked up yet - or has changed since
@@ -38,10 +38,17 @@ export async function GET(request) {
   let placed = 0;
   let unplaced = 0;
   let places = 0;
+  let unavailable = 0;
   for (const [query, ids] of pending) {
     if (places >= MAX_PLACES) break;
     places += 1;
-    const point = query ? await geocode(query) : null;
+    const { point, unavailable: down } = query ? await geocodeResult(query) : { point: null, unavailable: false };
+    // The lookup service didn't answer: leave these for the next run rather
+    // than recording the place as looked up (and never trying again).
+    if (down) {
+      unavailable += ids.length;
+      continue;
+    }
     for (let i = 0; i < ids.length; i += 200) {
       await supabase
         .from("candidates")
@@ -51,5 +58,5 @@ export async function GET(request) {
     if (point) placed += ids.length;
     else unplaced += ids.length;
   }
-  return NextResponse.json({ ok: true, places, placed, unplaced, remainingPlaces: Math.max(0, pending.size - places) });
+  return NextResponse.json({ ok: true, places, placed, unplaced, unavailable, remainingPlaces: Math.max(0, pending.size - places) });
 }

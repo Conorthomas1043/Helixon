@@ -1,7 +1,8 @@
 // Candidate-related data this app keeps in the browser (recent analyses,
-// recently viewed candidates). Removed on log out so the next person on a
-// shared computer doesn't inherit it.
-const KEYS = ["analysisHistory", "helixon:recently-viewed-candidates", "feedbackCount"];
+// recently viewed candidates, and the search box's recently opened
+// candidates, jobs and clients - components/dashboard/NavTools.jsx). Removed
+// on log out so the next person on a shared computer doesn't inherit it.
+const KEYS = ["analysisHistory", "helixon:recently-viewed-candidates", "feedbackCount", "helixon.recent"];
 
 export function clearLocalCandidateData() {
   if (typeof window === "undefined") return;

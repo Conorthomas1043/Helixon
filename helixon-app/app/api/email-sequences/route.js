@@ -5,6 +5,7 @@ import { JsonObject } from "@/lib/api/schemas";
 import { cleanLine } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
 import { agencyDb } from "@/lib/agency-db";
+import { fetchAll } from "@/lib/fetch-all";
 
 // Email sequences (lib/sequences.js).
 //
@@ -12,9 +13,12 @@ import { agencyDb } from "@/lib/agency-db";
 // POST { name, steps }        create one
 
 export const GET = customerRoute(async (_request, _context, auth) => {
+  // Enrolments a page at a time - one select stops at 1,000 rows, which
+  // undercounted every sequence's figures.
+  const db = await agencyDb();
   const [{ data, error }, { data: enrollments }] = await Promise.all([
-    (await agencyDb()).from("email_sequences").select("*").eq("agency_id", auth.agencyId).order("name"),
-    (await agencyDb()).from("sequence_enrollments").select("sequence_id, status, stopped_reason").eq("agency_id", auth.agencyId).limit(20000),
+    db.from("email_sequences").select("*").eq("agency_id", auth.agencyId).order("name"),
+    fetchAll((from, to) => db.from("sequence_enrollments").select("id, sequence_id, status, stopped_reason").eq("agency_id", auth.agencyId).order("id").range(from, to)),
   ]);
   if (error) return NextResponse.json({ error: "Failed to load sequences." }, { status: 500 });
   const stats = new Map();

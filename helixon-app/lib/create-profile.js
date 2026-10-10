@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { sendWelcomeEmail } from "@/lib/lifecycle-email";
 import { stripe } from "@/lib/stripe";
 import { planForPriceId } from "@/lib/plans";
+import { BILLING_STATUSES } from "@/lib/subscription-status";
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 
@@ -203,6 +204,15 @@ export async function linkSubscriptionFromStripeSession({
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const plan = planForPriceId(subscription.items?.data?.[0]?.price?.id) || session.metadata?.plan || null;
+
+  // A different subscription is already on file: only a live one replaces
+  // it (a new checkout after an old plan ended). An older session's dead
+  // subscription never overwrites the current one - that would detach it,
+  // and Stripe's webhooks for it would then match nothing.
+  // ("incomplete" too: a fresh checkout paid by a slower method starts there.)
+  if (current?.stripe_subscription_id && !BILLING_STATUSES.has(subscription.status) && subscription.status !== "incomplete") {
+    return { linked: false, reason: "subscription_not_live" };
+  }
 
   const { error } = await supabase.from("subscriptions").upsert(
     {

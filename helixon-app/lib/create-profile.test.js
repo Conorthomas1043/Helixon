@@ -66,6 +66,14 @@ describe("linkSubscriptionFromStripeSession", () => {
     expect(state.subscriptions[0].status).toBe("canceled");
   });
 
+  it("never lets an older, ended subscription replace the current one", async () => {
+    state.subscriptions = [{ user_id: "p1", stripe_subscription_id: "sub_2", status: "active", plan: "agency" }];
+    state.subscription = { id: "sub_1", status: "canceled", items: { data: [] } };
+    const result = await linkSubscriptionFromStripeSession({ profileId: "p1", stripeSessionId: "cs_1", clerkUserId: "user_1" });
+    expect(result).toEqual({ linked: false, reason: "subscription_not_live" });
+    expect(state.subscriptions[0]).toMatchObject({ stripe_subscription_id: "sub_2", status: "active" });
+  });
+
   it("refuses a subscription another profile already holds", async () => {
     state.subscriptions = [{ user_id: "p2", stripe_subscription_id: "sub_1", status: "active" }];
     const result = await linkSubscriptionFromStripeSession({ profileId: "p1", stripeSessionId: "cs_1", clerkUserId: "user_1" });

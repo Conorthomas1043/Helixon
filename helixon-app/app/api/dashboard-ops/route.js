@@ -4,6 +4,7 @@ import { customerRoute } from "@/lib/api/route";
 import { buildOps } from "@/lib/dashboard-ops";
 import { getAccess } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+import { fetchAll } from "@/lib/fetch-all";
 
 // GET /api/dashboard-ops?scope=mine|team - the Overview's business view
 // (lib/dashboard-ops.js): open jobs, interviews this week, offers out,
@@ -17,9 +18,12 @@ import { agencyDb } from "@/lib/agency-db";
 
 const LIMIT = 5000;
 
+// `query` is a query, or a page builder (from, to) => query read a page at
+// a time up to LIMIT rows (one select stops at 1,000).
 async function rows(query, fallback) {
-  let { data, error } = await query;
-  if (error && fallback) ({ data, error } = await fallback());
+  const run = (q) => (typeof q === "function" ? fetchAll(q, { cap: LIMIT }) : q);
+  let { data, error } = await run(query);
+  if (error && fallback) ({ data, error } = await run(fallback));
   if (error) {
     console.warn("[dashboard-ops] Query skipped:", error.message);
     return [];
@@ -34,21 +38,22 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const now = Date.now();
   const soon = new Date(now + 31 * 86400000).toISOString().slice(0, 10);
 
-  const jobQuery = (cols) => db.from("jobs").select(cols).eq("agency_id", agencyId).eq("status", "open").limit(LIMIT);
-  const placementQuery = (cols) =>
+  const jobQuery = (cols) => (from, to) => db.from("jobs").select(cols).eq("agency_id", agencyId).eq("status", "open").order("id").range(from, to);
+  const placementQuery = (cols) => (from, to) =>
     db
       .from("placements")
       .select(cols)
       .eq("agency_id", agencyId)
       .in("status", ["offered", "accepted", "started", "completed"])
       .gte("created_at", new Date(now - 400 * 86400000).toISOString())
-      .limit(LIMIT);
+      .order("id")
+      .range(from, to);
   const placementCols = "id, status, kind, fee_amount, currency, offer_date, created_at, start_date, end_date, rebate_until, recruiter_id, candidate_id, candidate_name, client_name";
 
   const [jobs, interviews, placements, invoices, timesheets, checks, clients] = await Promise.all([
     rows(
       jobQuery("id, title, client, status, owner_id, user_id, priority, target_date, openings, created_at, candidates(stage)"),
-      () => jobQuery("id, title, client, status, user_id, created_at, candidates(stage)")
+      jobQuery("id, title, client, status, user_id, created_at, candidates(stage)")
     ),
     rows(
       db
@@ -61,13 +66,13 @@ export const GET = customerRoute(async (request, _context, auth) => {
         .order("starts_at")
         .limit(200)
     ),
-    rows(placementQuery(`${placementCols}, splits`), () => placementQuery(placementCols)),
-    rows(db.from("invoices").select("id, number, status, total, currency, due_on, client_id, bill_to").eq("agency_id", agencyId).eq("status", "sent").limit(LIMIT)),
+    rows(placementQuery(`${placementCols}, splits`), placementQuery(placementCols)),
+    rows((from, to) => db.from("invoices").select("id, number, status, total, currency, due_on, client_id, bill_to").eq("agency_id", agencyId).eq("status", "sent").order("id").range(from, to)),
     rows(db.from("timesheets").select("id, status, week_starting, placement_id, placements(candidate_name)").eq("agency_id", agencyId).eq("status", "submitted").limit(500)),
     rows(
       db
         .from("compliance_checks")
-        .select("id, kind, label, status, expires_on, candidate_id, candidates(full_name, name)")
+        .select("id, kind, label, status, expires_on, candidate_id, candidates(full_name, name, recruiter_id)")
         .eq("agency_id", agencyId)
         .not("expires_on", "is", null)
         .lte("expires_on", soon)
@@ -98,7 +103,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
       placements: placements.filter((p) => access.seesAllCandidates || p.recruiter_id === userId || (Array.isArray(p.splits) && p.splits.some((x) => x.recruiterId === userId))),
       invoices: access.canSeeFinancials ? invoices : [],
       timesheets,
-      checks: checks.filter((c) => !renewed.has(`${c.candidate_id}:${c.kind}`)),
+      checks: checks.filter((c) => !renewed.has(`${c.candidate_id}:${c.kind}`) && visibleCandidate(c.candidates?.recruiter_id)),
       clients,
     },
     { now, myId: userId, mine }

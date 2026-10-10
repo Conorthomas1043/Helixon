@@ -7,7 +7,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, formatInterviewTime, toScorecard } from "@/lib/interviews";
-import { loadInterview } from "@/lib/interview-access";
+import { loadVisibleInterview } from "@/lib/interview-access";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -26,7 +26,7 @@ function scorecardUrl(token) {
 
 export const POST = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
-  const interview = await loadInterview(auth.agencyId, id);
+  const interview = await loadVisibleInterview(auth, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const candidateName = interview.candidates?.full_name || interview.candidates?.name || "the candidate";
@@ -91,7 +91,7 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
-  const interview = await loadInterview(auth.agencyId, id);
+  const interview = await loadVisibleInterview(auth, id);
   if (!interview) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const scorecardId = cleanUuid(new URL(request.url).searchParams.get("scorecardId"));
   if (!scorecardId) return NextResponse.json({ error: "Which scorecard?" }, { status: 400 });

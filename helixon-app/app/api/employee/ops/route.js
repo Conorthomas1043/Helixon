@@ -15,6 +15,7 @@ import { createClient } from "@supabase/supabase-js";
 import { employeeAccess } from "@/lib/session";
 import { groupBy, classifyAcquisition } from "@/lib/ops/attribution";
 import { reportError } from "@/lib/report-error";
+import { fetchAll } from "@/lib/fetch-all";
 
 function client() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -42,17 +43,20 @@ export async function GET() {
       .maybeSingle();
     if (employee.error || !employee.data) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
 
+    // Totals are counted by the database (a row pull stops at 1,000, so every
+    // KPI used to top out there); the breakdowns read every row.
+    const count = (table) => supabase.from(table).select("id", { count: "exact", head: true });
     const [agencies, candidates, jobs, analyses, demos] = await Promise.all([
-      supabase.from("agencies").select("id,plan_name,analyses_used,analyses_limit").limit(1000),
-      supabase.from("candidates").select("id").limit(1000),
-      supabase.from("jobs").select("id").limit(1000),
-      supabase.from("analyses").select("id").limit(1000),
-      supabase.from("demo_requests").select("utm_source,utm_medium,utm_campaign,referrer,created_at").limit(1000),
+      fetchAll((from, to) => supabase.from("agencies").select("id,plan_name,analyses_used,analyses_limit").order("id").range(from, to)),
+      count("candidates"),
+      count("jobs"),
+      count("analyses"),
+      fetchAll((from, to) => supabase.from("demo_requests").select("id,utm_source,utm_medium,utm_campaign,referrer,created_at").order("id").range(from, to)),
     ]);
 
     return NextResponse.json({
       employee: employee.data,
-      kpis: { agencies: agencies.data?.length || 0, candidates: candidates.data?.length || 0, jobs: jobs.data?.length || 0, analyses: analyses.data?.length || 0, leads: demos.data?.length || 0 },
+      kpis: { agencies: agencies.data?.length || 0, candidates: candidates.count || 0, jobs: jobs.count || 0, analyses: analyses.count || 0, leads: demos.data?.length || 0 },
       sales: { agenciesByPlan: groupBy(agencies.data || [], x => x.plan_name || "Unknown").map(([plan,count]) => ({ plan,count })) },
       seo: { channels: groupBy((demos.data || []).map(x => ({ ...x, channel: classifyAcquisition(x) })), x => x.channel).map(([channel,count]) => ({ channel,count })) },
     });

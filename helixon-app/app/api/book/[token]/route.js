@@ -55,8 +55,14 @@ export async function POST(request, { params }) {
   const link = await load(token);
   if (!link || !link.candidates) return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });
   const body = await request.json().catch(() => ({}));
-  const pick = typeof body.startsAt === "string" ? new Date(body.startsAt).toISOString() : null;
-  const available = openSlots(link).map((s) => new Date(s).toISOString());
+  // An unparseable time is "not available", not a 500 (toISOString throws
+  // on an invalid date).
+  const picked = typeof body.startsAt === "string" ? new Date(body.startsAt) : null;
+  const pick = picked && !Number.isNaN(picked.getTime()) ? picked.toISOString() : null;
+  const available = openSlots(link)
+    .map((s) => new Date(s))
+    .filter((d) => !Number.isNaN(d.getTime()))
+    .map((d) => d.toISOString());
   if (link.status !== "open") return NextResponse.json({ error: "A time has already been booked on this link." }, { status: 409 });
   if (!pick || !available.includes(pick)) return NextResponse.json({ error: "That time isn't available any more - please pick another." }, { status: 409 });
 

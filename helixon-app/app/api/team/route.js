@@ -7,6 +7,7 @@ import { computePresence } from "@/lib/presence";
 import { getAgencyPrivacy } from "@/lib/privacy-settings";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fetchAll } from "@/lib/fetch-all";
 
 // "Team" is the set of profiles sharing an agency_id. Agency-plan teammates
 // join through a Clerk Organization invite (app/api/team/invite), and the
@@ -39,11 +40,17 @@ export const GET = customerRoute(async (_request, _context, auth) => {
       .from("profiles")
       .select("clerk_user_id, first_name, last_name, username, last_seen_at, last_active_at, presence_status, presence_message, presence_until, presence_hidden")
       .eq("agency_id", agencyId),
-    (await agencyDb())
-      .from("candidates")
-      .select("recruiter_id, processing_status, stage, next_action, created_at, last_activity_at")
-      .eq("agency_id", agencyId)
-      .not("recruiter_id", "is", null),
+    // A page at a time - one select stops at 1,000 rows, which undercounted
+    // everyone's candidates in a larger agency.
+    fetchAll(async (from, to) =>
+      (await agencyDb())
+        .from("candidates")
+        .select("id, recruiter_id, processing_status, stage, next_action, created_at, last_activity_at")
+        .eq("agency_id", agencyId)
+        .not("recruiter_id", "is", null)
+        .order("id")
+        .range(from, to)
+    ),
   ]);
 
   if (membersError || candidatesError) {
