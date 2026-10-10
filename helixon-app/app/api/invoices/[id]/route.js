@@ -15,7 +15,9 @@ import { agencyDb } from "@/lib/agency-db";
 // GET   one invoice with the agency's invoice details (for printing) and
 //       the connected accounts package, if any
 // PATCH { status, paidOn? }   mark paid / sent / void. Voiding a contract
-//       invoice puts its timesheets back to approved.
+//       invoice puts its timesheets back to approved, so void is final:
+//       un-voiding would bill those timesheets twice once they're invoiced
+//       again.
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   if (!(await getAccess(auth)).canSeeFinancials) return NextResponse.json({ error: "Invoices are only visible to the owner and admins." }, { status: 403 });
@@ -42,10 +44,15 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     .update({ status: body.status, paid_on: paidOn })
     .eq("id", id)
     .eq("agency_id", auth.agencyId)
+    .neq("status", "void")
     .select("id, number, status, paid_on, total, currency, client_id, placement_id")
     .maybeSingle();
   if (error) return NextResponse.json({ error: "Failed to update." }, { status: 500 });
-  if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!data) {
+    const { data: existing } = await (await agencyDb()).from("invoices").select("id").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
+    if (existing) return NextResponse.json({ error: "A void invoice can't be changed - raise a new one instead." }, { status: 409 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (body.status === "paid") after(() => emitWebhook(auth.agencyId, "invoice.paid", data));
   if (body.status === "void") {
     await (await agencyDb()).from("timesheets").update({ status: "approved", invoice_id: null }).eq("invoice_id", id).eq("agency_id", auth.agencyId);

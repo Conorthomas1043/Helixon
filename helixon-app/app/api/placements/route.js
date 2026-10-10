@@ -9,7 +9,8 @@ import { logClientActivity } from "@/lib/clients";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
-import { getAccess, redactPlacement } from "@/lib/permissions";
+import { getAccess, placementInputFor, redactPlacement } from "@/lib/permissions";
+import { fetchAll } from "@/lib/fetch-all";
 import { agencyDb } from "@/lib/agency-db";
 
 // Offers and placements (lib/placements.js).
@@ -23,12 +24,16 @@ const INVOICE_COLS = "id, number, status, total, currency, issued_on, due_on, pa
 
 export const GET = customerRoute(async (request, _context, auth) => {
   const params = new URL(request.url).searchParams;
-  let query = (await agencyDb()).from("placements").select(`*, invoices(${INVOICE_COLS})`).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(2000);
   const candidateId = cleanUuid(params.get("candidateId"));
-  if (candidateId) query = query.eq("candidate_id", candidateId);
-  if (PLACEMENT_STATUSES[params.get("status")]) query = query.eq("status", params.get("status"));
-  if (["permanent", "contract"].includes(params.get("kind"))) query = query.eq("kind", params.get("kind"));
-  const { data, error } = await query;
+  const db = await agencyDb();
+  // A page at a time - one select stops at 1,000 rows.
+  const { data, error } = await fetchAll((from, to) => {
+    let query = db.from("placements").select(`*, invoices(${INVOICE_COLS})`).eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).order("id");
+    if (candidateId) query = query.eq("candidate_id", candidateId);
+    if (PLACEMENT_STATUSES[params.get("status")]) query = query.eq("status", params.get("status"));
+    if (["permanent", "contract"].includes(params.get("kind"))) query = query.eq("kind", params.get("kind"));
+    return query.range(from, to);
+  }, { cap: 5000 });
   if (error) return NextResponse.json({ error: "Failed to load placements." }, { status: 500 });
   const names = await resolveRecruiterNames(supabase, (data ?? []).map((p) => p.recruiter_id));
   const access = await getAccess(auth);
@@ -40,7 +45,10 @@ export const GET = customerRoute(async (request, _context, auth) => {
   });
 });
 
-export const POST = customerRoute(async (request, _context, auth, body) => {
+export const POST = customerRoute(async (request, _context, auth, input) => {
+  // Money only from someone allowed to see it; the job's or client's terms
+  // still fill the fee in.
+  const body = placementInputFor(input, await getAccess(auth));
   const candidateId = cleanUuid(body.candidateId);
   const { data: candidate } = candidateId
     ? await (await agencyDb())

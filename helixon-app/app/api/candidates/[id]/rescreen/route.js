@@ -7,6 +7,7 @@ import { cleanUuid } from "@/lib/sanitize";
 import { rescreenCandidate } from "@/lib/rescreen";
 import { candidateHidden } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
+import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
 
 // POST { jobId } - screen a candidate already on file against another job
 // using the CV we already hold (lib/rescreen.js). A full analysis, so it
@@ -32,6 +33,12 @@ export async function POST(request, { params }) {
 
   if (!(await rateLimit(`run-user:${auth.userId}`, RUN_LIMIT_PER_USER_PER_HOUR))) {
     return NextResponse.json({ ok: false, error: "Hourly analysis limit reached. Please try again later." }, { status: 429 });
+  }
+
+  // A re-screen is a screening: the same monthly cap as /api/run.
+  if (auth.screeningCap) {
+    const refused = capRefusal(await screeningsThisMonth(auth.agencyId), auth.screeningCap);
+    if (refused) return NextResponse.json({ ok: false, capReached: true, error: refused.error }, { status: refused.status });
   }
 
   try {

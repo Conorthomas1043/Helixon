@@ -31,6 +31,10 @@ const BLOCK_THRESHOLD = Number(process.env.FIREWALL_BLOCK_THRESHOLD) || 30;
 // occasionally come from legitimate monitoring or authorized testing.
 const ALERT_THRESHOLD = Number(process.env.FIREWALL_ALERT_THRESHOLD) || 20;
 
+// Automatic blocks lift after a day unless an admin chooses otherwise, so a
+// mistaken one doesn't lock someone out until a person notices.
+const DEFAULT_BLOCK_HOURS = 24;
+
 // One flagged-but-not-blocked email per IP per hour, so a slow scan or a
 // noisy scanner doesn't produce dozens of emails for the same source.
 const FLAG_ALERT_COOLDOWN_SECONDS = 60 * 60;
@@ -44,7 +48,9 @@ function resolvePolicy(policy) {
     blockThreshold: Number(policy?.blockThreshold) || BLOCK_THRESHOLD,
     alertThreshold: Number(policy?.alertThreshold) || ALERT_THRESHOLD,
     autoBlock: policy?.autoBlock !== false,
-    autoBlockHours: Number(policy?.autoBlockHours) || 0,
+    // Unset = DEFAULT_BLOCK_HOURS; an explicit 0 (an admin's choice on the
+    // Security page) means permanent.
+    autoBlockHours: policy?.autoBlockHours == null ? DEFAULT_BLOCK_HOURS : Number(policy.autoBlockHours) || 0,
     emailAlerts: policy?.emailAlerts !== false,
     // Query strings carry free-text searches (admins' included), so by
     // default attacks found there are recorded and flagged but don't
@@ -69,8 +75,8 @@ export function getFirewallPolicy(policy, recipients = null) {
  * look" alert. Never throws - a bug here must never break request logging
  * or block a legitimate visitor over an internal error.
  *
- * @returns {Promise<boolean>} true if this request (and every subsequent
- *   one from the same IP, until an admin unblocks it) should be denied.
+ * @returns {Promise<boolean>} true if this request should be denied (and,
+ *   when the IP was blocked, every later one until the block lifts).
  */
 export async function enforceFirewallPolicy({
   supabase,
@@ -93,19 +99,19 @@ export async function enforceFirewallPolicy({
     const threat = scoreRequest({ path, query: blockOnQuery ? query : "", user_agent: userAgent, method, blocked: false });
     if (threat.score < alertThreshold) return false;
 
-    // Never auto-block on a request another website made the visitor's
-    // browser send. Otherwise any page (or an email with an image) could
-    // embed <img src="https://helixon.co.uk/..%2f"> and get every visitor's
-    // IP - a customer, or a whole office behind one NAT - blocked until an
-    // admin notices. Browsers mark those requests Sec-Fetch-Site:
-    // cross-site/same-site, and a page can't forge the header. Scanners and
-    // hand-typed probes (no header, or "none"/"same-origin") are still
-    // blocked. A cross-site one is refused on its own (so a scanner can't
-    // dodge the policy just by sending the header) and flagged for a human,
-    // but the IP isn't put on the block list.
-    const inducedCrossSite = fetchSite === "cross-site" || fetchSite === "same-site";
+    // Never put an IP on the block list over a request a browser sent. A
+    // link can make anyone's browser request a hostile-looking path: an
+    // <img> on another site (Sec-Fetch-Site: cross-site), a link clicked in
+    // Outlook, Slack or a PDF, or pasted into the address bar ("none"), or
+    // one inside a candidate's notes in the dashboard itself
+    // ("same-origin"). Blocking on those let one crafted URL lock a
+    // customer - or a whole office behind one NAT - out of the site. Every
+    // browser sends Sec-Fetch-Site, and a page can't remove it, so such a
+    // request is refused on its own and flagged for a human. Scanners and
+    // scripts (curl, sqlmap...) send no header and are still blocked.
+    const fromBrowser = Boolean(fetchSite);
 
-    if (autoBlock && threat.score >= blockThreshold && !inducedCrossSite) {
+    if (autoBlock && threat.score >= blockThreshold && !fromBrowser) {
       // Re-check rather than trusting the caller's alreadyBlocked=false:
       // closes the narrow race of two near-simultaneous requests from the
       // same brand-new attacking IP both trying to be "the" insert, so at
@@ -179,7 +185,7 @@ export async function enforceFirewallPolicy({
       }
     }
 
-    return inducedCrossSite && threat.score >= blockThreshold;
+    return fromBrowser && threat.score >= blockThreshold;
   } catch (err) {
     reportError("[firewall] enforceFirewallPolicy error:", err.message);
     return Boolean(alreadyBlocked);

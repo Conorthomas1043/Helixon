@@ -11,6 +11,9 @@ function fakeSupabase(profiles) {
       const builder = {
         select: () => builder,
         update: (patch) => ((q.patch = patch), updates.push(q), builder),
+        delete: () => ((q.patch = "delete"), updates.push(q), builder),
+        order: () => builder,
+        range: () => builder,
         eq: (col, val) => (q.filters.push([col, val]), builder),
         in: (col, val) => (q.filters.push([col, val]), builder),
         then: (resolve) => resolve(table === "profiles" && !q.patch ? { data: profiles } : table === "candidates" && !q.patch ? { data: [{ id: "c1" }] } : { data: null }),
@@ -31,6 +34,9 @@ describe("anonymiseDeletedUser", () => {
     const notes = sb.updates.find((u) => u.table === "candidate_notes");
     expect(notes.patch).toEqual({ author_name: FORMER_MEMBER, author_id: null });
     expect(notes.filters).toContainEqual(["agency_id", "ag1"]);
+
+    const tokens = sb.updates.find((u) => u.table === "member_tokens");
+    expect(tokens).toMatchObject({ patch: "delete", filters: [["user_id", "user_9"]] });
 
     const activity = sb.updates.find((u) => u.table === "candidate_activity");
     expect(activity.patch).toEqual({ actor: FORMER_MEMBER });

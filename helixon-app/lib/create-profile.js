@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { after } from "next/server";
 import { sendWelcomeEmail } from "@/lib/lifecycle-email";
 import { stripe } from "@/lib/stripe";
+import { planForPriceId } from "@/lib/plans";
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 
@@ -136,6 +137,10 @@ export async function createProfileAndAgency({
 //      session can't be reused to unlock further accounts. Backed by a
 //      unique index (supabase/migrations/*_unique_stripe_subscription_id)
 //      so two simultaneous claims can't both succeed.
+// A session stays "complete" forever, so the status written is the
+// subscription's real one from Stripe, and a subscription already linked to
+// this profile is left alone: replaying an old session id (it's in the
+// success page's URL) must never turn a cancelled subscription back on.
 // Returns { linked: false, reason } when a guard refuses.
 export async function linkSubscriptionFromStripeSession({
   profileId,
@@ -170,30 +175,42 @@ export async function linkSubscriptionFromStripeSession({
     }
   }
 
-  if (session.subscription) {
-    const { data: claimedElsewhere, error: claimError } = await supabase
-      .from("subscriptions")
-      .select("user_id")
-      .eq("stripe_subscription_id", session.subscription)
-      .neq("user_id", profileId)
-      .limit(1);
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+  if (!subscriptionId) return { linked: false, reason: "no_subscription" };
 
-    if (claimError) throw new Error(claimError.message);
-    if (claimedElsewhere?.length) {
-      console.warn(`[link-subscription] Subscription ${session.subscription} is already linked to another profile - refusing to link.`);
-      return { linked: false, reason: "session_already_claimed" };
-    }
+  const { data: current, error: currentError } = await supabase
+    .from("subscriptions")
+    .select("stripe_subscription_id, plan")
+    .eq("user_id", profileId)
+    .maybeSingle();
+  if (currentError) throw new Error(currentError.message);
+  if (current?.stripe_subscription_id === subscriptionId) {
+    return { linked: true, plan: current.plan ?? session.metadata?.plan ?? null, already: true };
   }
 
-  const plan = session.metadata?.plan;
+  const { data: claimedElsewhere, error: claimError } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_subscription_id", subscriptionId)
+    .neq("user_id", profileId)
+    .limit(1);
+
+  if (claimError) throw new Error(claimError.message);
+  if (claimedElsewhere?.length) {
+    console.warn(`[link-subscription] Subscription ${subscriptionId} is already linked to another profile - refusing to link.`);
+    return { linked: false, reason: "session_already_claimed" };
+  }
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const plan = planForPriceId(subscription.items?.data?.[0]?.price?.id) || session.metadata?.plan || null;
 
   const { error } = await supabase.from("subscriptions").upsert(
     {
       user_id: profileId,
       plan,
       stripe_customer_id: session.customer,
-      stripe_subscription_id: session.subscription,
-      status: "active",
+      stripe_subscription_id: subscriptionId,
+      status: subscription.status,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" }
@@ -204,7 +221,7 @@ export async function linkSubscriptionFromStripeSession({
     // between the check above and this write (the unique index on
     // stripe_subscription_id is what makes that race safe).
     if (error.code === "23505") {
-      console.warn(`[link-subscription] Subscription ${session.subscription} was claimed concurrently - refusing to link.`);
+      console.warn(`[link-subscription] Subscription ${subscriptionId} was claimed concurrently - refusing to link.`);
       return { linked: false, reason: "session_already_claimed" };
     }
     throw new Error(error.message);

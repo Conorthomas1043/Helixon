@@ -60,7 +60,7 @@ export async function sharedProfiles(share) {
     candidateId: r.candidate_id,
     profile: buildClientProfile(
       { candidate: r.candidates, extracted: r.candidates.extracted, result: latest.get(r.candidate_id) ?? null, job: r.candidates.jobs },
-      { blind: share.blind, label: blindLabel(i), includeConcerns: share.include_concerns }
+      { blind: share.blind, label: blindLabel(i), includeConcerns: share.include_concerns, includeScore: share.show_score !== false }
     ),
     note: r.note,
     decision: r.client_decision,

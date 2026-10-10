@@ -5,6 +5,7 @@ import { JsonObject } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanPermissions, getAccess, normalisePermissions } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 // GET    the workspace's permissions (lib/permissions.js) and what the
 //        signed-in member can see
@@ -22,7 +23,7 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
   const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
   const settings = data?.settings || {};
   const permissions = { ...normalisePermissions(settings), ...changes };
-  const { error } = await supabase.from("agencies").update({ settings: { ...settings, permissions } }).eq("id", auth.agencyId);
+  const { error } = await mergeAgencySettings(supabase, auth.agencyId, { permissions });
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logAudit({
     auth,

@@ -92,7 +92,14 @@ export async function verifyGateCookie(cookieValue: string | undefined): Promise
   if (value !== GATE_VALUE || !nonce || !issuedAtStr) return false;
 
   const payload = `${value}.${nonce}.${issuedAtStr}`;
-  const expected = await hmacHex(payload);
+  // hmacHex throws when SITE_GATE_SECRET isn't set; that's "not verified",
+  // never a 500 from the proxy.
+  let expected: string;
+  try {
+    expected = await hmacHex(payload);
+  } catch {
+    return false;
+  }
   if (!timingSafeEqual(sig, expected)) return false;
 
   const issuedAt = Number(issuedAtStr);

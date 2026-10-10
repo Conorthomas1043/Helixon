@@ -32,6 +32,9 @@ vi.mock("@/lib/permissions", () => ({
   candidateHidden: async () => null,
   getAccess: async () => ({ seesAllCandidates: true, canSeeFinancials: true }),
   redactPlacement: (p) => p,
+  redactJob: (j) => j,
+  withoutMoney: (u) => u,
+  placementInputFor: (b) => b,
   canSeeCandidate: () => true,
   scopeCandidateQuery: (q) => q,
 }));

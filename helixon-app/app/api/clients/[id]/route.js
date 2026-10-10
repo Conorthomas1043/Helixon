@@ -4,7 +4,7 @@ import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients";
-import { getAccess } from "@/lib/permissions";
+import { getAccess, withoutMoney } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // One client (lib/clients.js).
@@ -77,8 +77,11 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const fields = cleanClientFields(body);
-  if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
+  // The fee only from someone allowed to see it (lib/permissions.js).
+  const access = await getAccess(auth);
+  const cleaned = cleanClientFields(body);
+  if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
+  const fields = withoutMoney(cleaned, access, ["fee_percent"]);
   if (Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
 
   const { data, error } = await (await agencyDb())
@@ -98,7 +101,8 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   await logClientActivity(auth.agencyId, client.id, "client_updated", recruiterDisplayName(auth.profile) || auth.userId, {
     fields: Object.keys(fields),
   });
-  return NextResponse.json({ client: toClient(data) });
+  const shaped = toClient(data);
+  return NextResponse.json({ client: access.canSeeFinancials ? shaped : { ...shaped, feePercent: null } });
 }, { body: ClientInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {

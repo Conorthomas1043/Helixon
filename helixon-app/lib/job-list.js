@@ -1,6 +1,7 @@
 import "server-only";
 
 import { agencyDb } from "@/lib/agency-db";
+import { getAccess, redactJob } from "@/lib/permissions";
 
 // The agency's jobs, newest first, each with its screening counts. Shared by
 // GET /api/jobs and the jobs page, which loads it on the server. Rows keep
@@ -11,7 +12,9 @@ import { agencyDb } from "@/lib/agency-db";
  * @param {{ agencyId: string }} auth a signed-in member
  * @returns {Promise<object[]>}
  */
-export async function listJobs({ agencyId }) {
+export async function listJobs(auth) {
+  const { agencyId } = auth;
+  const access = await getAccess(auth);
   const { data: jobs, error } = await (await agencyDb())
     .from("jobs")
     .select("*, candidates(id, processing_status, stage, match_score)")
@@ -22,7 +25,7 @@ export async function listJobs({ agencyId }) {
   return jobs.map((job) => {
     const completed = job.candidates.filter((c) => c.processing_status === "completed");
     return {
-      ...job,
+      ...redactJob(job, access),
       candidates: undefined,
       candidateCount: job.candidates.length,
       strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,

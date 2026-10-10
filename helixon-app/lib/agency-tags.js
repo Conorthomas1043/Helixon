@@ -3,6 +3,7 @@
 // are what candidates.tags stores; custom ids start with "c-" so they can
 // never collide with a built-in one.
 import { TAG_CATALOG } from "@/lib/tag-catalog";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 export const MAX_CUSTOM_TAGS = 40;
 export const MAX_TAG_LABEL = 30;
@@ -57,10 +58,7 @@ export async function addAgencyTag(supabase, agencyId, rawLabel) {
   if (custom.length >= MAX_CUSTOM_TAGS) return { error: `You can have up to ${MAX_CUSTOM_TAGS} of your own tags.` };
 
   const tag = { id, label };
-  const { error } = await supabase
-    .from("agencies")
-    .update({ settings: { ...settings, custom_tags: [...custom, tag] } })
-    .eq("id", agencyId);
+  const { error } = await mergeAgencySettings(supabase, agencyId, { custom_tags: [...custom, tag] });
   if (error) throw new Error(error.message);
   return { tag: { ...tag, custom: true } };
 }
@@ -86,10 +84,7 @@ export async function removeAgencyTag(supabase, agencyId, tagId) {
     if (error) throw new Error(error.message);
   }
 
-  const { error } = await supabase
-    .from("agencies")
-    .update({ settings: { ...settings, custom_tags: custom.filter((t) => t.id !== tagId) } })
-    .eq("id", agencyId);
+  const { error } = await mergeAgencySettings(supabase, agencyId, { custom_tags: custom.filter((t) => t.id !== tagId) });
   if (error) throw new Error(error.message);
   return { ok: true, untagged: tagged?.length || 0 };
 }

@@ -101,12 +101,17 @@ export async function POST(request) {
   // visible in Supabase, so we don't fail the whole submission for it.
   let emailSent = false;
   if (process.env.RESEND_API_KEY) {
+    // The Resend SDK reports a failed send as { error }, not by throwing.
+    // email_sent records the sales notification; the visitor's
+    // confirmation is a courtesy and only reported if it fails.
     try {
-      await resend.emails.send(
+      const { error: notifyError } = await resend.emails.send(
         salesNotificationEmail({ name, email, company, message, utm_source, utm_medium, utm_campaign, referrer }),
       );
+      if (notifyError) throw new Error(notifyError.message);
+      emailSent = true;
 
-      await resend.emails.send({
+      const { error: replyError } = await resend.emails.send({
         from: FROM_EMAIL,
         to: email,
         subject: "We've got your demo request",
@@ -117,8 +122,7 @@ export async function POST(request) {
           <p>- The Helixon team</p>
         `,
       });
-
-      emailSent = true;
+      if (replyError) reportError("Failed to send demo request confirmation:", replyError.message);
     } catch (err) {
       reportError("Failed to send demo request email:", err);
       // Don't fail the request - it's already saved.
@@ -128,14 +132,10 @@ export async function POST(request) {
   }
 
   if (emailSent && insertedId) {
-    // Fire-and-forget status update; doesn't affect the response either way.
-    supabase
-      .from("demo_requests")
-      .update({ email_sent: true })
-      .eq("id", insertedId)
-      .then(({ error }) => {
-        if (error) reportError("Failed to mark demo request as emailed:", error);
-      });
+    // Awaited: a serverless function can be frozen as soon as it responds.
+    // Doesn't affect the response either way.
+    const { error } = await supabase.from("demo_requests").update({ email_sent: true }).eq("id", insertedId);
+    if (error) reportError("Failed to mark demo request as emailed:", error);
   }
 
   return NextResponse.json({ ok: true });

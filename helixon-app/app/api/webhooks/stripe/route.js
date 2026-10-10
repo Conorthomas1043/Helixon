@@ -28,12 +28,22 @@ export async function POST(request) {
       case "checkout.session.completed": {
         const session = event.data.object;
         const userId = session.client_reference_id || session.metadata?.userId;
-        const plan = session.metadata?.plan;
 
         if (!userId) {
           reportError("[stripe-webhook] checkout.session.completed with no userId - cannot fulfill.");
           break;
         }
+
+        // The subscription's own status, not a hard-coded "active": a
+        // session paid by an asynchronous method completes before the money
+        // arrives, and a retried delivery can land after a cancellation.
+        const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+        if (!subscriptionId) {
+          reportError("[stripe-webhook] checkout.session.completed with no subscription - cannot fulfill.");
+          break;
+        }
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const plan = planForPriceId(subscription.items?.data?.[0]?.price?.id) || session.metadata?.plan || null;
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
@@ -41,13 +51,15 @@ export async function POST(request) {
             user_id: userId,
             plan,
             stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-            status: "active",
+            stripe_subscription_id: subscriptionId,
+            status: subscription.status,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
-        if (error) reportError("[stripe-webhook] Failed to upsert subscription:", error.message);
-        after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan: plan || null }));
+        // Thrown, not just logged: the catch below answers 500 so Stripe
+        // retries. A 200 here would lose the activation for good.
+        if (error) throw new Error(`Failed to upsert subscription: ${error.message}`);
+        after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan }));
         break;
       }
 
@@ -76,7 +88,7 @@ export async function POST(request) {
           .eq("stripe_subscription_id", sub.id)
           .select("user_id, plan");
 
-        if (error) reportError("[stripe-webhook] Failed to update subscription status:", error.message);
+        if (error) throw new Error(`Failed to update subscription status: ${error.message}`);
 
         const billingEvents = billingEventsFor(event.type, sub, event.data.previous_attributes);
         const row = rows?.[0];

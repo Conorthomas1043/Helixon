@@ -3,20 +3,20 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getCustomerContext } from "@/lib/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { reportError } from "@/lib/report-error";
+import { BILLING_STATUSES } from "@/lib/subscription-status";
 
 // POST /api/account/delete  { confirm: "DELETE" }
 //
 // Lets a signed-in person delete their own sign-in (their Clerk account). The
-// Clerk `user.deleted` webhook (app/api/webhooks/clerk) then detaches their
-// profile from the agency, so the agency's candidates, jobs and billing history
-// stay intact - only the person's ability to sign in goes away.
+// Clerk `user.deleted` webhook (app/api/webhooks/clerk) then anonymises their
+// profile (lib/anonymise-user.js): the sign-in link, name and private tokens
+// go, while the agency's candidates, jobs and billing history stay intact.
 //
 // It refuses while the person has a live subscription. Deleting the account does
 // NOT cancel Stripe billing, so without this guard someone could delete their
 // account and keep being charged with no way to reach the billing page. They
 // have to cancel first (Billing > Manage subscription), which is what the error
 // tells them.
-const BILLING_STATUSES = new Set(["active", "trialing", "past_due", "unpaid"]);
 
 export async function POST(request) {
   const { userId } = await auth();

@@ -4,6 +4,7 @@ import { customerRoute } from "@/lib/api/route";
 import { JsonObject } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanCustomisation, normaliseCustomisation } from "@/lib/custom-fields";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 // GET / PUT the agency's pipeline sub-stages and custom fields
 // (lib/custom-fields.js). Everyone reads them; the owner or an admin
@@ -21,11 +22,7 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   if (!(await canManageWorkspace(auth))) return NextResponse.json({ error: NOT_ADMIN }, { status: 403 });
   const cleaned = cleanCustomisation(body);
   if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
-  const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
-  const { error } = await supabase
-    .from("agencies")
-    .update({ settings: { ...(data?.settings || {}), customisation: cleaned } })
-    .eq("id", auth.agencyId);
+  const { error } = await mergeAgencySettings(supabase, auth.agencyId, { customisation: cleaned });
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   return NextResponse.json({ ...cleaned, canManage: true });
 }, { body: JsonObject, optionalBody: true });

@@ -42,7 +42,7 @@ export const DEFAULTS = Object.freeze({
   maintenance: { enabled: false, message: "" },
   announcement: { enabled: false, text: "", tone: "info", linkLabel: "", linkUrl: "" },
   features: Object.fromEntries(FEATURES.map((f) => [f.key, true])),
-  firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 0, emailAlerts: true, blockOnQuery: false },
+  firewall: { blockThreshold: ENV_BLOCK, alertThreshold: Math.min(ENV_ALERT, ENV_BLOCK), autoBlock: true, autoBlockHours: 24, emailAlerts: true, blockOnQuery: false },
   health: { muted: [] },
   alerts: { recipients: [], healthDigest: true },
   traffic: {

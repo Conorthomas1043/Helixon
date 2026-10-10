@@ -6,6 +6,7 @@ import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { startOfMonthUtc } from "@/lib/agency-controls";
 import { demoExpired } from "@/lib/subscription-status";
+import { revokeMemberTokens } from "@/lib/member-tokens";
 
 // The customer view: one row per agency with the numbers that answer "who is
 // using Helixon, on what plan, and how much?", plus the admin controls on a
@@ -70,6 +71,8 @@ export async function GET(request) {
       memberCount = { get: (id) => num(id, "members") };
       candidateCount = { get: (id) => num(id, "candidates") };
       jobCount = { get: (id) => num(id, "jobs") };
+      // Screenings run this month (scores rows) since migration 20261010000000;
+      // the column keeps its original name.
       monthCount = { get: (id) => num(id, "candidates_month") };
       lastActivityOf = (id) => {
         const t = byAgency.get(id)?.last_activity;
@@ -77,22 +80,22 @@ export async function GET(request) {
       };
     } else {
       // Fallback: tally capped row pulls in JavaScript.
-      const [candidates, jobs] = await Promise.all([
+      const [candidates, jobs, screenings] = await Promise.all([
         supabase.from("candidates").select("agency_id,created_at").limit(ROW_CAP),
         supabase.from("jobs").select("agency_id,created_at,status").limit(ROW_CAP),
+        supabase.from("scores").select("agency_id").gte("created_at", startOfMonthUtc()).limit(ROW_CAP),
       ]);
-      for (const result of [candidates, jobs]) {
+      for (const result of [candidates, jobs, screenings]) {
         if (result.error) return adminDbError("agencies", result.error);
       }
       memberCount = tally(profiles.data, "agency_id");
       candidateCount = tally(candidates.data, "agency_id");
       jobCount = tally(jobs.data, "agency_id");
-      const monthStart = Date.parse(startOfMonthUtc());
-      monthCount = tally((candidates.data || []).filter((c) => Date.parse(c.created_at) >= monthStart), "agency_id");
+      monthCount = tally(screenings.data, "agency_id");
       const lastCandidate = latest(candidates.data, "agency_id", "created_at");
       const lastJob = latest(jobs.data, "agency_id", "created_at");
       lastActivityOf = (id) => Math.max(lastCandidate.get(id) || 0, lastJob.get(id) || 0);
-      truncated = [profiles, candidates, jobs].some((r) => (r.data || []).length >= ROW_CAP);
+      truncated = [profiles, candidates, jobs, screenings].some((r) => (r.data || []).length >= ROW_CAP);
     }
 
     // A subscription belongs to whoever paid (one profile); every member of that
@@ -195,7 +198,8 @@ async function detail(supabase, id) {
       .eq("agency_id", id)
       .order("created_at", { ascending: false })
       .limit(8),
-    supabase.from("candidates").select("id", { count: "exact", head: true }).eq("agency_id", id).gte("created_at", startOfMonthUtc()),
+    // Screenings run, as the cap counts them (lib/agency-controls.js).
+    supabase.from("scores").select("id", { count: "exact", head: true }).eq("agency_id", id).gte("created_at", startOfMonthUtc()),
     supabase
       .from("admin_audit_logs")
       .select("id,admin_username,action,metadata,created_at")
@@ -327,10 +331,11 @@ export async function PATCH(request) {
         .update({ agency_id: null })
         .eq("id", profileId)
         .eq("agency_id", id)
-        .select("id,first_name,last_name,username");
+        .select("id,first_name,last_name,username,clerk_user_id");
       if (removeError) return adminDbError("agencies", removeError);
       if (!removed?.length) return json({ error: "That person isn't a member of this agency." }, 404);
       const m = removed[0];
+      await revokeMemberTokens(m.clerk_user_id, id);
       metadata = { name: agency.name, member: [m.first_name, m.last_name].filter(Boolean).join(" ") || m.username || profileId };
     } else {
       return json({ error: "Unknown agency action." }, 400);

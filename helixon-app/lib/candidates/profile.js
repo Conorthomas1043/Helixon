@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { agencyDb } from "@/lib/agency-db";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
-import { candidateHidden, getAccess } from "@/lib/permissions";
+import { candidateHidden, getAccess, redactJob } from "@/lib/permissions";
 
 const NOT_FOUND = { status: 404, error: "Not found" };
 
@@ -130,7 +130,7 @@ export async function loadCandidateProfile(auth, id) {
       currentCompany: candidate.current_company,
       yearsExperience: candidate.years_experience ?? extracted.years_experience ?? null,
       jobId: candidate.job_id,
-      job: candidate.jobs ?? null,
+      job: redactJob(candidate.jobs ?? null, await getAccess(auth)),
       jobTitle: candidate.jobs?.title || "Unspecified role",
       company: candidate.jobs?.client ?? null,
       recruiterId: candidate.recruiter_id,

@@ -3,7 +3,10 @@
 // identifies them should: GDPR erasure applies to recruiters' own data too.
 // Called from the Clerk user.deleted webhook (app/api/webhooks/clerk).
 //
-// - profile: name, username and presence cleared, sign-in detached
+// - profile: name, username and presence cleared, sign-in detached. It
+//   stays in the agency (its subscription row may be what the team's access
+//   hangs on); the Clerk webhook never re-links a profile by username alone
+// - calendar feed and BCC tokens deleted
 // - notes they wrote: author shown as "Former team member"
 // - activity history and talent pool entries: their name replaced likewise
 //
@@ -12,6 +15,7 @@
 // them up.
 
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { fetchAll } from "@/lib/fetch-all";
 
 export const FORMER_MEMBER = "Former team member";
 const CHUNK = 200;
@@ -22,6 +26,9 @@ export async function anonymiseDeletedUser(supabase, clerkUserId) {
     .select("id, agency_id, first_name, last_name, username")
     .eq("clerk_user_id", clerkUserId);
   if (error) throw new Error(error.message);
+
+  // Their calendar feed and BCC address stop working (lib/member-tokens.js).
+  await supabase.from("member_tokens").delete().eq("user_id", clerkUserId);
 
   for (const profile of profiles || []) {
     const name = recruiterDisplayName(profile);
@@ -38,7 +45,7 @@ export async function anonymiseDeletedUser(supabase, clerkUserId) {
       if (name) {
         await supabase.from("candidates").update({ talent_pool_by: FORMER_MEMBER }).eq("agency_id", profile.agency_id).eq("talent_pool_by", name);
 
-        const { data: rows } = await supabase.from("candidates").select("id").eq("agency_id", profile.agency_id);
+        const { data: rows } = await fetchAll((from, to) => supabase.from("candidates").select("id").eq("agency_id", profile.agency_id).order("id").range(from, to));
         const ids = (rows || []).map((r) => r.id);
         for (let i = 0; i < ids.length; i += CHUNK) {
           await supabase.from("candidate_activity").update({ actor: FORMER_MEMBER }).in("candidate_id", ids.slice(i, i + CHUNK)).eq("actor", name);

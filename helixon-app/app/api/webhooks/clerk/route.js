@@ -1,5 +1,5 @@
 import { Webhook } from "svix";
-import { ACCESS_STATUSES } from "@/lib/subscription-status";
+import { BILLING_STATUSES } from "@/lib/subscription-status";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { anonymiseDeletedUser } from "@/lib/anonymise-user";
@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
 import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/create-profile";
 import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/clerk-org";
 import { reportError } from "@/lib/report-error";
+import { revokeMemberTokens } from "@/lib/member-tokens";
 
 // Replaces app/api/auth/signup/route.js's job of creating the `agencies`
 // row and the `profiles` row. Under Supabase Auth that happened inline in
@@ -129,50 +130,52 @@ async function handleUserCreated(clerkUser) {
   if (linkedError) throw new Error(linkedError.message);
   if (alreadyLinked) return;
 
-  // ── Case 1: this username already has a profile (pre-Clerk account
-  // being migrated - see the migration SQL's backfill note). Link it
-  // instead of creating a duplicate agency/profile.
-  //
-  // NOTE: matched on `username`, not email - the original `profiles`
-  // schema (created directly in the Supabase dashboard, not tracked in
-  // this repo) is not confirmed to have an `email` column, since the old
-  // code always read email off the Supabase Auth user object rather than
-  // `profiles`. If you do have an `email` column on `profiles`, matching
-  // on that instead is more reliable (usernames could theoretically be
-  // reused by a different person) - swap `.eq("username", username)`
-  // below for `.eq("email", email)` in that case.
-  if (username) {
-    const { data: existing, error: lookupError } = await supabase
-      .from("profiles")
-      .select("id, clerk_user_id")
-      .eq("username", username)
-      .maybeSingle();
+  const verifiedEmails = (clerkUser.email_addresses || [])
+    .filter((e) => e.verification?.status === "verified")
+    .map((e) => String(e.email_address || "").toLowerCase());
 
-    if (lookupError) throw new Error(lookupError.message);
-
-    if (existing && !existing.clerk_user_id) {
-      const { error: linkError } = await supabase
-        .from("profiles")
-        .update({ clerk_user_id: clerkUserId })
-        .eq("id", existing.id);
-      if (linkError) throw new Error(linkError.message);
-      return;
-    }
-  }
-
-  // ── Case 2: brand-new signup - create the agency + profile, same shape
-  // as the old app/api/auth/signup/route.js did.
+  // Case 2 below needs a valid username; checked first so nothing that
+  // could never be issued at sign-up (an anonymised "deleted-..." profile,
+  // say) is ever looked up.
   if (!USERNAME_RE.test(username)) {
     reportError(`[clerk webhook] user ${clerkUserId} created with invalid/missing username metadata; skipping profile creation`);
     return;
   }
 
+  // ── Case 1: a pre-Clerk account (profiles.id is its Supabase Auth user
+  // id, clerk_user_id not yet set) is linked only when its sign-in email is
+  // one this Clerk user has verified. A matching username alone proves
+  // nothing - usernames are public and can be reused - so without the
+  // email it gets a new profile and agency under a free username instead.
+  let profileUsername = username;
+  const { data: existing, error: lookupError } = await supabase
+    .from("profiles")
+    .select("id, clerk_user_id")
+    .eq("username", username)
+    .maybeSingle();
+  if (lookupError) throw new Error(lookupError.message);
+
+  if (existing) {
+    if (!existing.clerk_user_id && (await legacyEmailMatches(existing.id, verifiedEmails))) {
+      const { error: linkError } = await supabase
+        .from("profiles")
+        .update({ clerk_user_id: clerkUserId })
+        .eq("id", existing.id)
+        .is("clerk_user_id", null);
+      if (linkError) throw new Error(linkError.message);
+      return;
+    }
+    profileUsername = await generateUsername(username);
+  }
+
+  // ── Case 2: brand-new signup - create the agency + profile, same shape
+  // as the old app/api/auth/signup/route.js did.
   const { profileId } = await createProfileAndAgency({
     clerkUserId,
     email,
     firstName,
     lastName,
-    username,
+    username: profileUsername,
     agencyName,
     plan: meta.plan,
   });
@@ -183,10 +186,6 @@ async function handleUserCreated(clerkUser) {
   // second, separately-timed Stripe webhook race.
   if (meta.stripeSessionId) {
     try {
-      const verifiedEmails = (clerkUser.email_addresses || [])
-        .filter((e) => e.verification?.status === "verified")
-        .map((e) => e.email_address);
-
       const linkResult = await linkSubscriptionFromStripeSession({
         profileId,
         stripeSessionId: meta.stripeSessionId,
@@ -205,6 +204,19 @@ async function handleUserCreated(clerkUser) {
       // "username already exists" case for an account that's already set up.
       reportError("[clerk webhook] Failed to link subscription:", err.message);
     }
+  }
+}
+
+// Whether the Supabase Auth account behind a pre-Clerk profile signed in
+// with one of `verifiedEmails`. False when there's no such account.
+async function legacyEmailMatches(profileId, verifiedEmails) {
+  if (!verifiedEmails.length) return false;
+  try {
+    const { data, error } = await supabase.auth.admin.getUserById(profileId);
+    if (error || !data?.user?.email) return false;
+    return verifiedEmails.includes(data.user.email.toLowerCase());
+  } catch {
+    return false;
   }
 }
 
@@ -305,8 +317,8 @@ async function handleOrganizationMembershipCreated(membership) {
 
 // Whether an existing profile can be moved into the agency that just
 // invited them: only when nobody else is in their current agency and it has
-// no active subscription (typically a solo workspace from signing up outside
-// the invite flow, or one whose plan has lapsed). Its data moves with them.
+// no subscription Stripe is still billing (typically a solo workspace from
+// signing up outside the invite flow, or one whose plan has lapsed). Its data moves with them.
 // Anyone with a paid or shared workspace of their own stays where they are.
 async function canMoveToInvitingAgency(profile) {
   if (!profile.agency_id) return true;
@@ -322,7 +334,7 @@ async function canMoveToInvitingAgency(profile) {
     .from("subscriptions")
     .select("id")
     .eq("user_id", profile.id)
-    .in("status", [...ACCESS_STATUSES])
+    .in("status", [...BILLING_STATUSES])
     .limit(1);
   if (subsError) throw new Error(subsError.message);
   return (subs || []).length === 0;
@@ -367,6 +379,7 @@ async function handleOrganizationMembershipDeleted(membership) {
     .eq("clerk_user_id", clerkUserId)
     .eq("agency_id", agency.id);
   if (updateError) throw new Error(updateError.message);
+  await revokeMemberTokens(clerkUserId, agency.id);
 }
 
 // Backstop against the 5-seat cap already enforced when an invite is sent

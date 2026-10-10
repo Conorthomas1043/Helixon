@@ -54,9 +54,9 @@ function skillNames(extracted, result) {
 
 /**
  * @param {{ candidate?: Record<string, any>, extracted?: Record<string, any>, result?: Record<string, any> | null, job?: Record<string, any> | null }} input
- * @param {{ blind?: boolean, label?: string, includeConcerns?: boolean }} [options]
+ * @param {{ blind?: boolean, label?: string, includeConcerns?: boolean, includeScore?: boolean }} [options]
  */
-export function buildClientProfile({ candidate = {}, extracted = {}, result = null, job = null }, { blind = false, label = "Candidate", includeConcerns = false } = {}) {
+export function buildClientProfile({ candidate = {}, extracted = {}, result = null, job = null }, { blind = false, label = "Candidate", includeConcerns = false, includeScore = true } = {}) {
   const ex = extracted || {};
   // Free-text redaction works off what extraction identified, plus what the
   // recruiter may have corrected on the row since.
@@ -116,7 +116,9 @@ export function buildClientProfile({ candidate = {}, extracted = {}, result = nu
     noticePeriod: text(ex.notice_period) || null,
     willingToRelocate: typeof ex.willing_to_relocate === "boolean" ? ex.willing_to_relocate : null,
     languages: (ex.languages || []).map((l) => (typeof l === "string" ? l : l?.language || l?.name)).filter(Boolean).slice(0, 6),
-    score: typeof candidate.match_score === "number" ? candidate.match_score : result?.match_score ?? null,
+    // Left out entirely when the share hides it - hiding it only on the
+    // page still sent it to anyone with the link.
+    score: !includeScore ? null : typeof candidate.match_score === "number" ? candidate.match_score : result?.match_score ?? null,
     summary: summary || null,
     strengths,
     concerns,

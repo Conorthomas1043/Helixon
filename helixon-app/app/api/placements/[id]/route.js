@@ -8,7 +8,7 @@ import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
-import { getAccess, redactPlacement } from "@/lib/permissions";
+import { getAccess, placementInputFor, redactPlacement } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // One placement: GET (with invoices and timesheets), PATCH, DELETE (only
@@ -47,7 +47,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const p = await load(auth.agencyId, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const fields = cleanPlacement(body, p);
+  const fields = cleanPlacement(placementInputFor(body, await getAccess(auth)), p);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
   if (!Object.keys(fields).length) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   if (fields.splits && !(await splitsAreTeammates(auth.agencyId, fields.splits))) {

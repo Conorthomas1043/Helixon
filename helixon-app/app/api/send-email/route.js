@@ -4,7 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
-import { rateLimit } from "@/lib/ratelimit";
+import { acquireLock, rateLimit, releaseLock } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { reportError } from "@/lib/report-error";
@@ -28,6 +28,7 @@ function isValidEmail(value) {
 }
 
 export async function POST(request) {
+  let lockName = null;
   try {
     const auth =
       await requireCustomerContext({
@@ -90,6 +91,16 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    // One send per draft: without this, two clicks (or two tabs) could
+    // both pass the "already sent" check below and both send.
+    if (!(await acquireLock(`send-email:${artifactId}`, 120))) {
+      return Response.json(
+        { ok: false, error: "This email draft is already being sent." },
+        { status: 409 }
+      );
+    }
+    lockName = `send-email:${artifactId}`;
 
     const {
       data: artifact,
@@ -246,7 +257,7 @@ export async function POST(request) {
       );
     }
 
-    await (await agencyDb())
+    const { error: markError } = await (await agencyDb())
       .from("artifacts")
       .update({
         content: {
@@ -265,6 +276,9 @@ export async function POST(request) {
       })
       .eq("id", artifactId)
       .eq("agency_id", agencyId);
+    if (markError) {
+      reportError("[send-email] Sent, but couldn't mark the draft as sent:", markError.message);
+    }
 
     // On the candidate's timeline, and counted with the rest of their
     // outreach in Analytics ("Emails") - sends from Helixon used to leave
@@ -300,5 +314,7 @@ export async function POST(request) {
       },
       { status: 500 }
     );
+  } finally {
+    if (lockName) await releaseLock(lockName);
   }
 }

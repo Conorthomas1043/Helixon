@@ -19,7 +19,10 @@ const client = { from: (name) => table(name) };
 const hidden = vi.fn();
 vi.mock("@/lib/supabase", () => ({ supabase: client }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => client }));
-vi.mock("@/lib/permissions", () => ({ candidateHidden: (...a) => hidden(...a), getAccess: async () => ({ canSeeFinancials: false }) }));
+vi.mock("@/lib/permissions", async (importOriginal) => {
+  const { redactJob } = await importOriginal();
+  return { candidateHidden: (...a) => hidden(...a), getAccess: async () => ({ canSeeFinancials: false }), redactJob };
+});
 vi.mock("@/lib/recruiter-directory", () => ({ resolveRecruiterNames: async () => new Map(), recruiterDisplayName: () => "" }));
 
 const { loadCandidateProfile } = await import("./profile");
@@ -44,13 +47,14 @@ describe("loadCandidateProfile", () => {
 
   it("returns the profile, hiding fees from members without financial access", async () => {
     results.candidates = {
-      data: { id: "c1", full_name: "Ada Lovelace", job_id: "j1", jobs: { id: "j1", title: "Engineer", client: "Acme" }, placement_fee: 9000, extracted: {} },
+      data: { id: "c1", full_name: "Ada Lovelace", job_id: "j1", jobs: { id: "j1", title: "Engineer", client: "Acme", fee_percent: 20, fee_amount: 9000 }, placement_fee: 9000, extracted: {} },
       error: null,
     };
     lists.candidate_notes = { data: [{ id: "n1", author_name: "Bo", author_id: "u", note: "Strong", created_at: "2026-10-01" }], error: null };
     const result = await loadCandidateProfile(auth, "c1");
     expect(result.status).toBe(200);
     expect(result.body).toMatchObject({ id: "c1", fullName: "Ada Lovelace", jobTitle: "Engineer", company: "Acme", placementFee: null });
+    expect(result.body.job).toMatchObject({ title: "Engineer", fee_percent: null, fee_amount: null });
     expect(result.body.notes).toEqual([expect.objectContaining({ id: "n1", body: "Strong" })]);
   });
 });

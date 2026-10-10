@@ -7,6 +7,8 @@ import { groupTransitions, inRange, loadActivity, loadCandidates, loadPlacements
 import { computeCore, furthestStageIndex } from "@/lib/analytics-snapshot";
 import { buildDigestEmail, digestEnabled } from "@/lib/analytics-digest";
 import { reportError } from "@/lib/report-error";
+import { normalisePermissions } from "@/lib/permissions";
+import { getOrgMemberRole } from "@/lib/clerk-org";
 
 // Monday-morning analytics summary: last week's headline numbers for the
 // agency against the week before (lib/analytics-digest.js), emailed to
@@ -39,11 +41,13 @@ async function allProfiles() {
   }
 }
 
-// One agency's week and the week before, in the digest's shape.
-async function agencyWeeks(agencyId, now) {
+// One agency's week and the week before, in the digest's shape. With
+// `recruiterId`, only that person's candidates - what a member limited to
+// their own candidates sees on the Analytics page.
+async function agencyWeeks(agencyId, now, recruiterId = null) {
   const week = { from: new Date(now - 7 * DAY), to: new Date(now) };
   const before = { from: new Date(now - 14 * DAY), to: week.from };
-  const filters = { jobId: null, recruiterId: null, range: week };
+  const filters = { jobId: null, recruiterId, range: week };
 
   const [current, previous, placements] = await Promise.all([
     loadCandidates(agencyId, filters, COLUMNS, { window: week }),
@@ -79,15 +83,35 @@ async function agencyWeeks(agencyId, now) {
 
 // Stalled is about the whole pipeline now, not just last week's new
 // candidates: in a middle stage with nothing logged for 5+ days.
-async function stalledCount(agencyId, now) {
-  const { count, error } = await supabase
+async function stalledCount(agencyId, now, recruiterId = null) {
+  let q = supabase
     .from("candidates")
     .select("id", { count: "exact", head: true })
     .eq("agency_id", agencyId)
     .in("stage", ["Shortlisted", "Interview", "Offer"])
     .lt("last_activity_at", new Date(now - 5 * DAY).toISOString());
+  if (recruiterId) q = q.eq("recruiter_id", recruiterId);
+  const { count, error } = await q;
   if (error) throw new Error(error.message);
   return count ?? 0;
+}
+
+// What one recipient may see under the agency's permissions
+// (lib/permissions.js): the owner and admins see everything.
+async function recipientAccess(agency, perms, userId) {
+  if (!perms.financialsAdminOnly && !perms.ownCandidatesOnly) return { fees: true, recruiterId: null };
+  let isAdmin = !agency?.clerk_org_id;
+  if (!isAdmin) {
+    try {
+      isAdmin = (await getOrgMemberRole({ orgId: agency.clerk_org_id, userId })) === "org:admin";
+    } catch {
+      isAdmin = false;
+    }
+  }
+  return {
+    fees: isAdmin || !perms.financialsAdminOnly,
+    recruiterId: isAdmin || !perms.ownCandidatesOnly ? null : userId,
+  };
 }
 
 export async function GET(request) {
@@ -128,7 +152,7 @@ export async function GET(request) {
       if (!to || !digestEnabled(u.privateMetadata)) continue;
       const agencyId = agencyOf.get(u.id);
       if (!recipientsByAgency.has(agencyId)) recipientsByAgency.set(agencyId, []);
-      recipientsByAgency.get(agencyId).push({ to, firstName: u.firstName });
+      recipientsByAgency.get(agencyId).push({ to, firstName: u.firstName, userId: u.id });
     }
   }
 
@@ -139,17 +163,25 @@ export async function GET(request) {
   let quiet = 0;
   for (const [agencyId, recipients] of recipientsByAgency) {
     try {
-      const [{ week, previous }, stalled, { data: agency }] = await Promise.all([
-        agencyWeeks(agencyId, now),
-        stalledCount(agencyId, now),
-        supabase.from("agencies").select("name").eq("id", agencyId).maybeSingle(),
-      ]);
+      const { data: agency, error: agencyError } = await supabase.from("agencies").select("name, settings, clerk_org_id").eq("id", agencyId).maybeSingle();
+      if (agencyError) throw new Error(agencyError.message);
+      const perms = normalisePermissions(agency?.settings);
+      // Figures per view: the whole agency, or one member's own candidates.
+      const views = new Map();
+      const viewFor = (recruiterId) => {
+        const key = recruiterId || "";
+        if (!views.has(key)) views.set(key, Promise.all([agencyWeeks(agencyId, now, recruiterId), stalledCount(agencyId, now, recruiterId)]));
+        return views.get(key);
+      };
       for (const r of recipients) {
+        const access = await recipientAccess(agency, perms, r.userId);
+        const [{ week, previous }, stalled] = await viewFor(access.recruiterId);
+        const hideFees = (w) => (w && !access.fees ? { ...w, fees: null } : w);
         const email = buildDigestEmail({
           firstName: r.firstName,
           agencyName: agency?.name || null,
-          week: { ...week, stalled },
-          previous,
+          week: { ...hideFees(week), stalled },
+          previous: hideFees(previous),
           siteUrl,
           weekLabel: "the last 7 days",
         });

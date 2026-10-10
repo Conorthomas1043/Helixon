@@ -117,9 +117,16 @@ function isCrossSiteRequest(request: NextRequest): boolean {
   return site === "cross-site" || site === "same-site";
 }
 
+// How long a request waits for /api/internal/edge-log's verdict (blocks,
+// maintenance) before carrying on without it.
+const EDGE_LOG_TIMEOUT_MS = 1000;
+
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // /monitoring is the Sentry tunnel (next.config.mjs tunnelRoute): error
+    // reports must not cost an edge-log call or be redirected during
+    // maintenance.
+    "/((?!_next/static|_next/image|favicon.ico|monitoring).*)",
   ],
 };
 
@@ -222,6 +229,9 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
       new URL("/api/internal/edge-log", request.url),
       {
         method: "POST",
+        // Fails open on slowness as well as on errors: a slow database
+        // must never hold every page on the site.
+        signal: AbortSignal.timeout(EDGE_LOG_TIMEOUT_MS),
         headers: {
           "Content-Type": "application/json",
           // Shared secret so /api/internal/edge-log can tell this call came

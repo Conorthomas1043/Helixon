@@ -12,6 +12,11 @@
 // out on the spot and sent them to the pricing page to buy again.
 export const ACCESS_STATUSES = new Set(["active", "past_due"]);
 
+// Statuses where Stripe is still billing (or will again): a workspace in one
+// of these is never moved or deleted out from under its subscription.
+// Matches move_member_into_agency (migration 20261010000000).
+export const BILLING_STATUSES = new Set(["active", "trialing", "past_due", "unpaid"]);
+
 // Statuses where the customer needs to update their payment method.
 export const PAYMENT_ISSUE_STATUSES = new Set(["past_due", "unpaid"]);
 

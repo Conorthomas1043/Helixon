@@ -10,6 +10,7 @@ import { upcomingRetention } from "@/lib/data-retention";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 // The workspace's Data & privacy settings (/dashboard/privacy).
 //
@@ -55,8 +56,7 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
   if (!(await canManage(auth))) {
     return NextResponse.json({ error: "Only the workspace owner or an admin can change these settings." }, { status: 403 });
   }
-  const { rawSettings } = await getAgencyPrivacy(supabase, auth.agencyId);
-  const next = { ...rawSettings };
+  const next = {};
   if (body?.retentionMonths !== undefined) {
     if (!RETENTION_CHOICES.includes(body.retentionMonths)) {
       return NextResponse.json({ error: "Pick one of the offered retention periods." }, { status: 400 });
@@ -68,7 +68,8 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
     next.presence_enabled = body.presenceEnabled;
   }
 
-  const { error } = await supabase.from("agencies").update({ settings: next }).eq("id", auth.agencyId);
+  if (!Object.keys(next).length) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
+  const { error } = await mergeAgencySettings(supabase, auth.agencyId, next);
   if (error) return NextResponse.json({ error: "Couldn't save." }, { status: 500 });
 
   // Switching presence off also deletes what was recorded.

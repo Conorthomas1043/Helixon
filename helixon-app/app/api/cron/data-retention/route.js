@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin/audit";
-import { removeCandidateCvs } from "@/lib/candidates/files";
-import { sweepAllAgencies } from "@/lib/data-retention";
+import { purgeAgencyCandidates, sweepAllAgencies } from "@/lib/data-retention";
 import { reportError } from "@/lib/report-error";
+import { fetchAll, inChunks } from "@/lib/fetch-all";
 
 // Fulfils the DPA's Annex C promise ("automatic deletion of candidate and
 // CV data 90 days after an agency's subscription is cancelled") - until
@@ -17,36 +17,6 @@ import { reportError } from "@/lib/report-error";
 // app/api/internal/edge-log. Fails closed: no secret configured means every
 // request is rejected, never silently trusted.
 const RETENTION_DAYS = 90;
-
-// Same dependency order as app/api/candidates/[id]'s DELETE handler
-// (feedback and shortlist_candidates reference scores.id with NO ACTION,
-// so feedback has to go before scores) - just batched per agency instead
-// of one candidate at a time.
-async function purgeCandidates(candidateIds) {
-  if (candidateIds.length === 0) return;
-
-  // Original CV files are candidate data too (the DPA promise covers
-  // them) - collect their paths before the rows that hold them go.
-  const { data: fileRows } = await supabase.from("candidates").select("cv_file_url").in("id", candidateIds);
-  const cvPaths = (fileRows || []).map((r) => r.cv_file_url).filter(Boolean);
-
-  const { data: scoreRows } = await supabase.from("scores").select("id").in("candidate_id", candidateIds);
-  const scoreIds = (scoreRows || []).map((s) => s.id);
-  if (scoreIds.length > 0) {
-    await supabase.from("feedback").delete().in("score_id", scoreIds);
-  }
-
-  await supabase.from("shortlist_candidates").delete().in("candidate_id", candidateIds);
-  await supabase.from("scores").delete().in("candidate_id", candidateIds);
-  await supabase.from("artifacts").delete().in("candidate_id", candidateIds);
-  await supabase.from("candidate_notes").delete().in("candidate_id", candidateIds);
-  await supabase.from("candidates").delete().in("id", candidateIds);
-
-  const storageError = await removeCandidateCvs(cvPaths);
-  if (storageError) {
-    reportError("[data-retention] Candidates purged but CV file removal failed:", storageError.message);
-  }
-}
 
 export async function GET(request) {
   const expected = process.env.CRON_SECRET;
@@ -96,11 +66,15 @@ export async function GET(request) {
   // webhooks/stripe) at the exact moment status transitions, so for a row
   // that's been sitting at status="canceled" it doubles as the cancellation
   // timestamp.
-  const { data: cancelled, error: subsError } = await supabase
-    .from("subscriptions")
-    .select("user_id, updated_at")
-    .eq("status", "canceled")
-    .lt("updated_at", cutoff);
+  const { data: cancelled, error: subsError } = await fetchAll((from, to) =>
+    supabase
+      .from("subscriptions")
+      .select("user_id, updated_at")
+      .eq("status", "canceled")
+      .lt("updated_at", cutoff)
+      .order("user_id")
+      .range(from, to),
+  );
 
   if (subsError) {
     reportError("[data-retention] Failed to query subscriptions:", subsError.message);
@@ -114,10 +88,9 @@ export async function GET(request) {
   // subscriptions.user_id points at profiles.id (see lib/customer-auth.js
   // and app/api/billing), not a separate "users" table.
   const profileIds = [...new Set(cancelled.map((s) => s.user_id).filter(Boolean))];
-  const { data: profiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, agency_id")
-    .in("id", profileIds);
+  const { data: profiles, error: profilesError } = await inChunks(profileIds, (chunk) =>
+    supabase.from("profiles").select("id, agency_id").in("id", chunk),
+  );
 
   if (profilesError) {
     reportError("[data-retention] Failed to resolve agencies:", profilesError.message);
@@ -135,39 +108,32 @@ export async function GET(request) {
     // cancelled - better to under-delete on a stale read than erase live
     // customer data because one seat's subscription lapsed while another's
     // is still active.
-    const { data: agencyProfiles } = await supabase.from("profiles").select("id").eq("agency_id", agencyId);
+    // A failed read is treated as "live" for the same reason.
+    const { data: agencyProfiles, error: agencyProfilesError } = await supabase.from("profiles").select("id").eq("agency_id", agencyId);
+    if (agencyProfilesError) continue;
     const agencyProfileIds = (agencyProfiles || []).map((p) => p.id);
-    const { data: liveSubs } = await supabase
-      .from("subscriptions")
-      .select("id")
-      .in("user_id", agencyProfileIds)
-      .neq("status", "canceled");
+    const { data: liveSubs, error: liveSubsError } = await inChunks(agencyProfileIds, (chunk) =>
+      supabase.from("subscriptions").select("id").in("user_id", chunk).neq("status", "canceled"),
+    );
 
-    if (liveSubs && liveSubs.length > 0) continue;
+    if (liveSubsError || (liveSubs && liveSubs.length > 0)) continue;
 
-    const { data: candidateRows, error: candErr } = await supabase
-      .from("candidates")
-      .select("id")
-      .eq("agency_id", agencyId);
+    // The same batched, error-checked erasure as a manual delete
+    // (lib/candidates/erasure.js via purgeAgencyCandidates). Only what was
+    // actually erased is counted and logged.
+    const { erased, failedStep } = await purgeAgencyCandidates(supabase, agencyId);
+    if (failedStep) reportError(`[data-retention] Purge of agency ${agencyId} stopped at ${failedStep} after ${erased} candidates.`);
+    if (!erased) continue;
 
-    if (candErr) {
-      reportError(`[data-retention] Failed to list candidates for agency ${agencyId}:`, candErr.message);
-      continue;
-    }
-
-    const candidateIds = (candidateRows || []).map((c) => c.id);
-    if (candidateIds.length === 0) continue;
-
-    await purgeCandidates(candidateIds);
     agenciesPurged += 1;
-    candidatesPurged += candidateIds.length;
+    candidatesPurged += erased;
 
     await writeAdminAuditSafe({
       adminUsername: "system:data-retention-cron",
       action: "retention_purge",
       targetType: "agency",
       targetId: agencyId,
-      metadata: { candidatesPurged: candidateIds.length, retentionDays: RETENTION_DAYS },
+      metadata: { candidatesPurged: erased, retentionDays: RETENTION_DAYS, ...(failedStep ? { incomplete: failedStep } : {}) },
     });
   }
 

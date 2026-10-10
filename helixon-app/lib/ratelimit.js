@@ -15,7 +15,7 @@ const WINDOW_MS = 60 * 60 * 1000;
 const FALLBACK_MAX_KEYS = 5000;
 const fallbackCounters = new Map(); // key -> { count, resetAt }
 
-function fallbackAllow(key, maxPerHour) {
+function fallbackAllow(key, maxPerHour, cost = 1) {
   const now = Date.now();
 
   // Keep the map bounded so a flood of unique identifiers can't grow memory
@@ -34,8 +34,10 @@ function fallbackAllow(key, maxPerHour) {
     entry = { count: 0, resetAt: now + WINDOW_MS };
     fallbackCounters.set(key, entry);
   }
-  entry.count += 1;
-  return entry.count <= maxPerHour;
+  entry.count += cost;
+  if (entry.count <= maxPerHour) return true;
+  if (cost > 1) entry.count -= cost;
+  return false;
 }
 
 /**
@@ -61,31 +63,83 @@ function fallbackAllow(key, maxPerHour) {
  * traffic because Redis is down. Failures are logged so they're visible.
  * Outside production with no Redis (local dev) requests are simply allowed.
  *
+ * `cost` charges more than one unit - one per email in a batch, say. A
+ * batch that would go over is refused whole and not charged, so it can
+ * be retried smaller.
+ *
  * @param {string} identifier - usually an IP address
- * @param {number} maxPerHour - requests allowed per rolling hour
+ * @param {number} maxPerHour - units allowed per window
+ * @param {{ cost?: number }} [options]
  * @returns {Promise<boolean>} true if the request should be allowed
  */
-export async function rateLimit(identifier, maxPerHour = 20) {
+export async function rateLimit(identifier, maxPerHour = 20, { cost = 1 } = {}) {
   const key = `helixon:ratelimit:${maxPerHour}:${identifier || "unknown"}`;
 
   const redisPromise = getRedis();
   if (!redisPromise) {
     if (process.env.NODE_ENV !== "production") return true;
     reportError("[ratelimit] Redis is not configured in production - using in-memory fallback.");
-    return fallbackAllow(key, maxPerHour);
+    return fallbackAllow(key, maxPerHour, cost);
   }
 
   try {
     const redis = await redisPromise;
 
-    const count = await redis.incr(key);
-    if (count === 1) {
+    const count = cost === 1 ? await redis.incr(key) : await redis.incrBy(key, cost);
+    if (count === cost) {
       await redis.expire(key, 60 * 60); // 1 hour window
     }
 
-    return count <= maxPerHour;
+    if (count <= maxPerHour) return true;
+    if (cost > 1) await redis.decrBy(key, cost);
+    return false;
   } catch (err) {
     reportError("[ratelimit] Redis error, using in-memory fallback:", err.message);
-    return fallbackAllow(key, maxPerHour);
+    return fallbackAllow(key, maxPerHour, cost);
+  }
+}
+
+const fallbackLocks = new Map(); // key -> expiresAt
+
+/**
+ * A short-lived lock, so two requests can't both do something that must
+ * happen once (send the same draft, raise the same invoice). True when
+ * this caller holds it; release it with releaseLock once done. Without
+ * Redis it's per instance, which still stops a double click.
+ *
+ * @param {string} name
+ * @param {number} [seconds]
+ * @returns {Promise<boolean>}
+ */
+export async function acquireLock(name, seconds = 60) {
+  const key = `helixon:lock:${name}`;
+  const redisPromise = getRedis();
+  if (redisPromise) {
+    try {
+      const redis = await redisPromise;
+      return (await redis.set(key, "1", { NX: true, EX: seconds })) === "OK";
+    } catch (err) {
+      reportError("[ratelimit] Redis error taking a lock, using in-memory fallback:", err.message);
+    }
+  }
+  const now = Date.now();
+  if ((fallbackLocks.get(key) ?? 0) > now) return false;
+  if (fallbackLocks.size >= FALLBACK_MAX_KEYS) {
+    for (const [k, until] of fallbackLocks) if (until <= now) fallbackLocks.delete(k);
+  }
+  fallbackLocks.set(key, now + seconds * 1000);
+  return true;
+}
+
+/** @param {string} name */
+export async function releaseLock(name) {
+  const key = `helixon:lock:${name}`;
+  fallbackLocks.delete(key);
+  const redisPromise = getRedis();
+  if (!redisPromise) return;
+  try {
+    await (await redisPromise).del(key);
+  } catch {
+    // It expires on its own.
   }
 }

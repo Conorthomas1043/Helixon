@@ -30,10 +30,16 @@ export function startOfMonthUtc(now = new Date()) {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 }
 
-/** Screenings (candidates created) this calendar month, UTC. */
+/**
+ * Screenings this calendar month, UTC: analyses actually run (`scores`
+ * rows - /api/run, re-screens and applications each write one). Counting
+ * candidates instead charged CSV imports and API additions that were never
+ * screened, missed re-screens, and counted an application against itself
+ * before it was screened.
+ */
 export async function screeningsThisMonth(agencyId) {
   const { count, error } = await supabase
-    .from("candidates")
+    .from("scores")
     .select("id", { count: "exact", head: true })
     .eq("agency_id", agencyId)
     .gte("created_at", startOfMonthUtc());

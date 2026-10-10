@@ -24,6 +24,12 @@ describe("buildDigestEmail", () => {
     expect(email.text).toContain("3 candidates have had no activity for 5+ days.");
   });
 
+  it("leaves fees out for someone who can't see financials", () => {
+    const email = buildDigestEmail({ ...base, week: { ...week, fees: null }, previous: { ...previous, fees: null } });
+    expect(email.text).not.toContain("Fees placed");
+    expect(email.html).not.toContain("Fees placed");
+  });
+
   it("escapes the agency name", () => {
     expect(buildDigestEmail(base).html).toContain("Acme &lt;Recruit&gt;");
   });

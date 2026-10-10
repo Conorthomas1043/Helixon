@@ -20,6 +20,7 @@ import { agencyDb } from "@/lib/agency-db";
 //   that came out empty) without sending anything.
 
 const MAX_PER_REQUEST = 100;
+// Emails, not requests: each one sent is charged against the allowance.
 const MAX_PER_HOUR = 400;
 
 export const POST = customerRoute(async (request, _context, auth, body) => {
@@ -55,7 +56,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
 
   if (!mailConfigured()) return NextResponse.json({ error: "Email isn't set up yet." }, { status: 503 });
   const sendable = rendered.filter((r) => r.email);
-  if (!(await rateLimit(`bulk-email:${auth.userId}`, MAX_PER_HOUR))) {
+  if (sendable.length && !(await rateLimit(`bulk-email:${auth.userId}`, MAX_PER_HOUR, { cost: sendable.length }))) {
     return NextResponse.json({ error: "You've sent a lot of emails in the last hour - try again later." }, { status: 429 });
   }
 

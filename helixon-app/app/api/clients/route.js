@@ -4,7 +4,8 @@ import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients";
-import { getAccess } from "@/lib/permissions";
+import { getAccess, withoutMoney } from "@/lib/permissions";
+import { fetchAll } from "@/lib/fetch-all";
 import { agencyDb } from "@/lib/agency-db";
 
 // The agency's clients (lib/clients.js).
@@ -14,15 +15,21 @@ import { agencyDb } from "@/lib/agency-db";
 // POST { name, ... }  create one
 
 export const GET = customerRoute(async (_request, _context, auth) => {
+  // A page at a time: one select stops at 1,000 rows, which undercounted
+  // contacts, jobs and fees for a larger agency.
+  const db = await agencyDb();
   const [{ data: clients, error }, { data: contacts }, { data: jobs }] = await Promise.all([
-    (await agencyDb()).from("clients").select("*").eq("agency_id", auth.agencyId).order("name").limit(2000),
-    (await agencyDb()).from("client_contacts").select("client_id").eq("agency_id", auth.agencyId).limit(10000),
-    (await agencyDb())
-      .from("jobs")
-      .select("id, client_id, status, candidates(stage, placement_fee)")
-      .eq("agency_id", auth.agencyId)
-      .not("client_id", "is", null)
-      .limit(5000),
+    fetchAll((from, to) => db.from("clients").select("*").eq("agency_id", auth.agencyId).order("name").order("id").range(from, to), { cap: 5000 }),
+    fetchAll((from, to) => db.from("client_contacts").select("id, client_id").eq("agency_id", auth.agencyId).order("id").range(from, to)),
+    fetchAll((from, to) =>
+      db
+        .from("jobs")
+        .select("id, client_id, status, candidates(stage, placement_fee)")
+        .eq("agency_id", auth.agencyId)
+        .not("client_id", "is", null)
+        .order("id")
+        .range(from, to),
+    ),
   ]);
   if (error) return NextResponse.json({ error: "Failed to load clients." }, { status: 500 });
 
@@ -59,8 +66,10 @@ export const GET = customerRoute(async (_request, _context, auth) => {
 });
 
 export const POST = customerRoute(async (request, _context, auth, body) => {
-  const fields = cleanClientFields(body, { requireName: true });
-  if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
+  const access = await getAccess(auth);
+  const cleaned = cleanClientFields(body, { requireName: true });
+  if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
+  const fields = withoutMoney(cleaned, access, ["fee_percent"]);
 
   const { data, error } = await (await agencyDb())
     .from("clients")
@@ -72,5 +81,6 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     return NextResponse.json({ error: "Failed to create client." }, { status: 500 });
   }
   await logClientActivity(auth.agencyId, data.id, "client_created", recruiterDisplayName(auth.profile) || auth.userId);
-  return NextResponse.json({ client: toClient(data) }, { status: 201 });
+  const shaped = toClient(data);
+  return NextResponse.json({ client: access.canSeeFinancials ? shaped : { ...shaped, feePercent: null } }, { status: 201 });
 }, { body: ClientInput, optionalBody: true });

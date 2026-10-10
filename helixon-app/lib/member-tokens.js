@@ -41,9 +41,25 @@ export async function memberToken(auth, purpose, { rotate = false } = {}) {
   return { token };
 }
 
-// { agency_id, user_id } for a token, or null.
+// { agency_id, user_id } for a token, or null. Only while the person is
+// still in that agency: a token outlives nothing it was issued for, even
+// if a removal path missed revokeMemberTokens.
 export async function memberForToken(token, purpose) {
   if (!TOKEN_RE.test(token || "") || !PURPOSES.includes(purpose)) return null;
   const { data } = await supabase.from("member_tokens").select("agency_id, user_id").eq("token", token).eq("purpose", purpose).maybeSingle();
-  return data || null;
+  if (!data) return null;
+  const { data: profile, error } = await supabase.from("profiles").select("id").eq("clerk_user_id", data.user_id).eq("agency_id", data.agency_id).maybeSingle();
+  if (error || !profile) return null;
+  return data;
+}
+
+// Deletes a person's tokens - their calendar feed and BCC address stop
+// working. Called whenever someone leaves an agency. Never throws: the
+// membership check in memberForToken still holds if this fails.
+export async function revokeMemberTokens(clerkUserId, agencyId = null) {
+  if (!clerkUserId) return;
+  let query = supabase.from("member_tokens").delete().eq("user_id", clerkUserId);
+  if (agencyId) query = query.eq("agency_id", agencyId);
+  const { error } = await query;
+  if (error) console.error("[member-tokens] Failed to revoke tokens:", error.message);
 }

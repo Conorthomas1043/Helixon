@@ -7,6 +7,7 @@ import { jobClientColumns } from "@/lib/clients";
 import { cleanJobDetails } from "@/lib/job-details";
 import { normaliseOffices } from "@/lib/offices";
 import { agencyDb } from "@/lib/agency-db";
+import { getAccess, redactJob, withoutMoney } from "@/lib/permissions";
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
@@ -25,7 +26,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 
   const completed = job.candidates.filter((c) => c.processing_status === "completed");
   return NextResponse.json({
-    ...job,
+    ...redactJob(job, await getAccess(auth)),
     candidates: undefined,
     candidateCount: job.candidates.length,
     strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,
@@ -184,9 +185,12 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     }
     update.public_description = body.publicDescription ? body.publicDescription.trim() : null;
   }
-  // Owner, openings, fee, priority, target date (lib/job-details.js).
-  const details = cleanJobDetails(body);
-  if (details.error) return NextResponse.json({ error: details.error }, { status: 400 });
+  // Owner, openings, fee, priority, target date (lib/job-details.js). The
+  // fee only from someone allowed to see it.
+  const access = await getAccess(auth);
+  const cleaned = cleanJobDetails(body);
+  if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
+  const details = withoutMoney(cleaned, access, ["fee_percent", "fee_amount"]);
   Object.assign(update, details);
   if (details.owner_id) {
     const { data: member } = await supabase.from("profiles").select("clerk_user_id").eq("agency_id", agencyId).eq("clerk_user_id", details.owner_id).maybeSingle();
@@ -230,7 +234,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ ok: true, job });
+  return NextResponse.json({ ok: true, job: redactJob(job, access) });
 }, { body: JobInput, optionalBody: true });
 
 // Deliberately refuses to delete a job with any candidates attached, rather

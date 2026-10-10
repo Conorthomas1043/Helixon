@@ -6,6 +6,7 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanCommission, cleanTargets, normalisePerformance } from "@/lib/performance";
 import { logAudit } from "@/lib/agency-audit";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 // GET / PUT the agency's monthly targets and commission plan
 // (lib/performance.js). Owner and admins only - commission is private.
@@ -27,8 +28,7 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   const commission = cleanCommission(body.commission || {});
   if (commission.error) return NextResponse.json({ error: commission.error }, { status: 400 });
   const performance = { targets: cleanTargets(body.targets || {}), commission };
-  const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
-  const { error } = await supabase.from("agencies").update({ settings: { ...(data?.settings || {}), performance } }).eq("id", auth.agencyId);
+  const { error } = await mergeAgencySettings(supabase, auth.agencyId, { performance });
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logAudit({ auth, request, action: "settings.performance", summary: "Changed targets or commission" });
   return NextResponse.json(performance);

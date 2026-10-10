@@ -56,11 +56,24 @@ export async function sweepAgency(supabase, agencyId, now = new Date()) {
   return { retentionMonths, expired, erased };
 }
 
+const AGENCY_PAGE = 1000;
+
+// Every agency id, a page at a time (a plain select stops at the database's
+// 1,000-row limit, which would leave every later agency unswept).
+async function allAgencyIds(supabase) {
+  const ids = [];
+  for (let from = 0; ; from += AGENCY_PAGE) {
+    const { data, error } = await supabase.from("agencies").select("id").order("id").range(from, from + AGENCY_PAGE - 1);
+    if (error) throw new Error(error.message);
+    ids.push(...(data || []).map((a) => a.id));
+    if (!data || data.length < AGENCY_PAGE) return ids;
+  }
+}
+
 export async function sweepAllAgencies(supabase, now = new Date()) {
-  const { data: agencies, error } = await supabase.from("agencies").select("id");
-  if (error) throw new Error(error.message);
+  const agencies = (await allAgencyIds(supabase)).map((id) => ({ id }));
   const summary = { agencies: 0, erased: 0, expired: 0, failed: [] };
-  for (const a of agencies || []) {
+  for (const a of agencies) {
     try {
       const r = await sweepAgency(supabase, a.id, now);
       summary.agencies += 1;
@@ -116,4 +129,25 @@ export async function upcomingRetention(supabase, agencyId, now = new Date()) {
     }),
     poolExpiries: (poolRows || []).map((r) => ({ id: r.id, name: r.full_name || r.name || "Unnamed candidate", expiresAt: r.talent_pool_expires_at })),
   };
+}
+
+// Erases every candidate of an agency whose subscription ended long enough
+// ago (the DPA's post-cancellation deletion - app/api/cron/data-retention),
+// through the same batched, error-checked erasure as a manual delete, a
+// thousand at a time up to `maxRounds` per run (the rest goes on the next
+// run). Returns { erased, failedStep? } - erased is what was actually
+// deleted, never what was attempted.
+export async function purgeAgencyCandidates(supabase, agencyId, { maxRounds = 20 } = {}) {
+  let erased = 0;
+  for (let round = 0; round < maxRounds; round++) {
+    const { data, error } = await supabase.from("candidates").select("id").eq("agency_id", agencyId).limit(1000);
+    if (error) return { erased, failedStep: "lookup" };
+    const ids = (data || []).map((r) => r.id);
+    if (!ids.length) break;
+    const result = await eraseCandidates(supabase, agencyId, ids);
+    erased += result.erased;
+    if (result.failedStep) return { erased, failedStep: result.failedStep };
+    if (!result.erased) break;
+  }
+  return { erased };
 }

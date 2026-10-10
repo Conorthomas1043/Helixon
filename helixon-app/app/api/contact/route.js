@@ -36,7 +36,9 @@ export async function POST(req) {
   // invisible/bidi characters.
   const name = cleanLine(body?.name, 200);
   const email = cleanLine(body?.email, 254);
-  const topic = cleanLine(body?.topic, 60) || "Something else";
+  // Only the form's own choices - anything else is "Something else".
+  const rawTopic = cleanLine(body?.topic, 60);
+  const topic = Object.keys(TOPIC_ROUTING).includes(rawTopic) ? rawTopic : "Something else";
   const message = cleanText(body?.message, { max: 5000 });
 
   if (!name || !email || !message) {
@@ -49,25 +51,29 @@ export async function POST(req) {
     return Response.json({ error: "Message is too long." }, { status: 400 });
   }
 
-  const to = TOPIC_ROUTING[topic] || TOPIC_ROUTING["Something else"];
+  const to = TOPIC_ROUTING[topic];
 
+  // The Resend SDK reports a failed send as { error }, not by throwing.
   try {
     // 1) Internal notification to the right team inbox
-    await resend.emails.send({
+    const { error: notifyError } = await resend.emails.send({
       from: FROM_NOTIFICATION,
       to,
-      reply_to: email,
+      replyTo: email,
       subject: `New contact form message - ${topic} - ${name}`,
       html: internalNotificationHtml({ name, email, topic, message }),
     });
+    if (notifyError) throw new Error(notifyError.message);
 
-    // 2) Automated "we'll get back to you" reply to the sender
-    await resend.emails.send({
+    // 2) Automated "we'll get back to you" reply to the sender. The message
+    //    has reached the team by now, so a failure here is only reported.
+    const { error: replyError } = await resend.emails.send({
       from: FROM_AUTOREPLY,
       to: email,
       subject: "We've got your message - Helixon",
       html: autoReplyHtml({ name }),
     });
+    if (replyError) reportError("Contact form auto-reply failed:", replyError.message);
 
     return Response.json({ ok: true });
   } catch (err) {
@@ -160,7 +166,7 @@ function internalNotificationHtml({ name, email, topic, message }) {
     </div>
     <a href="mailto:${escapeHtml(email)}" style="display:inline-block;margin-top:20px;background:${COLORS.forest};color:#ffffff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:10px;text-decoration:none;">Reply to ${escapeHtml(name.split(" ")[0] || "sender")}</a>
   `;
-  return emailShell({ preheader: `${topic} - ${message.slice(0, 80)}`, bodyHtml: body });
+  return emailShell({ preheader: escapeHtml(`${topic} - ${message.slice(0, 80)}`), bodyHtml: body });
 }
 
 function autoReplyHtml({ name }) {

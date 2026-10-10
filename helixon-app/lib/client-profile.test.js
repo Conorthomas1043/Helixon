@@ -42,6 +42,7 @@ describe("buildClientProfile", () => {
   it("leaves concerns out unless asked", () => {
     expect(buildClientProfile({ candidate, extracted, result }).concerns).toEqual([]);
     expect(buildClientProfile({ candidate, extracted, result }, { includeConcerns: true }).concerns).toEqual(["No fintech experience"]);
+    expect(buildClientProfile({ candidate: { ...candidate, match_score: 82 }, extracted, result }, { includeScore: false }).score).toBeNull();
   });
 
   it("shows identity when not blind", () => {

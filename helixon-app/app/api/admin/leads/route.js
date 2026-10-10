@@ -127,7 +127,9 @@ export async function PATCH(request) {
     if (body.action === "resend_notification") {
       if (!process.env.RESEND_API_KEY) return json({ error: "Email isn't configured on the server (RESEND_API_KEY)." }, 409);
       try {
-        await new Resend(process.env.RESEND_API_KEY).emails.send(salesNotificationEmail(lead, { resent: true }));
+        // The Resend SDK reports a failed send as { error }, not by throwing.
+        const { error: sendError } = await new Resend(process.env.RESEND_API_KEY).emails.send(salesNotificationEmail(lead, { resent: true }));
+        if (sendError) throw new Error(sendError.message);
       } catch (err) {
         reportError("[admin/leads] Resend failed:", err?.message || err);
         return json({ error: "The email didn't send. Check the Resend dashboard and try again." }, 502);

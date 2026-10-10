@@ -25,6 +25,7 @@ import {
 } from "@/lib/team-reassign";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+import { revokeMemberTokens } from "@/lib/member-tokens";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -324,6 +325,7 @@ export const DELETE = customerRoute(async (request, _context, auth, body) => {
   if (detachError) {
     reportError("[team/invite] Removed from Clerk org but failed to detach profile:", detachError.message);
   }
+  await revokeMemberTokens(memberUserId, auth.agencyId);
 
   let reassigned = 0;
   if (reassigning) {

@@ -21,7 +21,8 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
   const location = [city, country].filter(Boolean).join(", ") || "Unknown location";
 
   try {
-    await resend.emails.send({
+    // The Resend SDK reports a failed send as { error }, not by throwing.
+    const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
       subject: blocked
@@ -37,11 +38,12 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
         <p><strong>Signals:</strong> ${escapeHtml((signals || []).join(", ") || "-")}</p>
         <p>${
           blocked
-            ? "This IP has been added to the block list automatically. Every further request from it is denied until an admin removes the block from /admin/security."
+            ? "This IP has been added to the block list automatically. Every further request from it is denied until the block expires or an admin removes it from /admin/security."
             : "This is below the auto-block threshold, so nothing was blocked. Review it in /admin/pentester and block manually if it looks malicious."
         }</p>
       `,
     });
+    if (error) reportError("[firewall-alert] Failed to send email:", error.message);
   } catch (err) {
     reportError("[firewall-alert] Failed to send email:", err.message);
   }
@@ -54,7 +56,11 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
 export async function sendAdminAlert({ to, subject, html }) {
   if (!to?.length || !process.env.RESEND_API_KEY) return false;
   try {
-    await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    const { error } = await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    if (error) {
+      reportError("[admin-alert] Failed to send email:", error.message);
+      return false;
+    }
     return true;
   } catch (err) {
     reportError("[admin-alert] Failed to send email:", err.message);

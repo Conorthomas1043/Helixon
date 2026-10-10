@@ -66,6 +66,33 @@ export function redactPlacement(p, access) {
   return { ...p, salary: null, feePercent: null, feeAmount: null, payRate: null, chargeRate: null, invoices: [], financialsHidden: true };
 }
 
+// Job rows (database column names) with the agreed fee blanked likewise.
+export function redactJob(job, access) {
+  if (access.canSeeFinancials || !job) return job;
+  return { ...job, fee_percent: null, fee_amount: null, financialsHidden: true };
+}
+
+// The keys of `update` a member who can't see financials may still write:
+// money columns are dropped rather than refused, because the edit forms send
+// every field back, including the blanked ones.
+export function withoutMoney(update, access, columns) {
+  if (access.canSeeFinancials) return update;
+  const out = { ...update };
+  for (const c of columns) delete out[c];
+  return out;
+}
+
+// A placement request body without the money a member who can't see
+// financials isn't allowed to set (the placement form leaves these out for
+// them too - components/dashboard/placements.jsx).
+const PLACEMENT_MONEY_KEYS = ["salary", "feePercent", "feeAmount", "payRate", "chargeRate", "splits"];
+export function placementInputFor(body, access) {
+  if (access.canSeeFinancials || !body) return body;
+  const out = { ...body };
+  for (const k of PLACEMENT_MONEY_KEYS) delete out[k];
+  return out;
+}
+
 // For candidate routes: a 404 response when "own candidates only" hides
 // this candidate from the signed-in member, otherwise null. Shaped like
 // the routes' own "Not found" so a hidden candidate looks like no candidate.

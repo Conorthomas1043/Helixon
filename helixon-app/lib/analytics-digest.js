@@ -24,6 +24,7 @@ function change(current, previous, format = count) {
 }
 
 //   week:     { analysed, placed, fees, avgScore, shortlistRate, placementRate, stalled }
+//             fees: null leaves the row out (the recipient can't see financials)
 //   previous: same shape, for the week before (or null)
 // Returns null when nothing happened in either week - no point emailing a
 // page of zeros.
@@ -35,7 +36,7 @@ export function buildDigestEmail({ firstName, agencyName, week, previous, siteUr
   const rows = [
     { label: "Candidates analysed", value: count(week.analysed), change: change(week.analysed, p.analysed) },
     { label: "Placements", value: count(week.placed), change: change(week.placed, p.placed) },
-    { label: "Fees placed", value: money(week.fees), change: change(week.fees, p.fees, money) },
+    ...(week.fees == null ? [] : [{ label: "Fees placed", value: money(week.fees), change: change(week.fees, p.fees, money) }]),
     { label: "Average match score", value: week.analysed ? String(week.avgScore) : "-", change: week.analysed && p.analysed ? change(week.avgScore, p.avgScore) : "" },
     { label: "Shortlist rate", value: week.analysed ? `${week.shortlistRate}%` : "-", change: week.analysed && p.analysed ? change(week.shortlistRate, p.shortlistRate, (n) => `${n} pts`) : "" },
   ];

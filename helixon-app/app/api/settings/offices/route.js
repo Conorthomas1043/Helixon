@@ -6,6 +6,7 @@ import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanOffices, normaliseOffices } from "@/lib/offices";
 import { logAudit } from "@/lib/agency-audit";
 import { agencyDb } from "@/lib/agency-db";
+import { mergeAgencySettings } from "@/lib/agency-settings";
 
 // Offices or brands (lib/offices.js).
 // GET  { offices, memberOffices, canManage }
@@ -28,10 +29,7 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   const { data } = await supabase.from("agencies").select("settings").eq("id", auth.agencyId).maybeSingle();
   const settings = data?.settings || {};
   const before = normaliseOffices(settings).offices;
-  const { error } = await supabase
-    .from("agencies")
-    .update({ settings: { ...settings, offices: cleaned.offices, memberOffices: cleaned.memberOffices } })
-    .eq("id", auth.agencyId);
+  const { error } = await mergeAgencySettings(supabase, auth.agencyId, { offices: cleaned.offices, memberOffices: cleaned.memberOffices });
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
 
   const kept = new Set(cleaned.offices.map((o) => o.id));
