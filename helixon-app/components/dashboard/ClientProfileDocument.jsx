@@ -1,5 +1,5 @@
 // One client-ready candidate profile as a printable page (see
-// lib/client-profile.js for what's in it and what's deliberately not).
+// lib/clients/profile.js for what's in it and what's deliberately not).
 // Used by /dashboard/candidates/[id]/client-profile and a shortlist's
 // client pack, which prints one of these per page.
 

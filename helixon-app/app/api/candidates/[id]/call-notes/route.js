@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { rateLimit } from "@/lib/ratelimit";
-import { candidateHidden } from "@/lib/permissions";
-import { CALL_NOTES_SCHEMA, MAX_NOTES, SYSTEM_PROMPT, buildPrompt, cleanCallNotes, noteText } from "@/lib/call-notes";
+import { candidateHidden } from "@/lib/agency/permissions";
+import { CALL_NOTES_SCHEMA, MAX_NOTES, SYSTEM_PROMPT, buildPrompt, cleanCallNotes, noteText } from "@/lib/candidates/call-notes";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, flag, text } from "@/lib/api/schemas";
@@ -16,7 +16,7 @@ import { parseBody } from "@/lib/api/body";
 const CallNotesInput = fields({ kind: text(20), notes: text(40000), save: flag });
 
 // POST { notes, kind?: "call" | "meeting", save?: true }
-// Rough call notes or a transcript in, a tidy summary out (lib/call-notes.js):
+// Rough call notes or a transcript in, a tidy summary out (lib/candidates/call-notes.js):
 // summary, key points, next steps, a suggested follow-up, and notice /
 // salary / availability as said. With save, it's added to the candidate's
 // notes and timeline. Paid plans, like the other AI features.

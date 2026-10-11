@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin/audit";
-import { purgeAgencyCandidates, sweepAllAgencies } from "@/lib/data-retention";
+import { purgeAgencyCandidates, sweepAllAgencies } from "@/lib/compliance/data-retention";
 import { reportError } from "@/lib/report-error";
 import { fetchAll, inChunks } from "@/lib/fetch-all";
 
@@ -31,7 +31,7 @@ export async function GET(request) {
   }
 
   // 1. Every agency: erase candidates inactive past the agency's retention
-  //    period, and lapse expired talent pool entries (lib/data-retention.js).
+  //    period, and lapse expired talent pool entries (lib/compliance/data-retention.js).
   let inactivity = null;
   try {
     inactivity = await sweepAllAgencies(supabase);
@@ -85,7 +85,7 @@ export async function GET(request) {
     return NextResponse.json({ ok: true, agenciesPurged: 0, candidatesPurged: 0, inactivity });
   }
 
-  // subscriptions.user_id points at profiles.id (see lib/customer-auth.js
+  // subscriptions.user_id points at profiles.id (see lib/auth/customer-auth.js
   // and app/api/billing), not a separate "users" table.
   const profileIds = [...new Set(cancelled.map((s) => s.user_id).filter(Boolean))];
   const { data: profiles, error: profilesError } = await inChunks(profileIds, (chunk) =>

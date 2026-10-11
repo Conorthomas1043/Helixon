@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, num, text } from "@/lib/api/schemas";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { cleanInvoicing, normaliseInvoicing } from "@/lib/invoicing-settings";
-import { logAudit } from "@/lib/agency-audit";
-import { mergeAgencySettings } from "@/lib/agency-settings";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { cleanInvoicing, normaliseInvoicing } from "@/lib/placements/invoicing-settings";
+import { logAudit } from "@/lib/agency/audit";
+import { mergeAgencySettings } from "@/lib/agency/settings";
 
-// cleanInvoicing (lib/invoicing-settings.js) reads these.
+// cleanInvoicing (lib/placements/invoicing-settings.js) reads these.
 const InvoicingInput = fields({
   companyName: text(400),
   address: text(1000),
@@ -20,7 +20,7 @@ const InvoicingInput = fields({
   paymentTermsDays: num,
 });
 
-// GET / PATCH the agency's invoice details (lib/invoicing-settings.js).
+// GET / PATCH the agency's invoice details (lib/placements/invoicing-settings.js).
 // Changing them is for the owner or an admin.
 
 export const GET = customerRoute(async (_request, _context, auth) => {

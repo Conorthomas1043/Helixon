@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { removeCandidateCvs } from "@/lib/candidates/files";
-import { candidateHidden } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
+import { candidateHidden } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
 import { reportError, reportQuietly } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -22,12 +22,12 @@ const MergeInput = fields({ otherId: id });
 //
 // On different jobs: two pipeline entries for one person, which is how the
 // app tracks someone screened for several roles. They're linked as the same
-// person instead (pooled_from_id - see lib/rescreen.js), so the profile and
+// person instead (pooled_from_id - see lib/screening/rescreen.js), so the profile and
 // talent pool show them once and subject access / erasure cover both.
 
 const COLUMNS = "id, full_name, name, job_id, pooled_from_id, cv_file_url, jobs(title)";
 
-// The row a person's other records hang off (same rule as lib/rescreen.js).
+// The row a person's other records hang off (same rule as lib/screening/rescreen.js).
 const poolRootId = (c) => c.pooled_from_id || c.id;
 
 export const POST = customerRoute(async (request, { params }, auth, input) => {

@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
-import { HEARTBEAT_MS, computePresence } from "@/lib/presence";
-import { getAgencyPrivacy } from "@/lib/privacy-settings";
+import { HEARTBEAT_MS, computePresence } from "@/lib/agency/presence";
+import { getAgencyPrivacy } from "@/lib/compliance/privacy-settings";
 import { date, fields, flag, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const HeartbeatInput = fields({ active: flag });
 const PresenceStatusInput = fields({ status: text(20), message: text(400), until: date, hidden: flag });
 
-// Your own presence (lib/presence.js). Only ever touches the caller's own
+// Your own presence (lib/agency/presence.js). Only ever touches the caller's own
 // profile row.
 //
 // POST { active }                         heartbeat from an open tab, every

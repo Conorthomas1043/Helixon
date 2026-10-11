@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
-import { siteUrl } from "@/lib/mailer";
-import { toSignatureRequest } from "@/lib/signatures";
-import { logAudit } from "@/lib/agency-audit";
+import { siteUrl } from "@/lib/messaging/mailer";
+import { toSignatureRequest } from "@/lib/clients/signatures";
+import { logAudit } from "@/lib/agency/audit";
 import { agencyDb } from "@/lib/agency-db";
 
 const VoidInput = fields({ void: flag });

@@ -145,7 +145,7 @@ export async function bulkUpdateCandidates(ids, payload) {
   });
 }
 
-// subStage (optional): one of the agency's sub-stages (lib/custom-fields.js),
+// subStage (optional): one of the agency's sub-stages (lib/agency/custom-fields.js),
 // or null to clear it.
 /** @param {string} id @param {string} newStage @param {string | null | undefined} subStage */
 export async function updateCandidateStage(id, newStage, subStage) {

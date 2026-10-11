@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, ids } from "@/lib/api/schemas";
-import { toNotification } from "@/lib/notifications";
+import { toNotification } from "@/lib/messaging/notifications";
 import { agencyDb } from "@/lib/agency-db";
 
 const MarkReadInput = fields({ all: flag, ids: ids(1000) });
 
-// The bell in the nav (lib/notifications.js).
+// The bell in the nav (lib/messaging/notifications.js).
 // GET                      the signed-in member's latest 30, plus unread count
 // PATCH { ids? | all }     mark read
 

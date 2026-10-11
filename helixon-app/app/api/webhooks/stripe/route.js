@@ -1,8 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { stripe } from "@/lib/stripe";
-import { planForPriceId } from "@/lib/plans";
-import { agencyIdForProfile, billingEventsFor, captureAgencyEvent } from "@/lib/server-analytics";
+import { stripe } from "@/lib/billing/stripe";
+import { planForPriceId } from "@/lib/billing/plans";
+import { agencyIdForProfile, billingEventsFor, captureAgencyEvent } from "@/lib/analytics/server";
 import { reportError } from "@/lib/report-error";
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook

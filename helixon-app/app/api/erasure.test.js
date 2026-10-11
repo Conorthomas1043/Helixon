@@ -24,15 +24,15 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
-vi.mock("@/lib/permissions", async (importOriginal) => ({
+vi.mock("@/lib/auth/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
+vi.mock("@/lib/agency/permissions", async (importOriginal) => ({
   ...(await importOriginal()),
   candidateHidden: async () => null,
   getAccess: async () => state.access,
 }));
 vi.mock("@/lib/candidates/files", () => ({ removeCandidateCvs: (...a) => removeCandidateCvs(...a) }));
-vi.mock("@/lib/compliance-files", () => ({ removeComplianceDocuments: async () => null }));
-vi.mock("@/lib/agency-audit", () => ({ logAudit: (...a) => logAudit(...a) }));
+vi.mock("@/lib/compliance/files", () => ({ removeComplianceDocuments: async () => null }));
+vi.mock("@/lib/agency/audit", () => ({ logAudit: (...a) => logAudit(...a) }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 
 const candidate = await import("./candidates/[id]/route");

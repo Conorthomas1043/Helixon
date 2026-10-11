@@ -1,5 +1,5 @@
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { listJobs } from "@/lib/job-list";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { listJobs } from "@/lib/jobs/list";
 import JobsList from "./JobsList";
 
 // The jobs list, loaded on the server so it arrives with the jobs instead of

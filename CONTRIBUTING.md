@@ -27,7 +27,7 @@ The app lives in `helixon-app/`. Read [`docs/architecture.md`](docs/architecture
 ## Conventions by review
 
 - **Comments** say what the code does and why, not what it used to do. History belongs in the commit message.
-- **Pages** load their data on the server where they can. Otherwise they use `useResource` (`lib/use-resource.js`), not a hand-written `useEffect` fetch.
+- **Pages** load their data on the server where they can. Otherwise they use `useResource` (`lib/hooks/useResource.js`), not a hand-written `useEffect` fetch.
 - **State with many related fields** goes in a reducer with named actions and its own tests.
 - **New logic** goes in `lib/`, with tests next to it. Route handlers stay thin.
 - **Errors** reach `reportError()` (Sentry), not only `console.error`.

@@ -1,10 +1,10 @@
 "use client";
 
 import DashboardNav from "@/components/DashboardNav";
-import { FUNNEL_ORDER, STAGE_LABELS } from "@/lib/stage-labels";
+import { FUNNEL_ORDER, STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { PulseSurvey } from "@/components/dashboard/research";
-import { STRONG_MATCH_MIN } from "@/lib/scoreBands";
-import { computeCandidateStats } from "@/lib/dashboard-model";
+import { STRONG_MATCH_MIN } from "@/lib/screening/scoreBands";
+import { computeCandidateStats } from "@/lib/dashboard/model";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalSetting } from "@/lib/hooks/useLocalSetting";
 import { useUser } from "@clerk/nextjs";
@@ -116,7 +116,7 @@ export default function DashboardHome({ initialStats = null }) {
   const lastStageKey = stageOrder[stageOrder.length - 1];
 
   // Core KPI/stage/attention-item math is shared with the server side via
-  // lib/dashboard-model.js so this page and any future server rendering
+  // lib/dashboard/model.js so this page and any future server rendering
   // can't drift into two different answers for the same numbers. Only the
   // jobs/recruiter roll-ups below are dashboard-page-specific.
   const model = useMemo(() => {

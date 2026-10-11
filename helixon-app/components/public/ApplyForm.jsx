@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 
-// Same rule as acceptableCv() in lib/applications.js, checked before the
+// Same rule as acceptableCv() in lib/jobs/applications.js, checked before the
 // upload starts so a too-large file is refused at once rather than uploading
 // in full (slow on a phone) and only then coming back as an error.
 const MAX_CV_BYTES = 10 * 1024 * 1024;

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id, text } from "@/lib/api/schemas";
-import { getOrgCreatorId, getOrgMemberRole, setOrgMemberRole } from "@/lib/clerk-org";
-import { logAudit } from "@/lib/agency-audit";
+import { getOrgCreatorId, getOrgMemberRole, setOrgMemberRole } from "@/lib/auth/clerk-org";
+import { logAudit } from "@/lib/agency/audit";
 import { reportError } from "@/lib/report-error";
 
 const RoleInput = fields({ userId: id, role: text(20) });

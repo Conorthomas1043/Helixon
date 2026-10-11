@@ -26,7 +26,7 @@ import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { reportError } from "@/lib/report-error";
 
-export { AGENCY_RLS_EXCLUDED } from "@/lib/agency-tables";
+export { AGENCY_RLS_EXCLUDED } from "@/lib/agency/tables";
 
 const TOKEN_SECONDS = 300;
 // How long a member's agency is reused before it is looked up again. Short,

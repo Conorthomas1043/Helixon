@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients";
-import { getAccess, withoutMoney } from "@/lib/permissions";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { cleanClientFields, logClientActivity, toClient } from "@/lib/clients/core";
+import { getAccess, withoutMoney } from "@/lib/agency/permissions";
 import { fetchAll } from "@/lib/fetch-all";
 import { agencyDb } from "@/lib/agency-db";
 
-// The agency's clients (lib/clients.js).
+// The agency's clients (lib/clients/core.js).
 //
 // GET                 every client with its open jobs, contacts, placements
 //                     and fees billed

@@ -3,12 +3,12 @@
 // "Advertise" on a job's page: write the public advert, publish it to the
 // agency's jobs page (/jobs/<slug>/<job>), and copy a tracked link for each
 // channel - applications are tagged with where they came from and visits
-// are counted in the Sourcing panel (lib/careers.js).
+// are counted in the Sourcing panel (lib/jobs/careers.js).
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCareersSettings, updateJob } from "@/lib/dashboard-api";
-import { SHARE_CHANNELS } from "@/lib/careers";
+import { SHARE_CHANNELS } from "@/lib/jobs/careers";
 import { Card, Button, ErrorText, Field, Pill, TextArea, TextInput, INK, INK_MUTED } from "@/components/dashboard/ui";
 
 export default function AdvertisePanel({ job, onSaved }) {

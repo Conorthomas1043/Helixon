@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin/audit";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grade";
-import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
+import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 import { reportError } from "@/lib/report-error";
 
 // Once a day (vercel.json), the admin console's time-based controls:
 //   1. lift bans whose end date has passed (public.timed_bans)
 //   2. end demo access past its demo_expires_at (access already stopped at
-//      the end date - lib/subscription-status.js - this marks the row
+//      the end date - lib/billing/subscription-status.js - this marks the row
 //      cancelled so Billing and Agencies show it correctly)
 //   3. delete IP blocks and firewall rules that expired over a week ago
 //   4. run the health checks and email the alert recipients if anything is

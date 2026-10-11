@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { AUDIT_ACTIONS } from "@/lib/agency-audit";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { AUDIT_ACTIONS } from "@/lib/agency/audit";
 
-// GET ?before=<ISO>&action= - the workspace's audit log (lib/agency-audit.js),
+// GET ?before=<ISO>&action= - the workspace's audit log (lib/agency/audit.js),
 // newest first, 100 at a time. Owner and admins only.
 
 export const GET = customerRoute(async (request, _context, auth) => {

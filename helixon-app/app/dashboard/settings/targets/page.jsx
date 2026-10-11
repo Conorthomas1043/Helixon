@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getPerformanceSettings, savePerformanceSettings } from "@/lib/dashboard-api";
-import { METRICS, METRIC_KEYS } from "@/lib/performance";
+import { METRICS, METRIC_KEYS } from "@/lib/analytics/performance";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, Field, LoadingCard, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 const cell = "w-full text-[13px] px-2 py-1.5 rounded-[6px] bg-white text-right tabular-nums";

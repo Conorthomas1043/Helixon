@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";

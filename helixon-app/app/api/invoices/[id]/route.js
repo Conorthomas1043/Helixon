@@ -1,13 +1,13 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { InvoiceUpdate } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
-import { INVOICE_STATUSES } from "@/lib/placements";
-import { normaliseInvoicing } from "@/lib/invoicing-settings";
-import { logAudit } from "@/lib/agency-audit";
-import { getAccess } from "@/lib/permissions";
+import { INVOICE_STATUSES } from "@/lib/placements/core";
+import { normaliseInvoicing } from "@/lib/placements/invoicing-settings";
+import { logAudit } from "@/lib/agency/audit";
+import { getAccess } from "@/lib/agency/permissions";
 import { accountingConnection } from "@/lib/integrations/accounting-sync";
 import { providerFor } from "@/lib/integrations/providers";
 import { agencyDb } from "@/lib/agency-db";

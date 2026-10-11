@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { getRedis } from "@/lib/redis";
 import { reportError } from "@/lib/report-error";
 

@@ -14,9 +14,9 @@ import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/create-profile";
+import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/auth/create-profile";
 import { reportError } from "@/lib/report-error";
-import { BILLING_STATUSES } from "@/lib/subscription-status";
+import { BILLING_STATUSES } from "@/lib/billing/subscription-status";
 
 const MIN_PASSWORD_LENGTH = 12;
 export const PASSWORD_ERROR = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;

@@ -19,7 +19,7 @@ import {
   INTERVIEW_STATUSES,
   RECOMMENDATIONS,
   formatInterviewTime,
-} from "@/lib/interviews";
+} from "@/lib/interviews/core";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { RatingPicker } from "@/components/public/PublicCard";
 import CopyButton from "@/components/dashboard/CopyButton";
@@ -35,7 +35,7 @@ function toLocalInput(iso) {
 }
 
 const STATUS_STYLE = {
-  // Scheduled takes the Interview stage's teal-green (lib/stage-labels.js),
+  // Scheduled takes the Interview stage's teal-green (lib/candidates/stage-labels.js),
   // darkened for text; the purple it used appeared nowhere else in the brand.
   scheduled: { color: "#17625d", background: "#e7f3f2" },
   completed: { color: "var(--forest)", background: "var(--mint)" },

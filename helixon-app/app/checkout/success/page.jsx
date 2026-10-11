@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { stripe } from "@/lib/stripe";
+import { stripe } from "@/lib/billing/stripe";
 
 export const metadata = {
   title: "You're all set - Helixon",

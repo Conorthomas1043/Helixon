@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { customerRoute, parseBody } from "@/lib/api/route";
 import { fields, id, text } from "@/lib/api/schemas";
 import {
@@ -10,22 +10,22 @@ import {
   getOrgMemberRole,
   removeAgencyOrgMember,
   AGENCY_SEAT_LIMIT,
-} from "@/lib/clerk-org";
-import { getAgencyPlan } from "@/lib/plan";
+} from "@/lib/auth/clerk-org";
+import { getAgencyPlan } from "@/lib/billing/plan";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { supabase } from "@/lib/supabase";
 import { cleanEmail } from "@/lib/sanitize";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import {
   agencyMembers,
   candidateIdsOwnedBy,
   isValidAssignee,
   reassignCandidates,
   unassignedCandidateIds,
-} from "@/lib/team-reassign";
-import { logAudit } from "@/lib/agency-audit";
+} from "@/lib/agency/team-reassign";
+import { logAudit } from "@/lib/agency/audit";
 import { reportError } from "@/lib/report-error";
-import { revokeMemberTokens } from "@/lib/member-tokens";
+import { revokeMemberTokens } from "@/lib/agency/member-tokens";
 
 const InviteInput = fields({ email: text(320) });
 const RemoveInput = fields({ invitationId: id, userId: id, reassignTo: id });

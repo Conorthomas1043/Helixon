@@ -12,7 +12,7 @@
 
 import { Children, cloneElement, forwardRef, Fragment, isValidElement, useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { trapTab } from "@/lib/focus-trap";
+import { trapTab } from "@/lib/ui/focus-trap";
 import { initials } from "@/lib/format";
 
 export function cx(...parts) {

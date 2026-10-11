@@ -2,7 +2,7 @@
 
 // Client + hiring contact for a job. Type to pick one of the agency's
 // clients (or a new name, which becomes a client when the job is saved -
-// lib/clients.js ensureClient), then choose who the contact is there.
+// lib/clients/core.js ensureClient), then choose who the contact is there.
 //
 // value / onChange: { clientId, clientName, contactId, contactEmail }
 

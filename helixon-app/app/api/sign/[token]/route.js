@@ -1,15 +1,15 @@
 import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { logActivity } from "@/lib/candidates/activity";
-import { logClientActivity } from "@/lib/clients";
-import { notify } from "@/lib/notifications";
-import { SIGNATURE_KINDS, TOKEN_RE, cleanSignature, documentHash } from "@/lib/signatures";
+import { logClientActivity } from "@/lib/clients/core";
+import { notify } from "@/lib/messaging/notifications";
+import { SIGNATURE_KINDS, TOKEN_RE, cleanSignature, documentHash } from "@/lib/clients/signatures";
 import { fields, flag, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanSignature (lib/signatures.js) reads these.
+// cleanSignature (lib/clients/signatures.js) reads these.
 const SignatureAnswerInput = fields({ name: text(400), agree: flag, decline: flag, reason: text(4000) });
 
 // Public: the signing page (app/sign/[token]). The token is the only

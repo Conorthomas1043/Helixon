@@ -1,14 +1,14 @@
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { memberForToken } from "@/lib/member-tokens";
-import { buildFeed } from "@/lib/ics";
-import { INTERVIEW_KINDS } from "@/lib/interviews";
-import { siteUrl } from "@/lib/mailer";
+import { memberForToken } from "@/lib/agency/member-tokens";
+import { buildFeed } from "@/lib/interviews/ics";
+import { INTERVIEW_KINDS } from "@/lib/interviews/core";
+import { siteUrl } from "@/lib/messaging/mailer";
 import { fetchAll } from "@/lib/fetch-all";
-import { canSeeCandidate, getAccess } from "@/lib/permissions";
+import { canSeeCandidate, getAccess } from "@/lib/agency/permissions";
 
 // GET /api/calendar/<token>.ics - a person's interviews as a calendar feed
-// (lib/member-tokens.js). Calendar apps poll it without signing in, so the
+// (lib/agency/member-tokens.js). Calendar apps poll it without signing in, so the
 // token is the only credential; ?scope=team adds the whole team's. Past 60
 // days to a year ahead.
 

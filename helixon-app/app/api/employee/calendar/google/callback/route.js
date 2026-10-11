@@ -1,13 +1,13 @@
 // app/api/employee/calendar/google/callback/route.js
 // Google redirects here with ?code=&state= after the employee approves
 // (or denies) access. Exchanges the code for tokens and stores them
-// (lib/google-calendar.js's saveConnection), then sends the employee
+// (lib/interviews/google-calendar.js's saveConnection), then sends the employee
 // back to the calendar page with a query flag the UI reads for a toast.
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { employeeAccess } from "@/lib/session";
-import { exchangeCodeForTokens, saveConnection } from "@/lib/google-calendar";
+import { employeeAccess } from "@/lib/employee/session";
+import { exchangeCodeForTokens, saveConnection } from "@/lib/interviews/google-calendar";
 import { reportError } from "@/lib/report-error";
 
 const STATE_COOKIE = "google_oauth_state";

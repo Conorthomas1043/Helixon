@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { followUpItems, interviewFollowUpItems, sortFollowUps } from "@/lib/follow-ups";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { followUpItems, interviewFollowUpItems, sortFollowUps } from "@/lib/dashboard/follow-ups";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// GET ?scope=mine|all&tz= - open follow-ups (lib/follow-ups.js): candidates'
+// GET ?scope=mine|all&tz= - open follow-ups (lib/dashboard/follow-ups.js): candidates'
 // next actions, talent-pool check-ins and this week's interviews, most
 // urgent first. "mine" is the
 // candidates assigned to the caller. `tz` is the browser's time zone, so

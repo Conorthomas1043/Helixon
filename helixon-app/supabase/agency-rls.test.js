@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { AGENCY_RLS_EXCLUDED } from "../lib/agency-tables";
+import { AGENCY_RLS_EXCLUDED } from "../lib/agency/tables";
 
 const MIGRATION = fs.readFileSync(path.join(__dirname, "migrations/20261005000000_agency_member_rls.sql"), "utf8");
 const A = "00000000-0000-0000-0000-00000000000a";

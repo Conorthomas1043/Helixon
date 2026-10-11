@@ -6,12 +6,12 @@ import "server-only";
 // lib/candidates/list-params.js) and return { status, body }.
 
 import { supabase } from "@/lib/supabase";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { distanceMiles } from "@/lib/geocode";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 
 /** @typedef {import("@/lib/contracts/candidates").CandidateListPage} CandidateListPage */
 /** @typedef {import("@/lib/contracts/candidates").StageCounts} StageCounts */
@@ -50,7 +50,7 @@ export async function listCandidates(auth, params) {
   const pageSize = Math.min(200, Math.max(1, Number(params.get("pageSize")) || 8));
 
   const { resolved, error: filterError } = await resolveFilters(agencyId, filters);
-  // "Own candidates only" (lib/permissions.js) narrows every list.
+  // "Own candidates only" (lib/agency/permissions.js) narrows every list.
   const access = await getAccess(auth);
   if (filterError) return { status: 400, body: { error: filterError } };
 
@@ -140,7 +140,7 @@ export async function listCandidates(auth, params) {
 }
 
 const COUNT_BATCH = 1000;
-// Against a runaway loop, as in lib/dashboard-stats.js.
+// Against a runaway loop, as in lib/dashboard/stats.js.
 const COUNT_CAP = 20000;
 
 /**

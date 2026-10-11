@@ -7,21 +7,21 @@
 //   report  - the assessment as a document, with an action rail beside it
 // plus Bulk mode (BulkFlow) for many CVs against one role.
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import posthog from "@/lib/posthog";
+import posthog from "@/lib/analytics/posthog";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
 import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
-import { printSection } from "@/lib/print";
+import { printSection } from "@/lib/ui/print";
 import { BUTTON_BASE, BUTTON_SIZES, BUTTON_VARIANTS, Button, Card, Icon, Notice, Segmented, Toasts, cx, useToasts } from "./_components/ui";
 import {
   MIN_LOADING_MS,

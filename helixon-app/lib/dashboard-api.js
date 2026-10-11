@@ -4,7 +4,7 @@
 // API routes (app/api/candidates, jobs, team, analytics/timing ...). Each
 // throws an Error carrying the server's message on a non-2xx response,
 // except where a caller needs the status itself (getTeamSeatUsage). Stage
-// values come from lib/stage-labels.js.
+// values come from lib/candidates/stage-labels.js.
 //
 // The calls live in lib/api-client/, one module per area; this file
 // re-exports them so existing imports keep working.

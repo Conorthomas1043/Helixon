@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, text } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanText } from "@/lib/sanitize";
-import { slugify, validSlug } from "@/lib/careers";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { siteUrl } from "@/lib/mailer";
+import { slugify, validSlug } from "@/lib/jobs/careers";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { siteUrl } from "@/lib/messaging/mailer";
 
 const CareersInput = fields({
   slug: text(100),
@@ -16,7 +16,7 @@ const CareersInput = fields({
   privacyNotice: text(20000),
 });
 
-// The agency's public jobs page settings (lib/careers.js).
+// The agency's public jobs page settings (lib/jobs/careers.js).
 //
 // GET     the settings, the page's address, its feed, and whether you can
 //         change them (owner/admin)

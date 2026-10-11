@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { API_VERSION, apiJson, withApiKey } from "@/lib/api-v1";
-import { WEBHOOK_EVENTS } from "@/lib/webhooks";
+import { API_VERSION, apiJson, withApiKey } from "@/lib/api/v1";
+import { WEBHOOK_EVENTS } from "@/lib/integrations/webhooks";
 
 // GET /api/v1 - checks a key works, and lists what's available.
 export const GET = withApiKey(async (ctx) => {

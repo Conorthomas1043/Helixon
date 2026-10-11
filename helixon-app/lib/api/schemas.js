@@ -3,7 +3,7 @@
 // fields a route accepts; unknown keys are dropped, so a handler only ever
 // sees what its schema names. They check shape and size at the edge:
 // business rules (allowed statuses, ranges) stay in the cleaners each route
-// already uses (lib/clients.js, lib/placements.js, ...), which also accept
+// already uses (lib/clients/core.js, lib/placements/core.js, ...), which also accept
 // numbers typed as text, so these schemas do too.
 //
 // Schemas used by one route live in that route; the shared resources are

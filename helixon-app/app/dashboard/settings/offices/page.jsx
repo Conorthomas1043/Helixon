@@ -1,7 +1,7 @@
 "use client";
 
 // /dashboard/settings/offices - the agency's offices or brands, and who's
-// in which (app/api/settings/offices, lib/offices.js). Jobs are put in an
+// in which (app/api/settings/offices, lib/agency/offices.js). Jobs are put in an
 // office from the job page; the jobs list and Analytics filter by office.
 
 import { useEffect, useState } from "react";

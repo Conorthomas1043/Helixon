@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { cronAuthorized } from "@/lib/cron-auth";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { geocodeResult, normaliseLocation } from "@/lib/geocode";
 
 // Places candidates on the map for radius search (lib/geocode.js): every

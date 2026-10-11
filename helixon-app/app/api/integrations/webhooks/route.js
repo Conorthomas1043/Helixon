@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { WEBHOOK_EVENTS, checkWebhookUrl, deliver, webhookSecret } from "@/lib/webhooks";
-import { logAudit } from "@/lib/agency-audit";
+import { WEBHOOK_EVENTS, checkWebhookUrl, deliver, webhookSecret } from "@/lib/integrations/webhooks";
+import { logAudit } from "@/lib/agency/audit";
 import { fields, flag, id, nested, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanEvents (lib/webhooks.js) checks the event list.
+// cleanEvents (lib/integrations/webhooks.js) checks the event list.
 const WebhookInput = fields({ url: text(2000), description: text(240), events: nested });
 const WebhookUpdateInput = fields({ id, active: flag, events: nested, test: flag });
 
-// The agency's webhook endpoints (lib/webhooks.js). Owner and admins only.
+// The agency's webhook endpoints (lib/integrations/webhooks.js). Owner and admins only.
 // GET                                   endpoints, with their signing secrets
 // POST { url, events[], description }   add one
 // PATCH { id, active?, events? }        pause/resume or change events

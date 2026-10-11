@@ -5,13 +5,13 @@
 import Link from "next/link";
 import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG } from "@/lib/candidates/format";
 import { assignUnassignedCandidates, cancelTeamInvite, inviteTeammate } from "@/lib/dashboard-api";
-import { trapTab } from "@/lib/focus-trap";
+import { trapTab } from "@/lib/ui/focus-trap";
 import { useEffect, useRef, useState } from "react";
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Invite teammates into the agency's Clerk Organization (see
-// lib/clerk-org.js) and manage pending invites against the seat cap.
+// lib/auth/clerk-org.js) and manage pending invites against the seat cap.
 // Every state is shown, including an Individual-plan account and a failed
 // seat lookup, so the page never leaves someone with no way to add anyone
 // and no hint why.

@@ -3,7 +3,7 @@
 import "server-only";
 import { after } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { getConnection, updateConnection } from "@/lib/integrations/store";
 import { ACCOUNTING_PROVIDERS, invoiceState, pushInvoice } from "@/lib/integrations/accounting";
 import { reportError } from "@/lib/report-error";

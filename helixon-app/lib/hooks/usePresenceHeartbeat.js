@@ -1,7 +1,7 @@
 "use client";
 
 // Tells the server this person has Helixon open, once a minute, and whether
-// they've actually used it since the last beat (lib/presence.js turns that
+// they've actually used it since the last beat (lib/agency/presence.js turns that
 // into Active / Idle / Offline on the Team page). Mounted once, in
 // DashboardNav, so every signed-in page reports.
 //
@@ -9,7 +9,7 @@
 // go from Idle to Active without waiting for the next minute.
 
 import { useEffect } from "react";
-import { HEARTBEAT_MS, IDLE_AFTER_MS } from "@/lib/presence";
+import { HEARTBEAT_MS, IDLE_AFTER_MS } from "@/lib/agency/presence";
 
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "mousemove", "touchstart"];
 

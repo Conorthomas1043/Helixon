@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 const requireCustomerContext = vi.fn();
-vi.mock("@/lib/customer-auth", () => ({ requireCustomerContext: (...a) => requireCustomerContext(...a) }));
+vi.mock("@/lib/auth/customer-auth", () => ({ requireCustomerContext: (...a) => requireCustomerContext(...a) }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 
 const { customerRoute, ApiError } = await import("./route");

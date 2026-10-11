@@ -41,7 +41,7 @@ const apiHeaders = [
 const noIndexHeaders = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 
 // Content-Security-Policy: set per request by proxy.ts, with a fresh nonce
-// (lib/csp.js).
+// (lib/security/csp.js).
 
 const nextConfig = {
   turbopack: { root: appRoot },

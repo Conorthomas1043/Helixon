@@ -3,12 +3,12 @@
 // /dashboard/performance - the team leaderboard: each recruiter's CVs,
 // calls, CVs sent, interviews, offers, placements, fees and cash for a
 // period, against their targets, with commission where a plan is set up
-// (app/api/performance, lib/performance.js).
+// (app/api/performance, lib/analytics/performance.js).
 
 import { useMemo, useState } from "react";
 import { getPerformance } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
-import { METRICS, METRIC_KEYS, PERIODS } from "@/lib/performance";
+import { useResource } from "@/lib/hooks/useResource";
+import { METRICS, METRIC_KEYS, PERIODS } from "@/lib/analytics/performance";
 import { Page, PageHeader, Card, Button, ErrorState, LoadingCard, Select, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 function value(key, n) {

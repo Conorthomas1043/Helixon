@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
-import { RECOMMENDATIONS, cleanScorecard, formatInterviewTime } from "@/lib/interviews";
+import { RECOMMENDATIONS, cleanScorecard, formatInterviewTime } from "@/lib/interviews/core";
 import { fields, nested, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanScorecard (lib/interviews.js) reads these.
+// cleanScorecard (lib/interviews/core.js) reads these.
 const ScorecardInput = fields({
   overallRating: num,
   recommendation: text(40),

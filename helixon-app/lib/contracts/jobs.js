@@ -3,7 +3,7 @@
 //
 // The API keeps the database's column names, so a row carries every column
 // of `jobs`; the contract names the ones the pages read and lets the rest
-// through. The screening counts are added by lib/job-list.js.
+// through. The screening counts are added by lib/jobs/list.js.
 
 import { z } from "zod";
 import { nullableNumber, nullableString, timestamp } from "./common";
@@ -47,7 +47,7 @@ export const JobRowSchema = z.looseObject({
   show_salary: z.boolean().nullable().optional(),
   openings: nullableNumber.optional(),
   // Null, with financialsHidden set, for members who can't see money
-  // (redactJob in lib/permissions.js).
+  // (redactJob in lib/agency/permissions.js).
   fee_percent: numeric,
   fee_amount: numeric,
   financialsHidden: z.boolean().optional(),

@@ -3,16 +3,16 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { agencyDisplayName } from "@/lib/agency-display";
-import { buildClientProfile } from "@/lib/client-profile";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { agencyDisplayName } from "@/lib/agency/display";
+import { buildClientProfile } from "@/lib/clients/profile";
 import { cleanLine } from "@/lib/sanitize";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const ClientProfileInput = fields({ blind: flag });
 
-// The client-ready profile for one candidate (lib/client-profile.js).
+// The client-ready profile for one candidate (lib/clients/profile.js).
 //
 // GET ?blind=1&concerns=1&label=   the profile - client-safe fields only
 // POST { blind }                   records that it was printed/saved to send

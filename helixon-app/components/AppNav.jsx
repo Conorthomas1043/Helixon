@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SignOutButton, useUser } from "@clerk/nextjs";
-import posthog from "@/lib/posthog";
-import { useAnalyticsIdentity } from "@/lib/analytics";
-import { clearLocalCandidateData } from "@/lib/clear-local-data";
+import posthog from "@/lib/analytics/posthog";
+import { useAnalyticsIdentity } from "@/lib/analytics/track";
+import { clearLocalCandidateData } from "@/lib/compliance/clear-local-data";
 import { COLORS } from "@/lib/account";
 import { reportQuietly } from "@/lib/report-error";
 

@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { groupTransitions, inRange, loadActivity, loadCandidates, loadPlacements } from "@/lib/analytics-data";
-import { computeCore, furthestStageIndex } from "@/lib/analytics-snapshot";
-import { buildDigestEmail, digestEnabled } from "@/lib/analytics-digest";
+import { groupTransitions, inRange, loadActivity, loadCandidates, loadPlacements } from "@/lib/analytics/data";
+import { computeCore, furthestStageIndex } from "@/lib/analytics/snapshot";
+import { buildDigestEmail, digestEnabled } from "@/lib/analytics/digest";
 import { reportError } from "@/lib/report-error";
-import { normalisePermissions } from "@/lib/permissions";
-import { getOrgMemberRole } from "@/lib/clerk-org";
+import { normalisePermissions } from "@/lib/agency/permissions";
+import { getOrgMemberRole } from "@/lib/auth/clerk-org";
 
 // Monday-morning analytics summary: last week's headline numbers for the
-// agency against the week before (lib/analytics-digest.js), emailed to
+// agency against the week before (lib/analytics/digest.js), emailed to
 // everyone who switched it on in Account > Notifications. Same figures as
-// the Analytics page (lib/analytics-data.js, lib/analytics-snapshot.js).
+// the Analytics page (lib/analytics/data.js, lib/analytics/snapshot.js).
 // Suspended workspaces are skipped.
 //
 // Called by Vercel Cron (vercel.json) with `Authorization: Bearer
@@ -97,7 +97,7 @@ async function stalledCount(agencyId, now, recruiterId = null) {
 }
 
 // What one recipient may see under the agency's permissions
-// (lib/permissions.js): the owner and admins see everything.
+// (lib/agency/permissions.js): the owner and admins see everything.
 async function recipientAccess(agency, perms, userId) {
   if (!perms.financialsAdminOnly && !perms.ownCandidatesOnly) return { fees: true, recruiterId: null };
   let isAdmin = !agency?.clerk_org_id;

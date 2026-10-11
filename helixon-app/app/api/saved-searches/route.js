@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, nested, text } from "@/lib/api/schemas";
-import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
+import { cleanSavedSearch, toSavedSearch } from "@/lib/candidates/saved-searches";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { agencyDb } from "@/lib/agency-db";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 
-// cleanSavedSearch (lib/saved-searches.js) reads these; params in full.
+// cleanSavedSearch (lib/candidates/saved-searches.js) reads these; params in full.
 const SavedSearchInput = fields({ name: text(240), params: nested, shared: flag, alert: flag });
 
-// Saved Candidates searches (lib/saved-searches.js): your own plus ones
+// Saved Candidates searches (lib/candidates/saved-searches.js): your own plus ones
 // teammates shared.
 //
 // GET ?counts=1           with how many candidates each matches now

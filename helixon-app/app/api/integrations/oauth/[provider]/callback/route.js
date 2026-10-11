@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { siteUrl } from "@/lib/mailer";
-import { canManageWorkspace } from "@/lib/workspace-admin";
-import { logAudit } from "@/lib/agency-audit";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { siteUrl } from "@/lib/messaging/mailer";
+import { canManageWorkspace } from "@/lib/agency/workspace-admin";
+import { logAudit } from "@/lib/agency/audit";
 import { fetchTokens, providerFor } from "@/lib/integrations/providers";
 import { saveConnection } from "@/lib/integrations/store";
 import { quickbooksCompany, xeroTenant } from "@/lib/integrations/accounting";

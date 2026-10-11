@@ -19,11 +19,11 @@ const client = { from: (name) => table(name) };
 const hidden = vi.fn();
 vi.mock("@/lib/supabase", () => ({ supabase: client }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => client }));
-vi.mock("@/lib/permissions", async (importOriginal) => {
+vi.mock("@/lib/agency/permissions", async (importOriginal) => {
   const { redactJob } = await importOriginal();
   return { candidateHidden: (...a) => hidden(...a), getAccess: async () => ({ canSeeFinancials: false }), redactJob };
 });
-vi.mock("@/lib/recruiter-directory", () => ({ resolveRecruiterNames: async () => new Map(), recruiterDisplayName: () => "" }));
+vi.mock("@/lib/agency/recruiter-directory", () => ({ resolveRecruiterNames: async () => new Map(), recruiterDisplayName: () => "" }));
 
 const { loadCandidateProfile } = await import("./profile");
 const auth = { ok: true, agencyId: "agency-1", userId: "user_1" };

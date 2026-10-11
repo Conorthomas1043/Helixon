@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { customerRoute } from "@/lib/api/route";
 import { JobInput } from "@/lib/api/schemas";
 import { cleanText, cleanLine, cleanList, cleanNumber, cleanEmail } from "@/lib/sanitize";
-import { jobClientColumns, logClientActivity } from "@/lib/clients";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { jobClientColumns, logClientActivity } from "@/lib/clients/core";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { agencyDb } from "@/lib/agency-db";
-import { listJobs } from "@/lib/job-list";
+import { listJobs } from "@/lib/jobs/list";
 import { reportError } from "@/lib/report-error";
 
-// GET /api/jobs - the agency's jobs with screening counts (lib/job-list.js).
+// GET /api/jobs - the agency's jobs with screening counts (lib/jobs/list.js).
 export const GET = customerRoute(async (_request, _context, auth) => {
   try {
     return NextResponse.json(await listJobs(auth));

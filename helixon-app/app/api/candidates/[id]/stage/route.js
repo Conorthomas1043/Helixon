@@ -1,19 +1,19 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id, text } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
-import { STAGE_LABELS } from "@/lib/stage-labels";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { normaliseCustomisation } from "@/lib/custom-fields";
-import { candidateHidden } from "@/lib/permissions";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { normaliseCustomisation } from "@/lib/agency/custom-fields";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const StageInput = fields({ stage: text(40), subStage: id });
 
 // PATCH { stage?, subStage? } - move a candidate to a core stage and/or one
-// of the agency's sub-stages (lib/custom-fields.js). A sub-stage on its own
+// of the agency's sub-stages (lib/agency/custom-fields.js). A sub-stage on its own
 // also moves them to the stage it sits under; changing the stage without
 // one clears the sub-stage.
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {

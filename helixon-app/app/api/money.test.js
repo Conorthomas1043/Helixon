@@ -20,15 +20,15 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({
+vi.mock("@/lib/auth/customer-auth", () => ({
   requireCustomerContext: async () => state.auth,
   getCustomerContext: async () => state.context,
 }));
-vi.mock("@/lib/permissions", () => ({ getAccess: async () => state.access }));
-vi.mock("@/lib/plan", () => ({ getAgencyPlan: async () => "agency" }));
-vi.mock("@/lib/stripe", () => ({ stripe: { billingPortal: { sessions: { create: (...a) => portalCreate(...a) } } } }));
-vi.mock("@/lib/webhooks", () => ({ emitWebhook: (...a) => emitWebhook(...a) }));
-vi.mock("@/lib/agency-audit", () => ({ logAudit: vi.fn() }));
+vi.mock("@/lib/agency/permissions", () => ({ getAccess: async () => state.access }));
+vi.mock("@/lib/billing/plan", () => ({ getAgencyPlan: async () => "agency" }));
+vi.mock("@/lib/billing/stripe", () => ({ stripe: { billingPortal: { sessions: { create: (...a) => portalCreate(...a) } } } }));
+vi.mock("@/lib/integrations/webhooks", () => ({ emitWebhook: (...a) => emitWebhook(...a) }));
+vi.mock("@/lib/agency/audit", () => ({ logAudit: vi.fn() }));
 vi.mock("@/lib/integrations/accounting-sync", () => ({ accountingConnection: async () => null }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: (fn) => fn() }));

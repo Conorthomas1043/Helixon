@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { candidateCvUrl } from "@/lib/candidates/files";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 

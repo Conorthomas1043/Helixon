@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { getCurrentEmployeeId } from "@/lib/employee/session";
 import { recordHeartbeat, setBusy, getTeamPresence } from "@/lib/employee/presence";
 import { fields, flag, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

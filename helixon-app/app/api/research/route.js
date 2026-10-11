@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { supabase } from "@/lib/supabase";
 import { cleanText } from "@/lib/sanitize";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { recordSignal } from "@/lib/research-signals";
-import { captureAgencyEvent } from "@/lib/server-analytics";
-import { umuxLiteScore } from "@/lib/umux-lite";
+import { recordSignal } from "@/lib/analytics/research-signals";
+import { captureAgencyEvent } from "@/lib/analytics/server";
+import { umuxLiteScore } from "@/lib/analytics/umux-lite";
 import { reportError } from "@/lib/report-error";
 import { fields, flag, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

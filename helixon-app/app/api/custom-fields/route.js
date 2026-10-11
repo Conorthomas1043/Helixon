@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id, nested, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
-import { ENTITY_TABLES, cleanFieldValues, fieldsFor, normaliseCustomisation } from "@/lib/custom-fields";
+import { ENTITY_TABLES, cleanFieldValues, fieldsFor, normaliseCustomisation } from "@/lib/agency/custom-fields";
 
-// cleanFieldValues (lib/custom-fields.js) checks each value.
+// cleanFieldValues (lib/agency/custom-fields.js) checks each value.
 const FieldValuesInput = fields({ entity: text(20), id, values: nested });
 
 // PATCH { entity: "candidate"|"job"|"client", id, values: { fieldId: value } }

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { PAYMENT_ISSUE_STATUSES } from "@/lib/subscription-status";
+import { PAYMENT_ISSUE_STATUSES } from "@/lib/billing/subscription-status";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { getAgencyPlan } from "@/lib/plan";
+import { getAgencyPlan } from "@/lib/billing/plan";
 import { reportError } from "@/lib/report-error";
 
 // Returns the currently signed-in user (email + first name from `profiles`),

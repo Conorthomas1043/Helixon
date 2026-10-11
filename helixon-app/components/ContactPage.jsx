@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import posthog from "@/lib/posthog";
+import posthog from "@/lib/analytics/posthog";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 

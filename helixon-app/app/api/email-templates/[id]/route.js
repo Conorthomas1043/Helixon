@@ -3,10 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
-import { cleanTemplate, toTemplate } from "@/lib/email-templates";
+import { cleanTemplate, toTemplate } from "@/lib/messaging/email-templates";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanTemplate (lib/email-templates.js) reads these.
+// cleanTemplate (lib/messaging/email-templates.js) reads these.
 const TemplateInput = fields({ name: text(240), audience: text(40), subject: text(600), body: text(40000) });
 
 // PATCH / DELETE one of the agency's email templates.

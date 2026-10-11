@@ -1,9 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { neutralizeUntrusted, shouldBlockChatMessage } from "@/lib/prompt-safety";
-import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
+import { neutralizeUntrusted, shouldBlockChatMessage } from "@/lib/security/prompt-safety";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/ops/site-settings";
 import { after } from "next/server";
-import { recordSignal } from "@/lib/research-signals";
+import { recordSignal } from "@/lib/analytics/research-signals";
 import { questionTopic } from "@/lib/assistant-topics";
 import { reportError } from "@/lib/report-error";
 import { fields, nested } from "@/lib/api/schemas";

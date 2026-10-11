@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
-import { MERGE_FIELDS } from "@/lib/email-merge";
-import { cleanTemplate, toTemplate } from "@/lib/email-templates";
-import { inboundDomain } from "@/lib/tracked-email";
+import { MERGE_FIELDS } from "@/lib/messaging/email-merge";
+import { cleanTemplate, toTemplate } from "@/lib/messaging/email-templates";
+import { inboundDomain } from "@/lib/messaging/tracked-email";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanTemplate (lib/email-templates.js) reads these.
+// cleanTemplate (lib/messaging/email-templates.js) reads these.
 const TemplateInput = fields({ name: text(240), audience: text(40), subject: text(600), body: text(40000) });
 
-// The agency's email templates (lib/email-merge.js for merge fields).
+// The agency's email templates (lib/messaging/email-merge.js for merge fields).
 //
 // GET                                          templates + the merge fields
 // POST { name, audience?, subject, body }      create one
@@ -21,7 +21,7 @@ export const GET = customerRoute(async (_request, _context, auth) => {
   return NextResponse.json({
     templates: (data ?? []).map(toTemplate),
     mergeFields: MERGE_FIELDS,
-    // Whether replies are captured onto candidates' threads (lib/tracked-email.js).
+    // Whether replies are captured onto candidates' threads (lib/messaging/tracked-email.js).
     repliesCaptured: Boolean(inboundDomain() && process.env.RESEND_WEBHOOK_SECRET),
   });
 });

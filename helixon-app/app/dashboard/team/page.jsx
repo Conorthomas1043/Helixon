@@ -2,12 +2,12 @@
 
 // /dashboard/team - the agency's members (profiles sharing its agency_id)
 // with their workload, plus Agency-plan seat management backed by a Clerk
-// Organization (lib/clerk-org.js). Only the workspace owner ("org:admin")
+// Organization (lib/auth/clerk-org.js). Only the workspace owner ("org:admin")
 // can invite, cancel invites or remove people - the API enforces that, and
 // this page hides those controls from everyone else. "Overdue" mirrors the
 // candidate profile page: nextAction.dueAt in the past and not completed.
 //
-// Presence (lib/presence.js): who's active, idle, busy, away or offline -
+// Presence (lib/agency/presence.js): who's active, idle, busy, away or offline -
 // and when anyone offline was last active - from each person's heartbeat
 // (DashboardNav) and the status they set here.
 
@@ -15,7 +15,7 @@ import DashboardNav from "@/components/DashboardNav";
 import Link from "next/link";
 import PresenceDot from "@/components/PresenceDot";
 import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
-import { PRESENCE_ORDER, computePresence, timeAgo } from "@/lib/presence";
+import { PRESENCE_ORDER, computePresence, timeAgo } from "@/lib/agency/presence";
 import { getRecruiters as fetchRecruiters, getTeamSeatUsage, removeTeammate, setTeammateRole } from "@/lib/dashboard-api";
 import { reportQuietly } from "@/lib/report-error";
 import { useCallback, useEffect, useState } from "react";

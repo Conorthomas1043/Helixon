@@ -2,7 +2,7 @@
 
 // Dashboard API calls: team (re-exported by lib/dashboard-api.js).
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { apiFetch } from "./core";
 
 

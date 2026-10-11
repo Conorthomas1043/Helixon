@@ -1,11 +1,11 @@
 // lib/employee/onboarding.js
 // Supabase-backed CRUD for `employee_onboarding_progress` - tracks which
-// onboarding checklist items (see lib/onboarding-tasks.js) a given
+// onboarding checklist items (see lib/agency/onboarding-tasks.js) a given
 // employee has completed, and when.
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
-import { ONBOARDING_TASKS, onboardingTaskKeys } from "@/lib/onboarding-tasks";
+import { ONBOARDING_TASKS, onboardingTaskKeys } from "@/lib/agency/onboarding-tasks";
 import { reportError } from "@/lib/report-error";
 
 export async function getOnboardingProgress(employeeId) {

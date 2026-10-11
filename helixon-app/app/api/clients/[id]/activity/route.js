@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
-import { CLIENT_ACTIVITY_TYPES, loadClient, logClientActivity } from "@/lib/clients";
+import { CLIENT_ACTIVITY_TYPES, loadClient, logClientActivity } from "@/lib/clients/core";
 
 const ClientActivityInput = fields({ type: text(40), note: text(4000) });
 
 // POST { type, note } - log a call, email, meeting or note on a client's
-// timeline (lib/clients.js CLIENT_ACTIVITY_TYPES).
+// timeline (lib/clients/core.js CLIENT_ACTIVITY_TYPES).
 export const POST = customerRoute(async (request, { params }, auth, body) => {
   const { id } = await params;
   const client = await loadClient(auth.agencyId, id);

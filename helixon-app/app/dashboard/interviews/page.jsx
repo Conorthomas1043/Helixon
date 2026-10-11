@@ -8,7 +8,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getInterviews } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import { Page, PageHeader, Card, EmptyState, ErrorState, LoadingCard, INK, INK_MUTED } from "@/components/dashboard/ui";
 import { InterviewItem } from "@/components/dashboard/interviews";
 import { InterviewWeek } from "@/components/dashboard/interview-week";

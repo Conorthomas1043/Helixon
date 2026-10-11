@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { REMINDER_PREF_KEY, remindersEnabled } from "@/lib/reminder-email";
-import { DIGEST_PREF_KEY, digestEnabled } from "@/lib/analytics-digest";
+import { REMINDER_PREF_KEY, remindersEnabled } from "@/lib/messaging/reminder-email";
+import { DIGEST_PREF_KEY, digestEnabled } from "@/lib/analytics/digest";
 import { fields, flag } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -10,7 +10,7 @@ import { parseBody } from "@/lib/api/body";
 // private metadata (server-only):
 //   followUpReminders   weekday follow-up reminder (app/api/cron/reminders)
 //   applicationAlerts   an email per application from the jobs page
-//                       (lib/applications.js)
+//                       (lib/jobs/applications.js)
 //   weeklyDigest        Monday analytics summary
 //                       (app/api/cron/analytics-digest)
 // The first two are on unless set to false; the digest is off until

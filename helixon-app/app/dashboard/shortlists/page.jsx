@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getShortlists, createShortlist, getJobs } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidates/format";
 import { Skeleton as Block } from "@/components/ui";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";

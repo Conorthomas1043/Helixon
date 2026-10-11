@@ -2,7 +2,7 @@
 
 // Part of the dashboard home (app/dashboard/page.js).
 
-import { REVIEW_MIN, STRONG_MATCH_MIN } from "@/lib/scoreBands";
+import { REVIEW_MIN, STRONG_MATCH_MIN } from "@/lib/screening/scoreBands";
 import { formatDate as fmtDate } from "@/lib/format";
 
 export const formatDate = (date) => fmtDate(date, { withTime: true });

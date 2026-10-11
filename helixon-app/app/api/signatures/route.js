@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, id, num, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
+import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
 import { logActivity } from "@/lib/candidates/activity";
-import { logClientActivity } from "@/lib/clients";
-import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/signatures";
+import { logClientActivity } from "@/lib/clients/core";
+import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/clients/signatures";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanSignatureRequest (lib/signatures.js) reads the document fields.
+// cleanSignatureRequest (lib/clients/signatures.js) reads the document fields.
 const SignatureRequestInput = fields({
   kind: text(40),
   title: text(400),
@@ -24,7 +24,7 @@ const SignatureRequestInput = fields({
   send: flag,
 });
 
-// Documents sent for e-signature (lib/signatures.js).
+// Documents sent for e-signature (lib/clients/signatures.js).
 //
 // GET ?clientId= | ?candidateId=    requests for one client or candidate
 // POST { kind, title, body, signerName, signerEmail?, clientId?,

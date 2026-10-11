@@ -2,7 +2,7 @@ import { scoreWeightsFor, effectiveWeights, FULL_CREDIT_YEARS, IMPORTANCE_MULTIP
 
 import { normaliseSkill } from "../utils/skillNormaliser.js";
 
-import { STRONG_MATCH_MIN, REVIEW_MIN } from "../../scoreBands.js";
+import { STRONG_MATCH_MIN, REVIEW_MIN } from "../../screening/scoreBands.js";
 
 import { semanticMatch } from "./semanticMatcher.js";
 import { embedSkills, findSemanticMatch } from "./embeddingMatcher.js";

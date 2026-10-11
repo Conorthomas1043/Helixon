@@ -1,6 +1,6 @@
 "use client";
 // /admin/site - site-wide controls: maintenance mode, the announcement
-// banner and feature switches (lib/site-settings.js). Every change is
+// banner and feature switches (lib/ops/site-settings.js). Every change is
 // saved per section and audited.
 
 import { useState } from "react";

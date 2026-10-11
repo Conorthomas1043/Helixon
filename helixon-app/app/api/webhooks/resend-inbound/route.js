@@ -3,13 +3,13 @@ import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidates/activity";
-import { tokenFromAddress } from "@/lib/tracked-email";
-import { bccTokenFromAddress, memberForToken } from "@/lib/member-tokens";
-import { fileEmail } from "@/lib/email-filing";
-import { notify } from "@/lib/notifications";
+import { tokenFromAddress } from "@/lib/messaging/tracked-email";
+import { bccTokenFromAddress, memberForToken } from "@/lib/agency/member-tokens";
+import { fileEmail } from "@/lib/messaging/email-filing";
+import { notify } from "@/lib/messaging/notifications";
 import { reportError } from "@/lib/report-error";
 
-// Replies to emails sent through Helixon (lib/tracked-email.js). Resend
+// Replies to emails sent through Helixon (lib/messaging/tracked-email.js). Resend
 // receives mail for RESEND_INBOUND_DOMAIN and posts an "email.received"
 // event here, signed with RESEND_WEBHOOK_SECRET (Svix headers). The
 // reply+<token>@ address it was sent to says which message it answers, so
@@ -21,7 +21,7 @@ import { reportError } from "@/lib/report-error";
 // Unknown or unsigned requests are refused; events for other addresses are
 // acknowledged and ignored.
 //
-// Mail to someone's log+<token>@ address (lib/member-tokens.js) is an email
+// Mail to someone's log+<token>@ address (lib/agency/member-tokens.js) is an email
 // they sent from their own inbox with that address in BCC: it's filed on
 // the timeline of every candidate and client contact it went to.
 
@@ -125,7 +125,7 @@ export async function POST(request) {
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
 const emailsIn = (list) => [...new Set((list || []).flatMap((a) => String(a || "").toLowerCase().match(EMAIL_RE) || []))];
 
-// An email BCC'd to a member's log+<token>@ address (filed by lib/email-filing.js).
+// An email BCC'd to a member's log+<token>@ address (filed by lib/messaging/email-filing.js).
 async function logBccEmail({ data, token, resend }) {
   const member = await memberForToken(token, "bcc");
   if (!member) return NextResponse.json({ ok: true, ignored: true });

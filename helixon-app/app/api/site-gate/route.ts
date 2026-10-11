@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/site-gate";
+import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/auth/site-gate";
 import { fields, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -15,7 +15,7 @@ const GateInput = fields({ password: str(400) });
 //   SITE_GATE_SECRET=some-long-random-string
 
 // FIX: was a second, separately-maintained "60 * 60 * 8" - now imported
-// from lib/site-gate.ts so the cookie's browser-side maxAge and the
+// from lib/auth/site-gate.ts so the cookie's browser-side maxAge and the
 // server-side expiry check in verifyGateCookie() can't drift apart.
 const MAX_AGE = GATE_MAX_AGE_SECONDS;
 

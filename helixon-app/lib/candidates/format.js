@@ -12,7 +12,7 @@
  * instead of forking a second, slightly-different palette.
  * ---------------------------------------------------------------------- */
 
-import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "../scoreBands";
+import { STRONG_MATCH_MIN, REVIEW_MIN, scoreBandLabel } from "../screening/scoreBands";
 import { formatDate as fmtDate, initials } from "@/lib/format";
 
 export const formatDate = (date) => fmtDate(date, { withTime: true, empty: "Unknown date" });

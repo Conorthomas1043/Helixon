@@ -1,19 +1,19 @@
-import { emitWebhook } from "@/lib/webhooks";
-import { mailConfigured, sendAgencyEmail, siteUrl } from "@/lib/mailer";
-import { escapeHtml } from "@/lib/demo-notification";
+import { emitWebhook } from "@/lib/integrations/webhooks";
+import { mailConfigured, sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
+import { escapeHtml } from "@/lib/messaging/demo-notification";
 import { NextResponse, after } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
-import { sourceFromParam } from "@/lib/careers";
-import { loadPublicJob } from "@/lib/public-jobs";
-import { acceptableCv, receiveApplication, screenApplication } from "@/lib/applications";
+import { sourceFromParam } from "@/lib/jobs/careers";
+import { loadPublicJob } from "@/lib/jobs/public-jobs";
+import { acceptableCv, receiveApplication, screenApplication } from "@/lib/jobs/applications";
 
 // POST (multipart) - an application from a public job page
 // (components/public/ApplyForm.jsx): slug, jobId, name, email, phone?,
 // linkedin?, cv, consent, src?, website (honeypot).
 //
 // Answers as soon as the application is safely stored; screening runs
-// afterwards (lib/applications.js), so the applicant isn't kept waiting.
+// afterwards (lib/jobs/applications.js), so the applicant isn't kept waiting.
 
 // Room for the screening that runs after the response.
 export const maxDuration = 240;

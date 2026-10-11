@@ -144,7 +144,7 @@ export function NoteEditor({ note, onSave }) {
 }
 
 // Entries lapse after the agency's retention period (GDPR storage
-// limitation - lib/data-retention.js); within a month of that, offer to
+// limitation - lib/compliance/data-retention.js); within a month of that, offer to
 // extend.
 export function PoolExpiry({ expiresAt, onExtend, disabled }) {
   if (!expiresAt) return null;

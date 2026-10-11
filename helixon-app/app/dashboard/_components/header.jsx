@@ -3,7 +3,7 @@
 // Part of the dashboard home (app/dashboard/page.js).
 
 import Link from "next/link";
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { ACCENT, ACCENT_BG, ACCENT_FG, AMBER_BG, AMBER_FG, BORDER, BORDER2, CARD, GREEN_FG, RED, SURFACE, TEXT, TEXT_FAINT, TEXT_SUB } from "./shared";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 

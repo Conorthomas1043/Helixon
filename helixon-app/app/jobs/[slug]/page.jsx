@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { loadCareersAgency, listPublicJobs } from "@/lib/public-jobs";
+import { loadCareersAgency, listPublicJobs } from "@/lib/jobs/public-jobs";
 import { JobsHeader, JobsFooter } from "@/components/public/JobsChrome";
 
 export const dynamic = "force-dynamic";

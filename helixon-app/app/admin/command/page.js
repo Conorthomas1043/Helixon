@@ -56,7 +56,7 @@ export default function CommandPage() {
   // Prefer the live Stripe/Clerk numbers over the mirrored Supabase ones -
   // the subscriptions table never gets an amount field written to it, and
   // Supabase Auth stopped being the identity source once the app moved to
-  // Clerk (see lib/customer-auth.js), so its user list is stale.
+  // Clerk (see lib/auth/customer-auth.js), so its user list is stale.
   const mrr = stripe?.configured && !stripe.error ? stripe.mrr : sales.mrr;
   const mrrCurrency = stripe?.currency || "gbp";
   const mrrIsLive = stripe?.configured && !stripe.error;

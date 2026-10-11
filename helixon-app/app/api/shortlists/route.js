@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { MAX_NAME_LEN, addToShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/shortlists";
+import { MAX_NAME_LEN, addToShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/clients/shortlists";
 import { fields, id, ids, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const ShortlistInput = fields({ name: text(400), jobId: id, candidateIds: ids(1000) });
 
-// The agency's shortlists (lib/shortlists.js). Rebuilt on Clerk auth and
+// The agency's shortlists (lib/clients/shortlists.js). Rebuilt on Clerk auth and
 // agency scoping - the original took an agencyId from the request with no
 // authentication at all.
 //

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { buildOps } from "@/lib/dashboard-ops";
-import { getAccess } from "@/lib/permissions";
+import { buildOps } from "@/lib/dashboard/ops";
+import { getAccess } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 
 // GET /api/dashboard-ops?scope=mine|team - the Overview's business view
-// (lib/dashboard-ops.js): open jobs, interviews this week, offers out,
+// (lib/dashboard/ops.js): open jobs, interviews this week, offers out,
 // placements and fees this month, cash owed, and alerts for overdue
 // invoices, timesheets to approve, expiring compliance checks, contracts
 // and rebate periods ending, and jobs past their fill-by date.

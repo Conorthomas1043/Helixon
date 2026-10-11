@@ -5,7 +5,7 @@
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { getInvoice, syncInvoiceToAccounts, updateInvoice } from "@/lib/dashboard-api";
-import { printSection } from "@/lib/print";
+import { printSection } from "@/lib/ui/print";
 import { Page, PageHeader, Button, ErrorState, ErrorText, LoadingCard, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
 import { useConfirm } from "@/components/dashboard/use-confirm";

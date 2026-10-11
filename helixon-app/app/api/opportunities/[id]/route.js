@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { OpportunityInput } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { logClientActivity } from "@/lib/clients";
-import { OPPORTUNITY_STAGES, cleanOpportunity, toOpportunity } from "@/lib/opportunities";
+import { logClientActivity } from "@/lib/clients/core";
+import { OPPORTUNITY_STAGES, cleanOpportunity, toOpportunity } from "@/lib/clients/opportunities";
 import { agencyDb } from "@/lib/agency-db";
 
 // PATCH { title?, stage?, value?, probability?, expectedClose?, ownerId?,

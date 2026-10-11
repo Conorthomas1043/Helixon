@@ -15,7 +15,7 @@ import { Card, Icon, Notice, Spinner, cx } from "./ui";
 import CandidateChooser from "./CandidateChooser";
 import RawCvCompare from "./RawCvCompare";
 import { LETTERS, PillButton, PillTabs, StagePicker, openOriginalCv } from "./compareBits";
-import { printSection } from "@/lib/print";
+import { printSection } from "@/lib/ui/print";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";

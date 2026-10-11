@@ -11,7 +11,7 @@ import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
 import { blockIsActive } from "@/lib/security/rules";
 import { scoreRequest } from "@/lib/security/threat-score";
-import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
+import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow } from "@/lib/admin/traffic";
 import { fields, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
@@ -118,7 +118,7 @@ const LOG_LIMIT = 2000;
 const LOG_COLUMNS = "id,ip,user_agent,method,path,query,host,country,city,lat,lon,referer,blocked,ts,outcome,status_code,location,rule,threat_score,signals,traffic_class";
 const OUTCOMES = new Set(["allowed", "blocked", "redirected", "not_found"]);
 const METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
-// Who the numbers are about (lib/traffic-class.js). "people" also leaves
+// Who the numbers are about (lib/analytics/traffic-class.js). "people" also leaves
 // out the admin area, so watching this page doesn't count as traffic.
 const AUDIENCES = new Set(["all", "people", "automated", "crawler", "monitor", "bot"]);
 // Whole-range breakdowns (admin_traffic_top).

@@ -2,7 +2,7 @@
 
 // Dashboard API calls: jobs (re-exported by lib/dashboard-api.js).
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { apiFetch } from "./core";
 
 /** @typedef {import("@/lib/contracts/jobs").JobRow} JobRow */
@@ -36,7 +36,7 @@ export function adaptJob(j) {
     requiredSkills: j.required_skills ?? [],
     preferredSkills: j.preferred_skills ?? [],
     minYearsExperience: j.min_years_experience,
-    // lib/job-details.js - owner falls back to whoever created the job.
+    // lib/jobs/details.js - owner falls back to whoever created the job.
     ownerId: j.owner_id || j.user_id || null,
     openings: j.openings ?? null,
     feePercent: j.fee_percent == null ? null : Number(j.fee_percent),

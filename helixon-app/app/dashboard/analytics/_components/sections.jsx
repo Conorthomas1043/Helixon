@@ -3,7 +3,7 @@
 // Part of the analytics page (../page.jsx): timing, outreach, advertising,
 // money, retention, feedback and pipeline rows.
 
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { INK, INK_MUTED, INK_FAINT } from "@/lib/candidates/format";
 import { MUTED_BAR, StatCard } from "./charts";
 

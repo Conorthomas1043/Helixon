@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { recordSignal } from "@/lib/research-signals";
+import { recordSignal } from "@/lib/analytics/research-signals";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
-import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
-import { FROM_EMAIL, escapeHtml, salesNotificationEmail } from "@/lib/demo-notification";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/ops/site-settings";
+import { FROM_EMAIL, escapeHtml, salesNotificationEmail } from "@/lib/messaging/demo-notification";
 import { reportError } from "@/lib/report-error";
 import { fields, flag, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

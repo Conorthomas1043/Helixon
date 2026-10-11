@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
-import { toReference } from "@/lib/compliance";
-import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
-import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
-import { candidateHidden } from "@/lib/permissions";
+import { toReference } from "@/lib/compliance/core";
+import { referenceRequestEmail, referenceUrl } from "@/lib/compliance/email";
+import { agencyFromName, sendAgencyEmail } from "@/lib/messaging/mailer";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const ReferenceUpdateInput = fields({ action: text(20), notes: text(8000) });

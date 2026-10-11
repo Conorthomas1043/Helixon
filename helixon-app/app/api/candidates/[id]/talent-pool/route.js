@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
-import { poolRootId } from "@/lib/rescreen";
-import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
-import { candidateHidden } from "@/lib/permissions";
+import { poolRootId } from "@/lib/screening/rescreen";
+import { addMonths, getAgencyPrivacy } from "@/lib/compliance/privacy-settings";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 import { date, fields, flag, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
@@ -16,7 +16,7 @@ const PoolUpdateInput = fields({ status: text(40), checkIn: date, note: text(400
 
 // Save someone to the agency's talent pool for future roles, or take them
 // out. The pool holds one entry per person: the flag goes on their first
-// candidate row (the one later screenings hang off - see lib/rescreen.js),
+// candidate row (the one later screenings hang off - see lib/screening/rescreen.js),
 // whichever of their rows it's set from.
 //
 // POST { note? }                       save (or update the note)
@@ -27,7 +27,7 @@ const PoolUpdateInput = fields({ status: text(40), checkIn: date, note: text(400
 //                                      retention period
 //
 // Entries lapse at talent_pool_expires_at (the agency's retention period
-// after saving - lib/privacy-settings.js) unless extended.
+// after saving - lib/compliance/privacy-settings.js) unless extended.
 // DELETE                               remove
 
 const POOL_STATUSES = ["available", "open", "not_looking"];

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { getStats } from "@/lib/employee/store";
 
 export async function GET() {

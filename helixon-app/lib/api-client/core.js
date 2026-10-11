@@ -7,7 +7,7 @@
 // apiFetch's T the contract type, so a key the route doesn't send is a type
 // error here rather than `undefined` on a page.
 
-import { OFFLINE_MESSAGE, announceSignedOut, responseErrorMessage } from "@/lib/api-errors";
+import { OFFLINE_MESSAGE, announceSignedOut, responseErrorMessage } from "@/lib/api-client/errors";
 
 // A request body as the area modules pass it on: the fields a page filled
 // in, checked by the route's schema (lib/api/schemas.js).

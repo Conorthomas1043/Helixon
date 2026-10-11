@@ -6,8 +6,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getInterviews } from "@/lib/dashboard-api";
-import { INTERVIEW_KINDS } from "@/lib/interviews";
-import { addWeeks, groupByWeekday, startOfWeek, weekDays, weekLabel } from "@/lib/interview-week";
+import { INTERVIEW_KINDS } from "@/lib/interviews/core";
+import { addWeeks, groupByWeekday, startOfWeek, weekDays, weekLabel } from "@/lib/interviews/week";
 import { Button, Card, ErrorState, LoadingCard, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 const STATUS_COLOUR = {

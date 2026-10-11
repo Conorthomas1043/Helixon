@@ -1,7 +1,7 @@
 "use client";
 
 // /dashboard/shortlists/[id]/client-pack - every person on a shortlist as
-// a client-ready profile (lib/client-profile.js), one per printed page, in
+// a client-ready profile (lib/clients/profile.js), one per printed page, in
 // the shortlist's order (strongest match first). Anonymised packs label
 // people Candidate A, B, C… in that order.
 
@@ -11,8 +11,8 @@ import DashboardNav from "@/components/DashboardNav";
 import ClientProfileDocument from "@/components/dashboard/ClientProfileDocument";
 import ClientProfileToolbar from "@/components/dashboard/ClientProfileToolbar";
 import { getShortlist, getClientProfile, recordClientProfilePrinted } from "@/lib/dashboard-api";
-import { blindLabel } from "@/lib/client-profile";
-import { printSection } from "@/lib/print";
+import { blindLabel } from "@/lib/clients/profile";
+import { printSection } from "@/lib/ui/print";
 import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getScoreBand, STRONG_MATCH_MIN, REVIEW_MIN } from "../../scoreBands.js";
+import { getScoreBand, STRONG_MATCH_MIN, REVIEW_MIN } from "../../screening/scoreBands.js";
 import { scoreLabel, scoreBandOf } from "../../candidates/format.js";
 import { estimateSalary } from "../scoring/salaryEngine.js";
 

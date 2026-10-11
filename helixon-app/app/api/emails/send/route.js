@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, id, ids, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
-import { mergeContext, renderTemplate } from "@/lib/email-merge";
-import { loadEmailTargets } from "@/lib/email-targets";
-import { agencyFromName, mailConfigured, senderEmail } from "@/lib/mailer";
-import { sendTrackedEmail } from "@/lib/tracked-email";
+import { mergeContext, renderTemplate } from "@/lib/messaging/email-merge";
+import { loadEmailTargets } from "@/lib/messaging/email-targets";
+import { agencyFromName, mailConfigured, senderEmail } from "@/lib/messaging/mailer";
+import { sendTrackedEmail } from "@/lib/messaging/tracked-email";
 import { agencyDb } from "@/lib/agency-db";
 
 const BulkEmailInput = fields({ candidateIds: ids(1000), subject: text(600), body: text(40000), templateId: id, preview: flag });
 
 // Email one or many candidates, each with the merge fields filled in for
-// them (lib/email-merge.js). Every email is sent separately - nobody sees
+// them (lib/messaging/email-merge.js). Every email is sent separately - nobody sees
 // anyone else's address - and kept on each candidate's thread.
 //
 // POST { candidateIds, subject, body, templateId?, preview? }

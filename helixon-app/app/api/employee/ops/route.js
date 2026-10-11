@@ -1,11 +1,11 @@
 // Employees don't have Supabase Auth accounts; they log in through
 // lib/employee/auth.js's own username/password + cookie-session system
-// (see lib/session.js). So this route uses the same employeeAccess()
+// (see lib/employee/session.js). So this route uses the same employeeAccess()
 // session check as every other /api/employee/* route, not a Bearer token.
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { groupBy, classifyAcquisition } from "@/lib/ops/attribution";
 import { reportError } from "@/lib/report-error";
 import { fetchAll } from "@/lib/fetch-all";

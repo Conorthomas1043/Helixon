@@ -4,7 +4,7 @@
 // lib/employee/goals.js's canWrite(), not here.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { addGoalItem, toggleGoalItem, deleteGoalItem } from "@/lib/employee/goals";
 import { fields, flag, id, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

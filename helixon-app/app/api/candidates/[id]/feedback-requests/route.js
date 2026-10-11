@@ -20,10 +20,10 @@ import { fields, id, text } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { agencyDisplayName } from "@/lib/agency-display";
-import { feedbackRequestEmail } from "@/lib/feedback-request-email";
-import { candidateHidden } from "@/lib/permissions";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { agencyDisplayName } from "@/lib/agency/display";
+import { feedbackRequestEmail } from "@/lib/messaging/feedback-request-email";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 

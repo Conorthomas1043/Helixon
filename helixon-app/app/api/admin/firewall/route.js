@@ -8,13 +8,13 @@ import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
 import { RULE_KINDS, clearFirewallRulesCache, isCountryCode, parseCidr, ruleProblem } from "@/lib/security/rules";
-import { alertRecipients, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
+import { alertRecipients, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/ops/site-settings";
 import { fields, id, nested, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const RuleInput = fields({ kind: text(40), value: text(400), note: text(400), hours: num });
 const RuleRemoveInput = fields({ id });
-// cleanSetting (lib/site-settings.js) checks both in full.
+// cleanSetting (lib/ops/site-settings.js) checks both in full.
 const FirewallSettingsInput = fields({ alerts: nested, policy: nested });
 
 // The Security page's controls beyond single IP blocks:

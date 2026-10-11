@@ -5,9 +5,9 @@
 import Link from "next/link";
 import PresenceDot from "@/components/PresenceDot";
 import { CARD, INK, INK_FAINT, INK_MUTED, RED_BG, RED_STRONG, initials } from "@/lib/candidates/format";
-import { presenceLine, timeAgo } from "@/lib/presence";
+import { presenceLine, timeAgo } from "@/lib/agency/presence";
 
-// Presence colours and wording come from lib/presence.js via PresenceDot.
+// Presence colours and wording come from lib/agency/presence.js via PresenceDot.
 export const PRESENCE_TEXT = {
   active: "var(--score-strong)",
   hidden: INK_FAINT,

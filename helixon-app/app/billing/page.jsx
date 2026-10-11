@@ -1,12 +1,12 @@
 "use client";
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNav from "@/components/DashboardNav";
 import { PageCard, Button, InlineAlert } from "@/components/account/ui";
 import { apiRequest, COLORS, GENERIC_ERROR } from "@/lib/account";
-import { PLAN_LABELS } from "@/lib/plans";
+import { PLAN_LABELS } from "@/lib/billing/plans";
 import { Dialog } from "@/components/dashboard/ui";
 import { reportQuietly } from "@/lib/report-error";
 import { getBillingSummary } from "@/lib/api-client/billing";
@@ -133,7 +133,7 @@ export default function BillingPage() {
   const statusLabel = STATUS_LABELS[status] || status;
   const hasSubscription = Boolean(state.data?.subscription?.hasStripeCustomer);
   // A failed renewal. past_due keeps access while Stripe retries; unpaid
-  // has stopped it (lib/subscription-status.js). Either way the page leads
+  // has stopped it (lib/billing/subscription-status.js). Either way the page leads
   // with an alert explaining it, and doesn't show "You're not on a paid
   // plan yet" with a link to buy again.
   const paymentFailed = status === "past_due" || status === "unpaid";

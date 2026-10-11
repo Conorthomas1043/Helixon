@@ -1,4 +1,4 @@
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { countCandidateStages, listCandidates } from "@/lib/candidates/list";
 import { buildCandidatesQuery, filtersFromParams } from "@/lib/candidates/list-params";
 import CandidateList from "./CandidateList";

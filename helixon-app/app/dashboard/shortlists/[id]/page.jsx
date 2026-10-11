@@ -17,9 +17,9 @@ import {
   removeFromShortlist,
   getJobs,
 } from "@/lib/dashboard-api";
-import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stage-labels";
+import { STAGE_LABELS, STAGE_COLORS } from "@/lib/candidates/stage-labels";
 import ShareShortlist from "@/components/dashboard/ShareShortlist";
-import { CLIENT_DECISIONS } from "@/lib/client-decisions";
+import { CLIENT_DECISIONS } from "@/lib/clients/decisions";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { reportQuietly } from "@/lib/report-error";

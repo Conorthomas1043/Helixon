@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { cleanUuid } from "@/lib/sanitize";
-import { candidateHaystack, quickFit } from "@/lib/talent-pool-match";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { candidateHaystack, quickFit } from "@/lib/candidates/talent-pool-match";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -11,7 +11,7 @@ import { agencyDb } from "@/lib/agency-db";
 // (app/api/candidates/[id]/talent-pool), with their availability, check-in
 // date and the roles each has been screened for.
 //
-// Every person is also given a quick keyword fit (lib/talent-pool-match.js)
+// Every person is also given a quick keyword fit (lib/candidates/talent-pool-match.js)
 // against each open job, which gives:
 //   - bestMatch: their best open job they haven't been screened for yet
 //   - openJobs: each open job with how many likely fits the pool holds

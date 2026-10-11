@@ -1,18 +1,18 @@
 "use client";
 
 // /dashboard/business-development - winning new clients: a board of deals
-// by stage (app/api/opportunities, lib/opportunities.js), pipeline totals,
+// by stage (app/api/opportunities, lib/clients/opportunities.js), pipeline totals,
 // and the client follow-ups that are due.
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { getClients, getOpportunities, getRecruiters, setClientNextAction, updateOpportunity } from "@/lib/dashboard-api";
-import { OPEN_STAGES, OPPORTUNITY_STAGES, effectiveProbability, pipelineSummary } from "@/lib/opportunities";
+import { OPEN_STAGES, OPPORTUNITY_STAGES, effectiveProbability, pipelineSummary } from "@/lib/clients/opportunities";
 import { OpportunityDialog, StagePill } from "@/components/dashboard/opportunities";
 import { Button, Card, EmptyState, ErrorState, LoadingCard, Page, PageHeader, formatMoney, INK, INK_MUTED, INK_FAINT, CARD } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidates/format";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 
 async function loadBoard() {
   const [d, clients, team] = await Promise.all([getOpportunities(), getClients(), getRecruiters().catch(() => [])]);

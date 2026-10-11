@@ -132,7 +132,7 @@ export async function uploadFile(employeeId, { folderId, name, buffer, mimeType,
     .single();
 
   if (error) {
-    // Same cleanup pattern as lib/create-profile.js - don't leave an
+    // Same cleanup pattern as lib/auth/create-profile.js - don't leave an
     // orphaned blob in storage if the metadata row fails to insert.
     await supabase.storage.from(BUCKET).remove([storagePath]);
     reportError("[employee-files] uploadFile metadata insert failed:", error.message);

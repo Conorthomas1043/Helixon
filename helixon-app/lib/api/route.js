@@ -14,7 +14,7 @@ import "server-only";
 // The handler gets the same (request, context) Next passes, plus the
 // signed-in member's context and, with a `body` schema, the parsed body.
 
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { reportError } from "@/lib/report-error";
 import { fail, parseBody } from "@/lib/api/body";
 
@@ -30,7 +30,7 @@ export class ApiError extends Error {
   }
 }
 
-/** @typedef {import("@/lib/customer-auth").CustomerAuth} CustomerAuth */
+/** @typedef {import("@/lib/auth/customer-auth").CustomerAuth} CustomerAuth */
 
 /**
  * @param {(request: Request, context: any, auth: CustomerAuth, body?: any) => Promise<Response>} handler

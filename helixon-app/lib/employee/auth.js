@@ -23,7 +23,7 @@ import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { isFeatureEnabled } from "@/lib/site-settings";
+import { isFeatureEnabled } from "@/lib/ops/site-settings";
 import { reportError } from "@/lib/report-error";
 
 const COOKIE_NAME = "employee_session";

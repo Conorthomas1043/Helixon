@@ -5,14 +5,14 @@
 // was an admin doing it for them from app/admin/employees (the "Reset
 // password" button), which shows the plaintext new password once in an
 // admin-only modal - useless to the employee themselves, and the first
-// onboarding checklist item (lib/onboarding-tasks.js, "Set your password
+// onboarding checklist item (lib/agency/onboarding-tasks.js, "Set your password
 // and confirm you can log in") had nothing in the product to actually do
 // that with. This is what makes that checklist item literally true.
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { getCurrentEmployeeId, SESSION_COOKIE } from "@/lib/session";
+import { getCurrentEmployeeId, SESSION_COOKIE } from "@/lib/employee/session";
 import { hashEmployeePassword } from "@/lib/employee/auth";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";

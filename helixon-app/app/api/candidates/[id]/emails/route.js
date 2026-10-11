@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { cleanUuid } from "@/lib/sanitize";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // GET - the emails sent to and received from this candidate through

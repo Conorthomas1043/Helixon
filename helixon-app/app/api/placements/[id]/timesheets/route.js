@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { date, fields, id, num, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
-import { weekStarting } from "@/lib/placements";
+import { weekStarting } from "@/lib/placements/core";
 import { agencyDb } from "@/lib/agency-db";
 
 const TimesheetInput = fields({

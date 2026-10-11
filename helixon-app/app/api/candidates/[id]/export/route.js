@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { personCandidateIds } from "@/lib/candidates/person";
-import { getAgencyTags } from "@/lib/agency-tags";
-import { candidateHidden, canSeeCandidate, getAccess } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
+import { getAgencyTags } from "@/lib/agency/tags";
+import { candidateHidden, canSeeCandidate, getAccess } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 

@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { sendActivationNudges } from "@/lib/lifecycle-email";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { DEFAULT_TIME_ZONE, followUpItems, interviewFollowUpItems } from "@/lib/follow-ups";
-import { buildReminderEmail, remindersEnabled } from "@/lib/reminder-email";
+import { DEFAULT_TIME_ZONE, followUpItems, interviewFollowUpItems } from "@/lib/dashboard/follow-ups";
+import { buildReminderEmail, remindersEnabled } from "@/lib/messaging/reminder-email";
 import { reportError } from "@/lib/report-error";
 
 // Weekday-morning follow-up reminders: each recruiter gets one email
 // listing the next actions and talent-pool check-ins that are overdue or due
-// today on candidates assigned to them (lib/follow-ups.js,
-// lib/reminder-email.js). Unassigned candidates have nobody to remind;
+// today on candidates assigned to them (lib/dashboard/follow-ups.js,
+// lib/messaging/reminder-email.js). Unassigned candidates have nobody to remind;
 // anyone who turned reminders off (Account > Notifications) or is no longer
 // in the candidate's agency is skipped, as are suspended workspaces.
 //

@@ -1,4 +1,4 @@
-// The small status dot on a teammate's avatar (lib/presence.js states).
+// The small status dot on a teammate's avatar (lib/agency/presence.js states).
 export const PRESENCE_COLORS = {
   active: "#1f9d61",
   idle: "#e2a93b",

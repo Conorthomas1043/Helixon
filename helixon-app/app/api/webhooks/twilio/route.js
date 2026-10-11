@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/candidates/activity";
-import { notify } from "@/lib/notifications";
-import { isStopMessage, normalisePhone, smsWebhookUrl, verifyTwilioSignature } from "@/lib/sms";
+import { notify } from "@/lib/messaging/notifications";
+import { isStopMessage, normalisePhone, smsWebhookUrl, verifyTwilioSignature } from "@/lib/messaging/sms";
 
 // Twilio posts here (form-encoded, signed with X-Twilio-Signature):
 //   - delivery updates for texts sent from Helixon (MessageStatus), which

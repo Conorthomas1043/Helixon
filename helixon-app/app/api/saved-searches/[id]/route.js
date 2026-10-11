@@ -3,10 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, nested, text } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
-import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
+import { cleanSavedSearch, toSavedSearch } from "@/lib/candidates/saved-searches";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanSavedSearch (lib/saved-searches.js) reads these; params in full.
+// cleanSavedSearch (lib/candidates/saved-searches.js) reads these; params in full.
 const SavedSearchInput = fields({ name: text(240), params: nested, shared: flag, alert: flag });
 
 // PATCH / DELETE one of your own saved searches.

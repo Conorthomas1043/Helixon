@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { agencyDb } from "@/lib/agency-db";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 
 // GET /api/compare?ids=a,b,c&jobId=j
 //

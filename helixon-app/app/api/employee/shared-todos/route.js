@@ -4,10 +4,10 @@
 // Uses the same employeeAccess() session check as every other
 // /api/employee/* route. Employees have no Supabase Auth account or email
 // column; they log in through lib/employee/auth.js's own username/password
-// + cookie-session system (see lib/session.js).
+// + cookie-session system (see lib/employee/session.js).
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import {
   getSharedTodos,
   addSharedTodo,

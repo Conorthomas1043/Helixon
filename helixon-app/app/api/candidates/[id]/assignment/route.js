@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { candidateHidden } from "@/lib/permissions";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const AssignmentInput = fields({ recruiterId: id });

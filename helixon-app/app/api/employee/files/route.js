@@ -5,7 +5,7 @@
 // separate multipart route at app/api/employee/files/upload/route.js.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { listFolder, createFolder, deleteFolder, deleteFile } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
 import { fields, id, str } from "@/lib/api/schemas";

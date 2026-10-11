@@ -1,6 +1,6 @@
 // Shared constants and helpers for the /analyse workspace (single + bulk).
 
-import { STRONG_MATCH_MIN, REVIEW_MIN, BAND_LABELS } from "@/lib/scoreBands";
+import { STRONG_MATCH_MIN, REVIEW_MIN, BAND_LABELS } from "@/lib/screening/scoreBands";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MIN_LOADING_MS = 900;
@@ -24,7 +24,7 @@ export const RUN_STEPS = [
 ];
 
 // The recruiter's own call after a thumbs down - same labels as the score
-// bands (lib/scoreBands.js), saved as feedback.expected_band.
+// bands (lib/screening/scoreBands.js), saved as feedback.expected_band.
 export const FEEDBACK_BANDS = ["Strong match", "Worth reviewing", "Not suitable"];
 
 // Why a recruiter disagrees. The first three name *where* the pipeline went
@@ -130,7 +130,7 @@ export function lsSet(key, value) {
 // rather than a new candidate.
 //
 // Kept in this browser only, for 30 days at most (file names are often the
-// candidate's name) and cleared on log out (lib/clear-local-data.js).
+// candidate's name) and cleared on log out (lib/compliance/clear-local-data.js).
 const HISTORY_MAX_AGE_MS = 30 * 86400000;
 
 function recentHistory() {

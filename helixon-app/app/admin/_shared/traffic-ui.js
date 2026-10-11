@@ -3,7 +3,7 @@
 // Request details shared by Traffic, Command and Investigate: how a
 // request's outcome and threat score read, the request inspector drawer
 // and CSV export. What the log keeps - and deliberately doesn't - is
-// decided in lib/request-capture.js and the Traffic page's capture settings.
+// decided in lib/ops/request-capture.js and the Traffic page's capture settings.
 
 import Link from "next/link";
 import { Drawer, Skeleton } from "./ui";

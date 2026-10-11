@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
-import { PLAN_FEATURES } from "@/lib/plan-features";
-import { startCheckout } from "@/lib/start-checkout";
+import { PLAN_FEATURES } from "@/lib/billing/plan-features";
+import { startCheckout } from "@/lib/billing/start-checkout";
 
 const PLANS = [
   {

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { getOrgCreatorId, listOrgMembers } from "@/lib/clerk-org";
-import { computePresence } from "@/lib/presence";
-import { getAgencyPrivacy } from "@/lib/privacy-settings";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { getOrgCreatorId, listOrgMembers } from "@/lib/auth/clerk-org";
+import { computePresence } from "@/lib/agency/presence";
+import { getAgencyPrivacy } from "@/lib/compliance/privacy-settings";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
@@ -78,7 +78,7 @@ export const GET = customerRoute(async (_request, _context, auth) => {
     (members ?? []).map((m) => {
       const owned = (candidates ?? []).filter((c) => c.recruiter_id === m.clerk_user_id);
       const completed = owned.filter((c) => c.processing_status === "completed");
-      // Presence (lib/presence.js): raw values so the page can keep it
+      // Presence (lib/agency/presence.js): raw values so the page can keep it
       // current between refreshes, plus the state worked out now.
       const presenceRaw = !presenceEnabled
         ? null

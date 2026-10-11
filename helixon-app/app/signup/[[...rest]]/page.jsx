@@ -1,6 +1,6 @@
 "use client";
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -173,7 +173,7 @@ export default function SignupPage() {
   const isPostCheckoutCompletion = isSignedIn && Boolean(sessionId);
 
   // Present when this page was reached via a Clerk Organization invite
-  // email (Agency-plan team invite, see lib/clerk-org.js) rather than a
+  // email (Agency-plan team invite, see lib/auth/clerk-org.js) rather than a
   // paid Stripe checkout. Clerk's <SignUp/> detects this ticket itself and
   // handles the accept-invitation flow internally - this page's only job
   // for that path is to get out of the way: no payment to check for, and

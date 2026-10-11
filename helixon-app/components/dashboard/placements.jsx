@@ -2,7 +2,7 @@
 
 // Offers and placements, shared by the candidate profile's Placement card
 // and /dashboard/placements: the record/edit dialog, one placement with its
-// invoices, and a contractor's timesheets (lib/placements.js for the sums).
+// invoices, and a contractor's timesheets (lib/placements/core.js for the sums).
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import {
   saveTimesheet,
   updatePlacement,
 } from "@/lib/dashboard-api";
-import { PLACEMENT_STATUSES, INVOICE_STATUSES, computeFee, contractMargin, weekStarting } from "@/lib/placements";
+import { PLACEMENT_STATUSES, INVOICE_STATUSES, computeFee, contractMargin, weekStarting } from "@/lib/placements/core";
 import { Button, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDate as fmtDate } from "@/lib/format";
 import { reportQuietly } from "@/lib/report-error";
@@ -71,7 +71,7 @@ const blankForm = (p) => ({
   splits: p?.splits?.length ? p.splits.map((s) => ({ recruiterId: s.recruiterId, percent: String(s.percent) })) : [],
 });
 
-// Sharing a placement's fee and credit between recruiters (lib/placements.js
+// Sharing a placement's fee and credit between recruiters (lib/placements/core.js
 // cleanSplits). Empty = all to the candidate's recruiter.
 function SplitEditor({ splits, onChange }) {
   const [team, setTeam] = useState([]);
@@ -156,7 +156,7 @@ export function PlacementDialog({ candidate, placement, onClose, onSaved }) {
       Object.assign(body, { salary: f.salary, feePercent: f.feePercent, rebateDays: f.rebateDays });
       if (feeTyped) body.feeAmount = f.feeAmount;
     }
-    // Members who can't see money (lib/permissions.js) get blanks back -
+    // Members who can't see money (lib/agency/permissions.js) get blanks back -
     // never send those blanks, or saving would wipe the real figures.
     if (moneyHidden) for (const k of ["salary", "feePercent", "feeAmount", "payRate", "chargeRate", "splits"]) delete body[k];
     // On a new offer, blanks are left out so the client's terms fill them.

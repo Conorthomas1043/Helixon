@@ -1,16 +1,16 @@
 import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { logActivity } from "@/lib/candidates/activity";
-import { logClientActivity } from "@/lib/clients";
-import { notify } from "@/lib/notifications";
-import { TOKEN_RE } from "@/lib/signatures";
-import { openSlots } from "@/lib/interview-booking";
-import { INTERVIEW_KINDS, formatInterviewTime } from "@/lib/interviews";
-import { inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
-import { sendInterviewInvites } from "@/lib/interview-invites";
-import { FUNNEL_ORDER } from "@/lib/stage-labels";
+import { logClientActivity } from "@/lib/clients/core";
+import { notify } from "@/lib/messaging/notifications";
+import { TOKEN_RE } from "@/lib/clients/signatures";
+import { openSlots } from "@/lib/interviews/booking";
+import { INTERVIEW_KINDS, formatInterviewTime } from "@/lib/interviews/core";
+import { inviteRecipients, loadInterview, shapeInterview } from "@/lib/interviews/access";
+import { sendInterviewInvites } from "@/lib/interviews/invites";
+import { FUNNEL_ORDER } from "@/lib/candidates/stage-labels";
 import { date, fields } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

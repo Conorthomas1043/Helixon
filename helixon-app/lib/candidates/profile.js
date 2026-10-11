@@ -4,14 +4,14 @@
 // profile page, which loads it on the server so the page arrives with it.
 //
 // `auth` is a requireCustomerContext() result; everything is scoped to its
-// agency and to what this member may see (lib/permissions.js).
+// agency and to what this member may see (lib/agency/permissions.js).
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { agencyDb } from "@/lib/agency-db";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { buildReport, matchHighlights } from "@/lib/analysis-report";
-import { candidateHidden, getAccess, redactJob } from "@/lib/permissions";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { buildReport, matchHighlights } from "@/lib/screening/analysis-report";
+import { candidateHidden, getAccess, redactJob } from "@/lib/agency/permissions";
 
 /** @typedef {import("@/lib/contracts/candidates").CandidateProfile} CandidateProfile */
 
@@ -99,7 +99,7 @@ export async function loadCandidateProfile(auth, id) {
   const extracted = candidate.extracted || {};
 
   // The talent pool entry and every role this person has been screened for
-  // live on their first row (lib/rescreen.js) - this one, or the one it was
+  // live on their first row (lib/screening/rescreen.js) - this one, or the one it was
   // screened from.
   const rootId = candidate.pooled_from_id || candidate.id;
   const [{ data: root }, { data: related }] = await Promise.all([

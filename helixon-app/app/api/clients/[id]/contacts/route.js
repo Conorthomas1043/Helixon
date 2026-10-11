@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { cleanContactFields, loadClient, logClientActivity, toContact } from "@/lib/clients";
+import { cleanContactFields, loadClient, logClientActivity, toContact } from "@/lib/clients/core";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, flag, id, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanContactFields (lib/clients.js) reads the contact fields.
+// cleanContactFields (lib/clients/core.js) reads the contact fields.
 const ContactFields = {
   name: text(400),
   jobTitle: text(400),
@@ -20,7 +20,7 @@ const ContactFields = {
 const ContactInput = fields(ContactFields);
 const ContactUpdateInput = fields({ ...ContactFields, contactId: id });
 
-// A client's contacts (lib/clients.js).
+// A client's contacts (lib/clients/core.js).
 //
 // POST { name, jobTitle?, email?, phone?, notes?, isPrimary? }  add one
 // PATCH { contactId, ...fields }                                 edit one

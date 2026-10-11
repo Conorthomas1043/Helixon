@@ -1,14 +1,14 @@
 "use client";
 
 // The agency's own sub-stages and custom fields on screen
-// (lib/custom-fields.js): a sub-stage picker for under the stage select,
+// (lib/agency/custom-fields.js): a sub-stage picker for under the stage select,
 // a sub-stage label for cards, and a card of custom fields for a
 // candidate, job or client.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCustomisation, setCustomFieldValues } from "@/lib/dashboard-api";
-import { fieldsFor, formatFieldValue, subStagesFor } from "@/lib/custom-fields";
+import { fieldsFor, formatFieldValue, subStagesFor } from "@/lib/agency/custom-fields";
 import { Button, Card, ErrorText, Field, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { reportQuietly } from "@/lib/report-error";
 

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
-import { candidateHidden } from "@/lib/permissions";
-import { findMentions } from "@/lib/mentions";
-import { notify } from "@/lib/notifications";
+import { candidateHidden } from "@/lib/agency/permissions";
+import { findMentions } from "@/lib/messaging/mentions";
+import { notify } from "@/lib/messaging/notifications";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, flag, id, text } from "@/lib/api/schemas";
@@ -88,7 +88,7 @@ export async function POST(request, { params }) {
 
   await logActivity(supabase, id, "note_added", authorName);
 
-  // @mentions notify the teammates named (lib/mentions.js).
+  // @mentions notify the teammates named (lib/messaging/mentions.js).
   if (noteBody.includes("@")) {
     const { data: team } = await supabase.from("profiles").select("clerk_user_id, first_name, last_name, username").eq("agency_id", auth.agencyId);
     const members = (team ?? []).map((m) => ({ id: m.clerk_user_id, name: recruiterDisplayName(m) })).filter((m) => m.id && m.name);

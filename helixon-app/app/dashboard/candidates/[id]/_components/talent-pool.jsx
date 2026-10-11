@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { CARD, INK, INK_FAINT, INK_MUTED, formatRelativeTime, scoreColor } from "@/lib/candidates/format";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { useState } from "react";
 import { FieldLabel, SectionHeading } from "./primitives";
 

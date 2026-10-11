@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { stripe } from "@/lib/stripe";
-import { PRICE_IDS } from "@/lib/plans";
+import { stripe } from "@/lib/billing/stripe";
+import { PRICE_IDS } from "@/lib/billing/plans";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
+import { featureOffResponse, isFeatureEnabled } from "@/lib/ops/site-settings";
 import { reportError } from "@/lib/report-error";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const CheckoutInput = fields({ plan: text(40) });
 
-// Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
+// Internal plan id -> Stripe Price id mapping now lives in lib/billing/plans.js,
 // shared with the webhook's reverse lookup (planForPriceId) so an upgrade/
 // downgrade via the Stripe Billing Portal can be mapped back to a plan
 // name without a second, possibly-drifted copy of this table.
@@ -63,7 +63,7 @@ export async function POST(request) {
       // subscriptions.user_id is a foreign key onto profiles.id (the
       // pre-existing uuid PK, unrelated to the Clerk id) - resolve that
       // first so the webhook below writes to the same row
-      // lib/customer-auth.js reads from.
+      // lib/auth/customer-auth.js reads from.
       const { data, error: profileError } = await supabaseAdmin
         .from("profiles")
         .select("id")

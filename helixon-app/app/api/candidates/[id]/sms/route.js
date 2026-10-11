@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { rateLimit } from "@/lib/ratelimit";
-import { candidateHidden } from "@/lib/permissions";
-import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/sms";
+import { candidateHidden } from "@/lib/agency/permissions";
+import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/messaging/sms";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, text } from "@/lib/api/schemas";
@@ -14,7 +14,7 @@ import { parseBody } from "@/lib/api/body";
 
 const SmsInput = fields({ body: text(2000) });
 
-// Texts with a candidate (lib/sms.js, Twilio).
+// Texts with a candidate (lib/messaging/sms.js, Twilio).
 // GET            the conversation, oldest first, and whether texting is set up
 // POST { body }  send a text to the candidate's phone number
 

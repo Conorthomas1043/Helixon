@@ -8,7 +8,7 @@
 // e.g. {"cold_calls": "none", "files": "view"}. NULL/missing keys fall back
 // to the role.
 //
-// Enforcement is server-side, in requireEmployeeAccess() (lib/session.js):
+// Enforcement is server-side, in requireEmployeeAccess() (lib/employee/session.js):
 // GET needs "view", anything that changes data needs "edit". The portal
 // also hides sections an employee can't open, but that is cosmetic.
 

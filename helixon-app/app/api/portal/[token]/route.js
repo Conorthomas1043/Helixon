@@ -1,12 +1,12 @@
 import { NextResponse, after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { logActivity } from "@/lib/candidates/activity";
-import { notify } from "@/lib/notifications";
-import { storeComplianceDocument } from "@/lib/compliance-files";
-import { CHECK_KINDS } from "@/lib/compliance";
-import { TOKEN_RE } from "@/lib/signatures";
+import { notify } from "@/lib/messaging/notifications";
+import { storeComplianceDocument } from "@/lib/compliance/files";
+import { CHECK_KINDS } from "@/lib/compliance/core";
+import { TOKEN_RE } from "@/lib/clients/signatures";
 import { PORTAL_FIELDS, cleanPortalUpdate, portalView } from "@/lib/candidates/portal";
 import { date, fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

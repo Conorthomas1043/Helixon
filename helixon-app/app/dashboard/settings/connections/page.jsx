@@ -2,11 +2,11 @@
 
 // /dashboard/settings/connections - your interviews in your own calendar
 // (a subscribable feed) and logging emails sent from your own inbox by BCC
-// (app/api/connections, lib/member-tokens.js). Personal to each member.
+// (app/api/connections, lib/agency/member-tokens.js). Personal to each member.
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api-client/core";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import { Button, Card, ErrorText, LoadingCard, Page, PageHeader, TextInput, INK, INK_MUTED } from "@/components/dashboard/ui";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import CopyButton from "@/components/dashboard/CopyButton";

@@ -12,7 +12,7 @@
 // rather than reported as done.
 
 import { removeCandidateCvs } from "@/lib/candidates/files";
-import { removeComplianceDocuments } from "@/lib/compliance-files";
+import { removeComplianceDocuments } from "@/lib/compliance/files";
 import { reportError } from "@/lib/report-error";
 
 const BATCH = 200;

@@ -4,9 +4,9 @@ import { cleanEmail, cleanLine, cleanList, cleanText, cleanUuid } from "@/lib/sa
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { findExistingPerson } from "@/lib/candidates/duplicates";
 import { logActivity } from "@/lib/candidates/activity";
-import { STAGE_LABELS } from "@/lib/stage-labels";
-import { CANDIDATE_COLUMNS, apiError, apiJson, pageMeta, paging, sinceParam, toApiCandidate, withApiKey } from "@/lib/api-v1";
-import { candidatePayload, emitWebhook } from "@/lib/webhooks";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { CANDIDATE_COLUMNS, apiError, apiJson, pageMeta, paging, sinceParam, toApiCandidate, withApiKey } from "@/lib/api/v1";
+import { candidatePayload, emitWebhook } from "@/lib/integrations/webhooks";
 import { fields, id, stringList, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

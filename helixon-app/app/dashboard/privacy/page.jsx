@@ -1,7 +1,7 @@
 "use client";
 
 // /dashboard/privacy - the workspace's GDPR controls in one place:
-//   - how long candidates are kept without activity (lib/privacy-settings),
+//   - how long candidates are kept without activity (lib/compliance/privacy-settings),
 //     and who is coming up for deletion so they can be kept on purpose
 //   - talent pool entries about to lapse
 //   - whether the Team page shows who's online (staff presence)
@@ -16,7 +16,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { getPrivacyOverview, keepCandidates, updatePrivacySettings, updateTalentPoolEntry } from "@/lib/dashboard-api";
 import { Card, Icon, Notice, Spinner, Toasts, cx, useToasts } from "@/app/analyse/_components/ui";
 import { Avatar, PillButton, PillTabs, StagePill } from "@/app/analyse/_components/compareBits";
-import { NOTICE_TEMPLATE } from "@/lib/privacy-notice";
+import { NOTICE_TEMPLATE } from "@/lib/compliance/privacy-notice";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const REQUESTS = [

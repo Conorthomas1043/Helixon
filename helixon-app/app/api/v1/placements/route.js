@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { PLACEMENT_STATUSES, toPlacement } from "@/lib/placements";
-import { apiError, apiJson, pageMeta, paging, sinceParam, withApiKey } from "@/lib/api-v1";
+import { PLACEMENT_STATUSES, toPlacement } from "@/lib/placements/core";
+import { apiError, apiJson, pageMeta, paging, sinceParam, withApiKey } from "@/lib/api/v1";
 
 // GET /api/v1/placements?status=&createdSince= - offers and placements.
 export const GET = withApiKey(async (ctx, request) => {

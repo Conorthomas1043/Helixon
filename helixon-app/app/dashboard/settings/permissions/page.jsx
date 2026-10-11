@@ -1,11 +1,11 @@
 "use client";
 
 // /dashboard/settings/permissions - what members (not the owner or admins)
-// can see (lib/permissions.js).
+// can see (lib/agency/permissions.js).
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api-client/core";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import { Card, ErrorText, LoadingCard, Page, PageHeader, INK, INK_MUTED } from "@/components/dashboard/ui";
 
 const OPTIONS = [

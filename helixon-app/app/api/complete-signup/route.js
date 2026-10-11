@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { PRICE_IDS } from "@/lib/plans";
+import { PRICE_IDS } from "@/lib/billing/plans";
 import { cleanLine } from "@/lib/sanitize";
 import {
   createProfileAndAgency,
   generateUsername,
   linkSubscriptionFromStripeSession,
-} from "@/lib/create-profile";
+} from "@/lib/auth/create-profile";
 import { reportError } from "@/lib/report-error";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

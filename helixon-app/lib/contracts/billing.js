@@ -1,5 +1,5 @@
 // GET /api/billing - the Billing page's summary of the agency's plan and the
-// signed-in member's Stripe subscription. Built by lib/billing-summary.js and
+// signed-in member's Stripe subscription. Built by lib/billing/summary.js and
 // read through getBillingSummary() in lib/api-client/billing.js.
 
 import { z } from "zod";

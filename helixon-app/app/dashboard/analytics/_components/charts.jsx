@@ -5,7 +5,7 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { INK, INK_MUTED, INK_FAINT, AMBER, RED, CARD } from "@/lib/candidates/format";
-import { axisMoney, niceTicks } from "@/lib/chart-ticks";
+import { axisMoney, niceTicks } from "@/lib/analytics/chart-ticks";
 
 // "▲ 4 pts vs previous 30 days". Up isn't always good news (more failed
 // analyses), so the arrow carries direction and the text stays neutral ink.

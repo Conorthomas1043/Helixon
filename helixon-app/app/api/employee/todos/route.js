@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { getTodos, addTodo, updateTodo, deleteTodo } from "@/lib/employee/todos";
 import { date, fields, flag, id, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

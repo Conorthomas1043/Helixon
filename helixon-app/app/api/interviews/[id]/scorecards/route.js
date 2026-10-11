@@ -3,15 +3,15 @@ import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, nested, num, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
-import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, formatInterviewTime, toScorecard } from "@/lib/interviews";
-import { loadVisibleInterview } from "@/lib/interview-access";
-import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
+import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, formatInterviewTime, toScorecard } from "@/lib/interviews/core";
+import { loadVisibleInterview } from "@/lib/interviews/access";
+import { sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanScorecard and cleanReviewer (lib/interviews.js) read these.
+// cleanScorecard and cleanReviewer (lib/interviews/core.js) read these.
 const ScorecardInput = fields({
   mode: text(20),
   overallRating: num,
@@ -25,7 +25,7 @@ const ScorecardInput = fields({
   send: flag,
 });
 
-// Scorecards on an interview (lib/interviews.js).
+// Scorecards on an interview (lib/interviews/core.js).
 //
 // POST { mode: "submit", overallRating, recommendation, criteria, ... }
 //     the recruiter fills one in themselves

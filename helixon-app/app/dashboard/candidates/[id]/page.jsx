@@ -1,4 +1,4 @@
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { loadCandidateProfile } from "@/lib/candidates/profile";
 import { shapeCandidate } from "@/lib/candidates/shape";
 import CandidateProfile from "./CandidateProfile";

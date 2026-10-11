@@ -6,7 +6,7 @@ import { Toggle } from "@/components/account/ui";
 
 // The "Notifications" tab: the optional emails - the weekday follow-up
 // reminder (app/api/cron/reminders), new-application alerts from the jobs
-// page (lib/applications.js) and the weekly analytics summary
+// page (lib/jobs/applications.js) and the weekly analytics summary
 // (app/api/cron/analytics-digest). Everything else Helixon sends is
 // transactional (sign-in and verification, team invitations, billing
 // receipts, and emails a recruiter sends from inside the app) and can't be

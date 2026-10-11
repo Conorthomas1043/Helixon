@@ -3,16 +3,16 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
-import { cleanReferee, toReference } from "@/lib/compliance";
-import { loadCandidate } from "@/lib/compliance-server";
-import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
-import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
-import { candidateHidden } from "@/lib/permissions";
+import { cleanReferee, toReference } from "@/lib/compliance/core";
+import { loadCandidate } from "@/lib/compliance/server";
+import { referenceRequestEmail, referenceUrl } from "@/lib/compliance/email";
+import { agencyFromName, sendAgencyEmail } from "@/lib/messaging/mailer";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanReferee (lib/compliance.js) reads the referee fields.
+// cleanReferee (lib/compliance/core.js) reads the referee fields.
 const RefereeInput = fields({
   refereeName: text(400),
   refereeEmail: text(320),

@@ -2,17 +2,17 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, id, nested, num, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
-import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
-import { newToken } from "@/lib/signatures";
-import { cleanBookingRequest, openSlots } from "@/lib/interview-booking";
-import { formatInterviewTime } from "@/lib/interviews";
-import { candidateHidden } from "@/lib/permissions";
+import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
+import { newToken } from "@/lib/clients/signatures";
+import { cleanBookingRequest, openSlots } from "@/lib/interviews/booking";
+import { formatInterviewTime } from "@/lib/interviews/core";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanBookingRequest (lib/interview-booking.js) checks the times and details.
+// cleanBookingRequest (lib/interviews/booking.js) checks the times and details.
 const BookingOfferInput = fields({
   slots: nested,
   durationMinutes: num,
@@ -25,7 +25,7 @@ const BookingOfferInput = fields({
   send: flag,
 });
 
-// Interview booking links for one candidate (lib/interview-booking.js).
+// Interview booking links for one candidate (lib/interviews/booking.js).
 // GET                    the candidate's open and recent links
 // POST { slots, durationMinutes, kind, location?, interviewers?, round?,
 //        contactId?, expiresInDays?, send? }   offer times; with send,

@@ -1,9 +1,9 @@
 import DashboardNav from "@/components/DashboardNav";
 import SettingsNav from "@/components/account/SettingsNav";
 import PageTransition from "@/components/account/PageTransition";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { supabase } from "@/lib/supabase";
-import { agencyDisplayName } from "@/lib/agency-display";
+import { agencyDisplayName } from "@/lib/agency/display";
 
 // (No title here: each tab sets its own in app/account/[[...account]]/page.js,
 // and a title in this layout would only be overridden - or, with the site's

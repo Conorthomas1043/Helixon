@@ -1,5 +1,5 @@
-import { getCustomerContext } from "@/lib/customer-auth";
-import { loadDashboardStats } from "@/lib/dashboard-stats";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
+import { loadDashboardStats } from "@/lib/dashboard/stats";
 import DashboardHome from "./DashboardHome";
 
 // The dashboard home, loaded on the server so it arrives with its numbers

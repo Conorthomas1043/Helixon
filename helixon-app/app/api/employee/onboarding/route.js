@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { getCurrentEmployeeId } from "@/lib/employee/session";
 import { getOnboardingProgress, setOnboardingTaskState } from "@/lib/employee/onboarding";
 import { fields, flag, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

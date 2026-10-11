@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { AMBER, AMBER_BG, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, formatRelativeTime, scoreColor, scoreLabel } from "@/lib/candidates/format";
 import { Avatar as KitAvatar } from "@/components/ui";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { useNow } from "@/lib/hooks/useNow";
 import { STAGE_ORDER } from "./shared";
 

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanLine } from "@/lib/sanitize";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { MAX_NAME_LEN, loadShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/shortlists";
-import { canSeeCandidate, getAccess } from "@/lib/permissions";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { MAX_NAME_LEN, loadShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/clients/shortlists";
+import { canSeeCandidate, getAccess } from "@/lib/agency/permissions";
 import { fields, id, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const ShortlistUpdateInput = fields({ name: text(400), jobId: id });
 
-// One shortlist (lib/shortlists.js).
+// One shortlist (lib/clients/shortlists.js).
 //
 // GET                    the list and the people on it, strongest match first
 // PATCH { name?, jobId? }  rename it or point it at another job (null = none)

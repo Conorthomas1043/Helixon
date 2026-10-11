@@ -3,12 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { JobInput } from "@/lib/api/schemas";
 import { cleanEmail } from "@/lib/sanitize";
-import { jobClientColumns } from "@/lib/clients";
-import { cleanJobDetails } from "@/lib/job-details";
-import { normaliseOffices } from "@/lib/offices";
+import { jobClientColumns } from "@/lib/clients/core";
+import { cleanJobDetails } from "@/lib/jobs/details";
+import { normaliseOffices } from "@/lib/agency/offices";
 import { agencyDb } from "@/lib/agency-db";
-import { getAccess, redactJob, withoutMoney } from "@/lib/permissions";
-import { JOB_WITH_CANDIDATES, withCounts } from "@/lib/job-list";
+import { getAccess, redactJob, withoutMoney } from "@/lib/agency/permissions";
+import { JOB_WITH_CANDIDATES, withCounts } from "@/lib/jobs/list";
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
@@ -95,7 +95,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
 
   // The client, picked (clientId / contactId) or typed (client) - a typed
   // name is matched to, or becomes, one of the agency's clients
-  // (lib/clients.js), which also keeps jobs.client / client_email in step.
+  // (lib/clients/core.js), which also keeps jobs.client / client_email in step.
   const client = cleanString(body.client, MAX_CLIENT_LEN);
   if (client?.error) return NextResponse.json({ error: `Client must be ${MAX_CLIENT_LEN} characters or fewer.` }, { status: 400 });
   if (client !== undefined || body.clientId !== undefined || body.contactId !== undefined) {
@@ -156,7 +156,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (preferredSkills?.error) return NextResponse.json({ error: `Preferred skills: up to ${MAX_SKILLS}, each under ${MAX_SKILL_LEN} characters.` }, { status: 400 });
   if (preferredSkills !== undefined) update.preferred_skills = preferredSkills;
 
-  // Advertising on the agency's public jobs page (lib/careers.js).
+  // Advertising on the agency's public jobs page (lib/jobs/careers.js).
   if (body.published !== undefined) {
     update.published = body.published === true;
     if (update.published) update.published_at = new Date().toISOString();
@@ -172,7 +172,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     }
     update.public_description = body.publicDescription ? body.publicDescription.trim() : null;
   }
-  // Owner, openings, fee, priority, target date (lib/job-details.js). The
+  // Owner, openings, fee, priority, target date (lib/jobs/details.js). The
   // fee only from someone allowed to see it.
   const access = await getAccess(auth);
   const cleaned = cleanJobDetails(body);

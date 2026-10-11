@@ -7,7 +7,7 @@ import { FEEDBACK_DOWN_REASONS } from "@/app/analyse/_lib/analyse";
 // (docs/ux-research-audit.md, R8): score disagreements, the pulse survey,
 // cancellation reasons, chat-assistant questions, what demo leads want to
 // solve, and who's opted in to research. Read-only. Free text arrives
-// already scrubbed of contact details (lib/research-signals.js).
+// already scrubbed of contact details (lib/analytics/research-signals.js).
 const DAY = 86400000;
 const RANGE_DAYS = { "30d": 30, "90d": 90, "365d": 365 };
 

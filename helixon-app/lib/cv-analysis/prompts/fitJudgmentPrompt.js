@@ -1,4 +1,4 @@
-import { wrapUntrusted, jsonForPrompt } from "../../prompt-safety.js";
+import { wrapUntrusted, jsonForPrompt } from "../../security/prompt-safety.js";
 
 // Only the fields judgment actually needs - keeps the prompt small and
 // avoids re-sending the full candidate object (name/email/phone/etc, which

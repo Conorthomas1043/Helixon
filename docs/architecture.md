@@ -8,32 +8,32 @@ How the app in `helixon-app/` fits together. Read this before changing auth, dat
 |---|---|---|
 | Web app | Next.js (App Router), React 19, Tailwind v4 | `app/`, `components/` |
 | Hosting, crons | Vercel | `vercel.json` |
-| Customer sign-in | Clerk (users and organisations) | `proxy.ts`, `lib/customer-auth.js` |
+| Customer sign-in | Clerk (users and organisations) | `proxy.ts`, `lib/auth/customer-auth.js` |
 | Data | Supabase Postgres, reached with the **service-role** key | `lib/supabase.js`, `supabase/migrations/` |
-| Billing | Stripe Checkout and webhooks | `lib/stripe.js`, `app/api/webhooks/stripe` |
-| Email | Resend (outbound, and inbound for BCC logging) | `lib/mailer.js`, `app/api/webhooks/resend-inbound` |
-| SMS, calls | Twilio | `lib/sms.js`, `app/api/webhooks/twilio` |
+| Billing | Stripe Checkout and webhooks | `lib/billing/stripe.js`, `app/api/webhooks/stripe` |
+| Email | Resend (outbound, and inbound for BCC logging) | `lib/messaging/mailer.js`, `app/api/webhooks/resend-inbound` |
+| SMS, calls | Twilio | `lib/messaging/sms.js`, `app/api/webhooks/twilio` |
 | AI | Anthropic (extraction, judging), Voyage (embeddings), Gemini | `lib/cv-analysis/` |
 | Rate limits, sessions cache | Redis | `lib/redis.js`, `lib/ratelimit.js` |
 | Errors, performance | Sentry (`lib/report-error.js` for handled errors), Vercel Speed Insights | `instrumentation*.js`, `sentry.*.config.js` |
-| Product analytics | PostHog, only after cookie consent | `instrumentation-client.js`, `lib/analytics.js` |
+| Product analytics | PostHog, only after cookie consent | `instrumentation-client.js`, `lib/analytics/track.js` |
 
 ## Who uses it, and how each is authenticated
 
 | Area | People | Auth | Guard used in API routes |
 |---|---|---|---|
-| `/dashboard`, `/analyse`, `/account`, `/billing` | Agency members | Clerk session, checked in `proxy.ts` | `requireCustomerContext()` (`lib/customer-auth.js`). It returns the member's `agencyId`, role and subscription state |
+| `/dashboard`, `/analyse`, `/account`, `/billing` | Agency members | Clerk session, checked in `proxy.ts` | `requireCustomerContext()` (`lib/auth/customer-auth.js`). It returns the member's `agencyId`, role and subscription state |
 | `/admin` | Helixon staff (operators) | Own username/password + TOTP, signed session cookie, double-submit CSRF token. The login can be moved to a secret path with `ADMIN_LOGIN_SLUG` | `requireAdminSession()` (`lib/admin/auth.js`) |
-| `/employee` | Helixon staff (sales/ops) | Own bcrypt credentials, sessions in `employee_sessions` | `employeeAccess()` (`lib/session.js`, backed by `lib/employee/auth.js`) |
+| `/employee` | Helixon staff (sales/ops) | Own bcrypt credentials, sessions in `employee_sessions` | `employeeAccess()` (`lib/employee/session.js`, backed by `lib/employee/auth.js`) |
 | `/share`, `/scorecard`, `/portal`, `/book`, `/sign`, `/reference`, `/feedback` | Clients, candidates, referees, with no account | An unguessable token in the link | Token lookup in each route |
-| `/api/v1/*` | Customer integrations | API key (`lib/api-keys.js`) | `lib/api-v1.js` |
-| `/api/cron/*`, `/api/internal/*` | Vercel Cron, the edge proxy | Bearer secret, compared in constant time (`lib/timing-safe.js`) | |
+| `/api/v1/*` | Customer integrations | API key (`lib/auth/api-keys.js`) | `lib/api/v1.js` |
+| `/api/cron/*`, `/api/internal/*` | Vercel Cron, the edge proxy | Bearer secret, compared in constant time (`lib/security/timing-safe.js`) | |
 | `/api/webhooks/*` | Clerk, Stripe, Resend, Twilio | Provider signature (svix, Stripe, Twilio HMAC) | |
 
 Customer API routes start with `customerRoute()` (`lib/api/route.js`): sign-in, the request body checked against a schema, and any thrown error turned into JSON and reported. Every route's schema names the fields it accepts (the shared field types are in `lib/api/schemas.js`) and unknown keys are dropped; routes that read the body themselves use `parseBody()` (`lib/api/body.js`) the same way. `test/request-schemas.test.js` keeps every route on a schema.
 
 Responses have contracts too, starting with candidates, jobs and billing. A contract is a zod schema in `lib/contracts/` for the JSON a route answers with, and its type is derived from the schema:
-- **On the server,** the code that builds the response is typed with it (`lib/candidates/list.js`, `lib/candidates/profile.js`, `lib/job-list.js`, `lib/billing-summary.js`).
+- **On the server,** the code that builds the response is typed with it (`lib/candidates/list.js`, `lib/candidates/profile.js`, `lib/jobs/list.js`, `lib/billing/summary.js`).
 - **In the browser,** the `lib/api-client` call that reads it returns that type (`getCandidates`, `getJobs`, `getBillingSummary` ...).
 - **In tests,** `app/api/contracts.test.js` calls the routes and parses their real answers with the contract.
 
@@ -49,7 +49,7 @@ The rules:
 1. Get `agencyId` from `requireCustomerContext()`, never from the request body or query string.
 2. Every query on an agency-owned table carries `.eq("agency_id", agencyId)`.
 3. A child row (a note, an activity entry) may be reached by its parent's id only after the parent was loaded with the agency filter.
-4. Within an agency, `lib/permissions.js` decides what a member may see (for example, recruiters limited to their own candidates).
+4. Within an agency, `lib/agency/permissions.js` decides what a member may see (for example, recruiters limited to their own candidates).
 
 `lib/security/tenant-isolation.test.js` enforces rule 2 as a ratchet: it fails if any API file gains an unfiltered query on an agency table. Crons, webhooks, admin tools and token links are in its baseline because they legitimately work across agencies.
 
@@ -85,13 +85,28 @@ Defined in `vercel.json`, all under `app/api/cron/` (times are UTC):
 - `app/`: routes. `app/api/` holds the 200 or so route handlers. Each area has an `error.js` boundary (`components/RouteError.jsx`).
 - `components/ui`: the UI kit, the one set of building blocks for every screen: `Button`, `Card`, `Field` and inputs, `Switch`, `Segmented`, `Notice`, `Dialog` (focus-trapped), `EmptyState`, `ErrorState`, `Pill`, toasts and icons. Colours come from the `--ui-*` tokens in `app/globals.css`, which the admin console redefines for its dark theme (`app/admin/_shared/styles.js`). Each area's `ui` module (`components/dashboard/ui`, `app/analyse/_components/ui`, `components/account/ui`, `app/employee/_shared/ui`, `app/admin/_shared/ui`) re-exports it and adds only that area's own layouts. `/ui-gallery` shows every component in both themes when `UI_GALLERY=1` is set. `components/dashboard/use-confirm.jsx` replaces `window.confirm`.
 - Loading data on the server: the candidate profile (`app/dashboard/candidates/[id]/page.jsx`) loads with `lib/candidates/profile.js`, the same loader `GET /api/candidates/[id]` uses, and hands it to the client component, which only fetches again on retry. Its panels live in `_components/`. New pages should follow this pattern.
-- Loading data in the browser, where a page can't load on the server: `useResource(key, loader)` (`lib/use-resource.js`) instead of a hand-written `useState`/`useEffect`/cancelled-flag block.
+- Loading data in the browser, where a page can't load on the server: `useResource(key, loader)` (`lib/hooks/useResource.js`) instead of a hand-written `useState`/`useEffect`/cancelled-flag block.
   - **The key** names everything the request depends on (`interviews:${scope}`). An answer for an old key never replaces the current one.
-  - **The cache:** the last answer per key is kept for the session (`lib/resource-cache.js`), so returning to a page shows it at once while it reloads. Pages that read the same key (`jobs`) share one request.
+  - **The cache:** the last answer per key is kept for the session (`lib/hooks/resource-cache.js`), so returning to a page shows it at once while it reloads. Pages that read the same key (`jobs`) share one request.
   - **What it returns:** `reload()` after a change; `mutate()` when the page already knows the result.
   - **Sign-out:** logging out clears the cache.
   - **Where it's used:** Interviews, Performance, Compliance, Shortlists, Business development, Clients, Placements, the Calendar & email and Permissions settings, the profile's booking and self-service cards, and the saved jobs on /analyse. Other pages move onto it as they're touched.
 - State with many related fields goes in a reducer with named actions, tested on its own. `/analyse` keeps its job, candidate, run and report in `app/analyse/_lib/workspace-state.js`. A finished analysis, "Screen another CV" and "Next candidate" are single actions there, not a dozen `setState` calls in a handler.
-- `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`).
+- `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`), one folder per domain:
+
+  | Folder | What's in it |
+  |---|---|
+  | `agency/` | Workspace settings, permissions, offices, custom fields, tags, the team directory and presence |
+  | `analytics/` | Product analytics (`track.js` in the browser, `server.js` on the server), the Analytics page's numbers, traffic classification, research signals |
+  | `api/`, `api-client/`, `contracts/` | The route wrapper and request schemas, the browser's calls to them, and the response contracts between the two |
+  | `auth/`, `security/`, `admin/`, `employee/` | Sign-in for customers, API keys and cron; the CSP, firewall and secrets; the admin console; the staff portal |
+  | `billing/`, `placements/` | Plans, Stripe and subscription status; offers, placements, invoices and accounting exports |
+  | `candidates/`, `screening/`, `cv-analysis/`, `jobs/`, `clients/`, `interviews/` | The recruiting domain: the candidate list and profile, running a screening and its report, the scoring engine, jobs and careers pages, clients, shortlists and e-signatures, interviews and calendars |
+  | `compliance/` | Compliance checks, privacy notices, data retention and erasure |
+  | `messaging/` | Email (sending, templates, sequences, tracking, filing), SMS, notifications and @mentions |
+  | `dashboard/`, `ops/`, `integrations/` | The Overview's figures; request logging and health checks; Xero, QuickBooks, mailboxes and outgoing webhooks |
+  | `hooks/`, `ui/` | Browser hooks (`useResource` among them) and small DOM helpers |
+
+  The few modules left at the top level are shared by everything: the database clients (`supabase.js`, `agency-db.js`), `env.js`, `report-error.js`, `ratelimit.js`, `redis.js`, `sanitize.js`, `format.js` and `csv.js`.
 - `app/globals.css`: design tokens (`--forest`, `--ink-*`, score colours, radii, shadows), mapped into Tailwind's theme.
 - `supabase/migrations/`: the schema history, applied with the "Apply database migrations" workflow (see the runbook).

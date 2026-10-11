@@ -3,14 +3,14 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, nested, text } from "@/lib/api/schemas";
 import { cleanLine } from "@/lib/sanitize";
-import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
+import { cleanSequenceSteps, toSequence } from "@/lib/messaging/sequences";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 
-// cleanSequenceSteps (lib/sequences.js) checks the steps in full.
+// cleanSequenceSteps (lib/messaging/sequences.js) checks the steps in full.
 const SequenceInput = fields({ name: text(240), steps: nested });
 
-// Email sequences (lib/sequences.js).
+// Email sequences (lib/messaging/sequences.js).
 //
 // GET                         each sequence with active/completed/stopped counts
 // POST { name, steps }        create one

@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, num, text } from "@/lib/api/schemas";
-import { candidateHidden, getAccess } from "@/lib/permissions";
+import { candidateHidden, getAccess } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -53,7 +53,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  // Members who can't see money (lib/permissions.js) can't change it either.
+  // Members who can't see money (lib/agency/permissions.js) can't change it either.
   const { canSeeFinancials } = await getAccess(auth);
   if (!canSeeFinancials) {
     delete body.placementFee;

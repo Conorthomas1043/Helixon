@@ -1,8 +1,8 @@
 import { requireAdminSession } from "@/lib/admin/auth";
 import { getAdminSupabase } from "@/lib/admin/supabase";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
-import { PLAN_MONTHLY_GBP, planLabel } from "@/lib/plans";
-import { demoExpired } from "@/lib/subscription-status";
+import { PLAN_MONTHLY_GBP, planLabel } from "@/lib/billing/plans";
+import { demoExpired } from "@/lib/billing/subscription-status";
 import { fetchAll, inChunks } from "@/lib/fetch-all";
 
 // Billing for /admin/billing: every subscription with who it belongs to,

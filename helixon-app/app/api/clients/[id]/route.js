@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients";
-import { getAccess, withoutMoney } from "@/lib/permissions";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { cleanClientFields, loadClient, logClientActivity, toClient, toContact } from "@/lib/clients/core";
+import { getAccess, withoutMoney } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// One client (lib/clients.js).
+// One client (lib/clients/core.js).
 //
 // GET     the client, its contacts, jobs, placements, invoices and timeline
 // PATCH   edit details and terms (a rename updates its jobs' client name)
@@ -77,7 +77,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const client = await loadClient(auth.agencyId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // The fee only from someone allowed to see it (lib/permissions.js).
+  // The fee only from someone allowed to see it (lib/agency/permissions.js).
   const access = await getAccess(auth);
   const cleaned = cleanClientFields(body);
   if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });

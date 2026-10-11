@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { generateApiKey } from "@/lib/api-keys";
-import { logAudit } from "@/lib/agency-audit";
+import { generateApiKey } from "@/lib/auth/api-keys";
+import { logAudit } from "@/lib/agency/audit";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const KeyInput = fields({ name: text(240) });
 
-// The agency's API keys (lib/api-keys.js). Owner and admins only.
+// The agency's API keys (lib/auth/api-keys.js). Owner and admins only.
 // GET                 the keys (never the keys themselves - only prefixes)
 // POST { name }       make one; the key is in this response and nowhere else
 // DELETE ?id=         revoke one

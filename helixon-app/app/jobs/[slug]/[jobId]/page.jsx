@@ -7,10 +7,10 @@ import { after } from "next/server";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { loadPublicJob, recordChannelVisit } from "@/lib/public-jobs";
-import { jobPostingJsonLd, sourceFromParam } from "@/lib/careers";
+import { loadPublicJob, recordChannelVisit } from "@/lib/jobs/public-jobs";
+import { jobPostingJsonLd, sourceFromParam } from "@/lib/jobs/careers";
 import { rateLimit } from "@/lib/ratelimit";
-import { siteUrl } from "@/lib/mailer";
+import { siteUrl } from "@/lib/messaging/mailer";
 import ApplyForm from "@/components/public/ApplyForm";
 import { JobsHeader, JobsFooter } from "@/components/public/JobsChrome";
 

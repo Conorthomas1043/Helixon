@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { recordSignal } from "@/lib/research-signals";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { recordSignal } from "@/lib/analytics/research-signals";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
-import { captureAgencyEvent } from "@/lib/server-analytics";
+import { captureAgencyEvent } from "@/lib/analytics/server";
 import { fields, flag, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

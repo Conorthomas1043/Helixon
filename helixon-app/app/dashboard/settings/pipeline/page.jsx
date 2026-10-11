@@ -2,12 +2,12 @@
 
 // /dashboard/settings/pipeline - the agency's own sub-stages within the six
 // core stages, and custom fields on candidates, jobs and clients
-// (lib/custom-fields.js, app/api/customisation).
+// (lib/agency/custom-fields.js, app/api/customisation).
 
 import { useCallback, useEffect, useState } from "react";
 import { getCustomisation, saveCustomisation } from "@/lib/dashboard-api";
-import { FIELD_ENTITIES, FIELD_TYPES } from "@/lib/custom-fields";
-import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
+import { FIELD_ENTITIES, FIELD_TYPES } from "@/lib/agency/custom-fields";
+import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, LoadingCard, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 const STAGES = [...FUNNEL_ORDER, "Rejected"];

@@ -5,8 +5,8 @@
 // /api/research and are read on the admin Voice of customer page.
 
 import { useEffect, useState } from "react";
-import { UMUX_ITEMS } from "@/lib/umux-lite";
-import { track } from "@/lib/analytics";
+import { UMUX_ITEMS } from "@/lib/analytics/umux-lite";
+import { track } from "@/lib/analytics/track";
 import { reportQuietly } from "@/lib/report-error";
 
 const SNOOZE_KEY = "helixon_pulse_snoozed_until";

@@ -8,8 +8,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getComplianceOverview, sendPrivacyNoticesTo } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
-import { CHECK_KINDS } from "@/lib/compliance";
+import { useResource } from "@/lib/hooks/useResource";
+import { CHECK_KINDS } from "@/lib/compliance/core";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, LoadingCard, Pill, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { CheckStatePill } from "@/components/dashboard/CompliancePanel";
 

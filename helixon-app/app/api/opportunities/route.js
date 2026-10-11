@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { OpportunityInput } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { loadClient, logClientActivity } from "@/lib/clients";
-import { cleanOpportunity, toOpportunity } from "@/lib/opportunities";
+import { loadClient, logClientActivity } from "@/lib/clients/core";
+import { cleanOpportunity, toOpportunity } from "@/lib/clients/opportunities";
 import { agencyDb } from "@/lib/agency-db";
 
-// Business-development deals (lib/opportunities.js).
+// Business-development deals (lib/clients/opportunities.js).
 //
 // GET ?clientId=                       every deal (or one client's), newest first
 // POST { clientId, title, stage?, value?, probability?, expectedClose?,

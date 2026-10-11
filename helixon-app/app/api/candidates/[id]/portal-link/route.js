@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
-import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
-import { newToken } from "@/lib/signatures";
+import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
+import { newToken } from "@/lib/clients/signatures";
 import { PORTAL_LINK_DAYS } from "@/lib/candidates/portal";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const PortalLinkInput = fields({ send: flag });

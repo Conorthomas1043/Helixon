@@ -3,10 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, nested, text } from "@/lib/api/schemas";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
+import { cleanSequenceSteps, toSequence } from "@/lib/messaging/sequences";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanSequenceSteps (lib/sequences.js) checks the steps in full.
+// cleanSequenceSteps (lib/messaging/sequences.js) checks the steps in full.
 const SequenceUpdateInput = fields({ name: text(240), steps: nested, active: flag });
 
 // PATCH { name?, steps?, active? } / DELETE one sequence. Pausing

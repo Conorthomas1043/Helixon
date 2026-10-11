@@ -4,7 +4,7 @@
 // An invoice is pushed once (as a draft in Xero unless XERO_INVOICE_STATUS
 // says otherwise); after that only its payment status is read back.
 
-import { invoiceLines } from "@/lib/accounting-export";
+import { invoiceLines } from "@/lib/placements/accounting-export";
 
 const round2 = (n) => Math.round(Number(n || 0) * 100) / 100;
 

@@ -5,11 +5,11 @@
 // half-saved screening never shows up in the pipeline.
 
 import { estimateSalary } from "@/lib/cv-analysis";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { findExistingPerson } from "@/lib/candidates/duplicates";
-import { ensureClient } from "@/lib/clients";
+import { ensureClient } from "@/lib/clients/core";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidates/files";
-import { matchHighlights } from "@/lib/analysis-report";
+import { matchHighlights } from "@/lib/screening/analysis-report";
 import { reportError } from "@/lib/report-error";
 
 // jobs.role_tier allows only entry_level, skilled and senior, while job
@@ -32,7 +32,7 @@ function salaryFor(extracted, result, jobParsed) {
 
 async function newJobRow({ agencyId, userId, jobText, jobParsed, clientEmail, saveJob }) {
   // The client named in the description becomes (or is matched to) one of
-  // the agency's clients - lib/clients.js.
+  // the agency's clients - lib/clients/core.js.
   const client = await ensureClient(agencyId, jobParsed?.client)
     .then((c) => (c ? { client: c.name, client_id: c.id } : { client: jobParsed?.client || null }))
     .catch(() => ({ client: jobParsed?.client || null }));

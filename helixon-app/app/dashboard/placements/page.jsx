@@ -8,11 +8,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getAccountingExport, getInvoices, getPlacements, updateInvoice } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
-import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements";
+import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements/core";
 import { Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placements";
 import { useConfirm } from "@/components/dashboard/use-confirm";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 
 async function loadPlacements() {
   // Invoices are refused (403) for members when money is admin-only.

@@ -26,9 +26,9 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
+vi.mock("@/lib/auth/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
 vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: vi.fn() }));
-vi.mock("@/lib/permissions", () => ({
+vi.mock("@/lib/agency/permissions", () => ({
   candidateHidden: async () => null,
   getAccess: async () => ({ seesAllCandidates: true, canSeeFinancials: true }),
   redactPlacement: (p) => p,
@@ -39,10 +39,10 @@ vi.mock("@/lib/permissions", () => ({
   scopeCandidateQuery: (q) => q,
 }));
 vi.mock("@/lib/candidates/activity", () => ({ logActivity: vi.fn() }));
-vi.mock("@/lib/agency-audit", () => ({ logAudit: vi.fn() }));
-vi.mock("@/lib/webhooks", () => ({ emitWebhook: vi.fn() }));
-vi.mock("@/lib/placement-sync", () => ({ syncCandidate: vi.fn(), splitsAreTeammates: async () => true }));
-vi.mock("@/lib/recruiter-directory", () => ({ recruiterDisplayName: () => "Ada", resolveRecruiterNames: async () => new Map() }));
+vi.mock("@/lib/agency/audit", () => ({ logAudit: vi.fn() }));
+vi.mock("@/lib/integrations/webhooks", () => ({ emitWebhook: vi.fn() }));
+vi.mock("@/lib/placements/sync", () => ({ syncCandidate: vi.fn(), splitsAreTeammates: async () => true }));
+vi.mock("@/lib/agency/recruiter-directory", () => ({ recruiterDisplayName: () => "Ada", resolveRecruiterNames: async () => new Map() }));
 vi.mock("@/lib/integrations/accounting-sync", () => ({ syncInvoiceToAccounts: vi.fn() }));
 vi.mock("@/lib/candidates/erasure", () => ({
   eraseCandidates: vi.fn(async (db, agencyId, list) => {
@@ -50,7 +50,7 @@ vi.mock("@/lib/candidates/erasure", () => ({
     return { erased: list.length };
   }),
 }));
-vi.mock("@/lib/clients", async (importOriginal) => ({ ...(await importOriginal()), logClientActivity: vi.fn() }));
+vi.mock("@/lib/clients/core", async (importOriginal) => ({ ...(await importOriginal()), logClientActivity: vi.fn() }));
 
 const placements = await import("./placements/route");
 const placement = await import("./placements/[id]/route");
@@ -59,8 +59,8 @@ const clients = await import("./clients/route");
 const client = await import("./clients/[id]/route");
 const candidate = await import("./candidates/[id]/route");
 const { listCandidates, countCandidateStages } = await import("@/lib/candidates/list");
-const { listJobs } = await import("@/lib/job-list");
-const { loadDashboardStats } = await import("@/lib/dashboard-stats");
+const { listJobs } = await import("@/lib/jobs/list");
+const { loadDashboardStats } = await import("@/lib/dashboard/stats");
 
 const call = (handler, { method = "GET", body, id, query = "" } = {}) =>
   handler(

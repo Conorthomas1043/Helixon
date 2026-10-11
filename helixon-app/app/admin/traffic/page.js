@@ -10,7 +10,7 @@ import TrafficMapPanel, { pointKey } from "../_shared/TrafficMapPanel";
 import TrafficTimeline from "../_shared/TrafficTimeline";
 import { OUTCOME_FILTERS, REQUEST_CSV_COLUMNS, RequestInspector, ThreatPill, downloadCsv } from "../_shared/traffic-ui";
 import { useAdminTraffic } from "../_shared/hooks";
-import { TRAFFIC_CLASSES } from "@/lib/traffic-class";
+import { TRAFFIC_CLASSES } from "@/lib/analytics/traffic-class";
 import { timeAgo } from "../_shared/data";
 import { csrfHeaders } from "../_shared/csrf";
 import { toast } from "../_shared/toast";
@@ -19,7 +19,7 @@ import { placeLabel } from "@/lib/admin/traffic";
 // Every refresh is itself a logged request, so live mode stays modest.
 const LIVE_MS = 15_000;
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
-// Match DETAIL_DAYS / RETENTION_DAYS in lib/site-settings.js (server-only module).
+// Match DETAIL_DAYS / RETENTION_DAYS in lib/ops/site-settings.js (server-only module).
 const DETAIL_DAYS = [3, 7, 14, 30];
 const RETENTION_DAYS = [30, 60, 90];
 const RANGES = ["24h", "7d", "30d", "90d"];

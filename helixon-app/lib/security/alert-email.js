@@ -11,7 +11,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Helixon Security <noreply@helixon.co.uk>";
 
-// `to`: the recipients set on the admin Security page (lib/site-settings.js
+// `to`: the recipients set on the admin Security page (lib/ops/site-settings.js
 // alertRecipients); falls back to SECURITY_ALERT_EMAIL.
 export async function sendFirewallAlert({ outcome, ip, path, method, country, city, userAgent, score, signals, to: recipients }) {
   const to = recipients?.length ? recipients : process.env.SECURITY_ALERT_EMAIL;

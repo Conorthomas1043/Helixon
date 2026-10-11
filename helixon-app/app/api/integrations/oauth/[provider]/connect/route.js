@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { canManageWorkspace } from "@/lib/workspace-admin";
-import { siteUrl } from "@/lib/mailer";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { canManageWorkspace } from "@/lib/agency/workspace-admin";
+import { siteUrl } from "@/lib/messaging/mailer";
 import { authorizeUrl, providerFor } from "@/lib/integrations/providers";
 import { integrationReady } from "@/lib/integrations/store";
 

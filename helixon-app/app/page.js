@@ -7,7 +7,7 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import AnalysisExample from "@/components/landing/AnalysisExample";
-import { PLAN_FEATURES } from "@/lib/plan-features";
+import { PLAN_FEATURES } from "@/lib/billing/plan-features";
 import {
   BulkPreviewCard,
   BuyPlanButton,
@@ -341,7 +341,7 @@ function TrustSection() {
 
 
 /* ── Pricing plans - a "get a demo" tile plus the two paid plans. What each
-   plan includes comes from lib/plan-features, shared with /pricing. ── */
+   plan includes comes from lib/billing/plan-features, shared with /pricing. ── */
 
 const PLANS = [
   {

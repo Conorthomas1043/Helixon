@@ -3,7 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
-import posthog, { loadPosthog } from "@/lib/posthog";
+import posthog, { loadPosthog } from "@/lib/analytics/posthog";
 
 // ── Cookie consent ──────────────────────────────────────────────────────────
 // The banner (components/CookieConsentBanner.jsx) stores the visitor's choice in
@@ -41,7 +41,7 @@ if (!posthogToken) {
   // PostHog is not even downloaded until the visitor has opted in: initialising
   // it (even opted out) still fetches feature flags and surveys from PostHog
   // with a throwaway identifier, which is more than "Essential only" should
-  // allow, and the library itself is weight nobody else needs. lib/posthog.js
+  // allow, and the library itself is weight nobody else needs. lib/analytics/posthog.js
   // stands in for it until then (calls are dropped, `__loaded` is false).
   let posthogStarted = false;
 

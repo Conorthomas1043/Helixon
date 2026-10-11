@@ -2,11 +2,11 @@ import { Resend } from "resend";
 import { currentUser } from "@clerk/nextjs/server";
 
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { acquireLock, rateLimit, releaseLock } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, id, text } from "@/lib/api/schemas";

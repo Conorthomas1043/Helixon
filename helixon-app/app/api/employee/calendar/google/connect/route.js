@@ -1,13 +1,13 @@
 // app/api/employee/calendar/google/connect/route.js
 // Starts the OAuth2 authorization-code flow (redirects to Google's
-// consent screen). See lib/google-calendar.js for why this needs
+// consent screen). See lib/interviews/google-calendar.js for why this needs
 // GOOGLE_CALENDAR_CLIENT_ID/SECRET before it can do anything.
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { employeeAccess } from "@/lib/session";
-import { isConfigured, getAuthUrl } from "@/lib/google-calendar";
+import { employeeAccess } from "@/lib/employee/session";
+import { isConfigured, getAuthUrl } from "@/lib/interviews/google-calendar";
 
 // Short-lived, httpOnly - a CSRF guard for the callback (the state value
 // returned by Google must match this), not a long-term session artefact.

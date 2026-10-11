@@ -4,7 +4,7 @@
 
 import Report from "@/app/analyse/_components/Report";
 import { AMBER, CARD, INK, INK_FAINT, INK_MUTED, formatDateOnly } from "@/lib/candidates/format";
-import { printSection } from "@/lib/print";
+import { printSection } from "@/lib/ui/print";
 import { useRef, useState } from "react";
 import { FieldLabel, SectionHeading } from "./primitives";
 

@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, nested } from "@/lib/api/schemas";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { cleanCustomisation, normaliseCustomisation } from "@/lib/custom-fields";
-import { mergeAgencySettings } from "@/lib/agency-settings";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { cleanCustomisation, normaliseCustomisation } from "@/lib/agency/custom-fields";
+import { mergeAgencySettings } from "@/lib/agency/settings";
 
-// cleanCustomisation (lib/custom-fields.js) checks both lists in full.
+// cleanCustomisation (lib/agency/custom-fields.js) checks both lists in full.
 const CustomisationInput = fields({ subStages: nested, customFields: nested });
 
 // GET / PUT the agency's pipeline sub-stages and custom fields
-// (lib/custom-fields.js). Everyone reads them; the owner or an admin
+// (lib/agency/custom-fields.js). Everyone reads them; the owner or an admin
 // changes them. PUT replaces both lists.
 
 export const GET = customerRoute(async (_request, _context, auth) => {

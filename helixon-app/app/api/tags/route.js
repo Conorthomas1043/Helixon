@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { addAgencyTag, getAgencyTags, removeAgencyTag } from "@/lib/agency-tags";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { addAgencyTag, getAgencyTags, removeAgencyTag } from "@/lib/agency/tags";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const TagCreateInput = fields({ label: text(120) });
 
-// The agency's candidate tags (lib/agency-tags.js).
+// The agency's candidate tags (lib/agency/tags.js).
 // GET               built-in + the agency's own
 // POST { label }    add one of the agency's own
 // DELETE ?id=       delete one of the agency's own (and untag everyone)

@@ -2,17 +2,17 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, nested, num, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
-import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/import-mapping";
-import { getAgencyPrivacy, addMonths } from "@/lib/privacy-settings";
+import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/candidates/import-mapping";
+import { getAgencyPrivacy, addMonths } from "@/lib/compliance/privacy-settings";
 import { linkedInHandle } from "@/lib/candidates/duplicates";
-import { ensureClient } from "@/lib/clients";
+import { ensureClient } from "@/lib/clients/core";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 
-// Rows, mapping and options are checked by lib/import-mapping.js.
+// Rows, mapping and options are checked by lib/candidates/import-mapping.js.
 const ImportInput = fields({ type: text(20), rows: nested, mapping: nested, firstRow: num, options: nested });
 
 // How many existing rows de-duplication reads per table.
@@ -20,7 +20,7 @@ const MAX_EXISTING = 200000;
 
 // POST { type, mapping, rows: [[cells]], firstRow, options? } - one batch
 // (up to IMPORT_BATCH rows) of a CSV import from /dashboard/import. Every
-// row is mapped and validated again here (lib/import-mapping.js); people,
+// row is mapped and validated again here (lib/candidates/import-mapping.js); people,
 // clients and contacts already on file are skipped rather than duplicated.
 //
 // options.talentPool (candidates): also save them to the talent pool.

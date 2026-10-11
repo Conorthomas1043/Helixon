@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, ids } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
-import { EXPIRING_DAYS, checkState, privacyNoticeStatus, toCheck } from "@/lib/compliance";
-import { sendPrivacyNotices } from "@/lib/compliance-email";
+import { EXPIRING_DAYS, checkState, privacyNoticeStatus, toCheck } from "@/lib/compliance/core";
+import { sendPrivacyNotices } from "@/lib/compliance/email";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 

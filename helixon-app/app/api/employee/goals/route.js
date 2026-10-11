@@ -5,7 +5,7 @@
 // app/api/employee/goals/items/route.js.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { getGoals, addGoal, updateGoal, deleteGoal } from "@/lib/employee/goals";
 import { date, fields, id, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

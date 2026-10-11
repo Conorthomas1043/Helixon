@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { cleanLine, cleanList, cleanText } from "@/lib/sanitize";
-import { ensureClient } from "@/lib/clients";
-import { JOB_COLUMNS, apiError, apiJson, pageMeta, paging, toApiJob, withApiKey } from "@/lib/api-v1";
+import { ensureClient } from "@/lib/clients/core";
+import { JOB_COLUMNS, apiError, apiJson, pageMeta, paging, toApiJob, withApiKey } from "@/lib/api/v1";
 import { fields, stringList, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

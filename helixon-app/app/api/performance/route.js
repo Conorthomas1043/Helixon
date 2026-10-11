@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { canManageWorkspace } from "@/lib/workspace-admin";
-import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRange, placementInPeriod, scaleTargets } from "@/lib/performance";
-import { getAccess } from "@/lib/permissions";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { canManageWorkspace } from "@/lib/agency/workspace-admin";
+import { aggregate, commissionFor, emptyMetrics, normalisePerformance, periodRange, placementInPeriod, scaleTargets } from "@/lib/analytics/performance";
+import { getAccess } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 
 // GET ?period=this_month|last_month|this_quarter|... - each recruiter's
 // activity and revenue for the period against their targets
-// (lib/performance.js), plus the team's. Commission figures are shown to
+// (lib/analytics/performance.js), plus the team's. Commission figures are shown to
 // the owner/admins for everyone, and to each recruiter for themselves.
 
 const LIMIT = 20000;
@@ -100,7 +100,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
     };
   });
 
-  // Money admin-only (lib/permissions.js): members see activity, not fees,
+  // Money admin-only (lib/agency/permissions.js): members see activity, not fees,
   // cash or commission.
   const { canSeeFinancials } = await getAccess(auth);
   if (!canSeeFinancials) {

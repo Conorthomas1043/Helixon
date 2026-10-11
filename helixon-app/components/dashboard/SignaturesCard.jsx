@@ -1,13 +1,13 @@
 "use client";
 
-// Documents sent for e-signature (app/api/signatures, lib/signatures.js),
+// Documents sent for e-signature (app/api/signatures, lib/clients/signatures.js),
 // on a client's page (terms of business) or a candidate's (offer letters,
 // contracts). `template(kind, agencyName)` returns { title, body } to start
 // the document from.
 
 import { useCallback, useEffect, useState } from "react";
 import { createSignatureRequest, getSignatureRequest, getSignatureRequests, voidSignatureRequest } from "@/lib/dashboard-api";
-import { SIGNATURE_KINDS, SIGNATURE_STATUSES } from "@/lib/signatures-shared";
+import { SIGNATURE_KINDS, SIGNATURE_STATUSES } from "@/lib/clients/signatures-shared";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";

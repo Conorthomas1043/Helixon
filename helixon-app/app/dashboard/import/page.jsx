@@ -9,7 +9,7 @@
 
 import { useMemo, useState } from "react";
 import { parseCsv } from "@/lib/csv";
-import { IMPORT_BATCH, IMPORT_TYPES, MAX_IMPORT_ROWS, guessMapping, mapRow } from "@/lib/import-mapping";
+import { IMPORT_BATCH, IMPORT_TYPES, MAX_IMPORT_ROWS, guessMapping, mapRow } from "@/lib/candidates/import-mapping";
 import { Page, PageHeader, Card, Button, ErrorText, Pill, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 async function postBatch(payload) {

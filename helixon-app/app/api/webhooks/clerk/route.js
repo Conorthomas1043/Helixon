@@ -1,13 +1,13 @@
 import { Webhook } from "svix";
-import { BILLING_STATUSES } from "@/lib/subscription-status";
+import { BILLING_STATUSES } from "@/lib/billing/subscription-status";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { anonymiseDeletedUser } from "@/lib/anonymise-user";
+import { anonymiseDeletedUser } from "@/lib/compliance/anonymise-user";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
-import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/create-profile";
-import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/clerk-org";
+import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/auth/create-profile";
+import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/auth/clerk-org";
 import { reportError } from "@/lib/report-error";
-import { revokeMemberTokens } from "@/lib/member-tokens";
+import { revokeMemberTokens } from "@/lib/agency/member-tokens";
 
 // Replaces app/api/auth/signup/route.js's job of creating the `agencies`
 // row and the `profiles` row. Under Supabase Auth that happened inline in
@@ -22,7 +22,7 @@ import { revokeMemberTokens } from "@/lib/member-tokens";
 // Subscribe to: user.created (required), user.deleted (optional, see below),
 // organizationMembership.created, organizationMembership.deleted and
 // organizationInvitation.created (required for Agency-plan team invites
-// and offboarding - see lib/clerk-org.js).
+// and offboarding - see lib/auth/clerk-org.js).
 // Copy the "Signing secret" into CLERK_WEBHOOK_SECRET.
 //
 // agencyName/username/firstName/lastName arrive via `unsafeMetadata`,
@@ -69,7 +69,7 @@ export async function POST(request) {
     } else if (event.type === "user.deleted") {
       // Keep the profile row (the agency's candidates and history still
       // reference it) but erase what identifies the person - name,
-      // presence, and their name in notes and history (lib/anonymise-user.js).
+      // presence, and their name in notes and history (lib/compliance/anonymise-user.js).
       await anonymiseDeletedUser(supabase, event.data.id);
     } else if (event.type === "organizationMembership.created") {
       await handleOrganizationMembershipCreated(event.data);
@@ -221,7 +221,7 @@ async function legacyEmailMatches(profileId, verifiedEmails) {
 
 // Fires whenever someone joins a Clerk Organization - both for the agency
 // owner (Clerk auto-creates their membership the moment
-// lib/clerk-org.js's ensureAgencyOrg calls createOrganization with
+// lib/auth/clerk-org.js's ensureAgencyOrg calls createOrganization with
 // createdBy: ownerClerkUserId) and for an invited teammate accepting their
 // invite. The owner already has a profile from their original signup, so
 // this is a no-op for them; for an invited teammate, this is the only

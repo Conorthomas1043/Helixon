@@ -1,10 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import { cleanClientFields, toClient } from "@/lib/clients";
-import { apiError, apiJson, pageMeta, paging, withApiKey } from "@/lib/api-v1";
+import { cleanClientFields, toClient } from "@/lib/clients/core";
+import { apiError, apiJson, pageMeta, paging, withApiKey } from "@/lib/api/v1";
 import { fields, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanClientFields (lib/clients.js) reads these; the owner is always the key's member.
+// cleanClientFields (lib/clients/core.js) reads these; the owner is always the key's member.
 const NewClientInput = fields({
   name: text(400),
   website: text(600),

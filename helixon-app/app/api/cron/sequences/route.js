@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { mergeContext, renderTemplate } from "@/lib/email-merge";
-import { stepDueAt, stopReason } from "@/lib/sequences";
-import { agencyFromName, mailConfigured } from "@/lib/mailer";
-import { sendTrackedEmail } from "@/lib/tracked-email";
+import { mergeContext, renderTemplate } from "@/lib/messaging/email-merge";
+import { stepDueAt, stopReason } from "@/lib/messaging/sequences";
+import { agencyFromName, mailConfigured } from "@/lib/messaging/mailer";
+import { sendTrackedEmail } from "@/lib/messaging/tracked-email";
 import { logActivity } from "@/lib/candidates/activity";
 import { reportError } from "@/lib/report-error";
-import { agencyHasActiveSubscription } from "@/lib/customer-auth";
+import { agencyHasActiveSubscription } from "@/lib/auth/customer-auth";
 
-// Sends the sequence emails that are due (lib/sequences.js). For each due
+// Sends the sequence emails that are due (lib/messaging/sequences.js). For each due
 // enrolment: stop it if the candidate has no email or has been rejected or
 // placed; otherwise send the step - merge fields filled in, from the agency,
 // replies to the recruiter who enrolled them - and schedule the next one.

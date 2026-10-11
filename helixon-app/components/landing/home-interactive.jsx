@@ -9,7 +9,7 @@ import Button from "@/components/landing/Button";
 import CountUp from "@/components/dashboard/CountUp";
 import useScrollEntrance from "@/lib/hooks/useScrollEntrance";
 import useRovingTabs from "@/lib/hooks/useRovingTabs";
-import { startCheckout } from "@/lib/start-checkout";
+import { startCheckout } from "@/lib/billing/start-checkout";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 

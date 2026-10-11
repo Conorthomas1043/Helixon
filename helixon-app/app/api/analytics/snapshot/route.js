@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { groupTransitions, inRange, jobIdsForClient, loadActivity, loadCandidates, loadPlacements, readAnalyticsFilters } from "@/lib/analytics-data";
-import { computeCore, computeDeltas, computeTeam, computeTrends, furthestStageIndex } from "@/lib/analytics-snapshot";
-import { getAccess } from "@/lib/permissions";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { groupTransitions, inRange, jobIdsForClient, loadActivity, loadCandidates, loadPlacements, readAnalyticsFilters } from "@/lib/analytics/data";
+import { computeCore, computeDeltas, computeTeam, computeTrends, furthestStageIndex } from "@/lib/analytics/snapshot";
+import { getAccess } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 
 // GET /api/analytics/snapshot - the Analytics page's headline numbers

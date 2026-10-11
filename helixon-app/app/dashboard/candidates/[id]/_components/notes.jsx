@@ -153,5 +153,5 @@ export function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDele
 
 /* ------------------------------------------------------------------------
  * Talent pool & other roles - keep someone for future jobs, and screen them
- * against another job from the CV already on file (lib/rescreen.js).
+ * against another job from the CV already on file (lib/screening/rescreen.js).
  * ---------------------------------------------------------------------- */

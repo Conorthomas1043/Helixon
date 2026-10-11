@@ -5,7 +5,7 @@
 // of screening a CV against a new job description on /analyse.
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { trapTab } from "@/lib/focus-trap";
+import { trapTab } from "@/lib/ui/focus-trap";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -14,7 +14,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { adaptJob, getJobs as fetchJobs, createJob } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidates/format";
-import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
+import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/jobs/details";
 import { useOffices } from "@/components/dashboard/use-offices";
 import { Button, EmptyState as KitEmptyState, Skeleton as Block } from "@/components/ui";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";

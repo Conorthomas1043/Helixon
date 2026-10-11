@@ -1,4 +1,4 @@
-import { UNTRUSTED_CONTENT_RULES } from "../../prompt-safety.js";
+import { UNTRUSTED_CONTENT_RULES } from "../../security/prompt-safety.js";
 
 export default `
 You are an expert recruiter who screens candidates for every kind of role - technical, commercial, healthcare, trades, hospitality, public sector, executive and more.

@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { date, fields, flag, text } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanLine } from "@/lib/sanitize";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const NextActionInput = fields({ label: text(400), dueAt: date, completed: flag });

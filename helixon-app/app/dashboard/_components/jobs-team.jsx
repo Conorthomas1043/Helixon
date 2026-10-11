@@ -3,7 +3,7 @@
 // Part of the dashboard home (app/dashboard/page.js).
 
 import Link from "next/link";
-import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
+import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { SectionHeading } from "@/components/ui";
 import { ACCENT_BG, ACCENT_FG, BORDER, BORDER2, CARD, GREEN_FG, RED, RED_BG, TEXT, TEXT_FAINT, TEXT_SUB, formatNumber } from "./shared";
 import { EmptyState } from "./states";

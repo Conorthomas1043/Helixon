@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
-import { isConfigured, getConnection } from "@/lib/google-calendar";
+import { employeeAccess } from "@/lib/employee/session";
+import { isConfigured, getConnection } from "@/lib/interviews/google-calendar";
 
 export async function GET() {
   const { employeeId, forbidden } = await employeeAccess("calendar", "view");

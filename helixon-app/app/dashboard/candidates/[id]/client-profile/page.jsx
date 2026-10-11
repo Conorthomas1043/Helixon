@@ -1,7 +1,7 @@
 "use client";
 
 // /dashboard/candidates/[id]/client-profile - the client-ready version of
-// a candidate's profile (lib/client-profile.js), optionally anonymised, to
+// a candidate's profile (lib/clients/profile.js), optionally anonymised, to
 // print or save as PDF and send to a hiring manager.
 
 import { use, useEffect, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import DashboardNav from "@/components/DashboardNav";
 import ClientProfileDocument from "@/components/dashboard/ClientProfileDocument";
 import ClientProfileToolbar from "@/components/dashboard/ClientProfileToolbar";
 import { getClientProfile, recordClientProfilePrinted } from "@/lib/dashboard-api";
-import { printSection } from "@/lib/print";
+import { printSection } from "@/lib/ui/print";
 import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 

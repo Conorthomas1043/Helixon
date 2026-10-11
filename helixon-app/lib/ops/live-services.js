@@ -36,7 +36,7 @@ export async function getStripeSnapshot() {
     return { configured: false };
   }
 
-  // Deliberately its own client, not the shared lib/stripe.js singleton -
+  // Deliberately its own client, not the shared lib/billing/stripe.js singleton -
   // that one constructs unconditionally at module scope and throws
   // immediately if STRIPE_SECRET_KEY is unset, which would defeat the
   // "configured: false" guard above before it ever ran.
@@ -93,7 +93,7 @@ export async function getStripeSnapshot() {
 
 /**
  * Real identity data from Clerk - the actual source of truth for users
- * since the migration off Supabase Auth (see lib/customer-auth.js). The
+ * since the migration off Supabase Auth (see lib/auth/customer-auth.js). The
  * admin Users page still reads supabase.auth.admin.listUsers(), which is
  * now a stale identity source; this is the live one.
  */

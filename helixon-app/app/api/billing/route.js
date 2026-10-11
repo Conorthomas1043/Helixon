@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { getAgencyPlan } from "@/lib/plan";
+import { getAgencyPlan } from "@/lib/billing/plan";
 import { reportError } from "@/lib/report-error";
-import { billingSummary, emptyBillingSummary } from "@/lib/billing-summary";
+import { billingSummary, emptyBillingSummary } from "@/lib/billing/summary";
 
 // GET /api/billing - the data behind app/billing. Reuses the same
 // getCustomerContext() helper api/run and api/dashboard-stats already use,

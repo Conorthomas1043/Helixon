@@ -2,12 +2,12 @@
 
 // Business-development pieces shared by a client's page and
 // /dashboard/business-development: the deal dialog, a client's deals card,
-// and a client's follow-up card (lib/opportunities.js).
+// and a client's follow-up card (lib/clients/opportunities.js).
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createOpportunity, deleteOpportunity, getClients, getOpportunities, getRecruiters, setClientNextAction, updateOpportunity } from "@/lib/dashboard-api";
-import { DEFAULT_PROBABILITY, OPPORTUNITY_STAGES, effectiveProbability } from "@/lib/opportunities";
+import { DEFAULT_PROBABILITY, OPPORTUNITY_STAGES, effectiveProbability } from "@/lib/clients/opportunities";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";

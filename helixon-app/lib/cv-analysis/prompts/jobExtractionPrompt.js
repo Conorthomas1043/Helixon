@@ -1,4 +1,4 @@
-import { wrapUntrusted } from "../../prompt-safety.js";
+import { wrapUntrusted } from "../../security/prompt-safety.js";
 
 // Keeps the whole prompt under askClaude()'s 40,000-character truncation
 // (see utils/sanitise.js).

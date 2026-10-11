@@ -29,23 +29,23 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({
+vi.mock("@/lib/auth/customer-auth", () => ({
   requireCustomerContext: async () => state.auth,
   getCustomerContext: async () => state.context,
 }));
-vi.mock("@/lib/permissions", async (importOriginal) => ({
+vi.mock("@/lib/agency/permissions", async (importOriginal) => ({
   ...(await importOriginal()),
   getAccess: async () => state.access,
   candidateHidden: async () => false,
   scopeCandidateQuery: (q) => q,
 }));
-vi.mock("@/lib/plan", () => ({ getAgencyPlan: async () => "agency" }));
-vi.mock("@/lib/recruiter-directory", () => ({
+vi.mock("@/lib/billing/plan", () => ({ getAgencyPlan: async () => "agency" }));
+vi.mock("@/lib/agency/recruiter-directory", () => ({
   recruiterDisplayName: () => "Ada",
   resolveRecruiterNames: async (_db, ids) => new Map(ids.filter(Boolean).map((id) => [id, "Ada Lovelace"])),
 }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
-vi.mock("@/lib/analytics", () => ({ track: vi.fn() }));
+vi.mock("@/lib/analytics/track", () => ({ track: vi.fn() }));
 
 const billing = await import("./billing/route");
 const jobs = await import("./jobs/route");

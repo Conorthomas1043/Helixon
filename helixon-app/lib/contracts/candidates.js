@@ -55,7 +55,7 @@ export const CandidateListPageSchema = z.strictObject({
 });
 
 // { all, Screened, Shortlisted, ... } - one key per stage in
-// lib/stage-labels.js, plus `all`.
+// lib/candidates/stage-labels.js, plus `all`.
 export const StageCountsSchema = z.record(z.string(), z.number().int()).refine((c) => typeof c.all === "number", "all is required");
 
 export const CandidateNoteSchema = z.strictObject({

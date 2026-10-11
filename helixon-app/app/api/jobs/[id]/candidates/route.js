@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
 import { agencyDb } from "@/lib/agency-db";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { fetchAll } from "@/lib/fetch-all";
 
 export const GET = customerRoute(async (request, { params }, auth) => {

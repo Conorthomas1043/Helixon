@@ -3,12 +3,12 @@
 // - POST: records the request in request_logs and returns
 //   { isBlocked, maintenance, capturePayload } so proxy.ts can gate it
 //   (maintenance is the admin's switch on /admin/site, cached in
-//   lib/site-settings.js)
+//   lib/ops/site-settings.js)
 // - PATCH: proxy.ts reports what happened next when it decides after the
 //   log line was written - a redirect (maintenance, sign-in), a hidden
 //   admin 404, or the (redacted) body of a blocked request.
 //
-// What's kept per request, and what isn't, is in lib/request-capture.js:
+// What's kept per request, and what isn't, is in lib/ops/request-capture.js:
 // headers and query strings with secrets redacted, bodies only for blocked
 // requests. The admin controls both on the Traffic page.
 //
@@ -21,16 +21,16 @@
 // value on every call. Fails closed: if the secret isn't set, or doesn't
 // match, the request is rejected rather than silently trusted.
 
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { after } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { enforceFirewallPolicy } from "@/lib/security/firewall";
 import { scoreRequest } from "@/lib/security/threat-score";
-import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
+import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 import { blockIsActive, getFirewallRules, matchRange, matchRequestRule } from "@/lib/security/rules";
-import { redactHeaders, redactPayload, redactQuery } from "@/lib/request-capture";
-import { classifyUserAgent } from "@/lib/traffic-class";
-import { maybeCheckTraffic } from "@/lib/traffic-alerts";
+import { redactHeaders, redactPayload, redactQuery } from "@/lib/ops/request-capture";
+import { classifyUserAgent } from "@/lib/analytics/traffic-class";
+import { maybeCheckTraffic } from "@/lib/analytics/traffic-alerts";
 import { reportError } from "@/lib/report-error";
 import { fields, flag, nested, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
@@ -225,7 +225,7 @@ export async function POST(request) {
       // Nothing to record.
     } else if (mayFollowUp) await insertLog(row);
     else after(() => insertLog(row));
-    // Site-wide spike check, at most every few minutes (lib/traffic-alerts.js).
+    // Site-wide spike check, at most every few minutes (lib/analytics/traffic-alerts.js).
     after(() => maybeCheckTraffic(settings));
 
     return Response.json({

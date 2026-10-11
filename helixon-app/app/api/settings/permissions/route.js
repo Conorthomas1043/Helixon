@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag } from "@/lib/api/schemas";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { cleanPermissions, getAccess, normalisePermissions } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
-import { mergeAgencySettings } from "@/lib/agency-settings";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { cleanPermissions, getAccess, normalisePermissions } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
+import { mergeAgencySettings } from "@/lib/agency/settings";
 
-// One switch per PERMISSION_KEYS entry (lib/permissions.js).
+// One switch per PERMISSION_KEYS entry (lib/agency/permissions.js).
 const PermissionsInput = fields({ financialsAdminOnly: flag, ownCandidatesOnly: flag });
 
-// GET    the workspace's permissions (lib/permissions.js) and what the
+// GET    the workspace's permissions (lib/agency/permissions.js) and what the
 //        signed-in member can see
 // PATCH  change them - owner or admin only
 

@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, nested } from "@/lib/api/schemas";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { cleanOffices, normaliseOffices } from "@/lib/offices";
-import { logAudit } from "@/lib/agency-audit";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { cleanOffices, normaliseOffices } from "@/lib/agency/offices";
+import { logAudit } from "@/lib/agency/audit";
 import { agencyDb } from "@/lib/agency-db";
-import { mergeAgencySettings } from "@/lib/agency-settings";
+import { mergeAgencySettings } from "@/lib/agency/settings";
 
-// cleanOffices (lib/offices.js) checks both in full.
+// cleanOffices (lib/agency/offices.js) checks both in full.
 const OfficesInput = fields({ offices: nested, memberOffices: nested });
 
-// Offices or brands (lib/offices.js).
+// Offices or brands (lib/agency/offices.js).
 // GET  { offices, memberOffices, canManage }
 // PUT  { offices: [{ id?, name }], memberOffices }   owner or admin. Jobs in
 //      an office that's removed are left without one.

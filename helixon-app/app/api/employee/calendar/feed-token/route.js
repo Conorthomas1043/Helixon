@@ -4,7 +4,7 @@
 // feed itself at app/api/employee/calendar/feed/[token].
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { ensureFeedToken, regenerateFeedToken } from "@/lib/employee/calendar";
 
 function feedUrl(token) {

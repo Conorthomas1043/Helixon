@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({ event: null, upserts: [], upsertError: null, updateError: null, subscription: null }));
 
-vi.mock("@/lib/stripe", () => ({
+vi.mock("@/lib/billing/stripe", () => ({
   stripe: {
     webhooks: { constructEvent: () => state.event },
     subscriptions: { retrieve: async () => state.subscription },
@@ -19,7 +19,7 @@ vi.mock("@/lib/supabase", () => ({
     }),
   },
 }));
-vi.mock("@/lib/server-analytics", () => ({ agencyIdForProfile: vi.fn(), billingEventsFor: () => [], captureAgencyEvent: vi.fn() }));
+vi.mock("@/lib/analytics/server", () => ({ agencyIdForProfile: vi.fn(), billingEventsFor: () => [], captureAgencyEvent: vi.fn() }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: vi.fn() }));
 

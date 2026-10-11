@@ -8,7 +8,7 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getClients, createClient } from "@/lib/dashboard-api";
-import { useResource } from "@/lib/use-resource";
+import { useResource } from "@/lib/hooks/useResource";
 import { downloadCsv } from "@/lib/csv";
 import {
   Page,

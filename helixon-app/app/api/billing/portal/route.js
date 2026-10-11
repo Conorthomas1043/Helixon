@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
-import { stripe } from "@/lib/stripe";
+import { stripe } from "@/lib/billing/stripe";
 import { reportError } from "@/lib/report-error";
 
 // POST /api/billing/portal - hands the user off to Stripe's hosted Billing

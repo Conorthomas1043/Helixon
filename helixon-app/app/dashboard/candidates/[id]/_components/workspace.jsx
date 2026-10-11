@@ -3,7 +3,7 @@
 // Part of the candidate profile page (../page.jsx).
 
 import { CARD, INK, INK_FAINT, INK_MUTED, RED, RED_BG, RED_STRONG, formatDateOnly } from "@/lib/candidates/format";
-import { STAGE_LABELS } from "@/lib/stage-labels";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { SubStagePicker } from "@/components/dashboard/custom-fields";
 import { useNow } from "@/lib/hooks/useNow";
 import { useState } from "react";

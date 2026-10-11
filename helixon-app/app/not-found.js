@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { after } from "next/server";
-import { LOG_UID_HEADER, markRequestStatus } from "@/lib/request-status";
+import { LOG_UID_HEADER, markRequestStatus } from "@/lib/ops/request-status";
 
 // Rendering this means the app answered 404 - recorded against the
 // request's log line so admin Traffic can list broken links.

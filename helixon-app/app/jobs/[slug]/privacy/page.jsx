@@ -1,8 +1,8 @@
 // /jobs/<slug>/privacy - the agency's privacy notice for applicants,
-// linked from the application form (lib/privacy-notice.js).
+// linked from the application form (lib/compliance/privacy-notice.js).
 
 import { notFound } from "next/navigation";
-import { agencyNotice, loadCareersAgency } from "@/lib/public-jobs";
+import { agencyNotice, loadCareersAgency } from "@/lib/jobs/public-jobs";
 import { JobsHeader, JobsFooter } from "@/components/public/JobsChrome";
 
 export const dynamic = "force-dynamic";

@@ -1,4 +1,4 @@
-import { wrapUntrusted } from "../../prompt-safety.js";
+import { wrapUntrusted } from "../../security/prompt-safety.js";
 
 // askClaude() truncates the whole prompt to 40,000 characters
 // (utils/sanitise.js). The CV is capped so that, with the schema above and

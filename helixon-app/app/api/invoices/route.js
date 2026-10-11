@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { INVOICE_STATUSES } from "@/lib/placements";
-import { getAccess } from "@/lib/permissions";
+import { INVOICE_STATUSES } from "@/lib/placements/core";
+import { getAccess } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // GET ?status= - the agency's invoices, newest first.

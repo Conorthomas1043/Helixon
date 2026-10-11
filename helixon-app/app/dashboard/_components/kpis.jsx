@@ -4,7 +4,7 @@
 
 import CountUp from "@/components/dashboard/CountUp";
 import Link from "next/link";
-import { METRICS, METRIC_KEYS } from "@/lib/performance";
+import { METRICS, METRIC_KEYS } from "@/lib/analytics/performance";
 import { SectionHeading } from "@/components/ui";
 import { getPerformance } from "@/lib/dashboard-api";
 import { useEffect, useState } from "react";
@@ -107,7 +107,7 @@ export function BusinessKpis({ kpis }) {
     { label: "Interviews", value: kpis.interviewsThisWeek, sub: kpis.interviewsToday ? `${kpis.interviewsToday} today` : "Next 7 days", href: "/dashboard/interviews" },
     { label: "Offers out", value: kpis.offersOut, sub: "Waiting on an answer", href: "/dashboard/placements" },
     { label: "Placed this month", value: kpis.placementsThisMonth, sub: kpis.feesThisMonth == null ? "This month" : `${formatMoneyShort(kpis.feesThisMonth)} in fees`, href: "/dashboard/placements" },
-    // Hidden from members when money is admin-only (lib/permissions.js).
+    // Hidden from members when money is admin-only (lib/agency/permissions.js).
     kpis.outstanding != null && {
       label: "Owed to you",
       value: formatMoneyShort(kpis.outstanding),

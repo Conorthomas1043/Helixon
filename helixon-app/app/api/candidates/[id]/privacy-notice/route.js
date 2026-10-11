@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanLine } from "@/lib/sanitize";
-import { loadCandidate } from "@/lib/compliance-server";
-import { sendPrivacyNotices } from "@/lib/compliance-email";
-import { candidateHidden } from "@/lib/permissions";
+import { loadCandidate } from "@/lib/compliance/server";
+import { sendPrivacyNotices } from "@/lib/compliance/email";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const PrivacyNoticeInput = fields({ action: text(20), source: text(200) });

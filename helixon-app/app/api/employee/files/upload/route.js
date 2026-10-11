@@ -3,7 +3,7 @@
 // app/api/employee/files/route.js since that one takes JSON bodies.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { uploadFile, MAX_FILE_BYTES } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
 

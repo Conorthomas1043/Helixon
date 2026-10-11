@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import { clearLocalCandidateData } from "@/lib/clear-local-data";
+import { clearLocalCandidateData } from "@/lib/compliance/clear-local-data";
 import Button from "@/components/landing/Button";
 import Logo from "@/components/marketing/Logo";
 

@@ -13,7 +13,7 @@ export async function getCandidateCompliance(candidateId) {
   return apiFetch(`/api/candidates/${candidateId}/compliance`);
 }
 
-// `fields` as cleanCheck in lib/compliance.js reads them; `file` optional.
+// `fields` as cleanCheck in lib/compliance/core.js reads them; `file` optional.
 /** @param {string} method @param {import("./core").Fields} fields @param {File | null | undefined} file */
 export function checkRequest(method, fields, file) {
   if (!file) return jsonBody(method, fields);

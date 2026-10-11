@@ -4,8 +4,8 @@
 
 import CountUp from "@/components/dashboard/CountUp";
 import Link from "next/link";
-import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
-import { STRONG_MATCH_MIN, scoreBandLabel } from "@/lib/scoreBands";
+import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { STRONG_MATCH_MIN, scoreBandLabel } from "@/lib/screening/scoreBands";
 import { SectionHeading } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import { useNow } from "@/lib/hooks/useNow";

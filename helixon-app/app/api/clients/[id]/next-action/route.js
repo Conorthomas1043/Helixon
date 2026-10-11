@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { date, fields, flag, text } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { loadClient, logClientActivity } from "@/lib/clients";
-import { cleanNextAction } from "@/lib/opportunities";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { loadClient, logClientActivity } from "@/lib/clients/core";
+import { cleanNextAction } from "@/lib/clients/opportunities";
 import { agencyDb } from "@/lib/agency-db";
 
-// cleanNextAction (lib/opportunities.js) reads label and dueAt.
+// cleanNextAction (lib/clients/opportunities.js) reads label and dueAt.
 const ClientNextActionInput = fields({ label: text(400), dueAt: date, completed: flag });
 
 // A follow-up on a client - the same idea as a candidate's next action.

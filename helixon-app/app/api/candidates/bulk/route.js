@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id, ids, text } from "@/lib/api/schemas";
-import { STAGE_LABELS } from "@/lib/stage-labels";
-import { findAgencyTag } from "@/lib/agency-tags";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { findAgencyTag } from "@/lib/agency/tags";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { eraseCandidates } from "@/lib/candidates/erasure";
-import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
+import { addMonths, getAgencyPrivacy } from "@/lib/compliance/privacy-settings";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
 import { agencyDb } from "@/lib/agency-db";
 
 // ids above MAX_IDS get the route's own message, not a schema error.
@@ -118,7 +118,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     return NextResponse.json({ ok: true, updated: tagging.length });
   }
 
-  // Talent pool: one entry per person, on their first row (lib/rescreen.js).
+  // Talent pool: one entry per person, on their first row (lib/screening/rescreen.js).
   if (body.action === "pool" || body.action === "unpool") {
     const adding = body.action === "pool";
     const roots = [...new Set((rows || []).map((r) => r.pooled_from_id || r.id))];

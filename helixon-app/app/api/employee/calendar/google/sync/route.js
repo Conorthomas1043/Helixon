@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
-import { sync } from "@/lib/google-calendar";
+import { employeeAccess } from "@/lib/employee/session";
+import { sync } from "@/lib/interviews/google-calendar";
 
 export async function POST() {
   const { employeeId, forbidden } = await employeeAccess("calendar", "edit");

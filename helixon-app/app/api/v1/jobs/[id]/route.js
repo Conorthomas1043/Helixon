@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { cleanUuid } from "@/lib/sanitize";
-import { JOB_COLUMNS, apiError, apiJson, toApiJob, withApiKey } from "@/lib/api-v1";
+import { JOB_COLUMNS, apiError, apiJson, toApiJob, withApiKey } from "@/lib/api/v1";
 
 // GET /api/v1/jobs/{id} - with a count of candidates per stage.
 export const GET = withApiKey(async (ctx, request, params) => {

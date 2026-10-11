@@ -1104,7 +1104,7 @@
     "inlineStyles": 0,
     "fontSizes": 0
   },
-  "lib/analytics-digest.js": {
+  "lib/analytics/digest.js": {
     "hex": 11,
     "inlineStyles": 0,
     "fontSizes": 0
@@ -1114,12 +1114,12 @@
     "inlineStyles": 0,
     "fontSizes": 0
   },
-  "lib/dashboard-model.js": {
+  "lib/dashboard/model.js": {
     "hex": 6,
     "inlineStyles": 0,
     "fontSizes": 0
   },
-  "lib/demo-notification.js": {
+  "lib/messaging/demo-notification.js": {
     "hex": 1,
     "inlineStyles": 0,
     "fontSizes": 0
@@ -1129,12 +1129,12 @@
     "inlineStyles": 0,
     "fontSizes": 0
   },
-  "lib/reminder-email.js": {
+  "lib/messaging/reminder-email.js": {
     "hex": 13,
     "inlineStyles": 0,
     "fontSizes": 0
   },
-  "lib/stage-labels.js": {
+  "lib/candidates/stage-labels.js": {
     "hex": 3,
     "inlineStyles": 0,
     "fontSizes": 0

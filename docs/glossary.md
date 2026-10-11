@@ -23,4 +23,4 @@ One name per concept, used the same way in the product, emails, the website and 
 | **Client** | The company the agency is hiring for | Customer, hiring company |
 | **Hiring manager** | The person at the client who decides | Client contact (in copy) |
 
-Code (routes, variables, table names) can keep its older names. `/analyse` stays a URL, for example. Only user-facing words follow this table. The score band words come from `lib/scoreBands.js` (`BAND_LABELS`, `scoreBandLabel`); don't hard-code them.
+Code (routes, variables, table names) can keep its older names. `/analyse` stays a URL, for example. Only user-facing words follow this table. The score band words come from `lib/screening/scoreBands.js` (`BAND_LABELS`, `scoreBandLabel`); don't hard-code them.

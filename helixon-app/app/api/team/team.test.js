@@ -26,10 +26,10 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
-vi.mock("@/lib/plan", () => ({ getAgencyPlan: async () => state.plan }));
+vi.mock("@/lib/auth/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
+vi.mock("@/lib/billing/plan", () => ({ getAgencyPlan: async () => state.plan }));
 vi.mock("@/lib/ratelimit", () => ({ getClientIp: () => "203.0.113.9", rateLimit: async () => true }));
-vi.mock("@/lib/clerk-org", () => ({
+vi.mock("@/lib/auth/clerk-org", () => ({
   AGENCY_SEAT_LIMIT: 5,
   getOrgMemberRole: async ({ userId }) => state.roles[userId] ?? null,
   getOrgCreatorId: async () => state.creator,
@@ -38,8 +38,8 @@ vi.mock("@/lib/clerk-org", () => ({
   listOrgMembers: async () => [],
   ...clerk,
 }));
-vi.mock("@/lib/agency-audit", () => ({ logAudit: (...a) => logAudit(...a) }));
-vi.mock("@/lib/member-tokens", () => ({ revokeMemberTokens: (...a) => revokeMemberTokens(...a) }));
+vi.mock("@/lib/agency/audit", () => ({ logAudit: (...a) => logAudit(...a) }));
+vi.mock("@/lib/agency/member-tokens", () => ({ revokeMemberTokens: (...a) => revokeMemberTokens(...a) }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 
 const role = await import("./role/route");

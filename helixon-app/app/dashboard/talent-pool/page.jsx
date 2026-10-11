@@ -5,7 +5,7 @@
 // availability and a date to check in, all editable here.
 //
 // Every open job is pre-matched against the pool with a quick keyword fit
-// (free, instant - lib/talent-pool-match.js): the strip at the top shows
+// (free, instant - lib/candidates/talent-pool-match.js): the strip at the top shows
 // which jobs the pool could fill, and each person shows their best open
 // job. Picking a job ranks everyone by fit; the best can then be screened
 // properly in one go from the CVs already on file (app/api/candidates/[id]/

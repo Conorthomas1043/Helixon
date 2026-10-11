@@ -15,7 +15,7 @@
 // needed, works fine alongside the existing signed session cookie.
 
 import crypto from "crypto";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER } from "@/lib/admin/csrf-constants";
 
 export { ADMIN_CSRF_COOKIE, ADMIN_CSRF_HEADER };

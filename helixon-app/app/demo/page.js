@@ -1,9 +1,9 @@
 "use client";
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import posthog from "@/lib/posthog";
+import posthog from "@/lib/analytics/posthog";
 import Logo from "@/components/marketing/Logo";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";

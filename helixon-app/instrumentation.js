@@ -19,7 +19,7 @@ export async function onRequestError(err, request, context) {
   const raw = request?.headers?.["x-helixon-log-uid"];
   const uid = Array.isArray(raw) ? raw[0] : raw;
   if (!uid) return;
-  const { markRequestStatus } = await import("./lib/request-status");
+  const { markRequestStatus } = await import("./lib/ops/request-status");
   await markRequestStatus(uid, 500);
 }
 

@@ -1,13 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
 
-import { requireCustomerContext } from "@/lib/customer-auth";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanUuid } from "@/lib/sanitize";
-import { neutralizeUntrusted, UNTRUSTED_CONTENT_RULES } from "@/lib/prompt-safety";
+import { neutralizeUntrusted, UNTRUSTED_CONTENT_RULES } from "@/lib/security/prompt-safety";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { rateLimit } from "@/lib/ratelimit";
-import { candidateHidden } from "@/lib/permissions";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { fields, id, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { logClientActivity } from "@/lib/clients";
-import { loadShortlist, shortlistAuth } from "@/lib/shortlists";
-import { toShare } from "@/lib/shortlist-shares";
-import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
-import { canSeeCandidate, getAccess } from "@/lib/permissions";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { logClientActivity } from "@/lib/clients/core";
+import { loadShortlist, shortlistAuth } from "@/lib/clients/shortlists";
+import { toShare } from "@/lib/clients/shortlist-shares";
+import { sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
+import { canSeeCandidate, getAccess } from "@/lib/agency/permissions";
 import { fields, flag, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -21,7 +21,7 @@ const ShareInput = fields({
   send: flag,
 });
 
-// Client review links for a shortlist (lib/shortlist-shares.js).
+// Client review links for a shortlist (lib/clients/shortlist-shares.js).
 //
 // GET                      the links made for it
 // POST { blind?, includeConcerns?, showScore?, expiresInDays?,

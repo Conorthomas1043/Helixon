@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useRef, useState } from "react";
 import { Avatar as KitAvatar, SectionHeading, Skeleton as Block } from "@/components/ui";
 

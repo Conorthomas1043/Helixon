@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
-import { loadCandidate, readCheckBody } from "@/lib/compliance-server";
-import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance";
-import { removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance-files";
-import { candidateHidden } from "@/lib/permissions";
+import { loadCandidate, readCheckBody } from "@/lib/compliance/server";
+import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, privacyNoticeStatus, toCheck, toReference } from "@/lib/compliance/core";
+import { removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance/files";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// A candidate's compliance record (lib/compliance.js).
+// A candidate's compliance record (lib/compliance/core.js).
 //
 // GET    their checks, references and where their privacy notice stands
 // POST   add a check - JSON, or multipart form fields plus a `document`

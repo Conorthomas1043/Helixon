@@ -3,9 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { fields, id } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
-import { findAgencyTag } from "@/lib/agency-tags";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { candidateHidden } from "@/lib/permissions";
+import { findAgencyTag } from "@/lib/agency/tags";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 const TagInput = fields({ tagId: id });

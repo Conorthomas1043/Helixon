@@ -3,7 +3,7 @@
 // employee sees every event; only the creator can edit or delete one.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { getEvents, addEvent, updateEvent, deleteEvent } from "@/lib/employee/calendar";
 import { date, fields, flag, id, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";

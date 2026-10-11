@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { cleanSearchTerm, likePattern, quoted } from "@/lib/candidates/search";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // GET /api/search?q= - the search box in the nav (⌘K / Ctrl+K): candidates,
 // jobs, clients and client contacts matching the term, a few of each.
-// Candidates respect "own candidates only" (lib/permissions.js).
+// Candidates respect "own candidates only" (lib/agency/permissions.js).
 
 const PER_KIND = 6;
 

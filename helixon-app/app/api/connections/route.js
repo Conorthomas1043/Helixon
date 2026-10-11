@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { customerRoute } from "@/lib/api/route";
 import { fields, flag, text } from "@/lib/api/schemas";
-import { siteUrl } from "@/lib/mailer";
-import { bccAddress, memberToken } from "@/lib/member-tokens";
-import { inboundDomain } from "@/lib/tracked-email";
+import { siteUrl } from "@/lib/messaging/mailer";
+import { bccAddress, memberToken } from "@/lib/agency/member-tokens";
+import { inboundDomain } from "@/lib/messaging/tracked-email";
 
 const RotateInput = fields({ purpose: text(20), rotate: flag });
 
 // The signed-in member's calendar feed and BCC logging address
-// (lib/member-tokens.js), made on first ask.
+// (lib/agency/member-tokens.js), made on first ask.
 // GET                          both
 // POST { purpose, rotate }     a new one - the old feed URL / address stops working
 

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { cronAuthorized } from "@/lib/cron-auth";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
-import { searchHref } from "@/lib/saved-searches";
-import { sendAgencyEmail, mailConfigured, siteUrl } from "@/lib/mailer";
-import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+import { searchHref } from "@/lib/candidates/saved-searches";
+import { sendAgencyEmail, mailConfigured, siteUrl } from "@/lib/messaging/mailer";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 
 // Weekday-morning "new matches" emails for saved searches with alerts on:
 // for each, the candidates added since the last alert that match it. One

@@ -8,7 +8,7 @@ from "../prompts/candidateExtractionPrompt.js";
 import validateCandidate
 from "../validators/validateCandidate.js";
 
-import { detectPromptInjection } from "../../prompt-safety.js";
+import { detectPromptInjection } from "../../security/prompt-safety.js";
 
 import { debug } from "../utils/logger.js";
 import { summarise } from "../utils/logger.js";

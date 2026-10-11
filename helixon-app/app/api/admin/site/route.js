@@ -2,11 +2,11 @@ import { requireAdminSession } from "@/lib/admin/auth";
 import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { adminJson as json, adminErrorResponse } from "@/lib/admin/http";
-import { FEATURES, SETTING_KEYS, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
+import { FEATURES, SETTING_KEYS, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/ops/site-settings";
 import { fields, nested, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanSetting (lib/site-settings.js) checks the value for its key.
+// cleanSetting (lib/ops/site-settings.js) checks the value for its key.
 const SettingInput = fields({ key: text(40), value: nested });
 
 // Site controls (/admin/site): maintenance mode, the announcement banner

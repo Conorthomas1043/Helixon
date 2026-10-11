@@ -3,7 +3,7 @@ import { getAdminSupabase } from "@/lib/admin/supabase";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanUuid } from "@/lib/sanitize";
 import { effectivePermissions, rolePreset } from "@/lib/employee/permissions";
-import { ONBOARDING_TASKS } from "@/lib/onboarding-tasks";
+import { ONBOARDING_TASKS } from "@/lib/agency/onboarding-tasks";
 
 // Everything the admin console's employee drawer shows about one person:
 // the account, what they can do (role preset, overrides, effective), where

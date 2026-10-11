@@ -2,7 +2,7 @@
 // Shared cold-call list imported from CSV - see lib/employee/call-list.js.
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import {
   getCallList,
   importContacts,

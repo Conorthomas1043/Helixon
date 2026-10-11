@@ -5,7 +5,7 @@
 // employee can see this; there's nothing sensitive in it.
 
 import { NextResponse } from "next/server";
-import { getCurrentEmployeeId } from "@/lib/session";
+import { getCurrentEmployeeId } from "@/lib/employee/session";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {

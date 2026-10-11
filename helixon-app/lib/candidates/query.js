@@ -6,7 +6,7 @@
 //   search      plain text -> substring match on the person, their job and
 //               recruiter (lib/candidates/search.js); with boolean syntax
 //               (AND / OR / NOT, "phrases", brackets, prefix*) -> full-text
-//               search of their CV and profile (lib/boolean-search.js)
+//               search of their CV and profile (lib/candidates/boolean-search.js)
 //   near, radius   within ~radius miles of a UK place or postcode
 //               (lib/geocode.js) - candidates whose location couldn't be
 //               placed are left out
@@ -14,9 +14,9 @@
 
 import "server-only";
 import { supabase } from "@/lib/supabase";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { buildCandidateSearchFilter, cleanSearchTerm, likePattern, matchingRecruiterIds, quoted } from "@/lib/candidates/search";
-import { booleanToTsquery, looksBoolean } from "@/lib/boolean-search";
+import { booleanToTsquery, looksBoolean } from "@/lib/candidates/boolean-search";
 import { boundingBox, geocode } from "@/lib/geocode";
 
 export const RADIUS_CHOICES = [5, 10, 25, 50, 100];

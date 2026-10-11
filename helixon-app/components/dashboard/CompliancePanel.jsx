@@ -2,7 +2,7 @@
 
 // The candidate profile's Compliance card: whether they've had the privacy
 // notice (or given consent), right-to-work and other checks with expiry
-// dates and a copy of the document, and references (lib/compliance.js).
+// dates and a copy of the document, and references (lib/compliance/core.js).
 
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -17,7 +17,7 @@ import {
   updateComplianceCheck,
   updateReference,
 } from "@/lib/dashboard-api";
-import { CHECK_KINDS, CHECK_STATUSES, REFERENCE_QUESTIONS, RTW_DOCUMENTS, checkState } from "@/lib/compliance";
+import { CHECK_KINDS, CHECK_STATUSES, REFERENCE_QUESTIONS, RTW_DOCUMENTS, checkState } from "@/lib/compliance/core";
 import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 

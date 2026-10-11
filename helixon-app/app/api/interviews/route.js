@@ -1,20 +1,20 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { InterviewInput } from "@/lib/api/schemas";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
-import { logClientActivity } from "@/lib/clients";
+import { logClientActivity } from "@/lib/clients/core";
 import { cleanEmail, cleanUuid } from "@/lib/sanitize";
-import { cleanInterviewFields, formatInterviewTime } from "@/lib/interviews";
-import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
-import { sendInterviewInvites } from "@/lib/interview-invites";
-import { FUNNEL_ORDER } from "@/lib/stage-labels";
-import { getAccess } from "@/lib/permissions";
+import { cleanInterviewFields, formatInterviewTime } from "@/lib/interviews/core";
+import { INTERVIEW_SELECT, inviteRecipients, loadInterview, shapeInterview } from "@/lib/interviews/access";
+import { sendInterviewInvites } from "@/lib/interviews/invites";
+import { FUNNEL_ORDER } from "@/lib/candidates/stage-labels";
+import { getAccess } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
-// Interviews (lib/interviews.js).
+// Interviews (lib/interviews/core.js).
 //
 // GET ?candidateId=&jobId=&from=&to=&scope=mine|all   list, soonest first,
 //     with candidate, job, contact and a scorecard summary

@@ -11,11 +11,11 @@
     "lib/contracts/**/*.js",
     "lib/api/**/*.js",
     "lib/api-client/**/*.js",
-    "lib/billing-summary.js",
+    "lib/billing/summary.js",
     "lib/candidates/list-params.js",
     "lib/candidates/shape.js",
-    "lib/resource-cache.js",
-    "lib/use-resource.js"
+    "lib/hooks/resource-cache.js",
+    "lib/hooks/useResource.js"
   ],
   "exclude": ["node_modules", ".next", "**/*.test.js"]
 }

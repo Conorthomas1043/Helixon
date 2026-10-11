@@ -1,8 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { isTextualBody, stripSecretHeaders } from "@/lib/request-capture";
-import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/site-gate";
-import { buildCsp, createNonce } from "@/lib/csp";
+import { isTextualBody, stripSecretHeaders } from "@/lib/ops/request-capture";
+import { GATE_COOKIE_NAME, verifyGateCookie } from "@/lib/auth/site-gate";
+import { buildCsp, createNonce } from "@/lib/security/csp";
 import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
@@ -45,7 +45,7 @@ const HIDE_ADMIN = /^[A-Za-z0-9_-]{8,}$/.test(ADMIN_LOGIN_SLUG);
 
 // Rewriting to a path that has no route makes Next render the site's normal
 // 404 page with a 404 status.
-// This page's Content-Security-Policy with a fresh nonce (lib/csp.js). The
+// This page's Content-Security-Policy with a fresh nonce (lib/security/csp.js). The
 // policy also goes on the *request*: Next reads the nonce from there and adds
 // it to every script it renders.
 function applyCsp(requestHeaders: Headers) {
@@ -146,7 +146,7 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
 
   // ── 0. Maintenance gate - checked first, before anything else ────────────
   // The helixon_dev_unlocked cookie carries an HMAC signature
-  // (lib/site-gate.ts) that only the server can produce. httpOnly stops JS
+  // (lib/auth/site-gate.ts) that only the server can produce. httpOnly stops JS
   // from setting it, but not a visitor typing the name/value into devtools,
   // so a cookie that is merely present proves nothing: a hand-typed one
   // fails verification and gets bounced back to the gate.
@@ -246,7 +246,7 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
           // link) - see lib/security/firewall.js.
           fetchSite: request.headers.get("sec-fetch-site") || "",
           // For the request inspector. Cookies, tokens and other secrets
-          // never leave this function (lib/request-capture.js); edge-log
+          // never leave this function (lib/ops/request-capture.js); edge-log
           // redacts again before anything is stored.
           uid,
           mayFollowUp,
@@ -393,7 +393,7 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
   // Lets the not-found page and error reporting mark this request's log
-  // line with a real 404 / 500 (lib/request-status.js). Only ever set
+  // line with a real 404 / 500 (lib/ops/request-status.js). Only ever set
   // here - a value the client sent is dropped.
   requestHeaders.delete(LOG_UID_HEADER);
   if (logged) requestHeaders.set(LOG_UID_HEADER, uid);

@@ -1,6 +1,6 @@
 // Helixon's own emails to a new customer (not email an agency sends to
-// candidates - that's lib/mailer.js):
-//   1. Welcome, as soon as the workspace exists (lib/create-profile.js).
+// candidates - that's lib/messaging/mailer.js):
+//   1. Welcome, as soon as the workspace exists (lib/auth/create-profile.js).
 //   2. One activation nudge, if nothing has been screened 2-7 days later
 //      (the weekday reminders cron).
 // Before this, a paying customer got a Stripe receipt and nothing else.
@@ -11,8 +11,8 @@ import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
-import { planLabel } from "@/lib/plans";
-import { escapeHtml, FROM_EMAIL } from "@/lib/demo-notification";
+import { planLabel } from "@/lib/billing/plans";
+import { escapeHtml, FROM_EMAIL } from "@/lib/messaging/demo-notification";
 import WelcomeEmail from "@/emails/WelcomeEmail";
 
 // Replies reach a person, not noreply@.

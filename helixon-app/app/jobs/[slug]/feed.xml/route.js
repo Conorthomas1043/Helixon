@@ -1,6 +1,6 @@
-import { loadCareersAgency, listPublicJobs } from "@/lib/public-jobs";
-import { jobsFeedXml } from "@/lib/careers";
-import { siteUrl } from "@/lib/mailer";
+import { loadCareersAgency, listPublicJobs } from "@/lib/jobs/public-jobs";
+import { jobsFeedXml } from "@/lib/jobs/careers";
+import { siteUrl } from "@/lib/messaging/mailer";
 
 // GET /jobs/<slug>/feed.xml - the agency's published jobs as an
 // Indeed-style XML feed, for job boards and aggregators that take one.

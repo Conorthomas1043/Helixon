@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/timing-safe";
+import { timingSafeEqualStr } from "@/lib/security/timing-safe";
 import { supabase } from "@/lib/supabase";
 import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { syncMailbox } from "@/lib/integrations/mailbox";

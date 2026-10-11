@@ -1,15 +1,15 @@
 import { NextResponse, after } from "next/server";
 import { customerRoute } from "@/lib/api/route";
 import { fields, text } from "@/lib/api/schemas";
-import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
-import { getAccess } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
-import { siteUrl } from "@/lib/mailer";
+import { canManageWorkspace, NOT_ADMIN } from "@/lib/agency/workspace-admin";
+import { getAccess } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
+import { siteUrl } from "@/lib/messaging/mailer";
 import { PROVIDERS, providerFor } from "@/lib/integrations/providers";
 import { getConnection, integrationReady, publicConnection, removeConnection } from "@/lib/integrations/store";
 import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { MAILBOX_PROVIDERS, syncMailbox } from "@/lib/integrations/mailbox";
-import { smsConfigured, smsWebhookUrl } from "@/lib/sms";
+import { smsConfigured, smsWebhookUrl } from "@/lib/messaging/sms";
 import { reportError } from "@/lib/report-error";
 
 const SyncInput = fields({ action: text(20), provider: text(40) });

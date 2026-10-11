@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCustomerContext } from "@/lib/customer-auth";
-import { loadDashboardStats } from "@/lib/dashboard-stats";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
+import { loadDashboardStats } from "@/lib/dashboard/stats";
 import { reportError } from "@/lib/report-error";
-import { SUSPENDED_MESSAGE } from "@/lib/agency-controls";
+import { SUSPENDED_MESSAGE } from "@/lib/agency/controls";
 
-// GET /api/dashboard-stats - the dashboard home's data (lib/dashboard-stats.js).
+// GET /api/dashboard-stats - the dashboard home's data (lib/dashboard/stats.js).
 // The page loads it on the server first; it calls this to refresh.
 export async function GET() {
   const context = await getCustomerContext();

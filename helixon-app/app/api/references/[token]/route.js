@@ -1,14 +1,14 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
-import { REFERENCE_QUESTIONS, cleanReferenceAnswers } from "@/lib/compliance";
-import { notify } from "@/lib/notifications";
+import { REFERENCE_QUESTIONS, cleanReferenceAnswers } from "@/lib/compliance/core";
+import { notify } from "@/lib/messaging/notifications";
 import { fields, flag, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// One answer per question, as cleanReferenceAnswers (lib/compliance.js) reads them.
+// One answer per question, as cleanReferenceAnswers (lib/compliance/core.js) reads them.
 const ReferenceAnswersInput = fields({
   ...Object.fromEntries(REFERENCE_QUESTIONS.map((q) => [q.id, q.type === "rating" ? num : text(6000)])),
   completedBy: text(400),

@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { updateCandidateStage, addCandidateNote, saveToTalentPool, removeFromTalentPool } from "@/lib/dashboard-api";
-import { FUNNEL_ORDER, STAGE_COLORS } from "@/lib/stage-labels";
+import { FUNNEL_ORDER, STAGE_COLORS } from "@/lib/candidates/stage-labels";
 import { Card, Button, Icon, Textarea, Input, Select, Label, cx } from "./ui";
 import { EMAIL_PURPOSES, FEEDBACK_BANDS, FEEDBACK_DOWN_REASONS } from "../_lib/analyse";
 

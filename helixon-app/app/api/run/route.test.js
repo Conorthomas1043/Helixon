@@ -21,12 +21,12 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/lib/agency-db", () => ({ agencyDb: async () => state.db }));
-vi.mock("@/lib/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
+vi.mock("@/lib/auth/customer-auth", () => ({ requireCustomerContext: async () => state.auth }));
 vi.mock("@/lib/ratelimit", () => ({
   getClientIp: () => "203.0.113.9",
   rateLimit: vi.fn(async (key) => !state.limits.some((prefix) => key.startsWith(prefix))),
 }));
-vi.mock("@/lib/agency-controls", async (importOriginal) => ({
+vi.mock("@/lib/agency/controls", async (importOriginal) => ({
   ...(await importOriginal()),
   screeningsThisMonth: async () => state.used,
 }));
@@ -36,12 +36,12 @@ vi.mock("@/lib/cv-analysis", () => ({
 }));
 vi.mock("@/lib/cv-analysis/extraction/cvTextExtractor", () => ({ default: vi.fn(async () => "spec text") }));
 vi.mock("@/lib/candidates/duplicates", () => ({ findExistingPerson: async () => null }));
-vi.mock("@/lib/clients", () => ({ ensureClient: async () => null }));
+vi.mock("@/lib/clients/core", () => ({ ensureClient: async () => null }));
 vi.mock("@/lib/candidates/files", () => ({
   storeCandidateCv: vi.fn(async ({ candidateId }) => ({ path: `cvs/${candidateId}.pdf`, fileName: "cv.pdf" })),
   removeCandidateCvs: vi.fn(),
 }));
-vi.mock("@/lib/webhooks", () => ({ emitWebhook: vi.fn(), candidatePayload: (c) => c }));
+vi.mock("@/lib/integrations/webhooks", () => ({ emitWebhook: vi.fn(), candidatePayload: (c) => c }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
 vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: vi.fn() }));
 

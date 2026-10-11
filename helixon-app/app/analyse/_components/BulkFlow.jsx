@@ -13,7 +13,7 @@
 // in this browser as it goes (_lib/bulkRun.js), so a closed tab or dropped
 // connection can be resumed instead of starting again.
 
-import { track } from "@/lib/analytics";
+import { track } from "@/lib/analytics/track";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";

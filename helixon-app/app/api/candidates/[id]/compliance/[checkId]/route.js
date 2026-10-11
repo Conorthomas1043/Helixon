@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
-import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, toCheck } from "@/lib/compliance";
-import { complianceDocumentUrl, removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance-files";
-import { readCheckBody } from "@/lib/compliance-server";
-import { candidateHidden } from "@/lib/permissions";
+import { CHECK_KINDS, CHECK_STATUSES, cleanCheck, toCheck } from "@/lib/compliance/core";
+import { complianceDocumentUrl, removeComplianceDocuments, storeComplianceDocument } from "@/lib/compliance/files";
+import { readCheckBody } from "@/lib/compliance/server";
+import { candidateHidden } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // One compliance check.

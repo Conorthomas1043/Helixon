@@ -1,19 +1,19 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { PlacementInput } from "@/lib/api/schemas";
-import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-directory";
+import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
-import { logClientActivity } from "@/lib/clients";
+import { logClientActivity } from "@/lib/clients/core";
 import { cleanUuid } from "@/lib/sanitize";
-import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements";
-import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
-import { getAccess, placementInputFor, redactPlacement } from "@/lib/permissions";
+import { PLACEMENT_STATUSES, cleanPlacement, toPlacement } from "@/lib/placements/core";
+import { splitsAreTeammates, syncCandidate } from "@/lib/placements/sync";
+import { getAccess, placementInputFor, redactPlacement } from "@/lib/agency/permissions";
 import { fetchAll } from "@/lib/fetch-all";
 import { agencyDb } from "@/lib/agency-db";
 
-// Offers and placements (lib/placements.js).
+// Offers and placements (lib/placements/core.js).
 //
 // GET ?candidateId=&status=&kind=   list, newest first, with their invoices
 // POST { candidateId, kind, ...offer }   record an offer. The client's fee
@@ -61,7 +61,7 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   if (!candidate) return NextResponse.json({ error: "Candidate not found." }, { status: 404 });
 
   const terms = candidate.jobs?.clients || {};
-  // A fee agreed for this job (lib/job-details.js) beats the client's
+  // A fee agreed for this job (lib/jobs/details.js) beats the client's
   // standard terms. Read separately so a database without those columns
   // yet still records the placement.
   const { data: jobTerms } = candidate.job_id

@@ -1,14 +1,14 @@
 import { NextResponse, after } from "next/server";
-import { emitWebhook } from "@/lib/webhooks";
+import { emitWebhook } from "@/lib/integrations/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { PlacementInput } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
-import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements";
-import { splitsAreTeammates, syncCandidate } from "@/lib/placement-sync";
-import { getAccess, placementInputFor, redactPlacement } from "@/lib/permissions";
+import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements/core";
+import { splitsAreTeammates, syncCandidate } from "@/lib/placements/sync";
+import { getAccess, placementInputFor, redactPlacement } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // One placement: GET (with invoices and timesheets), PATCH, DELETE (only

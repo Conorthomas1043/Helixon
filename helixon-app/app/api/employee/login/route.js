@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { loginEmployee } from "@/lib/employee/auth";
-import { isFeatureEnabled } from "@/lib/site-settings";
+import { isFeatureEnabled } from "@/lib/ops/site-settings";
 import { fields, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 

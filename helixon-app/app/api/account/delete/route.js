@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { getCustomerContext } from "@/lib/customer-auth";
+import { getCustomerContext } from "@/lib/auth/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { reportError } from "@/lib/report-error";
-import { BILLING_STATUSES } from "@/lib/subscription-status";
+import { BILLING_STATUSES } from "@/lib/billing/subscription-status";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -13,7 +13,7 @@ const DeleteAccountInput = fields({ confirm: text(20) });
 //
 // Lets a signed-in person delete their own sign-in (their Clerk account). The
 // Clerk `user.deleted` webhook (app/api/webhooks/clerk) then anonymises their
-// profile (lib/anonymise-user.js): the sign-in link, name and private tokens
+// profile (lib/compliance/anonymise-user.js): the sign-in link, name and private tokens
 // go, while the agency's candidates, jobs and billing history stay intact.
 //
 // It refuses while the person has a live subscription. Deleting the account does

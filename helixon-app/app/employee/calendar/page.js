@@ -4,7 +4,7 @@
 // ways to get it into a personal calendar app: a read-only "subscribe by
 // URL" ICS feed (works in both Google Calendar and Apple Calendar today,
 // no setup needed beyond pasting a link), and a real two-way Google
-// Calendar OAuth connection (lib/google-calendar.js) that needs
+// Calendar OAuth connection (lib/interviews/google-calendar.js) that needs
 // GOOGLE_CALENDAR_CLIENT_ID/SECRET configured before it can do anything.
 
 import { Toaster, useToasts } from "@/app/employee/_shared/Toaster";

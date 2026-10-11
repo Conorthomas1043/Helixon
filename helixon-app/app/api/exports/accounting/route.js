@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { getAccess } from "@/lib/permissions";
-import { logAudit } from "@/lib/agency-audit";
-import { payrollRows, quickbooksInvoiceRows, xeroInvoiceRows } from "@/lib/accounting-export";
+import { getAccess } from "@/lib/agency/permissions";
+import { logAudit } from "@/lib/agency/audit";
+import { payrollRows, quickbooksInvoiceRows, xeroInvoiceRows } from "@/lib/placements/accounting-export";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 
 // GET ?format=xero|quickbooks|payroll&from=YYYY-MM-DD&to=YYYY-MM-DD
 // Invoices (by issue date, drafts and void ones left out) in Xero's or
 // QuickBooks' import layout, or approved contractor timesheets (by week) as
-// a payroll sheet (lib/accounting-export.js). JSON rows - the page turns
+// a payroll sheet (lib/placements/accounting-export.js). JSON rows - the page turns
 // them into the CSV file. Needs permission to see financials.
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

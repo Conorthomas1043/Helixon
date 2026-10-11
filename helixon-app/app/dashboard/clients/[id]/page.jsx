@@ -40,7 +40,7 @@ import { CustomFieldsCard } from "@/components/dashboard/custom-fields";
 import { InvoiceStatusPill } from "@/components/dashboard/placements";
 import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/opportunities";
 import SignaturesCard from "@/components/dashboard/SignaturesCard";
-import { termsOfBusinessText } from "@/lib/signatures-shared";
+import { termsOfBusinessText } from "@/lib/clients/signatures-shared";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const ACTIVITY_LABELS = {

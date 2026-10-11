@@ -1,12 +1,12 @@
 // Mailbox sync: reads a connected Gmail / Outlook mailbox (read-only) and
 // files emails to or from candidates and client contacts on their
-// timelines (lib/email-filing.js). Everything else in the mailbox is looked
+// timelines (lib/messaging/email-filing.js). Everything else in the mailbox is looked
 // at only as far as its From/To/Cc headers and is never stored.
 //
 // Each run reads mail since the connection's sync_cursor (the first run
 // goes back MAILBOX_LOOKBACK_DAYS, default 30), at most MAX_MESSAGES.
 
-import { fileEmail, knownAddresses } from "@/lib/email-filing";
+import { fileEmail, knownAddresses } from "@/lib/messaging/email-filing";
 import { accessToken, updateConnection } from "@/lib/integrations/store";
 import { direction, gmailMessage, nextCursor, otherParties, outlookMessage, syncStart } from "@/lib/integrations/mailbox-parse";
 

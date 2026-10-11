@@ -6,12 +6,12 @@ import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { getServicesSnapshot } from "@/lib/ops/live-services";
 import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { gradeHealth } from "@/lib/ops/health-grade";
-import { cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
+import { cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/ops/site-settings";
 import { reportError } from "@/lib/report-error";
 import { fields, nested } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
-// cleanSetting (lib/site-settings.js) checks the list.
+// cleanSetting (lib/ops/site-settings.js) checks the list.
 const MuteInput = fields({ muted: nested });
 
 // Single combined "is the site actually working" snapshot: the existing

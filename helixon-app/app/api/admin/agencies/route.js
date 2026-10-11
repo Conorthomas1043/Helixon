@@ -4,9 +4,9 @@ import { getAdminSupabase } from "@/lib/admin/supabase";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
-import { startOfMonthUtc } from "@/lib/agency-controls";
-import { demoExpired } from "@/lib/subscription-status";
-import { revokeMemberTokens } from "@/lib/member-tokens";
+import { startOfMonthUtc } from "@/lib/agency/controls";
+import { demoExpired } from "@/lib/billing/subscription-status";
+import { revokeMemberTokens } from "@/lib/agency/member-tokens";
 import { fields, id, num, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -68,7 +68,7 @@ export async function GET(request) {
     const agencyOfProfile = new Map((profiles.data || []).map((p) => [p.id, p.agency_id]));
     const subByAgency = new Map();
     for (const raw of subscriptions.data || []) {
-      // A demo past its end date no longer grants access (lib/subscription-status.js).
+      // A demo past its end date no longer grants access (lib/billing/subscription-status.js).
       const sub = demoExpired(raw) ? { ...raw, status: "ended" } : raw;
       const agencyId = agencyOfProfile.get(sub.user_id);
       if (!agencyId) continue;
@@ -163,7 +163,7 @@ async function detail(supabase, id) {
       .eq("agency_id", id)
       .order("created_at", { ascending: false })
       .limit(8),
-    // Screenings run, as the cap counts them (lib/agency-controls.js).
+    // Screenings run, as the cap counts them (lib/agency/controls.js).
     supabase.from("scores").select("id", { count: "exact", head: true }).eq("agency_id", id).gte("created_at", startOfMonthUtc()),
     supabase
       .from("admin_audit_logs")

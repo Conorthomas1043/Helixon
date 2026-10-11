@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
-import { MAX_NOTE_LEN, addToShortlist, loadShortlist, shortlistAuth } from "@/lib/shortlists";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
+import { MAX_NOTE_LEN, addToShortlist, loadShortlist, shortlistAuth } from "@/lib/clients/shortlists";
 import { fields, id, ids, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
 const AddCandidatesInput = fields({ candidateIds: ids(1000), note: text(4000) });
 const CandidateNoteInput = fields({ candidateId: id, note: text(4000) });
 
-// The people on one shortlist (lib/shortlists.js).
+// The people on one shortlist (lib/clients/shortlists.js).
 //
 // POST { candidateIds, note? }   add people (already-listed ones are skipped)
 // PATCH { candidateId, note }    change why someone is on it

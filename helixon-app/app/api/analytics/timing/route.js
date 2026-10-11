@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { requireCustomerContext } from "@/lib/customer-auth";
-import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/stage-labels";
-import { resolveRecruiterNames } from "@/lib/recruiter-directory";
-import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics-data";
-import { getAccess } from "@/lib/permissions";
+import { requireCustomerContext } from "@/lib/auth/customer-auth";
+import { STAGE_LABELS, FUNNEL_ORDER } from "@/lib/candidates/stage-labels";
+import { resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
+import { jobIdsForClient, loadActivity, loadCandidates, readAnalyticsFilters } from "@/lib/analytics/data";
+import { getAccess } from "@/lib/agency/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 
@@ -88,7 +88,7 @@ const EMPTY_RESPONSE = {
   },
 };
 
-// Optional filters, matching the Analytics page's (lib/analytics-data.js
+// Optional filters, matching the Analytics page's (lib/analytics/data.js
 // readAnalyticsFilters): period/from/to, jobId, recruiterId, clientId. They
 // narrow which candidates everything is computed from; the channel figures
 // follow the job/client filter, and feedback stays agency-wide.
@@ -99,7 +99,7 @@ export async function GET(request) {
   }
   const { agencyId } = auth;
   const filters = readAnalyticsFilters(new URL(request.url).searchParams);
-  // Permissions (lib/permissions.js): members limited to their own
+  // Permissions (lib/agency/permissions.js): members limited to their own
   // candidates get their own numbers; money can be admin-only.
   const access = await getAccess(auth);
   if (!access.seesAllCandidates) filters.recruiterId = auth.userId;
@@ -109,7 +109,7 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: "Failed to load analytics data." }, { status: 500 });
   }
 
-  // Paged (lib/analytics-data.js) - a plain select stopped at the
+  // Paged (lib/analytics/data.js) - a plain select stopped at the
   // database's row limit without saying so.
   const candidateQuery = loadCandidates(
     agencyId,

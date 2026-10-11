@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { InterviewInput } from "@/lib/api/schemas";
-import { recruiterDisplayName } from "@/lib/recruiter-directory";
+import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
-import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews";
-import { INTERVIEW_SELECT, inviteRecipients, loadInterview, loadVisibleInterview, shapeInterview } from "@/lib/interview-access";
-import { sendInterviewInvites } from "@/lib/interview-invites";
+import { cleanInterviewFields, formatInterviewTime, INTERVIEW_OUTCOMES, INTERVIEW_STATUSES } from "@/lib/interviews/core";
+import { INTERVIEW_SELECT, inviteRecipients, loadInterview, loadVisibleInterview, shapeInterview } from "@/lib/interviews/access";
+import { sendInterviewInvites } from "@/lib/interviews/invites";
 import { agencyDb } from "@/lib/agency-db";
 
 // One interview.

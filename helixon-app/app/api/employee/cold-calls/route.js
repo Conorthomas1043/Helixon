@@ -4,7 +4,7 @@
 // logged it can edit or delete it).
 
 import { NextResponse } from "next/server";
-import { employeeAccess } from "@/lib/session";
+import { employeeAccess } from "@/lib/employee/session";
 import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee/cold-calls";
 import { finishRow } from "@/lib/employee/call-list";
 import { reportError } from "@/lib/report-error";

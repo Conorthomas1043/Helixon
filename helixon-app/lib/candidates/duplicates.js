@@ -1,7 +1,7 @@
 // Spotting a person who's already on file when a new CV is uploaded
 // (app/api/run). A match on email or LinkedIn profile links the new
 // candidate row to that person through pooled_from_id - the same link a
-// re-screen from the talent pool makes (lib/rescreen.js) - so their profile
+// re-screen from the talent pool makes (lib/screening/rescreen.js) - so their profile
 // lists every role they've been screened for, the talent pool shows them
 // once, and subject access / erasure (lib/candidates/person.js) cover every
 // row.
