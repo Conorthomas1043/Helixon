@@ -9,6 +9,10 @@ import { candidateHidden } from "@/lib/permissions";
 import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/sms";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const SmsInput = fields({ body: text(2000) });
 
 // Texts with a candidate (lib/sms.js, Twilio).
 // GET            the conversation, oldest first, and whether texting is set up
@@ -53,7 +57,9 @@ export async function POST(request, { params }) {
   const { auth, candidate } = ctx;
   if (!smsConfigured()) return NextResponse.json({ error: "Texting isn't set up yet - see Settings → Integrations." }, { status: 503 });
 
-  const payload = (await request.json().catch(() => null)) ?? {};
+  const parsedBody = await parseBody(request, SmsInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const payload = parsedBody.body;
   const body = cleanText(payload.body, { max: SMS_MAX });
   if (!body) return NextResponse.json({ error: "Write a message first." }, { status: 400 });
   const to = normalisePhone(candidate.phone);

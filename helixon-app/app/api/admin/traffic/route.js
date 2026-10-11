@@ -13,6 +13,11 @@ import { blockIsActive } from "@/lib/security/rules";
 import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/site-settings";
 import { RANGE_HOURS, rangeHours, decodePlace, geoPointFromRow } from "@/lib/admin/traffic";
+import { fields, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const BlockInput = fields({ ip: text(64), reason: text(1000), hours: num });
+const UnblockInput = fields({ ip: text(64) });
 
 function json(data, status = 200) {
   return NextResponse.json(data, {
@@ -290,8 +295,9 @@ export async function POST(
     const supabase =
       getAdminSupabase();
 
-    const body =
-      (await request.json().catch(() => null)) ?? {};
+    const parsedBody = await parseBody(request, BlockInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const ip =
       String(body.ip || "").trim();
@@ -400,8 +406,9 @@ export async function DELETE(
     const supabase =
       getAdminSupabase();
 
-    const body =
-      (await request.json().catch(() => null)) ?? {};
+    const parsedBody = await parseBody(request, UnblockInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const ip =
       String(body.ip || "").trim();

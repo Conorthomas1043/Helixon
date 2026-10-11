@@ -11,6 +11,10 @@ import { INTERVIEW_KINDS, formatInterviewTime } from "@/lib/interviews";
 import { inviteRecipients, loadInterview, shapeInterview } from "@/lib/interview-access";
 import { sendInterviewInvites } from "@/lib/interview-invites";
 import { FUNNEL_ORDER } from "@/lib/stage-labels";
+import { date, fields } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const BookInput = fields({ startsAt: date });
 
 // Public: a candidate picks an interview time (app/book/[token]). The token
 // is the only credential. Picking books the interview, moves the candidate
@@ -54,7 +58,9 @@ export async function POST(request, { params }) {
   if (!(await rateLimit(`book-post:${getClientIp(request)}`, 20))) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   const link = await load(token);
   if (!link || !link.candidates) return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, BookInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   // An unparseable time is "not available", not a 500 (toISOString throws
   // on an invalid date).
   const picked = typeof body.startsAt === "string" ? new Date(body.startsAt) : null;

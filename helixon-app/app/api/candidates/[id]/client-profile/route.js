@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency-display";
@@ -9,6 +9,8 @@ import { buildClientProfile } from "@/lib/client-profile";
 import { cleanLine } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const ClientProfileInput = fields({ blind: flag });
 
 // The client-ready profile for one candidate (lib/client-profile.js).
 //
@@ -72,4 +74,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
     note: blind ? "Anonymised profile" : "Named profile",
   });
   return NextResponse.json({ ok: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ClientProfileInput, optionalBody: true });

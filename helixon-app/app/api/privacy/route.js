@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, ids, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { getOrgMemberRole } from "@/lib/clerk-org";
@@ -11,6 +11,9 @@ import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+const PrivacySettingsInput = fields({ retentionMonths: num, presenceEnabled: flag });
+const KeepInput = fields({ action: text(20), ids: ids(1000) });
 
 // The workspace's Data & privacy settings (/dashboard/privacy).
 //
@@ -81,7 +84,7 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
   }
   await logAudit({ auth, request, action: "settings.privacy", summary: "Changed privacy settings", meta: body && typeof body === "object" ? Object.keys(body) : null });
   return NextResponse.json({ ok: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: PrivacySettingsInput, optionalBody: true });
 
 export const POST = customerRoute(async (request, _context, auth, body) => {
   if (body?.action !== "keep") return NextResponse.json({ error: "Unknown action." }, { status: 400 });
@@ -97,4 +100,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   await (await agencyDb()).from("candidates").update({ last_activity_at: now }).eq("agency_id", auth.agencyId).in("id", keep);
   await supabase.from("candidate_activity").insert(keep.map((id) => ({ candidate_id: id, type: "retention_extended", actor, meta: { note: "Kept past the retention period" } })));
   return NextResponse.json({ ok: true, kept: keep.length });
-}, { body: JsonObject, optionalBody: true });
+}, { body: KeepInput, optionalBody: true });

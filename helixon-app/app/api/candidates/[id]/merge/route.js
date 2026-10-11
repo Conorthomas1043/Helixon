@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
@@ -10,6 +10,8 @@ import { candidateHidden } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError, reportQuietly } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+
+const MergeInput = fields({ otherId: id });
 
 // POST { otherId } - the same person recorded twice.
 //
@@ -73,4 +75,4 @@ export const POST = customerRoute(async (request, { params }, auth, input) => {
   await logActivity(supabase, keep.id, "candidate_linked", actor, { note: `Linked as the same person as ${otherName}${other.jobs?.title ? ` (${other.jobs.title})` : ""}` });
   await logActivity(supabase, other.id, "candidate_linked", actor, { note: `Linked as the same person as ${keep.full_name || keep.name || "candidate"}` });
   return NextResponse.json({ ok: true, mode: "linked" });
-}, { body: JsonObject, optionalBody: true });
+}, { body: MergeInput, optionalBody: true });

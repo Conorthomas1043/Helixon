@@ -1,6 +1,6 @@
 import { NextResponse, after } from "next/server";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { getAccess } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
@@ -11,6 +11,8 @@ import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { MAILBOX_PROVIDERS, syncMailbox } from "@/lib/integrations/mailbox";
 import { smsConfigured, smsWebhookUrl } from "@/lib/sms";
 import { reportError } from "@/lib/report-error";
+
+const SyncInput = fields({ action: text(20), provider: text(40) });
 
 // The services a workspace can connect (lib/integrations/providers.js).
 // GET                                 each one: set up? connected (to what)?
@@ -83,4 +85,4 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   } catch (err) {
     return NextResponse.json({ error: err.message || "Sync failed." }, { status: 502 });
   }
-}, { body: JsonObject, optionalBody: true });
+}, { body: SyncInput, optionalBody: true });

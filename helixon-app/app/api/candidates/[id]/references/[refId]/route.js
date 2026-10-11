@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
@@ -10,6 +10,8 @@ import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const ReferenceUpdateInput = fields({ action: text(20), notes: text(8000) });
 
 // One reference.
 // GET     { reference, link } - the link, to copy and send yourself
@@ -82,7 +84,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logActivity(supabase, ref.candidate_id, body.action === "resend" ? "reference_requested" : "reference_received", actor, { note });
   return NextResponse.json({ reference: toReference(data) });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ReferenceUpdateInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);

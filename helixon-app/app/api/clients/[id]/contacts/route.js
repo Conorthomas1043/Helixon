@@ -5,6 +5,20 @@ import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { cleanContactFields, loadClient, logClientActivity, toContact } from "@/lib/clients";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, flag, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanContactFields (lib/clients.js) reads the contact fields.
+const ContactFields = {
+  name: text(400),
+  jobTitle: text(400),
+  email: text(320),
+  phone: text(80),
+  notes: text(4000),
+  isPrimary: flag,
+};
+const ContactInput = fields(ContactFields);
+const ContactUpdateInput = fields({ ...ContactFields, contactId: id });
 
 // A client's contacts (lib/clients.js).
 //
@@ -32,7 +46,9 @@ async function clearOtherPrimaries(agencyId, clientId, keepId) {
 export async function POST(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ContactInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const fields = cleanContactFields(body, { requireName: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
 
@@ -51,7 +67,9 @@ export async function POST(request, { params }) {
 export async function PATCH(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ContactUpdateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const contactId = cleanUuid(body.contactId);
   if (!contactId) return NextResponse.json({ error: "Which contact?" }, { status: 400 });
   const fields = cleanContactFields(body);

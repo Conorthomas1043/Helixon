@@ -6,6 +6,11 @@ import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { notify } from "@/lib/notifications";
 import { SIGNATURE_KINDS, TOKEN_RE, cleanSignature, documentHash } from "@/lib/signatures";
+import { fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanSignature (lib/signatures.js) reads these.
+const SignatureAnswerInput = fields({ name: text(400), agree: flag, decline: flag, reason: text(4000) });
 
 // Public: the signing page (app/sign/[token]). The token is the only
 // credential, so this answers with only the document and who it's for,
@@ -50,7 +55,9 @@ export async function POST(request, { params }) {
   // The text must be what was sent - refuse if it's been changed since.
   if (documentHash(row.title, row.body) !== row.document_hash) return NextResponse.json({ error: "This document has changed - please ask for a new link." }, { status: 409 });
 
-  const answer = cleanSignature(await request.json().catch(() => ({})));
+  const parsed = await parseBody(request, SignatureAnswerInput, { allowEmpty: true });
+  if (parsed.response) return parsed.response;
+  const answer = cleanSignature(parsed.body);
   if (answer.error) return NextResponse.json({ error: answer.error }, { status: 400 });
 
   const now = new Date().toISOString();

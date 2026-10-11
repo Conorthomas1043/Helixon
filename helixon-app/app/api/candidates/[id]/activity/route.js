@@ -14,12 +14,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const ActivityInput = fields({ type: text(40), note: text(2000) });
 
 const ACTIVITY_TYPES = new Set(["call_logged", "email_logged", "meeting_logged", "cv_sent_logged", "sms_logged", "whatsapp_logged"]);
 
@@ -61,4 +63,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
       ? { id: latest.id, type: latest.type, actor: latest.actor, meta: latest.meta, timestamp: latest.created_at }
       : null,
   });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ActivityInput, optionalBody: true });

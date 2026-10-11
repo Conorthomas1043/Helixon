@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, ids } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { EXPIRING_DAYS, checkState, privacyNoticeStatus, toCheck } from "@/lib/compliance";
 import { sendPrivacyNotices } from "@/lib/compliance-email";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+
+const ComplianceSendInput = fields({ candidateIds: ids(1000) });
 
 // The agency's compliance to-do list (/dashboard/compliance).
 //
@@ -84,4 +86,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
   const result = await sendPrivacyNotices({ agencyId: auth.agencyId, profile: auth.profile, actor, recruiterName: recruiterDisplayName(auth.profile), candidates: candidates ?? [] });
   return NextResponse.json(result);
-}, { body: JsonObject, optionalBody: true });
+}, { body: ComplianceSendInput, optionalBody: true });

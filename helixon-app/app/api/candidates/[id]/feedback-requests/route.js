@@ -16,7 +16,7 @@ import { Resend } from "resend";
 import { currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id, text } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
@@ -26,6 +26,8 @@ import { feedbackRequestEmail } from "@/lib/feedback-request-email";
 import { candidateHidden } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+
+const FeedbackRequestInput = fields({ kind: text(40), sendTo: text(320), requestId: id, recipientLabel: text(200) });
 
 const MAX_EMAILS_PER_HOUR = 40;
 
@@ -181,4 +183,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
   // The link exists either way; a failed send says so and leaves it to copy.
   const sendError = sendTo ? await emailRequest({ auth, candidate, row: data, to: sendTo }) : null;
   return NextResponse.json({ request: shape(data), emailedTo: sendTo && !sendError ? sendTo : null, sendError });
-}, { body: JsonObject, optionalBody: true });
+}, { body: FeedbackRequestInput, optionalBody: true });

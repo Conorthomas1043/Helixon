@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { eraseCandidates } from "@/lib/candidates/erasure";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
@@ -12,6 +12,17 @@ import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { loadCandidateProfile } from "@/lib/candidates/profile";
+
+// The details that can be corrected by hand (EDITABLE below).
+const CandidateDetailsInput = fields({
+  fullName: text(200),
+  email: text(320),
+  phone: text(80),
+  linkedin: text(400),
+  location: text(200),
+  currentTitle: text(200),
+  currentCompany: text(200),
+});
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;
@@ -103,7 +114,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     currentTitle: data.current_title,
     currentCompany: data.current_company,
   });
-}, { body: JsonObject, optionalBody: true });
+}, { body: CandidateDetailsInput, optionalBody: true });
 
 // Permanently erases a candidate and every row that references them - the
 // tool an agency needs to fulfil a data subject's right to erasure (privacy

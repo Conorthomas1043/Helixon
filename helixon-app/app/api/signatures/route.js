@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, id, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/mailer";
@@ -9,6 +9,20 @@ import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients";
 import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/signatures";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanSignatureRequest (lib/signatures.js) reads the document fields.
+const SignatureRequestInput = fields({
+  kind: text(40),
+  title: text(400),
+  body: text(100000),
+  signerName: text(400),
+  signerEmail: text(320),
+  expiresInDays: num,
+  clientId: id,
+  candidateId: id,
+  placementId: id,
+  send: flag,
+});
 
 // Documents sent for e-signature (lib/signatures.js).
 //
@@ -102,4 +116,4 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   if (clientId) await logClientActivity(auth.agencyId, clientId, "signature_requested", actor, { note });
 
   return NextResponse.json({ request: toSignatureRequest(data, { includeLink: true, siteUrl: siteUrl() }), link, emailError }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: SignatureRequestInput, optionalBody: true });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCustomerContext } from "@/lib/customer-auth";
-import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { customerRoute, parseBody } from "@/lib/api/route";
+import { fields, id, text } from "@/lib/api/schemas";
 import {
   ensureAgencyOrg,
   getOrgSeatUsage,
@@ -26,6 +26,10 @@ import {
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
 import { revokeMemberTokens } from "@/lib/member-tokens";
+
+const InviteInput = fields({ email: text(320) });
+const RemoveInput = fields({ invitationId: id, userId: id, reassignTo: id });
+const ReassignInput = fields({ reassignUnassignedTo: id });
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -152,8 +156,9 @@ export async function POST(request) {
     return NextResponse.json({ error: "Team invites are available on the Agency plan." }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
-  const email = cleanEmail(body?.email);
+  const parsed = await parseBody(request, InviteInput, { allowEmpty: true });
+  if (parsed.response) return parsed.response;
+  const email = cleanEmail(parsed.body.email);
   if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
@@ -352,7 +357,7 @@ export const DELETE = customerRoute(async (request, _context, auth, body) => {
 
   await logAudit({ auth, request, action: "team.removed", targetType: "user", summary: `Removed a teammate${reassigned ? ` (${reassigned} candidates reassigned)` : ""}` });
   return NextResponse.json({ ok: true, reassigned });
-}, { body: JsonObject, optionalBody: true });
+}, { body: RemoveInput, optionalBody: true });
 
 // PATCH { reassignUnassignedTo }: hand every candidate that no current
 // member owns (left behind by an earlier removal, or unassigned by hand) to
@@ -390,4 +395,4 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
     reportError("[team/invite] Bulk reassignment failed:", err.message);
     return NextResponse.json({ error: "Couldn't reassign those candidates. Please try again." }, { status: 500 });
   }
-}, { body: JsonObject, optionalBody: true });
+}, { body: ReassignInput, optionalBody: true });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, nested, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { IMPORT_BATCH, IMPORT_TYPES, mapRow } from "@/lib/import-mapping";
@@ -11,6 +11,9 @@ import { ensureClient } from "@/lib/clients";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
+
+// Rows, mapping and options are checked by lib/import-mapping.js.
+const ImportInput = fields({ type: text(20), rows: nested, mapping: nested, firstRow: num, options: nested });
 
 // How many existing rows de-duplication reads per table.
 const MAX_EXISTING = 200000;
@@ -52,7 +55,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   const result =
     body.type === "candidates" ? await importCandidates(valid, ctx) : body.type === "clients" ? await importClients(valid, ctx) : await importJobs(valid, ctx);
   return NextResponse.json({ ...result, errors: [...errors, ...(result.errors || [])] });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ImportInput, optionalBody: true });
 
 async function importCandidates(items, { auth, actor, options }) {
   const emails = [...new Set(items.map((i) => i.record.email).filter(Boolean))];

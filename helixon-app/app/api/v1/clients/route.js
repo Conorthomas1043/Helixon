@@ -1,6 +1,21 @@
 import { supabase } from "@/lib/supabase";
 import { cleanClientFields, toClient } from "@/lib/clients";
 import { apiError, apiJson, pageMeta, paging, withApiKey } from "@/lib/api-v1";
+import { fields, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanClientFields (lib/clients.js) reads these; the owner is always the key's member.
+const NewClientInput = fields({
+  name: text(400),
+  website: text(600),
+  industry: text(240),
+  address: text(1000),
+  termsNotes: text(4000),
+  status: text(40),
+  feePercent: num,
+  paymentTermsDays: num,
+  rebateDays: num,
+});
 
 // GET  /api/v1/clients
 // POST /api/v1/clients { name, website?, industry?, address?, status?,
@@ -20,7 +35,9 @@ export const GET = withApiKey(async (ctx, request) => {
 });
 
 export const POST = withApiKey(async (ctx, request) => {
-  const body = await request.json().catch(() => null);
+  const parsed = await parseBody(request, NewClientInput, { respond: apiError });
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
   if (!body || typeof body !== "object") return apiError(400, "Send a JSON body.");
   const fields = cleanClientFields({ ...body, ownerId: undefined }, { requireName: true });
   if (fields.error) return apiError(400, fields.error);

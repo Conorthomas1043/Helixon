@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { rateLimit } from "@/lib/ratelimit";
 import { reportError } from "@/lib/report-error";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const PasswordInput = fields({ currentPassword: text(400), newPassword: text(400) });
 
 // POST /api/account/password { currentPassword, newPassword } - changes the
 // signed-in person's password through Clerk's backend API, after Clerk
@@ -20,7 +24,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, PasswordInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const currentPassword = body?.currentPassword;
   const newPassword = body?.newPassword;
 

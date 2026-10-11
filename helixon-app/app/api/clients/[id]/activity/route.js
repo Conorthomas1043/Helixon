@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanText } from "@/lib/sanitize";
 import { CLIENT_ACTIVITY_TYPES, loadClient, logClientActivity } from "@/lib/clients";
+
+const ClientActivityInput = fields({ type: text(40), note: text(4000) });
 
 // POST { type, note } - log a call, email, meeting or note on a client's
 // timeline (lib/clients.js CLIENT_ACTIVITY_TYPES).
@@ -18,4 +20,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
 
   await logClientActivity(auth.agencyId, client.id, body.type, recruiterDisplayName(auth.profile) || auth.userId, note ? { note } : null);
   return NextResponse.json({ ok: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ClientActivityInput, optionalBody: true });

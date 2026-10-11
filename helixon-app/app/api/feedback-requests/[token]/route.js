@@ -10,6 +10,10 @@ import { supabase } from "@/lib/supabase";
 import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { cleanText } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
+import { fields, ids, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const FeedbackAnswerInput = fields({ rating: num, comment: text(4000), tags: ids(20) });
 
 const MAX_SUBMISSIONS_PER_HOUR = 20; // per IP - this is a low-traffic public form, not an API
 const TAG_VALUES = new Set([
@@ -73,7 +77,9 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "This link has already been used." }, { status: 409 });
   }
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, FeedbackAnswerInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const maxRating = row.kind === "candidate_nps" ? 10 : 5;
   const rating = Number(body?.rating);
   if (!Number.isInteger(rating) || rating < 0 || rating > maxRating) {

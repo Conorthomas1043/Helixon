@@ -8,6 +8,10 @@ import { rescreenCandidate } from "@/lib/rescreen";
 import { candidateHidden } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
 import { capRefusal, screeningsThisMonth } from "@/lib/agency-controls";
+import { fields, id } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const RescreenInput = fields({ jobId: id });
 
 // POST { jobId } - screen a candidate already on file against another job
 // using the CV we already hold (lib/rescreen.js). A full analysis, so it
@@ -24,7 +28,9 @@ export async function POST(request, { params }) {
   const hidden = await candidateHidden(auth, (await params).id);
   if (hidden) return hidden;
   const { id } = await params;
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, RescreenInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const sourceId = cleanUuid(id);
   const jobId = cleanUuid(body?.jobId);
   if (!sourceId || !jobId) {

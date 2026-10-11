@@ -5,6 +5,20 @@
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
 import { getEvents, addEvent, updateEvent, deleteEvent } from "@/lib/employee/calendar";
+import { date, fields, flag, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// Saved as given by addEvent / updateEvent (lib/employee/calendar.js).
+const EventInput = fields({
+  action: str(20),
+  id,
+  title: str(400),
+  notes: str(8000),
+  location: str(400),
+  start_at: date,
+  end_at: date,
+  all_day: flag,
+});
 
 export async function GET(request) {
   const { employeeId, forbidden } = await employeeAccess("calendar", "view");
@@ -27,7 +41,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, EventInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "create") {

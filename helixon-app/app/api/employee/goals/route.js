@@ -7,6 +7,18 @@
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
 import { getGoals, addGoal, updateGoal, deleteGoal } from "@/lib/employee/goals";
+import { date, fields, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const GoalInput = fields({
+  action: str(20),
+  id,
+  title: str(400),
+  notes: str(8000),
+  status: str(40),
+  deadline: date,
+  assigned_to: id,
+});
 
 const VALID_STATUSES = new Set(["not_started", "in_progress", "blocked", "done"]);
 
@@ -26,7 +38,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, GoalInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "create") {

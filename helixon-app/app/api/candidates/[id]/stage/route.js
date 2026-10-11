@@ -2,13 +2,15 @@ import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id, text } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { normaliseCustomisation } from "@/lib/custom-fields";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const StageInput = fields({ stage: text(40), subStage: id });
 
 // PATCH { stage?, subStage? } - move a candidate to a core stage and/or one
 // of the agency's sub-stages (lib/custom-fields.js). A sub-stage on its own
@@ -65,4 +67,4 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   }
 
   return NextResponse.json(data);
-}, { body: JsonObject, optionalBody: true });
+}, { body: StageInput, optionalBody: true });

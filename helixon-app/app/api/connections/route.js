@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, text } from "@/lib/api/schemas";
 import { siteUrl } from "@/lib/mailer";
 import { bccAddress, memberToken } from "@/lib/member-tokens";
 import { inboundDomain } from "@/lib/tracked-email";
+
+const RotateInput = fields({ purpose: text(20), rotate: flag });
 
 // The signed-in member's calendar feed and BCC logging address
 // (lib/member-tokens.js), made on first ask.
@@ -34,4 +36,4 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   const body = input;
   if (!["calendar", "bcc"].includes(body.purpose) || body.rotate !== true) return NextResponse.json({ error: "Nothing to do." }, { status: 400 });
   return NextResponse.json(await shape(auth, body.purpose));
-}, { body: JsonObject, optionalBody: true });
+}, { body: RotateInput, optionalBody: true });

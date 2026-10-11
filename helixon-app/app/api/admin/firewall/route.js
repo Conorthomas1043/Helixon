@@ -9,6 +9,13 @@ import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
 import { RULE_KINDS, clearFirewallRulesCache, isCountryCode, parseCidr, ruleProblem } from "@/lib/security/rules";
 import { alertRecipients, cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
+import { fields, id, nested, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const RuleInput = fields({ kind: text(40), value: text(400), note: text(400), hours: num });
+const RuleRemoveInput = fields({ id });
+// cleanSetting (lib/site-settings.js) checks both in full.
+const FirewallSettingsInput = fields({ alerts: nested, policy: nested });
 
 // The Security page's controls beyond single IP blocks:
 //   GET                          rules, the policy in force, the admin's own IP
@@ -48,7 +55,9 @@ export async function POST(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, RuleInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const kind = RULE_KINDS.includes(body.kind) ? body.kind : null;
     if (!kind) return json({ error: "Unknown rule type." }, 400);
@@ -113,7 +122,9 @@ export async function DELETE(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, RuleRemoveInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const id = cleanUuid(body.id);
     if (!id) return json({ error: "A valid rule id is required." }, 400);
 
@@ -141,7 +152,9 @@ export async function PATCH(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, FirewallSettingsInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const current = await getSiteSettings({ fresh: true });
     if (body.alerts) {
       const alerts = cleanSetting("alerts", { ...current.alerts, ...body.alerts });

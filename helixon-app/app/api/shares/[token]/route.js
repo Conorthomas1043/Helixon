@@ -11,6 +11,10 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { notify } from "@/lib/notifications";
 import { captureAgencyEvent } from "@/lib/server-analytics";
 import { reportError } from "@/lib/report-error";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const DecisionInput = fields({ candidateId: id, decision: text(20), comment: text(4000), name: text(400) });
 
 // Public: a client's view of a shared shortlist (app/share/[token]). The
 // token is the only credential, and the link stops working when revoked or
@@ -60,7 +64,9 @@ export async function POST(request, { params }) {
   const share = await load((await params).token);
   if (!share) return NextResponse.json({ error: "This link has expired or been withdrawn." }, { status: 404 });
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, DecisionInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const candidateId = cleanUuid(body.candidateId);
   if (!candidateId || !CLIENT_DECISIONS[body.decision]) return NextResponse.json({ error: "Choose interview, maybe or not for us." }, { status: 400 });
   const comment = cleanText(body.comment, { max: 2000 }) || null;

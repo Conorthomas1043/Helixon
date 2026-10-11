@@ -6,6 +6,11 @@ import { after } from "next/server";
 import { recordSignal } from "@/lib/research-signals";
 import { questionTopic } from "@/lib/assistant-topics";
 import { reportError } from "@/lib/report-error";
+import { fields, nested } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// sanitizeMessages (below) checks each message.
+const AssistantInput = fields({ messages: nested });
 
 // Keep this on the server only - never expose GEMINI_API_KEY to the client.
 let genAI = null;
@@ -118,7 +123,9 @@ export async function POST(req) {
       );
     }
 
-    const body = await req.json().catch(() => null);
+    const parsedBody = await parseBody(req, AssistantInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
       return Response.json(

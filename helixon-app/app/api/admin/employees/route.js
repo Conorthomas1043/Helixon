@@ -7,6 +7,32 @@ import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { ROLES as ROLE_LIST, cleanOverrides, effectivePermissions, overridesAfterRoleChange, overridesFor } from "@/lib/employee/permissions";
 import { reportError } from "@/lib/report-error";
+import { fields, flag, id, nested, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// permissions is checked in full by cleanOverrides (lib/employee/permissions.js).
+const NewEmployeeInput = fields({
+  username: text(100),
+  fullName: text(200),
+  displayName: text(200),
+  email: text(320),
+  role: text(40),
+  password: text(400),
+  generatePassword: flag,
+  permissions: nested,
+});
+const EmployeeUpdateInput = fields({
+  action: text(40),
+  employeeId: id,
+  email: text(320),
+  fullName: text(200),
+  role: text(40),
+  password: text(400),
+  generate: flag,
+  permissions: nested,
+  resetPermissions: flag,
+  sessionId: id,
+});
 
 function validUsername(value) {
   return typeof value === "string" && /^[A-Za-z0-9._-]{3,64}$/.test(value);
@@ -91,7 +117,9 @@ export async function POST(request) {
       return json(CSRF_REJECTION, 403);
     }
     const supabase = getAdminSupabase();
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, NewEmployeeInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     if (!body || typeof body !== "object") {
       return json({ error: "Invalid request." }, 400);
     }
@@ -169,7 +197,9 @@ export async function PATCH(request) {
       return json(CSRF_REJECTION, 403);
     }
     const supabase = getAdminSupabase();
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, EmployeeUpdateInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     if (!body || typeof body !== "object") {
       return json({ error: "Invalid request." }, 400);
     }

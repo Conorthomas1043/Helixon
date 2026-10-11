@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, num, text } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanInvoicing, normaliseInvoicing } from "@/lib/invoicing-settings";
 import { logAudit } from "@/lib/agency-audit";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+// cleanInvoicing (lib/invoicing-settings.js) reads these.
+const InvoicingInput = fields({
+  companyName: text(400),
+  address: text(1000),
+  vatNumber: text(80),
+  companyNumber: text(80),
+  email: text(320),
+  bankDetails: text(1000),
+  prefix: text(20),
+  vatRate: num,
+  paymentTermsDays: num,
+});
 
 // GET / PATCH the agency's invoice details (lib/invoicing-settings.js).
 // Changing them is for the owner or an admin.
@@ -27,4 +40,4 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logAudit({ auth, request, action: "settings.invoicing", summary: "Changed invoicing settings" });
   return NextResponse.json({ ...fields, canManage: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: InvoicingInput, optionalBody: true });

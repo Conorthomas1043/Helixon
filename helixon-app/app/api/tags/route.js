@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { addAgencyTag, getAgencyTags, removeAgencyTag } from "@/lib/agency-tags";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const TagCreateInput = fields({ label: text(120) });
 
 // The agency's candidate tags (lib/agency-tags.js).
 // GET               built-in + the agency's own
@@ -26,7 +30,9 @@ export async function GET() {
 export async function POST(request) {
   const { auth, response } = await authed();
   if (response) return response;
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, TagCreateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   try {
     const result = await addAgencyTag(supabase, auth.agencyId, body?.label);
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });

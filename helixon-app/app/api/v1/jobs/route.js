@@ -2,6 +2,19 @@ import { supabase } from "@/lib/supabase";
 import { cleanLine, cleanList, cleanText } from "@/lib/sanitize";
 import { ensureClient } from "@/lib/clients";
 import { JOB_COLUMNS, apiError, apiJson, pageMeta, paging, toApiJob, withApiKey } from "@/lib/api-v1";
+import { fields, stringList, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const NewJobInput = fields({
+  title: text(400),
+  client: text(400),
+  description: text(50000),
+  location: text(240),
+  employmentType: text(80),
+  seniority: text(80),
+  salaryRange: text(200),
+  requiredSkills: stringList,
+});
 
 // GET  /api/v1/jobs?status=open|closed
 // POST /api/v1/jobs { title, client?, location?, salaryRange?,
@@ -18,7 +31,9 @@ export const GET = withApiKey(async (ctx, request) => {
 });
 
 export const POST = withApiKey(async (ctx, request) => {
-  const body = await request.json().catch(() => null);
+  const parsed = await parseBody(request, NewJobInput, { respond: apiError });
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
   if (!body || typeof body !== "object") return apiError(400, "Send a JSON body.");
   const title = cleanLine(body.title, 200);
   if (!title) return apiError(400, "title is required.");

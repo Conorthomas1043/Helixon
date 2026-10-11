@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { MAX_NAME_LEN, addToShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/shortlists";
+import { fields, id, ids, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ShortlistInput = fields({ name: text(400), jobId: id, candidateIds: ids(1000) });
 
 // The agency's shortlists (lib/shortlists.js). Rebuilt on Clerk auth and
 // agency scoping - the original took an agencyId from the request with no
@@ -45,7 +49,9 @@ export async function POST(request) {
   const { auth, response } = await shortlistAuth();
   if (response) return response;
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, ShortlistInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const name = cleanLine(body?.name, MAX_NAME_LEN);
   if (!name) return NextResponse.json({ error: "Give the shortlist a name." }, { status: 400 });
 

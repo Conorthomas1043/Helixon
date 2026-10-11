@@ -8,6 +8,10 @@ import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/permissions";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const DraftEmailInput = fields({ candidateId: id, jobId: id, purpose: text(40) });
 
 // Each draft is a model call, so an account gets a generous hourly allowance
 // rather than none at all.
@@ -55,7 +59,9 @@ export async function POST(request) {
       agencyId,
     } = auth;
 
-    const body = await request.json();
+    const parsedBody = await parseBody(request, DraftEmailInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const candidateId =
       cleanUuid(body?.candidateId);

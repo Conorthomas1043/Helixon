@@ -5,6 +5,10 @@ import { verifyAdminTotp, adminHasTotp } from "@/lib/admin/totp";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const LoginInput = fields({ username: text(200), password: text(400), code: text(20) });
 
 // Attempts allowed per hour. The per-IP cap stops one client hammering
 // passwords; the per-username cap stops a distributed guess at one admin
@@ -49,7 +53,9 @@ export async function POST(request) {
       return json({ error: "Too many login attempts. Please try again later." }, 429);
     }
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, LoginInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const username = cleanLine(body?.username, 64);
     const password = typeof body?.password === "string" ? body.password.slice(0, 1024) : "";

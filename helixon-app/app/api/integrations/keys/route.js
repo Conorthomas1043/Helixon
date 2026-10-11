@@ -6,6 +6,10 @@ import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { generateApiKey } from "@/lib/api-keys";
 import { logAudit } from "@/lib/agency-audit";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const KeyInput = fields({ name: text(240) });
 
 // The agency's API keys (lib/api-keys.js). Owner and admins only.
 // GET                 the keys (never the keys themselves - only prefixes)
@@ -35,7 +39,9 @@ export async function GET() {
 export async function POST(request) {
   const { auth, res } = await guard();
   if (res) return res;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, KeyInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const name = cleanLine(body.name, 80);
   if (!name) return NextResponse.json({ error: "Give the key a name, like 'Zapier' or 'LinkedIn extension'." }, { status: 400 });
   const { count } = await supabase.from("api_keys").select("id", { count: "exact", head: true }).eq("agency_id", auth.agencyId).is("revoked_at", null);

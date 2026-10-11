@@ -3,6 +3,10 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanText, cleanLine } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
 import { escapeHtml } from "@/lib/format";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ContactFormInput = fields({ name: text(400), email: text(320), topic: text(120), message: text(10000) });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,12 +28,9 @@ export async function POST(req) {
     return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
-  let body;
-  try {
-    body = await req.json();
-  } catch {
-    return Response.json({ error: "Invalid request body." }, { status: 400 });
-  }
+  const parsed = await parseBody(req, ContactFormInput);
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
 
   // Single-line fields lose all line breaks (no header/subject injection into
   // the email); the message keeps its paragraphs but loses control and

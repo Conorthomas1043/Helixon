@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { REMINDER_PREF_KEY, remindersEnabled } from "@/lib/reminder-email";
 import { DIGEST_PREF_KEY, digestEnabled } from "@/lib/analytics-digest";
+import { fields, flag } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
 
 // The signed-in person's email preferences, kept on their Clerk user's
 // private metadata (server-only):
@@ -17,6 +20,7 @@ import { DIGEST_PREF_KEY, digestEnabled } from "@/lib/analytics-digest";
 // PATCH { followUpReminders?, applicationAlerts?, weeklyDigest? }  change them
 
 const KEYS = [REMINDER_PREF_KEY, "applicationAlerts", DIGEST_PREF_KEY];
+const NotificationPrefsInput = fields(Object.fromEntries(KEYS.map((key) => [key, flag])));
 
 function prefs(meta) {
   return { followUpReminders: remindersEnabled(meta), applicationAlerts: meta?.applicationAlerts !== false, weeklyDigest: digestEnabled(meta) };
@@ -33,7 +37,9 @@ export async function GET() {
 export async function PATCH(request) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Please sign in to continue." }, { status: 401 });
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, NotificationPrefsInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const update = {};
   for (const key of KEYS) {
     if (body?.[key] === undefined) continue;

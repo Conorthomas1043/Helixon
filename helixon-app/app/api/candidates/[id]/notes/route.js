@@ -9,6 +9,11 @@ import { findMentions } from "@/lib/mentions";
 import { notify } from "@/lib/notifications";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, flag, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const NoteInput = fields({ body: text(20000) });
+const NoteUpdateInput = fields({ noteId: id, body: text(20000), pinned: flag });
 
 // Team notes on a candidate. The text lives in candidate_notes.note - this
 // route used to write a `body` column that doesn't exist (and no
@@ -61,7 +66,9 @@ export async function POST(request, { params }) {
   if (ctx.response) return ctx.response;
   const { auth, id } = ctx;
 
-  const payload = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, NoteInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const payload = parsedBody.body;
   const noteBody = cleanText(payload?.body, { max: 5000 });
   if (!noteBody) {
     return NextResponse.json({ error: "Write something first." }, { status: 400 });
@@ -106,7 +113,9 @@ export async function PATCH(request, { params }) {
   if (ctx.response) return ctx.response;
   const { auth, id } = ctx;
 
-  const payload = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, NoteUpdateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const payload = parsedBody.body;
 
   // Pinning isn't editing - anyone on the team can pin a note.
   if (typeof payload?.pinned === "boolean") {

@@ -7,6 +7,10 @@ import { recordSignal } from "@/lib/research-signals";
 import { captureAgencyEvent } from "@/lib/server-analytics";
 import { umuxLiteScore } from "@/lib/umux-lite";
 import { reportError } from "@/lib/report-error";
+import { fields, flag, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ResearchInput = fields({ kind: text(40), capabilities: num, ease: num, comment: text(4000), optIn: flag });
 
 // The signed-in recruiter's side of research (docs/ux-research-audit.md, R8):
 //   GET   { pulseDue, optedIn }      whether to show the pulse survey
@@ -44,7 +48,9 @@ export async function POST(request) {
   if (!(await rateLimit(`research:${getClientIp(request)}`, 20))) {
     return NextResponse.json({ ok: false, error: "Too many requests." }, { status: 429 });
   }
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, ResearchInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const agencyId = profile.agency_id || null;
 
   if (body?.kind === "pulse_survey") {

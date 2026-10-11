@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, id, nested, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
@@ -11,6 +11,19 @@ import { cleanBookingRequest, openSlots } from "@/lib/interview-booking";
 import { formatInterviewTime } from "@/lib/interviews";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanBookingRequest (lib/interview-booking.js) checks the times and details.
+const BookingOfferInput = fields({
+  slots: nested,
+  durationMinutes: num,
+  kind: text(40),
+  round: num,
+  expiresInDays: num,
+  location: text(1000),
+  interviewers: text(1000),
+  contactId: id,
+  send: flag,
+});
 
 // Interview booking links for one candidate (lib/interview-booking.js).
 // GET                    the candidate's open and recent links
@@ -111,7 +124,7 @@ export const POST = customerRoute(async (request, { params }, auth, input) => {
     note: `${offer.slots.length} interview time${offer.slots.length === 1 ? "" : "s"} offered${body.send === true && !emailError ? " (emailed)" : ""}`,
   });
   return NextResponse.json({ link, emailError }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: BookingOfferInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);

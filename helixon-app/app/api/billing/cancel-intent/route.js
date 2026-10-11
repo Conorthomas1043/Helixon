@@ -4,6 +4,10 @@ import { getCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { captureAgencyEvent } from "@/lib/server-analytics";
+import { fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const CancelIntentInput = fields({ reason: text(40), detail: text(1000), canTalk: flag });
 
 // Why someone is about to cancel, asked on the Billing page before it hands
 // over to the Stripe portal. Recorded server-side against the agency, so the
@@ -16,7 +20,9 @@ export async function POST(request) {
   if (!(await rateLimit(`cancel-intent:${getClientIp(request)}`, 10))) {
     return NextResponse.json({ ok: false, error: "Too many requests." }, { status: 429 });
   }
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, CancelIntentInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const reason = REASONS.has(body?.reason) ? body.reason : "other";
   const detail = cleanLine(body?.detail, 500) || null;
   await captureAgencyEvent("cancellation_started", profile?.agency_id, { reason, detail });

@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server";
 import { emitWebhook } from "@/lib/webhooks";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, ids, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logClientActivity } from "@/lib/clients";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
@@ -13,6 +13,8 @@ import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
 import { reportError } from "@/lib/report-error";
 import { acquireLock, releaseLock } from "@/lib/ratelimit";
+
+const RaiseInvoiceInput = fields({ timesheetIds: ids(1000), notes: text(4000) });
 
 // POST { timesheetIds?, notes? } - raise an invoice for a placement.
 // Permanent: one line, the placement fee. Contract: a line per approved
@@ -38,7 +40,7 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
   } finally {
     await releaseLock(lock);
   }
-}, { body: JsonObject, optionalBody: true });
+}, { body: RaiseInvoiceInput, optionalBody: true });
 
 // Every invoice number the agency has used. All of them: one plain select
 // stops at 1,000 rows, after which the next number collided with an

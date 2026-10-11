@@ -8,6 +8,10 @@ import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
 import { listFolder, createFolder, deleteFolder, deleteFile } from "@/lib/employee/files";
 import { cleanUuid } from "@/lib/sanitize";
+import { fields, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const FileInput = fields({ action: str(20), id, name: str(400), parent_id: id });
 
 export async function GET(request) {
   const { employeeId, forbidden } = await employeeAccess("files", "view");
@@ -34,7 +38,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, FileInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "create_folder") {

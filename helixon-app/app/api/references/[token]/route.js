@@ -5,6 +5,17 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
 import { REFERENCE_QUESTIONS, cleanReferenceAnswers } from "@/lib/compliance";
 import { notify } from "@/lib/notifications";
+import { fields, flag, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// One answer per question, as cleanReferenceAnswers (lib/compliance.js) reads them.
+const ReferenceAnswersInput = fields({
+  ...Object.fromEntries(REFERENCE_QUESTIONS.map((q) => [q.id, q.type === "rating" ? num : text(6000)])),
+  completedBy: text(400),
+  completedByTitle: text(400),
+  confirm: flag,
+  decline: flag,
+});
 
 // Public: a referee's reference form (app/reference/[token]). The token is
 // the only credential, so this answers with only what the form needs - the
@@ -47,7 +58,9 @@ export async function POST(request, { params }) {
   if (row.status !== "requested") return NextResponse.json({ error: "This reference has already been answered." }, { status: 409 });
   if (expired(row)) return NextResponse.json({ error: "This link has expired - please ask the agency for a new one." }, { status: 410 });
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ReferenceAnswersInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   let update;
   if (body.decline === true) {
     update = { status: "declined", received_at: new Date().toISOString() };

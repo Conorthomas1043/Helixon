@@ -10,6 +10,10 @@ import { candidateHidden } from "@/lib/permissions";
 import { CALL_NOTES_SCHEMA, MAX_NOTES, SYSTEM_PROMPT, buildPrompt, cleanCallNotes, noteText } from "@/lib/call-notes";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const CallNotesInput = fields({ kind: text(20), notes: text(40000), save: flag });
 
 // POST { notes, kind?: "call" | "meeting", save?: true }
 // Rough call notes or a transcript in, a tidy summary out (lib/call-notes.js):
@@ -32,7 +36,9 @@ export async function POST(request, { params }) {
     : { data: null };
   if (!candidate) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = (await request.json().catch(() => null)) ?? {};
+  const parsedBody = await parseBody(request, CallNotesInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const notes = cleanText(body.notes, { max: MAX_NOTES });
   if (!notes || notes.length < 20) return NextResponse.json({ error: "Paste your notes or the transcript first." }, { status: 400 });
   const kind = body.kind === "meeting" ? "meeting" : "call";

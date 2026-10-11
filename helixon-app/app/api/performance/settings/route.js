@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, nested } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanCommission, cleanTargets, normalisePerformance } from "@/lib/performance";
 import { logAudit } from "@/lib/agency-audit";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+// cleanCommission and cleanTargets (lib/performance.js) check both in full.
+const PerformanceSettingsInput = fields({ commission: nested, targets: nested });
 
 // GET / PUT the agency's monthly targets and commission plan
 // (lib/performance.js). Owner and admins only - commission is private.
@@ -32,4 +35,4 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   await logAudit({ auth, request, action: "settings.performance", summary: "Changed targets or commission" });
   return NextResponse.json(performance);
-}, { body: JsonObject, optionalBody: true });
+}, { body: PerformanceSettingsInput, optionalBody: true });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, nested, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
@@ -10,6 +10,20 @@ import { DEFAULT_CRITERIA, RECOMMENDATIONS, cleanReviewer, cleanScorecard, forma
 import { loadVisibleInterview } from "@/lib/interview-access";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanScorecard and cleanReviewer (lib/interviews.js) read these.
+const ScorecardInput = fields({
+  mode: text(20),
+  overallRating: num,
+  recommendation: text(40),
+  criteria: nested,
+  strengths: text(6000),
+  concerns: text(6000),
+  comments: text(6000),
+  reviewerName: text(400),
+  reviewerEmail: text(320),
+  send: flag,
+});
 
 // Scorecards on an interview (lib/interviews.js).
 //
@@ -87,7 +101,7 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
   }
 
   return NextResponse.json({ error: "Unknown mode." }, { status: 400 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ScorecardInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const { id } = await params;

@@ -8,10 +8,19 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, num, text } from "@/lib/api/schemas";
 import { candidateHidden, getAccess } from "@/lib/permissions";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+
+const PlacementDetailsInput = fields({
+  source: text(40),
+  rejectionReason: text(60),
+  placementFee: num,
+  placementCost: num,
+  retention30d: text(20),
+  retention90d: text(20),
+});
 
 const SOURCE_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 const REJECTION_REASON_VALUES = new Set([
@@ -122,4 +131,4 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
     retention30d: data.retention_30d,
     retention90d: data.retention_90d,
   });
-}, { body: JsonObject, optionalBody: true });
+}, { body: PlacementDetailsInput, optionalBody: true });

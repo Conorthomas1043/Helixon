@@ -9,6 +9,10 @@ import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const SendEmailInput = fields({ artifactId: id, to: text(320), subject: text(600) });
 
 // Sends real email through Resend, so cap how many one account can fire off
 // even though each draft can only be sent once.
@@ -58,7 +62,9 @@ export async function POST(request) {
       agencyId,
     } = auth;
 
-    const body = await request.json();
+    const parsedBody = await parseBody(request, SendEmailInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     const artifactId =
       body?.artifactId;

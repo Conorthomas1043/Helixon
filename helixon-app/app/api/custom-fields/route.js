@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id, nested, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { ENTITY_TABLES, cleanFieldValues, fieldsFor, normaliseCustomisation } from "@/lib/custom-fields";
+
+// cleanFieldValues (lib/custom-fields.js) checks each value.
+const FieldValuesInput = fields({ entity: text(20), id, values: nested });
 
 // PATCH { entity: "candidate"|"job"|"client", id, values: { fieldId: value } }
 // Sets custom field values on one record; a blank removes one.
@@ -34,4 +37,4 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
     if (labels.length) await logActivity(supabase, id, "details_updated", recruiterDisplayName(auth.profile) || auth.userId, { note: `Updated ${labels.join(", ")}` });
   }
   return NextResponse.json({ values: result.values });
-}, { body: JsonObject, optionalBody: true });
+}, { body: FieldValuesInput, optionalBody: true });

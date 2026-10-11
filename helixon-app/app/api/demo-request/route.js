@@ -7,6 +7,22 @@ import { cleanText, cleanLine } from "@/lib/sanitize";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 import { FROM_EMAIL, escapeHtml, salesNotificationEmail } from "@/lib/demo-notification";
 import { reportError } from "@/lib/report-error";
+import { fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const DemoRequestInput = fields({
+  name: text(400),
+  email: text(320),
+  company: text(400),
+  message: text(10000),
+  researchOptIn: flag,
+  referrer: text(2000),
+  utm_source: text(200),
+  utm_medium: text(200),
+  utm_campaign: text(200),
+  utm_term: text(200),
+  utm_content: text(200),
+});
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -31,12 +47,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
-  }
+  const parsed = await parseBody(request, DemoRequestInput, { respond: (status, error) => NextResponse.json({ ok: false, error }, { status }) });
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
 
   const name = cleanLine(body?.name, 200);
   const email = cleanLine(body?.email, 254);

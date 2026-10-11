@@ -9,6 +9,10 @@ import {
   linkSubscriptionFromStripeSession,
 } from "@/lib/create-profile";
 import { reportError } from "@/lib/report-error";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const CompleteSignupInput = fields({ sessionId: text(400), plan: text(40), agencyName: text(400) });
 
 // Used by app/signup when someone lands there already signed in to Clerk
 // (the post-checkout redirect from app/checkout/success for a user whose
@@ -23,7 +27,9 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Please sign in first." }, { status: 401 });
     }
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, CompleteSignupInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const agencyName = cleanLine(body?.agencyName, 100);
     const sessionId = body?.sessionId || null;
     // Client-supplied, so only accept a real plan id - anything else is

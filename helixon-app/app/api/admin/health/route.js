@@ -8,6 +8,11 @@ import { getFullHealthChecksSnapshot } from "@/lib/ops/health-checks";
 import { gradeHealth } from "@/lib/ops/health-grade";
 import { cleanSetting, getSiteSettings, saveSiteSetting } from "@/lib/site-settings";
 import { reportError } from "@/lib/report-error";
+import { fields, nested } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanSetting (lib/site-settings.js) checks the list.
+const MuteInput = fields({ muted: nested });
 
 // Single combined "is the site actually working" snapshot: the existing
 // live-services checks (Stripe/Clerk/Redis/Resend/Sentry) plus the database
@@ -80,7 +85,9 @@ export async function PATCH(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, MuteInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const before = (await getSiteSettings({ fresh: true })).health;
     const value = cleanSetting("health", { muted: body.muted });
 

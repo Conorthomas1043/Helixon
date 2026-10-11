@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, nested, text } from "@/lib/api/schemas";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanSequenceSteps (lib/sequences.js) checks the steps in full.
+const SequenceUpdateInput = fields({ name: text(240), steps: nested, active: flag });
 
 // PATCH { name?, steps?, active? } / DELETE one sequence. Pausing
 // (active: false) holds every enrolment where it is; deleting removes the
@@ -34,7 +37,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to save the sequence." }, { status: 500 });
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ sequence: toSequence(data) });
-}, { body: JsonObject, optionalBody: true });
+}, { body: SequenceUpdateInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const id = cleanUuid((await params).id);

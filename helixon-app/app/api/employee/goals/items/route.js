@@ -6,6 +6,10 @@
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";
 import { addGoalItem, toggleGoalItem, deleteGoalItem } from "@/lib/employee/goals";
+import { fields, flag, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const GoalItemInput = fields({ action: str(20), goalId: id, id, title: str(400), done: flag });
 
 export async function POST(request) {
   const { employeeId, forbidden } = await employeeAccess("goals", "edit");
@@ -14,7 +18,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, GoalItemInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action, goalId } = body;
 
   if (!goalId) return NextResponse.json({ ok: false, error: "Missing goalId." }, { status: 400 });

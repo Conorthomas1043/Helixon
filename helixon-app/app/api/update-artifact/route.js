@@ -4,6 +4,10 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ArtifactInput = fields({ artifactId: id, finalText: text(100000) });
 
 // Records the text a recruiter finally sent after editing an AI-drafted email,
 // and whether they kept the draft largely as written (see draft-email).
@@ -19,7 +23,9 @@ export async function POST(request) {
   }
   const { agencyId } = auth;
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, ArtifactInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const artifactId = cleanUuid(body?.artifactId);
   const finalText = cleanText(body?.finalText, { max: 10000 });
 

@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, text } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanText } from "@/lib/sanitize";
 import { slugify, validSlug } from "@/lib/careers";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { siteUrl } from "@/lib/mailer";
+
+const CareersInput = fields({
+  slug: text(100),
+  enabled: flag,
+  intro: text(4000),
+  website: text(600),
+  privacyEmail: text(320),
+  privacyNotice: text(20000),
+});
 
 // The agency's public jobs page settings (lib/careers.js).
 //
@@ -81,4 +90,4 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
     return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   }
   return NextResponse.json(shape(data, true));
-}, { body: JsonObject, optionalBody: true });
+}, { body: CareersInput, optionalBody: true });

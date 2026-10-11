@@ -8,6 +8,10 @@ import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
 import { salesNotificationEmail } from "@/lib/demo-notification";
 import { reportError } from "@/lib/report-error";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const LeadInput = fields({ action: text(40), id, status: text(40), owner: text(200), notes: text(8000) });
 
 // Demo-request pipeline: everyone who filled in the "Get a demo" form, with
 // where they came from, plus the sales workflow on top (PATCH): a status
@@ -116,7 +120,9 @@ export async function PATCH(request) {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
     const supabase = getAdminSupabase();
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, LeadInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const leadId = cleanUuid(body.id);
     if (!leadId) return json({ error: "A valid lead id is required." }, 400);
 

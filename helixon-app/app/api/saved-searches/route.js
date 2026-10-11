@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, nested, text } from "@/lib/api/schemas";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
 import { applyFilters, readFilters, resolveFilters } from "@/lib/candidates/query";
 import { agencyDb } from "@/lib/agency-db";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
+
+// cleanSavedSearch (lib/saved-searches.js) reads these; params in full.
+const SavedSearchInput = fields({ name: text(240), params: nested, shared: flag, alert: flag });
 
 // Saved Candidates searches (lib/saved-searches.js): your own plus ones
 // teammates shared.
@@ -48,4 +51,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the search." }, { status: 500 });
   return NextResponse.json({ search: toSavedSearch(data, auth.userId) }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: SavedSearchInput, optionalBody: true });

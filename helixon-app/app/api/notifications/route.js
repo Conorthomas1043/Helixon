@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, ids } from "@/lib/api/schemas";
 import { toNotification } from "@/lib/notifications";
 import { agencyDb } from "@/lib/agency-db";
+
+const MarkReadInput = fields({ all: flag, ids: ids(1000) });
 
 // The bell in the nav (lib/notifications.js).
 // GET                      the signed-in member's latest 30, plus unread count
@@ -31,4 +33,4 @@ export const PATCH = customerRoute(async (request, _context, auth, input) => {
   const { error } = await q;
   if (error) return NextResponse.json({ error: "Couldn't update." }, { status: 500 });
   return NextResponse.json({ ok: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: MarkReadInput, optionalBody: true });

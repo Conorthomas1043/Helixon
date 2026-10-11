@@ -14,9 +14,11 @@ import "server-only";
 // The handler gets the same (request, context) Next passes, plus the
 // signed-in member's context and, with a `body` schema, the parsed body.
 
-import { NextResponse } from "next/server";
 import { requireCustomerContext } from "@/lib/customer-auth";
 import { reportError } from "@/lib/report-error";
+import { fail, parseBody } from "@/lib/api/body";
+
+export { fail, parseBody };
 
 // Throw from a handler to answer with a specific status and message.
 export class ApiError extends Error {
@@ -25,31 +27,6 @@ export class ApiError extends Error {
     this.status = status;
     this.extra = extra;
   }
-}
-
-export function fail(status, error, extra) {
-  return NextResponse.json({ error, ...extra }, { status });
-}
-
-// Reads and validates a JSON body. Returns { body } or { response } (a 400
-// explaining the first problem in words a person can act on).
-export async function parseBody(request, schema, { allowEmpty = false } = {}) {
-  let raw;
-  try {
-    const textBody = await request.text();
-    // Routes whose body is optional (a DELETE, a "mark all read") treat no
-    // body as an empty object.
-    raw = allowEmpty && !textBody.trim() ? {} : JSON.parse(textBody);
-  } catch {
-    return { response: fail(400, "The request body must be JSON.") };
-  }
-  const result = schema.safeParse(raw);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    const field = issue?.path?.length ? issue.path.join(".") : null;
-    return { response: fail(400, field ? `${field}: ${issue.message}` : issue?.message || "Invalid request.") };
-  }
-  return { body: result.data };
 }
 
 /**

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/site-gate";
+import { fields, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const GateInput = fields({ password: str(400) });
 
 // Server-side password check for the "under construction" gate. The
 // password itself now lives only here (env var), never in shipped JS -
@@ -28,12 +32,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { password?: string } | null = null;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Malformed request." }, { status: 400 });
-  }
+  const parsed = await parseBody(request, GateInput, {
+    respond: (status: number, error: string) => NextResponse.json({ ok: false, error }, { status }),
+  });
+  if (parsed.response) return parsed.response;
+  const body: { password?: string | null } = parsed.body;
 
   const submitted = typeof body?.password === "string" ? body.password : "";
   const correct = process.env.SITE_GATE_PASSWORD;

@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, nested, text } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
 import { cleanSavedSearch, toSavedSearch } from "@/lib/saved-searches";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanSavedSearch (lib/saved-searches.js) reads these; params in full.
+const SavedSearchInput = fields({ name: text(240), params: nested, shared: flag, alert: flag });
 
 // PATCH / DELETE one of your own saved searches.
 
@@ -24,7 +27,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   if (!data) return NextResponse.json({ error: "Only the person who saved it can change it." }, { status: 404 });
   return NextResponse.json({ search: toSavedSearch(data, auth.userId) });
-}, { body: JsonObject, optionalBody: true });
+}, { body: SavedSearchInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const id = cleanUuid((await params).id);

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanPermissions, getAccess, normalisePermissions } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+// One switch per PERMISSION_KEYS entry (lib/permissions.js).
+const PermissionsInput = fields({ financialsAdminOnly: flag, ownCandidatesOnly: flag });
 
 // GET    the workspace's permissions (lib/permissions.js) and what the
 //        signed-in member can see
@@ -32,4 +35,4 @@ export const PATCH = customerRoute(async (request, _context, auth, body) => {
     summary: Object.entries(changes).map(([k, v]) => `${k === "financialsAdminOnly" ? "Financials admin-only" : "Own candidates only"}: ${v ? "on" : "off"}`).join(", "),
   });
   return NextResponse.json({ permissions, canManage: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: PermissionsInput, optionalBody: true });

@@ -8,6 +8,11 @@ import { poolRootId } from "@/lib/rescreen";
 import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+import { date, fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const PoolAddInput = fields({ note: text(4000) });
+const PoolUpdateInput = fields({ status: text(40), checkIn: date, note: text(4000), extend: flag });
 
 // Save someone to the agency's talent pool for future roles, or take them
 // out. The pool holds one entry per person: the flag goes on their first
@@ -64,7 +69,9 @@ export async function POST(request, { params }) {
   const ctx = await load(params);
   if (ctx.response) return ctx.response;
   const { auth, id, rootId } = ctx;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, PoolAddInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const note = cleanText(body?.note, { max: 500 }) || null;
   const actor = recruiterDisplayName(auth.profile) || auth.userId;
 
@@ -86,7 +93,9 @@ export async function PATCH(request, { params }) {
   const ctx = await load(params);
   if (ctx.response) return ctx.response;
   const { auth, rootId } = ctx;
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, PoolUpdateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

@@ -16,6 +16,10 @@ import { getCurrentEmployeeId, SESSION_COOKIE } from "@/lib/session";
 import { hashEmployeePassword } from "@/lib/employee/auth";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/ratelimit";
+import { fields, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const PasswordInput = fields({ currentPassword: str(400), newPassword: str(400) });
 
 // Same floor app/api/admin/employees/route.js enforces for employee
 // accounts - one password policy, not two.
@@ -34,7 +38,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, PasswordInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const currentPassword = typeof body.currentPassword === "string" ? body.currentPassword : "";
   const newPassword = typeof body.newPassword === "string" ? body.newPassword : "";
 

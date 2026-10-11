@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { date, fields, flag, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { loadClient, logClientActivity } from "@/lib/clients";
 import { cleanNextAction } from "@/lib/opportunities";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanNextAction (lib/opportunities.js) reads label and dueAt.
+const ClientNextActionInput = fields({ label: text(400), dueAt: date, completed: flag });
 
 // A follow-up on a client - the same idea as a candidate's next action.
 // PATCH { label, dueAt }      set it
@@ -30,4 +33,4 @@ export const PATCH = customerRoute(async (request, { params }, auth, input) => {
   const { error } = await (await agencyDb()).from("clients").update({ next_action: withOwner }).eq("id", client.id).eq("agency_id", auth.agencyId);
   if (error) return NextResponse.json({ error: "Failed to save the follow-up." }, { status: 500 });
   return NextResponse.json({ nextAction: withOwner });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ClientNextActionInput, optionalBody: true });

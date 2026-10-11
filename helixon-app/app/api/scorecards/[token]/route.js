@@ -3,6 +3,19 @@ import { supabase } from "@/lib/supabase";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { logActivity } from "@/lib/candidates/activity";
 import { RECOMMENDATIONS, cleanScorecard, formatInterviewTime } from "@/lib/interviews";
+import { fields, nested, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanScorecard (lib/interviews.js) reads these.
+const ScorecardInput = fields({
+  overallRating: num,
+  recommendation: text(40),
+  criteria: nested,
+  strengths: text(6000),
+  concerns: text(6000),
+  comments: text(6000),
+  reviewerName: text(400),
+});
 
 // Public: an interviewer's scorecard link (app/scorecard/[token]). The
 // token is the only credential, so this answers with as little as the form
@@ -52,7 +65,9 @@ export async function POST(request, { params }) {
   if (!row) return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });
   if (row.submitted_at) return NextResponse.json({ error: "This scorecard has already been submitted." }, { status: 409 });
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ScorecardInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const card = cleanScorecard(body, (row.criteria ?? []).map((c) => c.name));
   if (card.error) return NextResponse.json({ error: card.error }, { status: 400 });
 

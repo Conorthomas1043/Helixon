@@ -14,6 +14,11 @@ import {
   MAX_IMPORT_ROWS,
 } from "@/lib/employee/call-list";
 import { reportError } from "@/lib/report-error";
+import { fields, id, nested, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// contacts is checked row by row below.
+const CallListInput = fields({ action: str(20), id, batchLabel: str(200), contacts: nested });
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -35,7 +40,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, CallListInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   try {

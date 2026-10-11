@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { date, fields, id, num, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
 import { weekStarting } from "@/lib/placements";
 import { agencyDb } from "@/lib/agency-db";
+
+const TimesheetInput = fields({
+  weekStarting: date,
+  quantity: num,
+  notes: text(2000),
+  timesheetId: id,
+  status: text(20),
+  approvedBy: text(400),
+});
 
 // A contractor's timesheets (weekly hours or days).
 //
@@ -36,7 +45,7 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
     : await (await agencyDb()).from("timesheets").insert({ ...row, agency_id: auth.agencyId, placement_id: p.id, week_starting: week, created_by: auth.userId });
   if (error) return NextResponse.json({ error: "Failed to save the timesheet." }, { status: 500 });
   return NextResponse.json({ ok: true, weekStarting: week });
-}, { body: JsonObject, optionalBody: true });
+}, { body: TimesheetInput, optionalBody: true });
 
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const p = await placement(auth, (await params).id);
@@ -57,7 +66,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (error) return NextResponse.json({ error: "Failed to update." }, { status: 500 });
   if (!data?.length) return NextResponse.json({ error: "Not found, or already invoiced." }, { status: 404 });
   return NextResponse.json({ ok: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: TimesheetInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const p = await placement(auth, (await params).id);

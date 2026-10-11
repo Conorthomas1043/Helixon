@@ -5,6 +5,11 @@ import { requireCustomerContext } from "@/lib/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { HEARTBEAT_MS, computePresence } from "@/lib/presence";
 import { getAgencyPrivacy } from "@/lib/privacy-settings";
+import { date, fields, flag, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const HeartbeatInput = fields({ active: flag });
+const PresenceStatusInput = fields({ status: text(20), message: text(400), until: date, hidden: flag });
 
 // Your own presence (lib/presence.js). Only ever touches the caller's own
 // profile row.
@@ -58,7 +63,9 @@ export async function POST(request) {
   if (!(await rateLimit(`presence:${auth.userId}`, 600))) {
     return NextResponse.json({ ok: false }, { status: 429 });
   }
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, HeartbeatInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const now = new Date().toISOString();
   const { presenceEnabled, hidden } = await tracking(auth).catch(() => ({ presenceEnabled: false, hidden: true }));
   if (!presenceEnabled || hidden) {
@@ -78,7 +85,9 @@ export async function POST(request) {
 export async function PATCH(request) {
   const { auth, response } = await own();
   if (response) return response;
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, PresenceStatusInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

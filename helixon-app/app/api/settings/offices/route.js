@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, nested } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanOffices, normaliseOffices } from "@/lib/offices";
 import { logAudit } from "@/lib/agency-audit";
 import { agencyDb } from "@/lib/agency-db";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+// cleanOffices (lib/offices.js) checks both in full.
+const OfficesInput = fields({ offices: nested, memberOffices: nested });
 
 // Offices or brands (lib/offices.js).
 // GET  { offices, memberOffices, canManage }
@@ -37,4 +40,4 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   if (removed.length) await (await agencyDb()).from("jobs").update({ office_id: null }).eq("agency_id", auth.agencyId).in("office_id", removed);
   await logAudit({ auth, request, action: "settings.offices", summary: `Offices: ${cleaned.offices.map((o) => o.name).join(", ") || "none"}` });
   return NextResponse.json({ ...cleaned, canManage: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: OfficesInput, optionalBody: true });

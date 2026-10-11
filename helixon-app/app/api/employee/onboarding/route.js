@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCurrentEmployeeId } from "@/lib/session";
 import { getOnboardingProgress, setOnboardingTaskState } from "@/lib/employee/onboarding";
+import { fields, flag, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const OnboardingInput = fields({ taskKey: str(100), completed: flag });
 
 export async function GET() {
   const employeeId = await getCurrentEmployeeId();
@@ -17,7 +21,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, OnboardingInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   if (!body.taskKey) {
     return NextResponse.json({ ok: false, error: "Missing taskKey." }, { status: 400 });
   }

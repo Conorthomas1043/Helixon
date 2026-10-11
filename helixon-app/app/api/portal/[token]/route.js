@@ -7,7 +7,15 @@ import { notify } from "@/lib/notifications";
 import { storeComplianceDocument } from "@/lib/compliance-files";
 import { CHECK_KINDS } from "@/lib/compliance";
 import { TOKEN_RE } from "@/lib/signatures";
-import { cleanPortalUpdate, portalView } from "@/lib/candidates/portal";
+import { PORTAL_FIELDS, cleanPortalUpdate, portalView } from "@/lib/candidates/portal";
+import { date, fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// The fields a candidate may edit (PORTAL_FIELDS, lib/candidates/portal.js).
+const PortalUpdateInput = fields({
+  ...Object.fromEntries(Object.keys(PORTAL_FIELDS).map((key) => [key, text(400)])),
+  availableFrom: date,
+});
 
 // Public: a candidate's self-service page (app/portal/[token]). The token
 // is the only credential. Answers with only the candidate's own editable
@@ -87,7 +95,9 @@ export async function POST(request, { params }) {
     return NextResponse.json({ ok: true, document: { kind: CHECK_KINDS[kind], name: doc.name, status: "Received" } }, { status: 201 });
   }
 
-  const { update, changed, error: invalid } = cleanPortalUpdate(await request.json().catch(() => ({})), candidate);
+  const parsed = await parseBody(request, PortalUpdateInput, { allowEmpty: true });
+  if (parsed.response) return parsed.response;
+  const { update, changed, error: invalid } = cleanPortalUpdate(parsed.body, candidate);
   if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
   if (!changed.length) return NextResponse.json({ ok: true, changed: [] });
   const { error } = await supabase

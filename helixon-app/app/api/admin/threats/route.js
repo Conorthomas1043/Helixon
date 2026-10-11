@@ -5,6 +5,11 @@ import { getAdminSupabase } from "@/lib/admin/supabase";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanLine } from "@/lib/sanitize";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const DismissInput = fields({ ip: text(64), reason: text(1000) });
+const UndismissInput = fields({ ip: text(64) });
 
 // Pentester findings an admin has reviewed:
 //   POST   { ip, reason }  dismiss everything that IP has done so far
@@ -20,7 +25,9 @@ export async function POST(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, DismissInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const ip = validIp(body.ip);
     if (!ip) return json({ error: "A valid IP address is required." }, 400);
     const reason = cleanLine(body.reason, 200) || null;
@@ -41,7 +48,9 @@ export async function DELETE(request) {
   try {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, UndismissInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const ip = validIp(body.ip);
     if (!ip) return json({ error: "A valid IP address is required." }, 400);
 

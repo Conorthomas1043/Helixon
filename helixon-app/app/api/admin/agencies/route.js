@@ -7,6 +7,10 @@ import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { startOfMonthUtc } from "@/lib/agency-controls";
 import { demoExpired } from "@/lib/subscription-status";
 import { revokeMemberTokens } from "@/lib/member-tokens";
+import { fields, id, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const AgencyActionInput = fields({ action: text(40), id, name: text(400), profileId: id, reason: text(1000), cap: num });
 
 // The customer view: one row per agency with the numbers that answer "who is
 // using Helixon, on what plan, and how much?", plus the admin controls on a
@@ -251,7 +255,9 @@ export async function PATCH(request) {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
     const supabase = getAdminSupabase();
-    const body = (await request.json().catch(() => null)) || {};
+    const parsedBody = await parseBody(request, AgencyActionInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const id = cleanUuid(body.id);
     const action = cleanLine(body.action, 40);
     if (!id) return json({ error: "A valid agency id is required." }, 400);

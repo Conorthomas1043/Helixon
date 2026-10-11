@@ -5,6 +5,8 @@ import { logActivity } from "@/lib/candidates/activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { CANDIDATE_COLUMNS, apiError, apiJson, toApiCandidate, withApiKey } from "@/lib/api-v1";
 import { emitWebhook } from "@/lib/webhooks";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
 
 // GET   /api/v1/candidates/{id}
 // PATCH /api/v1/candidates/{id}  { stage?, email?, phone?, location?,
@@ -30,10 +32,19 @@ const FIELDS = {
   currentCompany: ["current_company", (v) => cleanLine(v, 160)],
 };
 
+const CandidateUpdateInput = fields({
+  ...Object.fromEntries(Object.keys(FIELDS).map((key) => [key, text(400)])),
+  email: text(320),
+  stage: text(40),
+  note: text(10000),
+});
+
 export const PATCH = withApiKey(async (ctx, request, params) => {
   const c = await load(ctx.agencyId, params.id);
   if (!c) return apiError(404, "Candidate not found.");
-  const body = await request.json().catch(() => null);
+  const parsed = await parseBody(request, CandidateUpdateInput, { respond: apiError });
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
   if (!body || typeof body !== "object") return apiError(400, "Send a JSON body.");
 
   const update = {};

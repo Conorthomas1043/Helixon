@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCurrentEmployeeId } from "@/lib/session";
 import { recordHeartbeat, setBusy, getTeamPresence } from "@/lib/employee/presence";
+import { fields, flag, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const PresenceInput = fields({ action: str(20), busy: flag });
 
 export async function GET() {
   const employeeId = await getCurrentEmployeeId();
@@ -16,7 +20,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, PresenceInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "heartbeat") {

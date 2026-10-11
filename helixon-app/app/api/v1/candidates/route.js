@@ -7,6 +7,23 @@ import { logActivity } from "@/lib/candidates/activity";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { CANDIDATE_COLUMNS, apiError, apiJson, pageMeta, paging, sinceParam, toApiCandidate, withApiKey } from "@/lib/api-v1";
 import { candidatePayload, emitWebhook } from "@/lib/webhooks";
+import { fields, id, stringList, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const NewCandidateInput = fields({
+  name: text(240),
+  email: text(320),
+  phone: text(80),
+  linkedin: text(400),
+  location: text(240),
+  currentTitle: text(320),
+  currentCompany: text(320),
+  jobId: id,
+  stage: text(40),
+  source: text(40),
+  skills: stringList,
+  note: text(10000),
+});
 
 // GET  /api/v1/candidates - the Candidates list's filters (search, boolean
 //      search, stage, jobId, near/radius, tags...) plus updatedSince, paged
@@ -33,7 +50,9 @@ export const GET = withApiKey(async (ctx, request) => {
 });
 
 export const POST = withApiKey(async (ctx, request) => {
-  const body = await request.json().catch(() => null);
+  const parsed = await parseBody(request, NewCandidateInput, { respond: apiError });
+  if (parsed.response) return parsed.response;
+  const body = parsed.body;
   if (!body || typeof body !== "object") return apiError(400, "Send a JSON body.");
   const name = cleanLine(body.name, 120);
   if (!name) return apiError(400, "name is required.");

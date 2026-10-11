@@ -6,6 +6,10 @@ import { hashEmployeePassword, startEmployeeSession } from "@/lib/employee/auth"
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { adminJson as json, adminErrorResponse, adminDbError } from "@/lib/admin/http";
 import { cleanUuid } from "@/lib/sanitize";
+import { fields, id } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const PortalInput = fields({ employeeId: id });
 
 // Signs the admin into the staff portal (/employee) without a password.
 //
@@ -59,7 +63,9 @@ export async function POST(request) {
     const admin = await requireAdminSession();
     if (!verifyCsrf(request)) return json(CSRF_REJECTION, 403);
     const supabase = getAdminSupabase();
-    const body = await request.json().catch(() => ({}));
+    const parsedBody = await parseBody(request, PortalInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
 
     if (body?.employeeId) {
       const employeeId = cleanUuid(body.employeeId);

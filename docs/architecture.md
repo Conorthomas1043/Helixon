@@ -30,6 +30,8 @@ How the app in `helixon-app/` fits together. Read this before changing auth, dat
 | `/api/cron/*`, `/api/internal/*` | Vercel Cron, the edge proxy | Bearer secret, compared in constant time (`lib/timing-safe.js`) | |
 | `/api/webhooks/*` | Clerk, Stripe, Resend, Twilio | Provider signature (svix, Stripe, Twilio HMAC) | |
 
+Customer API routes start with `customerRoute()` (`lib/api/route.js`): sign-in, the request body checked against a schema, and any thrown error turned into JSON and reported. Every route's schema names the fields it accepts (the shared field types are in `lib/api/schemas.js`) and unknown keys are dropped; routes that read the body themselves use `parseBody()` (`lib/api/body.js`) the same way. `test/request-schemas.test.js` keeps every route on a schema.
+
 `proxy.ts` (Next's middleware) runs first on every request. It applies Clerk, the maintenance switch, the admin gate, cross-site request rejection (CSRF by `Origin`/`Sec-Fetch-Site`) and request logging. Security headers and the Content-Security-Policy are set in `next.config.mjs`.
 
 ## Tenant isolation (read this before writing a query)

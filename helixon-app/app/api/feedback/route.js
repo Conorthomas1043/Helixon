@@ -5,6 +5,10 @@ import { rateLimit } from "@/lib/ratelimit";
 import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ScoreFeedbackInput = fields({ rating: text(10), reason: text(4000), comment: text(4000), expectedBand: text(40), scoreId: id });
 
 // Thumbs up/down on an analysis (see the feedback buttons in app/analyse).
 //
@@ -32,7 +36,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, ScoreFeedbackInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
 
   const rating = body?.rating;
   if (rating !== "up" && rating !== "down") {

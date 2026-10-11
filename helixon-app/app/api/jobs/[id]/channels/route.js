@@ -9,9 +9,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, num, text } from "@/lib/api/schemas";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
+
+const ChannelInput = fields({ channel: text(40), clicks: num, spend: num });
 
 const CHANNEL_VALUES = new Set(["referral", "job_board", "linkedin", "direct_sourcing", "agency_database", "careers_page", "other"]);
 
@@ -83,4 +85,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
   }
 
   return NextResponse.json({ channel: data });
-}, { body: JsonObject, optionalBody: true });
+}, { body: ChannelInput, optionalBody: true });

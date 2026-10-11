@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id, ids, text } from "@/lib/api/schemas";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { findAgencyTag } from "@/lib/agency-tags";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
@@ -11,6 +11,9 @@ import { addMonths, getAgencyPrivacy } from "@/lib/privacy-settings";
 import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { logAudit } from "@/lib/agency-audit";
 import { agencyDb } from "@/lib/agency-db";
+
+// ids above MAX_IDS get the route's own message, not a schema error.
+const BulkInput = fields({ action: text(20), ids: ids(5000), stage: text(40), tagId: id });
 
 // POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
@@ -147,4 +150,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   }
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: BulkInput, optionalBody: true });

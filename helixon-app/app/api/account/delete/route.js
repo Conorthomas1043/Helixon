@@ -4,6 +4,10 @@ import { getCustomerContext } from "@/lib/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { reportError } from "@/lib/report-error";
 import { BILLING_STATUSES } from "@/lib/subscription-status";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const DeleteAccountInput = fields({ confirm: text(20) });
 
 // POST /api/account/delete  { confirm: "DELETE" }
 //
@@ -28,7 +32,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, DeleteAccountInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   if (body?.confirm !== "DELETE") {
     return NextResponse.json({ ok: false, error: 'Type DELETE to confirm.' }, { status: 400 });
   }

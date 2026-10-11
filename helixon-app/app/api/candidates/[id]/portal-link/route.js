@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
@@ -10,6 +10,8 @@ import { newToken } from "@/lib/signatures";
 import { PORTAL_LINK_DAYS } from "@/lib/candidates/portal";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const PortalLinkInput = fields({ send: flag });
 
 // A candidate's private self-service link (lib/candidates/portal.js).
 // GET               the current link, if there is one
@@ -97,7 +99,7 @@ export const POST = customerRoute(async (request, { params }, auth, input) => {
     note: body.send === true && !emailError ? "Self-service link emailed" : "Self-service link created",
   });
   return NextResponse.json({ link, emailError }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: PortalLinkInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
   const hidden = await candidateHidden(auth, (await params).id);

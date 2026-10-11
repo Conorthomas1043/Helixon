@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, text } from "@/lib/api/schemas";
 import { MERGE_FIELDS } from "@/lib/email-merge";
 import { cleanTemplate, toTemplate } from "@/lib/email-templates";
 import { inboundDomain } from "@/lib/tracked-email";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanTemplate (lib/email-templates.js) reads these.
+const TemplateInput = fields({ name: text(240), audience: text(40), subject: text(600), body: text(40000) });
 
 // The agency's email templates (lib/email-merge.js for merge fields).
 //
@@ -33,4 +36,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the template." }, { status: 500 });
   return NextResponse.json({ template: toTemplate(data) }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: TemplateInput, optionalBody: true });

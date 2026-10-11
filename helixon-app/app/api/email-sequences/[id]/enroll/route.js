@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, ids } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { stepDueAt, stopReason } from "@/lib/sequences";
 import { agencyDb } from "@/lib/agency-db";
+
+const EnrollInput = fields({ candidateIds: ids(1000) });
 
 // POST { candidateIds } - start these candidates on the sequence. People
 // already on it, without an email address, or rejected/placed are skipped.
@@ -54,4 +56,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
     await Promise.all(rows.map((r) => logActivity(supabase, r.candidate_id, "sequence_enrolled", actor, { note: sequence.name })));
   }
   return NextResponse.json({ enrolled: rows.length, skipped });
-}, { body: JsonObject, optionalBody: true, requireSubscription: true });
+}, { body: EnrollInput, optionalBody: true, requireSubscription: true });

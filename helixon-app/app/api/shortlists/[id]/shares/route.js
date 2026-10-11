@@ -8,6 +8,18 @@ import { loadShortlist, shortlistAuth } from "@/lib/shortlists";
 import { toShare } from "@/lib/shortlist-shares";
 import { sendAgencyEmail, siteUrl } from "@/lib/mailer";
 import { canSeeCandidate, getAccess } from "@/lib/permissions";
+import { fields, flag, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ShareInput = fields({
+  recipientEmail: text(320),
+  recipientName: text(400),
+  expiresInDays: num,
+  blind: flag,
+  includeConcerns: flag,
+  showScore: flag,
+  send: flag,
+});
 
 // Client review links for a shortlist (lib/shortlist-shares.js).
 //
@@ -42,7 +54,9 @@ export async function POST(request, { params }) {
   if (response) return response;
   const loaded = await loadShortlist(auth.agencyId, (await params).id);
   if (loaded.response) return loaded.response;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ShareInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
 
   const days = body.expiresInDays === null || body.expiresInDays === undefined ? 30 : Number(body.expiresInDays);
   if (!Number.isInteger(days) || days < 0 || days > 365) return NextResponse.json({ error: "Expiry must be 0–365 days (0 = never)." }, { status: 400 });

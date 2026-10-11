@@ -4,6 +4,10 @@ import { cleanLine } from "@/lib/sanitize";
 import { resolveRecruiterNames } from "@/lib/recruiter-directory";
 import { MAX_NAME_LEN, loadShortlist, ownedJobId, shortlistAuth, toShortlist } from "@/lib/shortlists";
 import { canSeeCandidate, getAccess } from "@/lib/permissions";
+import { fields, id, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const ShortlistUpdateInput = fields({ name: text(400), jobId: id });
 
 // One shortlist (lib/shortlists.js).
 //
@@ -65,7 +69,9 @@ export async function PATCH(request, { params }) {
   const loaded = await loadShortlist(auth.agencyId, id);
   if (loaded.response) return loaded.response;
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, ShortlistUpdateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const update = {};
   if (body?.name !== undefined) {
     const name = cleanLine(body.name, MAX_NAME_LEN);

@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, nested } from "@/lib/api/schemas";
 import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanCustomisation, normaliseCustomisation } from "@/lib/custom-fields";
 import { mergeAgencySettings } from "@/lib/agency-settings";
+
+// cleanCustomisation (lib/custom-fields.js) checks both lists in full.
+const CustomisationInput = fields({ subStages: nested, customFields: nested });
 
 // GET / PUT the agency's pipeline sub-stages and custom fields
 // (lib/custom-fields.js). Everyone reads them; the owner or an admin
@@ -25,4 +28,4 @@ export const PUT = customerRoute(async (request, _context, auth, body) => {
   const { error } = await mergeAgencySettings(supabase, auth.agencyId, { customisation: cleaned });
   if (error) return NextResponse.json({ error: "Failed to save." }, { status: 500 });
   return NextResponse.json({ ...cleaned, canManage: true });
-}, { body: JsonObject, optionalBody: true });
+}, { body: CustomisationInput, optionalBody: true });

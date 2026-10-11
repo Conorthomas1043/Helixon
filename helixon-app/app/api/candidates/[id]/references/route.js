@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { logActivity } from "@/lib/candidates/activity";
 import { cleanReferee, toReference } from "@/lib/compliance";
@@ -11,6 +11,17 @@ import { referenceRequestEmail, referenceUrl } from "@/lib/compliance-email";
 import { agencyFromName, sendAgencyEmail } from "@/lib/mailer";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+// cleanReferee (lib/compliance.js) reads the referee fields.
+const RefereeInput = fields({
+  refereeName: text(400),
+  refereeEmail: text(320),
+  refereePhone: text(80),
+  refereeCompany: text(400),
+  refereeTitle: text(400),
+  relationship: text(400),
+  send: flag,
+});
 
 // POST { refereeName, refereeEmail?, refereeCompany?, refereeTitle?,
 //        refereePhone?, relationship?, send? } - add a referee and, when
@@ -66,4 +77,4 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
     { reference: toReference({ ...data, requested_at: emailError ? null : data.requested_at }), link: referenceUrl(data.token), emailError },
     { status: 201 }
   );
-}, { body: JsonObject, optionalBody: true });
+}, { body: RefereeInput, optionalBody: true });

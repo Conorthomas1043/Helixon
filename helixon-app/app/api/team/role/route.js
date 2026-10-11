@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, id, text } from "@/lib/api/schemas";
 import { getOrgCreatorId, getOrgMemberRole, setOrgMemberRole } from "@/lib/clerk-org";
 import { logAudit } from "@/lib/agency-audit";
 import { reportError } from "@/lib/report-error";
+
+const RoleInput = fields({ userId: id, role: text(20) });
 
 // POST { userId, role: "admin" | "member" } - make a teammate an admin (can
 // invite, remove and reassign, like the owner) or back to a member. Only the
@@ -53,4 +55,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     reportError("[team/role] Failed to change role:", detail);
     return NextResponse.json({ error: "Couldn't change their role. Please try again." }, { status: 500 });
   }
-}, { body: JsonObject, optionalBody: true });
+}, { body: RoleInput, optionalBody: true });

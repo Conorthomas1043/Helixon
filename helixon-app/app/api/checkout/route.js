@@ -6,6 +6,10 @@ import { PRICE_IDS } from "@/lib/plans";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { featureOffResponse, isFeatureEnabled } from "@/lib/site-settings";
 import { reportError } from "@/lib/report-error";
+import { fields, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const CheckoutInput = fields({ plan: text(40) });
 
 // Internal plan id -> Stripe Price id mapping now lives in lib/plans.js,
 // shared with the webhook's reverse lookup (planForPriceId) so an upgrade/
@@ -21,7 +25,9 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, CheckoutInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const plan = body?.plan;
 
     if (!plan || !PRICE_IDS[plan]) {

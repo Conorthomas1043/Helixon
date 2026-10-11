@@ -4,6 +4,11 @@ import { cleanText, cleanUuid } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { MAX_NOTE_LEN, addToShortlist, loadShortlist, shortlistAuth } from "@/lib/shortlists";
+import { fields, id, ids, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const AddCandidatesInput = fields({ candidateIds: ids(1000), note: text(4000) });
+const CandidateNoteInput = fields({ candidateId: id, note: text(4000) });
 
 // The people on one shortlist (lib/shortlists.js).
 //
@@ -24,7 +29,9 @@ export async function POST(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, AddCandidatesInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const note = cleanText(body?.note, { max: MAX_NOTE_LEN }) || null;
   const result = await addToShortlist(ctx.auth, ctx.shortlist.id, body?.candidateIds, note, ctx.shortlist.name);
   if (result.error) return NextResponse.json({ error: result.error }, { status: result.status });
@@ -35,7 +42,9 @@ export async function PATCH(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
 
-  const body = await request.json().catch(() => null);
+  const parsedBody = await parseBody(request, CandidateNoteInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const candidateId = cleanUuid(body?.candidateId);
   if (!candidateId) return NextResponse.json({ error: "Which candidate?" }, { status: 400 });
   const note = cleanText(body?.note, { max: MAX_NOTE_LEN }) || null;

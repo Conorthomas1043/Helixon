@@ -8,6 +8,22 @@ import { employeeAccess } from "@/lib/session";
 import { getColdCalls, addColdCall, updateColdCall, deleteColdCall, getColdCallStats, OUTCOMES } from "@/lib/employee/cold-calls";
 import { finishRow } from "@/lib/employee/call-list";
 import { reportError } from "@/lib/report-error";
+import { date, fields, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// Saved as given by addColdCall / updateColdCall (lib/employee/cold-calls.js).
+const ColdCallInput = fields({
+  action: str(20),
+  id,
+  call_list_id: id,
+  contact_name: str(400),
+  company: str(400),
+  phone: str(80),
+  outcome: str(40),
+  notes: str(8000),
+  follow_up_at: date,
+  called_at: date,
+});
 
 const VALID_OUTCOMES = new Set(OUTCOMES);
 
@@ -38,7 +54,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, ColdCallInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "create") {

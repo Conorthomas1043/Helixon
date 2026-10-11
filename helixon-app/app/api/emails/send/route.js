@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag, id, ids, text } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { rateLimit } from "@/lib/ratelimit";
 import { cleanLine, cleanText, cleanUuid } from "@/lib/sanitize";
@@ -10,6 +10,8 @@ import { loadEmailTargets } from "@/lib/email-targets";
 import { agencyFromName, mailConfigured, senderEmail } from "@/lib/mailer";
 import { sendTrackedEmail } from "@/lib/tracked-email";
 import { agencyDb } from "@/lib/agency-db";
+
+const BulkEmailInput = fields({ candidateIds: ids(1000), subject: text(600), body: text(40000), templateId: id, preview: flag });
 
 // Email one or many candidates, each with the merge fields filled in for
 // them (lib/email-merge.js). Every email is sent separately - nobody sees
@@ -89,4 +91,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     failed: failed.length,
     skippedNoEmail: rendered.filter((r) => !r.email).map((r) => r.name),
   });
-}, { body: JsonObject, optionalBody: true, requireSubscription: true });
+}, { body: BulkEmailInput, optionalBody: true, requireSubscription: true });

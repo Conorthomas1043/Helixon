@@ -18,6 +18,19 @@ import {
   updateSharedTodo,
   deleteSharedTodo,
 } from "@/lib/employee/shared-todos";
+import { date, fields, flag, id, str } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const SharedTodoInput = fields({
+  action: str(20),
+  id,
+  title: str(400),
+  notes: str(8000),
+  priority: str(20),
+  due_date: date,
+  assigned_to: id,
+  done: flag,
+});
 
 export async function GET() {
   const { employeeId, forbidden } = await employeeAccess("team_tasks", "view");
@@ -35,7 +48,9 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: "Not authenticated." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, SharedTodoInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const { action } = body;
 
   if (action === "create") {

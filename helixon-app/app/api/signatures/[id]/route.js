@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, flag } from "@/lib/api/schemas";
 import { cleanUuid } from "@/lib/sanitize";
 import { siteUrl } from "@/lib/mailer";
 import { toSignatureRequest } from "@/lib/signatures";
 import { logAudit } from "@/lib/agency-audit";
 import { agencyDb } from "@/lib/agency-db";
+
+const VoidInput = fields({ void: flag });
 
 // GET              one request, with the full text and audit trail
 // PATCH { void }   withdraw one that hasn't been signed yet
@@ -40,4 +42,4 @@ export const PATCH = customerRoute(async (request, { params }, auth, input) => {
   if (error || !data) return NextResponse.json({ error: "Couldn't withdraw it." }, { status: 500 });
   await logAudit({ auth, request, action: "signature.withdrawn", targetType: "signature", targetId: data.id, summary: `Withdrew "${data.title}"` });
   return NextResponse.json({ request: toSignatureRequest(data) });
-}, { body: JsonObject, optionalBody: true });
+}, { body: VoidInput, optionalBody: true });

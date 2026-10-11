@@ -5,6 +5,12 @@ import { canManageWorkspace, NOT_ADMIN } from "@/lib/workspace-admin";
 import { cleanLine, cleanUuid } from "@/lib/sanitize";
 import { WEBHOOK_EVENTS, checkWebhookUrl, deliver, webhookSecret } from "@/lib/webhooks";
 import { logAudit } from "@/lib/agency-audit";
+import { fields, flag, id, nested, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// cleanEvents (lib/webhooks.js) checks the event list.
+const WebhookInput = fields({ url: text(2000), description: text(240), events: nested });
+const WebhookUpdateInput = fields({ id, active: flag, events: nested, test: flag });
 
 // The agency's webhook endpoints (lib/webhooks.js). Owner and admins only.
 // GET                                   endpoints, with their signing secrets
@@ -51,7 +57,9 @@ export async function GET() {
 export async function POST(request) {
   const { auth, res } = await guard();
   if (res) return res;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, WebhookInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const checked = checkWebhookUrl(body.url);
   if (checked.error) return NextResponse.json({ error: checked.error }, { status: 400 });
   const { count } = await supabase.from("webhook_endpoints").select("id", { count: "exact", head: true }).eq("agency_id", auth.agencyId);
@@ -69,7 +77,9 @@ export async function POST(request) {
 export async function PATCH(request) {
   const { auth, res } = await guard();
   if (res) return res;
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await parseBody(request, WebhookUpdateInput, { allowEmpty: true });
+  if (parsedBody.response) return parsedBody.response;
+  const body = parsedBody.body;
   const id = cleanUuid(body.id);
   const { data: endpoint } = id ? await supabase.from("webhook_endpoints").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle() : { data: null };
   if (!endpoint) return NextResponse.json({ error: "Not found" }, { status: 404 });

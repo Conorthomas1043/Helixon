@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { fields, nested, text } from "@/lib/api/schemas";
 import { cleanLine } from "@/lib/sanitize";
 import { cleanSequenceSteps, toSequence } from "@/lib/sequences";
 import { agencyDb } from "@/lib/agency-db";
 import { fetchAll } from "@/lib/fetch-all";
+
+// cleanSequenceSteps (lib/sequences.js) checks the steps in full.
+const SequenceInput = fields({ name: text(240), steps: nested });
 
 // Email sequences (lib/sequences.js).
 //
@@ -43,4 +46,4 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
     .single();
   if (error) return NextResponse.json({ error: "Failed to save the sequence." }, { status: 500 });
   return NextResponse.json({ sequence: toSequence(data) }, { status: 201 });
-}, { body: JsonObject, optionalBody: true });
+}, { body: SequenceInput, optionalBody: true });

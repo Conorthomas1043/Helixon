@@ -33,6 +33,42 @@ import { redactHeaders, redactPayload, redactQuery } from "@/lib/request-capture
 import { classifyUserAgent } from "@/lib/traffic-class";
 import { maybeCheckTraffic } from "@/lib/traffic-alerts";
 import { reportError } from "@/lib/report-error";
+import { fields, flag, nested, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+// What proxy.ts sends: the request as the edge saw it, then the outcome.
+const EdgeRequestInput = fields({
+  uid: text(64),
+  edgeId: text(200),
+  ip: text(64),
+  ua: text(4000),
+  method: text(16),
+  path: text(8000),
+  query: text(8000),
+  host: text(400),
+  protocol: text(16),
+  ts: text(64),
+  referer: text(8000),
+  country: text(8),
+  city: text(400),
+  region: text(200),
+  postal: text(40),
+  timezone: text(100),
+  lat: num,
+  lon: num,
+  fetchSite: text(40),
+  headers: nested,
+  mayFollowUp: flag,
+});
+const EdgeOutcomeInput = fields({
+  uid: text(64),
+  outcome: text(40),
+  statusCode: num,
+  location: text(4000),
+  rule: text(40),
+  payload: nested,
+  contentType: text(400),
+});
 
 async function findBlock(ip) {
   const { data } = await supabase.from("blocked_ips").select("ip,expires_at").eq("ip", ip).maybeSingle();
@@ -77,7 +113,9 @@ export async function POST(request) {
     const auth = authorised(request);
     if (!auth.ok) return Response.json({ ok: false, isBlocked: false }, { status: auth.status });
 
-    const body = await request.json();
+    const parsedBody = await parseBody(request, EdgeRequestInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const { ip, ua, method, path, ts, referer, country, city, lat, lon, fetchSite } = body;
     const rawQuery = String(body.query || "").replace(/^\?/, "");
 
@@ -211,7 +249,9 @@ export async function PATCH(request) {
     const auth = authorised(request);
     if (!auth.ok) return Response.json({ ok: false }, { status: auth.status });
 
-    const body = await request.json();
+    const parsedBody = await parseBody(request, EdgeOutcomeInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     if (!UUID.test(body.uid || "")) return Response.json({ ok: false }, { status: 400 });
 
     const update = {};

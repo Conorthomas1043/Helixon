@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
-import { JsonObject } from "@/lib/api/schemas";
+import { date, fields, flag, text } from "@/lib/api/schemas";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/recruiter-directory";
 import { cleanLine } from "@/lib/sanitize";
 import { candidateHidden } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
+
+const NextActionInput = fields({ label: text(400), dueAt: date, completed: flag });
 
 // PATCH { label, dueAt } to set a new next action.
 // PATCH { completed: true } to complete the existing one.
@@ -64,4 +66,4 @@ export const PATCH = customerRoute(async (request, { params }, auth, input) => {
 
   await logActivity(supabase, id, "next_action_set", actor, { label: nextAction.label });
   return NextResponse.json({ nextAction });
-}, { body: JsonObject, optionalBody: true });
+}, { body: NextActionInput, optionalBody: true });

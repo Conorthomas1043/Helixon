@@ -22,6 +22,33 @@ import {
   userHistory,
   validatePassword,
 } from "@/lib/admin/users";
+import { fields, flag, id, num, text } from "@/lib/api/schemas";
+import { parseBody } from "@/lib/api/body";
+
+const NewUserInput = fields({
+  email: text(320),
+  password: text(400),
+  firstName: text(200),
+  lastName: text(200),
+  agencyId: id,
+  autoConfirm: flag,
+  isTestUser: flag,
+  testLabel: text(200),
+});
+// Read here and by the operations in lib/admin/users.js.
+const UserActionInput = fields({
+  action: text(40),
+  userId: text(128),
+  agencyId: id,
+  agencyName: text(400),
+  plan: text(40),
+  days: num,
+  reason: text(1000),
+  firstName: text(200),
+  lastName: text(200),
+  password: text(400),
+});
+const UserDeleteInput = fields({ userId: text(128) });
 
 // The admin console's Users page: list and search accounts (GET), create a
 // legacy account (POST), ban, unban, grant demos and the rest (PATCH), and
@@ -94,7 +121,9 @@ export async function POST(request) {
     }
     const supabase = getAdminSupabase();
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, NewUserInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     if (!body || typeof body !== "object") {
       return json({ error: "Invalid request." }, 400);
     }
@@ -210,7 +239,9 @@ export async function PATCH(request) {
     }
     const supabase = getAdminSupabase();
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, UserActionInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     if (!body || typeof body !== "object") {
       return json({ error: "Invalid request." }, 400);
     }
@@ -284,7 +315,9 @@ export async function DELETE(request) {
     }
     const supabase = getAdminSupabase();
 
-    const body = await request.json().catch(() => null);
+    const parsedBody = await parseBody(request, UserDeleteInput, { allowEmpty: true });
+    if (parsedBody.response) return parsedBody.response;
+    const body = parsedBody.body;
     const userId = cleanLine(body?.userId, 128);
 
     const clerk = isClerkId(userId);
