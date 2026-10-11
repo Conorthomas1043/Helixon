@@ -5,9 +5,10 @@
 // offer or placed without a verified right-to-work check; privacy notices
 // due to people who didn't apply directly; references still awaited.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getComplianceOverview, sendPrivacyNoticesTo } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import { CHECK_KINDS } from "@/lib/compliance";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, LoadingCard, Pill, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { CheckStatePill } from "@/components/dashboard/CompliancePanel";
@@ -36,32 +37,12 @@ function Empty({ children }) {
 const STATE_ORDER = { expired: 0, failed: 1, expiring: 2, pending: 3 };
 
 export default function CompliancePage() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
+  const { data, error, reload } = useResource("compliance", getComplianceOverview);
   const [selected, setSelected] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    getComplianceOverview()
-      .then((d) => {
-        if (!cancelled) {
-          setData(d);
-          setError(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
-
-  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
   const checks = useMemo(() => [...(data?.checks || [])].sort((a, b) => (STATE_ORDER[a.state] ?? 9) - (STATE_ORDER[b.state] ?? 9)), [data]);
   const emailable = (data?.notices || []).filter((n) => n.email);
 
@@ -98,7 +79,7 @@ export default function CompliancePage() {
         title="Compliance"
         subtitle="Right-to-work and other checks, privacy notices and references that need attention. Record checks from each candidate's Compliance card."
       />
-      {error ? (
+      {error && !data ? (
         <ErrorState body="Compliance couldn't be loaded." onRetry={reload} />
       ) : !data ? (
         <LoadingCard rows={6} />

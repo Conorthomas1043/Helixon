@@ -4,10 +4,11 @@
 // (app/api/clients): open jobs, contacts, placements and fees billed for
 // each. Clients are also created automatically when a job names one.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getClients, createClient } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import { downloadCsv } from "@/lib/csv";
 import {
   Page,
@@ -92,34 +93,13 @@ function NewClientDialog({ onClose, onCreated }) {
 
 export default function ClientsPage() {
   const router = useRouter();
-  const [clients, setClients] = useState(null);
-  const [status, setStatus] = useState("loading");
-  const [reloadKey, setReloadKey] = useState(0);
+  const { data: clients, error, reload: retry } = useResource("clients", getClients);
+  const status = clients ? "ready" : error ? "error" : "loading";
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("current");
   const [sortBy, setSortBy] = useState("name");
 
-  useEffect(() => {
-    let cancelled = false;
-    getClients()
-      .then((c) => {
-        if (cancelled) return;
-        setClients(c);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
-
-  const retry = useCallback(() => {
-    setStatus("loading");
-    setReloadKey((k) => k + 1);
-  }, []);
   const closeNew = useCallback(() => setCreating(false), []);
 
   const visible = useMemo(() => {

@@ -4,7 +4,7 @@
 // by stage (app/api/opportunities, lib/opportunities.js), pipeline totals,
 // and the client follow-ups that are due.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { getClients, getOpportunities, getRecruiters, setClientNextAction, updateOpportunity } from "@/lib/dashboard-api";
@@ -12,6 +12,14 @@ import { OPEN_STAGES, OPPORTUNITY_STAGES, effectiveProbability, pipelineSummary 
 import { OpportunityDialog, StagePill } from "@/components/dashboard/opportunities";
 import { Button, Card, EmptyState, ErrorState, LoadingCard, Page, PageHeader, formatMoney, INK, INK_MUTED, INK_FAINT, CARD } from "@/components/dashboard/ui";
 import { formatDateOnly } from "@/lib/candidates/format";
+import { useResource } from "@/lib/use-resource";
+
+async function loadBoard() {
+  const [d, clients, team] = await Promise.all([getOpportunities(), getClients(), getRecruiters().catch(() => [])]);
+  return { deals: d.opportunities || [], clients: clients || [], team };
+}
+
+const EMPTY_BOARD = { deals: [], clients: [], team: [] };
 
 function Stat({ label, value, sub }) {
   return (
@@ -29,8 +37,9 @@ function startOfMonth() {
 }
 
 export default function BusinessDevelopmentPage() {
-  const [state, setState] = useState({ status: "loading", deals: [], clients: [], team: [] });
-  const [reloadKey, setReloadKey] = useState(0);
+  const board = useResource("business-development", loadBoard);
+  const state = { status: board.data ? "ready" : board.error ? "error" : "loading", ...(board.data ?? EMPTY_BOARD) };
+  const { reload: refetch, mutate } = board;
   const [dialog, setDialog] = useState(null); // null | "new" | deal
   const [mineOnly, setMineOnly] = useState(false);
   const [showClosed, setShowClosed] = useState(false);
@@ -38,24 +47,10 @@ export default function BusinessDevelopmentPage() {
   const { user } = useUser();
   const myId = user?.id ?? null;
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getOpportunities(), getClients(), getRecruiters().catch(() => [])])
-      .then(([d, clients, team]) => {
-        if (!cancelled) setState({ status: "ready", deals: d.opportunities || [], clients: clients || [], team });
-      })
-      .catch(() => {
-        if (!cancelled) setState((s) => ({ ...s, status: "error" }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
-
   const reload = useCallback(() => {
     setDialog(null);
-    setReloadKey((k) => k + 1);
-  }, []);
+    refetch();
+  }, [refetch]);
   const close = useCallback(() => setDialog(null), []);
 
   const deals = useMemo(() => state.deals.filter((d) => !mineOnly || d.ownerId === myId), [state.deals, mineOnly, myId]);
@@ -73,7 +68,7 @@ export default function BusinessDevelopmentPage() {
     setError("");
     try {
       await updateOpportunity(deal.id, { stage });
-      setState((s) => ({ ...s, deals: s.deals.map((d) => (d.id === deal.id ? { ...d, stage, closedAt: stage === "won" || stage === "lost" ? new Date().toISOString() : null } : d)) }));
+      mutate((s) => ({ ...s, deals: s.deals.map((d) => (d.id === deal.id ? { ...d, stage, closedAt: stage === "won" || stage === "lost" ? new Date().toISOString() : null } : d)) }));
     } catch (err) {
       setError(err.message);
     }
@@ -83,7 +78,7 @@ export default function BusinessDevelopmentPage() {
     setError("");
     try {
       await setClientNextAction(client.id, { completed: true });
-      setState((s) => ({ ...s, clients: s.clients.map((c) => (c.id === client.id ? { ...c, nextAction: null } : c)) }));
+      mutate((s) => ({ ...s, clients: s.clients.map((c) => (c.id === client.id ? { ...c, nextAction: null } : c)) }));
     } catch (err) {
       setError(err.message);
     }

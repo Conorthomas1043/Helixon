@@ -5,11 +5,12 @@
 // are added from a candidate's profile or in bulk from Candidates; each
 // list has a printable client pack (./[id]/client-pack).
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DashboardNav from "@/components/DashboardNav";
 import { getShortlists, createShortlist, getJobs } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidates/format";
 import { Skeleton as Block } from "@/components/ui";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
@@ -78,33 +79,12 @@ function NewShortlistForm({ jobs, onCreated }) {
 
 export default function ShortlistsPage() {
   const router = useRouter();
-  const [lists, setLists] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [status, setStatus] = useState("loading");
-  const [reloadKey, setReloadKey] = useState(0);
+  const { data: lists, error, reload: retry } = useResource("shortlists", getShortlists);
+  // Only for the "new shortlist" form; the page works without it.
+  const { data: allJobs } = useResource("jobs", getJobs);
+  const jobs = useMemo(() => (allJobs ?? []).filter((x) => x.status === "open"), [allJobs]);
+  const status = lists ? "ready" : error ? "error" : "loading";
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getShortlists(), getJobs().catch(() => [])])
-      .then(([l, j]) => {
-        if (cancelled) return;
-        setLists(l);
-        setJobs(j.filter((x) => x.status === "open"));
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
-
-  const retry = useCallback(() => {
-    setStatus("loading");
-    setReloadKey((k) => k + 1);
-  }, []);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();

@@ -12,6 +12,7 @@ import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 import { SIGNED_OUT_EVENT } from "@/lib/api-errors";
+import { clearResources } from "@/lib/use-resource";
 import { initials } from "@/lib/format";
 import { reportQuietly } from "@/lib/report-error";
 
@@ -383,6 +384,7 @@ function DashboardNavContent() {
                   onClick={() => {
                     if (posthog.__loaded) posthog.reset();
                     clearLocalCandidateData();
+                    clearResources();
                   }}
                   className="w-full text-left block text-xs px-3 py-2 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
                   style={{ color: "var(--score-low)" }}

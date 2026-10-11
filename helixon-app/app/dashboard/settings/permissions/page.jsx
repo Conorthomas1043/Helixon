@@ -3,7 +3,9 @@
 // /dashboard/settings/permissions - what members (not the owner or admins)
 // can see (lib/permissions.js).
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { apiFetch } from "@/lib/api-client/core";
+import { useResource } from "@/lib/use-resource";
 import { Card, ErrorText, LoadingCard, Page, PageHeader, INK, INK_MUTED } from "@/components/dashboard/ui";
 
 const OPTIONS = [
@@ -20,20 +22,14 @@ const OPTIONS = [
 ];
 
 export default function PermissionsPage() {
-  const [state, setState] = useState(null);
-  const [error, setError] = useState("");
+  const { data: state, error: loadError, loading, mutate } = useResource("settings:permissions", () => apiFetch("/api/settings/permissions"));
+  const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(null);
-
-  useEffect(() => {
-    fetch("/api/settings/permissions", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("load"))))
-      .then(setState)
-      .catch(() => setError("Couldn't load permissions."));
-  }, []);
+  const error = saveError || (loadError && !state ? "Couldn't load permissions." : "");
 
   async function toggle(key, value) {
     setSaving(key);
-    setError("");
+    setSaveError("");
     try {
       const res = await fetch("/api/settings/permissions", {
         method: "PATCH",
@@ -43,9 +39,9 @@ export default function PermissionsPage() {
       });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || "Couldn't save that.");
-      setState((s) => ({ ...s, permissions: d.permissions }));
+      mutate((s) => ({ ...s, permissions: d.permissions }));
     } catch (err) {
-      setError(err.message);
+      setSaveError(err.message);
     } finally {
       setSaving(null);
     }
@@ -54,7 +50,7 @@ export default function PermissionsPage() {
   return (
     <Page width="narrow">
       <PageHeader back={{ href: "/dashboard/settings", label: "Settings" }} eyebrow="Workspace" title="Permissions" subtitle="What members can see. The owner and admins always see everything." />
-      {!state && !error && <LoadingCard rows={2} />}
+      {loading && <LoadingCard rows={2} />}
       <ErrorText>{error}</ErrorText>
       {state && (
         <Card>

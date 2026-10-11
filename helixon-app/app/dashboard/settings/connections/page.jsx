@@ -4,7 +4,9 @@
 // (a subscribable feed) and logging emails sent from your own inbox by BCC
 // (app/api/connections, lib/member-tokens.js). Personal to each member.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { apiFetch } from "@/lib/api-client/core";
+import { useResource } from "@/lib/use-resource";
 import { Button, Card, ErrorText, LoadingCard, Page, PageHeader, TextInput, INK, INK_MUTED } from "@/components/dashboard/ui";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import CopyButton from "@/components/dashboard/CopyButton";
@@ -23,16 +25,10 @@ function CopyRow({ label, value }) {
 
 export default function ConnectionsPage() {
   const [ask, confirmDialog] = useConfirm();
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const { data, error: loadError, loading, mutate } = useResource("connections", () => apiFetch("/api/connections"));
+  const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/connections", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("load"))))
-      .then(setData)
-      .catch(() => setError("Couldn't load your connections."));
-  }, []);
+  const error = actionError || (loadError && !data ? "Couldn't load your connections." : "");
 
   async function rotate(purpose) {
     const calendar = purpose === "calendar";
@@ -47,9 +43,9 @@ export default function ConnectionsPage() {
     try {
       const res = await fetch("/api/connections", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ purpose, rotate: true }) });
       if (!res.ok) throw new Error("Couldn't do that.");
-      setData(await res.json());
+      mutate(await res.json());
     } catch (err) {
-      setError(err.message);
+      setActionError(err.message);
     } finally {
       setBusy(false);
     }
@@ -61,7 +57,7 @@ export default function ConnectionsPage() {
     <Page width="narrow">
       <PageHeader back={{ href: "/dashboard/settings", label: "Settings" }} eyebrow="You" title="Calendar & email" subtitle="Personal to you - your teammates have their own." />
       <ErrorText>{error}</ErrorText>
-      {!data && !error && <LoadingCard rows={3} />}
+      {loading && <LoadingCard rows={3} />}
       {data?.unavailable && (
         <Card>
           <p className="text-[14px]" style={{ color: INK_MUTED }}>These need a database update first (migration 20261003020000).</p>

@@ -5,8 +5,9 @@
 // period, against their targets, with commission where a plan is set up
 // (app/api/performance, lib/performance.js).
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { getPerformance } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import { METRICS, METRIC_KEYS, PERIODS } from "@/lib/performance";
 import { Page, PageHeader, Card, Button, ErrorState, LoadingCard, Select, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
@@ -31,26 +32,7 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 export default function PerformancePage() {
   const [period, setPeriod] = useState("this_month");
   const [rankBy, setRankBy] = useState("fees");
-  const [state, setState] = useState({ period: null, data: null, error: false });
-  const [reloadKey, setReloadKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    getPerformance(period)
-      .then((data) => {
-        if (!cancelled) setState({ period, data, error: false });
-      })
-      .catch(() => {
-        if (!cancelled) setState({ period, data: null, error: true });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [period, reloadKey]);
-
-  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
-  const loading = state.period !== period;
-  const data = state.data;
+  const { data, error, loading, reload } = useResource(`performance:${period}`, () => getPerformance(period));
   const ranked = useMemo(() => [...(data?.people || [])].sort((a, b) => b.metrics[rankBy] - a.metrics[rankBy] || a.name.localeCompare(b.name)), [data, rankBy]);
   const showCommission = Boolean(data?.commission) && ranked.some((p) => p.commission != null);
 
@@ -72,7 +54,7 @@ export default function PerformancePage() {
         }
       />
 
-      {state.error && !loading ? (
+      {error && !data ? (
         <ErrorState body="Performance couldn't be loaded." onRetry={reload} />
       ) : loading || !data ? (
         <LoadingCard rows={6} />

@@ -13,7 +13,9 @@
     "lib/api-client/**/*.js",
     "lib/billing-summary.js",
     "lib/candidates/list-params.js",
-    "lib/candidates/shape.js"
+    "lib/candidates/shape.js",
+    "lib/resource-cache.js",
+    "lib/use-resource.js"
   ],
   "exclude": ["node_modules", ".next", "**/*.test.js"]
 }

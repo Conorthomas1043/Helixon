@@ -8,12 +8,13 @@
 // plus Bulk mode (BulkFlow) for many CVs against one role.
 
 import { track } from "@/lib/analytics";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import posthog from "@/lib/posthog";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
@@ -33,9 +34,8 @@ import {
   ls,
   lsSet,
   recordAnalysis,
-  savedJobText,
 } from "./_lib/analyse";
-import { EMPTY_ROLE_DRAFT } from "./_lib/roles";
+import { initialWorkspace, roleModeFor, workspaceReducer } from "./_lib/workspace-state";
 import { useEmailComposer } from "./_lib/useEmailComposer";
 import { reportQuietly } from "@/lib/report-error";
 
@@ -126,6 +126,9 @@ function MoreActions({ actions }) {
   );
 }
 
+// A stable empty list while saved jobs load.
+const NO_JOBS = [];
+
 export default function AnalyseWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -133,44 +136,45 @@ export default function AnalyseWorkspace() {
 
   const [mode, setMode] = useState(() => (searchParams?.get("mode") === "bulk" ? "bulk" : "single"));
 
-  // ── Role ──────────────────────────────────────────────────────────────
-  const [savedJobs, setSavedJobs] = useState([]);
-  const [jobsLoaded, setJobsLoaded] = useState(false);
-  const [roleMode, setRoleMode] = useState("paste");
-  const [existingJobId, setExistingJobId] = useState(null);
-  const [prefilledJob, setPrefilledJob] = useState(null);
-  const [jobText, setJobText] = useState("");
-  const [jobFile, setJobFile] = useState(null);
-  const [requirements, setRequirements] = useState([]);
-  // The "Build it" form's answers - kept here so they survive switching
-  // between methods and coming back for the next candidate.
-  const [roleDraft, setRoleDraft] = useState(EMPTY_ROLE_DRAFT);
-  const [clientEmail, setClientEmail] = useState("");
+  // The job, the candidate, the run and its report: one reducer
+  // (_lib/workspace-state.js), so the changes that touch several at once are
+  // named and tested there.
+  const [state, dispatch] = useReducer(workspaceReducer, initialWorkspace);
+  const {
+    existingJobId,
+    prefilledJob,
+    jobText,
+    jobFile,
+    requirements,
+    roleDraft,
+    clientEmail,
+    file,
+    compareFile,
+    reference,
+    blind,
+    loading,
+    step,
+    error,
+    result,
+    candidateId,
+    duplicate,
+    jobId,
+    jobTitle,
+    comparing,
+    rerunning,
+    scoreId,
+    feedback,
+  } = state;
+  const set = useCallback((field) => (value) => dispatch({ type: "set", field, value }), []);
 
-  // ── Candidate ─────────────────────────────────────────────────────────
-  const [file, setFile] = useState(null);
-  const [compareFile, setCompareFile] = useState(null);
-  const [reference, setReference] = useState("");
-  const [blind, setBlind] = useState(false);
+  const { data: savedJobs = NO_JOBS, loading: jobsLoading, error: jobsError } = useResource("jobs", getJobs);
+  useEffect(() => {
+    if (jobsError) reportQuietly(jobsError);
+  }, [jobsError]);
+  const roleMode = roleModeFor(state, savedJobs.length);
+
   const [consent, setConsentState] = useState(false);
 
-  // ── Run / result ──────────────────────────────────────────────────────
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState(null);
-  const [result, setResult] = useState(null);
-  const [candidateId, setCandidateId] = useState(null);
-  // Set when this CV belongs to someone already on file (api/run links them).
-  const [duplicate, setDuplicate] = useState(null);
-  const [jobId, setJobId] = useState(null);
-  const [jobTitle, setJobTitle] = useState(null);
-  const [comparing, setComparing] = useState(false);
-  const [rerunning, setRerunning] = useState(false);
-
-  // ── Email / feedback ──────────────────────────────────────────────────
-  // The analysis the thumbs up/down rates (scores.id from /api/run).
-  const [scoreId, setScoreId] = useState(null);
-  const [feedback, setFeedback] = useState({ sent: false, rating: null, reason: null });
   const { email, reset: resetEmail } = useEmailComposer({
     candidateId,
     jobId,
@@ -193,42 +197,23 @@ export default function AnalyseWorkspace() {
     lsSet("analyseConsent", value);
   }, []);
 
-  useEffect(() => {
-    getJobs()
-      .then((jobs) => {
-        setSavedJobs(jobs);
-        if (jobs.length) setRoleMode((m) => (m === "paste" ? "saved" : m));
-      })
-      .catch(reportQuietly)
-      .finally(() => setJobsLoaded(true));
-  }, []);
-
-  const selectSavedJob = useCallback((job) => {
-    setExistingJobId(job.id);
-    setJobText(savedJobText(job));
-    setJobFile(null);
-    if (job.client_email && !clientEmail) setClientEmail(job.client_email);
-  }, [clientEmail]);
-
-  // /analyse?jobId=... from a job's page pre-selects that job.
+  // /analyse?jobId=... from a job's page pre-selects that job - once: the
+  // saved jobs load again in the background (a cached list shows first), and
+  // that mustn't undo what the person has done since.
   useEffect(() => {
     const targetId = searchParams?.get("jobId");
-    if (!targetId || !savedJobs.length) return;
+    if (!targetId || !savedJobs.length || prefilledJob) return;
     const match = savedJobs.find((j) => j.id === targetId);
     if (!match) return;
-    const t = setTimeout(() => {
-      setPrefilledJob(match);
-      setRoleMode("saved");
-      selectSavedJob(match);
-    }, 0);
+    const t = setTimeout(() => dispatch({ type: "prefillJob", job: match }), 0);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only once jobs have loaded
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- when the jobs arrive
   }, [savedJobs]);
 
   // Progress steps advance on a timer while the request is in flight.
   useEffect(() => {
     if (!loading) return undefined;
-    const t = setInterval(() => setStep((s) => Math.min(s + 1, RUN_STEPS.length - 1)), 6000);
+    const t = setInterval(() => dispatch({ type: "tick", lastStep: RUN_STEPS.length - 1 }), 6000);
     return () => clearInterval(t);
   }, [loading]);
 
@@ -253,44 +238,24 @@ export default function AnalyseWorkspace() {
   const canAnalyse = !missing && !loading;
 
   // ── Handlers ──────────────────────────────────────────────────────────
-  function onRoleText(value) {
-    setJobText(value);
-    // Editing the text means it's no longer exactly the saved job.
-    if (existingJobId) setExistingJobId(null);
-    setJobTitle(null);
-  }
-
-  function onRoleModeChange(next) {
-    setRoleMode(next);
-    if (next !== "saved" && existingJobId) {
-      setExistingJobId(null);
-      setJobTitle(null);
-    }
-  }
-
   function onJobFile(chosen) {
-    setExistingJobId(null);
-    setJobTitle(null);
     if (!chosen) {
-      setJobFile(null);
+      dispatch({ type: "jobFile", file: null });
       return;
     }
     const problem = jobFileProblem(chosen);
     if (problem) {
+      dispatch({ type: "detachJob" });
       toast(problem, "error");
       return;
     }
     if (isTextFile(chosen)) {
+      dispatch({ type: "jobFile", file: null });
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setJobText(String(e.target?.result || ""));
-        setRoleMode("paste");
-      };
+      reader.onload = (e) => dispatch({ type: "jobTextFromFile", text: String(e.target?.result || "") });
       reader.readAsText(chosen);
-      setJobFile(null);
     } else {
-      setJobFile(chosen);
-      setJobText("");
+      dispatch({ type: "jobFile", file: chosen });
     }
   }
 
@@ -301,9 +266,7 @@ export default function AnalyseWorkspace() {
       toast(problem, "error");
       return;
     }
-    setError(null);
-    if (comparing) setCompareFile(chosen);
-    else setFile(chosen);
+    dispatch({ type: "cvFile", file: chosen });
   }
 
   function saveTemplate() {
@@ -323,9 +286,7 @@ export default function AnalyseWorkspace() {
     lastRunRef.current = opts;
 
     const startedAt = Date.now();
-    setLoading(true);
-    setStep(0);
-    setError(null);
+    dispatch({ type: "runStarted" });
 
     const form = new FormData();
     form.append("cv", cv);
@@ -350,27 +311,19 @@ export default function AnalyseWorkspace() {
         // Without this, failed analyses were invisible in analytics: only
         // successes were recorded, so the failure rate couldn't be seen.
         track("analysis_failed", { status: response.status, comparison: isCompare, cv_file_type: cv.type || "unknown" });
-        setError(data?.error || failureMessage(response.status));
+        dispatch({ type: "runFailed", error: data?.error || failureMessage(response.status) });
         return;
       }
 
       if (isCompare) {
         // Both candidates are saved now - open the full side-by-side page.
-        setComparing(false);
-        setCompareFile(null);
+        dispatch({ type: "stopComparing" });
         const q = new URLSearchParams({ ids: [candidateId, data.candidateId].filter(Boolean).join(",") });
         if (data.jobId || jobId) q.set("jobId", data.jobId || jobId);
         router.push(`/analyse/compare?${q.toString()}`);
       } else {
-        setResult(data.result);
-        setCandidateId(data.candidateId);
-        setDuplicate(data.duplicate || null);
-        setJobId(data.jobId);
-        setScoreId(data.scoreId || null);
-        setJobTitle(data.job?.title || null);
+        dispatch({ type: "analysed", data });
         resetEmail();
-        setFeedback({ sent: false, rating: null, reason: null });
-        setRerunning(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
@@ -399,11 +352,11 @@ export default function AnalyseWorkspace() {
       });
     } catch {
       track("analysis_failed", { status: "network", comparison: isCompare, cv_file_type: cv.type || "unknown" });
-      setError("Network error - check your connection and try again.");
+      dispatch({ type: "runFailed", error: "Network error - check your connection and try again." });
     } finally {
       const remaining = MIN_LOADING_MS - (Date.now() - startedAt);
       if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
-      setLoading(false);
+      dispatch({ type: "runFinished" });
     }
   }
 
@@ -426,31 +379,15 @@ export default function AnalyseWorkspace() {
   }, [mode, showSetup, canAnalyse, rerunning]);
 
   function startNew() {
-    setResult(null);
-    setCandidateId(null);
-    setDuplicate(null);
-    setJobId(null);
-    setJobTitle(null);
-    setFile(null);
-    setCompareFile(null);
-    setComparing(false);
-    setRerunning(false);
-    setReference("");
-    setScoreId(null);
+    dispatch({ type: "startNew" });
     resetEmail();
-    setFeedback({ sent: false, rating: null, reason: null });
-    setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function newCandidateSameRole() {
-    // Keep the role (and attach to the job the last analysis created).
-    const keepJobId = existingJobId || jobId;
-    startNew();
-    if (keepJobId) {
-      setExistingJobId(keepJobId);
-      if (savedJobs.some((j) => j.id === keepJobId)) setRoleMode("saved");
-    }
+    dispatch({ type: "nextCandidate", savedJobIds: savedJobs.map((j) => j.id) });
+    resetEmail();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function copySummary() {
@@ -474,7 +411,7 @@ export default function AnalyseWorkspace() {
   }
 
   async function submitFeedback(rating, reason = null, expectedBand = null) {
-    setFeedback({ sent: true, rating, reason });
+    dispatch({ type: "feedbackSent", rating, reason });
     lsSet("feedbackCount", ls("feedbackCount", 0) + 1);
     if (posthog.__loaded) posthog.capture("analysis_feedback_submitted", { rating, reason });
     try {
@@ -537,8 +474,8 @@ export default function AnalyseWorkspace() {
               </Button>
               <MoreActions
                 actions={[
-                  { label: "Re-score", icon: "refresh", onSelect: () => setRerunning(true) },
-                  { label: "Upload a CV to compare", icon: "compare", onSelect: () => setComparing(true) },
+                  { label: "Re-score", icon: "refresh", onSelect: () => set("rerunning")(true) },
+                  { label: "Upload a CV to compare", icon: "compare", onSelect: () => set("comparing")(true) },
                   jobId && candidateId && {
                     label: "Compare everyone for this role",
                     icon: "layers",
@@ -577,7 +514,7 @@ export default function AnalyseWorkspace() {
               <Notice
                 tone="error"
                 className="mb-5"
-                onDismiss={() => setError(null)}
+                onDismiss={() => set("error")(null)}
                 action={
                   <button type="button" onClick={() => analyse(lastRunRef.current)} className="font-semibold underline underline-offset-2 shrink-0">
                     Try again
@@ -595,7 +532,7 @@ export default function AnalyseWorkspace() {
                   <p className="text-[14px] text-[var(--ink-soft)] mt-2">
                     Comparing against <span className="text-[var(--ink)] font-medium">{result?.blind_mode ? "the blind-screened candidate" : result?.name || "the first candidate"}</span> ({result?.match_score}/100).
                   </p>
-                  <Button size="sm" variant="ghost" className="mt-3 -ml-2" onClick={() => { setComparing(false); setCompareFile(null); }} icon="arrowLeft">
+                  <Button size="sm" variant="ghost" className="mt-3 -ml-2" onClick={() => dispatch({ type: "stopComparing" })} icon="arrowLeft">
                     Back to the report
                   </Button>
                 </Card>
@@ -606,18 +543,18 @@ export default function AnalyseWorkspace() {
                   jobText={jobText}
                   jobFile={jobFile}
                   mode={roleMode}
-                  setMode={onRoleModeChange}
+                  setMode={(mode) => dispatch({ type: "roleMode", mode })}
                   roleDraft={roleDraft}
-                  setRoleDraft={setRoleDraft}
-                  onSelectSavedJob={(job) => { selectSavedJob(job); setJobTitle(null); }}
-                  onJobTextChange={onRoleText}
+                  setRoleDraft={set("roleDraft")}
+                  onSelectSavedJob={(job) => dispatch({ type: "selectSavedJob", job })}
+                  onJobTextChange={(text) => dispatch({ type: "roleText", text })}
                   onJobFile={onJobFile}
                   onSaveTemplate={saveTemplate}
                   requirements={requirements}
-                  setRequirements={setRequirements}
+                  setRequirements={set("requirements")}
                   clientEmail={clientEmail}
-                  setClientEmail={setClientEmail}
-                  disabled={!jobsLoaded && roleMode === "saved"}
+                  setClientEmail={set("clientEmail")}
+                  disabled={jobsLoading && roleMode === "saved"}
                 />
               )}
               <div className="lg:sticky lg:top-[76px]">
@@ -626,20 +563,20 @@ export default function AnalyseWorkspace() {
                   onFile={onCvFile}
                   previous={previous}
                   reference={reference}
-                  setReference={setReference}
+                  setReference={set("reference")}
                   blind={blind}
-                  setBlind={setBlind}
+                  setBlind={set("blind")}
                   consent={consent}
                   setConsent={setConsent}
                   canAnalyse={canAnalyse}
                   missing={missing}
                   onAnalyse={() => analyse({ rerun: rerunning })}
                   rerunOf={rerunning ? file?.name : null}
-                  onCancelRerun={() => setRerunning(false)}
+                  onCancelRerun={() => set("rerunning")(false)}
                   compare={comparing}
                 />
                 {rerunning && (
-                  <Button size="sm" variant="ghost" className="mt-2" icon="arrowLeft" onClick={() => setRerunning(false)}>
+                  <Button size="sm" variant="ghost" className="mt-2" icon="arrowLeft" onClick={() => set("rerunning")(false)}>
                     Back to the report
                   </Button>
                 )}

@@ -4,7 +4,7 @@
 // the invoices raised from them: fees banked, what's unpaid or overdue,
 // who's still inside a rebate period, and contractors on assignment.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getAccountingExport, getInvoices, getPlacements, updateInvoice } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
@@ -12,6 +12,13 @@ import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements";
 import { Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placements";
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { useResource } from "@/lib/use-resource";
+
+async function loadPlacements() {
+  // Invoices are refused (403) for members when money is admin-only.
+  const [placements, invoices] = await Promise.all([getPlacements(), getInvoices().catch(() => [])]);
+  return { placements, invoices, today: new Date().toISOString().slice(0, 10), financialsHidden: Boolean(placements?.financialsHidden) };
+}
 
 function Stat({ label, value, hint, tone }) {
   return (
@@ -40,35 +47,13 @@ export default function PlacementsPage() {
   // front can't make the server and client renders differ.
   const query = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
   const [tab, setTab] = useState(() => (query?.get("tab") === "invoices" ? "invoices" : "placements"));
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
+  const { data, error, reload } = useResource("placements", loadPlacements);
   const [status, setStatus] = useState("all");
   const [kind, setKind] = useState(() => (query?.get("kind") === "contract" ? "contract" : "all"));
   const [invoiceFilter, setInvoiceFilter] = useState("unpaid");
   const [invoiceError, setInvoiceError] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [exportNote, setExportNote] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    // Invoices are refused (403) for members when money is admin-only.
-    Promise.all([getPlacements(), getInvoices().catch(() => [])])
-      .then(([placements, invoices]) => {
-        if (!cancelled) {
-          setData({ placements, invoices, today: new Date().toISOString().slice(0, 10), financialsHidden: Boolean(placements?.financialsHidden) });
-          setError(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadKey]);
-
-  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const stats = useMemo(() => {
     if (!data) return null;
@@ -171,7 +156,7 @@ export default function PlacementsPage() {
       />
       {exportNote && <p className="text-[13px]" style={{ color: INK_MUTED }}>{exportNote}</p>}
 
-      {error ? (
+      {error && !data ? (
         <ErrorState body="Placements couldn't be loaded." onRetry={reload} />
       ) : !data ? (
         <LoadingCard rows={6} />

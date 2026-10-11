@@ -5,9 +5,10 @@
 // an outcome or scorecard; and recent ones (app/api/interviews). Or a
 // Monday-to-Sunday week view (components/dashboard/interview-week.jsx).
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getInterviews } from "@/lib/dashboard-api";
+import { useResource } from "@/lib/use-resource";
 import { Page, PageHeader, Card, EmptyState, ErrorState, LoadingCard, INK, INK_MUTED } from "@/components/dashboard/ui";
 import { InterviewItem } from "@/components/dashboard/interviews";
 import { InterviewWeek } from "@/components/dashboard/interview-week";
@@ -25,6 +26,7 @@ function dayLabel(date) {
 }
 
 const VIEW_KEY = "helixon:interviews-view";
+const NO_INTERVIEWS = [];
 
 export default function InterviewsPage() {
   const [scope, setScope] = useState("mine");
@@ -43,26 +45,13 @@ export default function InterviewsPage() {
       // private window - the choice just isn't remembered
     }
   };
-  const [state, setState] = useState({ scope: null, list: [], error: false, at: 0 });
-  const [reloadKey, setReloadKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    // From 60 days back (to catch ones still needing an outcome) onwards.
-    getInterviews({ scope, from: new Date(Date.now() - 60 * DAY).toISOString() })
-      .then((list) => {
-        if (!cancelled) setState({ scope, list, error: false, at: Date.now() });
-      })
-      .catch(() => {
-        if (!cancelled) setState({ scope, list: [], error: true, at: Date.now() });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [scope, reloadKey]);
-
-  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
-  const loading = state.scope !== scope;
+  // From 60 days back (to catch ones still needing an outcome) onwards.
+  // `at` is when they were loaded: "upcoming" is relative to it.
+  const { data, error, loading, reload } = useResource(`interviews:${scope}`, async () => {
+    const list = await getInterviews({ scope, from: new Date(Date.now() - 60 * DAY).toISOString() });
+    return { list, at: Date.now() };
+  });
+  const state = { list: data?.list ?? NO_INTERVIEWS, at: data?.at ?? 0, error: Boolean(error) && !data };
 
   const groups = useMemo(() => {
     const now = state.at;

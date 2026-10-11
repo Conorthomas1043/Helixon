@@ -25,6 +25,7 @@ import { Button, Card, Dialog, ErrorText, Field, Select, TextInput, INK, INK_MUT
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import CopyButton from "@/components/dashboard/CopyButton";
 import { reportQuietly } from "@/lib/report-error";
+import { useResource } from "@/lib/use-resource";
 
 // Offer letters and contracts, worded from the candidate's latest placement.
 export function CandidateDocumentsCard({ candidate }) {
@@ -71,18 +72,12 @@ export function CandidateDocumentsCard({ candidate }) {
 // documents (app/portal/[token]).
 export function SelfServiceCard({ candidate }) {
   const [ask, confirmDialog] = useConfirm();
-  const [state, setState] = useState({ loading: true, link: null, unavailable: false });
+  const portal = useResource(`portal-link:${candidate.id}`, () => getPortalLink(candidate.id));
+  const state = { loading: portal.loading, link: portal.data?.link ?? null, unavailable: Boolean(portal.data?.unavailable) };
+  const setLink = (link) => portal.mutate((d) => ({ ...d, link }));
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    getPortalLink(candidate.id)
-      .then((d) => { if (!cancelled) setState({ loading: false, link: d.link, unavailable: Boolean(d.unavailable) }); })
-      .catch(() => { if (!cancelled) setState({ loading: false, link: null, unavailable: false }); });
-    return () => { cancelled = true; };
-  }, [candidate.id]);
 
   async function create(send) {
     setBusy(true);
@@ -90,7 +85,7 @@ export function SelfServiceCard({ candidate }) {
     setNote("");
     try {
       const res = await createPortalLink(candidate.id, { send });
-      setState((s) => ({ ...s, link: res.link }));
+      setLink(res.link);
       setNote(res.emailError ? `Link made, but the email didn't send: ${res.emailError}` : send ? `Emailed to ${candidate.email}.` : "Link ready - copy it below.");
     } catch (err) {
       setError(err.message);
@@ -104,7 +99,7 @@ export function SelfServiceCard({ candidate }) {
     setBusy(true);
     try {
       await revokePortalLink(candidate.id);
-      setState((s) => ({ ...s, link: null }));
+      setLink(null);
       setNote("Link turned off.");
     } catch (err) {
       setError(err.message);
@@ -231,26 +226,18 @@ function OfferTimesDialog({ candidate, onClose, onSaved }) {
 
 // Interview times offered for the candidate to pick (app/book/[token]).
 export function BookingLinksCard({ candidate, onBooked }) {
-  const [links, setLinks] = useState(null);
-  const [unavailable, setUnavailable] = useState(false);
+  const { data, error, reload } = useResource(`booking-links:${candidate.id}`, () => getBookingLinks(candidate.id));
+  const links = data ? data.links || [] : error ? [] : null;
+  const unavailable = Boolean(data?.unavailable);
   const [dialog, setDialog] = useState(false);
   const [note, setNote] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
 
+  // A time was picked: the profile refreshes to show the interview.
   useEffect(() => {
-    let cancelled = false;
-    getBookingLinks(candidate.id)
-      .then((d) => {
-        if (cancelled) return;
-        setLinks(d.links || []);
-        setUnavailable(Boolean(d.unavailable));
-        if ((d.links || []).some((l) => l.status === "booked")) onBooked?.();
-      })
-      .catch(() => { if (!cancelled) setLinks([]); });
-    return () => { cancelled = true; };
-    // onBooked only refreshes the profile - not a reason to re-fetch.
+    if ((data?.links || []).some((l) => l.status === "booked")) onBooked?.();
+    // onBooked only refreshes the profile - not a reason to run again.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candidate.id, reloadKey]);
+  }, [data]);
 
   if (unavailable) return null;
   const open = (links || []).filter((l) => l.status === "open" && l.openSlots.length > 0);
@@ -278,7 +265,7 @@ export function BookingLinksCard({ candidate, onBooked }) {
                     } catch (err) {
                       setNote(`Couldn't cancel that link: ${err.message}`);
                     }
-                    setReloadKey((k) => k + 1);
+                    reload();
                   }}
                 >
                   Cancel link
@@ -296,7 +283,7 @@ export function BookingLinksCard({ candidate, onBooked }) {
           onSaved={(res) => {
             setDialog(false);
             setNote(res.emailError ? `Saved, but the email didn't send: ${res.emailError}. Copy the link instead.` : "Times offered.");
-            setReloadKey((k) => k + 1);
+            reload();
           }}
         />
       )}
