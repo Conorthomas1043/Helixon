@@ -1,4 +1,5 @@
 import { CURRENT_YEAR } from "../config.js";
+import { normaliseAiWriting } from "../../screening/ai-writing.js";
 
 
 function toStringOrEmpty(value) {
@@ -108,7 +109,10 @@ export default function validateCandidate(candidate = {}) {
         years_experience: 0,
 
 
-        cv_quality_issues: []
+        cv_quality_issues: [],
+
+
+        ai_writing: { likelihood: "low", signals: [] }
 
 
     };
@@ -200,6 +204,12 @@ export default function validateCandidate(candidate = {}) {
         toArray(candidate.cv_quality_issues)
             .map((issue) => (typeof issue === "string" ? issue.trim() : String(issue ?? "").trim()))
             .filter(Boolean);
+
+
+
+    // Shown as an amber prompt to check, never scored (lib/screening/ai-writing.js).
+    candidate.ai_writing =
+        normaliseAiWriting(candidate.ai_writing);
 
 
 

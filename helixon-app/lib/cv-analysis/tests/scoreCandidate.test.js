@@ -183,3 +183,22 @@ describe("scoring rule fixes", () => {
     expect(result.warnings.some((w) => /unusually long/.test(w))).toBe(true);
   });
 });
+
+describe("the AI-writing flag", () => {
+  // It's shown to the recruiter as a prompt to check (lib/screening/ai-writing.js);
+  // the score must be exactly the same whatever the CV reader thought.
+  it("never changes the score", async () => {
+    const details = [{ skill: "Python", depth: "Expert" }, { skill: "SQL", depth: "Used" }];
+    const plain = await scoreCandidate(candidate(details), job, cv);
+    const flagged = await scoreCandidate(
+      candidate(details, { ai_writing: { likelihood: "high", signals: ["Stock phrasing throughout", "Claims with no figures"] } }),
+      job,
+      cv
+    );
+    // The result echoes the candidate back; everything else must match.
+    const { candidate: _flaggedInput, ...flaggedScore } = flagged;
+    const { candidate: _plainInput, ...plainScore } = plain;
+    expect(flaggedScore).toEqual(plainScore);
+    expect(flagged.match_score).toBe(plain.match_score);
+  });
+});

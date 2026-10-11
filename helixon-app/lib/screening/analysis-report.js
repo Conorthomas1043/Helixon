@@ -1,11 +1,11 @@
 // The recruiter-facing report for one analysis, built from what the scoring
 // pipeline produced (scores.result) and what was read from the CV
 // (candidates.extracted). Used by /api/run to answer straight after
-// screening, and by /api/candidates/[id] so the candidate profile can show
-// the same full report later - before, the report only existed in the
-// /api/run response and was gone once you left the Analyse screen.
+// screening, and by /api/candidates/[id] so the candidate profile shows the
+// same full report later.
 
 import { getScoreBand } from "@/lib/screening/scoreBands";
+import { aiWritingNotice } from "@/lib/screening/ai-writing";
 
 // Contact details and anything identifying are withheld for a blind screen.
 export function redactExtracted(ex = {}) {
@@ -61,6 +61,9 @@ export function buildReport(result = {}, extracted = {}, { salary = null, blind 
 
     experience_breakdown: ex.experience_breakdown || [],
     cv_quality_issues: ex.cv_quality_issues || [],
+    // An amber prompt to check the specifics at interview, for a CV that
+    // clearly reads as AI-written. Never part of the score.
+    ai_writing: aiWritingNotice(ex),
     education: ex.education || [],
     certifications: ex.certifications || [],
     languages: ex.languages || [],

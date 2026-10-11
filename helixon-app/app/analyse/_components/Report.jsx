@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { Card, Icon, Notice, cx } from "./ui";
 import { scoreTone } from "../_lib/analyse";
+import AiWritingNotice from "@/components/dashboard/AiWritingNotice";
 
 // Salary estimates carry their own currency and pay period - the role can
 // be anywhere, and hourly work is shown as an hourly rate.
@@ -218,7 +219,7 @@ export default function Report({ result, roleLabel }) {
           </div>
         </div>
 
-        {(capped || result.confidence === "Low" || result.duplicate_of || result.warnings?.length > 0) && (
+        {(capped || result.confidence === "Low" || result.duplicate_of || result.warnings?.length > 0 || result.ai_writing) && (
           <div className="mt-5 space-y-2">
             {capped && (
               <Notice tone="warn">
@@ -230,6 +231,7 @@ export default function Report({ result, roleLabel }) {
             {(result.warnings || []).map((w) => (
               <Notice key={w} tone="warn">{w}</Notice>
             ))}
+            {result.ai_writing && <AiWritingNotice notice={result.ai_writing} />}
           </div>
         )}
       </header>

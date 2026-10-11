@@ -7,6 +7,7 @@ import { AMBER, CARD, INK, INK_FAINT, INK_MUTED, formatDateOnly } from "@/lib/ca
 import { printSection } from "@/lib/ui/print";
 import { useRef, useState } from "react";
 import { FieldLabel, SectionHeading } from "./primitives";
+import AiWritingNotice from "@/components/dashboard/AiWritingNotice";
 
 export function MatchOverview({ candidate }) {
   return (
@@ -182,6 +183,8 @@ export function FullAnalysis({ analysis, candidateName }) {
         {role ? ` for ${role}` : ""}
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.
       </p>
+      {/* Visible while the report is collapsed; the open report shows it too. */}
+      {!open && <AiWritingNotice notice={analysis.report.ai_writing} className="mt-4" />}
       {open && (
         <div className="mt-5">
           <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} />
