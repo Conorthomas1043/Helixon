@@ -10,6 +10,8 @@ import { candidatePayload, emitWebhook } from "@/lib/integrations/webhooks";
 import { readScreeningForm, reusableJobParsed, screeningFailure } from "@/lib/screening/input";
 import { duplicateNotice, saveScreening } from "@/lib/screening/save";
 import { reportError } from "@/lib/report-error";
+import { captureAgencyEvent } from "@/lib/analytics/server";
+import { aiWritingNotice } from "@/lib/screening/ai-writing";
 
 // POST (multipart) - screen one CV against a job: check the request, run the
 // analysis (lib/cv-analysis), save it (lib/screening/save.js) and answer with
@@ -76,6 +78,13 @@ export async function POST(request) {
 
     after(() =>
       emitWebhook(agencyId, "candidate.created", candidatePayload({ ...candidate, match_score: matchScore, job_id: job.id }, { jobTitle: job.title ?? null, via: "screening" }))
+    );
+    // How often the AI-writing check fires, per agency (no CV content).
+    after(() =>
+      captureAgencyEvent("cv_ai_writing_checked", agencyId, {
+        likelihood: extracted?.ai_writing?.likelihood ?? "unknown",
+        flagged: Boolean(aiWritingNotice(extracted)),
+      })
     );
 
     return NextResponse.json({

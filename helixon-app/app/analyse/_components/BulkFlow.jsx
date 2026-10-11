@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
 import { splitViewHref } from "@/lib/workspace/panes";
+import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
 import { isZipFile, unzipCvs } from "../_lib/zip";
 import { bulkResultRows, clearSavedRun, loadSavedRun, pendingInRun, saveRun, serialiseQueue } from "../_lib/bulkRun";
 import { Card, CardHeader, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
@@ -285,7 +286,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
         return { outcome: "rate_limited" };
       }
       if (data?.ok) {
-        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null, duplicate: data.duplicate || null });
+        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null, duplicate: data.duplicate || null, aiWritten: Boolean(data.result?.ai_writing) });
         return { outcome: "ok", jobId: data.jobId };
       }
       updateItem(item.id, { status: "failed", errorMessage: data?.error || "Analysis failed." });
@@ -639,6 +640,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                       <p className={cx("text-[13px] truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
                         {item.status === "failed" || item.status === "rate_limited" ? item.errorMessage : item.name ? item.file.name : formatBytes(item.file.size)}
                       </p>
+                      {item.aiWritten && <AiWritingBadge className="mt-1" />}
                       {item.duplicate && (
                         <p className="text-[13px] truncate" style={{ color: item.duplicate.sameJobCandidateId ? "var(--score-mid)" : "var(--forest)" }}>
                           {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}

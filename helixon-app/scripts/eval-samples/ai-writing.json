@@ -1,0 +1,77 @@
+{
+ "_note": "Synthetic starter set: no real people. Add real CVs you're permitted to use (labelled 'ai' or 'human', with a group such as native / non_native / short / polished) to make the numbers meaningful. Run: npm run eval:ai-writing -- --yes",
+ "cases": [
+  {
+   "id": "ai-1",
+   "label": "ai",
+   "group": "generic",
+   "cv": "Results-driven Sales Professional with a proven track record of exceeding targets in fast-paced environments. Passionate about building strong client relationships and driving revenue growth.\n\nEXPERIENCE\nSenior Account Executive, Leading Technology Company (2019-Present)\n- Spearheaded strategic initiatives that drove significant revenue growth across key accounts\n- Leveraged cross-functional collaboration to deliver exceptional customer experiences\n- Consistently exceeded quarterly targets through a dynamic, solutions-focused approach\n\nAccount Executive, Growing SaaS Organisation (2016-2019)\n- Cultivated strong relationships with key stakeholders to drive business success\n- Leveraged data-driven insights to optimise the sales pipeline\n- Championed best practices that enhanced team performance\n\nSKILLS\nStrategic Planning, Relationship Building, Negotiation, Communication, Leadership"
+  },
+  {
+   "id": "ai-2",
+   "label": "ai",
+   "group": "generic",
+   "cv": "Dynamic and detail-oriented Software Engineer passionate about leveraging cutting-edge technologies to deliver innovative solutions.\n\nPROFESSIONAL EXPERIENCE\nSoftware Engineer, Innovative Tech Solutions (2020-Present)\n- Spearheaded the development of scalable applications, driving efficiency and innovation\n- Collaborated with cross-functional teams to deliver high-quality software solutions\n- Leveraged agile methodologies to streamline processes and enhance productivity\n- Played a pivotal role in optimising system performance and reliability\n\nJunior Developer, Forward-Thinking Startup (2018-2020)\n- Contributed to the successful delivery of key projects in a fast-paced environment\n- Demonstrated a proven ability to learn new technologies quickly\n\nSKILLS: Problem Solving, Teamwork, Innovation, Software Development"
+  },
+  {
+   "id": "ai-3",
+   "label": "ai",
+   "group": "generic",
+   "cv": "Compassionate and dedicated Healthcare Assistant committed to delivering exceptional, person-centred care. Passionate about making a meaningful difference in patients' lives.\n\nEXPERIENCE\nHealthcare Assistant, Reputable Care Provider (2021-Present)\n- Delivered exceptional care to residents, fostering a supportive and nurturing environment\n- Collaborated seamlessly with multidisciplinary teams to enhance patient outcomes\n- Demonstrated unwavering commitment to upholding the highest standards of care\n- Played a key role in driving continuous improvement initiatives\n\nCare Support Worker, Community Organisation (2019-2021)\n- Empowered individuals to achieve their goals through compassionate support\n- Championed a culture of dignity and respect"
+  },
+  {
+   "id": "ai-4",
+   "label": "ai",
+   "group": "generic",
+   "cv": "Highly motivated Marketing Manager with a proven track record of driving brand growth and delivering impactful campaigns. Adept at leveraging data-driven strategies to achieve business objectives.\n\nMarketing Manager, Dynamic Consumer Brand (2018-Present)\n- Spearheaded innovative marketing strategies that significantly boosted brand awareness\n- Orchestrated integrated campaigns that drove engagement and conversions\n- Fostered strong partnerships with stakeholders to align marketing with business goals\n- Leveraged analytics to optimise performance and maximise ROI\n\nMarketing Executive, Leading Agency (2015-2018)\n- Played a pivotal role in delivering successful campaigns for high-profile clients"
+  },
+  {
+   "id": "ai-5",
+   "label": "ai",
+   "group": "generic",
+   "cv": "Strategic and results-oriented Project Manager passionate about delivering complex projects on time and within budget. Proven ability to lead diverse teams and drive organisational success.\n\nProject Manager, Global Enterprise (2017-Present)\n- Led cross-functional teams to deliver transformative projects that exceeded expectations\n- Leveraged robust stakeholder management to ensure alignment and drive results\n- Spearheaded process improvements that enhanced operational efficiency\n- Championed a culture of collaboration, accountability and continuous improvement\n\nKEY SKILLS\nLeadership, Stakeholder Management, Risk Management, Strategic Thinking"
+  },
+  {
+   "id": "human-1",
+   "label": "human",
+   "group": "native",
+   "cv": "Tom Reilly - Data Engineer, Leeds\n\nInitech, Data Engineer, 2020 - now\n- Built the nightly Airflow pipelines that load 2TB of card transactions into Snowflake (14 DAGs, about 300 tasks)\n- Moved us off Redshift in 2022: 9 months, ran both side by side for 6 weeks, cut warehouse spend by about 40%\n- On call one week in six; wrote most of the runbooks after a bad outage in March 2023\n\nAcme Retail, Analyst, 2017 - 2020\n- SQL and Excel reporting for 120 stores; automated the weekly sales pack with Python, which saved the team about a day a week\n\nPython, SQL, Airflow, dbt, Snowflake, Terraform (some)"
+  },
+  {
+   "id": "human-2",
+   "label": "human",
+   "group": "native",
+   "cv": "Sarah Okafor\nStaff Nurse (Band 5)\n\nSt James's University Hospital, Ward J24 (acute medicine), 2021 - present\n32-bed ward. I run the shift as nurse in charge about twice a week. Trained 6 student nurses on placement. Did the IV and venepuncture competencies in my first year and now sign off new starters on them.\n\nHCA, Leeds General Infirmary, 2018 - 2021 (while studying)\n\nBSc Adult Nursing, University of Leeds, 2021\nNMC PIN active. Enhanced DBS 2023."
+  },
+  {
+   "id": "human-3",
+   "label": "human",
+   "group": "native",
+   "cv": "Dave Price - Electrician\n18th edition, ECS gold card, full UK licence and own van.\n\n2015 - now: self employed. Mostly domestic rewires and consumer unit changes round Bradford, plus some landlord EICRs (about 15 a month). Did the full rewire on a row of 8 terraces for a housing association last year.\n2010 - 2015: Apprentice then improver at J Smith Electrical, commercial fit-outs (shops, a school extension).\n\nNVQ Level 3, AM2 passed 2013."
+  },
+  {
+   "id": "human-4",
+   "label": "human",
+   "group": "non_native",
+   "cv": "Marta Kowalska\nWarehouse Team Leader\n\nAmazon LBA4 Doncaster, 2019 until now\nI am team leader for night shift, 18 people in my team. I make the rota and I check the picking rates every hour. Last year our team have best accuracy on the site for 4 months. I am training new people on the scanner and on safety.\n\nTesco distribution, picker, 2016 - 2019\nPicking for stores, about 160 cases per hour. Counterbalance and reach truck licence (2017).\n\nLanguages: Polish (native), English (good), Russian (basic)."
+  },
+  {
+   "id": "human-5",
+   "label": "human",
+   "group": "non_native",
+   "cv": "Rahul Mehta - Java Developer\n\nInfosys (client: a UK bank), 2018 - 2024\nWorked on the payments team. We migrated the batch payments system from mainframe to Java Spring Boot services. I wrote the reconciliation service which compare the two systems every night during 8 months parallel run. Also I did performance tuning, the main job went from 4 hours to 50 minutes.\n\nTCS, 2015 - 2018. Junior developer on an insurance claims system (Java, Oracle).\n\nB.Tech Computer Science, Pune University 2015. On Skilled Worker visa, can transfer."
+  },
+  {
+   "id": "human-6",
+   "label": "human",
+   "group": "short",
+   "cv": "Jade Wilson\nBarista / Supervisor\n\nCosta Coffee, Briggate - 2022 to now. Supervisor since 2023. Open and close, cash up, do the rota for 9 staff.\nPret, 2020 - 2022. Barista.\n\nFood Hygiene Level 2. Available weekends."
+  },
+  {
+   "id": "human-7",
+   "label": "human",
+   "group": "polished",
+   "cv": "Eleanor Hughes - Finance Director\n\nNorthgate Logistics (turnover £180m, 1,400 staff), Finance Director, 2019 - present\n- Led the refinancing of a £60m revolving credit facility in 2023 with Lloyds and HSBC\n- Brought month-end close from 12 working days to 5 by moving the group onto NetSuite\n- Sat on the sale process when private equity bought a 40% stake in 2021\n\nKPMG Leeds, Audit Manager, 2012 - 2019 (manufacturing and logistics clients)\n\nACA (ICAEW) 2015. BSc Economics, University of Nottingham."
+  }
+ ]
+}

@@ -501,7 +501,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
               {/* Main column: the assessment and the record. */}
               <div className="space-y-4 lg:space-y-6 order-2 lg:order-1">
                 <MatchOverview candidate={candidate} />
-                <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} />
+                <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} candidateId={candidate.id} />
                 {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
@@ -528,7 +528,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
                     onLogActivity={handleLogActivity}
                     loggingActivity={loggingActivity}
                   />
-                  <NotesPanel notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
+                  <NotesPanel candidateId={candidate.id} notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
                   <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
                 </PanelGroup>
                 <PanelGroup id="contact" title="Contact" summary="Email, texts, booking links and feedback requests" defaultOpen>

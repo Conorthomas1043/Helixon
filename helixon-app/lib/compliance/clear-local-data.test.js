@@ -27,8 +27,10 @@ describe("clearLocalCandidateData", () => {
       "helixon:workspace-tabs:user_b": "[]",
       "helixon:interviews-view": "week",
     });
-    globalThis.window = { localStorage };
+    const sessionStorage = fakeStorage({ "helixon:note-draft:c1": "Half a note", "helixon:tab-scroll:candidate:c1": "400", other: "x" });
+    globalThis.window = { localStorage, sessionStorage };
     clearLocalCandidateData();
     expect(localStorage.keys()).toEqual(["helixon:interviews-view"]);
+    expect(sessionStorage.keys()).toEqual(["other"]);
   });
 });

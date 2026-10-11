@@ -5,7 +5,7 @@ import { reportError } from "@/lib/report-error";
 // Writes to public.research_signals (supabase/migrations/20261004090000).
 // Best-effort and never throws: research capture must never break the
 // flow it sits in. Missing table (migration not yet applied) is silent.
-export const SIGNAL_KINDS = new Set(["cancellation_reason", "assistant_question", "pulse_survey", "research_optin"]);
+export const SIGNAL_KINDS = new Set(["cancellation_reason", "assistant_question", "pulse_survey", "research_optin", "ai_writing_feedback"]);
 
 // Strips the obvious personal data out of free text before it's kept for
 // research: email addresses, phone numbers and URLs. Data minimisation,

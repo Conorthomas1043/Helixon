@@ -79,6 +79,7 @@ export function serialiseQueue(queue) {
       name: it.name ?? null,
       errorMessage: it.errorMessage ?? null,
       duplicate: it.duplicate ?? null,
+      aiWritten: Boolean(it.aiWritten),
     };
   });
 }
@@ -104,6 +105,8 @@ export function bulkResultRows(queue, origin = "") {
             ? "Already on file"
             : ""
         : it.errorMessage || "",
+      // An amber prompt to check at interview, never part of the score.
+      "Possibly AI-written": it.aiWritten ? "Yes" : "",
       Link: it.candidateId ? `${origin}/dashboard/candidates/${it.candidateId}` : "",
     }));
 }

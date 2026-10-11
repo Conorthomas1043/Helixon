@@ -13,20 +13,34 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, cx } from "@/components/ui";
-import { useWorkspaceTabs } from "@/lib/hooks/useWorkspaceTabs";
+import { useEffect, useSyncExternalStore } from "react";
+import { markTabReturn, setTabsCookie, useWorkspaceTabs } from "@/lib/hooks/useWorkspaceTabs";
 import { TAB_KINDS, neighbourAfterClose, tabHref, tabKey, tabKeyForPath } from "@/lib/workspace/tabs";
 import { splitViewHref } from "@/lib/workspace/panes";
+
+const noSubscribe = () => () => {};
 
 export default function WorkspaceTabs() {
   const { tabs, close, closeAll } = useWorkspaceTabs();
   const pathname = usePathname();
   const router = useRouter();
   const activeKey = tabKeyForPath(pathname);
+  // Before the tabs are read (the server render, hydration) this holds the
+  // strip's place - sized in CSS only when the cookie says there are tabs.
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
+  useEffect(() => {
+    // Tabs gone some other way (storage cleared): stop reserving room.
+    if (hydrated && !tabs.length) setTabsCookie(false);
+  }, [hydrated, tabs.length]);
+  if (!hydrated) return <div className="ws-tabs-slot" aria-hidden="true" />;
 
   function onClose(key) {
     if (key === activeKey) {
       const next = neighbourAfterClose(tabs, key);
-      if (next) router.push(tabHref(next));
+      if (next) {
+        markTabReturn(tabKey(next));
+        router.push(tabHref(next));
+      }
     }
     close(key);
   }
@@ -54,7 +68,8 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
 
   return (
     <nav aria-label="Open records" className="print-hide border-b border-[var(--border)] bg-[var(--mist)]">
-      <div className="mx-auto flex max-w-[1500px] items-center gap-2 px-4 sm:px-6 py-1.5">
+      {/* A fixed height, matched by .ws-tabs-slot in globals.css. */}
+      <div className="mx-auto flex h-10 max-w-[1500px] items-center gap-2 px-4 sm:px-6">
         <ul className="scroll-fade-x flex min-w-0 flex-1 gap-1 overflow-x-auto">
           {tabs.map((tab) => {
             const key = tabKey(tab);
@@ -72,6 +87,8 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
                 >
                   <Link
                     href={tabHref(tab)}
+                    // Back to where you were on that page.
+                    onClick={() => markTabReturn(key)}
                     aria-current={active ? "page" : undefined}
                     title={`${kind.label}: ${tab.title}`}
                     className="flex max-w-[220px] items-center gap-1.5 rounded-l-[8px] py-1 pl-2.5 pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"

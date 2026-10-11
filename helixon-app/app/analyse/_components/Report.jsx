@@ -117,7 +117,8 @@ function ContactRow({ icon, label, children }) {
 
 // `embedded`: shown inside a split-view pane (app/dashboard/workspace), which
 // scrolls on its own - the sticky section menu would float mid-pane there.
-export default function Report({ result, roleLabel, embedded = false }) {
+// `candidateId`, when known, lets the AI-writing notice ask whether it's right.
+export default function Report({ result, roleLabel, embedded = false, candidateId = null }) {
   const [grown, setGrown] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setGrown(true), 120);
@@ -125,6 +126,9 @@ export default function Report({ result, roleLabel, embedded = false }) {
   }, [result]);
 
   if (!result) return null;
+  // Section ids are the menu's anchors. Embedded reports have no menu, and
+  // several on one page (the split view) mustn't repeat the same ids.
+  const sectionId = (name) => (embedded ? undefined : name);
 
   const tone = scoreTone(result.match_score);
   const blind = !!result.blind_mode;
@@ -233,7 +237,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
             {(result.warnings || []).map((w) => (
               <Notice key={w} tone="warn">{w}</Notice>
             ))}
-            {result.ai_writing && <AiWritingNotice notice={result.ai_writing} />}
+            {result.ai_writing && <AiWritingNotice notice={result.ai_writing} candidateId={candidateId} where={embedded ? "split_view" : "report"} />}
           </div>
         )}
       </header>
@@ -253,7 +257,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
       )}
 
       {/* ── Overview ────────────────────────────────────────────────── */}
-      <Section id="overview" title="Overview">
+      <Section id={sectionId("overview")} title="Overview">
         {breakdown.length > 0 && (
           <div className="space-y-5">
             {breakdown.map((row, i) => {
@@ -298,7 +302,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
 
       {/* ── Must-haves ──────────────────────────────────────────────── */}
       {requirements.length > 0 && (
-        <Section id="requirements" title="Must-haves" meta={`${metCount} of ${requirements.length} met`}>
+        <Section id={sectionId("requirements")} title="Must-haves" meta={`${metCount} of ${requirements.length} met`}>
           <ul className="divide-y divide-[var(--border-soft)] border-y border-[var(--border-soft)]">
             {requirements.map((r, i) => (
               <li key={`${r.requirement}-${i}`} className="flex gap-3 py-3">
@@ -320,7 +324,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
       )}
 
       {/* ── Skills ──────────────────────────────────────────────────── */}
-      <Section id="skills" title="Skills">
+      <Section id={sectionId("skills")} title="Skills">
         <div className="grid gap-6 sm:grid-cols-3">
           <SkillList title="Matched" items={matched} tone="var(--forest)" empty="None matched." />
           {missingFlat.length ? (
@@ -342,7 +346,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
 
       {/* ── Experience ──────────────────────────────────────────────── */}
       {sections.some((s) => s.id === "experience") && (
-        <Section id="experience" title="Experience">
+        <Section id={sectionId("experience")} title="Experience">
           {experience.length > 0 && (
             <div className="space-y-3">
               {experience.map((item, i) => (
@@ -397,7 +401,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
 
       {/* ── Evidence ────────────────────────────────────────────────── */}
       {sections.some((s) => s.id === "evidence") && (
-        <Section id="evidence" title="Evidence">
+        <Section id={sectionId("evidence")} title="Evidence">
           {result.red_flags?.length > 0 && (
             <div className="rounded-[10px] border border-[#f2d2cd] bg-[#fdf6f5] px-4 py-3.5 mb-6">
               <p className="text-[14px] font-semibold text-[#a83226] mb-2 flex items-center gap-1.5">
@@ -425,7 +429,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
 
       {/* ── Interview questions ─────────────────────────────────────── */}
       {result.interview_questions?.length > 0 && (
-        <Section id="interview" title="Interview questions" meta="Tailored to the gaps above">
+        <Section id={sectionId("interview")} title="Interview questions" meta="Tailored to the gaps above">
           <ol className="space-y-3.5">
             {result.interview_questions.map((q, i) => (
               <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-[var(--ink)]">
@@ -439,7 +443,7 @@ export default function Report({ result, roleLabel, embedded = false }) {
 
       {/* ── Contact & salary ────────────────────────────────────────── */}
       {sections.some((s) => s.id === "contact") && (
-        <Section id="contact" title={blind ? "Salary" : "Contact and salary"}>
+        <Section id={sectionId("contact")} title={blind ? "Salary" : "Contact and salary"}>
           {hasContact && (
             <div className="mb-6">
               {result.email && (

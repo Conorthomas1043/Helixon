@@ -5,6 +5,7 @@
 import { CARD, INK, INK_FAINT, INK_MUTED, RED_STRONG, formatRelativeTime } from "@/lib/candidates/format";
 import { useMemo, useState } from "react";
 import { SectionHeading } from "./primitives";
+import { useSessionDraft } from "@/lib/hooks/useSessionDraft";
 
 export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
   const [editing, setEditing] = useState(false);
@@ -80,8 +81,9 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
   );
 }
 
-export function NotesPanel({ notes, currentUserId, onAddNote, onEditNote, onDeleteNote, onPinNote }) {
-  const [draft, setDraft] = useState("");
+export function NotesPanel({ candidateId, notes, currentUserId, onAddNote, onEditNote, onDeleteNote, onPinNote }) {
+  // Kept while switching between workspace tabs (lib/hooks/useSessionDraft.js).
+  const [draft, setDraft] = useSessionDraft(candidateId ? `helixon:note-draft:${candidateId}` : null);
   // Pinned first (most recently pinned on top), then newest first.
   const ordered = useMemo(
     () =>

@@ -94,7 +94,12 @@ Defined in `vercel.json`, all under `app/api/cron/` (times are UTC):
 - Workspace tabs and split view. Opening a candidate, job, client or shortlist adds it to the strip of tabs under the nav (`components/workspace/WorkspaceTabs.jsx`).
   - **Tabs:** the rules are in `lib/workspace/tabs.js`. They're stored in the browser per user (`lib/hooks/useWorkspaceTabs.js`), up to 12, and cleared on log out.
   - **Split view:** `/dashboard/workspace` shows up to 4 candidates side by side, each pane switching between their screening report, CV and profile summary. The layout lives in the address (`?open=<id>,<id>:cv`, `lib/workspace/panes.js`), so it can be bookmarked or shared. Ways in: the screening report, bulk screening results, the Candidates list and the tab strip.
-- The "Possibly AI-written" amber notice comes from the CV reader's `ai_writing` judgement (`lib/screening/ai-writing.js`). It shows only for clear cases and never affects the score; a test in `lib/cv-analysis/tests/scoreCandidate.test.js` holds that.
+  - **Keeping your place:** a record reopened from its tab goes back to where it was scrolled, and a note being typed is kept for the session (`lib/hooks/useSessionDraft.js`). A `helixon_ws_tabs` cookie (just "1") lets the server leave room for the strip, so the page doesn't jump.
+- The "Possibly AI-written" amber notice comes from the CV reader's `ai_writing` judgement (`lib/screening/ai-writing.js`).
+  - **Clear cases only:** it shows for those alone and never affects the score; a test in `lib/cv-analysis/tests/scoreCandidate.test.js` holds that.
+  - **Where it shows:** on the report, the profile and in split view, and as a pill in bulk results, on Compare and on the Candidates list.
+  - **Older candidates:** CVs read before the check get it once, when re-screened against another job (`lib/cv-analysis/extraction/aiWritingCheck.js`).
+  - **Measuring it:** recruiters can answer "Does this look right?" (kept as `ai_writing_feedback` research signals). `npm run eval:ai-writing` measures precision and the false-alarm rate on labelled CVs, overall and for non-native English writers. Usage events record how often it fires and how the split view and tabs are used.
 - State with many related fields goes in a reducer with named actions, tested on its own. `/analyse` keeps its job, candidate, run and report in `app/analyse/_lib/workspace-state.js`. A finished analysis, "Screen another CV" and "Next candidate" are single actions there, not a dozen `setState` calls in a handler.
 - `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`), one folder per domain:
 

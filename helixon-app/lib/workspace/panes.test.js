@@ -44,7 +44,7 @@ describe("split view address", () => {
   });
 
   it("lays out one to four panes", () => {
-    expect(paneGridClass(1)).toBe("grid-cols-1");
+    expect(paneGridClass(1)).toContain("grid-cols-1");
     expect(paneGridClass(3)).toContain("lg:grid-cols-3");
     expect(paneGridClass(4)).toContain("lg:grid-cols-2");
   });

@@ -42,13 +42,15 @@ describe("server-rendered dashboard pages", () => {
     const html = renderToString(
       <CandidateList
         initialData={{
-          result: { items: [{ id: "c1", fullName: "Ada Lovelace", stage: "Screened", status: "completed", score: 91, tags: [], skills: ["Rust"] }], total: 1, page: 1, pageSize: 8, totalPages: 1 },
+          result: { items: [{ id: "c1", fullName: "Ada Lovelace", stage: "Screened", status: "completed", score: 91, tags: [], skills: ["Rust"], aiWritten: true }], total: 1, page: 1, pageSize: 8, totalPages: 1 },
           stageCounts: { all: 1, Screened: 1 },
         }}
       />
     );
     expect(html).toContain("Ada Lovelace");
     expect(html).not.toContain("Loading candidates");
+    // The amber flag shows in the list, not only on the report.
+    expect(html).toContain("Possibly AI-written");
   });
 
   it("jobs list shows the jobs", () => {

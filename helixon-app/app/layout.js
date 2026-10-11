@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import SiteAnnouncement from "@/components/SiteAnnouncement";
 import { connection } from "next/server";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 // Every font the site uses, self-hosted through next/font rather than a Google
@@ -51,6 +52,9 @@ export default async function RootLayout({ children }) {
   // request), so Next can put the CSP nonce from proxy.ts on its scripts.
   // A prerendered page's scripts would have no nonce and be blocked.
   await connection();
+  // Leaves room for the workspace tab strip on the first render when this
+  // browser has tabs (lib/hooks/useWorkspaceTabs.js), so the page doesn't jump.
+  const hasWorkspaceTabs = (await cookies()).get("helixon_ws_tabs")?.value === "1";
   return (
     <ClerkProvider
       // Reads this request's CSP nonce (set by proxy.ts) and puts it on
@@ -89,7 +93,7 @@ export default async function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} h-full`}>
+      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} h-full`} data-ws-tabs={hasWorkspaceTabs ? "" : undefined}>
         <body className="min-h-full flex flex-col antialiased">
           {/* Admin-set banner (/admin/site); renders nothing unless one is on. */}
           <SiteAnnouncement />

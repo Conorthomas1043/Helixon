@@ -71,8 +71,8 @@ export function setPaneView(panes, id, view) {
  * @param {number} n
  */
 export function paneGridClass(n) {
-  if (n >= 4) return "grid-cols-1 lg:grid-cols-2";
-  if (n === 3) return "grid-cols-1 lg:grid-cols-3";
-  if (n === 2) return "grid-cols-1 lg:grid-cols-2";
-  return "grid-cols-1";
+  if (n >= 4) return "grid-cols-1 lg:grid-cols-2 lg:grid-rows-2";
+  if (n === 3) return "grid-cols-1 lg:grid-cols-3 lg:grid-rows-1";
+  if (n === 2) return "grid-cols-1 lg:grid-cols-2 lg:grid-rows-1";
+  return "grid-cols-1 lg:grid-rows-1";
 }

@@ -139,6 +139,8 @@ beforeEach(() => {
         cv_filename: "grace.pdf",
         extracted: { skills: ["SQL", "Python"], education: ["BSc Maths"], positions: [{ title: "Data Engineer", company: "Initech", duration: "2019-2026" }] },
         skills: ["SQL", "Python"],
+        // What the list's extracted->ai_writing select returns.
+        ai_writing: { likelihood: "high", signals: ["Stock phrasing", "No figures"] },
         pooled_from_id: null,
         talent_pool_at: null,
         rejection_reason: null,
@@ -233,7 +235,7 @@ describe("candidates match their contracts", () => {
     expect(res.status).toBe(200);
     const page = CandidateListPageSchema.parse(await res.json());
     expect(page).toMatchObject({ total: 1, page: 1, pageSize: 20, totalPages: 1, searchMode: null });
-    expect(page.items[0]).toMatchObject({ fullName: "Grace Hopper", jobTitle: "Senior Data Engineer", company: "Acme", recruiterName: "Ada Lovelace", skills: ["SQL", "Python"] });
+    expect(page.items[0]).toMatchObject({ fullName: "Grace Hopper", jobTitle: "Senior Data Engineer", company: "Acme", recruiterName: "Ada Lovelace", skills: ["SQL", "Python"], aiWritten: true });
   });
 
   it("GET /api/candidates/stage-counts", async () => {

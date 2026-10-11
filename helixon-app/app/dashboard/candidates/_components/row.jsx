@@ -8,6 +8,7 @@ import { Avatar as KitAvatar } from "@/components/ui";
 import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
 import { useNow } from "@/lib/hooks/useNow";
 import { STAGE_ORDER } from "./shared";
+import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
 
 export function TagChip({ label, active, onClick, onDelete }) {
   return (
@@ -124,6 +125,7 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
                   ☆ Pool
                 </span>
               )}
+              {candidate.aiWritten && <AiWritingBadge className="ml-1.5 align-middle" />}
             </p>
             <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
               {candidate.jobTitle}

@@ -616,7 +616,7 @@ export default function AnalyseWorkspace() {
                   )}
                 </div>
               )}
-              <Report result={result} roleLabel={roleLabel} />
+              <Report result={result} roleLabel={roleLabel} candidateId={candidateId} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">
               <Button variant="secondary" size="sm" icon="printer" className="w-full" onClick={() => printSection("analysis-report")}>

@@ -34,3 +34,12 @@ describe("bulkResultRows", () => {
     expect(rows.find((r) => r.File === "c.pdf")).toMatchObject({ Status: "Failed", Note: "Couldn't read it" });
   });
 });
+
+describe("the AI-writing flag in a bulk run", () => {
+  it("is kept when the run is saved and shown in the export", () => {
+    const queue = [{ id: "1", file: { name: "a.pdf", size: 1 }, status: "done", candidateId: "c1", score: 80, name: "A", aiWritten: true }];
+    expect(serialiseQueue(queue)[0].aiWritten).toBe(true);
+    expect(bulkResultRows(queue)[0]["Possibly AI-written"]).toBe("Yes");
+    expect(bulkResultRows([{ ...queue[0], aiWritten: false }])[0]["Possibly AI-written"]).toBe("");
+  });
+});

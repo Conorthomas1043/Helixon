@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { customerRoute } from "@/lib/api/route";
 import { agencyDb } from "@/lib/agency-db";
 import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
+import { aiWritingNotice } from "@/lib/screening/ai-writing";
 
 // GET /api/compare?ids=a,b,c&jobId=j
 //
@@ -130,6 +131,8 @@ export const GET = customerRoute(async (request, _context, auth) => {
       location: c.location || null,
       stage: c.stage || null,
       totalYears: c.extracted?.years_experience ?? null,
+      // The amber "possibly AI-written" prompt (lib/screening/ai-writing.js).
+      aiWritten: Boolean(aiWritingNotice(c.extracted)),
       hasCv: Boolean(c.cv_file_url),
       analysedAt: score?.created_at || null,
       // Scored against a different role than the one being compared on -

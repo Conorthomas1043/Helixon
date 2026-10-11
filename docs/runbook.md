@@ -48,6 +48,12 @@ To switch it off, set `SUPABASE_AGENCY_RLS=0` and redeploy. The migration can st
 
 After adding a table with an `agency_id` column, re-run the migration's policy block (or the whole migration, which is safe to repeat) so the new table gets the policy.
 
+## Checking the AI-writing flag
+
+- **Measure accuracy:** `ANTHROPIC_API_KEY=... npm run eval:ai-writing -- --yes`. It runs the check on `scripts/eval-samples/ai-writing.json` and reports precision, recall and false alarms, per group. That file is a synthetic starter set; add real CVs you're permitted to use, labelled `ai` or `human`. If false alarms on human CVs are more than rare, especially for non-native English writers, raise the bar in `lib/screening/ai-writing.js` or switch the notice off.
+- **Real-world answers:** recruiters' "Does this look right?" answers are in `research_signals` with `kind = 'ai_writing_feedback'` (label `right` or `wrong`). They need migration `20261011000000_ai_writing_feedback` applied.
+- **Volume:** the `cv_ai_writing_checked` analytics event (per screening, by agency) shows how often the flag fires.
+
 ## Environment variables
 
 `helixon-app/.env.example` lists every variable, with comments. Set them in Vercel (Project → Settings → Environment Variables). The app needs at least Supabase, Clerk, Stripe and Resend to work. AI, Redis and integration keys switch individual features on.

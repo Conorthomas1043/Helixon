@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { WorkspaceTabStrip } from "@/components/workspace/WorkspaceTabs";
 import CandidatePane from "@/app/dashboard/workspace/CandidatePane";
+import CandidatePicker from "@/app/dashboard/workspace/CandidatePicker";
 import { primeResource } from "@/lib/hooks/useResource";
 import { buildReport } from "@/lib/screening/analysis-report";
 
@@ -86,15 +87,20 @@ export default function WorkspaceDemo() {
   });
   const [views, setViews] = useState({ "demo-a": "score", "demo-b": "profile" });
   const [tabs, setTabs] = useState(TABS);
+  const [picked, setPicked] = useState(null);
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <CandidatePicker exclude={["demo-a"]} onPick={setPicked} />
+        <span className="text-sm text-[var(--ink-soft)]" data-testid="picked">{picked ? `Picked ${picked}` : "Nothing picked"}</span>
+      </div>
       <div className="rounded-[12px] border border-[var(--border)] bg-white">
         <WorkspaceTabStrip tabs={tabs} activeKey="candidate:demo-a" onClose={(key) => setTabs((t) => t.filter((x) => `${x.kind}:${x.id}` !== key))} onCloseAll={() => setTabs([])} />
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid lg:h-[720px] grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-1">
         {CANDIDATES.map((c) => (
-          <CandidatePane key={c.id} id={c.id} view={views[c.id]} tall onView={(v) => setViews((s) => ({ ...s, [c.id]: v }))} onClose={() => {}} />
+          <CandidatePane key={c.id} id={c.id} view={views[c.id]} onView={(v) => setViews((s) => ({ ...s, [c.id]: v }))} onClose={() => {}} />
         ))}
       </div>
     </div>

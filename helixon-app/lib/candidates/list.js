@@ -12,6 +12,7 @@ import { distanceMiles } from "@/lib/geocode";
 import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { aiWritingNotice } from "@/lib/screening/ai-writing";
 
 /** @typedef {import("@/lib/contracts/candidates").CandidateListPage} CandidateListPage */
 /** @typedef {import("@/lib/contracts/candidates").StageCounts} StageCounts */
@@ -57,7 +58,7 @@ export async function listCandidates(auth, params) {
   // skills:extracted->skills pulls just that key - selecting the whole
   // parsed-CV `extracted` JSON per row made every list/board load heavy.
   const COLUMNS =
-    "id, full_name, name, current_title, current_company, location, processing_status, stage, sub_stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, source, lat, lng, skills:extracted->skills, jobs(id, title, client)";
+    "id, full_name, name, current_title, current_company, location, processing_status, stage, sub_stage, match_score, tags, next_action, recruiter_id, job_id, created_at, last_activity_at, talent_pool_at, pooled_from_id, source, lat, lng, skills:extracted->skills, ai_writing:extracted->ai_writing, jobs(id, title, client)";
   const build = (broadSearch) => {
     let query = db
       .from("candidates")
@@ -122,6 +123,7 @@ export async function listCandidates(auth, params) {
         subStage: c.sub_stage ?? null,
         score: c.match_score,
         skills: Array.isArray(c.skills) ? c.skills : [],
+        aiWritten: Boolean(aiWritingNotice({ ai_writing: c.ai_writing })),
         tags: c.tags ?? [],
         nextAction: c.next_action,
         createdAt: c.created_at,

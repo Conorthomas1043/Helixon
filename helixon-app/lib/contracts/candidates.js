@@ -40,6 +40,8 @@ const common = {
 export const CandidateListItemSchema = z.strictObject({
   ...common,
   skills: z.array(z.unknown()),
+  // The amber "possibly AI-written" prompt (lib/screening/ai-writing.js).
+  aiWritten: z.boolean(),
   inTalentPool: z.boolean(),
   // Only with a radius search.
   distanceMiles: nullableNumber,

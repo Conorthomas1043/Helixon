@@ -16,7 +16,8 @@
     "eval:fairness": "node scripts/eval-fairness.mjs",
     "typecheck": "node scripts/typecheck.mjs",
     "test:e2e": "playwright test",
-    "check": "npm run lint && npm run typecheck && npm test && node scripts/check-migrations.mjs"
+    "check": "npm run lint && npm run typecheck && npm test && node scripts/check-migrations.mjs",
+    "eval:ai-writing": "node scripts/eval-ai-writing.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

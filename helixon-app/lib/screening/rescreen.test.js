@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/cv-analysis", () => ({ analyseCV: vi.fn(), estimateSalary: vi.fn() }));
 vi.mock("@/lib/candidates/files", () => ({ copyCandidateCv: vi.fn() }));
+vi.mock("@/lib/cv-analysis/extraction/aiWritingCheck", () => ({ default: vi.fn() }));
 
-const { jobTextFor, poolRootId, rescreenCandidate } = await import("./rescreen");
+const { jobTextFor, poolRootId, rescreenCandidate, withAiWritingCheck } = await import("./rescreen");
+const { default: checkAiWriting } = await import("@/lib/cv-analysis/extraction/aiWritingCheck");
 const { analyseCV } = await import("@/lib/cv-analysis");
 
 describe("poolRootId", () => {
@@ -72,5 +74,43 @@ describe("rescreenCandidate", () => {
   it("is scoped to the agency - an unknown candidate or job is not found", async () => {
     expect((await rescreenCandidate(fakeSupabase({ jobs: [{ data: { id: "j1" } }] }), args)).status).toBe(404);
     expect((await rescreenCandidate(fakeSupabase({ candidates: [{ data: { id: "c1", cv_text: "x" } }] }), args)).status).toBe(404);
+  });
+});
+
+describe("withAiWritingCheck", () => {
+  const judged = { likelihood: "high", signals: ["Stock phrasing", "No figures"] };
+
+  function recordingSupabase() {
+    const updates = [];
+    const builder = {
+      update(values) {
+        updates.push(values);
+        return builder;
+      },
+      eq: () => builder,
+      then: (resolve) => resolve({ error: null }),
+    };
+    return { updates, from: () => builder };
+  }
+
+  it("checks a CV read before the AI-writing check existed, once, and saves it", async () => {
+    checkAiWriting.mockResolvedValueOnce(judged);
+    const supabase = recordingSupabase();
+    const out = await withAiWritingCheck(supabase, "ag", { id: "c1", cv_text: "CV", extracted: { name: "Jo" } });
+    expect(out).toEqual({ name: "Jo", ai_writing: judged });
+    expect(supabase.updates).toEqual([{ extracted: { name: "Jo", ai_writing: judged } }]);
+  });
+
+  it("leaves a CV that already has the judgement alone", async () => {
+    checkAiWriting.mockClear();
+    const extracted = { name: "Jo", ai_writing: { likelihood: "low", signals: [] } };
+    expect(await withAiWritingCheck(recordingSupabase(), "ag", { id: "c1", cv_text: "CV", extracted })).toBe(extracted);
+    expect(checkAiWriting).not.toHaveBeenCalled();
+  });
+
+  it("a failed check doesn't stop the re-screen", async () => {
+    checkAiWriting.mockRejectedValueOnce(new Error("model down"));
+    const extracted = { name: "Jo" };
+    expect(await withAiWritingCheck(recordingSupabase(), "ag", { id: "c1", cv_text: "CV", extracted })).toBe(extracted);
   });
 });

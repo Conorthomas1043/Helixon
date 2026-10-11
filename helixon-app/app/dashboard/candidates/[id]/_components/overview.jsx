@@ -137,7 +137,7 @@ export function ExperienceSection({ candidate }) {
  * Documents
  * ---------------------------------------------------------------------- */
 
-export function FullAnalysis({ analysis, candidateName }) {
+export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
   if (!analysis?.report) return null;
@@ -184,10 +184,10 @@ export function FullAnalysis({ analysis, candidateName }) {
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.
       </p>
       {/* Visible while the report is collapsed; the open report shows it too. */}
-      {!open && <AiWritingNotice notice={analysis.report.ai_writing} className="mt-4" />}
+      {!open && <AiWritingNotice notice={analysis.report.ai_writing} candidateId={candidateId} where="profile" className="mt-4" />}
       {open && (
         <div className="mt-5">
-          <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} />
+          <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} candidateId={candidateId} />
         </div>
       )}
     </div>

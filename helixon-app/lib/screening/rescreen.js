@@ -6,6 +6,7 @@
 // "already screened for this job" and list a person's other roles.
 
 import { analyseCV, estimateSalary } from "@/lib/cv-analysis";
+import checkAiWriting from "@/lib/cv-analysis/extraction/aiWritingCheck";
 import { matchHighlights } from "@/lib/screening/analysis-report";
 import { copyCandidateCv } from "@/lib/candidates/files";
 import { reportError } from "@/lib/report-error";
@@ -52,6 +53,23 @@ export async function existingScreening(supabase, agencyId, rootId, jobId) {
 }
 
 // Returns { candidateId, score, recommendation } or { error, status, existingId? }.
+// The stored CV reading, with the AI-writing judgement added if it was read
+// before that check existed (lib/screening/ai-writing.js). Saved back on the
+// source record so it's made once. A failed check just leaves it out: it's a
+// prompt to the recruiter, never part of the score.
+export async function withAiWritingCheck(supabase, agencyId, source) {
+  const extracted = source.extracted || {};
+  if (extracted.ai_writing) return source.extracted;
+  try {
+    const aiWriting = await checkAiWriting(source.cv_text);
+    const updated = { ...extracted, ai_writing: aiWriting };
+    await supabase.from("candidates").update({ extracted: updated }).eq("id", source.id).eq("agency_id", agencyId);
+    return updated;
+  } catch {
+    return source.extracted;
+  }
+}
+
 export async function rescreenCandidate(supabase, { agencyId, userId, actor, sourceId, jobId }) {
   const [{ data: source }, { data: job }] = await Promise.all([
     supabase.from("candidates").select(SOURCE_COLUMNS).eq("id", sourceId).eq("agency_id", agencyId).maybeSingle(),
@@ -75,9 +93,10 @@ export async function rescreenCandidate(supabase, { agencyId, userId, actor, sou
   }
   const knownJobParsed = job.parsed && Array.isArray(job.parsed.required_skills) ? job.parsed : null;
 
+  const sourceExtracted = await withAiWritingCheck(supabase, agencyId, source);
   const { extracted, result, jobParsed } = await analyseCV(null, jobText, {
     cvText: source.cv_text,
-    extracted: source.extracted,
+    extracted: sourceExtracted,
     jobParsed: knownJobParsed,
   });
 
@@ -109,7 +128,7 @@ export async function rescreenCandidate(supabase, { agencyId, userId, actor, sou
       location: source.location,
       years_experience: source.years_experience,
       cv_text: source.cv_text,
-      extracted: extracted || source.extracted,
+      extracted: extracted || sourceExtracted,
       processing_status: "completed",
       source: "agency_database",
       pooled_from_id: rootId,

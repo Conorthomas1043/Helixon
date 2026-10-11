@@ -476,3 +476,9 @@ body {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
+
+/* The workspace tab strip's place before the tabs are read in the browser
+   (components/workspace/WorkspaceTabs.jsx): 40px plus its 1px border, only
+   when the helixon_ws_tabs cookie says this browser has tabs. */
+.ws-tabs-slot { display: none; }
+html[data-ws-tabs] .ws-tabs-slot { display: block; height: 41px; border-bottom: 1px solid var(--border); background: var(--mist); }

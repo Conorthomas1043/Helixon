@@ -2,8 +2,10 @@
 
 // One candidate in the split view: their screening report, their CV, or a
 // summary of their profile. Loaded through the shared cache
-// (lib/hooks/useResource.js), so a pane for someone whose profile was just
-// open appears at once.
+// (lib/hooks/useResource.js): a candidate already shown in this session -
+// in another pane, or before a reload of the layout - appears at once and
+// refreshes in the background. (The full profile page loads on the server
+// and doesn't fill this cache.)
 
 import { useState } from "react";
 import Link from "next/link";
@@ -27,9 +29,9 @@ const VIEW_OPTIONS = PANE_VIEWS.map((value) => ({ value, label: PANE_VIEW_LABELS
 const scorePillTone = (score) => (score == null ? "neutral" : score >= STRONG_MATCH_MIN ? "green" : score >= REVIEW_MIN ? "amber" : "red");
 
 /**
- * @param {{ id: string, view: "score" | "cv" | "profile", tall: boolean, onView: (view: string) => void, onClose: () => void }} props
+ * @param {{ id: string, view: "score" | "cv" | "profile", onView: (view: string) => void, onClose: () => void }} props
  */
-export default function CandidatePane({ id, view, tall, onView, onClose }) {
+export default function CandidatePane({ id, view, onView, onClose }) {
   const { data: candidate, error, loading, reload } = useResource(`candidate:${id}`, () => getCandidateById(id));
   const name = candidate?.fullName || "Candidate";
 
@@ -37,8 +39,8 @@ export default function CandidatePane({ id, view, tall, onView, onClose }) {
     <section
       aria-label={name}
       className={cx(
-        "flex min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--border)] bg-white",
-        tall ? "lg:h-[calc(100vh-11rem)]" : "lg:h-[calc(50vh-6rem)] lg:min-h-[420px]"
+        // On a laptop the pane fills its grid cell and scrolls inside.
+        "flex min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--border)] bg-white lg:h-full lg:min-h-0"
       )}
     >
       <header className="flex flex-wrap items-center gap-2 border-b border-[var(--border)] px-4 py-2.5">
@@ -94,7 +96,7 @@ function ScoreView({ candidate }) {
         {analysis.jobTitle ? `For ${analysis.jobTitle}` : "Latest screening"}
         {analysis.analysedAt ? `, ${formatDateOnly(analysis.analysedAt)}` : ""}
       </p>
-      <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} embedded />
+      <Report result={analysis.report} roleLabel={analysis.jobTitle || "this role"} embedded candidateId={candidate.id} />
     </>
   );
 }
@@ -111,7 +113,7 @@ function CvView({ candidate }) {
   return (
     <div className="space-y-3">
       {confirmDialog}
-      <AiWritingNotice notice={candidate.analysis?.report?.ai_writing} />
+      <AiWritingNotice notice={candidate.analysis?.report?.ai_writing} candidateId={candidate.id} where="split_view" />
       {candidate.resume && (
         <Button size="sm" variant="secondary" icon="external" onClick={() => openOriginalCv({ id: candidate.id, blind: candidate.screenedBlind }, ask)}>
           Open the original file
@@ -152,7 +154,7 @@ function ProfileView({ candidate: c }) {
   const role = [c.currentTitle, c.currentCompany].filter(Boolean).join(" at ");
   return (
     <div className="space-y-4">
-      <AiWritingNotice notice={c.analysis?.report?.ai_writing} />
+      <AiWritingNotice notice={c.analysis?.report?.ai_writing} candidateId={c.id} where="split_view" />
       <dl className="divide-y divide-[var(--border-soft)]">
         <Row label="Current role">{role || null}</Row>
         <Row label="Location">{c.location}</Row>

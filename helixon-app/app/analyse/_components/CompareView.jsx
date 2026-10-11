@@ -16,6 +16,8 @@ import CandidateChooser from "./CandidateChooser";
 import RawCvCompare from "./RawCvCompare";
 import { LETTERS, PillButton, PillTabs, StagePicker, openOriginalCv } from "./compareBits";
 import { printSection } from "@/lib/ui/print";
+import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
+import { splitViewHref } from "@/lib/workspace/panes";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { scoreTone } from "../_lib/analyse";
 import { columnLabels, coverage, mustHaveRows, skillRows, verdict, winners } from "../_lib/compare";
@@ -181,6 +183,7 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
         {isLeader && <Pill className="bg-[var(--forest)] text-white border-[var(--forest)]" icon="check">Top match</Pill>}
       </div>
       <p className="text-[13px] font-medium mt-1.5" style={{ color: tone.fg }}>{c.recommendation || tone.label}</p>
+      {c.aiWritten && <AiWritingBadge className="mt-1.5" />}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[13px]">
         <Link href={`/dashboard/candidates/${c.id}`} className="font-semibold text-[var(--forest)] hover:underline">Profile</Link>
         {c.hasCv && (
@@ -319,6 +322,20 @@ export default function CompareWorkspace() {
               {status === "ready" && n >= 2
                 ? [job?.client, `${n} candidates`].filter(Boolean).join(" · ")
                 : "Put 2 to 4 screened candidates next to each other - their scores, or their CVs."}
+            </p>
+            {/* The other side-by-side view, so the two aren't confused. */}
+            <p className="text-sm text-[var(--ink-soft)] mt-1 print-hide">
+              Lines candidates up point by point.{" "}
+              {n >= 1 ? (
+                <Link href={splitViewHref(candidates.map((c) => c.id))} className="font-semibold text-[var(--forest)] hover:underline">
+                  Open them in split view
+                </Link>
+              ) : (
+                <Link href="/dashboard/workspace" className="font-semibold text-[var(--forest)] hover:underline">
+                  Split view
+                </Link>
+              )}{" "}
+              to read each one&apos;s full report, CV or profile in its own pane.
             </p>
           </div>
           {status === "ready" && n >= 2 && (
