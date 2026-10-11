@@ -48,13 +48,10 @@ const CHANNELS = [
   },
 ];
 
-// Topic select - value IS the destination inbox, so the form and the API
-// route (TOPIC_ROUTING) always agree with no separate label-to-email mapping.
-const TOPICS = [
-  "support@helixon.co.uk",
-  "sales@helixon.co.uk",
-  "hello@helixon.co.uk",
-];
+// Topic select - each value is a key of TOPIC_ROUTING in app/api/contact,
+// which picks the inbox. (It used to send the inbox address itself, which
+// the route didn't recognise, so every message landed in hello@.)
+const TOPICS = ["Support", "Sales & pricing", "Something else"];
 
 export default function ContactPage() {
   const [name, setName] = useState("");
