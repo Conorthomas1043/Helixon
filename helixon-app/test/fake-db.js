@@ -62,7 +62,18 @@ export function fakeDb(seed = {}) {
         return Promise.resolve().then(run).then(resolve, reject);
       },
     };
-    for (const m of ["order", "range", "or", "not", "filter", "ilike", "like", "contains", "match", "textSearch", "returns", "abortSignal"]) q[m] = () => q;
+    for (const m of ["order", "range", "not", "filter", "ilike", "like", "contains", "match", "textSearch", "returns", "abortSignal"]) q[m] = () => q;
+    // `.or("id.eq.x,recruiter_id.is.null")`: a row matching any clause. Only
+    // `col.eq.value` and `col.is.null` clauses are understood; anything else
+    // leaves the filter out, which (like the others above) only widens a
+    // result.
+    q.or = (expr) => {
+      const clauses = String(expr).split(",").map((c) => c.match(/^(\w+)\.(eq\.(.+)|is\.null)$/));
+      if (clauses.every(Boolean)) {
+        filters.push((r) => clauses.some(([, col, , val]) => (val === undefined ? r[col] == null : String(r[col]) === val)));
+      }
+      return q;
+    };
 
     function run() {
       const rows = tables[table];
