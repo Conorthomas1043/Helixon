@@ -126,7 +126,7 @@ export default function CompliancePage() {
             {data.missingRtw.length === 0 ? (
               <Empty>Everyone at offer or placed has a verified right-to-work check.</Empty>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {data.missingRtw.map((m) => (
                   <li key={m.candidateId} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
                     <Person id={m.candidateId} name={m.candidateName} />
@@ -144,7 +144,7 @@ export default function CompliancePage() {
             {checks.length === 0 ? (
               <Empty>Nothing expired, expiring in the next 30 days, or left to do.</Empty>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {checks.map((c) => (
                   <li key={c.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
                     <Person id={c.candidateId} name={c.candidateName} />
@@ -185,10 +185,13 @@ export default function CompliancePage() {
             {data.notices.length === 0 ? (
               <Empty>Everyone has had your privacy notice or given consent.</Empty>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {data.notices.map((n) => (
                   <li key={n.candidateId} className="py-2 flex flex-wrap items-center gap-2 text-[14px]">
-                    <input type="checkbox" aria-label={`Select ${n.candidateName}`} disabled={!n.email} checked={selected.has(n.candidateId)} onChange={() => toggle(n.candidateId)} />
+                    {/* Padded label: a 24px hit area around the 18px box. */}
+                    <label className="inline-flex p-[3px] -m-[3px] cursor-pointer">
+                      <input type="checkbox" aria-label={`Select ${n.candidateName}`} disabled={!n.email} checked={selected.has(n.candidateId)} onChange={() => toggle(n.candidateId)} />
+                    </label>
                     <Person id={n.candidateId} name={n.candidateName} />
                     <span className="text-[13px]" style={{ color: n.overdue ? "var(--score-low)" : INK_MUTED }}>
                       {n.overdue ? "Overdue" : "Due"} {fmt(n.dueOn)}
@@ -208,7 +211,7 @@ export default function CompliancePage() {
             {data.references.length === 0 ? (
               <Empty>No references outstanding.</Empty>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {data.references.map((r) => (
                   <li key={r.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
                     <Person id={r.candidateId} name={r.candidateName} />

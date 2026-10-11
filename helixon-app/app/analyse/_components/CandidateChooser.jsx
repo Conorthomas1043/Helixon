@@ -37,7 +37,7 @@ function Row({ c, picked, disabled, onToggle }) {
         <Avatar name={c.name} />
         <span className="min-w-0 flex-1">
           <span className="block text-[14px] font-semibold text-[var(--ink)] truncate">{c.name}</span>
-          <span className="block text-[13.5px] text-[var(--ink-soft)] truncate">
+          <span className="block text-[14px] text-[var(--ink-soft)] truncate">
             {[c.currentTitle, c.jobTitle && `screened for ${c.jobTitle}`].filter(Boolean).join(" · ") || "No role on file"}
           </span>
         </span>
@@ -48,7 +48,7 @@ function Row({ c, picked, disabled, onToggle }) {
           <span className="block text-[15px] font-semibold tabular-nums" style={{ color: tone.fg }}>
             {c.score ?? "–"}
           </span>
-          {c.score != null && <span className="block text-[11.5px] text-[var(--ink-faint)]">{tone.label}</span>}
+          {c.score != null && <span className="block text-[12px] text-[var(--ink-faint)]">{tone.label}</span>}
         </span>
       </button>
     </li>
@@ -114,7 +114,7 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
         />
       </div>
 
-      {error && <p className="text-[13.5px] text-[#a83226]">{error}</p>}
+      {error && <p className="text-[14px] text-[#a83226]">{error}</p>}
 
       {poolRows.length > 0 && (
         <div>
@@ -150,10 +150,10 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-[var(--border-soft)]">
           <div className="flex flex-wrap items-center gap-1.5 min-w-0">
             {selected.length === 0 ? (
-              <p className="text-[13.5px] text-[var(--ink-faint)]">Choose 2 to {max} candidates.</p>
+              <p className="text-[14px] text-[var(--ink-faint)]">Choose 2 to {max} candidates.</p>
             ) : (
               selected.map((id) => (
-                <span key={id} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-[var(--mint)] text-[13.5px] font-semibold text-[var(--forest-deep)]">
+                <span key={id} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-[var(--mint)] text-[14px] font-semibold text-[var(--forest-deep)]">
                   {nameOf(id)}
                   <button type="button" onClick={() => onToggle(id)} aria-label={`Remove ${nameOf(id)}`} className="p-0.5 rounded-full hover:bg-white/60">
                     <Icon name="x" size={12} />

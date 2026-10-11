@@ -61,7 +61,7 @@ export default function AuditLogPage() {
   }
 
   return (
-    <Page width={1000}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Workspace"
@@ -97,7 +97,7 @@ export default function AuditLogPage() {
       {status === "ready" && entries.length === 0 && <EmptyState title="Nothing logged yet" body="Actions are recorded from now on." />}
       {status === "ready" && entries.length > 0 && (
         <Card padded={false}>
-          <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+          <ul className="divide-y">
             {entries.map((e) => (
               <li key={e.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 text-[14px]">
                 <span className="tabular-nums shrink-0 sm:w-40" style={{ color: INK_FAINT }}>

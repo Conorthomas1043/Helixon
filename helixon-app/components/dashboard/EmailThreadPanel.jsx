@@ -131,7 +131,7 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
           {candidate.email ? "Nothing sent from Helixon yet." : "No email address on file - add one with Edit details."}
         </p>
       ) : (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y">
           {[...data.messages].reverse().map((m) => (
             <Message key={m.id} m={m} />
           ))}

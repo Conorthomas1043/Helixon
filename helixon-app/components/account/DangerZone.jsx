@@ -47,7 +47,7 @@ export default function DangerZone() {
   return (
     <form onSubmit={deleteAccount} className="px-6 py-8 sm:px-10 sm:py-10">
       <h3 className="text-[17px] font-semibold text-[#10221d]">Delete your account</h3>
-      <p className="mt-2 max-w-[560px] text-[14px] leading-6 text-[#638279]">
+      <p className="mt-2 max-w-[560px] text-[14px] leading-6 text-[var(--ink-faint)]">
         This permanently removes your Helixon sign-in - you won&apos;t be able to log in again with this email. Your agency&apos;s
         candidates, jobs and billing history stay with the agency. To have that data erased as well, email{" "}
         <a href="mailto:support@helixon.co.uk" className="font-semibold text-[#087a5b] hover:underline">
@@ -56,7 +56,7 @@ export default function DangerZone() {
         .
       </p>
 
-      <ul className="mt-4 max-w-[560px] list-disc space-y-1 pl-5 text-[14px] leading-6 text-[#638279]">
+      <ul className="mt-4 max-w-[560px] list-disc space-y-1 pl-5 text-[14px] leading-6 text-[var(--ink-faint)]">
         <li>This can&apos;t be undone.</li>
         <li>If you pay for Helixon, cancel your subscription first - deleting your account doesn&apos;t stop billing.</li>
       </ul>

@@ -197,12 +197,12 @@ function GateForm() {
                 </svg>
               </div>
               <h1
-                className="text-[1.6rem] font-semibold tracking-tight mb-2"
+                className="text-2xl font-semibold tracking-tight mb-2"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
                 You&apos;re in
               </h1>
-              <p className="text-[13.5px]" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-[14px]" style={{ color: "var(--ink-soft)" }}>
                 Taking you through now.
               </p>
             </>
@@ -211,13 +211,13 @@ function GateForm() {
               <DiggingScene />
 
               <h1
-                className="text-[1.7rem] sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
+                className="text-[28px] sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
                 Under construction
               </h1>
 
-              <p className="text-[13.5px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-[14px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
                 {siteSettings?.maintenance?.message || "We're making some changes behind the scenes."} If you have the password, you can get through now.
               </p>
 
@@ -251,7 +251,7 @@ function GateForm() {
                   <p
                     id="dev-gate-error"
                     role="alert"
-                    className="text-[12.5px] mb-4"
+                    className="text-[13px] mb-4"
                     style={{ color: "var(--score-low)" }}
                   >
                     {error}

@@ -26,7 +26,7 @@ export function FilterChip({ active, onClick, children, count }) {
         <span
           className="text-[12px] font-semibold px-1.5 rounded-full tabular-nums"
           style={{
-            background: active ? "rgba(255,255,255,0.25)" : "var(--mist)",
+            background: active ? "rgba(0,0,0,0.2)" : "var(--mist)", // white on 25% white over forest was 3.7:1
             color: active ? "white" : INK_FAINT,
           }}
         >

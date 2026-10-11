@@ -172,14 +172,14 @@ export default function ConnectedApps() {
         </p>
       )}
       <Card title="Your mailbox" eyebrow="Just you">
-        <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y -my-3.5">
           {mailboxes.map((p) => (
             <Row key={p.provider} item={p} canManage={data.canManage} onChanged={reload} />
           ))}
         </ul>
       </Card>
       <Card title="Accounts" eyebrow="Whole workspace">
-        <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y -my-3.5">
           {accounting.map((p) => (
             <Row key={p.provider} item={p} canManage={data.canManage} onChanged={reload} />
           ))}

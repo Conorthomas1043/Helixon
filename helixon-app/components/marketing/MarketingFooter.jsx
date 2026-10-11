@@ -19,7 +19,6 @@ const COLUMNS = [
     links: [
       ["About", "/about"],
       ["Careers", "/careers"],
-      ["Blog", "/blog"],
       ["Product updates", "/updates"],
       ["Contact", "/contact"],
     ],

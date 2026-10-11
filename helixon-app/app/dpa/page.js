@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
 import { useEffect, useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -66,10 +68,10 @@ function useActiveSection(ids) {
 function Section({ id, title, children }) {
   return (
     <section id={id} className="scroll-mt-24 mb-12">
-      <h2 className="text-lg font-semibold tracking-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+      <h2 className="text-lg font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
         {title}
       </h2>
-      <div className="space-y-3 text-[13px] leading-relaxed" style={{ color: "#4a6357" }}>
+      <div className="space-y-3 text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
         {children}
       </div>
     </section>
@@ -78,69 +80,12 @@ function Section({ id, title, children }) {
 
 export default function DpaPage() {
   const active = useActiveSection(SECTIONS.map((s) => s.id));
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [tocOpenMobile, setTocOpenMobile] = useState(false);
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: "var(--mist)",
-        "--forest": "#0b6e4f",
-        "--forest-deep": "#085a41",
-        "--mint": "#e3f0e9",
-        "--mist": "#f6f8f6",
-        "--border": "#dde6e1",
-        "--signal": "#f59e0b",
-        "--font-display": "var(--font-fraunces), Georgia, serif",
-        "--font-mono": "'IBM Plex Mono', monospace",
-      }}
-    >
-      {/* ── Nav (shared shell) ──────────────────────────────────────────── */}
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-              </svg>
-            </div>
-            <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-            <Link href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</Link>
-            <Link href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</Link>
-            <Link href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</Link>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link href="/demo" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")} onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}>
-              Get a demo now
-            </Link>
-            <button type="button" onClick={() => setMobileNavOpen((v) => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
-              className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-              </svg>
-            </button>
-          </div>
-        </div>
-        {mobileNavOpen && (
-          <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-            {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["Login", "/login"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "var(--ink-soft)" }}>{label}</a>
-            ))}
-          </div>
-        )}
-      </nav>
+      <MarketingNav active="dpa" />
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -149,7 +94,7 @@ export default function DpaPage() {
           <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
           </p>
-          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Data Processing Agreement
           </h1>
           <p className="text-sm leading-relaxed max-w-xl mb-6" style={{ color: "var(--ink-soft)" }}>
@@ -157,8 +102,8 @@ export default function DpaPage() {
             personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-            <span><strong style={{ color: "#13201b" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
-            <span><strong style={{ color: "#13201b" }}>Version:</strong> 3.1</span>
+            <span><strong style={{ color: "var(--ink)" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
+            <span><strong style={{ color: "var(--ink)" }}>Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
                 page and choosing "Save as PDF" produces the same document. */}
             <button
@@ -180,7 +125,7 @@ export default function DpaPage() {
           type="button"
           onClick={() => setTocOpenMobile((v) => !v)}
           className="w-full max-w-[1100px] mx-auto px-6 py-3 flex items-center justify-between text-xs font-semibold"
-          style={{ color: "#13201b" }}
+          style={{ color: "var(--ink)" }}
         >
           On this page
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: tocOpenMobile ? "rotate(180deg)" : "none", transition: "transform .2s" }}>
@@ -236,13 +181,13 @@ export default function DpaPage() {
           </Section>
 
           <Section id="definitions" title="2. Definitions">
-            <p><strong style={{ color: "#13201b" }}>“Data Protection Laws”</strong> means UK GDPR, EU GDPR (Regulation
+            <p><strong style={{ color: "var(--ink)" }}>“Data Protection Laws”</strong> means UK GDPR, EU GDPR (Regulation
               (EU) 2016/679), the UK Data Protection Act 2018, and any other applicable law relating to the
               processing of personal data.</p>
-            <p><strong style={{ color: "#13201b" }}>“Personal Data”, “Processing”, “Controller”, “Processor”, “Data
-              Subject”</strong> and <strong style={{ color: "#13201b" }}>“Personal Data Breach”</strong> take the
+            <p><strong style={{ color: "var(--ink)" }}>“Personal Data”, “Processing”, “Controller”, “Processor”, “Data
+              Subject”</strong> and <strong style={{ color: "var(--ink)" }}>“Personal Data Breach”</strong> take the
               meanings given in the applicable Data Protection Laws.</p>
-            <p><strong style={{ color: "#13201b" }}>“Sub-processor”</strong> means any third party appointed by
+            <p><strong style={{ color: "var(--ink)" }}>“Sub-processor”</strong> means any third party appointed by
               Helixon to process personal data on Customer’s behalf, as listed in Annex B.</p>
           </Section>
 
@@ -262,15 +207,15 @@ export default function DpaPage() {
           </Section>
 
           <Section id="data-types" title="5. Categories of data">
-            <p><strong style={{ color: "#13201b" }}>Data subjects:</strong> job candidates whose CVs are uploaded by
+            <p><strong style={{ color: "var(--ink)" }}>Data subjects:</strong> job candidates whose CVs are uploaded by
               Customer, and Customer’s own personnel (users of the platform).</p>
-            <p><strong style={{ color: "#13201b" }}>Categories of data:</strong> name, contact details, employment
+            <p><strong style={{ color: "var(--ink)" }}>Categories of data:</strong> name, contact details, employment
               and education history, skills, and any other information a candidate has chosen to include on their
               CV. Helixon does not knowingly process special category data and asks Customer not to upload CVs
               containing it beyond what a candidate has voluntarily disclosed within their own document. Where a
               CV contains it, it is processed only because it is in the document: the AI is instructed never to
               base any score or judgement on a protected characteristic, and Customer can screen blind.</p>
-            <p><strong style={{ color: "#13201b" }}>Customer personnel:</strong> account details, activity history
+            <p><strong style={{ color: "var(--ink)" }}>Customer personnel:</strong> account details, activity history
               within the workspace, and - only while Customer has team presence switched on - when each person has
               Helixon open and last used it, plus any status they set. Individuals can hide their presence and
               Customer can switch the feature off, which deletes what was recorded.</p>
@@ -308,7 +253,7 @@ export default function DpaPage() {
               produces a machine-readable file of everything held about them across every job they were screened
               for (access and portability); <em>Delete candidate</em> can erase every one of those records, their
               files included (erasure); and their details can be edited (rectification).</p>
-            <p><strong style={{ color: "#13201b" }}>Automated processing.</strong> Helixon’s match scores and
+            <p><strong style={{ color: "var(--ink)" }}>Automated processing.</strong> Helixon’s match scores and
               summaries are decision support. Helixon does not make decisions producing legal or similarly
               significant effects on candidates; Customer agrees that a person will review an assessment before any
               such decision, and will meet any request from a candidate for human review or an explanation.</p>
@@ -356,7 +301,7 @@ export default function DpaPage() {
                 ["Categories of data", "CV contents, contact details, employment history"],
               ].map(([k, v], i) => (
                 <div key={k} className="grid grid-cols-[130px_1fr] text-[12px]" style={{ background: i % 2 === 0 ? "var(--mist)" : "white" }}>
-                  <div className="px-4 py-3 font-semibold" style={{ color: "#13201b" }}>{k}</div>
+                  <div className="px-4 py-3 font-semibold" style={{ color: "var(--ink)" }}>{k}</div>
                   <div className="px-4 py-3 border-l" style={{ color: "var(--ink-soft)", borderColor: "var(--border)" }}>{v}</div>
                 </div>
               ))}
@@ -370,7 +315,7 @@ export default function DpaPage() {
               </div>
               {SUBPROCESSORS.map((sp, i) => (
                 <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-[12px] px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "var(--ink-soft)" }}>
-                  <span style={{ color: "#13201b", fontWeight: 500 }}>{sp.name}</span>
+                  <span style={{ color: "var(--ink)", fontWeight: 500 }}>{sp.name}</span>
                   <span>{sp.purpose}</span>
                   <span>{sp.location}</span>
                 </div>
@@ -401,18 +346,7 @@ export default function DpaPage() {
       </div>
 
       </main>
-      {/* ── Footer (shared shell) ───────────────────────────────────────── */}
-      <footer className="border-t bg-white" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
-          <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/dpa" style={{ color: "var(--forest)", fontWeight: 600 }}>DPA</Link>
-            <Link href="/login">Login</Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

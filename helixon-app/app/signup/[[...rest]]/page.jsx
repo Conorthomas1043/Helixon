@@ -230,7 +230,7 @@ export default function SignupPage() {
                 </svg>
               </div>
               <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>Team invite</p>
-              <h1 className="text-white text-[2.6rem] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
+              <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
                 Join your<br />team on Helixon.
               </h1>
               <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
@@ -336,7 +336,7 @@ export default function SignupPage() {
               <StepMark step={step} />
             </div>
             <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>{copy.eyebrow}</p>
-            <h1 className="text-white text-[2.6rem] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>{copy.title}</h1>
+            <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>{copy.title}</h1>
             <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
           </div>
         </div>

@@ -99,7 +99,7 @@ export default function PrivacyToc({ sections }) {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="flex gap-2 text-[12.5px] py-1.5 pl-3 border-l-2 transition-colors leading-snug hover:text-[var(--ink)]"
+              className="flex gap-2 text-[13px] py-1.5 pl-3 border-l-2 transition-colors leading-snug hover:text-[var(--ink)]"
               style={{ borderColor: on ? "var(--forest)" : "var(--border)", color: on ? "var(--forest)" : "var(--ink-soft)", fontWeight: on ? 600 : 400 }}
             >
               <span className="tabular-nums w-4 shrink-0" style={{ color: on ? "var(--forest)" : "var(--ink-faint)" }}>

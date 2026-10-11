@@ -101,7 +101,7 @@ export default function InterviewsPage() {
   const viewTab = (v, l) => toggle(view === v, () => setView(v), `view-${v}`, l);
 
   return (
-    <Page width={1000}>
+    <Page>
       <PageHeader
         eyebrow="Schedule"
         title="Interviews"
@@ -126,7 +126,7 @@ export default function InterviewsPage() {
         <>
           {groups.needsOutcome.length > 0 && (
             <Card eyebrow="To close out" title="Happened - record how it went">
-              <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y -my-3.5">
                 {groups.needsOutcome.map((i) => (
                   <InterviewItem key={i.id} interview={i} onChanged={reload} showCandidate />
                 ))}
@@ -135,7 +135,7 @@ export default function InterviewsPage() {
           )}
           {groups.byDay.map(([day, list]) => (
             <Card key={day} eyebrow={`${list.length} interview${list.length === 1 ? "" : "s"}`} title={day}>
-              <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y -my-3.5">
                 {list.map((i) => (
                   <InterviewItem key={i.id} interview={i} onChanged={reload} showCandidate />
                 ))}
@@ -144,7 +144,7 @@ export default function InterviewsPage() {
           ))}
           {groups.recent.length > 0 && (
             <Card eyebrow="Recent" title="Done and dusted">
-              <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y -my-3.5">
                 {groups.recent.map((i) => (
                   <InterviewItem key={i.id} interview={i} onChanged={reload} showCandidate />
                 ))}

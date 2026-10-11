@@ -18,6 +18,7 @@ import { useOffices } from "@/components/dashboard/use-offices";
 import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel } from "@/lib/candidates/format";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { Avatar, Skeleton as Block } from "@/components/ui";
+import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
 
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
@@ -66,8 +67,8 @@ function ChannelRow({ channelKey, value, onSave }) {
   }
 
   return (
-    <div className="flex items-center gap-3 py-2">
-      <span className="text-[14px] font-medium w-32 shrink-0" style={{ color: INK }}>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2">
+      <span className="text-[14px] font-medium w-full sm:w-32 shrink-0" style={{ color: INK }}>
         {CHANNEL_LABELS[channelKey]}
       </span>
       <div className="flex items-center gap-1.5">
@@ -112,7 +113,7 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
         Self-reported - whatever your job board/LinkedIn campaign dashboard shows. Combined with each candidate&apos;s
         source (set on their profile) for apply rate and cost per applicant in Analytics.
       </p>
-      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+      <div className="divide-y">
         {CHANNEL_KEYS.map((key) => (
           <ChannelRow key={key} channelKey={key} value={byChannel.get(key)} onSave={onSaveChannel} />
         ))}
@@ -571,7 +572,7 @@ export default function JobDetailPage({ params }) {
       {confirmDialog}
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_NARROW} space-y-6`}>
         {status === "loading" && <JobDetailSkeleton />}
         {status === "error" && <StateMessage title="Unable to load job" body="Something went wrong while loading this role." onRetry={retry} />}
         {status === "not-found" && <StateMessage title="Job not found" body="This role may have been removed, or the link is out of date." />}
@@ -582,7 +583,7 @@ export default function JobDetailPage({ params }) {
               <Link href="/dashboard/jobs" className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
                 ← All jobs
               </Link>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <Link
                   href={`/dashboard/candidates?jobId=${job.id}`}
                   className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
@@ -608,7 +609,9 @@ export default function JobDetailPage({ params }) {
             </div>
 
             <header className="rounded-[16px] p-6 sm:p-8" style={CARD}>
-              <div className="flex items-start justify-between gap-4 mb-5">
+              {/* Title above the actions on a phone; side by side from tablet up
+                  (the actions used to push the page 55px wider than a phone). */}
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-5">
                 <div className="min-w-0">
                   <h1 className="text-2xl font-semibold leading-tight" style={{ fontFamily: "var(--font-display)", color: INK }}>
                     {job.title}
@@ -625,7 +628,7 @@ export default function JobDetailPage({ params }) {
                     {job.location}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <div className="flex items-center gap-2 flex-wrap sm:shrink-0 sm:justify-end">
                   <span
                     className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: job.status === "open" ? GREEN_BG : "var(--mist)", color: job.status === "open" ? "var(--forest)" : INK_MUTED }}
@@ -815,7 +818,7 @@ export default function JobDetailPage({ params }) {
                   )}
                 </p>
               ) : (
-                <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                <ul className="divide-y">
                   {filteredCandidates.map((c, i) => (
                     <RankedCandidateRow key={c.id} candidate={c} rank={i + 1} />
                   ))}

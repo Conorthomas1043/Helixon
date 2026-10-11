@@ -116,7 +116,7 @@ function BulkScreeningSection() {
     ];
     if (i < stages.length - 1) {
       items.push(
-        <svg key={`arrow-${i}`} className="hidden sm:block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round">
+        <svg key={`arrow-${i}`} className="hidden sm:block self-center" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       );
@@ -138,7 +138,8 @@ function BulkScreeningSection() {
           </p>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-center mb-12">
+      {/* Stretch, not centre: the cards match heights when one title wraps. */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-stretch mb-12">
         {nodes}
       </div>
       <Reveal delay={stages.length * 80}>
@@ -324,7 +325,8 @@ function TrustSection() {
             <Reveal key={p.title} delay={i * 60}>
               <div className="rounded-[14px] p-6 h-full" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
                 <h3 className="text-[15px] font-semibold mb-2 text-white">{p.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>{p.body}</p>
+                {/* 0.85 white on the card's tint measured 4.46:1; this is 5:1. */}
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.93)" }}>{p.body}</p>
               </div>
             </Reveal>
           ))}
@@ -485,7 +487,8 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[900px] mx-auto items-stretch">
             {PLANS.map((plan) => (
-              <Reveal key={plan.name}>
+              // On a phone the recommended plan comes first, not below the demo card.
+              <Reveal key={plan.name} className={plan.highlight ? "order-first md:order-none" : ""}>
                 <div
                   className="rounded-[16px] p-6 flex flex-col relative h-full"
                   style={{
@@ -506,7 +509,7 @@ export default function LandingPage() {
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-6">
-                    <span className="text-[2.25rem] font-semibold leading-none" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
+                    <span className="text-[2.25rem] font-semibold leading-none" style={{ fontFamily: /\d/.test(plan.price) ? "var(--font-mono)" : "var(--font-display)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
                     <span className="text-[13px]" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.period}</span>
                   </div>
                   <ul className="space-y-3 mb-7 flex-1">

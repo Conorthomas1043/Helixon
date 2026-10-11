@@ -92,7 +92,7 @@ export default function BusinessDevelopmentPage() {
   const closed = deals.filter((d) => d.stage === "won" || d.stage === "lost");
 
   return (
-    <Page width={1280}>
+    <Page>
       <PageHeader
         eyebrow="Revenue"
         title="Business development"
@@ -199,7 +199,7 @@ export default function BusinessDevelopmentPage() {
                       {summary.wonCount} won and {summary.lostCount} lost this month.
                     </p>
                   ) : (
-                    <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                    <ul className="divide-y">
                       {closed.map((d) => (
                         <li key={d.id} className="py-2.5 flex items-center justify-between gap-3 text-[14px]">
                           <button type="button" onClick={() => setDialog(d)} className="min-w-0 text-left">

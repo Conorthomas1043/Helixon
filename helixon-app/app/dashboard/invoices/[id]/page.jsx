@@ -84,14 +84,14 @@ export default function InvoicePage({ params }) {
 
   if (status === "loading") {
     return (
-      <Page width={900}>
+      <Page width="narrow">
         <LoadingCard rows={8} />
       </Page>
     );
   }
   if (status !== "ready") {
     return (
-      <Page width={900}>
+      <Page width="narrow">
         <ErrorState title={status === "not-found" ? "Invoice not found" : "Couldn't load the invoice"} onRetry={status === "error" ? () => setReloadKey((k) => k + 1) : undefined} />
       </Page>
     );
@@ -104,7 +104,7 @@ export default function InvoicePage({ params }) {
   return (
     <>
       {confirmDialog}
-    <Page width={900}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/placements", label: "Placements & invoices" }}
         title={`Invoice ${inv.number}`}

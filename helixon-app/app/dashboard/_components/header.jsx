@@ -130,7 +130,7 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
       ...CARD,
       position: "relative",
       overflow: "hidden",
-      padding: "28px 32px",
+      padding: "clamp(20px, 4vw, 28px) clamp(20px, 5vw, 32px)",
       display: "flex",
       flexWrap: "wrap",
       gap: 20,
@@ -204,7 +204,9 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+      {/* Shrinkable so its buttons wrap onto a second line on a phone instead
+          of running off the card ("+ Screen a CV" used to be cut off). */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 1, minWidth: 0, maxWidth: "100%", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <Link href="/dashboard/candidates" style={{
           display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999, border: `1px solid ${BORDER}`,

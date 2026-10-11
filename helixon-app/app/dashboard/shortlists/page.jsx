@@ -12,6 +12,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { getShortlists, createShortlist, getJobs } from "@/lib/dashboard-api";
 import { INK, INK_MUTED, INK_FAINT, CARD, formatDateOnly } from "@/lib/candidates/format";
 import { Skeleton as Block } from "@/components/ui";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 function NewShortlistForm({ jobs, onCreated }) {
   const [name, setName] = useState("");
@@ -113,7 +114,7 @@ export default function ShortlistsPage() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header>
           <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             Client submissions

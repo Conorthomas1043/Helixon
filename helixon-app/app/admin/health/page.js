@@ -21,7 +21,7 @@ function overallStatus(health) {
 // One tick per recorded run, oldest on the left.
 function HistoryStrip({ history }) {
   const runs = [...(history || [])].reverse();
-  if (!runs.length) return <div className="faint" style={{ fontSize: 13.5 }}>No runs recorded yet.</div>;
+  if (!runs.length) return <div className="faint" style={{ fontSize: 14 }}>No runs recorded yet.</div>;
   const incidents = (history || []).filter((h) => h.overall !== "ok").slice(0, 6);
   return (
     <>
@@ -212,7 +212,7 @@ export default function HealthPage() {
             </span>
           )}
           {status.grade?.mutedFailing?.length > 0 && (
-            <span className="faint" style={{ fontSize: 13.5 }}>
+            <span className="faint" style={{ fontSize: 14 }}>
               Muted but failing: {status.grade.mutedFailing.map((k) => HEALTH_CHECKS.find((c) => c.key === k)?.label || k).join(", ")}
             </span>
           )}
@@ -222,7 +222,7 @@ export default function HealthPage() {
       <div className="split section">
         <Panel title="History" sub="The overall status each time the checks ran.">
           {health?.history === null ? (
-            <div className="faint" style={{ fontSize: 13.5 }}>History needs the latest database migration (admin_granular_controls).</div>
+            <div className="faint" style={{ fontSize: 14 }}>History needs the latest database migration (admin_granular_controls).</div>
           ) : (
             <HistoryStrip history={health?.history} />
           )}

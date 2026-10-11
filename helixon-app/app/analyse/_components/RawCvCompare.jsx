@@ -146,8 +146,8 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
             <span className="mx-auto w-10 h-10 rounded-full bg-[var(--mist)] border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
               <Icon name="eyeOff" size={18} />
             </span>
-            <p className="text-[14.5px] text-[var(--ink)] font-semibold mt-3">Screened blind</p>
-            <p className="text-[13.5px] text-[var(--ink-soft)] mt-1 max-w-[240px] mx-auto">Their CV shows their name and contact details.</p>
+            <p className="text-[15px] text-[var(--ink)] font-semibold mt-3">Screened blind</p>
+            <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-[240px] mx-auto">Their CV shows their name and contact details.</p>
             <button
               type="button"
               onClick={onReveal}
@@ -157,7 +157,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
             </button>
           </div>
         ) : (
-          <div className="text-[13.5px] leading-[1.6] text-[var(--ink)]">
+          <div className="text-[14px] leading-[1.6] text-[var(--ink)]">
             {parsed.lines.map((line, i) => {
               const isHeading = parsed.headings.has(i);
               const inSection = range && i >= range.start && i <= range.end;
@@ -331,7 +331,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
             />
             {findRe && (
               <>
-                <span className="hidden sm:inline text-[13.5px] text-[var(--ink-soft)] whitespace-nowrap tabular-nums">
+                <span className="hidden sm:inline text-[14px] text-[var(--ink-soft)] whitespace-nowrap tabular-nums">
                   {totalMatches ? `${totalMatches} in ${cvsWithMatches} of ${n} CVs` : "No matches"}
                 </span>
                 <button

@@ -24,9 +24,9 @@ export function Avatar({ name, state, size = 46 }) {
         className="w-full h-full rounded-full flex items-center justify-center font-semibold"
         style={{
           background: state && state !== "offline" ? "var(--mint)" : "var(--mist)",
-          color: "var(--forest)",
+          // Offline reads as grey initials, not faded green (3.5:1).
+          color: state === "offline" || state === "hidden" ? "var(--ink-soft)" : "var(--forest)",
           fontSize: Math.round(size * 0.3),
-          opacity: state === "offline" || state === "hidden" ? 0.75 : 1,
         }}
         aria-hidden="true"
       >
@@ -66,7 +66,7 @@ export function SummaryTile({ label, value, sub, dot, active, onClick }) {
       <p className="text-[24px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
         {value}
       </p>
-      {sub && <p className="text-[12.5px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
+      {sub && <p className="text-[13px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
     </button>
   );
 }
@@ -76,8 +76,10 @@ export const ROLE_LABELS = { owner: "Owner", admin: "Admin", member: "Member" };
 export function MemberCard({ member, isYou, presence, now, canRemove, canChangeRole, changingRole, onChangeRole, removing, onRemove }) {
   const state = presence?.state;
   const line = presence ? presenceLine(presence, now) : null;
+  // No fade for offline members: the avatar and presence dot already say so,
+  // and fading the whole card took its grey text below 4.5:1.
   return (
-    <div className="rounded-[14px] p-5 flex flex-col" style={{ ...CARD, opacity: state === "offline" || state === "hidden" ? 0.92 : 1 }}>
+    <div className="rounded-[14px] p-5 flex flex-col" style={CARD}>
       <div className="flex items-start gap-3">
         <Avatar name={member.name} state={state} />
         <div className="min-w-0 flex-1">
@@ -91,13 +93,13 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
             </span>
           </div>
           {presence && (
-            <p className="flex items-center gap-1.5 text-[13.5px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
+            <p className="flex items-center gap-1.5 text-[14px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
               {state !== "offline" && state !== "hidden" && <PresenceDot state={state} size={7} ring="transparent" />}
               {line}
             </p>
           )}
           {presence?.message && (
-            <p className="text-[13.5px] mt-1 italic" style={{ color: INK }}>
+            <p className="text-[14px] mt-1 italic" style={{ color: INK }}>
               “{presence.message}”
             </p>
           )}
@@ -109,7 +111,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
         )}
       </div>
 
-      <p className="text-[12.5px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-[13px] mt-3" style={{ color: INK_FAINT }}>
         {member.lastWorkedAt ? `Last worked on a candidate ${timeAgo(member.lastWorkedAt, now)}` : "No candidate activity yet"}
         {member.screenedToday > 0 ? ` · ${member.screenedToday} screened today` : ""}
       </p>

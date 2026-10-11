@@ -129,7 +129,7 @@ function Pill({ status }) {
   const s = STATUS_STYLE[status];
   return (
     <span
-      className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
     >
       <span aria-hidden="true">{s.icon}</span>
@@ -186,8 +186,8 @@ function Report({ ex }) {
           <ScoreRing score={ex.score} />
           <div className="min-w-0">
             <p className="text-[15px] font-semibold truncate" style={{ color: "var(--ink)" }}>{ex.candidate}</p>
-            <p className="text-[11.5px] truncate" style={{ color: "var(--ink-faint)" }}>{ex.current}</p>
-            <span className="inline-block mt-2 text-[10.5px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <p className="text-[12px] truncate" style={{ color: "var(--ink-faint)" }}>{ex.current}</p>
+            <span className="inline-block mt-2 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
               {ex.verdict}
             </span>
           </div>
@@ -198,7 +198,7 @@ function Report({ ex }) {
           <ul className="space-y-2.5">
             {ex.breakdown.map((b) => (
               <li key={b.label}>
-                <div className="flex items-baseline justify-between text-[11.5px]">
+                <div className="flex items-baseline justify-between text-[12px]">
                   <span style={{ color: "var(--ink-soft)" }}>{b.label}</span>
                   <span className="tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--ink)" }}>
                     {b.value}<span style={{ color: "var(--ink-faint)" }}>/{b.max}</span>
@@ -227,7 +227,7 @@ function Report({ ex }) {
             {ex.requirements.map((r) => (
               <li key={r.skill} className="py-2 first:pt-0">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12.5px] min-w-0" style={{ color: "var(--ink)" }}>
+                  <span className="text-[13px] min-w-0" style={{ color: "var(--ink)" }}>
                     {r.skill}
                     {r.importance && (
                       <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>{r.importance}</span>
@@ -250,9 +250,9 @@ function Report({ ex }) {
           <ul className="space-y-1.5">
             {ex.mustHaves.map((m) => (
               <li key={m.text} className="flex items-center justify-between gap-3">
-                <span className="text-[12.5px]" style={{ color: "var(--ink)" }}>
+                <span className="text-[13px]" style={{ color: "var(--ink)" }}>
                   {m.text}
-                  {m.note && <span className="block text-[10.5px]" style={{ color: "var(--ink-faint)" }}>{m.note}</span>}
+                  {m.note && <span className="block text-[11px]" style={{ color: "var(--ink-faint)" }}>{m.note}</span>}
                 </span>
                 <Pill status={m.status} />
               </li>
@@ -265,7 +265,7 @@ function Report({ ex }) {
             <Label>Strengths</Label>
             <ul className="space-y-1">
               {ex.strengths.map((s) => (
-                <li key={s} className="text-[11.5px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
+                <li key={s} className="text-[12px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
                   <span style={{ color: "var(--forest)" }}>✓</span>{s}
                 </li>
               ))}
@@ -275,7 +275,7 @@ function Report({ ex }) {
             <Label>Worth a second look</Label>
             <ul className="space-y-1">
               {ex.concerns.map((s) => (
-                <li key={s} className="text-[11.5px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
+                <li key={s} className="text-[12px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
                   <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{s}
                 </li>
               ))}

@@ -234,7 +234,7 @@ export default function EmailSettingsPage() {
   return (
     <>
       {confirmDialog}
-    <Page width={1000}>
+    <Page>
       <PageHeader
         eyebrow="Outreach"
         title="Email templates & sequences"
@@ -245,10 +245,13 @@ export default function EmailSettingsPage() {
       {status === "ready" && (
         <>
           {!data.repliesCaptured && (
-            <div className="rounded-[12px] px-4 py-3 text-[13px]" style={{ background: "#fff8e6", color: "#7a4f0a", border: "1px solid #f1dfb5" }}>
-              Replies go straight to the sender&apos;s inbox. To also keep them on candidates&apos; records (and stop sequences when someone
-              replies), set RESEND_INBOUND_DOMAIN and RESEND_WEBHOOK_SECRET and point Resend&apos;s &quot;email.received&quot; webhook at
-              /api/webhooks/resend-inbound.
+            // Plain words for the agency: the set-up itself (environment
+            // variables and a Resend webhook) is Helixon's job, and the
+            // startup check in lib/env.js tells the people who can do it.
+            <div className="rounded-[12px] px-4 py-3 text-[13px]" style={{ background: "var(--ui-warn-soft)", color: "var(--ui-warn)", border: "1px solid rgba(138,90,18,0.2)" }}>
+              Replies go straight to the sender&apos;s inbox for now. Filing them on the candidate&apos;s record, and stopping a sequence when
+              someone replies, isn&apos;t switched on for your workspace yet - email{" "}
+              <a href="mailto:support@helixon.co.uk" className="underline font-semibold">support@helixon.co.uk</a> and we&apos;ll turn it on.
             </div>
           )}
           <ErrorText>{error}</ErrorText>
@@ -256,7 +259,7 @@ export default function EmailSettingsPage() {
             {data.templates.length === 0 ? (
               <p className="text-[14px]" style={{ color: INK_MUTED }}>No templates yet - save the emails you send most, like interview invites and rejections.</p>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {data.templates.map((t) => (
                   <li key={t.id} className="py-3 flex items-center gap-3">
                     <div className="min-w-0 flex-1">
@@ -278,7 +281,7 @@ export default function EmailSettingsPage() {
             {sequences.length === 0 ? (
               <p className="text-[14px]" style={{ color: INK_MUTED }}>No sequences yet - e.g. a three-email nurture for passive candidates, sent a few days apart.</p>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {sequences.map((s) => (
                   <li key={s.id} className="py-3 flex flex-wrap items-center gap-3">
                     <div className="min-w-0 flex-1">

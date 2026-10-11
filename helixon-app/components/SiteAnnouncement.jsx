@@ -45,7 +45,7 @@ export default function SiteAnnouncement() {
 
   const external = /^https?:/i.test(a.linkUrl || "");
   return (
-    <div role="region" aria-label="Announcement" className="w-full text-[13.5px]" style={TONE_STYLES[a.tone] || TONE_STYLES.info}>
+    <div role="region" aria-label="Announcement" className="w-full text-[14px]" style={TONE_STYLES[a.tone] || TONE_STYLES.info}>
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-center gap-3 text-center">
         <p className="leading-snug">
           {a.text}

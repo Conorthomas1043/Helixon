@@ -164,7 +164,7 @@ export function DocumentsSection({ candidate }) {
                 </button>
               </div>
               <pre
-                className="max-h-[420px] overflow-auto whitespace-pre-wrap px-3 py-2.5 text-[13.5px] leading-relaxed"
+                className="max-h-[420px] overflow-auto whitespace-pre-wrap px-3 py-2.5 text-[14px] leading-relaxed"
                 style={{ color: INK, fontFamily: "inherit" }}
               >
                 {text}

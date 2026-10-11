@@ -661,7 +661,7 @@ export default function TrafficPage() {
       <section className="section">
         <div className="section-head">
           <div>
-            <div className="panel-title">Request log</div>
+            <h2 className="panel-title">Request log</h2>
             <div className="panel-sub">
               {formatNumber(rows.length)} {filterActive ? "matching " : ""}requests from {AUDIENCE_LABEL[audience] || "all traffic"} shown, newest first
               {selected ? ` · from ${placeLabel({ country: selected.country })}` : ""}

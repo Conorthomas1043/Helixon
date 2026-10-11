@@ -504,7 +504,7 @@ export default function AnalyseWorkspace() {
           <div className="min-w-0">
             {inReport ? (
               <>
-                <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-[13.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
+                <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-[14px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
                   <Icon name="arrowLeft" size={14} /> Screen another CV
                 </button>
                 <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
@@ -516,7 +516,7 @@ export default function AnalyseWorkspace() {
                 <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
                   {comparing ? "Compare a second candidate" : rerunning ? "Re-score candidate" : "Screen a CV"}
                 </h1>
-                <p className="text-[14.5px] text-[var(--ink-soft)] mt-1">
+                <p className="text-[15px] text-[var(--ink-soft)] mt-1">
                   {mode === "bulk"
                     ? "Score a whole batch of CVs against one role."
                     : comparing

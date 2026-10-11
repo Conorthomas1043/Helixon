@@ -170,7 +170,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
           </Section>
 
           <Section title="Screening limit">
-            <p className="faint" style={{ margin: "0 0 8px", fontSize: 13.5 }}>
+            <p className="faint" style={{ margin: "0 0 8px", fontSize: 14 }}>
               {formatNumber(agency.screeningsThisMonth)} CVs screened this month{agency.screeningCap ? ` of ${formatNumber(agency.screeningCap)}` : ""}. With a cap, screening stops for the rest of the month once it&rsquo;s reached.
             </p>
             {agency.screeningCap ? <Progress value={agency.screeningsThisMonth} max={agency.screeningCap} /> : null}
@@ -250,7 +250,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
 
           <Section title="History">
             {(data.history || []).length === 0 ? (
-              <div className="faint" style={{ fontSize: 13.5 }}>No admin changes recorded.</div>
+              <div className="faint" style={{ fontSize: 14 }}>No admin changes recorded.</div>
             ) : (
               <div className="mini-list">
                 {data.history.map((h) => (

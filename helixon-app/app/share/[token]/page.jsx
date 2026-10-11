@@ -136,7 +136,7 @@ export default function SharedShortlistPage({ params }) {
     return (
       <main className="min-h-screen" style={{ background: "var(--mist)" }} aria-busy="true">
         <div className="mx-auto max-w-[860px] px-4 sm:px-6 py-10 space-y-4">
-          <p className="sr-only">Loading the shortlist…</p>
+          <div role="status"><h1 className="sr-only">Loading the shortlist…</h1></div>
           <div className="h-3 w-32 rounded-full bg-white" />
           <div className="h-8 w-2/3 rounded-[8px] bg-white" />
           <div className="h-64 rounded-[14px] bg-white" />

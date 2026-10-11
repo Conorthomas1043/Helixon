@@ -67,7 +67,7 @@ function BulletList({ items, marker = "dot", tone }) {
   return (
     <ul className="space-y-2">
       {items.map((item, i) => (
-        <li key={i} className="flex gap-2.5 text-[14.5px] leading-relaxed text-[var(--ink)]">
+        <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed text-[var(--ink)]">
           {marker === "check" ? (
             <Icon name="check" size={14} className="mt-[3px] text-[var(--forest)]" strokeWidth={2.2} />
           ) : marker === "x" ? (
@@ -92,7 +92,7 @@ function SkillList({ title, items, tone, empty }) {
       {items.length ? (
         <ul className="space-y-1.5">
           {items.map((s, i) => (
-            <li key={i} className="text-[14.5px] text-[var(--ink)] leading-snug">
+            <li key={i} className="text-[15px] text-[var(--ink)] leading-snug">
               {s}
             </li>
           ))}
@@ -108,8 +108,8 @@ function ContactRow({ icon, label, children }) {
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-[var(--border-soft)] last:border-b-0">
       <Icon name={icon} size={15} className="mt-0.5 text-[var(--ink-faint)]" />
-      <span className="w-28 shrink-0 text-[13.5px] text-[var(--ink-soft)]">{label}</span>
-      <span className="min-w-0 text-[14.5px] text-[var(--ink)] break-words">{children}</span>
+      <span className="w-28 shrink-0 text-[14px] text-[var(--ink-soft)]">{label}</span>
+      <span className="min-w-0 text-[15px] text-[var(--ink)] break-words">{children}</span>
     </div>
   );
 }
@@ -188,13 +188,13 @@ export default function Report({ result, roleLabel }) {
               </h2>
             </div>
             {(headline || roleLabel) && (
-              <p className="text-[14.5px] text-[var(--ink-soft)] mt-1">
+              <p className="text-[15px] text-[var(--ink-soft)] mt-1">
                 {!blind && headline}
                 {!blind && headline && roleLabel ? " · " : ""}
                 {roleLabel && <>for <span className="text-[var(--ink)]">{roleLabel}</span></>}
               </p>
             )}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[13.5px] text-[var(--ink-soft)]">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[14px] text-[var(--ink-soft)]">
               {result.seniority_match && result.seniority_match !== "Unknown" && (
                 <span>
                   Seniority: <span className="text-[var(--ink)] font-medium">{result.seniority_match}</span>
@@ -214,7 +214,7 @@ export default function Report({ result, roleLabel }) {
                 </span>
               )}
             </div>
-            {result.summary && <p className="text-[14.5px] leading-[1.65] text-[var(--ink)] mt-4 max-w-[62ch]">{result.summary}</p>}
+            {result.summary && <p className="text-[15px] leading-[1.65] text-[var(--ink)] mt-4 max-w-[62ch]">{result.summary}</p>}
           </div>
         </div>
 
@@ -239,7 +239,7 @@ export default function Report({ result, roleLabel }) {
           <ul className="flex gap-1">
             {sections.map((s) => (
               <li key={s.id}>
-                <a href={`#${s.id}`} className="inline-block px-2.5 py-3 text-[13.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] whitespace-nowrap">
+                <a href={`#${s.id}`} className="inline-block px-2.5 py-3 text-[14px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] whitespace-nowrap">
                   {s.label}
                 </a>
               </li>
@@ -256,14 +256,14 @@ export default function Report({ result, roleLabel }) {
               const t = scoreTone(row.value);
               return (
                 <div key={row.key} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 items-baseline">
-                  <span className="text-[14.5px] font-medium text-[var(--ink)]">{row.label}</span>
-                  <span className="text-[14.5px] font-semibold tabular-nums" style={{ color: t.fg }}>
+                  <span className="text-[15px] font-medium text-[var(--ink)]">{row.label}</span>
+                  <span className="text-[15px] font-semibold tabular-nums" style={{ color: t.fg }}>
                     {row.value}
                   </span>
                   <div className="col-span-2">
                     <Meter value={row.value} tone={t.fg} grown={grown} delay={i * 90} />
                   </div>
-                  {result.score_rationale?.[row.key] && <p className="col-span-2 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">{result.score_rationale[row.key]}</p>}
+                  {result.score_rationale?.[row.key] && <p className="col-span-2 text-[14px] leading-relaxed text-[var(--ink-soft)]">{result.score_rationale[row.key]}</p>}
                 </div>
               );
             })}
@@ -306,8 +306,8 @@ export default function Report({ result, roleLabel }) {
                   <Icon name={r.met ? "check" : "x"} size={11} strokeWidth={2.6} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[14.5px] font-medium text-[var(--ink)]">{r.requirement}</p>
-                  {r.evidence && <p className="text-[13.5px] leading-relaxed text-[var(--ink-soft)] mt-0.5">{r.evidence}</p>}
+                  <p className="text-[15px] font-medium text-[var(--ink)]">{r.requirement}</p>
+                  {r.evidence && <p className="text-[14px] leading-relaxed text-[var(--ink-soft)] mt-0.5">{r.evidence}</p>}
                 </div>
               </li>
             ))}
@@ -329,7 +329,7 @@ export default function Report({ result, roleLabel }) {
           )}
         </div>
         {result.other_skills?.length > 0 && (
-          <p className="text-[13.5px] leading-relaxed text-[var(--ink-soft)] mt-6 pt-4 border-t border-[var(--border-soft)]">
+          <p className="text-[14px] leading-relaxed text-[var(--ink-soft)] mt-6 pt-4 border-t border-[var(--border-soft)]">
             <span className="font-medium text-[var(--ink)]">Also on the CV: </span>
             {result.other_skills.join(", ")}
           </p>
@@ -343,8 +343,8 @@ export default function Report({ result, roleLabel }) {
             <div className="space-y-3">
               {experience.map((item, i) => (
                 <div key={i} className="grid grid-cols-[minmax(0,1fr)_56px] gap-x-4 gap-y-1 items-baseline">
-                  <span className="text-[14.5px] text-[var(--ink)] truncate">{item.area}</span>
-                  <span className="text-[13.5px] text-right tabular-nums text-[var(--ink-soft)]">{item.years > 0 ? `${item.years} yr${item.years === 1 ? "" : "s"}` : "None"}</span>
+                  <span className="text-[15px] text-[var(--ink)] truncate">{item.area}</span>
+                  <span className="text-[14px] text-right tabular-nums text-[var(--ink-soft)]">{item.years > 0 ? `${item.years} yr${item.years === 1 ? "" : "s"}` : "None"}</span>
                   <div className="col-span-2">
                     <Meter value={((item.years || 0) / maxYears) * 100} tone="var(--ink-mute)" grown={grown} delay={Math.min(i, 8) * 50} />
                   </div>
@@ -361,11 +361,11 @@ export default function Report({ result, roleLabel }) {
                   <ul className="space-y-3">
                     {result.education.map((e, i) => (
                       <li key={i}>
-                        <p className="text-[14.5px] font-medium text-[var(--ink)]">
+                        <p className="text-[15px] font-medium text-[var(--ink)]">
                           {e.degree}
                           {e.field_of_study ? `, ${e.field_of_study}` : ""}
                         </p>
-                        <p className="text-[13.5px] text-[var(--ink-soft)]">
+                        <p className="text-[14px] text-[var(--ink-soft)]">
                           {[e.institution, yearRange(e.start_year, e.end_year), e.grade].filter(Boolean).join(" · ")}
                         </p>
                       </li>
@@ -378,9 +378,9 @@ export default function Report({ result, roleLabel }) {
                   <p className="text-[13px] font-medium text-[var(--ink-soft)] mb-2">Certifications</p>
                   <ul className="space-y-2">
                     {result.certifications.map((c, i) => (
-                      <li key={i} className="text-[14.5px] text-[var(--ink)]">
+                      <li key={i} className="text-[15px] text-[var(--ink)]">
                         {c.name}
-                        {(c.issuer || c.year) && <span className="text-[13.5px] text-[var(--ink-soft)]"> · {[c.issuer, c.year].filter(Boolean).join(", ")}</span>}
+                        {(c.issuer || c.year) && <span className="text-[14px] text-[var(--ink-soft)]"> · {[c.issuer, c.year].filter(Boolean).join(", ")}</span>}
                       </li>
                     ))}
                   </ul>
@@ -396,7 +396,7 @@ export default function Report({ result, roleLabel }) {
         <Section id="evidence" title="Evidence">
           {result.red_flags?.length > 0 && (
             <div className="rounded-[10px] border border-[#f2d2cd] bg-[#fdf6f5] px-4 py-3.5 mb-6">
-              <p className="text-[13.5px] font-semibold text-[#a83226] mb-2 flex items-center gap-1.5">
+              <p className="text-[14px] font-semibold text-[#a83226] mb-2 flex items-center gap-1.5">
                 <Icon name="alert" size={14} /> Worth raising on the call
               </p>
               <BulletList items={result.red_flags} tone="#c0392b" />
@@ -424,7 +424,7 @@ export default function Report({ result, roleLabel }) {
         <Section id="interview" title="Interview questions" meta="Tailored to the gaps above">
           <ol className="space-y-3.5">
             {result.interview_questions.map((q, i) => (
-              <li key={i} className="flex gap-3 text-[14.5px] leading-relaxed text-[var(--ink)]">
+              <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-[var(--ink)]">
                 <span className="w-5 shrink-0 text-right tabular-nums text-[var(--ink-faint)] font-medium">{i + 1}.</span>
                 <span>{q}</span>
               </li>
@@ -477,7 +477,7 @@ export default function Report({ result, roleLabel }) {
                 {PAY_PERIOD_SUFFIX[result.salary_estimate.period] || ""}
                 {result.salary_estimate.seniority && <span className="text-[14px] font-normal text-[var(--ink-soft)] ml-2">{result.salary_estimate.seniority}</span>}
               </p>
-              {result.salary_estimate.rationale && <p className="text-[13.5px] leading-relaxed text-[var(--ink-soft)] mt-1 max-w-[62ch]">{result.salary_estimate.rationale}</p>}
+              {result.salary_estimate.rationale && <p className="text-[14px] leading-relaxed text-[var(--ink-soft)] mt-1 max-w-[62ch]">{result.salary_estimate.rationale}</p>}
             </div>
           )}
         </Section>

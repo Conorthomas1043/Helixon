@@ -305,14 +305,14 @@ export default function ClientDetailPage({ params }) {
 
   if (status === "loading") {
     return (
-      <Page width={1100}>
+      <Page width="narrow">
         <LoadingCard rows={6} />
       </Page>
     );
   }
   if (status !== "ready") {
     return (
-      <Page width={1100}>
+      <Page width="narrow">
         <ErrorState
           title={status === "not-found" ? "Client not found" : "Unable to load this client"}
           body={status === "not-found" ? "It may have been deleted." : null}
@@ -331,7 +331,7 @@ export default function ClientDetailPage({ params }) {
   return (
     <>
       {confirmDialog}
-    <Page width={1100}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/clients", label: "All clients" }}
         eyebrow={client.industry || "Client"}
@@ -373,7 +373,7 @@ export default function ClientDetailPage({ params }) {
                 No jobs for {client.name} yet.
               </p>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {jobs.map((j) => (
                   <li key={j.id}>
                     <Link href={`/dashboard/jobs/${j.id}`} className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-[10px] hover:bg-[var(--mist)]">
@@ -404,7 +404,7 @@ export default function ClientDetailPage({ params }) {
                 No placements yet.
               </p>
             ) : (
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {placements.map((p) => (
                   <li key={p.candidateId} className="py-2.5 flex items-center gap-3 text-[14px]">
                     <Link href={`/dashboard/candidates/${p.candidateId}`} className="font-semibold hover:underline flex-1 min-w-0 truncate" style={{ color: INK }}>
@@ -424,7 +424,7 @@ export default function ClientDetailPage({ params }) {
 
           {invoices.length > 0 && (
             <Card title="Invoices" eyebrow={outstanding ? `${formatMoney(outstanding)} outstanding` : "All paid"}>
-              <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y">
                 {invoices.map((i) => (
                   <li key={i.id} className="py-2.5 flex items-center gap-3 text-[14px]">
                     <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>

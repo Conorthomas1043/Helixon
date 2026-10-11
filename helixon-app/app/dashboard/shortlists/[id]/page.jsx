@@ -24,6 +24,7 @@ import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor } from "@/lib/candidates/fo
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { reportQuietly } from "@/lib/report-error";
 import { Avatar as KitAvatar } from "@/components/ui";
+import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
 
 function Avatar({ name }) {
   return <KitAvatar name={name} tone="solid" />;
@@ -191,7 +192,7 @@ export default function ShortlistDetailPage({ params }) {
       {confirmDialog}
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1000px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_NARROW} space-y-6`}>
         <Link href="/dashboard/shortlists" className="text-[13px] font-semibold" style={{ color: INK_MUTED }}>
           ← All shortlists
         </Link>
@@ -311,7 +312,7 @@ export default function ShortlistDetailPage({ params }) {
                   .
                 </p>
               ) : (
-                <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+                <ul className="divide-y">
                   {candidates.map((c) => (
                     <li key={c.id} className="py-3.5 flex items-start gap-3">
                       <Avatar name={c.fullName} />
@@ -337,8 +338,11 @@ export default function ShortlistDetailPage({ params }) {
                         <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
                           {c.score ?? "-"}
                         </span>
+                        {/* Stage colour as a dot, the name in readable text (the coloured
+                            text was 2.4:1 for Screened). */}
                         {c.stage && (
-                          <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: STAGE_COLORS[c.stage] || INK_MUTED }}>
+                          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                            <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full" style={{ background: STAGE_COLORS[c.stage] || INK_MUTED }} />
                             {STAGE_LABELS[c.stage] ?? c.stage}
                           </span>
                         )}

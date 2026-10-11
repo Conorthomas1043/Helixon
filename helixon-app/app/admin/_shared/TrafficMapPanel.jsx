@@ -26,7 +26,7 @@ export default function TrafficMapPanel({ points = [], summary, partial, onSelec
     <section className="panel map-panel" aria-labelledby="traffic-map-title">
       <div className="map-panel-head">
         <div>
-          <div className="panel-title" id="traffic-map-title">{title}</div>
+          <h2 className="panel-title" id="traffic-map-title">{title}</h2>
           <div className="panel-sub">
             {sub ||
               (summary
@@ -47,7 +47,7 @@ export default function TrafficMapPanel({ points = [], summary, partial, onSelec
         <div className="map-side">
           <h3>Top places</h3>
           {top.length === 0 ? (
-            <div className="faint" style={{ fontSize: 13.5 }}>Nothing geolocated in this range.</div>
+            <div className="faint" style={{ fontSize: 14 }}>Nothing geolocated in this range.</div>
           ) : (
             top.map((p) => {
               const key = pointKey(p);

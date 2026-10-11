@@ -24,10 +24,10 @@ const BENEFITS = [
 ];
 
 const ROLES = [
-  { title: "Senior Full-Stack Engineer", team: "Engineering", location: "Remote (UK)", type: "Full-time" },
-  { title: "Product Designer", team: "Design", location: "Remote (UK) / London", type: "Full-time" },
-  { title: "Customer Success Manager", team: "Customer Success", location: "London", type: "Full-time" },
-  { title: "Growth Marketer", team: "Marketing", location: "Remote (UK)", type: "Full-time" },
+  { title: "Senior Full-Stack Engineer", team: "Engineering", location: "Remote (UK)", type: "Full-time", summary: "Next.js, Postgres and the screening pipeline: from CV parsing to the recruiter's report." },
+  { title: "Product Designer", team: "Design", location: "Remote (UK) / London", type: "Full-time", summary: "Own the recruiter's day in Helixon, from the pipeline board to the client-facing shortlist." },
+  { title: "Customer Success Manager", team: "Customer Success", location: "London", type: "Full-time", summary: "Onboard agency desks, run demos on their own CVs and turn their feedback into the roadmap." },
+  { title: "Growth Marketer", team: "Marketing", location: "Remote (UK)", type: "Full-time", summary: "Tell UK agencies what Helixon does, with honest content and campaigns that respect their time." },
 ];
 
 export default function CareersPage() {
@@ -39,7 +39,7 @@ export default function CareersPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-16 text-center">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           We&apos;re hiring - {ROLES.length} open roles
         </span>
@@ -53,6 +53,7 @@ export default function CareersPage() {
 
       {/* ── Values ───────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
+        <h2 className="sr-only">How we work</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {VALUES.map((v) => (
             <div key={v.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
@@ -86,7 +87,7 @@ export default function CareersPage() {
       {/* ── Open roles ───────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-24">
         <div className="text-center mb-10">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Come build with us
           </h2>
@@ -96,7 +97,7 @@ export default function CareersPage() {
           {ROLES.map((role, i) => (
             <a
               key={role.title}
-              href="/contact"
+              href={`/contact?role=${encodeURIComponent(role.title)}`}
               className="flex items-center justify-between gap-4 px-6 py-5 transition-colors"
               style={{ borderBottom: i < ROLES.length - 1 ? "1px solid var(--border)" : "none" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mist)")}
@@ -104,7 +105,8 @@ export default function CareersPage() {
             >
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{role.title}</h3>
-                <div className="flex items-center gap-2 flex-wrap text-[11px]" style={{ color: "var(--ink-faint)" }}>
+                <p className="text-xs leading-relaxed mb-1.5 text-[var(--ink-soft)]">{role.summary}</p>
+                <div className="flex items-center gap-2 flex-wrap text-xs" style={{ color: "var(--ink-faint)" }}>
                   <span>{role.team}</span>
                   <span>·</span>
                   <span>{role.location}</span>
@@ -112,9 +114,12 @@ export default function CareersPage() {
                   <span>{role.type}</span>
                 </div>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round" className="shrink-0">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+              <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--forest)]">
+                Apply
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
             </a>
           ))}
         </div>

@@ -1,902 +1,1142 @@
 {
   "app/about/page.js": {
     "hex": 0,
-    "inlineStyles": 31
+    "inlineStyles": 30,
+    "fontSizes": 1
   },
   "app/account/[[...account]]/AccountClient.jsx": {
-    "hex": 14,
-    "inlineStyles": 4
+    "hex": 12,
+    "inlineStyles": 4,
+    "fontSizes": 7
   },
   "app/account/layout.jsx": {
     "hex": 1,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 0
   },
   "app/admin/_shared/AdminShell.jsx": {
     "hex": 0,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 0
   },
   "app/admin/_shared/TrafficMapPanel.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 0
   },
   "app/admin/_shared/TrafficTimeline.jsx": {
     "hex": 0,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 0
   },
   "app/admin/_shared/WorldMap.jsx": {
     "hex": 1,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "app/admin/_shared/datatable.js": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "app/admin/_shared/modal.js": {
     "hex": 0,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 0
   },
   "app/admin/_shared/table.js": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 0
   },
   "app/admin/_shared/traffic-ui.js": {
     "hex": 0,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 0
   },
   "app/admin/_shared/ui.js": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 0
   },
   "app/admin/agencies/page.js": {
     "hex": 0,
-    "inlineStyles": 21
+    "inlineStyles": 21,
+    "fontSizes": 0
   },
   "app/admin/audit/page.js": {
     "hex": 0,
-    "inlineStyles": 9
+    "inlineStyles": 9,
+    "fontSizes": 0
   },
   "app/admin/billing/page.js": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 0
   },
   "app/admin/command/RecentPanels.js": {
     "hex": 0,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 0
   },
   "app/admin/command/page.js": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 0
   },
   "app/admin/employees/EmployeeDrawer.jsx": {
     "hex": 0,
-    "inlineStyles": 20
+    "inlineStyles": 20,
+    "fontSizes": 0
   },
   "app/admin/employees/access.jsx": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 0
   },
   "app/admin/employees/page.js": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 0
   },
   "app/admin/health/page.js": {
     "hex": 0,
-    "inlineStyles": 19
+    "inlineStyles": 19,
+    "fontSizes": 0
   },
   "app/admin/leads/page.js": {
     "hex": 0,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 0
   },
   "app/admin/login/page.js": {
     "hex": 0,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 0
   },
   "app/admin/mobile/AdminMobileApp.jsx": {
     "hex": 11,
-    "inlineStyles": 51
+    "inlineStyles": 51,
+    "fontSizes": 30
   },
   "app/admin/pentester/page.js": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 0
   },
   "app/admin/security/investigate/page.js": {
     "hex": 0,
-    "inlineStyles": 29
+    "inlineStyles": 29,
+    "fontSizes": 0
   },
   "app/admin/security/page.js": {
     "hex": 0,
-    "inlineStyles": 36
+    "inlineStyles": 36,
+    "fontSizes": 0
   },
   "app/admin/site/page.js": {
     "hex": 6,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 0
   },
   "app/admin/traffic/page.js": {
     "hex": 0,
-    "inlineStyles": 28
+    "inlineStyles": 28,
+    "fontSizes": 0
   },
   "app/admin/users/page.js": {
     "hex": 0,
-    "inlineStyles": 24
+    "inlineStyles": 24,
+    "fontSizes": 0
   },
   "app/admin/voice/page.js": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 0
   },
   "app/analyse/AnalyseWorkspace.jsx": {
     "hex": 3,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 10
   },
   "app/analyse/_components/BulkFlow.jsx": {
     "hex": 2,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 16
   },
   "app/analyse/_components/CandidateCard.jsx": {
     "hex": 1,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 6
   },
   "app/analyse/_components/CandidateChooser.jsx": {
     "hex": 2,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 12
   },
   "app/analyse/_components/CompareView.jsx": {
     "hex": 15,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 38
   },
   "app/analyse/_components/Rail.jsx": {
     "hex": 4,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 18
   },
   "app/analyse/_components/RawCvCompare.jsx": {
     "hex": 5,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 17
   },
   "app/analyse/_components/Report.jsx": {
     "hex": 5,
-    "inlineStyles": 11
+    "inlineStyles": 11,
+    "fontSizes": 42
   },
   "app/analyse/_components/RoleCard.jsx": {
     "hex": 2,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 11
   },
   "app/analyse/_components/RoleInputs.jsx": {
     "hex": 5,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 34
   },
   "app/analyse/_components/RunningPanel.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 6
   },
   "app/analyse/_components/compareBits.jsx": {
     "hex": 1,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 5
   },
   "app/analyse/_lib/analyse.js": {
     "hex": 2,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/api/contact/route.js": {
     "hex": 11,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/api/public/apply/route.js": {
     "hex": 3,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/billing/page.jsx": {
     "hex": 3,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 4
   },
   "app/blog/page.jsx": {
     "hex": 0,
-    "inlineStyles": 16
+    "inlineStyles": 16,
+    "fontSizes": 3
   },
   "app/book/[token]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 6
   },
   "app/careers/page.jsx": {
     "hex": 0,
-    "inlineStyles": 19
+    "inlineStyles": 19,
+    "fontSizes": 0
   },
   "app/checkout/success/page.jsx": {
     "hex": 0,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 6
   },
   "app/complaints/page.js": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 1
   },
   "app/cookie-policy/page.jsx": {
-    "hex": 21,
-    "inlineStyles": 42
+    "hex": 0,
+    "inlineStyles": 29,
+    "fontSizes": 13
   },
   "app/dashboard/DashboardHome.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 5,
+    "fontSizes": 0
   },
   "app/dashboard/_components/attention.jsx": {
     "hex": 1,
-    "inlineStyles": 49
+    "inlineStyles": 49,
+    "fontSizes": 0
   },
   "app/dashboard/_components/header.jsx": {
     "hex": 4,
-    "inlineStyles": 55
+    "inlineStyles": 55,
+    "fontSizes": 0
   },
   "app/dashboard/_components/jobs-team.jsx": {
     "hex": 0,
-    "inlineStyles": 27
+    "inlineStyles": 26,
+    "fontSizes": 1
   },
   "app/dashboard/_components/kpis.jsx": {
     "hex": 0,
-    "inlineStyles": 30
+    "inlineStyles": 30,
+    "fontSizes": 0
   },
   "app/dashboard/_components/pipeline.jsx": {
     "hex": 1,
-    "inlineStyles": 56
+    "inlineStyles": 56,
+    "fontSizes": 0
   },
   "app/dashboard/_components/states.jsx": {
     "hex": 1,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 0
+  },
+  "app/dashboard/analytics/_components/charts.jsx": {
+    "hex": 1,
+    "inlineStyles": 36,
+    "fontSizes": 21
+  },
+  "app/dashboard/analytics/_components/sections.jsx": {
+    "hex": 0,
+    "inlineStyles": 29,
+    "fontSizes": 15
+  },
+  "app/dashboard/analytics/_components/states.jsx": {
+    "hex": 0,
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "app/dashboard/analytics/page.jsx": {
-    "hex": 4,
-    "inlineStyles": 95
+    "hex": 0,
+    "inlineStyles": 27,
+    "fontSizes": 19
   },
   "app/dashboard/business-development/page.jsx": {
     "hex": 0,
-    "inlineStyles": 26
+    "inlineStyles": 25,
+    "fontSizes": 19
   },
   "app/dashboard/candidates/CandidateList.jsx": {
     "hex": 0,
-    "inlineStyles": 37
+    "inlineStyles": 36,
+    "fontSizes": 26
   },
   "app/dashboard/candidates/[id]/CandidateProfile.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "app/dashboard/candidates/[id]/_components/activity.jsx": {
     "hex": 0,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 5
   },
   "app/dashboard/candidates/[id]/_components/documents.jsx": {
     "hex": 2,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 9
   },
   "app/dashboard/candidates/[id]/_components/email.jsx": {
     "hex": 0,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 5
   },
   "app/dashboard/candidates/[id]/_components/feedback.jsx": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 12,
+    "fontSizes": 10
   },
   "app/dashboard/candidates/[id]/_components/header.jsx": {
     "hex": 0,
-    "inlineStyles": 24
+    "inlineStyles": 19,
+    "fontSizes": 17
   },
   "app/dashboard/candidates/[id]/_components/notes.jsx": {
     "hex": 0,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 9
   },
   "app/dashboard/candidates/[id]/_components/overview.jsx": {
     "hex": 0,
-    "inlineStyles": 20
+    "inlineStyles": 20,
+    "fontSizes": 12
   },
   "app/dashboard/candidates/[id]/_components/primitives.jsx": {
     "hex": 0,
-    "inlineStyles": 23
+    "inlineStyles": 23,
+    "fontSizes": 14
   },
   "app/dashboard/candidates/[id]/_components/talent-pool.jsx": {
     "hex": 0,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 20
   },
   "app/dashboard/candidates/[id]/_components/workspace.jsx": {
     "hex": 0,
-    "inlineStyles": 18
+    "inlineStyles": 18,
+    "fontSizes": 13
   },
   "app/dashboard/candidates/[id]/client-profile/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "app/dashboard/candidates/_components/filters.jsx": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 6
   },
   "app/dashboard/candidates/_components/row.jsx": {
     "hex": 2,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 17
   },
   "app/dashboard/candidates/_components/states.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 2
   },
   "app/dashboard/clients/[id]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 29
+    "inlineStyles": 26,
+    "fontSizes": 15
   },
   "app/dashboard/clients/page.jsx": {
     "hex": 2,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 9
   },
   "app/dashboard/compliance/page.jsx": {
     "hex": 1,
-    "inlineStyles": 17
+    "inlineStyles": 13,
+    "fontSizes": 11
   },
   "app/dashboard/email/page.jsx": {
-    "hex": 3,
-    "inlineStyles": 18
+    "hex": 0,
+    "inlineStyles": 16,
+    "fontSizes": 13
   },
   "app/dashboard/import/page.jsx": {
     "hex": 2,
-    "inlineStyles": 16
+    "inlineStyles": 16,
+    "fontSizes": 10
   },
   "app/dashboard/interviews/page.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 3,
+    "fontSizes": 3
   },
   "app/dashboard/invoices/[id]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 16
+    "inlineStyles": 16,
+    "fontSizes": 12
   },
   "app/dashboard/jobs/JobsList.jsx": {
     "hex": 0,
-    "inlineStyles": 34
+    "inlineStyles": 34,
+    "fontSizes": 25
   },
   "app/dashboard/jobs/[id]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 60
+    "inlineStyles": 58,
+    "fontSizes": 39
   },
   "app/dashboard/performance/page.jsx": {
     "hex": 0,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 7
   },
   "app/dashboard/pipeline/page.jsx": {
     "hex": 5,
-    "inlineStyles": 37
+    "inlineStyles": 37,
+    "fontSizes": 21
   },
   "app/dashboard/placements/page.jsx": {
     "hex": 0,
-    "inlineStyles": 15
+    "inlineStyles": 14,
+    "fontSizes": 6
   },
   "app/dashboard/privacy/page.jsx": {
     "hex": 9,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 39
   },
   "app/dashboard/settings/audit/page.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 5,
+    "fontSizes": 1
   },
   "app/dashboard/settings/careers/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 3
   },
   "app/dashboard/settings/connections/page.jsx": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 6
   },
   "app/dashboard/settings/integrations/page.jsx": {
     "hex": 9,
-    "inlineStyles": 28
+    "inlineStyles": 26,
+    "fontSizes": 20
   },
   "app/dashboard/settings/invoicing/page.jsx": {
     "hex": 0,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 2
   },
   "app/dashboard/settings/offices/page.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 5,
+    "fontSizes": 5
   },
   "app/dashboard/settings/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 2
   },
   "app/dashboard/settings/permissions/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 2
   },
   "app/dashboard/settings/pipeline/page.jsx": {
     "hex": 0,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 7
   },
   "app/dashboard/settings/targets/page.jsx": {
     "hex": 0,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 11
   },
   "app/dashboard/shortlists/[id]/client-pack/page.jsx": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 2
   },
   "app/dashboard/shortlists/[id]/page.jsx": {
     "hex": 2,
-    "inlineStyles": 37
+    "inlineStyles": 37,
+    "fontSizes": 21
   },
   "app/dashboard/shortlists/page.jsx": {
     "hex": 0,
-    "inlineStyles": 20
+    "inlineStyles": 20,
+    "fontSizes": 13
   },
   "app/dashboard/talent-pool/_components/pickers.jsx": {
     "hex": 4,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 10
   },
   "app/dashboard/talent-pool/_components/row.jsx": {
     "hex": 7,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 20
   },
   "app/dashboard/talent-pool/_components/shared.jsx": {
     "hex": 2,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/dashboard/talent-pool/_components/summary.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 3
   },
   "app/dashboard/talent-pool/page.jsx": {
     "hex": 2,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 33
   },
   "app/dashboard/team/_components/invite.jsx": {
     "hex": 0,
-    "inlineStyles": 40
+    "inlineStyles": 40,
+    "fontSizes": 27
   },
   "app/dashboard/team/_components/members.jsx": {
     "hex": 1,
-    "inlineStyles": 20
+    "inlineStyles": 19,
+    "fontSizes": 13
   },
   "app/dashboard/team/_components/states.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "app/dashboard/team/_components/status.jsx": {
     "hex": 0,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 15
   },
   "app/dashboard/team/page.jsx": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 8
   },
   "app/demo/page.js": {
     "hex": 2,
-    "inlineStyles": 31
+    "inlineStyles": 31,
+    "fontSizes": 13
   },
   "app/dpa/page.js": {
-    "hex": 24,
-    "inlineStyles": 49
+    "hex": 0,
+    "inlineStyles": 36,
+    "fontSizes": 10
   },
   "app/employee/_shared/EmployeeShell.jsx": {
     "hex": 1,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 7
   },
   "app/employee/_shared/TeamPresencePanel.jsx": {
     "hex": 6,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 3
   },
   "app/employee/_shared/Toaster.jsx": {
     "hex": 5,
-    "inlineStyles": 2
+    "inlineStyles": 2,
+    "fontSizes": 0
   },
   "app/employee/_shared/ui.jsx": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 4
   },
   "app/employee/calendar/page.js": {
     "hex": 11,
-    "inlineStyles": 50
+    "inlineStyles": 50,
+    "fontSizes": 1
   },
   "app/employee/cold-calls/CallListPanel.jsx": {
     "hex": 6,
-    "inlineStyles": 42
+    "inlineStyles": 42,
+    "fontSizes": 4
   },
   "app/employee/cold-calls/page.js": {
     "hex": 30,
-    "inlineStyles": 47
+    "inlineStyles": 47,
+    "fontSizes": 2
   },
   "app/employee/dashboard/day-cards.js": {
     "hex": 2,
-    "inlineStyles": 24
+    "inlineStyles": 24,
+    "fontSizes": 5
   },
   "app/employee/dashboard/my-tasks-panel.js": {
     "hex": 8,
-    "inlineStyles": 35
+    "inlineStyles": 35,
+    "fontSizes": 4
   },
   "app/employee/dashboard/onboarding-panel.js": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 2
   },
   "app/employee/dashboard/page.js": {
     "hex": 4,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 3
   },
   "app/employee/dashboard/team-tasks-panel.js": {
     "hex": 9,
-    "inlineStyles": 22
+    "inlineStyles": 22,
+    "fontSizes": 1
   },
   "app/employee/files/page.js": {
     "hex": 8,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 0
   },
   "app/employee/goals/page.js": {
     "hex": 19,
-    "inlineStyles": 36
+    "inlineStyles": 36,
+    "fontSizes": 3
   },
   "app/employee/login/page.js": {
     "hex": 2,
-    "inlineStyles": 18
+    "inlineStyles": 18,
+    "fontSizes": 3
   },
   "app/employee/mobile/EmployeeMobileApp.jsx": {
     "hex": 0,
-    "inlineStyles": 11
+    "inlineStyles": 11,
+    "fontSizes": 4
   },
   "app/employee/mobile/_components/calendar.jsx": {
     "hex": 2,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 14
   },
   "app/employee/mobile/_components/calls.jsx": {
     "hex": 4,
-    "inlineStyles": 21
+    "inlineStyles": 21,
+    "fontSizes": 16
   },
   "app/employee/mobile/_components/files.jsx": {
     "hex": 0,
-    "inlineStyles": 18
+    "inlineStyles": 18,
+    "fontSizes": 10
   },
   "app/employee/mobile/_components/shared.jsx": {
     "hex": 5,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 3
   },
   "app/employee/mobile/_components/stats.jsx": {
     "hex": 3,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 5
   },
   "app/employee/mobile/_components/todos.jsx": {
     "hex": 0,
-    "inlineStyles": 10
+    "inlineStyles": 10,
+    "fontSizes": 5
   },
   "app/employee/ops/page.js": {
     "hex": 3,
-    "inlineStyles": 18
+    "inlineStyles": 18,
+    "fontSizes": 1
   },
   "app/employee/page.js": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 3
   },
   "app/employee/settings/page.js": {
     "hex": 2,
-    "inlineStyles": 30
+    "inlineStyles": 30,
+    "fontSizes": 6
   },
   "app/feedback/[token]/page.jsx": {
     "hex": 8,
-    "inlineStyles": 16
+    "inlineStyles": 12,
+    "fontSizes": 6
   },
   "app/jobs/[slug]/[jobId]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 4
   },
   "app/jobs/[slug]/layout.js": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "app/jobs/[slug]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 4
   },
   "app/jobs/[slug]/privacy/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "app/layout.js": {
     "hex": 4,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/login/[[...rest]]/page.jsx": {
     "hex": 6,
-    "inlineStyles": 11
+    "inlineStyles": 11,
+    "fontSizes": 8
   },
   "app/manifest.js": {
     "hex": 2,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "app/not-found.js": {
     "hex": 2,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 0
   },
   "app/page.js": {
     "hex": 0,
-    "inlineStyles": 63
+    "inlineStyles": 63,
+    "fontSizes": 29
   },
   "app/portal/[token]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 14
   },
   "app/pricing/page.js": {
     "hex": 8,
-    "inlineStyles": 28
+    "inlineStyles": 28,
+    "fontSizes": 6
   },
   "app/privacy/PrivacyToc.jsx": {
     "hex": 0,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 2
   },
   "app/privacy/page.js": {
     "hex": 2,
-    "inlineStyles": 45
+    "inlineStyles": 45,
+    "fontSizes": 26
   },
   "app/reference/[token]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 13
   },
   "app/scorecard/[token]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 10
   },
   "app/share/[token]/page.jsx": {
     "hex": 1,
-    "inlineStyles": 24
+    "inlineStyles": 24,
+    "fontSizes": 13
   },
   "app/sign/[token]/page.jsx": {
     "hex": 0,
-    "inlineStyles": 22
+    "inlineStyles": 22,
+    "fontSizes": 17
   },
   "app/signup/[[...rest]]/page.jsx": {
     "hex": 8,
-    "inlineStyles": 28
+    "inlineStyles": 28,
+    "fontSizes": 17
   },
   "app/terms/page.js": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 1
   },
   "app/ui-gallery/Gallery.jsx": {
     "hex": 11,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "app/under-development/page.jsx": {
     "hex": 2,
-    "inlineStyles": 17
+    "inlineStyles": 17,
+    "fontSizes": 5
   },
   "app/updates/page.js": {
-    "hex": 13,
-    "inlineStyles": 32
+    "hex": 0,
+    "inlineStyles": 19,
+    "fontSizes": 9
   },
   "components/AppNav.jsx": {
     "hex": 0,
-    "inlineStyles": 16
+    "inlineStyles": 16,
+    "fontSizes": 1
   },
   "components/ContactPage.jsx": {
     "hex": 4,
-    "inlineStyles": 24
+    "inlineStyles": 24,
+    "fontSizes": 0
   },
   "components/CookieConsentBanner.jsx": {
-    "hex": 1,
-    "inlineStyles": 5
+    "hex": 0,
+    "inlineStyles": 5,
+    "fontSizes": 0
   },
   "components/DashboardNav.jsx": {
     "hex": 6,
-    "inlineStyles": 37
+    "inlineStyles": 37,
+    "fontSizes": 13
   },
   "components/FaqPage.jsx": {
     "hex": 0,
-    "inlineStyles": 12
+    "inlineStyles": 12,
+    "fontSizes": 2
   },
   "components/HowItWorksPage.jsx": {
     "hex": 0,
-    "inlineStyles": 14
+    "inlineStyles": 14,
+    "fontSizes": 3
   },
   "components/PresenceDot.jsx": {
     "hex": 5,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "components/RouteError.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 1
   },
   "components/SiteAnnouncement.jsx": {
     "hex": 3,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 1
   },
   "components/account/DangerZone.jsx": {
-    "hex": 11,
-    "inlineStyles": 3
+    "hex": 9,
+    "inlineStyles": 3,
+    "fontSizes": 5
   },
   "components/account/NotificationsInfo.jsx": {
-    "hex": 6,
-    "inlineStyles": 0
+    "hex": 4,
+    "inlineStyles": 0,
+    "fontSizes": 5
   },
   "components/account/SettingsNav.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "components/account/ui.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "components/auth/AuthShell.jsx": {
     "hex": 5,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 1
   },
   "components/dashboard/AccountSetupGate.jsx": {
     "hex": 0,
-    "inlineStyles": 19
+    "inlineStyles": 19,
+    "fontSizes": 0
   },
   "components/dashboard/AddToShortlist.jsx": {
     "hex": 0,
-    "inlineStyles": 12
+    "inlineStyles": 12,
+    "fontSizes": 11
   },
   "components/dashboard/AdvertisePanel.jsx": {
     "hex": 4,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 6
   },
   "components/dashboard/ClientProfileDocument.jsx": {
     "hex": 8,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 9
   },
   "components/dashboard/ClientProfileToolbar.jsx": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 4
   },
   "components/dashboard/CompliancePanel.jsx": {
     "hex": 8,
-    "inlineStyles": 27
+    "inlineStyles": 27,
+    "fontSizes": 16
   },
   "components/dashboard/ComposeEmail.jsx": {
     "hex": 2,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 7
   },
   "components/dashboard/ConnectedApps.jsx": {
     "hex": 2,
-    "inlineStyles": 16
+    "inlineStyles": 14,
+    "fontSizes": 12
   },
   "components/dashboard/EmailThreadPanel.jsx": {
     "hex": 2,
-    "inlineStyles": 9
+    "inlineStyles": 8,
+    "fontSizes": 7
   },
   "components/dashboard/InterviewsPanel.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 2,
+    "fontSizes": 2
   },
   "components/dashboard/NavTools.jsx": {
     "hex": 0,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 17
   },
   "components/dashboard/PhoneActions.jsx": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 1
   },
   "components/dashboard/PlacementPanel.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 2,
+    "fontSizes": 2
   },
   "components/dashboard/SavedSearches.jsx": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 11
   },
   "components/dashboard/ShareShortlist.jsx": {
     "hex": 2,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 5
   },
   "components/dashboard/SignaturesCard.jsx": {
     "hex": 0,
-    "inlineStyles": 15
+    "inlineStyles": 15,
+    "fontSizes": 13
   },
   "components/dashboard/SmsPanel.jsx": {
     "hex": 0,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 5
   },
   "components/dashboard/candidate-extras.jsx": {
     "hex": 0,
-    "inlineStyles": 25
+    "inlineStyles": 25,
+    "fontSizes": 25
   },
   "components/dashboard/custom-fields.jsx": {
     "hex": 0,
-    "inlineStyles": 5
+    "inlineStyles": 5,
+    "fontSizes": 3
   },
   "components/dashboard/interview-week.jsx": {
     "hex": 2,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 5
   },
   "components/dashboard/interviews.jsx": {
-    "hex": 4,
-    "inlineStyles": 21
+    "hex": 2,
+    "inlineStyles": 21,
+    "fontSizes": 18
   },
   "components/dashboard/opportunities.jsx": {
     "hex": 0,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 6
   },
   "components/dashboard/placements.jsx": {
     "hex": 12,
-    "inlineStyles": 27
+    "inlineStyles": 27,
+    "fontSizes": 14
   },
   "components/dashboard/research.jsx": {
     "hex": 0,
-    "inlineStyles": 16
+    "inlineStyles": 16,
+    "fontSizes": 14
   },
   "components/dashboard/ui.jsx": {
     "hex": 0,
-    "inlineStyles": 8
+    "inlineStyles": 8,
+    "fontSizes": 4
   },
   "components/dashboard/use-confirm.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 1
   },
   "components/landing/AnalysisExample.jsx": {
     "hex": 13,
-    "inlineStyles": 37
+    "inlineStyles": 37,
+    "fontSizes": 22
   },
   "components/landing/Button.jsx": {
     "hex": 0,
-    "inlineStyles": 1
+    "inlineStyles": 1,
+    "fontSizes": 0
   },
   "components/landing/ChatWidget.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 0
   },
   "components/landing/TooManyRequestsPage.js": {
     "hex": 1,
-    "inlineStyles": 19
+    "inlineStyles": 19,
+    "fontSizes": 6
   },
   "components/landing/home-interactive.jsx": {
     "hex": 12,
-    "inlineStyles": 103
+    "inlineStyles": 103,
+    "fontSizes": 47
   },
   "components/marketing/CtaBand.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "components/marketing/Logo.jsx": {
     "hex": 0,
-    "inlineStyles": 3
+    "inlineStyles": 3,
+    "fontSizes": 1
   },
   "components/marketing/MarketingFooter.jsx": {
     "hex": 0,
-    "inlineStyles": 7
+    "inlineStyles": 7,
+    "fontSizes": 2
   },
   "components/marketing/MarketingNav.jsx": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 13,
+    "fontSizes": 1
   },
   "components/public/ApplyForm.jsx": {
     "hex": 0,
-    "inlineStyles": 18
+    "inlineStyles": 18,
+    "fontSizes": 13
   },
   "components/public/JobsChrome.jsx": {
     "hex": 0,
-    "inlineStyles": 4
+    "inlineStyles": 4,
+    "fontSizes": 3
   },
   "components/public/PublicCard.jsx": {
     "hex": 0,
-    "inlineStyles": 6
+    "inlineStyles": 6,
+    "fontSizes": 1
   },
   "components/ui/index.jsx": {
     "hex": 0,
-    "inlineStyles": 13
+    "inlineStyles": 12,
+    "fontSizes": 26
   },
   "lib/account.js": {
     "hex": 6,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/analytics-digest.js": {
     "hex": 11,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/candidates/format.js": {
     "hex": 3,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/dashboard-model.js": {
     "hex": 6,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/demo-notification.js": {
     "hex": 1,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/lifecycle-email.jsx": {
     "hex": 4,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/reminder-email.js": {
     "hex": 13,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   },
   "lib/stage-labels.js": {
     "hex": 3,
-    "inlineStyles": 0
+    "inlineStyles": 0,
+    "fontSizes": 0
   }
 }

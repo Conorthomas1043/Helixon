@@ -30,7 +30,7 @@ function inputBlur(e) {
 const CHANNELS = [
   {
     title: "Sales & pricing",
-    body: "Questions about Team plans, invoicing, or multi-seat access.",
+    body: "Questions about the Agency plan, invoicing, or multi-seat access.",
     icon: <><path d="M3 3v18h18" /><path d="M7 14l4-4 3 3 5-6" /></>,
     email: "sales@helixon.co.uk",
   },
@@ -53,11 +53,13 @@ const CHANNELS = [
 // the route didn't recognise, so every message landed in hello@.)
 const TOPICS = ["Support", "Sales & pricing", "Something else"];
 
-export default function ContactPage() {
+// `role` comes from /contact?role=<title>, which each job on the careers
+// page links to; the message starts as an application for it.
+export default function ContactPage({ role = "" }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [topic, setTopic] = useState(TOPICS[0]);
-  const [message, setMessage] = useState("");
+  const [topic, setTopic] = useState(role ? "Something else" : TOPICS[0]);
+  const [message, setMessage] = useState(role ? `I'd like to apply for the ${role} role.\n\n` : "");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -94,7 +96,7 @@ export default function ContactPage() {
       <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
           We usually reply within a day
         </span>
@@ -111,6 +113,7 @@ export default function ContactPage() {
 
           {/* ── Channels ──────────────────────────────────────────────── */}
           <div className="space-y-4">
+            <h2 className="sr-only">Email us directly</h2>
             {CHANNELS.map((c) => (
               <div key={c.title} className="rounded-[14px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <div className="flex items-start gap-3.5">

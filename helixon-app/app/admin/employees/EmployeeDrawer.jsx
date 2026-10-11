@@ -208,7 +208,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
         {loading && !detail ? (
           <div className="skeleton" style={{ height: 40 }} />
         ) : sessions.length === 0 ? (
-          <div className="faint" style={{ fontSize: 13.5 }}>Not signed in anywhere.</div>
+          <div className="faint" style={{ fontSize: 14 }}>Not signed in anywhere.</div>
         ) : (
           <div className="mini-list">
             {sessions.map((s) => (
@@ -229,7 +229,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
       <section className="drawer-section">
         <h3>Recent sign-in attempts</h3>
         {attempts.length === 0 ? (
-          <div className="faint" style={{ fontSize: 13.5 }}>{loading && !detail ? "Loading…" : "No sign-in attempts on record."}</div>
+          <div className="faint" style={{ fontSize: 14 }}>{loading && !detail ? "Loading…" : "No sign-in attempts on record."}</div>
         ) : (
           <div className="mini-list">
             {attempts.map((a) => (
@@ -271,7 +271,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
       <section className="drawer-section">
         <h3>Admin history</h3>
         {history.length === 0 ? (
-          <div className="faint" style={{ fontSize: 13.5 }}>{loading && !detail ? "Loading…" : "No admin changes recorded."}</div>
+          <div className="faint" style={{ fontSize: 14 }}>{loading && !detail ? "Loading…" : "No admin changes recorded."}</div>
         ) : (
           <div className="mini-list">
             {history.map((h) => (

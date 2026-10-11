@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import MarketingNav from "@/components/marketing/MarketingNav";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
 import { useMemo, useState } from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -12,7 +14,7 @@ import { useMemo, useState } from "react";
 
 const TYPES = {
   new: { label: "New", color: "var(--forest)", bg: "var(--mint)" },
-  improved: { label: "Improved", color: "#b45309", bg: "#fdf3e0" },
+  improved: { label: "Improved", color: "var(--score-mid)", bg: "var(--ui-warn-soft)" },
   fixed: { label: "Fixed", color: "var(--ink-soft)", bg: "var(--mist)" },
 };
 
@@ -21,9 +23,9 @@ const UPDATES = [
     date: "4 August 2026",
     month: "August 2026",
     version: "2.9",
-    title: "Bulk CV upload for Team plans",
+    title: "Bulk CV upload",
     type: "new",
-    body: "Drag in up to 25 CVs at once and score them all against the same job description. Results land in one shortlist, ranked by match score.",
+    body: "Drag in a batch of CVs and score them all against the same job description - up to 50 at once on either plan (it launched at 25). Results land in one shortlist, ranked by match score.",
   },
   {
     date: "29 July 2026",
@@ -55,7 +57,7 @@ const UPDATES = [
     version: "2.7",
     title: "Shared job description library",
     type: "new",
-    body: "Save a job description once and reuse it across analyses. Team plans can share the library across every seat.",
+    body: "Save a job description once and reuse it across analyses. On the Agency plan, everyone in the team shares the library.",
   },
   {
     date: "24 June 2026",
@@ -79,7 +81,6 @@ const MONTHS = [...new Set(UPDATES.map((u) => u.month))];
 
 export default function AppUpdatesPage() {
   const [filter, setFilter] = useState("all");
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const filtered = useMemo(
     () => (filter === "all" ? UPDATES : UPDATES.filter((u) => u.type === filter)),
@@ -88,65 +89,9 @@ export default function AppUpdatesPage() {
   const groupedMonths = useMemo(() => [...new Set(filtered.map((u) => u.month))], [filtered]);
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: "var(--mist)",
-        "--forest": "#0b6e4f",
-        "--forest-deep": "#085a41",
-        "--mint": "#e3f0e9",
-        "--mist": "#f6f8f6",
-        "--border": "#dde6e1",
-        "--signal": "#f59e0b",
-        "--font-display": "var(--font-fraunces), Georgia, serif",
-        "--font-mono": "'IBM Plex Mono', monospace",
-      }}
-    >
-      {/* ── Nav (shared shell) ──────────────────────────────────────────── */}
+    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
-              <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-                <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-              </svg>
-            </div>
-            <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold tracking-tight" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-            <Link href="/#how" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>How it works</Link>
-            <Link href="/#pricing" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Pricing</Link>
-            <Link href="/login" className="px-3 py-1.5 rounded-[8px] transition-colors" onMouseEnter={(e) => (e.currentTarget.style.background = "var(--mint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>Login</Link>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link href="/" className="text-xs font-semibold px-4 py-1.5 rounded-[10px] transition-colors text-white hidden sm:block" style={{ background: "var(--forest)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--forest-deep)")} onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}>
-              Try now
-            </Link>
-            <button type="button" onClick={() => setMobileNavOpen((v) => !v)} aria-expanded={mobileNavOpen} aria-label="Open menu"
-              className="sm:hidden w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ color: "#13201b" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                {mobileNavOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-              </svg>
-            </button>
-          </div>
-        </div>
-        {mobileNavOpen && (
-          <div className="sm:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
-            {[["How it works", "/#how"], ["Pricing", "/#pricing"], ["Login", "/login"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMobileNavOpen(false)} className="text-xs px-2.5 py-2.5 rounded-[8px]" style={{ color: "var(--ink-soft)" }}>{label}</a>
-            ))}
-          </div>
-        )}
-      </nav>
+      <MarketingNav active="updates" />
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -155,7 +100,7 @@ export default function AppUpdatesPage() {
           <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> What&apos;s new
           </p>
-          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             What&apos;s new in Helixon
           </h1>
           <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
@@ -171,7 +116,7 @@ export default function AppUpdatesPage() {
             onClick={() => setFilter("all")}
             className="text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
             style={{
-              background: filter === "all" ? "#13201b" : "transparent",
+              background: filter === "all" ? "var(--ink)" : "transparent",
               color: filter === "all" ? "white" : "var(--ink-soft)",
               border: filter === "all" ? "none" : "1px solid var(--border)",
             }}
@@ -226,7 +171,7 @@ export default function AppUpdatesPage() {
                       <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>{u.date}</span>
                       <span className="text-[11px] ml-auto" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-faint)" }}>v{u.version}</span>
                     </div>
-                    <h3 className="text-sm font-semibold mb-1.5" style={{ color: "#13201b" }}>{u.title}</h3>
+                    <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{u.title}</h3>
                     <p className="text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{u.body}</p>
                   </article>
                 );
@@ -248,18 +193,7 @@ export default function AppUpdatesPage() {
       </div>
 
       </main>
-      {/* ── Footer (shared shell) ───────────────────────────────────────── */}
-      <footer className="border-t bg-white" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
-          <div className="flex gap-4 text-[11px]" style={{ color: "var(--ink-faint)" }}>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/dpa">DPA</Link>
-            <Link href="/updates" style={{ color: "var(--forest)", fontWeight: 600 }}>What&apos;s new</Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

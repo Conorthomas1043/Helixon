@@ -58,7 +58,7 @@ export default function ConnectionsPage() {
   return (
     <>
       {confirmDialog}
-    <Page width={800}>
+    <Page width="narrow">
       <PageHeader back={{ href: "/dashboard/settings", label: "Settings" }} eyebrow="You" title="Calendar & email" subtitle="Personal to you - your teammates have their own." />
       <ErrorText>{error}</ErrorText>
       {!data && !error && <LoadingCard rows={3} />}

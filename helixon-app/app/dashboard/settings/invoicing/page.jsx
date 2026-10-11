@@ -59,7 +59,7 @@ export default function InvoicingSettingsPage() {
   const set = (k) => (e) => setF((v) => ({ ...v, [k]: e.target.value }));
 
   return (
-    <Page width={860}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Revenue"

@@ -217,7 +217,7 @@ export default function CommandPage() {
         <div className="panel">
           <div className="section">
             <div className="section-head">
-              <div className="panel-title">Blocked IPs</div>
+              <h2 className="panel-title">Blocked IPs</h2>
               <Link className="panel-link" href="/admin/traffic">
                 Manage
               </Link>
@@ -267,7 +267,7 @@ export default function CommandPage() {
 
       <section className="section">
         <div className="section-head">
-          <div className="panel-title">Recent requests</div>
+          <h2 className="panel-title">Recent requests</h2>
           <Link className="btn small" href="/admin/traffic">
             View traffic log
           </Link>

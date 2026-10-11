@@ -101,7 +101,7 @@ export const BUTTON_BASE = cx(
 );
 
 export const BUTTON_SIZES = {
-  sm: "min-h-8 px-3 text-[13.5px]",
+  sm: "min-h-8 px-3 text-[14px]",
   md: "min-h-9 px-3.5 text-[14px]",
   lg: "min-h-11 px-5 text-[15px]",
 };
@@ -113,7 +113,7 @@ export const BUTTON_VARIANTS = {
   ghost: "bg-transparent border-transparent text-[var(--ui-text-soft)] hover:text-[var(--ui-text)] hover:bg-[var(--ui-surface-muted)]",
   dark: "bg-[var(--ui-text)] border-[var(--ui-text)] text-[var(--ui-surface)] hover:opacity-90",
   danger: "bg-[var(--ui-surface)] border-[var(--ui-border)] text-[var(--ui-danger)] hover:bg-[var(--ui-danger-soft)]",
-  dangerSolid: "bg-[var(--ui-danger)] border-[var(--ui-danger)] text-white hover:opacity-90",
+  dangerSolid: "bg-[var(--ui-danger)] border-[var(--ui-danger)] text-[var(--ui-on-danger)] hover:opacity-90",
 };
 
 export function Spinner({ size = 16, label }) {
@@ -239,7 +239,7 @@ export function Divider() {
 
 export function Kbd({ children }) {
   return (
-    <kbd className="inline-flex items-center h-5 px-1.5 rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-surface)] text-[11.5px] font-medium text-[var(--ui-text-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
+    <kbd className="inline-flex items-center h-5 px-1.5 rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-surface)] text-[12px] font-medium text-[var(--ui-text-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
       {children}
     </kbd>
   );
@@ -249,7 +249,7 @@ export function Kbd({ children }) {
 
 // 16px on phones: iOS Safari zooms the page into any field smaller than that.
 export const FIELD_BASE = cx(
-  "w-full bg-[var(--ui-surface)] rounded-input border border-[var(--ui-border)] text-[16px] sm:text-[14.5px] text-[var(--ui-text)]",
+  "w-full bg-[var(--ui-surface)] rounded-input border border-[var(--ui-border)] text-[16px] sm:text-[15px] text-[var(--ui-text)]",
   "placeholder:text-[var(--ui-text-faint)] outline-none transition-shadow",
   "focus:border-[var(--ui-accent)] focus:shadow-[0_0_0_3px_var(--ui-accent-soft)]",
   "disabled:bg-[var(--ui-surface-muted)] disabled:cursor-not-allowed",
@@ -281,8 +281,8 @@ export const Select = forwardRef(function Select({ options, className = "", chil
 export function Label({ htmlFor, children, hint }) {
   return (
     <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-2 mb-1.5">
-      <span className="text-[13.5px] font-medium text-[var(--ui-text)]">{children}</span>
-      {hint && <span className="text-[12.5px] text-[var(--ui-text-faint)]">{hint}</span>}
+      <span className="text-[14px] font-medium text-[var(--ui-text)]">{children}</span>
+      {hint && <span className="text-[13px] text-[var(--ui-text-faint)]">{hint}</span>}
     </label>
   );
 }
@@ -375,7 +375,7 @@ export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) 
             onClick={() => onChange(o.value)}
             className={cx(
               "inline-flex items-center gap-1.5 rounded-[7px] font-medium transition-colors",
-              size === "sm" ? "h-7 px-2.5 text-[13px]" : "h-8 px-3 text-[13.5px]",
+              size === "sm" ? "h-7 px-2.5 text-[13px]" : "h-8 px-3 text-[14px]",
               active ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ui-text-soft)] hover:text-[var(--ui-text)]"
             )}
           >
@@ -403,7 +403,7 @@ export function Notice({ tone = "info", children, action, onDismiss, className =
   return (
     <div
       role={tone === "error" ? "alert" : undefined}
-      className={cx("flex items-start gap-2.5 rounded-[10px] px-3.5 py-2.5 text-[13.5px] leading-relaxed", className)}
+      className={cx("flex items-start gap-2.5 rounded-[10px] px-3.5 py-2.5 text-[14px] leading-relaxed", className)}
       style={{ background: t.bg, color: t.fg, border: `1px solid ${t.border}` }}
     >
       <Icon name={t.icon} size={15} className="mt-[2px]" />
@@ -493,8 +493,8 @@ export function Toasts({ toasts, onDismiss }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[14px] font-medium text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
-          style={{ background: t.tone === "error" ? "var(--ui-danger)" : "var(--ink)" }}
+          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[14px] font-medium shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
+          style={t.tone === "error" ? { background: "var(--ui-danger)", color: "var(--ui-on-danger)" } : { background: "var(--ink)", color: "white" }}
         >
           <Icon name={t.tone === "error" ? "alert" : "check"} size={14} />
           {t.message}

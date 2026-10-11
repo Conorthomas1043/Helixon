@@ -15,6 +15,7 @@ import { BusinessKpis, DashboardKpis, TargetsCard, UsageSummary } from "./_compo
 import { ActivityOverview, PipelineSnapshot, RecentAnalyses, TopCandidates } from "./_components/pipeline";
 import { BG, CARD, TEXT_FAINT } from "./_components/shared";
 import { DashboardError, DashboardSkeleton, EmptyState } from "./_components/states";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 /* ─── Data loading ──────────────────────────────────────────────────────── */
 
@@ -213,7 +214,7 @@ export default function DashboardHome({ initialStats = null }) {
   return (
     <main style={{ minHeight: "100vh", background: BG }}>
       <DashboardNav />
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className={`${PAGE_FRAME_WIDE} flex flex-col gap-6`}>
         {/* The page's h1 lives in DashboardHeader, which only renders once data
             has loaded - so while loading (or on an error) there was no h1 at all. */}
         {!data && <h1 className="sr-only">Dashboard overview</h1>}
@@ -280,7 +281,7 @@ export default function DashboardHome({ initialStats = null }) {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <TopCandidates candidates={model.topCandidates} total={model.topCandidatesTotal} />
+                  <TopCandidates candidates={model.topCandidates} total={model.topCandidatesTotal} strongCount={model.totals.strongMatches} />
                   <ActivityOverview analyses={model.analyses} />
                 </div>
 

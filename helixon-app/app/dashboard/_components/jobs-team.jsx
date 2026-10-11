@@ -3,7 +3,7 @@
 // Part of the dashboard home (app/dashboard/page.js).
 
 import Link from "next/link";
-import { STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
+import { FUNNEL_ORDER, STAGE_COLORS, STAGE_LABELS } from "@/lib/stage-labels";
 import { SectionHeading } from "@/components/ui";
 import { ACCENT_BG, ACCENT_FG, BORDER, BORDER2, CARD, GREEN_FG, RED, RED_BG, TEXT, TEXT_FAINT, TEXT_SUB, formatNumber } from "./shared";
 import { EmptyState } from "./states";
@@ -26,7 +26,7 @@ export function ActiveJobs({ jobs, total, statsByJob }) {
       {jobs.length === 0 ? (
         <EmptyState title="No open jobs" body="Add a job to start building its pipeline." actionLabel="New job" actionHref="/dashboard/jobs?new=1" />
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul className="list-none m-0 p-0">
           {jobs.map((job, i) => {
             const stats = statsByJob.get(job.id);
             const late = job.targetDate && job.targetDate < today;
@@ -67,6 +67,17 @@ export function ActiveJobs({ jobs, total, statsByJob }) {
           })}
         </ul>
       )}
+      {jobs.some((job) => (statsByJob.get(job.id)?.stageSegments || []).some((seg) => seg.pct > 0)) && (
+        // What the bar colours mean - they had no key.
+        <p className="flex flex-wrap gap-x-3.5 gap-y-1 mt-3 pt-2.5 border-t text-[12px] text-[var(--ink-faint)]">
+          {FUNNEL_ORDER.map((key) => (
+            <span key={key} className="inline-flex items-center gap-1.5">
+              <span aria-hidden="true" className="w-2 h-2 rounded-full" style={{ background: STAGE_COLORS[key] }} />
+              {STAGE_LABELS[key]}
+            </span>
+          ))}
+        </p>
+      )}
     </div>
   );
 }
@@ -82,7 +93,7 @@ export function RecruiterPerformance({ recruiters }) {
         title="Recruiter performance"
         action={<Link href="/dashboard/analytics" style={{ fontSize: 13, fontWeight: 600, color: ACCENT_FG, textDecoration: "none" }}>Full analytics →</Link>}
       />
-      <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      <ul className="list-none m-0 p-0">
         {recruiters.map((r, i) => (
           <li
             key={r.key}

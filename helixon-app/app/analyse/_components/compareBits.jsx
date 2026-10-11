@@ -76,7 +76,7 @@ export function Avatar({ name, letter, size = 36 }) {
 export function StagePill({ stage }) {
   if (!stage) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink)]">
+    <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink)]">
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: STAGE_COLORS[stage] || "var(--ink-faint)" }} />
       {STAGE_LABELS[stage] || stage}
     </span>

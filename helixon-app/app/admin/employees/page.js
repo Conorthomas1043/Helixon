@@ -266,7 +266,7 @@ export default function EmployeesPage() {
                   <button key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>{label}</button>
                 ))}
               </div>
-              <span className="faint" style={{ marginLeft: "auto", fontSize: 13.5 }}>{rows.length} of {employees.length}</span>
+              <span className="faint" style={{ marginLeft: "auto", fontSize: 14 }}>{rows.length} of {employees.length}</span>
             </div>
 
             {!loading && employees.length === 0 ? (

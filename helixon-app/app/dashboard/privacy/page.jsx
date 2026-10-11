@@ -17,6 +17,7 @@ import { getPrivacyOverview, keepCandidates, updatePrivacySettings, updateTalent
 import { Card, Icon, Notice, Spinner, Toasts, cx, useToasts } from "@/app/analyse/_components/ui";
 import { Avatar, PillButton, PillTabs, StagePill } from "@/app/analyse/_components/compareBits";
 import { NOTICE_TEMPLATE } from "@/lib/privacy-notice";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const REQUESTS = [
   {
@@ -65,7 +66,7 @@ function StatCard({ label, value, sub, accent, icon }) {
       <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
-      {sub && <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
+      {sub && <p className="text-[13px] text-[var(--ink-faint)] mt-2">{sub}</p>}
     </div>
   );
 }
@@ -89,7 +90,7 @@ function Countdown({ iso, verb }) {
   return (
     <span className="text-right shrink-0">
       <span
-        className="inline-flex items-center gap-1 text-[12.5px] font-semibold px-2 py-0.5 rounded-full"
+        className="inline-flex items-center gap-1 text-[13px] font-semibold px-2 py-0.5 rounded-full"
         style={{ background: urgent ? "#fbefed" : "#fdf6e9", color: urgent ? "#a83226" : "#8a5a12" }}
       >
         <Icon name="clock" size={11} />
@@ -108,7 +109,7 @@ function AllClear({ children }) {
       <span className="w-11 h-11 rounded-full bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center mb-3">
         <Icon name="check" size={20} strokeWidth={2.2} />
       </span>
-      <p className="text-[14.5px] font-semibold text-[var(--ink)]">You&apos;re all clear</p>
+      <p className="text-[15px] font-semibold text-[var(--ink)]">You&apos;re all clear</p>
       <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-sm">{children}</p>
     </div>
   );
@@ -202,7 +203,7 @@ function PrivacyContent() {
   return (
     <main className="min-h-screen bg-[var(--mist)] pb-24">
       <DashboardNav />
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
@@ -379,8 +380,8 @@ function PrivacyContent() {
                         <Icon name={r.icon} size={18} />
                       </span>
                       <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)] mt-4">{r.right}</p>
-                      <p className="text-[14.5px] font-semibold text-[var(--ink)] mt-0.5">{r.title}</p>
-                      <p className="text-[13.5px] leading-relaxed text-[var(--ink-soft)] mt-2">{r.how}</p>
+                      <p className="text-[15px] font-semibold text-[var(--ink)] mt-0.5">{r.title}</p>
+                      <p className="text-[14px] leading-relaxed text-[var(--ink-soft)] mt-2">{r.how}</p>
                     </div>
                   ))}
                 </div>
@@ -416,7 +417,7 @@ function PrivacyContent() {
                       );
                     })}
                   </div>
-                  <ol className="mt-5 space-y-3 text-[13.5px] text-[var(--ink-soft)]">
+                  <ol className="mt-5 space-y-3 text-[14px] text-[var(--ink-soft)]">
                     {[
                       ["Any activity restarts the clock", "A stage change, note, tag or email."],
                       [`After ${months} months with none`, "The candidate is deleted - CV, analyses, notes and history."],
@@ -432,7 +433,7 @@ function PrivacyContent() {
                       </li>
                     ))}
                   </ol>
-                  <p className="text-[12.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
+                  <p className="text-[13px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
                     Checked every night. If your agency cancels, everything is deleted 90 days later.
                   </p>
                 </Card>
@@ -464,7 +465,7 @@ function PrivacyContent() {
                       </button>
                     }
                   />
-                  <p className="text-[13.5px] text-[var(--ink-soft)] leading-relaxed">
+                  <p className="text-[14px] text-[var(--ink-soft)] leading-relaxed">
                     Shows who&apos;s active, idle, busy or away on the Team page, and when anyone offline was last active. Only records when
                     people have Helixon open - never what they click or type.
                   </p>
@@ -475,7 +476,7 @@ function PrivacyContent() {
                       </span>
                     ))}
                   </div>
-                  <p className="text-[12.5px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
+                  <p className="text-[13px] text-[var(--ink-faint)] mt-4 pt-4 border-t border-[var(--border-soft)]">
                     It&apos;s monitoring of staff - mention it in your staff privacy notice while it&apos;s on.
                   </p>
                 </Card>
@@ -491,7 +492,7 @@ function PrivacyContent() {
                     Candidates must be told how their data is used - including that software helps assess CVs. Put this on your website or in
                     your first email.
                   </p>
-                  <ul className="mt-4 space-y-2 text-[13.5px] text-[var(--ink-soft)]">
+                  <ul className="mt-4 space-y-2 text-[14px] text-[var(--ink-soft)]">
                     {["Fill in the [bracketed] parts", `Set the retention to match yours (${months} months)`, "Add the email address candidates should use"].map((t) => (
                       <li key={t} className="flex gap-2">
                         <span className="text-[var(--forest)] mt-0.5">
@@ -548,7 +549,7 @@ function PrivacyContent() {
               type="button"
               onClick={() => keep(selected)}
               disabled={busyId === "bulk"}
-              className="ml-auto inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
+              className="ml-auto inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
             >
               <Icon name="check" size={13} />
               Keep {selected.length} for another {months} months

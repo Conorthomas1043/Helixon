@@ -23,7 +23,7 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
           <h2 className="text-[17px] font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
             {compare ? "Screening the second candidate" : "Screening candidate"}
           </h2>
-          <span className="ml-auto text-[13.5px] tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
+          <span className="ml-auto text-[14px] tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
             {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
           </span>
         </div>
@@ -52,7 +52,7 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
                   {i < RUN_STEPS.length - 1 && <span className="w-px flex-1 min-h-[22px] my-1" style={{ background: done ? "var(--forest)" : "var(--border)" }} />}
                 </div>
                 <div className="pb-5 -mt-0.5">
-                  <p className={cx("text-[14.5px]", current ? "font-semibold text-[var(--ink)]" : done ? "text-[var(--ink)]" : "text-[var(--ink-faint)]")}>{s.label}</p>
+                  <p className={cx("text-[15px]", current ? "font-semibold text-[var(--ink)]" : done ? "text-[var(--ink)]" : "text-[var(--ink-faint)]")}>{s.label}</p>
                   <p className={cx("text-[13px] mt-0.5", current ? "text-[var(--ink-soft)]" : "text-[var(--ink-faint)]")}>{s.detail}</p>
                 </div>
               </li>

@@ -39,7 +39,8 @@ export function PublicCardLoading({ label = "Loading…", width }) {
   return (
     <PublicCard loading width={width}>
       <div aria-busy="true" className="space-y-3">
-        <p className="sr-only" role="status">{label}</p>
+        {/* An h1 even while loading, so the page always has a heading. */}
+        <div role="status"><h1 className="sr-only">{label}</h1></div>
         {["w-2/3 h-5", "w-full h-3", "w-5/6 h-3", "w-full h-24 mt-5", "w-full h-11 mt-5"].map((cls) => (
           <div key={cls} className={`${cls} rounded-[8px] animate-pulse motion-reduce:animate-none`} style={{ background: "var(--mist)" }} />
         ))}

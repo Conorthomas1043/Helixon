@@ -86,6 +86,7 @@ export default function BillingPage() {
     {
       key: "stripe",
       label: "",
+      srLabel: "Stripe link",
       render: (s) =>
         s.stripeSubscriptionId || s.stripeCustomerId ? (
           <a

@@ -7,37 +7,38 @@ import Button from "@/components/landing/Button";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Helixon - About page
-// Honest product-focused copy. Avoids unsupported customer, team, usage,
-// security, storage, training, or historical claims.
+// Honest product-focused copy: only what the rest of the site already says
+// (scoring with evidence, bulk screening, blind screening, the CRM around
+// it, Swiss hosting, no model training). No customer, team or usage claims.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const VALUES = [
   {
-    title: "Built for recruitment workflows",
-    body: "Helixon is designed to make reviewing and comparing candidate applications easier, particularly when you're working through multiple CVs for the same role.",
+    title: "Evidence over a number",
+    body: "Every score comes with the reasons behind it: which requirements are met, the line in the CV that shows it, what still needs checking and what to ask at interview.",
   },
   {
-    title: "The recruiter stays in control",
-    body: "Helixon is a decision-support tool. It can help analyse and compare candidates, but the recruiter remains responsible for the hiring decision.",
+    title: "The recruiter decides",
+    body: "Helixon is a decision-support tool. It ranks and explains; the hiring decision always stays with the recruiter. Blind screening leaves names and other personal details out of the report.",
   },
   {
-    title: "Clearer candidate information",
-    body: "Helixon is designed to bring relevant information from candidate applications into a clearer format so recruiters can spend less time searching through documents.",
+    title: "Candidate data handled properly",
+    body: "CVs are stored in Switzerland, which the UK and EU recognise as adequate, encrypted at rest and in transit, and never used to train Helixon's or anyone else's models.",
   },
 ];
 
 const TIMELINE = [
   {
     label: "The problem",
-    body: "Reviewing CVs manually can be repetitive and time-consuming, especially when many candidates apply for the same role.",
+    body: "One role can bring in dozens of CVs. Reading each against the spec by eye is slow, and the comparison drifts as the pile goes down.",
   },
   {
     label: "The approach",
-    body: "Helixon analyses candidate information against a job specification and presents the results in a format designed to make comparison easier.",
+    body: "Helixon reads every CV against the same job specification, scores each the same way, and shows the evidence for every requirement: met, missing or still to confirm.",
   },
   {
     label: "Helixon today",
-    body: "Helixon is being developed as a recruitment screening tool focused on making candidate review faster, clearer and easier to manage.",
+    body: "Bulk screening of up to 50 CVs per role, blind screening, and a recruitment CRM around it: pipeline, client shortlists, interviews, placements and invoices.",
   },
 ];
 
@@ -45,7 +46,7 @@ function CtaButtons({ align = "left" }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-3 ${align === "center" ? "justify-center items-center" : ""}`}>
       <Button as="a" href="/demo" variant="primary" className="min-h-[48px]">
-        See Helixon
+        Get a demo
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
@@ -57,118 +58,57 @@ function CtaButtons({ align = "left" }) {
   );
 }
 
-// ── Signature element: CV pile → screening result ─────────────────────────
+// ── An example report ──────────────────────────────────────────────────────
 //
-// This is intentionally presented as an illustrative product concept rather
-// than a claim about a real candidate or guaranteed score.
+// The same kind of evidence the home page's sample analysis shows, labelled
+// as an example - not a real candidate or a promised score.
 
-function PileToScore() {
+const EXAMPLE_REQUIREMENTS = [
+  { label: "Order picking", status: "Met", tone: "met" },
+  { label: "RF scanner", status: "Met", tone: "met" },
+  { label: "Counterbalance forklift", status: "Missing", tone: "missing" },
+  { label: "Right to work in the UK", status: "To confirm", tone: "confirm" },
+];
+
+const TONES = {
+  met: { color: "var(--forest)", background: "var(--mint)" },
+  missing: { color: "var(--score-low)", background: "var(--ui-danger-soft)" },
+  confirm: { color: "var(--ink-soft)", background: "var(--mist)" },
+};
+
+function ExampleReport() {
   return (
     <div
-      className="rounded-[16px] p-6 w-full max-w-sm mx-auto lg:mx-0"
-      style={{
-        background: "white",
-        border: "1px solid var(--border)",
-        boxShadow: "0 20px 40px -20px rgba(19,32,27,0.18)",
-      }}
+      className="rounded-[16px] p-6 w-full max-w-sm mx-auto lg:mx-0 bg-white"
+      style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-raise)" }}
     >
-      <p
-        className="text-[11px] font-semibold uppercase tracking-widest mb-5"
-        style={{ color: "var(--ink-faint)" }}
-      >
-        The screening workflow
-      </p>
-
-      <div className="flex items-center gap-4 mb-6">
-        {/* Before: stack of CV cards */}
-        <div className="relative w-20 h-20 shrink-0">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="absolute rounded-[6px]"
-              style={{
-                width: 56,
-                height: 68,
-                left: i * 4,
-                top: i * 3,
-                background: "white",
-                border: "1px solid var(--border)",
-                transform: `rotate(${(i - 1.5) * 4}deg)`,
-                boxShadow: "0 2px 6px -2px rgba(19,32,27,0.15)",
-              }}
-            >
-              <div
-                className="w-full h-1.5 mt-3 mx-auto"
-                style={{
-                  width: "70%",
-                  background: "var(--border)",
-                }}
-              />
-
-              <div
-                className="mt-1.5 mx-auto"
-                style={{
-                  width: "50%",
-                  height: 4,
-                  background: "var(--border-soft, var(--border))",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="var(--ink-mute)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          className="shrink-0"
-        >
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-
-        {/* After: illustrative screening result */}
-        <div
-          className="rounded-[10px] px-4 py-3 flex-1"
-          style={{ background: "var(--mist)" }}
-        >
-          <p
-            className="text-[11px] font-semibold uppercase tracking-wide mb-1"
-            style={{ color: "var(--ink-faint)" }}
-          >
-            Candidate review
-          </p>
-
-          <div className="flex items-baseline gap-1.5">
-            <span
-              className="text-2xl font-semibold"
-              style={{
-                fontFamily: "var(--font-mono)",
-                color: "var(--forest)",
-              }}
-            >
-              ✓
-            </span>
-
-            <span
-              className="text-[11px] font-medium"
-              style={{ color: "var(--forest)" }}
-            >
-              Relevant evidence
-            </span>
-          </div>
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-faint)" }}>
+          Warehouse Operative
+        </p>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+          Example
+        </span>
+      </div>
+      <div className="flex items-center gap-4 mb-5">
+        <span className="text-[36px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
+          88
+        </span>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>Strong match</p>
+          <p className="text-xs" style={{ color: "var(--ink-soft)" }}>4 years in a busy distribution centre</p>
         </div>
       </div>
-
-      <p
-        className="text-xs leading-relaxed"
-        style={{ color: "var(--ink-soft)" }}
-      >
-        Helixon is designed to turn candidate documents into structured,
-        comparable information that can support the recruiter&apos;s review.
+      <ul className="divide-y" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        {EXAMPLE_REQUIREMENTS.map((r) => (
+          <li key={r.label} className="flex items-center justify-between gap-3 py-2.5">
+            <span className="text-sm" style={{ color: "var(--ink)" }}>{r.label}</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={TONES[r.tone]}>{r.status}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs leading-relaxed mt-4 pt-4 border-t" style={{ color: "var(--ink-soft)" }}>
+        From the CV: &ldquo;Ran weekly stock counts across three aisles.&rdquo;
       </p>
     </div>
   );
@@ -190,7 +130,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div>
             <span
-              className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
               style={{
                 background: "var(--mint)",
                 color: "var(--forest)",
@@ -206,24 +146,25 @@ export default function AboutPage() {
                 fontFamily: "var(--font-display)",
               }}
             >
-              Make candidate screening
+              Screening that
               <br />
-              easier to manage.
+              shows its working.
             </h1>
 
             <p
               className="text-sm leading-relaxed mb-8 max-w-md"
               style={{ color: "var(--ink-soft)" }}
             >
-              Helixon is designed to help recruiters review candidate
-              applications against job requirements, compare relevant
-              information and spend less time searching through CVs.
+              Helixon scores every CV against the job you&apos;re hiring for,
+              quotes the line in the CV behind each judgement, and keeps the
+              rest of the desk in one place. The score helps you decide; the
+              decision stays yours.
             </p>
 
             <CtaButtons />
           </div>
 
-          <PileToScore />
+          <ExampleReport />
         </div>
       </section>
 
@@ -239,7 +180,7 @@ export default function AboutPage() {
         <div className="max-w-[1100px] mx-auto px-6 py-20">
           <div className="text-center mb-12">
             <p
-              className="text-[11px] font-semibold uppercase tracking-widest mb-2"
+              className="text-xs font-semibold uppercase tracking-widest mb-2"
               style={{ color: "var(--ink-faint)" }}
             >
               The idea
@@ -303,7 +244,7 @@ export default function AboutPage() {
       <section className="max-w-[1100px] mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <p
-            className="text-[11px] font-semibold uppercase tracking-widest mb-2"
+            className="text-xs font-semibold uppercase tracking-widest mb-2"
             style={{ color: "var(--ink-faint)" }}
           >
             What we believe
@@ -386,7 +327,7 @@ export default function AboutPage() {
       >
         <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
           <p
-            className="text-[11px] font-semibold uppercase tracking-widest mb-3"
+            className="text-xs font-semibold uppercase tracking-widest mb-3"
             style={{ color: "var(--ink-faint)" }}
           >
             Who&apos;s behind it
@@ -399,24 +340,23 @@ export default function AboutPage() {
               fontFamily: "var(--font-display)",
             }}
           >
-            Building Helixon around a practical problem
+            Built for agency desks
           </h2>
 
           <p
             className="text-sm leading-relaxed max-w-lg mx-auto"
             style={{ color: "var(--ink-soft)" }}
           >
-            Helixon is being developed around a straightforward goal:
-            reduce repetitive work in candidate screening while keeping
-            recruiters in control of the decisions that matter.
+            One recruiter screens and the whole team sees the result. Notes,
+            tags and shortlists stay with the candidate, and every score,
+            note and stage change is recorded with who made it and when.
           </p>
         </div>
       </section>
 
       <CtaBand
-        heading="See how Helixon works."
-        body="Explore the screening workflow and see how candidate information can be organised against a job specification."
-        ctaLabel="Explore Helixon"
+        heading="See it on your own CVs."
+        body="Bring a live role and a few CVs, and we'll walk you through the ranked shortlist and the reasoning behind each score."
       />
 
       </main>

@@ -107,7 +107,7 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
       )}
 
       {requests.length > 0 && (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y">
           {requests.map((req) => (
             <li key={req.id} className="py-3 space-y-2">
               <div className="flex items-start justify-between gap-3">

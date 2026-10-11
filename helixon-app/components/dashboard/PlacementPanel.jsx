@@ -50,7 +50,7 @@ export default function PlacementPanel({ candidate, onChanged }) {
           No offer yet. Recording one keeps the salary, fee and rebate period, moves them to Offer / Placed, and lets you raise the invoice.
         </p>
       ) : (
-        <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y -my-3.5">
           {placements.map((p) => (
             <PlacementItem key={p.id} placement={p} onChanged={reload} />
           ))}

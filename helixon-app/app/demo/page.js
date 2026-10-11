@@ -302,7 +302,7 @@ export default function DemoRequestPage() {
                       Request sent
                     </h1>
 
-                    <p className="text-[13.5px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+                    <p className="text-[14px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
                       Thanks, {name.trim().split(" ")[0]}. Someone from our team will reach out to {email.trim()} within
                       one business day to find a time.
                     </p>
@@ -325,13 +325,13 @@ export default function DemoRequestPage() {
                 ) : (
                   <>
                     <h1
-                      className="text-[1.6rem] sm:text-[1.8rem] font-semibold tracking-tight leading-[1.1] mb-2"
+                      className="text-2xl sm:text-[28px] font-semibold tracking-tight leading-[1.1] mb-2"
                       style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
                     >
                       See Helixon on your own CVs
                     </h1>
 
-                    <p className="text-[13.5px] leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
+                    <p className="text-[14px] leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
                       Tell us a bit about your team. We&apos;ll reply within one business day and walk you
                       through how Helixon fits your screening process.
                     </p>
@@ -399,7 +399,7 @@ export default function DemoRequestPage() {
                         textarea
                       />
 
-                      <label className="flex items-start gap-2.5 text-[12.5px] mb-3 cursor-pointer" style={{ color: "var(--ink-soft)" }}>
+                      <label className="flex items-start gap-2.5 text-[13px] mb-3 cursor-pointer" style={{ color: "var(--ink-soft)" }}>
                         <input type="checkbox" checked={researchOptIn} onChange={(e) => setResearchOptIn(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
                         I&apos;m also happy to be invited to give feedback on new features (optional).
                       </label>

@@ -108,8 +108,11 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
         onClick={() => setOpen((v) => !v)}
         className={`${compact ? "px-3" : "px-2 xl:px-3"} py-1.5 rounded-[8px] whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--forest)]`}
         style={current ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
+        title={current ? current.label : undefined}
       >
-        {current ? current.label : "More"} ▾
+        {/* Capped: a long page name ("Placements & invoices") used to widen
+            the tab row until it ran underneath the search box. */}
+        <span className="inline-block max-w-[7.5rem] truncate align-bottom">{current ? current.label : "More"}</span> ▾
       </button>
       {open && (
         <div
@@ -131,7 +134,7 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
                   <span className="flex items-center gap-1.5 text-[14px]" style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)", fontWeight: 500 }}>
                     {l.label}
                     {l.team && plan && plan !== "agency" && (
-                      <span className="text-[11.5px] font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                      <span className="text-[12px] font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                         Agency plan
                       </span>
                     )}
@@ -158,14 +161,14 @@ function TeammateStack({ teammates }) {
   return (
     <Link
       href="/dashboard/team"
-      className="hidden lg:flex items-center -space-x-1.5 mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] rounded-full"
+      className="hidden lg:flex items-center -space-x-1 mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] rounded-full"
       aria-label={`${teammates.length} people on your team`}
       title={teammates.map((t) => `${t.name} - ${PRESENCE_LABELS[t.presence?.state] || "Offline"}`).join("\n")}
     >
       {shown.map((t) => (
         <span key={t.id} className="relative">
           <span
-            className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold text-white ring-2 ring-white"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold text-white ring-2 ring-white"
             style={{ background: "var(--forest)", opacity: t.presence?.online ? 1 : 0.55 }}
           >
             {initials(t.name)}
@@ -174,7 +177,7 @@ function TeammateStack({ teammates }) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+        <span className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
           +{overflow}
         </span>
       )}
@@ -281,7 +284,7 @@ function DashboardNavContent() {
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
-      <div className="max-w-[1200px] mx-auto px-6 h-[56px] flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group min-w-0" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 shrink-0" style={{ background: "var(--forest)" }}>
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
@@ -394,7 +397,9 @@ function DashboardNavContent() {
 
       {/* Mobile tab row: the tabs scroll; "More" stays put at the end. */}
       <div className="md:hidden flex items-center gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
-        <div className="flex overflow-x-auto gap-1 min-w-0">
+        {/* Fades out at the right edge so a cut-off tab ("Pipelir") reads as
+            "scroll for more" rather than a broken label. */}
+        <div className="scroll-fade-x flex overflow-x-auto gap-1 min-w-0 pr-4">
         {TABS.map((t) => {
           const active = t.href === activeHref;
           return (
@@ -451,7 +456,7 @@ function SignedOutBanner() {
   if (!signedOut) return null;
   return (
     <div role="alert" className="border-t" style={{ background: "#fff8e6", borderColor: "#f3d48a" }}>
-      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
         <span>
           <strong style={{ color: "#92620f" }}>You&apos;ve been signed out, so changes can&apos;t be saved.</strong>{" "}
           Sign in again in a new tab, then come back and try again. Anything you&apos;ve typed here stays put.
@@ -472,7 +477,7 @@ function PaymentIssueBanner({ issue }) {
   const stopped = issue.status === "unpaid";
   return (
     <div role="alert" className="border-t" style={{ background: "#fff7f7", borderColor: "#fecaca" }}>
-      <div className="max-w-[1200px] mx-auto px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style={{ color: "var(--ink)" }}>
         <span>
           <strong style={{ color: "var(--score-low)" }}>Your last Helixon payment didn&apos;t go through.</strong>{" "}
           {stopped

@@ -166,6 +166,19 @@ export default function AdminShell({ children, initialUsername }) {
                 })}
               </div>
             ))}
+            {/* These used to sit in the footer, which grew so tall that it
+                covered the last nav items on a 900px-high screen. */}
+            <div>
+              <div className="side-nav-group">Other views</div>
+              <button type="button" className="side-link" onClick={openStaffPortal} title="Open the staff portal signed in as you">
+                <Icon name="briefcase" />
+                Staff portal
+              </button>
+              <Link href="/admin/mobile" className="side-link">
+                <Icon name="command" />
+                Mobile view
+              </Link>
+            </div>
           </nav>
 
           <div className="sidebar-footer">
@@ -183,26 +196,15 @@ export default function AdminShell({ children, initialUsername }) {
                   </span>
                 )}
               </div>
-            </div>
-            <div className="footer-links">
-              <button type="button" className="side-link" onClick={openStaffPortal} title="Open the staff portal signed in as you">
-                <Icon name="briefcase" />
-                Staff portal
+              <button type="button" className="logout" onClick={signOut} aria-label="Log out" title="Log out">
+                <Icon name="logout" />
               </button>
-              <Link href="/admin/mobile" className="side-link">
-                <Icon name="command" />
-                Mobile view
-              </Link>
             </div>
-            <button className="logout" onClick={signOut}>
-              <Icon name="logout" />
-              Log out
-            </button>
           </div>
         </aside>
 
         <div className="main-col">
-          <div className="topbar">
+          <header className="topbar">
             <button className="icon-btn menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
               <Icon name="menu" />
             </button>
@@ -227,7 +229,7 @@ export default function AdminShell({ children, initialUsername }) {
             <span className="topbar-time" style={{ marginLeft: 0 }}>
               {now ? now.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
             </span>
-          </div>
+          </header>
 
           <main className="content">{children}</main>
         </div>

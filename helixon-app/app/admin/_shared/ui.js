@@ -214,7 +214,7 @@ export function Panel({ title, sub, action, children, className = "" }) {
       {(title || action) && (
         <div className="section-head" style={{ marginBottom: sub ? 2 : 10 }}>
           <div>
-            {title && <div className="panel-title">{title}</div>}
+            {title && <h2 className="panel-title">{title}</h2>}
             {sub && <div className="panel-sub">{sub}</div>}
           </div>
           {action}

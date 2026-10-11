@@ -25,6 +25,7 @@ import { RemoveDialog, TeamInvitePanel } from "./_components/invite";
 import { MemberCard, SummaryTile } from "./_components/members";
 import { ErrorState, TeamSkeleton } from "./_components/states";
 import { MyStatusCard } from "./_components/status";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 export default function TeamPage() {
   const { user } = useUser();
@@ -184,7 +185,7 @@ export default function TeamPage() {
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
       {confirmDialog}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
@@ -256,13 +257,13 @@ export default function TeamPage() {
                       style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                     >
                       {label}
-                      <span className="text-[12px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
+                      <span className="text-[12px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(0,0,0,0.2)" : "var(--mist)" }}>
                         {count}
                       </span>
                     </button>
                   );
                 })}
-                <span className="ml-auto text-[12.5px]" style={{ color: INK_FAINT }}>
+                <span className="ml-auto text-[13px]" style={{ color: INK_FAINT }}>
                   Updates live
                 </span>
               </div>

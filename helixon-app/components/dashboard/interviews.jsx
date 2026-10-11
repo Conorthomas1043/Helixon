@@ -35,10 +35,12 @@ function toLocalInput(iso) {
 }
 
 const STATUS_STYLE = {
-  scheduled: { color: "#5b4bc4", background: "#f1effc" },
+  // Scheduled takes the Interview stage's teal-green (lib/stage-labels.js),
+  // darkened for text; the purple it used appeared nowhere else in the brand.
+  scheduled: { color: "#17625d", background: "#e7f3f2" },
   completed: { color: "var(--forest)", background: "var(--mint)" },
   cancelled: { color: INK_FAINT, background: "var(--mist)" },
-  no_show: { color: "#b42318", background: "#fef2f2" },
+  no_show: { color: "var(--score-low)", background: "var(--ui-danger-soft)" },
 };
 
 export function InterviewStatusPill({ status }) {

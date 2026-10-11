@@ -15,7 +15,7 @@ function RailCard({ title, children, action }) {
   return (
     <Card className="px-4 py-4">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <h3 className="text-[14.5px] font-semibold text-[var(--ink)]">{title}</h3>
+        <h3 className="text-[15px] font-semibold text-[var(--ink)]">{title}</h3>
         {action}
       </div>
       {children}
@@ -230,7 +230,7 @@ export function EmailCard({ email }) {
               placeholder={audience === "client" ? "client@company.com" : "candidate@email.com"}
               className="text-[14px]"
             />
-            {clientEmailMissing && <p className="text-[12.5px] text-[var(--score-mid)] mt-1.5">No client email on this role - add one to send.</p>}
+            {clientEmailMissing && <p className="text-[13px] text-[var(--score-mid)] mt-1.5">No client email on this role - add one to send.</p>}
             <Button variant="primary" className="w-full mt-2" onClick={send} disabled={sending || !recipient.trim()} icon={sent ? "check" : "send"}>
               {sending ? "Sending…" : sent ? "Sent" : "Send"}
             </Button>
@@ -289,7 +289,7 @@ export function FeedbackCard({ feedback }) {
       )}
       {picking && downReason && (
         <div className="mt-3">
-          <p className="text-[13.5px] text-[var(--ink-soft)] mb-1.5">Where should this candidate sit?</p>
+          <p className="text-[14px] text-[var(--ink-soft)] mb-1.5">Where should this candidate sit?</p>
           <div className="flex flex-wrap gap-1.5">
             {FEEDBACK_BANDS.map((band) => (
               <button key={band} type="button" onClick={() => submit("down", downReason, band)} className="h-7 px-2.5 rounded-[7px] border border-[var(--border)] text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]">
@@ -302,7 +302,7 @@ export function FeedbackCard({ feedback }) {
           </div>
         </div>
       )}
-      <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">Used to tune scoring. It never changes this candidate&apos;s score.</p>
+      <p className="text-[13px] text-[var(--ink-faint)] mt-2">Used to tune scoring. It never changes this candidate&apos;s score.</p>
     </Card>
   );
 }

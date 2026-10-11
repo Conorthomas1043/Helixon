@@ -59,13 +59,13 @@ export function MethodPicker({ value, onChange, methods, counts = {} }) {
                 <Icon name={meta.icon} size={15} />
               </span>
               {counts[m] != null && (
-                <span className="h-5 min-w-5 px-1.5 rounded-full bg-[var(--mist)] border border-[var(--border)] text-[11.5px] font-semibold tabular-nums text-[var(--ink-soft)] flex items-center justify-center">
+                <span className="h-5 min-w-5 px-1.5 rounded-full bg-[var(--mist)] border border-[var(--border)] text-[12px] font-semibold tabular-nums text-[var(--ink-soft)] flex items-center justify-center">
                   {counts[m]}
                 </span>
               )}
             </span>
             <span className="block text-[14px] font-semibold text-[var(--ink)] leading-tight mt-2">{meta.label}</span>
-            <span className="block text-[12.5px] leading-snug text-[var(--ink-faint)] mt-0.5">{meta.hint}</span>
+            <span className="block text-[13px] leading-snug text-[var(--ink-faint)] mt-0.5">{meta.hint}</span>
           </button>
         );
       })}
@@ -82,7 +82,7 @@ export function ChoiceChip({ active, onClick, icon, children, className = "" }) 
       aria-pressed={active}
       onClick={onClick}
       className={cx(
-        "inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-[13.5px] font-medium transition-colors",
+        "inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-[14px] font-medium transition-colors",
         active
           ? "border-[var(--forest)] bg-[var(--forest)] text-white"
           : "border-[var(--border)] bg-white text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]",
@@ -113,7 +113,7 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
       {label && <Label htmlFor={id} hint={hint}>{label}</Label>}
       <div className="flex flex-wrap items-center gap-1.5 min-h-10 px-1.5 py-1.5 rounded-[10px] border border-[var(--border)] focus-within:border-[var(--forest)] focus-within:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] bg-white">
         {values.map((v) => (
-          <span key={v} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-[var(--mint)] border border-[#cfe6da] text-[13.5px] text-[var(--forest-deep)]">
+          <span key={v} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-[var(--mint)] border border-[#cfe6da] text-[14px] text-[var(--forest-deep)]">
             {v}
             <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} aria-label={`Remove ${v}`} className="p-0.5 rounded-full hover:bg-white/70">
               <Icon name="x" size={11} />
@@ -139,13 +139,13 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
       </div>
       {open.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
-          <span className="text-[12.5px] text-[var(--ink-faint)] mr-0.5">Suggested:</span>
+          <span className="text-[13px] text-[var(--ink-faint)] mr-0.5">Suggested:</span>
           {open.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => add(s)}
-              className="inline-flex items-center gap-1 h-6 px-2 rounded-full border border-dashed border-[var(--ink-mute)] text-[12.5px] text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] hover:bg-[#f4faf7] transition-colors"
+              className="inline-flex items-center gap-1 h-6 px-2 rounded-full border border-dashed border-[var(--ink-mute)] text-[13px] text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] hover:bg-[#f4faf7] transition-colors"
             >
               <Icon name="plus" size={11} />
               {s}
@@ -153,7 +153,7 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
           ))}
         </div>
       )}
-      {help && <p className="text-[12.5px] text-[var(--ink-faint)] mt-1.5">{help}</p>}
+      {help && <p className="text-[13px] text-[var(--ink-faint)] mt-1.5">{help}</p>}
     </div>
   );
 }
@@ -173,7 +173,7 @@ export function SpecChecklist({ text }) {
         <div className="flex-1 h-1.5 rounded-full bg-[var(--mist)] overflow-hidden" aria-hidden="true">
           <div className="h-full rounded-full bg-[var(--forest)] transition-[width] duration-300" style={{ width: `${(done / items.length) * 100}%` }} />
         </div>
-        <span className="text-[12.5px] tabular-nums text-[var(--ink-soft)]">{done} of {items.length} covered</span>
+        <span className="text-[13px] tabular-nums text-[var(--ink-soft)]">{done} of {items.length} covered</span>
       </div>
       <ul className="flex flex-wrap gap-1.5" aria-label="What the description covers">
         {items.map((i) => (
@@ -181,7 +181,7 @@ export function SpecChecklist({ text }) {
             key={i.key}
             title={i.done ? undefined : i.tip}
             className={cx(
-              "inline-flex items-center gap-1 h-6 px-2 rounded-full text-[12.5px] border",
+              "inline-flex items-center gap-1 h-6 px-2 rounded-full text-[13px] border",
               i.done ? "bg-[var(--mint)] border-[#cfe6da] text-[var(--forest-deep)]" : "bg-white border-dashed border-[var(--ink-mute)] text-[var(--ink-faint)]"
             )}
           >
@@ -191,7 +191,7 @@ export function SpecChecklist({ text }) {
           </li>
         ))}
       </ul>
-      {nextTip && <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">Tip: {nextTip}</p>}
+      {nextTip && <p className="text-[13px] text-[var(--ink-faint)] mt-2">Tip: {nextTip}</p>}
     </div>
   );
 }
@@ -203,11 +203,11 @@ const HOURLY_TYPES = new Set(["warehouse", "driving", "hospitality", "retail", "
 function Step({ n, title, hint, children }) {
   return (
     <section className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3">
-      <span className="w-6 h-6 rounded-full bg-[var(--mist)] border border-[var(--border)] text-[12.5px] font-semibold text-[var(--ink-soft)] flex items-center justify-center tabular-nums">{n}</span>
+      <span className="w-6 h-6 rounded-full bg-[var(--mist)] border border-[var(--border)] text-[13px] font-semibold text-[var(--ink-soft)] flex items-center justify-center tabular-nums">{n}</span>
       <div className="min-w-0 space-y-2.5">
         <div className="flex items-baseline justify-between gap-2 pt-[3px]">
           <h3 className="text-[14px] font-semibold text-[var(--ink)]">{title}</h3>
-          {hint && <span className="text-[12.5px] text-[var(--ink-faint)]">{hint}</span>}
+          {hint && <span className="text-[13px] text-[var(--ink-faint)]">{hint}</span>}
         </div>
         {children}
       </div>
@@ -262,7 +262,7 @@ export function RoleBuilder({ draft, onChange, onEditAsText }) {
         {type && !draft.title && (
           <div className="flex flex-wrap gap-1.5">
             {type.titles.map((t) => (
-              <button key={t} type="button" onClick={() => set({ title: t })} className="h-6 px-2 rounded-full border border-[var(--border)] text-[12.5px] text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] transition-colors">
+              <button key={t} type="button" onClick={() => set({ title: t })} className="h-6 px-2 rounded-full border border-[var(--border)] text-[13px] text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] transition-colors">
                 {t}
               </button>
             ))}
@@ -346,7 +346,7 @@ export function RoleBuilder({ draft, onChange, onEditAsText }) {
 
       <div className="rounded-[12px] border border-[var(--border)] bg-[var(--mist)] px-3.5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className={cx("inline-flex items-center gap-1.5 text-[13.5px] font-medium", ready ? "text-[var(--forest-deep)]" : "text-[var(--ink-soft)]")}>
+          <span className={cx("inline-flex items-center gap-1.5 text-[14px] font-medium", ready ? "text-[var(--forest-deep)]" : "text-[var(--ink-soft)]")}>
             <Icon name={ready ? "check" : "info"} size={14} />
             {ready ? "Ready - this is what the CV will be scored against" : "Add a job title and a little detail to continue"}
           </span>
@@ -432,13 +432,13 @@ export function TemplateGallery({ onPick }) {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[14px] font-semibold text-[var(--ink)] truncate">{t.title}</span>
-                  <span className="block text-[12.5px] text-[var(--ink-faint)] truncate">{type?.label} · {t.level}</span>
+                  <span className="block text-[13px] text-[var(--ink-faint)] truncate">{type?.label} · {t.level}</span>
                 </span>
               </button>
             );
           })}
         </div>
-        <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">Picking one opens it as text so you can tailor it - pay, hours, requirements.</p>
+        <p className="text-[13px] text-[var(--ink-faint)] mt-2">Picking one opens it as text so you can tailor it - pay, hours, requirements.</p>
       </div>
     </div>
   );

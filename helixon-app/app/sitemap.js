@@ -5,7 +5,8 @@ const PUBLIC_PATHS = [
   "/pricing",
   "/how-it-works",
   "/about",
-  "/blog",
+  // Not /blog: every post is still "Coming soon", so it's left out of the
+  // nav, footer and sitemap until there's something to read.
   "/faq",
   "/contact",
   "/demo",

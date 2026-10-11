@@ -47,7 +47,7 @@ export default function CandidateCard({
               <Icon name="file" size={18} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{file.name}</span>
+              <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{file.name}</span>
               <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(file.size)}</span>
             </span>
             {!rerunOf && (
@@ -126,7 +126,7 @@ export default function CandidateCard({
             onChange={(e) => setConsent(e.target.checked)}
             className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]"
           />
-          <span className="text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+          <span className="text-[14px] leading-relaxed text-[var(--ink-soft)]">
             I have a lawful basis (for example the candidate&apos;s consent or legitimate interest under UK GDPR) to screen this CV.
           </span>
         </label>

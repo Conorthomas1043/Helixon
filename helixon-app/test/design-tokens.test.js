@@ -1,9 +1,12 @@
 // Keeps the design system the source of colours and styling.
 //
-// Hard-coded hex colours and inline style={{...}} objects are counted per
-// file and compared with design-tokens.baseline.json. A file may lose them
-// (please do, as you touch it: use the --ui-* / palette tokens and the kit in
-// components/ui), but not gain them, and a new file starts at zero.
+// Hard-coded hex colours, inline style={{...}} objects and arbitrary font
+// sizes (text-[13px]) are counted per file and compared with
+// design-tokens.baseline.json. A file may lose them (please do, as you touch
+// it: use the --ui-* / palette tokens, the kit in components/ui and the type
+// scale - text-xs, text-sm, text-base ...), but not gain them, and a new file
+// starts at zero. Half-pixel font sizes (13.5px) aren't allowed at all: they
+// render blurry on standard screens and were the bulk of 31 distinct sizes.
 //
 // Exempt: where the tokens are defined (globals.css, the admin console's
 // stylesheet), emails (mail clients need literal colours), and the generated
@@ -32,24 +35,36 @@ export function count(source) {
   return {
     hex: (source.match(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])/g) || []).length,
     inlineStyles: (source.match(/style=\{\{/g) || []).length,
+    fontSizes: (source.match(/\btext-\[[0-9.]+(?:px|rem)\]/g) || []).length,
   };
 }
+
+const HALF_PIXEL = /\btext-\[\d+\.5px\]|fontSize: ?"?\d+\.5(?:px)?\b|font-size: ?\d+\.5px/g;
 
 function current() {
   const out = {};
   for (const f of ["app", "components", "lib"].flatMap((d) => files(d)).sort()) {
     const c = count(fs.readFileSync(path.join(ROOT, f), "utf8"));
-    if (c.hex || c.inlineStyles) out[f] = c;
+    if (c.hex || c.inlineStyles || c.fontSizes) out[f] = c;
   }
   return out;
 }
 
 describe("design tokens", () => {
   it("counts hex colours and inline styles", () => {
-    expect(count('<div style={{ color: "#13201b" }} className="text-[#fff]" />')).toEqual({ hex: 2, inlineStyles: 1 });
+    expect(count('<div style={{ color: "#13201b" }} className="text-[#fff] text-[13px]" />')).toEqual({ hex: 2, inlineStyles: 1, fontSizes: 1 });
   });
 
-  it("no file gains hard-coded colours or inline styles", () => {
+  it("no half-pixel font sizes", () => {
+    const found = [];
+    for (const f of ["app", "components", "lib"].flatMap((d) => files(d))) {
+      const hits = fs.readFileSync(path.join(ROOT, f), "utf8").match(HALF_PIXEL);
+      if (hits) found.push(`${f}: ${hits.join(", ")}`);
+    }
+    expect(found).toEqual([]);
+  });
+
+  it("no file gains hard-coded colours, inline styles or arbitrary font sizes", () => {
     const now = current();
     if (process.env.UPDATE_DESIGN_BASELINE) {
       fs.writeFileSync(BASELINE, JSON.stringify(now, null, 2) + "\n");
@@ -58,9 +73,10 @@ describe("design tokens", () => {
     const base = JSON.parse(fs.readFileSync(BASELINE, "utf8"));
     const grew = [];
     for (const [f, c] of Object.entries(now)) {
-      const b = base[f] || { hex: 0, inlineStyles: 0 };
+      const b = { hex: 0, inlineStyles: 0, fontSizes: 0, ...base[f] };
       if (c.hex > b.hex) grew.push(`${f}: ${b.hex} -> ${c.hex} hex colours (use a token, e.g. var(--ui-text) or text-[var(--ink-soft)])`);
       if (c.inlineStyles > b.inlineStyles) grew.push(`${f}: ${b.inlineStyles} -> ${c.inlineStyles} inline style objects (use Tailwind classes or the kit)`);
+      if (c.fontSizes > b.fontSizes) grew.push(`${f}: ${b.fontSizes} -> ${c.fontSizes} arbitrary font sizes (use text-xs, text-sm, text-base ...)`);
     }
     expect(grew).toEqual([]);
   });

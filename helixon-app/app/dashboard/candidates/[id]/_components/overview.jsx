@@ -177,7 +177,7 @@ export function FullAnalysis({ analysis, candidateName }) {
           </span>
         }
       />
-      <p className="text-[13.5px]" style={{ color: INK_MUTED }}>
+      <p className="text-[14px]" style={{ color: INK_MUTED }}>
         Score breakdown, requirements met, skills, red flags, interview questions and salary estimate
         {role ? ` for ${role}` : ""}
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.

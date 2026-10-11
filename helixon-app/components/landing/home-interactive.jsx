@@ -722,7 +722,8 @@ export function TrustStrip() {
       <div ref={ref} className="max-w-[1100px] mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
         {TRUST_METRICS.map((m) => (
           <div key={m.label}>
-            <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
+            {/* Mono is for figures; the worded metrics use the display face. */}
+            <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: typeof m.val === "number" ? "var(--font-mono)" : "var(--font-display)", color: "var(--forest)" }}>
               {typeof m.val === "number" ? <CountUp value={played ? m.val : 0} duration={1000} /> : m.display}
             </p>
             <p className="text-[13px] mt-1.5 leading-relaxed max-w-[15rem] mx-auto" style={{ color: "var(--ink-faint)" }}>{m.label}</p>

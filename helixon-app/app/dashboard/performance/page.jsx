@@ -55,7 +55,7 @@ export default function PerformancePage() {
   const showCommission = Boolean(data?.commission) && ranked.some((p) => p.commission != null);
 
   return (
-    <Page width={1280}>
+    <Page>
       <PageHeader
         eyebrow="Team"
         title="Performance"

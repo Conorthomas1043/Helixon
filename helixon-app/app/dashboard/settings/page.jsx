@@ -47,7 +47,7 @@ const SECTIONS = [
 
 export default function SettingsPage() {
   return (
-    <Page width={1000}>
+    <Page width="narrow">
       <PageHeader eyebrow="Workspace" title="Settings" subtitle="How Helixon works for your agency." />
       {SECTIONS.map((s) => (
         <section key={s.title}>

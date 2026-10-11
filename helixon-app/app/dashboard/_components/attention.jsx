@@ -53,18 +53,21 @@ export function AttentionPanel({ items: firstItems, allItems, total }) {
               }}
                 className="hover:bg-[var(--mist)] transition-colors"
               >
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ minWidth: 0, flex: "1 1 120px" }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.candidateName}</p>
                   <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.jobTitle}</p>
                 </div>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", fontSize: 12, fontWeight: 600,
+                {/* The reason may shorten, never the name: on a phone the pill used
+                    to keep its full width and squeeze the name out of the row. */}
+                <span title={item.reasonLabel} style={{
+                  display: "inline-block", fontSize: 12, fontWeight: 600,
                   padding: "3px 10px", borderRadius: 9999, whiteSpace: "nowrap",
+                  overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, maxWidth: "50%", flex: "0 1 auto",
                   background: item.tone.bg, color: item.tone.fg,
                 }}>
                   {item.reasonLabel}
                 </span>
-                <span style={{ fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap", flexShrink: 0 }}>{hydrated ? formatRelativeTime(item.createdAt) : ""}</span>
+                <span className="hidden sm:inline" style={{ fontSize: 12, color: TEXT_FAINT, whiteSpace: "nowrap", flexShrink: 0 }}>{hydrated ? formatRelativeTime(item.createdAt) : ""}</span>
                 {item.score !== null && (
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: scoreColor(item.score), flexShrink: 0, width: 32, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{item.score}</span>
                 )}

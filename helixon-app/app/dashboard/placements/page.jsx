@@ -177,7 +177,9 @@ export default function PlacementsPage() {
         <LoadingCard rows={6} />
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Two deliberate rows, money then activity. Seven tiles in a
+              five-column grid used to wrap 5 + 2. */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Stat label="Perm fees this year" value={formatMoney(stats.feesThisYear)} hint={`${stats.permCount} placement${stats.permCount === 1 ? "" : "s"}`} />
             <Stat label="Paid this year" value={formatMoney(stats.paidThisYear)} />
             <Stat label="Unpaid" value={formatMoney(stats.unpaid)} hint={`${stats.unpaidCount} invoice${stats.unpaidCount === 1 ? "" : "s"}`} />
@@ -187,6 +189,8 @@ export default function PlacementsPage() {
               hint={`${stats.overdueCount} invoice${stats.overdueCount === 1 ? "" : "s"}`}
               tone={stats.overdueCount ? "var(--score-low)" : undefined}
             />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Stat label="In rebate period" value={stats.rebateCount} hint={stats.rebateCount ? `${formatMoney(stats.rebateValue)} of fees at risk` : "None at risk"} />
             <Stat label="Contractors working" value={stats.contractors} hint={stats.contractors ? `~${formatMoney(stats.weeklyMargin)} margin a week` : null} />
             <Stat label="Offers pending" value={stats.pendingOffers} />
@@ -230,7 +234,7 @@ export default function PlacementsPage() {
               {placements.length === 0 ? (
                 <EmptyState title="No placements here" body="Open a candidate and use “Record offer” in their Offer & placement card." />
               ) : (
-                <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+                <ul className="divide-y -my-3.5">
                   {placements.map((p) => (
                     <PlacementItem key={p.id} placement={p} showCandidate onChanged={reload} />
                   ))}

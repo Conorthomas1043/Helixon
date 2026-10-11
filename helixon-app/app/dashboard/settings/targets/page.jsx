@@ -79,7 +79,7 @@ export default function TargetsSettingsPage() {
   const rows = [{ id: "team", name: "Whole team" }, ...people];
 
   return (
-    <Page width={1200}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Team"

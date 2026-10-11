@@ -155,7 +155,7 @@ function Section({ id, index, title, children }) {
         </span>
         {title}
       </h2>
-      <div className="space-y-4 text-[14.5px] leading-[1.75]" style={{ color: "var(--ink-soft)" }}>
+      <div className="space-y-4 text-[15px] leading-[1.75]" style={{ color: "var(--ink-soft)" }}>
         {children}
       </div>
     </section>
@@ -256,7 +256,7 @@ export default function Privacy() {
                 <Glyph name={g.icon} />
               </span>
               <span>
-                <span className="block text-[14.5px] font-semibold leading-snug" style={{ color: "var(--ink)" }}>
+                <span className="block text-[15px] font-semibold leading-snug" style={{ color: "var(--ink)" }}>
                   {g.title}
                 </span>
                 <span className="block text-[13px] leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
@@ -304,11 +304,11 @@ export default function Privacy() {
                   <p className="text-[15px] font-semibold mt-1" style={{ color: "var(--ink)" }}>
                     Controller: <span style={{ color: "var(--forest)" }}>{who}</span>
                   </p>
-                  <p className="text-[13.5px] leading-relaxed mt-2">{body}</p>
+                  <p className="text-[14px] leading-relaxed mt-2">{body}</p>
                 </div>
               ))}
             </div>
-            <p className="text-[13.5px]">
+            <p className="text-[14px]">
               See the{" "}
               <a href="/dpa" className="font-semibold underline underline-offset-2" style={{ color: "var(--forest)" }}>
                 Data Processing Agreement
@@ -377,7 +377,7 @@ export default function Privacy() {
                   <span className="leading-snug">{purpose}</span>
                   <span>
                     <span
-                      className="inline-block text-[11.5px] font-semibold px-2 py-0.5 rounded-full"
+                      className="inline-block text-[12px] font-semibold px-2 py-0.5 rounded-full"
                       style={{ background: US_ONLY(where) ? "#fdf6e9" : "var(--mint)", color: US_ONLY(where) ? "#8a5a12" : "var(--forest)" }}
                     >
                       {where}
@@ -463,7 +463,7 @@ export default function Privacy() {
             <div className="rounded-[16px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: "var(--forest)", color: "white" }}>
               <div>
                 <p className="text-[16px] font-semibold">Privacy questions or requests</p>
-                <p className="text-[13.5px] mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
+                <p className="text-[14px] mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
                   We reply within one month - usually much sooner.
                 </p>
               </div>

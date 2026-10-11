@@ -56,7 +56,7 @@ export default function NotificationsInfo() {
     <div className="px-6 py-8 sm:px-10 sm:py-10">
       <h3 className="text-[17px] font-semibold text-[#10221d]">Emails you can switch off</h3>
       <div className="mt-4 max-w-[560px] space-y-4" aria-busy={prefs === null || saving}>
-        {prefs === null && !error && <p className="text-[14px] text-[#638279]">Loading…</p>}
+        {prefs === null && !error && <p className="text-[14px] text-[var(--ink-faint)]">Loading…</p>}
         {prefs && (
           <>
             <Toggle
@@ -86,7 +86,7 @@ export default function NotificationsInfo() {
       </div>
 
       <h3 className="mt-8 text-[17px] font-semibold text-[#10221d]">Everything else</h3>
-      <p className="mt-2 max-w-[560px] text-[14px] leading-6 text-[#638279]">
+      <p className="mt-2 max-w-[560px] text-[14px] leading-6 text-[var(--ink-faint)]">
         Helixon doesn&apos;t send marketing emails. The rest of what you get from us is the essential kind - sign-in and
         verification messages, team invitations, and billing receipts - and those can&apos;t be turned off because the
         account needs them. Want another notification? Tell us via the{" "}

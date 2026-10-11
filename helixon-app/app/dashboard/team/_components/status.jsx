@@ -105,7 +105,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
         <PresenceDot state={presence?.state === "offline" ? "active" : presence?.state || "active"} size={9} ring="transparent" />
         {presence ? (presence.state === "offline" ? "Active now" : presenceLine(presence)) : "Active now"}
       </p>
-      {presence?.message && <p className="text-[13.5px] italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
+      {presence?.message && <p className="text-[14px] italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
 
       <div className="grid grid-cols-3 gap-1.5 mt-4" role="radiogroup" aria-label="Status">
         {STATUS_CHOICES.map((c) => {
@@ -121,7 +121,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
                 setStatus(c.value);
                 if (!c.value) save(null);
               }}
-              className="flex items-center justify-center gap-1.5 text-[13.5px] font-semibold px-2 py-2 rounded-[10px] border transition-colors"
+              className="flex items-center justify-center gap-1.5 text-[14px] font-semibold px-2 py-2 rounded-[10px] border transition-colors"
               style={{
                 borderColor: on ? "var(--forest)" : "var(--border)",
                 background: on ? "var(--mint)" : "white",
@@ -152,7 +152,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
                 key={m}
                 type="button"
                 onClick={() => setMessage(m)}
-                className="text-[12.5px] px-2.5 py-1 rounded-full hover:bg-[var(--mint)]"
+                className="text-[13px] px-2.5 py-1 rounded-full hover:bg-[var(--mint)]"
                 style={{ background: message === m ? "var(--mint)" : "var(--mist)", color: INK_MUTED }}
               >
                 {m}
@@ -164,7 +164,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               value={clearAfter}
               onChange={(e) => setClearAfter(e.target.value)}
               aria-label="Clear status"
-              className="flex-1 text-[13.5px] font-semibold px-3 py-2 rounded-full bg-white"
+              className="flex-1 text-[14px] font-semibold px-3 py-2 rounded-full bg-white"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               {CLEAR_AFTER.map((o) => (
@@ -177,7 +177,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               type="button"
               onClick={() => save()}
               disabled={saving}
-              className="text-[13.5px] font-semibold px-4 py-2 rounded-full disabled:opacity-50"
+              className="text-[14px] font-semibold px-4 py-2 rounded-full disabled:opacity-50"
               style={{ background: "var(--forest)", color: "white" }}
             >
               {saving ? "Saving…" : saved ? "Saved ✓" : "Set status"}
@@ -187,7 +187,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
       )}
       {!status && saved && <p className="text-[13px] mt-2" style={{ color: "var(--forest)" }}>Back to automatic ✓</p>}
       {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
-      <p className="text-[12.5px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-[13px] mt-3" style={{ color: INK_FAINT }}>
         Teammates see you as active while you&apos;re using Helixon, idle after 5 minutes without touching it, and offline once it&apos;s closed.
         Only those times are kept - not what you click or type.
       </p>
@@ -199,9 +199,9 @@ export function MyStatusEditor({ me, presence, onSaved }) {
           onChange={(e) => toggleHidden(!e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-[var(--forest)]"
         />
-        <span className="text-[13.5px]" style={{ color: INK }}>
+        <span className="text-[14px]" style={{ color: INK }}>
           Share my presence with the team
-          <span className="block text-[12.5px]" style={{ color: INK_FAINT }}>
+          <span className="block text-[13px]" style={{ color: INK_FAINT }}>
             {hidden ? "Hidden - nothing about when you use Helixon is being recorded." : "Untick to hide it and delete what's been recorded."}
           </span>
         </span>

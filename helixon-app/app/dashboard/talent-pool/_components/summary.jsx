@@ -21,7 +21,7 @@ export function StatCard({ label, value, sub, accent, onClick, active }) {
       <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
-      {sub && <p className="text-[12.5px] text-[var(--ink-faint)] mt-2">{sub}</p>}
+      {sub && <p className="text-[13px] text-[var(--ink-faint)] mt-2">{sub}</p>}
     </Tag>
   );
 }

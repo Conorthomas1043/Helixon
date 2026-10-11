@@ -269,7 +269,7 @@ export default function ClientsPage() {
                           {c.status !== "active" && <Pill color={st.color} background={st.background}>{st.label}</Pill>}
                           {c.industry && <p className="text-[13px]" style={{ color: INK_MUTED }}>{c.industry}</p>}
                           {c.nextAction && (
-                            <p className="text-[12.5px]" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
+                            <p className="text-[13px]" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
                               Follow-up: {c.nextAction.label}
                               {c.nextAction.dueAt ? ` · ${new Date(c.nextAction.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""}
                             </p>

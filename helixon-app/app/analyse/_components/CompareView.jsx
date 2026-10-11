@@ -69,7 +69,7 @@ function gridStyle(n) {
 function RowLabel({ children, hint }) {
   return (
     <div className="sticky left-0 z-[1] bg-white px-4 py-3 border-t border-[var(--border-soft)]">
-      <p className="text-[13.5px] font-medium text-[var(--ink)] leading-snug">{children}</p>
+      <p className="text-[14px] font-medium text-[var(--ink)] leading-snug">{children}</p>
       {hint && <p className="text-[12px] text-[var(--ink-faint)] mt-0.5">{hint}</p>}
     </div>
   );
@@ -88,7 +88,7 @@ function SectionRow({ n, title, extra }) {
         <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--ink-soft)]">{title}</p>
       </div>
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)] text-[12.5px] text-[var(--ink-soft)] tabular-nums">
+        <div key={i} className="bg-[var(--mist)] px-4 pt-5 pb-2 border-t border-[var(--border)] text-[13px] text-[var(--ink-soft)] tabular-nums">
           {extra?.[i] ?? ""}
         </div>
       ))}
@@ -118,7 +118,7 @@ function ScoreBar({ value, best }) {
 
 function Pill({ className, icon, children, title }) {
   return (
-    <span title={title} className={cx("inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[12.5px] font-medium", className)}>
+    <span title={title} className={cx("inline-flex items-center gap-1 h-6 px-2 rounded-full border text-[13px] font-medium", className)}>
       {icon && <Icon name={icon} size={11} strokeWidth={2.4} />}
       {children}
     </span>
@@ -126,11 +126,11 @@ function Pill({ className, icon, children, title }) {
 }
 
 function Bullets({ items, tone }) {
-  if (!items.length) return <span className="text-[13.5px] text-[var(--ink-faint)]">None noted</span>;
+  if (!items.length) return <span className="text-[14px] text-[var(--ink-faint)]">None noted</span>;
   return (
     <ul className="space-y-1.5">
       {items.slice(0, 4).map((t, i) => (
-        <li key={i} className="flex gap-1.5 text-[13.5px] leading-snug text-[var(--ink-soft)]">
+        <li key={i} className="flex gap-1.5 text-[14px] leading-snug text-[var(--ink-soft)]">
           <span className={cx("mt-[6px] w-1.5 h-1.5 rounded-full shrink-0", tone === "bad" ? "bg-[var(--score-low)]" : "bg-[var(--forest)]")} />
           <span>{t}</span>
         </li>
@@ -161,7 +161,7 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
           <Link href={`/dashboard/candidates/${c.id}`} className="block text-[14px] font-semibold text-[var(--ink)] truncate hover:underline" title={label}>
             {label}
           </Link>
-          <p className="text-[12.5px] text-[var(--ink-faint)] truncate">
+          <p className="text-[13px] text-[var(--ink-faint)] truncate">
             {c.blind ? "Screened blind" : [c.currentTitle, c.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
           </p>
         </div>
@@ -354,7 +354,7 @@ export default function CompareWorkspace() {
                 { value: "raw", label: "Raw CVs", icon: "file" },
               ]}
             />
-            <p className="text-[13.5px] text-[var(--ink-faint)]">
+            <p className="text-[14px] text-[var(--ink-faint)]">
               {view === "raw" ? "Each CV as it was uploaded - jump them all to the same section." : "Scored against the role - best in each row highlighted."}
             </p>
           </div>
@@ -434,13 +434,13 @@ export default function CompareWorkspace() {
                 </div>
                 <ul className="space-y-1.5">
                   {lines.map((l, i) => (
-                    <li key={i} className="flex gap-2 text-[14.5px] leading-relaxed text-[var(--ink)]">
+                    <li key={i} className="flex gap-2 text-[15px] leading-relaxed text-[var(--ink)]">
                       <span className="mt-[9px] w-1 h-1 rounded-full bg-[var(--ink-faint)] shrink-0" />
                       {l}
                     </li>
                   ))}
                 </ul>
-                <p className="text-[12.5px] text-[var(--ink-faint)] mt-3">A summary of the numbers below - use it alongside your own judgement, not instead of it.</p>
+                <p className="text-[13px] text-[var(--ink-faint)] mt-3">A summary of the numbers below - use it alongside your own judgement, not instead of it.</p>
               </Card>
             )}
 
@@ -449,7 +449,7 @@ export default function CompareWorkspace() {
                 <div className="grid w-full" style={gridStyle(n)}>
                   {/* Header */}
                   <div className="sticky left-0 z-[1] bg-white px-4 pt-4 pb-4 flex items-end">
-                    <p className="text-[12.5px] text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
+                    <p className="text-[13px] text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
                   </div>
                   {candidates.map((c, i) => (
                     <CandidateHeader
@@ -508,7 +508,7 @@ export default function CompareWorkspace() {
                                 {cell.stale ? " · a while ago" : ""}
                               </Pill>
                               {cell.evidence && (
-                                <p className="text-[12.5px] italic text-[var(--ink-faint)] mt-1.5 line-clamp-2">“{cell.evidence}”</p>
+                                <p className="text-[13px] italic text-[var(--ink-faint)] mt-1.5 line-clamp-2">“{cell.evidence}”</p>
                               )}
                             </Cell>
                           ))}
@@ -555,7 +555,7 @@ export default function CompareWorkspace() {
                               {status ? (
                                 <Pill className={MUST_HAVE[status]?.cls} icon={MUST_HAVE[status]?.icon}>{MUST_HAVE[status]?.label || status}</Pill>
                               ) : (
-                                <span className="text-[13.5px] text-[var(--ink-faint)]">Not checked</span>
+                                <span className="text-[14px] text-[var(--ink-faint)]">Not checked</span>
                               )}
                             </Cell>
                           ))}
@@ -574,12 +574,12 @@ export default function CompareWorkspace() {
                         <RowLabel hint={job?.minYears ? `Role asks for ${job.minYears}+` : undefined}>Relevant experience</RowLabel>
                         {candidates.map((c, i) => (
                           <Cell key={c.id} best={best.includes(i)}>
-                            <p className="text-[14.5px] text-[var(--ink)]" title={c.rationale?.experience || undefined}>
+                            <p className="text-[15px] text-[var(--ink)]" title={c.rationale?.experience || undefined}>
                               {c.relevantYears != null ? `${c.relevantYears} yrs` : "–"}
                               {best.includes(i) && <BestTag />}
                             </p>
                             {c.totalYears != null && c.totalYears !== c.relevantYears && (
-                              <p className="text-[12.5px] text-[var(--ink-faint)]">{c.totalYears} yrs in total</p>
+                              <p className="text-[13px] text-[var(--ink-faint)]">{c.totalYears} yrs in total</p>
                             )}
                           </Cell>
                         ))}

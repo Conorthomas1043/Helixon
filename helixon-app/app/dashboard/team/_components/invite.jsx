@@ -132,7 +132,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-sm font-semibold" style={{ color: INK }}>{canManage ? "Add a team member" : "Team seats"}</p>
-          <p className="text-[13.5px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>
             {canManage
               ? "They'll get an email with a link to join your workspace."
               : "Only the workspace owner can invite or remove people."}
@@ -190,7 +190,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
                 <span className="min-w-0">
                   <span className="block truncate" style={{ color: INK }}>{inv.email}</span>
                   {inv.createdAt && (
-                    <span className="block text-[12.5px]" style={{ color: INK_FAINT }}>
+                    <span className="block text-[13px]" style={{ color: INK_FAINT }}>
                       Invited {new Date(inv.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
                   )}
@@ -345,7 +345,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
 
         {owns > 0 && (
           <label className="block mb-5">
-            <span className="block text-[13.5px] font-semibold mb-1.5" style={{ color: INK }}>
+            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>
               Hand their {owns} candidate{owns === 1 ? "" : "s"} to
             </span>
             <select

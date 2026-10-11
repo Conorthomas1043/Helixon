@@ -65,13 +65,13 @@ export default function CookieConsentBanner({ embedded = false }) {
 
   return (
     <div
-      className={`${embedded ? "relative z-30 px-4 pt-4" : "fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 sm:pb-6"} cookie-banner`}
+      className={`${embedded ? "relative z-30 px-4 pt-4" : "fixed bottom-0 left-0 right-0 z-50 px-3 pb-3 sm:px-4 sm:pb-6"} cookie-banner`}
       role="region"
       aria-label="Cookie consent"
       data-visible={mounted && visible ? "true" : "false"}
     >
       <div
-        className="max-w-[720px] mx-auto rounded-[16px] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+        className="max-w-[720px] mx-auto rounded-[14px] sm:rounded-[16px] p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
         style={{
           background: "rgba(255,255,255,0.96)",
           backdropFilter: "blur(12px)",
@@ -81,8 +81,9 @@ export default function CookieConsentBanner({ embedded = false }) {
         }}
       >
         <p className="text-xs leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>
-          Essential cookies keep Helixon running. Optional analytics help us improve the product for
-          recruiters like you. Analytics are EU-hosted and never used to train AI.{" "}
+          {/* Kept short: on a phone this sits over the page until answered. */}
+          Essential cookies keep Helixon running. Optional analytics, EU-hosted and never used to
+          train AI, help us improve it.{" "}
           <Link href="/cookie-policy" className="underline font-medium" style={{ color: "var(--forest)" }}>
             Cookie Policy
           </Link>
@@ -92,7 +93,7 @@ export default function CookieConsentBanner({ embedded = false }) {
             type="button"
             onClick={() => setConsent("essential-only")}
             className="btn-outline flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-[10px] min-h-[44px] transition-colors"
-            style={{ border: "1.5px solid var(--border)", color: "#13201b" }}
+            style={{ border: "1.5px solid var(--border)", color: "var(--ink)" }}
           >
             Essential only
           </button>

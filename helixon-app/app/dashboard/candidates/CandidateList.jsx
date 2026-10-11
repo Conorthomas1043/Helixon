@@ -29,6 +29,7 @@ import { ColumnsMenu, FilterChip, Select } from "./_components/filters";
 import { CandidateRow, TagChip } from "./_components/row";
 import { STAGE_ORDER } from "./_components/shared";
 import { EmptyState, ErrorState, ListSkeleton } from "./_components/states";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 async function fetchCandidates(query) {
   const [result, stageCounts] = await Promise.all([getCandidates(query), getStageCounts(query)]);
@@ -359,7 +360,7 @@ function CandidateDatabaseContent({ initialData }) {
       <DashboardNav />
       {confirmDialog}
 
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
@@ -651,13 +652,15 @@ function CandidateDatabaseContent({ initialData }) {
 
         {/* Results */}
         <div className="rounded-[14px] p-4 sm:p-5" style={CARD}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[13px]" style={{ color: INK_MUTED }}>
+          {/* Wraps on a phone: the count, select-all, columns and sort used to
+              share one line and push the sort menu off the edge. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
+            <p className="text-[13px] whitespace-nowrap" style={{ color: INK_MUTED }}>
               {status === "ready" && result ? `Showing ${result.items.length === 0 ? 0 : (result.page - 1) * result.pageSize + 1}–${Math.min(result.page * result.pageSize, result.total)} of ${result.total}` : "\u00A0"}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {status === "ready" && result && result.items.length > 0 && (
-                <label className="flex items-center gap-1.5 text-[13px] font-semibold mr-2" style={{ color: INK_MUTED }}>
+                <label className="flex items-center gap-1.5 text-[13px] font-semibold mr-2 whitespace-nowrap" style={{ color: INK_MUTED }}>
                   <input
                     type="checkbox"
                     className="w-4 h-4 accent-[var(--forest)]"
@@ -680,7 +683,7 @@ function CandidateDatabaseContent({ initialData }) {
           )}
           {status === "ready" && result && result.items.length === 0 && <EmptyState hasFilters={hasAnyFilter} onClear={clearFilters} />}
           {status === "ready" && result && result.items.length > 0 && (
-            <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <ul className="divide-y">
               {result.items.map((c) => (
                 <CandidateRow key={c.id} candidate={c} selected={selectedIds.has(c.id)} onToggleSelect={toggleSelect} columns={columns} />
               ))}
@@ -728,7 +731,7 @@ function CandidateDatabaseFallback() {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+      <div className={PAGE_FRAME_WIDE}>
         <ListSkeleton />
       </div>
     </main>

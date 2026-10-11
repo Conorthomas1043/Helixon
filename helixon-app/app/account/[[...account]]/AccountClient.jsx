@@ -70,7 +70,7 @@ export default function AccountPage() {
         <h2 className="text-[20px] font-semibold tracking-[-0.02em]" style={{ color: "#10221d" }}>
           {copy.eyebrow}
         </h2>
-        <p className="mt-1.5 max-w-[560px] text-[14px] leading-6 text-[#638279]">
+        <p className="mt-1.5 max-w-[560px] text-[14px] leading-6 text-[var(--ink-faint)]">
           {copy.body}
         </p>
       </div>
@@ -150,7 +150,7 @@ export default function AccountPage() {
         ) : (
           <div className="px-8 py-14 text-center sm:px-14">
             <p className="mx-auto mb-2 text-[15px] font-semibold text-[#10221d]">Page not found</p>
-            <p className="mx-auto max-w-[420px] text-[14px] leading-6 text-[#638279]">
+            <p className="mx-auto max-w-[420px] text-[14px] leading-6 text-[var(--ink-faint)]">
               This settings page doesn&apos;t exist. Use the menu to pick Profile, Security, Notifications or Delete account.
             </p>
           </div>
@@ -206,11 +206,11 @@ function InfoCard({ icon, eyebrow, title, text }) {
       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6f3ef] text-[#087a5b]">
         {icon}
       </div>
-      <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#709188]">
+      <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
         {eyebrow}
       </p>
       <h2 className="text-[17px] font-semibold tracking-[-0.02em]">{title}</h2>
-      <p className="mt-2 text-[14px] leading-6 text-[#6b8980]">{text}</p>
+      <p className="mt-2 text-[14px] leading-6 text-[var(--ink-faint)]">{text}</p>
     </div>
   );
 }

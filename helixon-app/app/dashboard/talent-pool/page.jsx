@@ -25,6 +25,7 @@ import { useUndoDelete } from "@/components/dashboard/use-undo-delete";
 import { Chip, PoolRow } from "./_components/row";
 import { AVAILABILITY, todayIso } from "./_components/shared";
 import { PoolSkeleton, StatCard } from "./_components/summary";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const SCREEN_CONCURRENCY = 2;
 
@@ -317,7 +318,7 @@ function TalentPoolContent() {
     <main className="min-h-screen bg-[var(--mist)] pb-28">
       <DashboardNav />
       {confirmDialog}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
@@ -450,7 +451,7 @@ function TalentPoolContent() {
                       onChange={(e) => setJob(e.target.value)}
                       disabled={running}
                       aria-label="Change job"
-                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
+                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
                     >
                       {!jobs.some((j) => j.id === jobId) && <option value={jobId}>{job.title}</option>}
                       {jobs.map((j) => (
@@ -548,7 +549,7 @@ function TalentPoolContent() {
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search name, role, skill, location or note…"
                       aria-label="Search the talent pool"
-                      className="w-full text-[14.5px] pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
+                      className="w-full text-[15px] pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -556,7 +557,7 @@ function TalentPoolContent() {
                       value={skill}
                       onChange={(e) => setSkill(e.target.value)}
                       aria-label="Filter by skill"
-                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
+                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
                       style={{ border: `1px solid ${skill ? "var(--forest)" : "var(--border)"}` }}
                     >
                       <option value="">Any skill</option>
@@ -570,7 +571,7 @@ function TalentPoolContent() {
                       value={effectiveSort}
                       onChange={(e) => setSortBy(e.target.value)}
                       aria-label="Sort"
-                      className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
+                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
                     >
                       {Object.entries(SORTS)
                         .filter(([k]) => k !== "fit" || job)
@@ -702,7 +703,7 @@ function TalentPoolContent() {
                     onClick={() => {
                       stopRef.current = true;
                     }}
-                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
+                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
                   >
                     Stop
                   </button>
@@ -711,7 +712,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={screenSelected}
                     disabled={selected.length === 0}
-                    className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
                   >
                     <Icon name="sparkle" size={13} />
                     Screen {selected.length} for {job.title}
@@ -724,7 +725,7 @@ function TalentPoolContent() {
                     disabled={bulkBusy}
                     onChange={(e) => bulkAvailability(e.target.value)}
                     aria-label="Set availability for the selected"
-                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
+                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
                   >
                     <option value="">Set availability…</option>
                     {Object.entries(AVAILABILITY).map(([k, v]) => (
@@ -738,7 +739,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={bulkRemove}
                     disabled={bulkBusy}
-                    className="text-[13.5px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
+                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
                   >
                     Remove from pool
                   </button>

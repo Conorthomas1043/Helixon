@@ -58,7 +58,7 @@ export default function CareersSettingsPage() {
   const locked = data && !data.canManage;
 
   return (
-    <Page width={860}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Inbound applicants"

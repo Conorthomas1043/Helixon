@@ -17,6 +17,7 @@ import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD } from "@/lib/candidates/form
 import { JOB_PRIORITIES, daysToTarget, priorityRank } from "@/lib/job-details";
 import { useOffices } from "@/components/dashboard/use-offices";
 import { Button, EmptyState as KitEmptyState, Skeleton as Block } from "@/components/ui";
+import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 function Stat({ label, value, accent }) {
   return (
@@ -31,7 +32,10 @@ function Stat({ label, value, accent }) {
   );
 }
 
+// Nothing at all for an empty value: jobs without a seniority or employment
+// type used to show blank grey pills.
 function Chip({ children }) {
+  if (children === null || children === undefined || children === false || children === "") return null;
   return (
     <span className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
       {children}
@@ -165,7 +169,7 @@ function Field({ label, children, hint }) {
     <label className="block">
       <span className="block text-[13px] font-semibold mb-1" style={{ color: INK }}>{label}</span>
       {children}
-      {hint && <span className="block text-[12.5px] mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
+      {hint && <span className="block text-[13px] mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
     </label>
   );
 }
@@ -382,7 +386,7 @@ function JobsContent({ initialJobs }) {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>

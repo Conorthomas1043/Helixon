@@ -27,15 +27,16 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
       {jobs.length > 6 && (
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search your jobs" aria-label="Search your jobs" className="mb-2" />
       )}
-      <ul className="max-h-[296px] overflow-y-auto -mx-1 px-1 space-y-1" role="listbox" aria-label="Your jobs">
+      {/* A plain list of toggle buttons, like the candidate chooser. It was a
+          listbox whose options sat inside <li>s, which breaks both roles. */}
+      <ul className="max-h-[296px] overflow-y-auto -mx-1 px-1 space-y-1" aria-label="Your jobs">
         {visible.map((job) => {
           const active = job.id === selectedId;
           return (
             <li key={job.id}>
               <button
                 type="button"
-                role="option"
-                aria-selected={active}
+                aria-pressed={active}
                 onClick={() => onSelect(job)}
                 className={cx(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-left transition-colors border",
@@ -49,7 +50,7 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                   {active && <Icon name="check" size={10} strokeWidth={3} className="text-white" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{job.title}</span>
+                  <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{job.title}</span>
                   <span className="block text-[13px] text-[var(--ink-faint)] truncate">
                     {[job.company, job.candidateCount ? `${job.candidateCount} candidate${job.candidateCount === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ") || "No client set"}
                   </span>
@@ -134,7 +135,7 @@ export default function RoleCard({
             <div className="mt-3 space-y-2">
               <SpecChecklist text={jobText} />
               <div className="flex items-center justify-between">
-                <span className={cx("text-[12.5px] tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
+                <span className={cx("text-[13px] tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
                   {charCount > 0 && charCount < MIN_JOB_CHARS ? `${MIN_JOB_CHARS - charCount} more characters needed` : charCount > 0 ? `${charCount.toLocaleString()} characters` : ""}
                 </span>
                 {charCount >= MIN_JOB_CHARS && (
@@ -154,7 +155,7 @@ export default function RoleCard({
                 <Icon name="file" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
+                <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
                 <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(jobFile.size)} · read when you analyse</span>
               </span>
               <Button size="sm" variant="ghost" onClick={() => onJobFile(null)}>
@@ -181,7 +182,7 @@ export default function RoleCard({
               )}
             >
               <Icon name="upload" size={20} className="text-[var(--ink-soft)]" />
-              <span className="text-[14.5px] font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
+              <span className="text-[15px] font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
               <span className="text-[13px] text-[var(--ink-faint)]">PDF, Word or .txt · up to 10 MB · a photo of a printed advert won&apos;t work - paste the text instead</span>
             </button>
           ))}
@@ -213,10 +214,10 @@ export default function RoleCard({
           <div>
             <Label htmlFor="client-email" hint="Optional">Client email</Label>
             <Input id="client-email" type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="hiring.manager@client.com" />
-            <p className="text-[12.5px] text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
+            <p className="text-[13px] text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
           </div>
         ) : (
-          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
+          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
             <Icon name="plus" size={14} /> Add client email
           </button>
         )}

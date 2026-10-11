@@ -110,7 +110,7 @@ function ApiKeys({ origin }) {
       {keys === null ? (
         <p className="text-[14px]" style={{ color: INK_MUTED }}>Loading…</p>
       ) : keys.length === 0 ? null : (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y">
           {keys.map((k) => (
             <li key={k.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
               <span className="font-semibold" style={{ color: k.revokedAt ? INK_FAINT : INK }}>
@@ -250,7 +250,7 @@ function Webhooks() {
         </p>
       )}
       {data?.endpoints.length > 0 && (
-        <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y">
           {data.endpoints.map((e) => (
             <li key={e.id} className="py-3 text-[13px] space-y-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -309,7 +309,7 @@ export default function IntegrationsPage() {
   const retry = useCallback(() => window.location.reload(), []);
 
   return (
-    <Page width={900}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Workspace"

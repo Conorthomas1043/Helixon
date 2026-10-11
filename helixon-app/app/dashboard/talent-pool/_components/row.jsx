@@ -58,7 +58,7 @@ export function FitRing({ fit, size = 52 }) {
           {fit == null ? "–" : fit}
         </span>
       </div>
-      <span className="text-[11.5px] mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
+      <span className="text-[12px] mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
     </div>
   );
 }
@@ -68,7 +68,7 @@ export function RoleLink({ role }) {
   return (
     <Link
       href={`/dashboard/candidates/${role.candidateId}`}
-      className="inline-flex items-center gap-1.5 text-[12.5px] px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
+      className="inline-flex items-center gap-1.5 text-[13px] px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
       title={`Screened for ${role.jobTitle}`}
     >
       <span className="truncate max-w-[160px] text-[var(--ink-soft)]">{role.jobTitle}</span>
@@ -131,7 +131,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
             <AvailabilityPicker value={item.status} disabled={busy} onChange={(v) => onUpdate(item, { status: v })} />
             <CheckInPicker value={item.checkIn} disabled={busy} onChange={(v) => onUpdate(item, { checkIn: v })} />
           </div>
-          <p className="text-[13.5px] text-[var(--ink-soft)] mt-1">
+          <p className="text-[14px] text-[var(--ink-soft)] mt-1">
             {[item.currentTitle, item.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
             <span className="text-[var(--ink-faint)]">
               {[item.location, item.yearsExperience != null && `${item.yearsExperience} yrs`]
@@ -173,7 +173,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
               <button
                 type="button"
                 onClick={() => onMatchJob(item.bestMatch.jobId)}
-                className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
                 title="Their best fit among your open jobs - click to match the pool against it"
               >
                 <Icon name="sparkle" size={11} />
@@ -197,7 +197,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
 
           {/* Fit and status under the name on phones - the side column is too tight there. */}
           {job && (
-            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[13.5px]">
+            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[14px]">
               <span className="font-semibold tabular-nums" style={{ color: fitTone(item.fit).fg }}>
                 {item.fit == null ? "No fit score" : `${item.fit}% fit`}
               </span>
@@ -218,15 +218,15 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
                 <span aria-hidden="true" className="text-[16px] leading-none">⋯</span>
               </summary>
               <div className="absolute right-0 mt-1 w-48 rounded-[10px] p-1 z-20 bg-white border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
-                <Link href={`/dashboard/candidates/${item.id}`} className="block text-[13.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+                <Link href={`/dashboard/candidates/${item.id}`} className="block text-[14px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
                   Open profile
                 </Link>
                 {item.bestMatch && (
-                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-[13.5px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-[14px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
                     Match to {item.bestMatch.title}
                   </button>
                 )}
-                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-[13.5px] px-2.5 py-1.5 rounded-[8px] text-[#a83226] hover:bg-[#fbefed]">
+                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-[14px] px-2.5 py-1.5 rounded-[8px] text-[#a83226] hover:bg-[#fbefed]">
                   Remove from pool
                 </button>
               </div>

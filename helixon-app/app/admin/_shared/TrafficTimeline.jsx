@@ -154,7 +154,7 @@ export default function TrafficTimeline({ timeline, since, busy, selected, onSel
     <div className="panel section">
       <div className="section-head" style={{ marginBottom: 12 }}>
         <div>
-          <div className="panel-title">Requests over time</div>
+          <h2 className="panel-title">Requests over time</h2>
           <div className="panel-sub">
             One bar per {unit}. Blocked and flagged have their own scales. Click a bar to see those requests in the log.
           </div>

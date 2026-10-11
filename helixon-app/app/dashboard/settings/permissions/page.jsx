@@ -52,7 +52,7 @@ export default function PermissionsPage() {
   }
 
   return (
-    <Page width={800}>
+    <Page width="narrow">
       <PageHeader back={{ href: "/dashboard/settings", label: "Settings" }} eyebrow="Workspace" title="Permissions" subtitle="What members can see. The owner and admins always see everything." />
       {!state && !error && <LoadingCard rows={2} />}
       <ErrorText>{error}</ErrorText>

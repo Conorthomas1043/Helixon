@@ -86,7 +86,7 @@ export function DataTable({
                   onClick={column.sortable ? () => toggleSort(column) : undefined}
                   aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : undefined}
                 >
-                  {column.label}
+                  {column.label || (column.srLabel && <span className="sr-only">{column.srLabel}</span>)}
                   {active && (
                     <span className="sort-arrow">
                       <Icon name={sort.dir === "asc" ? "arrowUp" : "arrowDown"} size={11} strokeWidth={2.6} />

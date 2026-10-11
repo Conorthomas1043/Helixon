@@ -381,8 +381,8 @@ export function NotificationsBell() {
                 <button type="button" onClick={() => openItem(n)} className="w-full text-left px-4 py-2.5 flex gap-2 hover:bg-[var(--mist)]">
                   <span aria-hidden="true" className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: n.read ? "transparent" : "var(--forest)" }} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[13.5px]" style={{ color: "var(--ink)", fontWeight: n.read ? 400 : 600 }}>{n.title}</span>
-                    {n.body && <span className="block text-[12.5px] truncate" style={{ color: "var(--ink-soft)" }}>{n.body}</span>}
+                    <span className="block text-[14px]" style={{ color: "var(--ink)", fontWeight: n.read ? 400 : 600 }}>{n.title}</span>
+                    {n.body && <span className="block text-[13px] truncate" style={{ color: "var(--ink-soft)" }}>{n.body}</span>}
                   </span>
                   <span className="text-[12px] shrink-0" style={{ color: "var(--ink-faint)" }}>{timeAgo(n.createdAt)}</span>
                 </button>

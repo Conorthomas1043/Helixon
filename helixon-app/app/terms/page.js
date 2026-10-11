@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     id: "plans-billing", title: "5. Plans & billing",
-    body: ["Free accounts include a limited number of analyses. Paid plans (Solo, Team) are billed monthly and can be cancelled at any time from your account settings - you'll retain access until the end of the current billing period. We don't offer partial-month refunds, except where required by law."],
+    body: ["There is no free plan; you can see Helixon run on your own CVs in a demo before subscribing. Paid plans (Individual and Agency) are billed monthly and can be cancelled at any time from your account settings - you'll retain access until the end of the current billing period. We don't offer partial-month refunds, except where required by law."],
   },
   {
     id: "data", title: "6. Data handling",

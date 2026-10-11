@@ -338,7 +338,7 @@ export default function SecurityPage() {
           <div className="table-wrap" style={{ marginTop: 12 }}>
             <table className="table">
               <thead>
-                <tr><th>IP</th><th>Reason</th><th>By</th><th>Since</th><th>Expires</th><th></th></tr>
+                <tr><th>IP</th><th>Reason</th><th>By</th><th>Since</th><th>Expires</th><th><span className="sr-only">Actions</span></th></tr>
               </thead>
               <tbody>
                 {blocked.map((item) => (
@@ -390,7 +390,7 @@ export default function SecurityPage() {
           ) : (
             <div className="table-wrap" style={{ marginTop: 8 }}>
               <table className="table">
-                <thead><tr><th>Country</th><th>Requests</th><th>Denied</th><th></th></tr></thead>
+                <thead><tr><th>Country</th><th>Requests</th><th>Denied</th><th><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                   {countries.map((c) => (
                     <tr key={c.country}>

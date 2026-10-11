@@ -95,7 +95,7 @@ export default function ImportPage() {
   };
 
   return (
-    <Page width={1000}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Bring your data"

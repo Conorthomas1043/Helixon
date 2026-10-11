@@ -27,7 +27,8 @@ export function ScorePill({ score }) {
       <span style={{ fontFamily: "var(--font-mono)", color, fontSize: 14, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span style={{ color: TEXT_FAINT, fontSize: 12 }}>{scoreLabel(score)}</span>
+      {/* The number's colour carries the band on a phone, leaving room for the name. */}
+      <span className="hidden sm:inline text-xs text-[var(--ink-faint)]">{scoreLabel(score)}</span>
     </div>
   );
 }
@@ -88,15 +89,18 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="Screen a CV" actionHref="/analyse" />
       ) : (
         <>
-          <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
+          {/* A wrapping grid on a phone (the row used to scroll inside the card,
+              with the conversion labels overlapping the boxes); one row with
+              stage-to-stage conversion from tablet width up. */}
+          <div className="grid grid-cols-3 gap-1.5 pb-1 sm:flex sm:items-stretch">
             {stageOrder.map((stageKey, i) => {
               const count = stageCounts[stageKey] ?? 0;
               const heightPct = maxCount > 0 ? Math.max(6, Math.round((count / maxCount) * 100)) : 0;
               const conversion = i > 0 && reached[i - 1] > 0 ? Math.round((reached[i] / reached[i - 1]) * 100) : null;
               return (
-                <div key={stageKey} className="flex items-stretch gap-1.5 flex-1 min-w-[92px]">
+                <div key={stageKey} className="flex items-stretch gap-1.5 flex-1 min-w-0 sm:min-w-[92px]">
                   {conversion !== null && (
-                    <div className="flex flex-col items-center justify-center shrink-0 w-9" title={`${conversion}% of candidates who reached ${STAGE_LABELS[stageOrder[i - 1]]} got to ${STAGE_LABELS[stageKey]}`}>
+                    <div className="hidden sm:flex flex-col items-center justify-center shrink-0 w-9" title={`${conversion}% of candidates who reached ${STAGE_LABELS[stageOrder[i - 1]]} got to ${STAGE_LABELS[stageKey]}`}>
                       <span style={{ fontSize: 12, fontWeight: 600, color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>{conversion}%</span>
                       <span aria-hidden="true" style={{ fontSize: 13, color: TEXT_FAINT, lineHeight: 1 }}>→</span>
                     </div>
@@ -152,13 +156,17 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
 
 /* ─── Top candidates ────────────────────────────────────────────────────── */
 
-export function TopCandidates({ candidates, total }) {
+export function TopCandidates({ candidates, total, strongCount = 0 }) {
   const hiddenCount = Math.max(0, total - candidates.length);
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>
       <SectionHeading eyebrow="Top talent" title="Strongest candidates" />
       {candidates.length === 0 ? (
-        <EmptyState title="No strong matches yet" body={`Candidates scoring ${STRONG_MATCH_MIN} or above will appear here.`} />
+        strongCount > 0 ? (
+          <EmptyState title="All covered above" body="Every strong match is already in Needs your attention." />
+        ) : (
+          <EmptyState title="No strong matches yet" body={`Candidates scoring ${STRONG_MATCH_MIN} or above will appear here.`} />
+        )
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {candidates.map((c, i) => (
@@ -280,7 +288,7 @@ export function ActivityOverview({ analyses }) {
 
       <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 56, marginBottom: 12 }} role="img" aria-label={`Analyses per day over ${windowDays} days`}>
         {stats.dayBuckets.map((d, i) => (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 3 }}>
+          <div key={i} title={hydrated ? `${d.label}: ${d.count} analysed` : undefined} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 3 }}>
             <div style={{
               width: "100%", borderRadius: "3px 3px 0 0",
               height: barsGrown ? `${Math.max(4, Math.round((d.count / maxBucket) * 100))}%` : 0,

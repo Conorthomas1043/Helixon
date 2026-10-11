@@ -14,7 +14,6 @@ const NAV_LINKS = [
   ["how", "How it works", "/how-it-works"],
   ["pricing", "Pricing", "/pricing"],
   ["about", "About", "/about"],
-  ["blog", "Blog", "/blog"],
   ["faq", "FAQ", "/faq"],
 ];
 

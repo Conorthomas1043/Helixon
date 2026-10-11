@@ -9,7 +9,7 @@ import { AMBER, AMBER_BG, CARD, GREEN_BG, INK, INK_FAINT, INK_MUTED, RED_BG, RED
 import { STAGE_LABELS } from "@/lib/stage-labels";
 import { agoLabel, daysInStage, lastContact, linkedinUrl } from "@/lib/candidates/insights";
 import { useNow } from "@/lib/hooks/useNow";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, CopyButton, ShortcutsHint } from "./primitives";
 import { nextStageAfter } from "./utils";
 
@@ -21,12 +21,66 @@ export function CandidateFacts({ candidate }) {
   const stale = !contact || now - contact.at > 14 * 86400000;
   if (!contact && inStage == null) return null;
   return (
-    <p className="text-[12.5px] mt-2" style={{ color: INK_FAINT }}>
+    <p className="text-[13px] mt-2" style={{ color: INK_FAINT }}>
       <span style={{ color: stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "var(--score-mid)" : INK_FAINT }}>
         {contact ? `Last contacted ${agoLabel(contact.at, now)}` : "No contact logged yet"}
       </span>
       {inStage != null && candidate.stage && ` · In ${candidate.stage} for ${inStage} day${inStage === 1 ? "" : "s"}`}
     </p>
+  );
+}
+
+const MENU_ITEM_BASE =
+  "flex w-full items-center px-3 py-2 rounded-[8px] text-left text-[14px] font-medium hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]";
+const MENU_ITEM = `${MENU_ITEM_BASE} text-[var(--ink)]`;
+
+// The header used to show nine equal-weight actions in a row. The everyday
+// ones stay visible; the occasional ones live here. A disclosure, not an ARIA
+// menu: Tab moves through the items, Escape or a click outside closes it.
+function MoreActions({ children }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    function onPointerDown(e) {
+      if (!ref.current?.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative ml-auto">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls="candidate-more-actions"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full border text-[var(--ink)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        More
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          id="candidate-more-actions"
+          className="absolute right-0 top-full mt-2 z-20 w-56 p-1.5 rounded-[12px] bg-white border shadow-[0_16px_40px_-16px_rgba(19,32,27,0.3)]"
+          onClick={(e) => {
+            if (e.target.closest("a,button")) setOpen(false);
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -173,31 +227,12 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           Add note
         </button>
         {candidate.status === "completed" && (
-          <Link
-            href={`/analyse/compare?ids=${candidate.id}`}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
-          >
-            Compare with others
-          </Link>
-        )}
-        {candidate.status === "completed" && (
           <AddToShortlist
             candidateIds={[candidate.id]}
             jobId={candidate.jobId}
             defaultName={candidate.jobId ? `${candidate.jobTitle}${candidate.company ? ` - ${candidate.company}` : ""}` : ""}
             className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           />
-        )}
-        {candidate.status === "completed" && (
-          <Link
-            href={`/dashboard/candidates/${candidate.id}/client-profile`}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
-            title="A client-ready profile you can print or save as PDF - optionally anonymised"
-          >
-            Client profile
-          </Link>
         )}
         {candidate.email && (
           <a
@@ -214,37 +249,45 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
             {candidate.nextAction.label}
           </span>
         )}
-        {/* Deliberately understated and pushed to the far right - this is a
-            permanent, irreversible erasure (see app/api/candidates/[id]'s
-            DELETE handler), not a routine action, and shouldn't sit visually
-            level with Shortlist/Add note/Email. */}
-        <button
-          type="button"
-          onClick={onEdit}
-          className="inline-flex items-center text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
-        >
-          Edit details
-        </button>
-        {/* A plain link download: the export route answers with a JSON file. */}
-        <a
-          href={`/api/candidates/${candidate.id}/export`}
-          download
-          className="inline-flex items-center text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ color: INK_MUTED }}
-          title="Download everything held about this person (every job they've been screened for) - for a subject access or data portability request"
-        >
-          Export data
-        </a>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="inline-flex items-center text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ color: INK_FAINT }}
-          title="Permanently erase this candidate's data - e.g. to fulfil a right-to-erasure request"
-        >
-          Delete candidate
-        </button>
+        <MoreActions>
+          {candidate.status === "completed" && (
+            <Link href={`/analyse/compare?ids=${candidate.id}`} className={MENU_ITEM}>
+              Compare with others
+            </Link>
+          )}
+          {candidate.status === "completed" && (
+            <Link
+              href={`/dashboard/candidates/${candidate.id}/client-profile`}
+              className={MENU_ITEM}
+              title="A client-ready profile you can print or save as PDF - optionally anonymised"
+            >
+              Client profile
+            </Link>
+          )}
+          <button type="button" onClick={onEdit} className={MENU_ITEM}>
+            Edit details
+          </button>
+          {/* A plain link download: the export route answers with a JSON file. */}
+          <a
+            href={`/api/candidates/${candidate.id}/export`}
+            download
+            className={MENU_ITEM}
+            title="Download everything held about this person (every job they've been screened for) - for a subject access or data portability request"
+          >
+            Export data
+          </a>
+          {/* Set apart at the bottom: this is a permanent, irreversible erasure
+              (see app/api/candidates/[id]'s DELETE handler), not a routine action. */}
+          <div className="my-1.5 border-t" role="separator" />
+          <button
+            type="button"
+            onClick={onDelete}
+            className={`${MENU_ITEM_BASE} text-[var(--score-low)]`}
+            title="Permanently erase this candidate's data - e.g. to fulfil a right-to-erasure request"
+          >
+            Delete candidate
+          </button>
+        </MoreActions>
       </div>
     </header>
   );

@@ -7,6 +7,7 @@
 // See app/api/feedback-requests/[token]/route.js.
 
 import { use, useEffect, useState } from "react";
+import PublicCard from "@/components/public/PublicCard";
 
 const CANDIDATE_TAGS = [
   { value: "clear_process", label: "Process was clear" },
@@ -25,29 +26,9 @@ const CLIENT_TAGS = [
   { value: "good_partnership", label: "Good partnership overall" },
 ];
 
+// The shared public-page frame; this page used to carry its own copy.
 function Card({ children }) {
-  return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "var(--mist)" }}>
-      <div
-        className="w-full max-w-lg rounded-[20px] p-6 sm:p-8"
-        style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 50px -20px rgba(11,26,20,0.25)" }}
-      >
-        <div className="flex items-center gap-2.5 mb-6">
-          <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-            <svg width="15" height="15" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
-              <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
-            </svg>
-          </div>
-          <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-            Helixon
-          </span>
-        </div>
-        {children}
-      </div>
-    </main>
-  );
+  return <PublicCard width={512}>{children}</PublicCard>;
 }
 
 function TagPicker({ options, selected, onToggle }) {

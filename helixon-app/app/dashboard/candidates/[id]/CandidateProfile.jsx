@@ -39,6 +39,7 @@ import { TalentPoolPanel } from "./_components/talent-pool";
 import { pushRecentlyViewed } from "./_components/utils";
 import { OutcomeReportingPanel, RecruiterWorkspace } from "./_components/workspace";
 import { reportQuietly } from "@/lib/report-error";
+import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
 
 // `initialCandidate` is the profile as page.jsx loaded it on the server; when
 // it's there the page shows straight away and only fetches again on retry.
@@ -471,7 +472,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       {confirmDialog}
       <DashboardNav />
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6">
+      <div className={`${PAGE_FRAME_NARROW} space-y-6`}>
         {status === "loading" && <ProfileSkeleton />}
 
         {status === "error" && (

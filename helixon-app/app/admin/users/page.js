@@ -78,7 +78,7 @@ function UserHistory({ userId }) {
   const { data, loading } = useAdminData(`/api/admin/users?history=${encodeURIComponent(userId)}`);
   const rows = data?.history || [];
   if (loading && !data) return <div className="skeleton" style={{ height: 40 }} />;
-  if (!rows.length) return <div className="faint" style={{ fontSize: 13.5 }}>No admin changes recorded.</div>;
+  if (!rows.length) return <div className="faint" style={{ fontSize: 14 }}>No admin changes recorded.</div>;
   return (
     <div className="mini-list">
       {rows.map((h) => (
@@ -371,6 +371,7 @@ export default function UsersPage() {
     {
       key: "pick",
       label: "",
+      srLabel: "Select",
       render: (user) => (
         <input
           type="checkbox"
@@ -449,6 +450,7 @@ export default function UsersPage() {
     {
       key: "actions",
       label: "",
+      srLabel: "Actions",
       render: (user) => {
         const primary = primaryAction(user);
         return (

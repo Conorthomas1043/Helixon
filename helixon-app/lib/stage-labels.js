@@ -18,12 +18,15 @@ export const STAGE_LABELS = {
 export const FUNNEL_ORDER = ["Screened", "Shortlisted", "Interview", "Offer", "Placed"];
 
 // One accent per stage, shared by the pipeline board and the dashboard
-// funnel so a stage is the same colour everywhere - progressively greener
-// through the funnel, red for the terminal exit.
+// funnel so a stage is the same colour everywhere: grey-green to deep green
+// through the funnel, the brand gold for an offer on the table, red for the
+// terminal exit. Each is at least 3:1 on white (WCAG 1.4.11) - they're fills,
+// dots and borders, always next to the stage's name. Not for text: the
+// lighter ones are under 4.5:1.
 export const STAGE_COLORS = {
-  Screened: "#94a3b8",
-  Shortlisted: "#5b8def",
-  Interview: "#8b6cf0",
+  Screened: "#7f948a",
+  Shortlisted: "#3c9a73",
+  Interview: "#1d7a74",
   Offer: "var(--gold)",
   Placed: "var(--forest)",
   Rejected: "var(--score-low)",

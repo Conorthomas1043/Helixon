@@ -64,6 +64,7 @@
   --ui-on-accent:      #ffffff;
   --ui-danger:         var(--score-low);
   --ui-danger-soft:    #fbefed;
+  --ui-on-danger:      #ffffff; /* text on a solid --ui-danger fill */
   --ui-warn:           #8a5a12;
   --ui-warn-soft:      #fdf6e9;
 }
@@ -119,6 +120,27 @@
   /* Micro type scale used for text-2xs/text-3xs on nav labels, badges, etc. */
   --text-2xs: 0.75rem;   /* 12px */
   --text-3xs: 0.625rem;  /* 10px */
+}
+
+/* ── Default border colour ──────────────────────────────────────────────────
+   Tailwind v4 draws borders in currentColor unless told otherwise (v3 used a
+   light grey), so every `border` or `divide-y` without its own colour came
+   out in the text colour - near-black row dividers across the dashboard.
+   Default them to the theme's border colour instead (the admin console
+   redefines --border, so it gets its own). A colour class or inline style
+   still wins. */
+@layer base {
+  *, ::before, ::after, ::backdrop, ::file-selector-button {
+    border-color: var(--border);
+  }
+  /* Native checkboxes and radios render at 13px, too small to hit reliably.
+     In the base layer, so any size utility on a particular input still wins. */
+  input[type="checkbox"], input[type="radio"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--forest);
+    flex-shrink: 0;
+  }
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -445,4 +467,12 @@ body {
   body.printing-section *:not(:has(.print-target)):not(.print-target):not(.print-target *) {
     display: none !important;
   }
+}
+
+/* A horizontal scroller that fades out at its right edge, so a row cut off
+   mid-word reads as "more this way". Pair with right padding (pr-4 or more)
+   so the last item can scroll clear of the fade. */
+.scroll-fade-x {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }

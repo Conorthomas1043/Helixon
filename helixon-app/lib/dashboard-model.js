@@ -82,6 +82,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       tone: TONE.red,
       actionLabel: "Retry analysis",
       actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+      candidateKey: a.candidateId ?? a.id,
       priority: 0,
     });
   });
@@ -105,6 +106,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         tone: TONE.red,
         actionLabel: "Open candidate",
         actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        candidateKey: a.candidateId ?? a.id,
         priority: 0.5,
       });
     });
@@ -122,6 +124,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         tone: TONE.amber,
         actionLabel: "Open analysis",
         actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        candidateKey: a.candidateId ?? a.id,
         priority: 1,
       });
     });
@@ -141,6 +144,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         tone: TONE.green,
         actionLabel: "Review candidate",
         actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        candidateKey: a.candidateId ?? a.id,
         priority: 2,
       });
     });
@@ -166,6 +170,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         tone: TONE.amber,
         actionLabel: "Review candidate",
         actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        candidateKey: a.candidateId ?? a.id,
         priority: 3,
       });
     });
@@ -185,6 +190,7 @@ export function computeCandidateStats(candidates, now = Date.now()) {
         tone: TONE.neutral,
         actionLabel: "Assign stage",
         actionHref: `/dashboard/candidates/${a.candidateId ?? a.id}`,
+        candidateKey: a.candidateId ?? a.id,
         priority: 4,
       });
     });
@@ -194,7 +200,13 @@ export function computeCandidateStats(candidates, now = Date.now()) {
     return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
   });
 
-  const topCandidatesAll = [...completed].filter((a) => a.score !== null).sort((a, b) => b.score - a.score);
+  // Strong matches not already in the visible "Needs your attention" list.
+  // The two panels used to list largely the same people, and the count
+  // behind "N more strong candidates" included every scored candidate.
+  const shownInAttention = new Set(attentionItems.slice(0, 6).map((i) => i.candidateKey));
+  const topCandidatesAll = strongMatches
+    .filter((a) => !shownInAttention.has(a.candidateId ?? a.id))
+    .sort((a, b) => b.score - a.score);
 
   return {
     analyses,

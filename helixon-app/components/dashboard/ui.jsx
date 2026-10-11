@@ -9,6 +9,7 @@ import DashboardNav from "@/components/DashboardNav";
 import { INK, INK_MUTED, INK_FAINT, CARD } from "@/lib/candidates/format";
 import { trapTab } from "@/lib/focus-trap";
 import { Card as SurfaceCard, cx } from "@/components/ui";
+import { PAGE_WIDTHS } from "./page-frame";
 
 export {
   Button,
@@ -28,11 +29,12 @@ export {
 
 export { INK, INK_MUTED, INK_FAINT, CARD, trapTab };
 
-export function Page({ children, width = 1200 }) {
+// `width` is "wide" or "narrow" (see ./page-frame).
+export function Page({ children, width = "wide" }) {
   return (
     <main className="min-h-screen" style={{ background: "var(--mist)" }}>
       <DashboardNav />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6" style={{ maxWidth: width }}>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6" style={{ maxWidth: PAGE_WIDTHS[width] ?? PAGE_WIDTHS.wide }}>
         {children}
       </div>
     </main>

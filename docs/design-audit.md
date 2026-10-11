@@ -19,6 +19,78 @@
 
 ---
 
+## Fix status
+
+Every finding is fixed except the parts listed under **Not done**. The scores and rankings below describe `802793a`, before the fixes. They haven't been re-scored.
+
+**Checks after the fixes:**
+- lint: clean;
+- typecheck: 73 errors, the existing baseline, none new;
+- unit tests: 605 passing;
+- end-to-end tests: 14 passing;
+- migrations check and production build: both pass.
+
+**Re-checked in the harness:** the same pages were screenshotted again at 1440px and 390px and scanned with axe.
+- No page scrolls sideways.
+- axe reports no violations on any page re-scanned, admin console included. Before the fixes there were 150 contrast failures, 8 region failures, 4 heading-order failures and the `/analyse` ARIA errors.
+
+**What changed, by finding:**
+
+| # | Fix |
+|---|---|
+| 1 | Topic names sent (`f22eabe`) |
+| 2 | Attention-row pill truncates and the name keeps its width. Hero, job-detail and Candidates toolbars wrap. Overview funnel uses a 3-column grid on phones |
+| 3 | Default `border-color: var(--border)` in `globals.css`. The 49 redundant inline colours are removed |
+| 4 | Bar counts in ink, outside the fill (white only on the dark Placed bar) |
+| 5 | "More" label capped with an ellipsis. Avatars 28px with more spacing. Mobile tab row fades at the edge (`.scroll-fade-x`) |
+| 6 | See **Design system** below |
+| 7 | Half-pixel sizes (10.5 to 14.5px, 243 uses) rounded to whole pixels. Off-scale rem headings (22.4, 25.6, 27.2, 28.8, 41.6px) snapped to 22, 24, 28 and 40px |
+| 8 | Two widths: `wide` (1400px) for lists, boards and dashboards; `narrow` (1000px) for one record, a form or settings (`components/dashboard/page-frame.js`). The dashboard nav matches. Printable client documents stay at 860px |
+| 9 | Stages run on the brand ramp: sage, green, teal, gold, forest. Each is at least 3:1 on white. Blue and violet are gone. The shortlist pill shows a coloured dot with ink text. "Open jobs" bars have a legend |
+| 10 | Cookie policy, DPA and Product updates use `MarketingNav` and `MarketingFooter`. Fraunces removed. One CTA, "Get a demo" |
+| 11 | Terms, Product updates and Cookie policy corrected. About rewritten: an example report replaces the placeholder. Blog removed from the nav, footer and sitemap. Careers roles get a summary and an Apply link that pre-fills the contact form |
+| 12 | Admin text tokens: muted `#a3aebb`, faint `#7d8a99`, both at least 4.6:1 on every surface. The footer is now a compact user card with a log-out icon, and "Staff portal" and "Mobile view" moved into the nav, so the full nav fits or fades to show it scrolls. Top bar is a `<header>` landmark. Panel titles are `<h2>`. Empty table headers have screen-reader labels |
+| 13 | "Strongest candidates" leaves out anyone already in "Needs your attention", and its "N more" count now counts strong matches only. The chart titles say "furthest stage reached" and "where candidates are now" |
+| 14 | Plain "reply tracking isn't switched on" message with a support link |
+| 15 | `Chip` renders nothing when empty |
+| 16 | Explicit 1-2-5 ticks (`lib/chart-ticks.js`, tested). Fees below £10k show one decimal |
+
+**Low findings:**
+- **Fonts:** mono is used only for figures; worded metrics and the "Demo" price use the display face.
+- **Pricing on mobile:** the recommended plan comes first.
+- **Bulk-screening steps:** the three cards are the same height.
+- **Cookie banner:** more compact on phones, with shorter copy.
+- **Job picker on `/analyse`:** a plain list of toggle buttons.
+- **Checkboxes:** 18px app-wide; Compliance checkboxes have a 24px hit area.
+- **Pipeline move buttons:** 32px.
+- **Shared-link and booking pages:** an `h1` while loading.
+- **Heading order:** fixed on Contact and Careers.
+- **Candidate profile:** five everyday actions stay visible; the occasional five sit behind "More" (Delete set apart in red).
+- **Placements KPIs:** a money row of 4 and an activity row of 3.
+- **Candidate rows:** skill chips sit on one line (2 chips plus "+N").
+
+**Contrast found during re-checking:** offline team cards no longer fade. Account labels and the active filter-count badges use the shared ink colours. Home trust cards raised to 5:1. The UI kit's solid danger button and error toast use `--ui-on-danger` (dark text on the admin console's light red).
+
+**Design system:**
+- `test/design-tokens.test.js` now also counts arbitrary font sizes (`text-[13px]`) per file and fails on any half-pixel size. Like the hex and inline-style counts, a file may lose them but not gain them.
+- Totals since `802793a`:
+  - hex colours: 565 → 492;
+  - inline style objects: 3,329 → 3,249;
+  - arbitrary font sizes now at 1,653, and can only go down.
+- `analytics/page.jsx` is split into `_components/charts.jsx`, `sections.jsx` and `states.jsx` (998 lines → 453 for the page).
+- The feedback page uses the shared `PublicCard` instead of its own copy.
+
+**Not done:**
+- **Styling consolidation (6, 7).** The remaining arbitrary sizes and inline styles weren't rewritten in bulk. Swapping `text-[14px]` for `text-sm` also changes line height, so that conversion is safer file by file, as files are touched. The ratchet enforces it.
+- **The remaining local primitives.** Most are already thin wrappers over the kit. The admin, staff-portal and landing versions are themed on purpose.
+- **Overview length (13).** Moving whole sections off the Overview is a product decision, so the layout is unchanged.
+- **Home page length.** Unchanged, for the same reason.
+- **Legal page bodies.** The legal pages share a header and footer now, but their bodies still use three layouts.
+- **Large files.** The other four largest files aren't split.
+- **Untyped buttons.** The 165 `<button>`s without a `type` are untouched.
+
+---
+
 ## Scorecard
 
 | Dimension | Score | In one line |
@@ -45,7 +117,7 @@
 - **Where:** `components/ContactPage.jsx`.
 - **Cause:** the Topic dropdown's values were inbox addresses (`support@...`), but `app/api/contact` routes by topic name ("Support", "Sales & pricing").
 - **Effect:** the route never matched, so sales and support enquiries landed in hello@. The dropdown also showed raw email addresses as its options.
-- **Status:** fixed in this pass (the form now sends the topic names). Not yet pushed.
+- **Status:** fixed in `f22eabe` (the form now sends the topic names).
 
 **2. The Overview is broken on phones.** At 390px:
 - **"Needs your attention" rows hide the candidate's name.** The reason pill can't shrink (`app/dashboard/_components/attention.jsx:59`), so the name column collapses to zero width and the score spills outside the card.

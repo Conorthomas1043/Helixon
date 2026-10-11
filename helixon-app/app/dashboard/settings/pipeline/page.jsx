@@ -94,7 +94,7 @@ export default function PipelineSettingsPage() {
   const editField = (key, patch) => setFields((list) => list.map((f) => (f.key === key ? { ...f, ...patch } : f)));
 
   return (
-    <Page width={900}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Workspace"

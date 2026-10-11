@@ -466,7 +466,7 @@ function IpDossier({ ip }) {
         <div className="dossier-head">
           <div style={{ minWidth: 0 }}>
             <h2 className="ip-title">{ip}</h2>
-            <div className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>
+            <div className="muted" style={{ fontSize: 14, marginTop: 4 }}>
               {activity
                 ? `${Number(activity.requests).toLocaleString()} requests · ${Number(activity.paths).toLocaleString()} different paths · ${Number(activity.user_agents).toLocaleString()} user agents`
                 : "No requests from this address are in the log."}

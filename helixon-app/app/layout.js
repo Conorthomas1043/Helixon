@@ -1,4 +1,4 @@
-import { Fraunces, Geist_Mono, Inter, Outfit } from "next/font/google";
+import { Geist_Mono, Inter, Outfit } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -9,8 +9,7 @@ import "./globals.css";
 
 // Every font the site uses, self-hosted through next/font. They used to come
 // from a Google Fonts stylesheet: a render-blocking request to a third-party
-// origin on every page, which held back first paint, and it pulled in
-// Fraunces (three legal pages only) everywhere. next/font serves them from
+// origin on every page, which held back first paint. next/font serves them from
 // our own domain with size-matched fallbacks, so text doesn't jump when the
 // web font arrives. globals.css maps these onto --font-display/-body/-mono.
 const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], display: "swap" });
@@ -22,14 +21,7 @@ const geistMono = Geist_Mono({
   // Numbers and the Clerk widgets only; not worth a preload on every page.
   preload: false,
 });
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  axes: ["opsz"],
-  // Display face for the legal pages only.
-  preload: false,
-});
+
 
 const TITLE = "Helixon - AI CV screening for recruitment agencies";
 const DESCRIPTION =
@@ -97,7 +89,7 @@ export default async function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} ${fraunces.variable} h-full`}>
+      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} h-full`}>
         <body className="min-h-full flex flex-col antialiased">
           {/* Admin-set banner (/admin/site); renders nothing unless one is on. */}
           <SiteAnnouncement />

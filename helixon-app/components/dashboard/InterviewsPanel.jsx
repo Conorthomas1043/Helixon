@@ -50,7 +50,7 @@ export default function InterviewsPanel({ candidate, onChanged }) {
           No interviews yet. Scheduling one sends calendar invites to the candidate and the client.
         </p>
       ) : (
-        <ul className="divide-y -my-3.5" style={{ borderColor: "var(--border)" }}>
+        <ul className="divide-y -my-3.5">
           {[...interviews].reverse().map((i) => (
             <InterviewItem key={i.id} interview={i} onChanged={reload} />
           ))}

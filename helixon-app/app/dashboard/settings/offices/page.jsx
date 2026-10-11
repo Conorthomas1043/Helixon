@@ -56,7 +56,7 @@ export default function OfficesPage() {
   const canManage = state?.canManage;
 
   return (
-    <Page width={800}>
+    <Page width="narrow">
       <PageHeader
         back={{ href: "/dashboard/settings", label: "Settings" }}
         eyebrow="Workspace"
@@ -114,7 +114,7 @@ export default function OfficesPage() {
 
           {state.offices.some((o) => o.id) && team.length > 0 && (
             <Card title="Who's where">
-              <ul className="divide-y -my-3" style={{ borderColor: "var(--border)" }}>
+              <ul className="divide-y -my-3">
                 {team.map((m) => (
                   <li key={m.id} className="py-2.5 flex items-center justify-between gap-3">
                     <span className="text-[14px]" style={{ color: INK }}>

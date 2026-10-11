@@ -46,7 +46,7 @@ function LoginContent() {
             <p className="text-[11px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--mint)" }}>
               AI-powered recruitment
             </p>
-            <h1 className="text-white text-[2.6rem] font-semibold leading-[1.08] tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
               Match the right<br />candidate, faster.
             </h1>
             <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
