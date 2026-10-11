@@ -274,9 +274,6 @@ export default function SecurityPage() {
       </PageHeader>
 
       {error && <div className="notice error section">{error}</div>}
-      {firewall.data && !firewall.data.migrated && (
-        <div className="notice section">The allow list and country blocks need the latest database migration (admin_granular_controls).</div>
-      )}
 
       <div className="kpi-grid cols-6">
         <KpiCard label="Blocked IPs" icon="ban" value={blocked.length} tone="var(--critical)" foot={`${autoBlockedCount} by the firewall`} />
@@ -287,7 +284,7 @@ export default function SecurityPage() {
         <KpiCard label="Failed sign-ins" icon="alert" value={totals.failedAuthAttempts ?? "-"} tone={totals.failedAuthAttempts ? "var(--warn)" : undefined} />
       </div>
 
-      {myIp && myIp !== "unknown" && !myIpAllowed && firewall.data?.migrated && (
+      {myIp && myIp !== "unknown" && !myIpAllowed && firewall.data && (
         <div className="notice section" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <span>Your IP is <b className="mono">{myIp}</b>. Allow-listing it means no rule here can lock you out.</span>
           <button className="btn small" disabled={working} onClick={() => addRule("allow_ip", myIp, "Admin (added from Security page)", 0, "Your IP is on the allow list")}>

@@ -28,7 +28,6 @@ export async function POST(request) {
     const { error } = await getAdminSupabase()
       .from("threat_dismissals")
       .upsert({ ip, reason, dismissed_by: admin.username, dismissed_at: new Date().toISOString() }, { onConflict: "ip" });
-    if (error?.code === "42P01" || error?.code === "PGRST205") return json({ error: "Dismissing findings needs the latest database migration (admin_granular_controls)." }, 409);
     if (error) return adminDbError("threats", error);
 
     await writeAdminAudit({ adminUsername: admin.username, action: "threat_dismissed", targetType: "ip", targetId: ip, metadata: { ip, reason }, request });

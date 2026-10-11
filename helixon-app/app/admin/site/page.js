@@ -108,7 +108,7 @@ export default function SiteControlsPage() {
 
       {error && <div className="notice error section">{error}</div>}
       {data?.unavailable && (
-        <div className="notice section">Couldn&rsquo;t read the saved settings, so these are the defaults. If this persists, apply the admin_controls database migration.</div>
+        <div className="notice section">Couldn&rsquo;t read the saved settings, so these are the defaults. Reload to try again.</div>
       )}
 
       <div className="status-strip section" role="status">

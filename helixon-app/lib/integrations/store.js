@@ -16,10 +16,6 @@ export function integrationReady(provider) {
   return providerConfigured(provider) && secretBoxReady();
 }
 
-export function isMissingTable(error) {
-  return error && (error.code === "42P01" || error.code === "PGRST205");
-}
-
 // The agency's (or, for a member-scoped provider, this person's)
 // connection, or null.
 export async function getConnection(agencyId, provider, userId = null) {
@@ -29,7 +25,7 @@ export async function getConnection(agencyId, provider, userId = null) {
   q = p.scope === "member" ? q.eq("user_id", userId) : q.is("user_id", null);
   const { data, error } = await q.maybeSingle();
   if (error) {
-    if (!isMissingTable(error)) reportError("[integrations] load failed:", error.message);
+    reportError("[integrations] load failed:", error.message);
     return null;
   }
   return data;

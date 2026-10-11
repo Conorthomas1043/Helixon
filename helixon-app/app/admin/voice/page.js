@@ -74,11 +74,6 @@ export default function VoiceOfCustomerPage() {
       </PageHeader>
 
       {error && <div className="notice error" style={{ marginBottom: 16 }}>{error}</div>}
-      {data && !data.signalsAvailable && (
-        <div className="notice warn" style={{ marginBottom: 16 }}>
-          Survey answers, cancellation reasons, visitor questions and research opt-ins need the <code>20261004090000_research_signals</code> migration. Score feedback and demo requests are shown below.
-        </div>
-      )}
 
       <div className="kpi-grid cols-4">
         <KpiCard label="Scores agreed with" value={agreement == null ? "-" : `${agreement}%`} icon="check" foot={s ? `${formatNumber(s.total)} ratings` : ""} />

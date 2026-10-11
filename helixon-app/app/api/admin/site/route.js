@@ -29,14 +29,7 @@ export async function PATCH(request) {
     const before = (await getSiteSettings({ fresh: true }))[key];
     const value = cleanSetting(key, body.value);
 
-    try {
-      await saveSiteSetting(key, value, admin.username);
-    } catch (error) {
-      if (error?.code === "42P01" || error?.code === "PGRST205") {
-        return json({ error: "Site controls need the latest database migration (admin_controls)." }, 409);
-      }
-      throw error;
-    }
+    await saveSiteSetting(key, value, admin.username);
 
     await writeAdminAudit({
       adminUsername: admin.username,

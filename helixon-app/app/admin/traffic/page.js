@@ -9,7 +9,7 @@ import { RequestTable } from "../_shared/table";
 import TrafficMapPanel, { pointKey } from "../_shared/TrafficMapPanel";
 import TrafficTimeline from "../_shared/TrafficTimeline";
 import { OUTCOME_FILTERS, REQUEST_CSV_COLUMNS, RequestInspector, ThreatPill, downloadCsv } from "../_shared/traffic-ui";
-import { useAdminStats, useAdminTraffic } from "../_shared/hooks";
+import { useAdminTraffic } from "../_shared/hooks";
 import { TRAFFIC_CLASSES } from "@/lib/traffic-class";
 import { timeAgo } from "../_shared/data";
 import { csrfHeaders } from "../_shared/csrf";
@@ -79,7 +79,7 @@ function TopIpsPanel({ topIps, blockedSet }) {
       {topIps === undefined ? (
         <div className="skeleton" style={{ height: 200, marginTop: 12 }} />
       ) : topIps === null ? (
-        <div className="empty">Needs the latest database migration (request_inspector).</div>
+        <div className="empty">Couldn&rsquo;t load the busiest addresses. Refresh to try again.</div>
       ) : !topIps.length ? (
         <div className="empty">No requests in this range.</div>
       ) : (
@@ -258,7 +258,7 @@ function AlertsPanel({ alerts }) {
   return (
     <Panel title="Spike alerts" sub="Raised automatically - see the settings below.">
       {!alerts ? (
-        <div className="skeleton" style={{ height: 120, marginTop: 12 }} />
+        <div className="empty">Loading…</div>
       ) : !alerts.length ? (
         <div className="empty">No spikes so far.</div>
       ) : (
@@ -325,9 +325,6 @@ export default function TrafficPage() {
     to: slice?.to || "",
   };
   const { traffic, error, busy, block, unblock, reload, olderRows, hasOlder, loadOlder } = useAdminTraffic(range, filters);
-  const legacy = Boolean(traffic?.legacy);
-  // Only needed while the database is missing migration 20261001100000.
-  const { stats } = useAdminStats(legacy ? range : null);
 
   const query = useMemo(() => {
     const q = new URLSearchParams();
@@ -450,19 +447,12 @@ export default function TrafficPage() {
   const errorsNote = (item) => (item.errors ? `${item.errors.toLocaleString()} err` : null);
   const classItems = (breakdowns?.class || []).map((c) => ({ ...c, label: TRAFFIC_CLASSES[c.name] || c.name }));
 
-  const lists = breakdowns
-    ? {
-        paths: breakdowns.path,
-        referrers: breakdowns.referrer,
-        userAgents: breakdowns.user_agent,
-        countries: breakdowns.country,
-      }
-    : {
-        paths: stats?.traffic?.topPaths || [],
-        referrers: stats?.traffic?.referrers || [],
-        userAgents: stats?.traffic?.userAgents || [],
-        countries: stats?.traffic?.countries || [],
-      };
+  const lists = {
+    paths: breakdowns?.path || [],
+    referrers: breakdowns?.referrer || [],
+    userAgents: breakdowns?.user_agent || [],
+    countries: breakdowns?.country || [],
+  };
 
   return (
     <>
@@ -483,11 +473,6 @@ export default function TrafficPage() {
       </PageHeader>
 
       {error && <div className="notice error section">{error}</div>}
-      {legacy && (
-        <div className="notice section">
-          The database is missing the latest traffic migration (20261001100000), so totals ignore the filters and the panels below are a sample of recent requests.
-        </div>
-      )}
 
       <div className="filter-row section" style={{ marginTop: 0 }}>
         <div className="segmented" role="group" aria-label="Whose traffic">
@@ -572,7 +557,7 @@ export default function TrafficPage() {
           {breakdowns ? (
             <BarList items={classItems} limit={4} onSelect={(item) => setAudience(CLASS_TO_AUDIENCE[item.name] || "all")} emptyLabel="No requests in this range." />
           ) : (
-            <div className="empty">Needs the latest database migration.</div>
+            <div className="empty">Loading…</div>
           )}
         </Panel>
         <AlertsPanel alerts={traffic ? traffic.alerts || [] : undefined} />
@@ -635,7 +620,7 @@ export default function TrafficPage() {
           />
         </Panel>
         <Panel title="API endpoints" sub="Busiest /api routes, with errors">
-          {breakdowns ? <BarList items={breakdowns.api} limit={8} onSelect={(item) => filterTo("path", item.name)} active={text.path} note={errorsNote} emptyLabel="No API calls in this range." /> : <div className="empty">Needs the latest database migration.</div>}
+          {breakdowns ? <BarList items={breakdowns.api} limit={8} onSelect={(item) => filterTo("path", item.name)} active={text.path} note={errorsNote} emptyLabel="No API calls in this range." /> : <div className="empty">Loading…</div>}
         </Panel>
         <Panel title="Broken links & errors" sub="Pages answered 404, and paths that failed with a server error">
           {breakdowns ? (
@@ -649,7 +634,7 @@ export default function TrafficPage() {
               )}
             </>
           ) : (
-            <div className="empty">Needs the latest database migration.</div>
+            <div className="empty">Loading…</div>
           )}
         </Panel>
       </div>

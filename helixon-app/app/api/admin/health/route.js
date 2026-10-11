@@ -35,8 +35,10 @@ async function recordAndLoadHistory(supabase, grade, adminUsername) {
     .select("id,created_at,overall,failing,checked_by")
     .order("created_at", { ascending: false })
     .limit(HISTORY);
-  // Table arrives with migration 20260929030000; no history before that.
-  if (error) return null;
+  if (error) {
+    reportError("[admin/health] History load failed:", error.message);
+    return null;
+  }
 
   const last = history?.[0];
   const changed = !last || last.overall !== grade.overall || String(last.failing) !== String(grade.failing);
@@ -82,12 +84,7 @@ export async function PATCH(request) {
     const before = (await getSiteSettings({ fresh: true })).health;
     const value = cleanSetting("health", { muted: body.muted });
 
-    try {
-      await saveSiteSetting("health", value, admin.username);
-    } catch (error) {
-      if (error?.code === "42P01" || error?.code === "PGRST205") return json({ error: "Muting checks needs the admin_controls database migration." }, 409);
-      throw error;
-    }
+    await saveSiteSetting("health", value, admin.username);
 
     await writeAdminAudit({
       adminUsername: admin.username,

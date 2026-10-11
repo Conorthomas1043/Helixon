@@ -34,7 +34,7 @@ export async function recordSignal({ kind, agencyId = null, profileId = null, sc
       body: scrubFreeText(body),
       meta,
     });
-    if (error && error.code !== "42P01" && error.code !== "PGRST205") {
+    if (error) {
       reportError("[research-signals] Insert failed:", error.message);
       return false;
     }

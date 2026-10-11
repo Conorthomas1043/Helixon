@@ -202,7 +202,10 @@ async function attachBanEnds(supabase, users) {
   const ends = new Map();
   for (let i = 0; i < banned.length; i += 200) {
     const { data, error } = await supabase.from("timed_bans").select("user_id,until").in("user_id", banned.slice(i, i + 200));
-    if (error) return users; // before migration 20260929030200
+    if (error) {
+      reportError("[admin/users] Ban end dates failed to load:", error.message);
+      return users;
+    }
     for (const row of data || []) ends.set(row.user_id, row.until);
   }
   return users.map((u) => (ends.has(u.id) ? { ...u, banEndsAt: ends.get(u.id) } : u));
@@ -422,7 +425,7 @@ async function setBanEnd(supabase, userId, body, admin) {
   const { error } = until
     ? await supabase.from("timed_bans").upsert({ user_id: userId, until, reason: cleanLine(body.reason, 300) || null, created_by: admin?.username || null, created_at: new Date().toISOString() }, { onConflict: "user_id" })
     : await supabase.from("timed_bans").delete().eq("user_id", userId);
-  if (error && error.code !== "42P01" && error.code !== "PGRST205") throw new Error(error.message);
+  if (error) throw new Error(error.message);
 }
 
 async function applyClerkAction({ client, supabase, userId, action, body, admin }) {

@@ -168,7 +168,7 @@ export function ResearchOptIn() {
     fetch("/api/research", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (!cancelled && d?.available) setOptedIn(Boolean(d.optedIn));
+        if (!cancelled && d?.ok) setOptedIn(Boolean(d.optedIn));
       })
       .catch(reportQuietly);
     return () => {

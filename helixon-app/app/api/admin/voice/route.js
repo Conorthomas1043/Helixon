@@ -36,14 +36,13 @@ export async function GET(request) {
     ]);
     if (feedback.error) return adminDbError("voice feedback", feedback.error);
     if (demos.error) return adminDbError("voice demos", demos.error);
-    const signalsMissing = signals.error && (signals.error.code === "42P01" || signals.error.code === "PGRST205");
-    if (signals.error && !signalsMissing) return adminDbError("voice signals", signals.error);
+    if (signals.error) return adminDbError("voice signals", signals.error);
 
     const agencyName = new Map((agencies.data || []).map((a) => [a.id, a.name]));
     const named = (r) => ({ ...r, agency: r.agency_id ? agencyName.get(r.agency_id) || "Unknown agency" : null });
     const fb = feedback.data || [];
     const down = fb.filter((f) => f.rating === "down");
-    const sig = signalsMissing ? [] : signals.data || [];
+    const sig = signals.data || [];
     const ofKind = (k) => sig.filter((s) => s.kind === k).map(named);
 
     const pulses = ofKind("pulse_survey");
@@ -52,7 +51,6 @@ export async function GET(request) {
 
     return json({
       range,
-      signalsAvailable: !signalsMissing,
       scores: {
         total: fb.length,
         up: fb.length - down.length,

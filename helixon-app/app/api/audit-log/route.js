@@ -16,10 +16,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const action = params.get("action");
   if (action && AUDIT_ACTIONS[action]) q = q.eq("action", action);
   const { data, error } = await q;
-  if (error) {
-    if (["42P01", "PGRST205"].includes(error.code)) return NextResponse.json({ entries: [], unavailable: true, actions: AUDIT_ACTIONS });
-    return NextResponse.json({ error: "Failed to load the audit log." }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: "Failed to load the audit log." }, { status: 500 });
   const rows = data ?? [];
   return NextResponse.json({
     entries: rows.slice(0, 100).map((r) => ({

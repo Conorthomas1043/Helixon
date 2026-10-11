@@ -5,6 +5,7 @@ import { verifyCsrf, CSRF_REJECTION } from "@/lib/admin/csrf";
 import { getAdminSupabase } from "@/lib/admin/supabase";
 import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
 import { adminErrorResponse, adminDbError } from "@/lib/admin/http";
+import { reportError } from "@/lib/report-error";
 import { getClientIp } from "@/lib/ratelimit";
 import { cleanLine } from "@/lib/sanitize";
 import { getFirewallPolicy } from "@/lib/security/firewall";
@@ -117,7 +118,6 @@ const METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIO
 const AUDIENCES = new Set(["all", "people", "automated", "crawler", "monitor", "bot"]);
 // Whole-range breakdowns (admin_traffic_top).
 const BREAKDOWNS = ["path", "referrer", "user_agent", "country", "class", "api", "not_found", "server_error"];
-// 42883 / PGRST202: the function isn't there yet (migration not applied).
 
 export async function GET(request) {
   try {
@@ -192,6 +192,12 @@ export async function GET(request) {
     if (blockedIpsResult.error) return adminDbError("traffic", blockedIpsResult.error);
 
     if (logResult.error) return adminDbError("traffic", logResult.error);
+    // The panels degrade one by one (an empty list, a "couldn't load"), but
+    // a failed query should still reach someone.
+    const partialFailures = [summaryResult, previousResult, geoResult, timelineResult, topIpsResult, alertsResult, ...breakdownResults]
+      .map((r) => r.error?.message)
+      .filter(Boolean);
+    if (partialFailures.length) reportError("[admin/traffic] Some panels failed:", partialFailures.join("; "));
 
     const rows = (logResult.data || []).map((row) => {
       const out = { ...row, city: decodePlace(row.city) };

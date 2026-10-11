@@ -29,7 +29,7 @@ function startOfMonth() {
 }
 
 export default function BusinessDevelopmentPage() {
-  const [state, setState] = useState({ status: "loading", deals: [], clients: [], team: [], unavailable: false });
+  const [state, setState] = useState({ status: "loading", deals: [], clients: [], team: [] });
   const [reloadKey, setReloadKey] = useState(0);
   const [dialog, setDialog] = useState(null); // null | "new" | deal
   const [mineOnly, setMineOnly] = useState(false);
@@ -42,7 +42,7 @@ export default function BusinessDevelopmentPage() {
     let cancelled = false;
     Promise.all([getOpportunities(), getClients(), getRecruiters().catch(() => [])])
       .then(([d, clients, team]) => {
-        if (!cancelled) setState({ status: "ready", deals: d.opportunities || [], clients: clients || [], team, unavailable: Boolean(d.unavailable) });
+        if (!cancelled) setState({ status: "ready", deals: d.opportunities || [], clients: clients || [], team });
       })
       .catch(() => {
         if (!cancelled) setState((s) => ({ ...s, status: "error" }));
@@ -111,13 +111,6 @@ export default function BusinessDevelopmentPage() {
 
       {state.status === "loading" && <LoadingCard rows={5} />}
       {state.status === "error" && <ErrorState title="Unable to load business development" onRetry={reload} />}
-      {state.status === "ready" && state.unavailable && (
-        <Card>
-          <p className="text-[14px]" style={{ color: INK_MUTED }}>
-            Deals need a database update (migration 20261003000000) before they can be saved. Client follow-ups below still work.
-          </p>
-        </Card>
-      )}
       {error && <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
 
       {state.status === "ready" && (

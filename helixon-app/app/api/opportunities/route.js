@@ -25,11 +25,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
     .limit(2000);
   if (clientId) q = q.eq("client_id", clientId);
   const { data, error } = await q;
-  if (error) {
-    // Before the migration is applied there's simply nothing to show.
-    if (["42P01", "PGRST205", "PGRST200"].includes(error.code)) return NextResponse.json({ opportunities: [], unavailable: true });
-    return NextResponse.json({ error: "Failed to load deals." }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: "Failed to load deals." }, { status: 500 });
   return NextResponse.json({ opportunities: (data ?? []).map(toOpportunity) });
 });
 

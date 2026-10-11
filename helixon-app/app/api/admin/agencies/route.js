@@ -13,31 +13,12 @@ import { revokeMemberTokens } from "@/lib/member-tokens";
 // workspace (PATCH): rename, suspend/reactivate, a monthly screening cap,
 // and removing a member. Every change is audited.
 //
-// Counts come from admin_agency_counts() (migration 20260929030000). Until
-// that's applied they're tallied in JavaScript from capped row pulls, as
-// before, and flagged as truncated when a cap is hit.
+// Per-agency counts come from admin_agency_counts(). Profiles and
+// subscriptions are pulled in capped batches, flagged as truncated when a
+// cap is hit.
 
 const ROW_CAP = 20000;
 const DAY = 24 * 60 * 60 * 1000;
-
-function tally(rows, key) {
-  const map = new Map();
-  for (const row of rows || []) {
-    const k = row[key];
-    if (k) map.set(k, (map.get(k) || 0) + 1);
-  }
-  return map;
-}
-
-function latest(rows, key, dateKey) {
-  const map = new Map();
-  for (const row of rows || []) {
-    const k = row[key];
-    const t = row[dateKey] ? Date.parse(row[dateKey]) : 0;
-    if (k && t > (map.get(k) || 0)) map.set(k, t);
-  }
-  return map;
-}
 
 export async function GET(request) {
   try {
@@ -63,40 +44,20 @@ export async function GET(request) {
       if (result.error) return adminDbError("agencies", result.error);
     }
 
-    let memberCount, candidateCount, jobCount, monthCount, lastActivityOf;
-    let truncated = false;
-    if (!counts.error) {
-      const byAgency = new Map((counts.data || []).map((c) => [c.agency_id, c]));
-      const num = (id, key) => Number(byAgency.get(id)?.[key] || 0);
-      memberCount = { get: (id) => num(id, "members") };
-      candidateCount = { get: (id) => num(id, "candidates") };
-      jobCount = { get: (id) => num(id, "jobs") };
-      // Screenings run this month (scores rows) since migration 20261010000000;
-      // the column keeps its original name.
-      monthCount = { get: (id) => num(id, "candidates_month") };
-      lastActivityOf = (id) => {
-        const t = byAgency.get(id)?.last_activity;
-        return t ? Date.parse(t) : 0;
-      };
-    } else {
-      // Fallback: tally capped row pulls in JavaScript.
-      const [candidates, jobs, screenings] = await Promise.all([
-        supabase.from("candidates").select("agency_id,created_at").limit(ROW_CAP),
-        supabase.from("jobs").select("agency_id,created_at,status").limit(ROW_CAP),
-        supabase.from("scores").select("agency_id").gte("created_at", startOfMonthUtc()).limit(ROW_CAP),
-      ]);
-      for (const result of [candidates, jobs, screenings]) {
-        if (result.error) return adminDbError("agencies", result.error);
-      }
-      memberCount = tally(profiles.data, "agency_id");
-      candidateCount = tally(candidates.data, "agency_id");
-      jobCount = tally(jobs.data, "agency_id");
-      monthCount = tally(screenings.data, "agency_id");
-      const lastCandidate = latest(candidates.data, "agency_id", "created_at");
-      const lastJob = latest(jobs.data, "agency_id", "created_at");
-      lastActivityOf = (id) => Math.max(lastCandidate.get(id) || 0, lastJob.get(id) || 0);
-      truncated = [profiles, candidates, jobs, screenings].some((r) => (r.data || []).length >= ROW_CAP);
-    }
+    if (counts.error) return adminDbError("agencies", counts.error);
+    const byAgency = new Map((counts.data || []).map((c) => [c.agency_id, c]));
+    const num = (id, key) => Number(byAgency.get(id)?.[key] || 0);
+    const memberCount = { get: (id) => num(id, "members") };
+    const candidateCount = { get: (id) => num(id, "candidates") };
+    const jobCount = { get: (id) => num(id, "jobs") };
+    // Screenings run this month (rows in scores); the column keeps its
+    // original name.
+    const monthCount = { get: (id) => num(id, "candidates_month") };
+    const lastActivityOf = (id) => {
+      const t = byAgency.get(id)?.last_activity;
+      return t ? Date.parse(t) : 0;
+    };
+    const truncated = [profiles, subscriptions].some((r) => (r.data || []).length >= ROW_CAP);
 
     // A subscription belongs to whoever paid (one profile); every member of that
     // agency shares its plan, so key it by the payer's agency.

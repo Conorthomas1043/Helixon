@@ -6,6 +6,7 @@ import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { recordSignal } from "@/lib/research-signals";
 import { captureAgencyEvent } from "@/lib/server-analytics";
 import { umuxLiteScore } from "@/lib/umux-lite";
+import { reportError } from "@/lib/report-error";
 
 // The signed-in recruiter's side of research (docs/ux-research-audit.md, R8):
 //   GET   { pulseDue, optedIn }      whether to show the pulse survey
@@ -18,10 +19,6 @@ import { umuxLiteScore } from "@/lib/umux-lite";
 // New Directions for Institutional Research 121).
 const PULSE_EVERY_DAYS = 90;
 
-function missingTable(error) {
-  return error && (error.code === "42P01" || error.code === "PGRST205");
-}
-
 export async function GET() {
   const { user, profile } = await getCustomerContext();
   if (!user?.id || !profile?.id) return NextResponse.json({ ok: false }, { status: 401 });
@@ -30,11 +27,13 @@ export async function GET() {
     supabase.from("research_signals").select("id").eq("profile_id", profile.id).eq("kind", "pulse_survey").gte("created_at", since).limit(1),
     supabase.from("research_signals").select("label, created_at").eq("profile_id", profile.id).eq("kind", "research_optin").order("created_at", { ascending: false }).limit(1),
   ]);
-  if (missingTable(error)) return NextResponse.json({ ok: true, pulseDue: false, optedIn: false, available: false });
+  if (error) {
+    reportError("[research] Load failed:", error.message);
+    return NextResponse.json({ ok: false, error: "Couldn't load your research settings." }, { status: 500 });
+  }
   return NextResponse.json({
     ok: true,
-    available: true,
-    pulseDue: !error && !(recent || []).length,
+    pulseDue: !(recent || []).length,
     optedIn: Boolean(optins?.[0] && optins[0].label !== "withdrawn"),
   });
 }

@@ -208,9 +208,9 @@ export default function TrafficTimeline({ timeline, since, busy, selected, onSel
           onKeyDown={onKeyDown}
           onBlur={() => setActive(null)}
         >
-          {/* undefined: still loading; null: the timeline function isn't in the database yet. */}
+          {/* undefined: still loading; null: the timeline query failed. */}
           {timeline === null ? (
-            <div className="viz-empty">The timeline needs the latest database migration (request_inspector).</div>
+            <div className="viz-empty">Couldn&rsquo;t load the timeline. Refresh to try again.</div>
           ) : timeline && empty ? (
             <div className="viz-empty">No requests in this range.</div>
           ) : null}

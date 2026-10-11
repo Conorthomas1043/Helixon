@@ -167,7 +167,7 @@ export function ClientDealsCard({ clientId }) {
   useEffect(() => {
     let cancelled = false;
     getOpportunities({ clientId })
-      .then((d) => { if (!cancelled) setDeals(d.unavailable ? [] : d.opportunities); })
+      .then((d) => { if (!cancelled) setDeals(d.opportunities); })
       .catch(() => { if (!cancelled) setDeals([]); });
     return () => { cancelled = true; };
   }, [clientId, reloadKey]);

@@ -39,9 +39,9 @@ export async function GET(request, { params }) {
     .eq("agency_id", ctx.auth.agencyId)
     .order("created_at", { ascending: true })
     .limit(200);
-  const missing = error && (error.code === "42P01" || error.code === "PGRST205");
+  if (error) return NextResponse.json({ error: "Failed to load messages." }, { status: 500 });
   return NextResponse.json({
-    configured: smsConfigured() && !missing,
+    configured: smsConfigured(),
     phone: normalisePhone(ctx.candidate.phone),
     messages: (data ?? []).map(toMessage),
   });

@@ -27,10 +27,7 @@ export const GET = customerRoute(async (request, _context, auth) => {
   if (clientId) q = q.eq("client_id", clientId);
   if (candidateId) q = q.eq("candidate_id", candidateId);
   const { data, error } = await q;
-  if (error) {
-    if (["42P01", "PGRST205", "PGRST200"].includes(error.code)) return NextResponse.json({ requests: [], unavailable: true });
-    return NextResponse.json({ error: "Failed to load documents." }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: "Failed to load documents." }, { status: 500 });
   return NextResponse.json({ requests: (data ?? []).map((r) => toSignatureRequest(r, { includeLink: r.status === "sent", siteUrl: siteUrl() })) });
 });
 
@@ -71,10 +68,7 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
     })
     .select("*")
     .single();
-  if (error) {
-    if (["42P01", "PGRST205"].includes(error.code)) return NextResponse.json({ error: "E-signatures need a database update first (migration 20261003010000)." }, { status: 503 });
-    return NextResponse.json({ error: "Failed to save the document." }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: "Failed to save the document." }, { status: 500 });
 
   const link = `${siteUrl()}/sign/${data.token}`;
   let emailError = null;

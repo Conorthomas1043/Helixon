@@ -34,7 +34,7 @@ export default function AuditLogPage() {
         setEntries(d.entries);
         setActions(d.actions || {});
         setMore(d.more);
-        setStatus(d.unavailable ? "unavailable" : "ready");
+        setStatus("ready");
       })
       .catch((e) => {
         if (!cancelled) {
@@ -93,7 +93,6 @@ export default function AuditLogPage() {
       </div>
       {status === "loading" && <LoadingCard rows={6} />}
       {status === "error" && <ErrorState title={error} />}
-      {status === "unavailable" && <EmptyState title="Not switched on yet" body="The audit log needs a database update (migration 20261003020000)." />}
       {status === "ready" && entries.length === 0 && <EmptyState title="Nothing logged yet" body="Actions are recorded from now on." />}
       {status === "ready" && entries.length > 0 && (
         <Card padded={false}>

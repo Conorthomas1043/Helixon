@@ -222,7 +222,7 @@ export default function HealthPage() {
       <div className="split section">
         <Panel title="History" sub="The overall status each time the checks ran.">
           {health?.history === null ? (
-            <div className="faint" style={{ fontSize: 14 }}>History needs the latest database migration (admin_granular_controls).</div>
+            <div className="faint" style={{ fontSize: 14 }}>Couldn&rsquo;t load the history. Refresh to try again.</div>
           ) : (
             <HistoryStrip history={health?.history} />
           )}

@@ -21,7 +21,6 @@ import { alertRecipients, cleanSetting, getSiteSettings, saveSiteSetting } from 
 // Every change is audited. Rules reach every server within ~30 seconds
 // (lib/security/rules.js caches them).
 
-const MIGRATION_NEEDED = "Firewall rules need the latest database migration (admin_granular_controls).";
 
 export async function GET(request) {
   try {
@@ -31,12 +30,10 @@ export async function GET(request) {
       supabase.from("firewall_rules").select("id,kind,value,note,expires_at,created_by,created_at").order("created_at", { ascending: false }),
       getSiteSettings({ fresh: true }),
     ]);
-    const missing = error?.code === "42P01" || error?.code === "PGRST205";
-    if (error && !missing) return adminDbError("firewall", error);
+    if (error) return adminDbError("firewall", error);
     const now = Date.now();
     return json({
       ok: true,
-      migrated: !missing,
       rules: (data || []).map((r) => ({ ...r, expired: Boolean(r.expires_at) && new Date(r.expires_at).getTime() <= now })),
       policy: getFirewallPolicy(settings.firewall, alertRecipients(settings)),
       alerts: { ...settings.alerts, effective: alertRecipients(settings), envFallback: !settings.alerts?.recipients?.length && Boolean(process.env.SECURITY_ALERT_EMAIL) },
@@ -95,7 +92,6 @@ export async function POST(request) {
       .upsert({ kind, value, note, expires_at: expiresAt, created_by: admin.username, created_at: new Date().toISOString() }, { onConflict: "kind,value" })
       .select("id,kind,value,note,expires_at,created_by,created_at")
       .single();
-    if (error?.code === "42P01" || error?.code === "PGRST205") return json({ error: MIGRATION_NEEDED }, 409);
     if (error) return adminDbError("firewall", error);
     clearFirewallRulesCache();
 
@@ -149,12 +145,7 @@ export async function PATCH(request) {
     const current = await getSiteSettings({ fresh: true });
     if (body.alerts) {
       const alerts = cleanSetting("alerts", { ...current.alerts, ...body.alerts });
-      try {
-        await saveSiteSetting("alerts", alerts, admin.username);
-      } catch (error) {
-        if (error?.code === "42P01" || error?.code === "PGRST205") return json({ error: "Alert settings need the admin_controls database migration." }, 409);
-        throw error;
-      }
+      await saveSiteSetting("alerts", alerts, admin.username);
       await writeAdminAudit({
         adminUsername: admin.username,
         action: "alert_recipients_update",
@@ -169,14 +160,7 @@ export async function PATCH(request) {
     const before = current.firewall;
     const value = cleanSetting("firewall", { ...before, ...(body.policy || {}) });
 
-    try {
-      await saveSiteSetting("firewall", value, admin.username);
-    } catch (error) {
-      if (error?.code === "42P01" || error?.code === "PGRST205") {
-        return json({ error: "Firewall settings need the admin_controls database migration." }, 409);
-      }
-      throw error;
-    }
+    await saveSiteSetting("firewall", value, admin.username);
 
     await writeAdminAudit({
       adminUsername: admin.username,

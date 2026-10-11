@@ -183,7 +183,6 @@ function ViewDialog({ id, onClose }) {
 export default function SignaturesCard({ title = "Documents to sign", kinds, signer, template, clientId = null, candidateId = null, placementId = null, onChanged }) {
   const [ask, confirmDialog] = useConfirm();
   const [list, setList] = useState(null);
-  const [unavailable, setUnavailable] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -195,7 +194,6 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
       .then((d) => {
         if (cancelled) return;
         setList(d.requests || []);
-        setUnavailable(Boolean(d.unavailable));
       })
       .catch(() => { if (!cancelled) setList([]); });
     return () => { cancelled = true; };
@@ -221,11 +219,9 @@ export default function SignaturesCard({ title = "Documents to sign", kinds, sig
   return (
     <>
       {confirmDialog}
-    <Card title={title} action={!unavailable && <Button size="sm" onClick={() => setCreating(true)}>+ Send</Button>}>
+    <Card title={title} action={<Button size="sm" onClick={() => setCreating(true)}>+ Send</Button>}>
       {list === null ? (
         <p className="text-[14px]" style={{ color: INK_FAINT }}>Loading…</p>
-      ) : unavailable ? (
-        <p className="text-[14px]" style={{ color: INK_MUTED }}>E-signatures need a database update (migration 20261003010000).</p>
       ) : list.length === 0 ? (
         <p className="text-[14px]" style={{ color: INK_MUTED }}>Nothing sent yet. Send a document to be signed online - no printing or scanning.</p>
       ) : (
