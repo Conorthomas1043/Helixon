@@ -26,6 +26,13 @@ const cache = createResourceCache();
 export const clearResources = () => cache.clear();
 
 /**
+ * Puts an answer in the cache before anything asks for it - data the page
+ * already has, or the UI gallery's samples. Browser only.
+ * @param {string} key @param {unknown} data
+ */
+export const primeResource = (key, data) => cache.set(key, data);
+
+/**
  * @template T
  * @param {string | null} key
  * @param {() => Promise<T>} loader

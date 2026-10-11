@@ -42,6 +42,7 @@ import { ClientDealsCard, ClientFollowUpCard } from "@/components/dashboard/oppo
 import SignaturesCard from "@/components/dashboard/SignaturesCard";
 import { termsOfBusinessText } from "@/lib/clients/signatures-shared";
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { useWorkspaceTab } from "@/lib/hooks/useWorkspaceTabs";
 
 const ACTIVITY_LABELS = {
   client_created: "Client added",
@@ -257,6 +258,7 @@ export default function ClientDetailPage({ params }) {
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState(null);
+  useWorkspaceTab(data?.client ? { kind: "client", id, title: data.client.name } : null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
   const [editing, setEditing] = useState(false);

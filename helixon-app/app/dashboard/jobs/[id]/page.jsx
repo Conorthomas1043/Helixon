@@ -19,6 +19,7 @@ import { INK, INK_MUTED, INK_FAINT, GREEN_BG, CARD, scoreColor, scoreLabel } fro
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { Avatar, Skeleton as Block } from "@/components/ui";
 import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
+import { useWorkspaceTab } from "@/lib/hooks/useWorkspaceTabs";
 
 async function fetchJob(id) {
   const job = await getJobById(id).catch(() => null);
@@ -453,6 +454,7 @@ export default function JobDetailPage({ params }) {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  useWorkspaceTab(data?.job ? { kind: "job", id, title: data.job.title } : null);
 
   useEffect(() => {
     let cancelled = false;

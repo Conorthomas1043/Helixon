@@ -40,6 +40,7 @@ import { pushRecentlyViewed } from "./_components/utils";
 import { OutcomeReportingPanel, RecruiterWorkspace } from "./_components/workspace";
 import { reportQuietly } from "@/lib/report-error";
 import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
+import { useWorkspaceTab } from "@/lib/hooks/useWorkspaceTabs";
 
 // `initialCandidate` is the profile as page.jsx loaded it on the server; when
 // it's there the page shows straight away and only fetches again on retry.
@@ -51,6 +52,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
 
   const [candidate, setCandidate] = useState(initialCandidate);
   const [status, setStatus] = useState(initialCandidate ? "ready" : "loading"); // loading | ready | error | not-found
+  useWorkspaceTab(candidate ? { kind: "candidate", id, title: candidate.fullName } : null);
   const serverLoaded = useRef(initialCandidate ? id : null);
   const [reloadKey, setReloadKey] = useState(0);
   const [recruiters, setRecruiters] = useState([]);

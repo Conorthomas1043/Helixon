@@ -30,6 +30,7 @@ import { CandidateRow, TagChip } from "./_components/row";
 import { STAGE_ORDER } from "./_components/shared";
 import { EmptyState, ErrorState, ListSkeleton } from "./_components/states";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
+import { splitViewHref } from "@/lib/workspace/panes";
 
 async function fetchCandidates(query) {
   const [result, stageCounts] = await Promise.all([getCandidates(query), getStageCounts(query)]);
@@ -604,15 +605,24 @@ function CandidateDatabaseContent({ initialData }) {
               jobId={filters.jobId !== "all" ? filters.jobId : null}
               label="Add to client shortlist…"
             />
-            {selectedIds.size >= 2 && selectedIds.size <= 4 ? (
+            {selectedIds.size >= 2 && selectedIds.size <= 4 && (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}
                 className="text-[13px] font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
-                Compare side by side
+                Compare
+              </Link>
+            )}
+            {/* Each candidate's report, CV or profile in its own pane. */}
+            {selectedIds.size <= 4 ? (
+              <Link
+                href={splitViewHref([...selectedIds])}
+                className="text-sm font-semibold px-3 py-1.5 rounded-full border border-[var(--forest)] text-[var(--forest)] hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Open side by side
               </Link>
             ) : selectedIds.size > 4 ? (
-              <span className="text-[13px]" style={{ color: INK_MUTED }}>Select up to 4 to compare</span>
+              <span className="text-[13px]" style={{ color: INK_MUTED }}>Select up to 4 to compare or open side by side</span>
             ) : null}
             <button
               type="button"

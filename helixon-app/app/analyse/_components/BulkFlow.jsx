@@ -17,6 +17,7 @@ import { track } from "@/lib/analytics/track";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getJobById } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
+import { splitViewHref } from "@/lib/workspace/panes";
 import { isZipFile, unzipCvs } from "../_lib/zip";
 import { bulkResultRows, clearSavedRun, loadSavedRun, pendingInRun, saveRun, serialiseQueue } from "../_lib/bulkRun";
 import { Card, CardHeader, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
@@ -578,6 +579,18 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                     Compare {compareIds.length}
                   </Button>
                 )}
+                {/* Each candidate's own report, CV or profile in panes - in a new
+                    tab, so this run's results stay open here. */}
+                <Button
+                  size="sm"
+                  icon="layers"
+                  onClick={() => {
+                    const ids = compareIds.length ? compareIds : ranked.filter((it) => it.status === "done").slice(0, 4).map((it) => it.candidateId);
+                    window.open(splitViewHref(ids), "_blank", "noopener");
+                  }}
+                >
+                  Open side by side
+                </Button>
               </span>
             </div>
           )}

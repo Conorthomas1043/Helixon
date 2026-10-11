@@ -24,6 +24,7 @@ import {
 import { Card as DashboardCard } from "@/components/dashboard/ui";
 import { InlineAlert, PageCard, Toggle } from "@/components/account/ui";
 import { Chip, Kpi } from "@/app/employee/_shared/ui";
+import WorkspaceDemo from "./WorkspaceDemo";
 
 // The admin console's --ui-* values (app/admin/_shared/styles.js), applied
 // to one panel so both themes show side by side.
@@ -134,6 +135,10 @@ export default function Gallery() {
             <Kpi label="Calls today" value={42} sub="Staff KPI tile" />
           </div>
         </div>
+      </section>
+      <section>
+        <h2 className="text-lg font-semibold mb-4">Workspace tabs and split view</h2>
+        <WorkspaceDemo />
       </section>
       <section className="rounded-[16px] p-6 text-[var(--ui-text)]" style={ADMIN_THEME}>
         <h2 className="text-lg font-semibold mb-4">Admin console theme</h2>

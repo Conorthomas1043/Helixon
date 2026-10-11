@@ -115,7 +115,9 @@ function ContactRow({ icon, label, children }) {
   );
 }
 
-export default function Report({ result, roleLabel }) {
+// `embedded`: shown inside a split-view pane (app/dashboard/workspace), which
+// scrolls on its own - the sticky section menu would float mid-pane there.
+export default function Report({ result, roleLabel, embedded = false }) {
   const [grown, setGrown] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setGrown(true), 120);
@@ -236,7 +238,7 @@ export default function Report({ result, roleLabel }) {
         )}
       </header>
 
-      {sections.length > 1 && (
+      {!embedded && sections.length > 1 && (
         <nav aria-label="Report sections" className="sticky top-[56px] z-10 bg-white/95 backdrop-blur border-t border-[var(--border-soft)] px-4 sm:px-6 overflow-x-auto">
           <ul className="flex gap-1">
             {sections.map((s) => (

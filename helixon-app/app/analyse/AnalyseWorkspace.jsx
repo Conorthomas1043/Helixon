@@ -15,6 +15,7 @@ import posthog from "@/lib/analytics/posthog";
 import DashboardNav from "@/components/DashboardNav";
 import { getJobs } from "@/lib/dashboard-api";
 import { useResource } from "@/lib/hooks/useResource";
+import { splitViewHref } from "@/lib/workspace/panes";
 import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
@@ -480,6 +481,11 @@ export default function AnalyseWorkspace() {
                     label: "Compare everyone for this role",
                     icon: "layers",
                     onSelect: () => router.push(`/analyse/compare?jobId=${jobId}&ids=${candidateId}`),
+                  },
+                  candidateId && {
+                    label: "Open side by side",
+                    icon: "compare",
+                    onSelect: () => router.push(splitViewHref([candidateId])),
                   },
                 ].filter(Boolean)}
               />

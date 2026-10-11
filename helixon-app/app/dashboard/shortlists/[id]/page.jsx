@@ -25,6 +25,7 @@ import { useConfirm } from "@/components/dashboard/use-confirm";
 import { reportQuietly } from "@/lib/report-error";
 import { Avatar as KitAvatar } from "@/components/ui";
 import { PAGE_FRAME_NARROW } from "@/components/dashboard/page-frame";
+import { useWorkspaceTab } from "@/lib/hooks/useWorkspaceTabs";
 
 function Avatar({ name }) {
   return <KitAvatar name={name} tone="solid" />;
@@ -105,6 +106,7 @@ export default function ShortlistDetailPage({ params }) {
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState(null);
+  useWorkspaceTab(data?.shortlist ? { kind: "shortlist", id, title: data.shortlist.name } : null);
   const [status, setStatus] = useState("loading");
   const [reloadKey, setReloadKey] = useState(0);
   const [jobs, setJobs] = useState([]);

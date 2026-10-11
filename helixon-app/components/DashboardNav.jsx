@@ -13,6 +13,7 @@ import { clearLocalCandidateData } from "@/lib/compliance/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 import { SIGNED_OUT_EVENT } from "@/lib/api-client/errors";
 import { clearResources } from "@/lib/hooks/useResource";
+import WorkspaceTabs from "@/components/workspace/WorkspaceTabs";
 import { initials } from "@/lib/format";
 import { reportQuietly } from "@/lib/report-error";
 
@@ -43,6 +44,7 @@ const MORE = [
       { href: "/dashboard/talent-pool", label: "Talent pool", hint: "People you're keeping for future roles" },
       { href: "/dashboard/shortlists", label: "Client shortlists", hint: "Lists you send to a client to decide on" },
       { href: "/analyse/compare", label: "Compare candidates", hint: "Side by side, for one job" },
+      { href: "/dashboard/workspace", label: "Split view", hint: "Up to 4 candidates' scores, CVs or profiles at once" },
       { href: "/dashboard/import", label: "Import", hint: "Bring candidates in from a spreadsheet" },
     ],
   },
@@ -284,6 +286,7 @@ function DashboardNavContent() {
     : me?.agencyName || "Built for recruitment agencies";
 
   return (
+    <>
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group min-w-0" aria-label="Helixon home">
@@ -421,6 +424,8 @@ function DashboardNavContent() {
       <SignedOutBanner />
       {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
     </nav>
+    <WorkspaceTabs />
+    </>
   );
 }
 

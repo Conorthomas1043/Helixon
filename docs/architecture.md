@@ -91,6 +91,10 @@ Defined in `vercel.json`, all under `app/api/cron/` (times are UTC):
   - **What it returns:** `reload()` after a change; `mutate()` when the page already knows the result.
   - **Sign-out:** logging out clears the cache.
   - **Where it's used:** Interviews, Performance, Compliance, Shortlists, Business development, Clients, Placements, the Calendar & email and Permissions settings, the profile's booking and self-service cards, and the saved jobs on /analyse. Other pages move onto it as they're touched.
+- Workspace tabs and split view. Opening a candidate, job, client or shortlist adds it to the strip of tabs under the nav (`components/workspace/WorkspaceTabs.jsx`).
+  - **Tabs:** the rules are in `lib/workspace/tabs.js`. They're stored in the browser per user (`lib/hooks/useWorkspaceTabs.js`), up to 12, and cleared on log out.
+  - **Split view:** `/dashboard/workspace` shows up to 4 candidates side by side, each pane switching between their screening report, CV and profile summary. The layout lives in the address (`?open=<id>,<id>:cv`, `lib/workspace/panes.js`), so it can be bookmarked or shared. Ways in: the screening report, bulk screening results, the Candidates list and the tab strip.
+- The "Possibly AI-written" amber notice comes from the CV reader's `ai_writing` judgement (`lib/screening/ai-writing.js`). It shows only for clear cases and never affects the score; a test in `lib/cv-analysis/tests/scoreCandidate.test.js` holds that.
 - State with many related fields goes in a reducer with named actions, tested on its own. `/analyse` keeps its job, candidate, run and report in `app/analyse/_lib/workspace-state.js`. A finished analysis, "Screen another CV" and "Next candidate" are single actions there, not a dozen `setState` calls in a handler.
 - `lib/`: business logic, mostly pure functions with tests next to them (`*.test.js`), one folder per domain:
 

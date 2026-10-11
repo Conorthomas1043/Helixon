@@ -57,6 +57,11 @@ test.describe("security", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
+  test("the split view is behind sign-in too", async ({ page }) => {
+    await page.goto("/dashboard/workspace?open=abc,def:cv");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
   test("customer API refuses signed-out requests with JSON", async ({ request }) => {
     const res = await request.get("/api/clients");
     expect(res.status()).toBe(401);
