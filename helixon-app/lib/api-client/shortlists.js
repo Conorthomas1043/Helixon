@@ -5,6 +5,7 @@
 import { track } from "@/lib/analytics";
 import { apiFetch } from "./core";
 
+
 // Shortlists - see app/api/shortlists. `candidateId` marks which lists
 // already have that person on them (containsCandidate).
 /** @param {{ jobId?: string, candidateId?: string }} [filters] */
@@ -16,6 +17,7 @@ export async function getShortlists({ jobId, candidateId } = {}) {
   return res.shortlists;
 }
 
+/** @param {{ name: string, jobId?: string | null, candidateIds?: string[] }} shortlist */
 export async function createShortlist({ name, jobId = null, candidateIds = [] }) {
   const res = await apiFetch("/api/shortlists", {
     method: "POST",
@@ -25,10 +27,12 @@ export async function createShortlist({ name, jobId = null, candidateIds = [] })
   return res.shortlist;
 }
 
+/** @param {string} id */
 export async function getShortlist(id) {
   return apiFetch(`/api/shortlists/${id}`);
 }
 
+/** @param {string} id @param {import("./core").Fields} fields */
 export async function updateShortlist(id, fields) {
   const res = await apiFetch(`/api/shortlists/${id}`, {
     method: "PATCH",
@@ -38,10 +42,12 @@ export async function updateShortlist(id, fields) {
   return res.shortlist;
 }
 
+/** @param {string} id */
 export async function deleteShortlist(id) {
   return apiFetch(`/api/shortlists/${id}`, { method: "DELETE" });
 }
 
+/** @param {string} id @param {string[]} candidateIds @param {string | null} [note] */
 export async function addToShortlist(id, candidateIds, note = null) {
   return apiFetch(`/api/shortlists/${id}/candidates`, {
     method: "POST",
@@ -50,6 +56,7 @@ export async function addToShortlist(id, candidateIds, note = null) {
   });
 }
 
+/** @param {string} id @param {string} candidateId @param {string} note */
 export async function setShortlistNote(id, candidateId, note) {
   return apiFetch(`/api/shortlists/${id}/candidates`, {
     method: "PATCH",
@@ -58,16 +65,19 @@ export async function setShortlistNote(id, candidateId, note) {
   });
 }
 
+/** @param {string} id @param {string} candidateId */
 export async function removeFromShortlist(id, candidateId) {
   return apiFetch(`/api/shortlists/${id}/candidates?candidateId=${encodeURIComponent(candidateId)}`, { method: "DELETE" });
 }
 
 // Client review links for a shortlist - see app/api/shortlists/[id]/shares.
+/** @param {string} shortlistId */
 export async function getShortlistShares(shortlistId) {
   const res = await apiFetch(`/api/shortlists/${shortlistId}/shares`);
   return res.shares;
 }
 
+/** @param {string} shortlistId @param {import("./core").Fields} options */
 export async function createShortlistShare(shortlistId, options) {
   const share = await apiFetch(`/api/shortlists/${shortlistId}/shares`, {
     method: "POST",
@@ -78,6 +88,7 @@ export async function createShortlistShare(shortlistId, options) {
   return share;
 }
 
+/** @param {string} shortlistId @param {string} shareId */
 export async function revokeShortlistShare(shortlistId, shareId) {
   return apiFetch(`/api/shortlists/${shortlistId}/shares?shareId=${encodeURIComponent(shareId)}`, { method: "DELETE" });
 }

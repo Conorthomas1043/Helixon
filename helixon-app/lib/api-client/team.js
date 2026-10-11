@@ -5,6 +5,7 @@
 import { track } from "@/lib/analytics";
 import { apiFetch } from "./core";
 
+
 export async function getRecruiters() {
   return apiFetch("/api/team");
 }
@@ -19,6 +20,7 @@ export async function getTeamSeatUsage() {
   return { status: res.status, data };
 }
 
+/** @param {string} email */
 export async function inviteTeammate(email) {
   const result = await apiFetch("/api/team/invite", {
     method: "POST",
@@ -29,6 +31,7 @@ export async function inviteTeammate(email) {
   return result;
 }
 
+/** @param {string} invitationId */
 export async function cancelTeamInvite(invitationId) {
   return apiFetch("/api/team/invite", {
     method: "DELETE",
@@ -42,6 +45,7 @@ export async function cancelTeamInvite(invitationId) {
 // { invitationId } - see app/api/team/invite's DELETE handler. reassignTo:
 // a remaining member's id to take over their candidates, null to leave them
 // unassigned, or undefined to leave them as they are.
+/** @param {string} userId @param {string | null | undefined} reassignTo */
 export async function removeTeammate(userId, reassignTo) {
   return apiFetch("/api/team/invite", {
     method: "DELETE",
@@ -52,6 +56,7 @@ export async function removeTeammate(userId, reassignTo) {
 
 // Your own presence on the Team page: status "busy" | "away" | null
 // (automatic), with an optional message and end time (ISO).
+/** @param {{ status?: string | null, message?: string, until?: string | null }} [presence] */
 export async function setMyPresence({ status = null, message = "", until = null } = {}) {
   return apiFetch("/api/team/presence", {
     method: "PATCH",
@@ -65,6 +70,7 @@ export async function getPrivacyOverview() {
   return apiFetch("/api/privacy");
 }
 
+/** @param {import("./core").Fields} fields */
 export async function updatePrivacySettings(fields) {
   return apiFetch("/api/privacy", {
     method: "PATCH",
@@ -73,6 +79,7 @@ export async function updatePrivacySettings(fields) {
   });
 }
 
+/** @param {string[]} ids */
 export async function keepCandidates(ids) {
   return apiFetch("/api/privacy", {
     method: "POST",
@@ -83,6 +90,7 @@ export async function keepCandidates(ids) {
 
 // Stop (true) or start (false) sharing your presence; stopping deletes
 // what's been recorded.
+/** @param {boolean} hidden */
 export async function setPresenceHidden(hidden) {
   return apiFetch("/api/team/presence", {
     method: "PATCH",
@@ -92,6 +100,7 @@ export async function setPresenceHidden(hidden) {
 }
 
 // role: "admin" (can manage the team) or "member".
+/** @param {string} userId @param {string} role */
 export async function setTeammateRole(userId, role) {
   return apiFetch("/api/team/role", {
     method: "POST",
@@ -101,6 +110,7 @@ export async function setTeammateRole(userId, role) {
 }
 
 // Hands every candidate no current member owns to one team member.
+/** @param {string} toUserId */
 export async function assignUnassignedCandidates(toUserId) {
   return apiFetch("/api/team/invite", {
     method: "PATCH",

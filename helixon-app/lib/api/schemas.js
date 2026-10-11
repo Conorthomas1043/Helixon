@@ -26,6 +26,7 @@ export const stringList = z.union([z.array(z.string().max(500)).max(500), z.stri
 export const nested = z.unknown().optional();
 
 // An object of exactly these fields (others are dropped).
+/** @template {import("zod").ZodRawShape} S @param {S} shape */
 export const fields = (shape) => z.object(shape);
 
 // The body routes with no fields of their own take: an object, emptied.

@@ -4,16 +4,19 @@
 
 import { apiFetch, jsonBody } from "./core";
 
+
 // API keys and webhooks - see app/api/integrations.
 export async function getApiKeys() {
   const res = await apiFetch("/api/integrations/keys");
   return res.keys;
 }
 
+/** @param {string} name */
 export async function createApiKey(name) {
   return apiFetch("/api/integrations/keys", jsonBody("POST", { name }));
 }
 
+/** @param {string} id */
 export async function revokeApiKey(id) {
   return apiFetch(`/api/integrations/keys?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 }
@@ -22,15 +25,18 @@ export async function getWebhooks() {
   return apiFetch("/api/integrations/webhooks");
 }
 
+/** @param {import("./core").Fields} fields */
 export async function addWebhook(fields) {
   const res = await apiFetch("/api/integrations/webhooks", jsonBody("POST", fields));
   return res.endpoint;
 }
 
+/** @param {string} id @param {import("./core").Fields} fields */
 export async function updateWebhook(id, fields) {
   return apiFetch("/api/integrations/webhooks", jsonBody("PATCH", { id, ...fields }));
 }
 
+/** @param {string} id */
 export async function deleteWebhook(id) {
   return apiFetch(`/api/integrations/webhooks?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 }
@@ -42,10 +48,12 @@ export async function getConnections() {
   return apiFetch("/api/integrations/connections");
 }
 
+/** @param {string} provider */
 export async function disconnectIntegration(provider) {
   return apiFetch(`/api/integrations/connections?provider=${encodeURIComponent(provider)}`, { method: "DELETE" });
 }
 
+/** @param {string} provider */
 export async function syncIntegration(provider) {
   return apiFetch("/api/integrations/connections", {
     method: "POST",

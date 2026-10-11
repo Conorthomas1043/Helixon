@@ -5,9 +5,19 @@
 import { track } from "@/lib/analytics";
 import { apiFetch } from "./core";
 
+/** @typedef {import("@/lib/contracts/jobs").JobRow} JobRow */
+/** @typedef {import("@/lib/contracts/jobs").JobCounts} JobCounts */
+/** @typedef {import("@/lib/contracts/jobs").JobWithCounts} JobWithCounts */
+/** @typedef {import("@/lib/contracts/jobs").Job} Job */
+
+
 // Job rows come back from the API in their raw (snake_case) DB column
 // names; the pages use a camelCase job shape, so adapt here rather than in
 // every page.
+/**
+ * @param {JobRow & Partial<JobCounts>} j
+ * @returns {Job}
+ */
 export function adaptJob(j) {
   return {
     ...j,
@@ -41,7 +51,9 @@ export function adaptJob(j) {
 // app/api/jobs/route.js's POST. `fields`: { title, company, location,
 // employmentType, seniority, salaryRange, requiredSkills, preferredSkills,
 // minYearsExperience, jobText }.
+/** @param {import("./core").Fields} fields @returns {Promise<Job>} */
 export async function createJob(fields) {
+  /** @type {JobRow} */
   const job = await apiFetch("/api/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -51,27 +63,34 @@ export async function createJob(fields) {
   return adaptJob(job);
 }
 
+/** @returns {Promise<Job[]>} */
 export async function getJobs() {
+  /** @type {JobWithCounts[]} */
   const jobs = await apiFetch("/api/jobs");
   return jobs.map(adaptJob);
 }
 
+/** @param {string} id @returns {Promise<Job>} */
 export async function getJobById(id) {
+  /** @type {JobWithCounts} */
   const job = await apiFetch(`/api/jobs/${id}`);
   return adaptJob(job);
 }
 
+/** @param {string} jobId */
 export async function getJobCandidates(jobId) {
   return apiFetch(`/api/jobs/${jobId}/candidates`);
 }
 
 // Sourcing-channel clicks/spend for one job - see
 // app/api/jobs/[id]/channels/route.js.
+/** @param {string} jobId */
 export async function getJobChannels(jobId) {
   const res = await apiFetch(`/api/jobs/${jobId}/channels`);
   return res.channels;
 }
 
+/** @param {string} jobId @param {{ channel: string, clicks?: number | string | null, spend?: number | string | null }} figures */
 export async function setJobChannel(jobId, { channel, clicks, spend }) {
   const res = await apiFetch(`/api/jobs/${jobId}/channels`, {
     method: "POST",
@@ -81,6 +100,7 @@ export async function setJobChannel(jobId, { channel, clicks, spend }) {
   return res.channel;
 }
 
+/** @param {string} jobId @param {string} status */
 export async function updateJobStatus(jobId, status) {
   return apiFetch(`/api/jobs/${jobId}`, {
     method: "PATCH",
@@ -92,7 +112,9 @@ export async function updateJobStatus(jobId, status) {
 // `fields` is whatever subset of { title, client, location, employmentType,
 // seniority, minYearsExperience, requiredSkills, preferredSkills, status }
 // changed - api/jobs/[id]'s PATCH only updates the keys actually present.
+/** @param {string} jobId @param {import("./core").Fields} fields @returns {Promise<Job>} */
 export async function updateJob(jobId, fields) {
+  /** @type {{ ok: true, job: JobRow }} */
   const job = await apiFetch(`/api/jobs/${jobId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -103,6 +125,7 @@ export async function updateJob(jobId, fields) {
 
 // Refuses (409) if the job has any candidates attached - see api/jobs/[id]'s
 // DELETE handler for why.
+/** @param {string} jobId */
 export async function deleteJob(jobId) {
   return apiFetch(`/api/jobs/${jobId}`, { method: "DELETE" });
 }

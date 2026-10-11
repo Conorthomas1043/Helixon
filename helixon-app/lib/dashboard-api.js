@@ -10,6 +10,7 @@
 // re-exports them so existing imports keep working.
 
 export * from "./api-client/analytics";
+export * from "./api-client/billing";
 export * from "./api-client/candidates";
 export * from "./api-client/clients";
 export * from "./api-client/compliance";

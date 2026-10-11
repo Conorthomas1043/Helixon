@@ -32,6 +32,13 @@ How the app in `helixon-app/` fits together. Read this before changing auth, dat
 
 Customer API routes start with `customerRoute()` (`lib/api/route.js`): sign-in, the request body checked against a schema, and any thrown error turned into JSON and reported. Every route's schema names the fields it accepts (the shared field types are in `lib/api/schemas.js`) and unknown keys are dropped; routes that read the body themselves use `parseBody()` (`lib/api/body.js`) the same way. `test/request-schemas.test.js` keeps every route on a schema.
 
+Responses have contracts too, starting with candidates, jobs and billing. A contract is a zod schema in `lib/contracts/` for the JSON a route answers with, and its type is derived from the schema:
+- **On the server,** the code that builds the response is typed with it (`lib/candidates/list.js`, `lib/candidates/profile.js`, `lib/job-list.js`, `lib/billing-summary.js`).
+- **In the browser,** the `lib/api-client` call that reads it returns that type (`getCandidates`, `getJobs`, `getBillingSummary` ...).
+- **In tests,** `app/api/contracts.test.js` calls the routes and parses their real answers with the contract.
+
+A key renamed on one side is a type error or a failing test, not `undefined` on a page. `lib/contracts`, `lib/api` and `lib/api-client` are type-checked in strict mode with no allowed errors (`tsconfig.strict.json`, run by `npm run typecheck`). To add a contract: write the schema, type the server builder with `@returns`, type the client call, and add the route to the contract test.
+
 `proxy.ts` (Next's middleware) runs first on every request. It applies Clerk, the maintenance switch, the admin gate, cross-site request rejection (CSRF by `Origin`/`Sec-Fetch-Site`) and request logging. Security headers and the Content-Security-Policy are set in `next.config.mjs`.
 
 ## Tenant isolation (read this before writing a query)

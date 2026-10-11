@@ -4,12 +4,15 @@
 
 import { apiFetch } from "./core";
 
+
 // Talent pool - see app/api/talent-pool and app/api/candidates/[id]/talent-pool.
+/** @param {{ jobId?: string }} [filters] */
 export async function getTalentPool({ jobId = "" } = {}) {
   return apiFetch(`/api/talent-pool${jobId ? `?jobId=${encodeURIComponent(jobId)}` : ""}`);
 }
 
 // fields: { note?, status?: "available" | "open" | "not_looking" | null, checkIn?: "YYYY-MM-DD" | null }
+/** @param {string} id @param {import("./core").Fields} fields */
 export async function updateTalentPoolEntry(id, fields) {
   return (
     await apiFetch(`/api/candidates/${id}/talent-pool`, {
@@ -20,6 +23,7 @@ export async function updateTalentPoolEntry(id, fields) {
   ).talentPool;
 }
 
+/** @param {string} id @param {string} [note] */
 export async function saveToTalentPool(id, note = "") {
   return (
     await apiFetch(`/api/candidates/${id}/talent-pool`, {
@@ -30,6 +34,7 @@ export async function saveToTalentPool(id, note = "") {
   ).talentPool;
 }
 
+/** @param {string} id */
 export async function removeFromTalentPool(id) {
   // keepalive: an undoable removal may be sent as the page closes.
   return apiFetch(`/api/candidates/${id}/talent-pool`, { method: "DELETE", keepalive: true });
@@ -38,6 +43,7 @@ export async function removeFromTalentPool(id) {
 // Screens someone already on file against another job, reusing their CV.
 // Resolves { candidateId, score, recommendation, job }; a 409 means they're
 // already screened for it (err.existingId).
+/** @param {string} id @param {string} jobId */
 export async function rescreenCandidate(id, jobId) {
   const res = await fetch(`/api/candidates/${id}/rescreen`, {
     method: "POST",

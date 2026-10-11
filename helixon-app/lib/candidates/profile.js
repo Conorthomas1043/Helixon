@@ -13,6 +13,9 @@ import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/recruiter-dir
 import { buildReport, matchHighlights } from "@/lib/analysis-report";
 import { candidateHidden, getAccess, redactJob } from "@/lib/permissions";
 
+/** @typedef {import("@/lib/contracts/candidates").CandidateProfile} CandidateProfile */
+
+/** @type {{ status: 404, error: string }} */
 const NOT_FOUND = { status: 404, error: "Not found" };
 
 // See app/api/candidates/route.js for why this was rewritten (dead auth
@@ -51,11 +54,15 @@ async function loadNotes(candidateId) {
     .order("created_at", { ascending: false });
 }
 
-// { status: 200, body } or { status: 404, error }.
+/**
+ * Contract: lib/contracts/candidates.js.
+ * @param {{ agencyId: string, userId: string, profile?: any }} auth a signed-in member
+ * @param {string} id
+ * @returns {Promise<{ status: 200, body: CandidateProfile } | { status: 404, error: string }>}
+ */
 export async function loadCandidateProfile(auth, id) {
   if (await candidateHidden(auth, id)) return NOT_FOUND;
   const { agencyId } = auth;
-
 
   const { data: candidate, error } = await (await agencyDb())
     .from("candidates")
@@ -68,7 +75,7 @@ export async function loadCandidateProfile(auth, id) {
     return NOT_FOUND;
   }
 
-  const [{ data: notes }, { data: activity }, recruiterNames, { data: latestScore }] = await Promise.all([
+  const [{ data: notes }, { data: activity }, recruiterNames, { data: latestScore }, access] = await Promise.all([
     loadNotes(id),
     supabase
       .from("candidate_activity")
@@ -86,6 +93,7 @@ export async function loadCandidateProfile(auth, id) {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    getAccess(auth),
   ]);
 
   const extracted = candidate.extracted || {};
@@ -130,7 +138,7 @@ export async function loadCandidateProfile(auth, id) {
       currentCompany: candidate.current_company,
       yearsExperience: candidate.years_experience ?? extracted.years_experience ?? null,
       jobId: candidate.job_id,
-      job: redactJob(candidate.jobs ?? null, await getAccess(auth)),
+      job: redactJob(candidate.jobs ?? null, access),
       jobTitle: candidate.jobs?.title || "Unspecified role",
       company: candidate.jobs?.client ?? null,
       recruiterId: candidate.recruiter_id,
@@ -179,8 +187,8 @@ export async function loadCandidateProfile(auth, id) {
       nextAction: candidate.next_action,
       source: candidate.source,
       rejectionReason: candidate.rejection_reason,
-      placementFee: (await getAccess(auth)).canSeeFinancials ? candidate.placement_fee : null,
-      placementCost: (await getAccess(auth)).canSeeFinancials ? candidate.placement_cost : null,
+      placementFee: access.canSeeFinancials ? candidate.placement_fee : null,
+      placementCost: access.canSeeFinancials ? candidate.placement_cost : null,
       retention30d: candidate.retention_30d,
       retention90d: candidate.retention_90d,
       createdAt: candidate.created_at,

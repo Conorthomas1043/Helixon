@@ -23,7 +23,7 @@ CI (`.github/workflows/ci.yml`) runs these on every push and pull request. Run t
 | Command | What it checks |
 |---|---|
 | `npm run lint` | ESLint (Next.js core-web-vitals rules) |
-| `npm run typecheck` | Types in `lib/` and the `.ts` files. Existing errors are listed in `scripts/typecheck-baseline.json`; a file may lose errors but never gain them |
+| `npm run typecheck` | Types in `lib/` and the `.ts` files. Existing errors are listed in `scripts/typecheck-baseline.json`; a file may lose errors but never gain them. Then the API boundary (`lib/contracts`, `lib/api`, `lib/api-client`) in strict mode, which allows no errors at all |
 | `npm test` | Vitest unit tests, including the tenant-isolation guard (`lib/security/tenant-isolation.test.js`) |
 | `npm run build` | Production build |
 

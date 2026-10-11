@@ -4,6 +4,7 @@
 
 import { apiFetch } from "./core";
 
+
 // E-signatures - app/api/signatures, lib/signatures.js.
 /** @param {{ clientId?: string, candidateId?: string }} [filters] */
 export async function getSignatureRequests({ clientId, candidateId } = {}) {
@@ -13,12 +14,14 @@ export async function getSignatureRequests({ clientId, candidateId } = {}) {
   return apiFetch(`/api/signatures?${q.toString()}`);
 }
 
+/** @param {string} id */
 export async function getSignatureRequest(id) {
   const res = await apiFetch(`/api/signatures/${id}`);
   return res.request;
 }
 
 // Resolves { request, link, emailError }.
+/** @param {import("./core").Fields} fields */
 export async function createSignatureRequest(fields) {
   return apiFetch("/api/signatures", {
     method: "POST",
@@ -27,6 +30,7 @@ export async function createSignatureRequest(fields) {
   });
 }
 
+/** @param {string} id */
 export async function voidSignatureRequest(id) {
   return apiFetch(`/api/signatures/${id}`, {
     method: "PATCH",
@@ -37,10 +41,12 @@ export async function voidSignatureRequest(id) {
 
 // Candidate self-service link, interview booking links and merging -
 // app/api/candidates/[id]/portal-link, booking-links, merge.
+/** @param {string} candidateId */
 export async function getPortalLink(candidateId) {
   return apiFetch(`/api/candidates/${candidateId}/portal-link`);
 }
 
+/** @param {string} candidateId @param {{ send?: boolean }} [options] */
 export async function createPortalLink(candidateId, { send = false } = {}) {
   return apiFetch(`/api/candidates/${candidateId}/portal-link`, {
     method: "POST",
@@ -49,6 +55,7 @@ export async function createPortalLink(candidateId, { send = false } = {}) {
   });
 }
 
+/** @param {string} candidateId */
 export async function revokePortalLink(candidateId) {
   return apiFetch(`/api/candidates/${candidateId}/portal-link`, { method: "DELETE" });
 }

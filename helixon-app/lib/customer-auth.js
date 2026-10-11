@@ -144,6 +144,22 @@ export async function agencyHasActiveSubscription(agencyId) {
   return (subs || []).some((sub) => grantsAccess(sub));
 }
 
+/**
+ * Why a request was refused: not signed in (401), no agency or a suspended
+ * one (403), or no subscription where one is required (402).
+ * @typedef {{ ok: false, status: 401 | 402 | 403, error: string, upgrade?: boolean, suspended?: boolean }} CustomerRefusal
+ */
+/**
+ * A signed-in member of an agency. The refusal's keys are named (as
+ * undefined) so code that reads them after `if (!auth.ok)` type-checks with
+ * and without strictNullChecks.
+ * @typedef {{ ok: true, status?: undefined, error?: undefined, upgrade?: undefined, suspended?: undefined } & Awaited<ReturnType<typeof getCustomerContext>>} CustomerAuth
+ */
+
+/**
+ * @param {{ requireSubscription?: boolean }} [options]
+ * @returns {Promise<CustomerRefusal | CustomerAuth>}
+ */
 export async function requireCustomerContext({
   requireSubscription = false,
 } = {}) {

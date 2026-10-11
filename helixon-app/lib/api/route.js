@@ -22,6 +22,7 @@ export { fail, parseBody };
 
 // Throw from a handler to answer with a specific status and message.
 export class ApiError extends Error {
+  /** @param {number} status @param {string} message @param {Record<string, unknown>} [extra] */
   constructor(status, message, extra) {
     super(message);
     this.status = status;
@@ -29,11 +30,14 @@ export class ApiError extends Error {
   }
 }
 
+/** @typedef {import("@/lib/customer-auth").CustomerAuth} CustomerAuth */
+
 /**
- * @param {(request: Request, context: any, auth: any, body?: any) => Promise<Response>} handler
+ * @param {(request: Request, context: any, auth: CustomerAuth, body?: any) => Promise<Response>} handler
  * @param {{ body?: import("zod").ZodType, optionalBody?: boolean, requireSubscription?: boolean }} [options]
  */
 export function customerRoute(handler, { body: schema, optionalBody = false, requireSubscription = false } = {}) {
+  /** @param {Request} request @param {any} context */
   return async function route(request, context) {
     const auth = await requireCustomerContext(requireSubscription ? { requireSubscription: true } : undefined);
     if (!auth.ok) return fail(auth.status, auth.error, auth.upgrade ? { upgrade: auth.upgrade } : undefined);

@@ -13,6 +13,10 @@ import { getAccess, scopeCandidateQuery } from "@/lib/permissions";
 import { agencyDb } from "@/lib/agency-db";
 import { STAGE_LABELS } from "@/lib/stage-labels";
 
+/** @typedef {import("@/lib/contracts/candidates").CandidateListPage} CandidateListPage */
+/** @typedef {import("@/lib/contracts/candidates").StageCounts} StageCounts */
+/** @typedef {import("@/lib/contracts/common").ApiErrorBody} ApiErrorBody */
+
 // ?sortBy= choices.
 const SORTS = {
   score_desc: { column: "match_score", ascending: false },
@@ -28,9 +32,10 @@ const SORTS = {
 
 /**
  * One page of the agency's candidates matching the filters in `params`.
+ * Contract: lib/contracts/candidates.js.
  * @param {{ agencyId: string, userId: string, profile?: any }} auth a signed-in member
  * @param {URLSearchParams} params
- * @returns {Promise<{ status: number, body: any }>}
+ * @returns {Promise<{ status: 200, body: CandidateListPage } | { status: 400 | 500, body: ApiErrorBody }>}
  */
 export async function listCandidates(auth, params) {
   const db = await agencyDb();
@@ -145,7 +150,7 @@ const COUNT_CAP = 20000;
  * request).
  * @param {{ agencyId: string, userId: string, profile?: any }} auth a signed-in member
  * @param {URLSearchParams} params
- * @returns {Promise<{ status: number, body: any }>}
+ * @returns {Promise<{ status: 200, body: StageCounts } | { status: 400 | 500, body: ApiErrorBody }>}
  */
 export async function countCandidateStages(auth, params) {
   const db = await agencyDb();

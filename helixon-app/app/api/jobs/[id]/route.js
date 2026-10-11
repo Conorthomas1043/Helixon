@@ -8,6 +8,7 @@ import { cleanJobDetails } from "@/lib/job-details";
 import { normaliseOffices } from "@/lib/offices";
 import { agencyDb } from "@/lib/agency-db";
 import { getAccess, redactJob, withoutMoney } from "@/lib/permissions";
+import { JOB_WITH_CANDIDATES, withCounts } from "@/lib/job-list";
 
 export const GET = customerRoute(async (request, { params }, auth) => {
   const { agencyId } = auth;
@@ -15,7 +16,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 
   const { data: job, error } = await (await agencyDb())
     .from("jobs")
-    .select("*, candidates(id, processing_status, stage, match_score)")
+    .select(JOB_WITH_CANDIDATES)
     .eq("id", id)
     .eq("agency_id", agencyId)
     .maybeSingle();
@@ -24,17 +25,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const completed = job.candidates.filter((c) => c.processing_status === "completed");
-  return NextResponse.json({
-    ...redactJob(job, await getAccess(auth)),
-    candidates: undefined,
-    candidateCount: job.candidates.length,
-    strongMatches: completed.filter((c) => c.match_score !== null && c.match_score >= 80).length,
-    shortlisted: completed.filter((c) => c.stage === "Shortlisted").length,
-    interviewing: completed.filter((c) => c.stage === "Interview").length,
-    offers: completed.filter((c) => c.stage === "Offer").length,
-    placed: completed.filter((c) => c.stage === "Placed").length,
-  });
+  return NextResponse.json(withCounts(job, await getAccess(auth)));
 });
 
 const VALID_STATUSES = new Set(["open", "closed"]);

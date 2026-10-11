@@ -9,6 +9,7 @@ import { apiRequest, COLORS, GENERIC_ERROR } from "@/lib/account";
 import { PLAN_LABELS } from "@/lib/plans";
 import { Dialog } from "@/components/dashboard/ui";
 import { reportQuietly } from "@/lib/report-error";
+import { getBillingSummary } from "@/lib/api-client/billing";
 
 // Asked before handing a cancellation over to Stripe. The answers feed
 // /api/billing/cancel-intent; a couple of them have a better answer than
@@ -96,7 +97,7 @@ export default function BillingPage() {
 
   useEffect(() => {
     let cancelled = false;
-    apiRequest("/api/billing")
+    getBillingSummary()
       .then((data) => { if (!cancelled) setState({ loading: false, error: "", data }); })
       .catch((err) => { if (!cancelled) setState({ loading: false, error: err.message || GENERIC_ERROR, data: null }); });
     return () => { cancelled = true; };

@@ -4,6 +4,9 @@
 
 import { NextResponse } from "next/server";
 
+/** @typedef {(status: number, error: string, extra?: Record<string, unknown>) => Response} Respond */
+
+/** @type {Respond} */
 export function fail(status, error, extra) {
   return NextResponse.json({ error, ...extra }, { status });
 }
@@ -11,6 +14,13 @@ export function fail(status, error, extra) {
 // Reads and validates a JSON body. Returns { body } or { response } (a 400
 // explaining the first problem in words a person can act on). `respond`
 // builds that response; the public API passes its own error shape.
+/**
+ * @template {import("zod").ZodType} S
+ * @param {Request} request
+ * @param {S} schema
+ * @param {{ allowEmpty?: boolean, respond?: Respond }} [options]
+ * @returns {Promise<{ body: import("zod").infer<S>, response?: undefined } | { response: Response, body?: undefined }>}
+ */
 export async function parseBody(request, schema, { allowEmpty = false, respond = fail } = {}) {
   let raw;
   try {
