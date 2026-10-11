@@ -235,7 +235,7 @@ All twelve are done in code. Three need a setting changed outside the repo befor
 | D9 | Done for candidates, jobs and billing | `d180f0d` | Response contracts in `lib/contracts/` type both the server code that builds a response and the client call that reads it, and `app/api/contracts.test.js` checks real responses against them. `lib/contracts`, `lib/api` and `lib/api-client` type-check in strict mode with no allowed errors. Other responses move onto contracts as they're touched |
 | D10 | Done | `ecf1abf` | 117 of 133 top-level `lib/` modules are in domain folders; 16 shared ones stay at the top (map in `architecture.md`) |
 | D11 | Done for the hook and the worst component | `4dd54f5` | `useResource` (a keyed, session-cached loader) on 9 dashboard pages, 2 profile cards and /analyse; /analyse's 29 `useState` calls are one tested reducer. The 27 in `candidate-extras.jsx` turned out to be six small cards, not one component, so they didn't need a reducer. The remaining pages move onto the hook as they're touched |
-| D12 | Done | `a1f62e3`, `d09f873`, `ff5d423` | 127 history comments rewritten to give the current behaviour and its reason. What still matches "no longer" describes behaviour now (an expired demo no longer grants access) |
+| D12 | Done | `a1f62e3`, `d09f873`, `ff5d423` | 149 history comments rewritten to give the current behaviour and its reason (127 found by search, 22 more found while doing it). What still matches "no longer" describes behaviour now (an expired demo no longer grants access) |
 
 With D1 to D9 done, the API and front-end areas read senior, and the overall rating moves to **senior**. The step to **staff** is less about code and more about system shape:
 - typed contracts end to end;
