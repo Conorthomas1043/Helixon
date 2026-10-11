@@ -24,7 +24,7 @@ function toArray(value) {
 
 // Total years covered by dated positions, overlapping roles counted once.
 // Fallback for when extraction returns 0 years despite a dated work
-// history - which used to zero the experience component of the score.
+// history, which would otherwise zero the experience component of the score.
 function yearsFromPositions(positions = []) {
     const spans = positions
         .map((p) => [Number(p.start_year) || 0, Number(p.end_year) || CURRENT_YEAR])
@@ -67,8 +67,8 @@ export default function validateCandidate(candidate = {}) {
 
 
         // contact / status fields the run route and CandidateResult UI
-        // read directly - previously missing from both the prompt and
-        // this validator, so they always came through as undefined
+        // read directly - defaulted here so they never come through as
+        // undefined
         linkedin: "",
 
         github: "",

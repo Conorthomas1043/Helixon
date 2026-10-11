@@ -58,12 +58,11 @@ function randomHex(byteLen: number): string {
 /**
  * Builds the signed cookie value to hand back to the browser on success.
  *
- * FIX: this used to sign the constant string "granted", so every issued
- * cookie had the exact same value forever - anyone who ever saw one copy
- * of it (a screenshot, a log line, a shared machine) could replay it
- * indefinitely. Each call now mints a random nonce and embeds the issue
- * time, both covered by the signature, so every issuance is unique and
- * verifyGateCookie() can enforce its own expiry independent of whatever
+ * Each call mints a random nonce and embeds the issue time, both covered
+ * by the signature, so every issuance is unique: a fixed value could be
+ * replayed indefinitely by anyone who ever saw one copy of it (a
+ * screenshot, a log line, a shared machine). The issue time also lets
+ * verifyGateCookie() enforce its own expiry independent of whatever
  * maxAge/expires attributes did or didn't survive on the copy.
  */
 export async function signGateCookie(): Promise<string> {

@@ -32,8 +32,8 @@ function Stat({ label, value, accent }) {
   );
 }
 
-// Nothing at all for an empty value: jobs without a seniority or employment
-// type used to show blank grey pills.
+// Nothing at all for an empty value, so a job without a seniority or
+// employment type doesn't show blank grey pills.
 function Chip({ children }) {
   if (children === null || children === undefined || children === false || children === "") return null;
   return (

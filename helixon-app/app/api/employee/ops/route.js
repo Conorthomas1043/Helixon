@@ -1,14 +1,7 @@
-// Previously this route authenticated via a Supabase Auth Bearer token and
-// looked the caller up by employees.email - but employees don't have
-// Supabase Auth accounts; they log in through lib/employee/auth.js's own
-// username/password + cookie-session system (see lib/session.js). That
-// mismatch meant this route could never actually be called: it 403'd
-// unconditionally (see the same fix already applied to
-// app/api/employee/shared-todos/route.js). Its frontend read a token from
-// window.__HELIXON_ACCESS_TOKEN__, which nothing in the app ever sets -
-// confirming the whole path was orphaned. Rewritten to use the same
-// employeeAccess() session check every other /api/employee/* route
-// uses.
+// Employees don't have Supabase Auth accounts; they log in through
+// lib/employee/auth.js's own username/password + cookie-session system
+// (see lib/session.js). So this route uses the same employeeAccess()
+// session check as every other /api/employee/* route, not a Bearer token.
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -32,10 +25,9 @@ export async function GET() {
 
     const supabase = client();
     // NOTE: employees has no `email` column (see the identical note in
-    // app/api/employee/shared-todos/route.js) - selecting one here used to
-    // make this query fail on every single call, which this route treated
-    // as "not an employee" and answered with a 403 regardless of who was
-    // asking. That made /employee/ops permanently broken for everyone.
+    // app/api/employee/shared-todos/route.js) - selecting one would make
+    // this query fail on every call, which this route treats as "not an
+    // employee" and answers with a 403 regardless of who is asking.
     const employee = await supabase
       .from("employees")
       .select("id,username,display_name,full_name")
@@ -43,8 +35,8 @@ export async function GET() {
       .maybeSingle();
     if (employee.error || !employee.data) return NextResponse.json({ error: "Employee access required" }, { status: 403 });
 
-    // Totals are counted by the database (a row pull stops at 1,000, so every
-    // KPI used to top out there); the breakdowns read every row.
+    // Totals are counted by the database (a row pull stops at 1,000, which
+    // would cap every KPI there); the breakdowns read every row.
     const count = (table) => supabase.from(table).select("id", { count: "exact", head: true });
     const [agencies, candidates, jobs, analyses, demos] = await Promise.all([
       fetchAll((from, to) => supabase.from("agencies").select("id,plan_name,analyses_used,analyses_limit").order("id").range(from, to)),

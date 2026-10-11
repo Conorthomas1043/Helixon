@@ -37,8 +37,7 @@ export default function TeamPage() {
   const [ask, confirmDialog] = useConfirm();
 
   // Seat usage lives here, not inside the invite panel, so removing someone
-  // refreshes the "x of 5 seats" counter too - it used to stay stale until
-  // a full page reload.
+  // refreshes the "x of 5 seats" counter too, without a full page reload.
   const [usage, setUsage] = useState(null);
   const [usageState, setUsageState] = useState("loading"); // loading | ready | upgrade | error
   const [usageError, setUsageError] = useState("");

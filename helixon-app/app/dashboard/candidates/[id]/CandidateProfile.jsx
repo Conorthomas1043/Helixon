@@ -56,8 +56,8 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
   const [recruiters, setRecruiters] = useState([]);
   const [feedbackRequests, setFeedbackRequests] = useState([]);
   const [creatingFeedbackRequest, setCreatingFeedbackRequest] = useState(null);
-  // Every action on this page reports a failure here - they used to fail
-  // silently (a lost note, a stage that snapped back on reload).
+  // Every action on this page reports a failure here, so none fails
+  // silently (a lost note, a stage that snaps back on reload).
   const { toasts, toast, dismiss } = useToasts();
   const failed = useCallback((err, fallback) => toast(err?.message || fallback, "error"), [toast]);
   const [ask, confirmDialog] = useConfirm();
@@ -228,10 +228,8 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
     const name = candidate?.fullName || "this candidate";
     const others = candidate?.otherRoles?.length || 0;
     // They're also on file for other jobs - an erasure request has to cover
-    // those records too. This used to be a native confirm() where OK meant
-    // "erase everything" and Cancel meant "remove from this job only", so
-    // pressing Cancel still deleted. Each choice now says what it does, and
-    // Cancel really cancels.
+    // those records too. Each choice says exactly what it deletes, and
+    // Cancel deletes nothing.
     const scope = await ask(
       others > 0
         ? {

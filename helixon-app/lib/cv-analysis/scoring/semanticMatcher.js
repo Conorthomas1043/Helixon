@@ -5,9 +5,7 @@ import { normaliseSkill, containsPhrase } from "../utils/skillNormaliser.js";
 // Single source of truth for skill synonyms lives in
 // models/skillTaxonomy.json - add a new skill or alias there and every
 // caller of semanticMatch picks it up automatically, no code change
-// needed. This was previously a second, smaller taxonomy hardcoded here
-// that had drifted out of sync with the JSON file (which nothing
-// actually imported).
+// needed.
 //
 // Each entry is either a plain list of synonyms, or
 // { "synonyms": [...], "includes": [...] }:
@@ -17,8 +15,8 @@ import { normaliseSkill, containsPhrase } from "../utils/skillNormaliser.js";
 //     ("SQL" includes "MySQL"; "CRM" includes "Salesforce"). One direction
 //     only: a required "CRM" is met by a candidate's "Salesforce", but a
 //     required "Salesforce" is not met by "CRM" or by another include
-//     ("HubSpot"). The old flat lists treated every name in a group as
-//     equal, so e.g. "Redux" counted as "Next.js" and "Django" as "Flask".
+//     ("HubSpot"). Keeping the two apart stops every name in a group
+//     counting as equal (e.g. "Redux" as "Next.js", "Django" as "Flask").
 //
 // The index is built once at module load: required term -> set of
 // candidate terms that satisfy it.

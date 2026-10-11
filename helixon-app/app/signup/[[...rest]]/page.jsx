@@ -9,21 +9,16 @@ import AuthShell from "@/components/auth/AuthShell";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing used across the flow
 
-// Replaces the old 4-step custom wizard (name -> handle/agency -> security ->
-// confirm) + api/auth/signup + api/auth/verify-email +
-// api/auth/resend-confirmation + api/auth/username-available. Clerk's hosted
-// <SignUp/> now owns first/last name, email, username, password + strength
-// rules, bot protection, and email verification (its own code-entry step,
-// shown automatically) - that was steps "You", "Handle", "Security", and the
-// email-verification screen in the old wizard, all in one component.
+// Two steps: the agency name, then Clerk's hosted <SignUp/>, which owns
+// first/last name, email, username, password + strength rules, bot
+// protection, and email verification (its own code-entry step, shown
+// automatically). Clerk validates live, field by field, so there's no
+// separate review step.
 //
-// "Agency name" isn't a field Clerk knows about, so it's still collected
-// here first (step 01) and passed through as `unsafeMetadata`. The webhook
-// at app/api/webhooks/clerk/route.js reads it back out once the account is
-// actually created and creates the `agencies` + `profiles` rows - the same
-// inserts app/api/auth/signup/route.js used to do inline. The old "Confirm"
-// review step is gone too - nothing left to double-check once Clerk is
-// doing its own validation live, field by field.
+// "Agency name" isn't a field Clerk knows about, so it's collected here
+// first (step 01) and passed through as `unsafeMetadata`. The webhook at
+// app/api/webhooks/clerk/route.js reads it back out once the account is
+// actually created and creates the `agencies` + `profiles` rows.
 //
 // One-time setup needed in the Clerk dashboard (User & Authentication):
 // enable "Username" and "Name" (first/last) as required fields, so Clerk

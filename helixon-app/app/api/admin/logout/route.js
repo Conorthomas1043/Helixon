@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { destroyAdminSession, isAdminRouteHidden } from "@/lib/admin/auth";
 
-// POST only. The header "Log out" button used to navigate to this URL, which
-// sends a GET, so the request was answered 405 and the session was never
-// ended - admins stayed logged in for the full 8 hours. The button now POSTs
-// (see app/admin/layout.js). Cross-site POSTs are already refused in proxy.ts,
-// and forcing a logout is not a meaningful attack, so no CSRF token is needed.
+// POST only: a plain link here would send a GET, get a 405 and leave the
+// session running, so the sign-out button POSTs (app/admin/_shared/session.js).
+// Cross-site POSTs are already refused in proxy.ts, and forcing a logout is
+// not a meaningful attack, so no CSRF token is needed.
 export async function POST() {
   await destroyAdminSession();
 

@@ -281,8 +281,8 @@ export default async function scoreCandidate(
     const minYears = Number(job.min_years_experience) || 0;
     const yearsExperience = Number(candidate.years_experience) || 0;
 
-    // Years relevant to THIS role (judged), not total career length - ten
-    // years in an unrelated field used to earn full experience points.
+    // Years relevant to THIS role (judged), not total career length, so ten
+    // years in an unrelated field doesn't earn full experience points.
     // Falls back to total years when the judgement didn't produce one.
     const relevantYears = judgment.relevant_experience
         ? Math.min(yearsExperience || Infinity, judgment.relevant_experience.years)
@@ -349,8 +349,8 @@ export default async function scoreCandidate(
     // Risk is about the candidate, not their CV as a document: formatting
     // problems (no dates, a sparse or plain layout - common for hourly and
     // manual roles, where nobody needs a polished CV) lower confidence in
-    // this analysis, but they used to also push hiring risk up to "High"
-    // and add a red flag the candidate did nothing to earn.
+    // this analysis, but don't push hiring risk up or add a red flag the
+    // candidate did nothing to earn.
     const riskConfidence = calculateConfidence({
         evidence,
         cvIssues: [],
@@ -461,10 +461,9 @@ export default async function scoreCandidate(
 
     // Three real states, not two: "met" (verified from the CV), "not met"
     // (verified from the CV and it fails) and "unverified" (the CV has no
-    // way to tell us - e.g. right to work, security clearance). Previously
-    // this only tracked failed vs. not-failed, which reported every
-    // unverifiable requirement as "met: true" - actively misleading, since
-    // nothing had actually confirmed it.
+    // way to tell us - e.g. right to work, security clearance). Reporting an
+    // unverifiable requirement as met would be actively misleading, since
+    // nothing has actually confirmed it.
     const requirementsMet = (job.knockout_requirements || []).map((rule) => {
         const status = knockout.failed.includes(rule)
             ? "not_met"

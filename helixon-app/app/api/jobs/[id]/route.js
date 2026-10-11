@@ -62,17 +62,13 @@ function cleanSkillList(value) {
   return cleaned;
 }
 
-// Replaces app/api/jobs/[id]/update-status (retired - no auth, no agency
-// check, and broken on every call from reading `params` without awaiting
-// it). Also now handles editing a job's title/requirements, which nothing
-// previously did - a typo in a job title was permanent. Deliberately
-// still doesn't let the raw job spec text (job_text) be edited: that's
-// what every future analysis against this job re-parses skills/seniority
-// from (see api/run's existingJobId handling, which always takes fresh
-// jobText from the analysis request, never reads job_text back out) -
-// editing the structured fields here can't drift out of sync with
-// anything else the way editing the free-text spec without re-parsing it
-// could.
+// Updates a job's status, details and requirements. Deliberately doesn't
+// let the raw job spec text (job_text) be edited: that's what every future
+// analysis against this job re-parses skills/seniority from (see api/run's
+// existingJobId handling, which always takes fresh jobText from the
+// analysis request, never reads job_text back out) - editing the
+// structured fields here can't drift out of sync with anything else the
+// way editing the free-text spec without re-parsing it could.
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   const { agencyId } = auth;
   const { id } = await params;
@@ -121,8 +117,8 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (salaryRange !== undefined) update.salary_range = salaryRange;
 
   // The client contact the "present to client" / "chase feedback" emails and
-  // client feedback requests go to. Until now only the AI's read of the job
-  // spec ever set it.
+  // client feedback requests go to. Editable here as well as set by the AI's
+  // read of the job spec.
   if (body.clientEmail !== undefined) {
     if (body.clientEmail === null || body.clientEmail === "") {
       update.client_email = null;

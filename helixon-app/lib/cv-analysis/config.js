@@ -61,8 +61,8 @@ export function scoreWeightsFor(job = {}) {
 // out: no required skills extracted, or no preferred ones. Their points are
 // shared across the remaining components in proportion, so the total still
 // runs to 100. Handing everyone the missing component's full points instead
-// (the old behaviour) gave every candidate the same 35-50 points on a vague
-// job description, which squashed the ranking.
+// would give every candidate the same 35-50 points on a vague job
+// description, which squashes the ranking.
 export function effectiveWeights(base, { hasRequired = true, hasPreferred = true } = {}) {
     const dropped = new Set([
         ...(hasRequired ? [] : ["required"]),
@@ -85,8 +85,8 @@ export function effectiveWeights(base, { hasRequired = true, hasPreferred = true
 export const FULL_CREDIT_YEARS = { professional: 5, executive: 10, frontline: 2 };
 
 // How much of a matched skill's points the candidate earns, by how deeply
-// the CV shows it (candidate.skill_details[].depth). A skill that's only
-// listed used to earn exactly the same as one used for years.
+// the CV shows it (candidate.skill_details[].depth), so a skill that's only
+// listed earns less than one used for years.
 export const DEPTH_CREDIT = {
 
     Expert:1,

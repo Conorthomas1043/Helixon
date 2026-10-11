@@ -8,9 +8,9 @@ import { ACCESS_STATUSES, grantsAccess } from "@/lib/subscription-status";
 // again - a self-service upgrade/downgrade through the Stripe Billing
 // Portal only ever updates subscriptions.plan (see
 // app/api/webhooks/stripe), so the two agency-table fields silently go
-// stale the moment a customer changes plan. Several routes previously
-// read `agency.plan_name || agency.settings?.plan || subscription?.plan`,
-// i.e. preferred the two stale fields over the one accurate one.
+// stale the moment a customer changes plan. Use this rather than reading
+// `agency.plan_name || agency.settings?.plan || subscription?.plan`,
+// which prefers the two stale fields over the one accurate one.
 //
 // subscriptions.user_id is a uuid FK to profiles.id belonging to whoever
 // actually paid (the agency owner) - an invited teammate's own profile
@@ -33,8 +33,8 @@ export async function getAgencyPlan(agencyId) {
 
   // Not maybeSingle(): an agency can briefly have two active rows (a
   // re-subscribe, or a second member's own subscription), and
-  // maybeSingle() errors on more than one row - which threw here and took
-  // the Team page's invite panel down with a 500. An Agency-plan row wins.
+  // maybeSingle() errors on more than one row, which would throw here and
+  // take the Team page's invite panel down with a 500. An Agency-plan row wins.
   const { data: subscriptions, error: subError } = await supabase
     .from("subscriptions")
     .select("plan,status,stripe_subscription_id,demo_expires_at")

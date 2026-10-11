@@ -7,11 +7,11 @@ import SiteAnnouncement from "@/components/SiteAnnouncement";
 import { connection } from "next/server";
 import "./globals.css";
 
-// Every font the site uses, self-hosted through next/font. They used to come
-// from a Google Fonts stylesheet: a render-blocking request to a third-party
-// origin on every page, which held back first paint. next/font serves them from
-// our own domain with size-matched fallbacks, so text doesn't jump when the
-// web font arrives. globals.css maps these onto --font-display/-body/-mono.
+// Every font the site uses, self-hosted through next/font rather than a Google
+// Fonts stylesheet, which would be a render-blocking request to a third-party
+// origin on every page. next/font serves them from our own domain with
+// size-matched fallbacks, so text doesn't jump when the web font arrives.
+// globals.css maps these onto --font-display/-body/-mono.
 const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], display: "swap" });
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 const geistMono = Geist_Mono({

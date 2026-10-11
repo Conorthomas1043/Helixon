@@ -1,7 +1,7 @@
 // Deliberately never asks about employment gaps - see riskEngine.js and
-// scoreCandidate.js for why gaps aren't treated as a negative signal. (It
-// used to add "Can you explain any employment gaps?" whenever risk was
-// High, even though risk is computed without looking at gaps at all.)
+// scoreCandidate.js for why gaps aren't treated as a negative signal. Risk
+// is computed without looking at gaps at all, so a High risk says nothing
+// about them.
 export default function questions({ missing = [], unsupported = [] }){
 
 const q=[];

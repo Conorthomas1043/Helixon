@@ -150,9 +150,9 @@ export async function POST(req) {
     }
 
     // What visitors ask before buying is the clearest record of their
-    // objections, and it used to be discarded. Kept only for visitors who
-    // accepted optional cookies, with contact details stripped, tagged by
-    // topic (docs/ux-research-audit.md, R8).
+    // objections, so it's kept - only for visitors who accepted optional
+    // cookies, with contact details stripped, tagged by topic
+    // (docs/ux-research-audit.md, R8).
     const latest = [...contents].reverse().find((t) => t.role === "user")?.parts?.[0]?.text;
     if (latest && /(?:^|;\s*)helixon_cookie_consent=all(?:;|$)/.test(req.headers.get("cookie") || "") && !shouldBlockChatMessage(latest)) {
       after(() => recordSignal({ kind: "assistant_question", label: questionTopic(latest), body: latest, meta: { turn: contents.filter((t) => t.role === "user").length } }));

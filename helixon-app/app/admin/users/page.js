@@ -328,7 +328,7 @@ export default function UsersPage() {
   }
 
   // Every user action goes through here, so confirmations are consistent
-  // (ban used to fire on a single click with no confirmation).
+  // (a ban asks for a reason first, since it signs the person out).
   async function run(key, user, extra = {}) {
     const who = user.email || displayName(user) || "this user";
     if (key === "provision") {

@@ -12,14 +12,12 @@ import { ADMIN_CSRF_COOKIE, generateCsrfToken } from "@/lib/admin/csrf";
 import { reportError } from "@/lib/report-error";
 
 // ── Admin session handling ───────────────────────────────────────────────────
-// Replaces the old pattern of a USERS map + a hardcoded admin key sitting
-// inside client-side JS (admin/page.js). That meant anyone could open the
-// browser dev tools, read the JS bundle, and pull out both the admin
-// usernames/passwords AND the permanent backend admin key - giving them full
-// read access to every agency's candidates, scores, and subscriptions
-// forever, with no way to revoke it short of redeploying new code.
+// Nothing admin-related ships in client-side JS: anyone can open the browser
+// dev tools and read the bundle, and a leaked admin login or permanent admin
+// key would give full read access to every agency's candidates, scores, and
+// subscriptions, with no way to revoke it short of redeploying new code.
 //
-// This version:
+// So this:
 //  - Stores admin credentials as env vars (server-only, never shipped to the browser)
 //  - Compares password hashes, not plaintext
 //  - Issues a signed, httpOnly, short-lived session cookie instead of a
@@ -244,7 +242,7 @@ export function isAdminRouteHidden() {
   return /^[A-Za-z0-9_-]{8,}$/.test(slug);
 }
 
-// (isAdminUser(request) used to live here - a second, hand-rolled cookie
-// parser that let other routes grant admin perks such as bypassing the
-// paywall. Nothing called it, and an unused "am I admin" shortcut is a
-// liability, so it was removed.)
+// Admin checks go through getAdminSession() / requireAdminSession() above.
+// There's deliberately no lighter "am I admin" helper: a second, hand-rolled
+// cookie parser that lets other routes grant admin perks (such as bypassing
+// the paywall) is a liability.

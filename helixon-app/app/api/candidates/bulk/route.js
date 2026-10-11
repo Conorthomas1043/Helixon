@@ -17,10 +17,9 @@ const BulkInput = fields({ action: text(20), ids: ids(5000), stage: text(40), ta
 
 // POST { ids: [...], action: "stage" | "tag" | "delete" | "pool" | "unpool", stage?, tagId? }
 //
-// Bulk actions from the Candidates list in one request. They used to loop
-// one request per candidate from the browser (a 50-candidate stage change
-// was 50 requests, and failures were silently ignored). Every action is
-// scoped to the caller's agency; ids from anywhere else are ignored.
+// Bulk actions from the Candidates list, in one request rather than one per
+// candidate from the browser. Every action is scoped to the caller's agency;
+// ids from anywhere else are ignored.
 const MAX_IDS = 500;
 
 export const POST = customerRoute(async (request, _context, auth, body) => {

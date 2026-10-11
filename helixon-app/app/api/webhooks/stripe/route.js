@@ -69,10 +69,8 @@ export async function POST(request) {
       // also how a self-service upgrade/downgrade via the Stripe Billing
       // Portal arrives (Stripe doesn't send a separate "plan changed"
       // event - it's the same customer.subscription.updated with a new
-      // price on the subscription item). Previously this only wrote
-      // `status`, so an upgrade would charge the new price correctly but
-      // the app kept showing the plan the customer originally signed up
-      // for, everywhere that reads subscriptions.plan.
+      // price on the subscription item), and everything that reads
+      // subscriptions.plan should show the plan the customer now pays for.
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const sub = event.data.object;

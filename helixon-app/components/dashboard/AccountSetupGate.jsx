@@ -10,14 +10,14 @@ import DashboardNav from "@/components/DashboardNav";
 // agency, and the agency + profile rows are only created when an account is
 // set up through checkout (the Clerk webhook, or /api/complete-signup). A
 // signed-in person without one gets a 403 from every agency-scoped API
-// (candidates, jobs, team, analytics...), so each tab used to read "Unable to
-// load ..." with no hint why - while the Overview quietly showed a false
+// (candidates, jobs, team, analytics...), so each tab would read "Unable to
+// load ..." with no hint why - while the Overview would quietly show a false
 // "No candidates yet".
 //
 // This asks once, up front, and if the account genuinely has no agency it
 // shows what's wrong and what to do about it, instead of five broken tabs.
-// If the check itself fails (offline, 5xx) it steps aside and the pages behave
-// as they always did.
+// If the check itself fails (offline, 5xx) it steps aside and the pages load
+// as normal.
 
 const CARD = {
   background: "white",

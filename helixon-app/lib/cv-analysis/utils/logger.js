@@ -1,13 +1,13 @@
-// Centralised logging for the CV pipeline. Two things this exists to fix:
+// Centralised logging for the CV pipeline. Two things this exists to prevent:
 //
-// 1. Debug noise in production. The pipeline used to sprinkle raw
-//    console.log everywhere ("CLAUDE RAW:", full text) which is fine on a
-//    laptop but expensive and noisy once it's running on real traffic.
-//    debug() is a no-op in production unless explicitly turned back on.
+// 1. Debug noise in production. Raw console.log output (model responses,
+//    full text) is fine on a laptop but expensive and noisy once it's
+//    running on real traffic. debug() is a no-op in production unless
+//    explicitly turned back on (CV_PIPELINE_DEBUG=true).
 //
 // 2. Candidate PII ending up in logs. CV text, extracted names/emails/
-//    phone numbers, and full job descriptions were being logged verbatim
-//    on every request. Whatever platform aggregates these logs then holds
+//    phone numbers, and full job descriptions must never be logged
+//    verbatim: whatever platform aggregates these logs then holds
 //    candidate personal data indefinitely, outside of the database's own
 //    access controls/retention policy - a real compliance problem
 //    (GDPR/UK GDPR "right to erasure" can't reach a log line). summarise()

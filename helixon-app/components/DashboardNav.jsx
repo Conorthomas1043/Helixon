@@ -111,8 +111,8 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
         style={current ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
         title={current ? current.label : undefined}
       >
-        {/* Capped: a long page name ("Placements & invoices") used to widen
-            the tab row until it ran underneath the search box. */}
+        {/* Capped, so a long page name ("Placements & invoices") can't widen
+            the tab row until it runs underneath the search box. */}
         <span className="inline-block max-w-[7.5rem] truncate align-bottom">{current ? current.label : "More"}</span> ▾
       </button>
       {open && (

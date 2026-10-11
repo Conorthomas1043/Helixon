@@ -24,7 +24,7 @@ export async function getCandidates(query = {}) {
 // that need "every matching candidate" (analytics, pipeline board,
 // CSV export) page through the whole result using totalPages from each
 // real response. 200 per page keeps a large agency to a handful of
-// requests (it was 50, i.e. 100 sequential requests for 5,000 candidates).
+// requests (5,000 candidates is 25 sequential requests).
 // Capped at 100 pages (20,000 candidates) against a runaway loop.
 /** @param {CandidateQuery} [query] @returns {Promise<CandidateListItem[]>} */
 export async function getAllCandidates(query = {}) {
@@ -45,15 +45,14 @@ export async function getAllCandidates(query = {}) {
 }
 
 // Candidates per stage for the current filters (the stage tabs), counted
-// on the server in one request. This used to fetch every matching candidate
-// page by page and count them here.
+// on the server in one request rather than by fetching every candidate.
 /** @param {CandidateQuery} [query] @returns {Promise<StageCounts>} */
 export async function getStageCounts(query = {}) {
   return apiFetch(`/api/candidates/stage-counts?${buildCandidatesQuery(query).toString()}`);
 }
 
-// Every candidate for the pipeline board - the board used to ask for
-// pageSize: 500 and silently got the server's 50-row cap.
+// Every candidate for the pipeline board, paging through the API's
+// 200-row limit (see getAllCandidates).
 /** @param {CandidateQuery} [query] */
 export async function getPipelineCandidates(query = {}) {
   return getAllCandidates(query);

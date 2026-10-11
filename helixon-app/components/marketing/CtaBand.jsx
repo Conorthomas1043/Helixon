@@ -1,8 +1,8 @@
 import Button from "@/components/landing/Button";
 
 /**
- * The dark-forest "final CTA" band, previously copy-pasted per marketing
- * page. Content varies by page via props; chrome (background, radius,
+ * The dark-forest "final CTA" band shared by the marketing pages.
+ * Content varies by page via props; chrome (background, radius,
  * spacing, button styling) stays identical everywhere.
  */
 export default function CtaBand({

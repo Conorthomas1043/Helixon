@@ -1,7 +1,6 @@
 // lib/candidates/files.js
 // Original CV files, kept so recruiters can preview, download and send the
-// real document - the analysis only ever kept the extracted text before,
-// and threw the file away.
+// real document, not just the text the analysis extracted from it.
 //
 // Stored in the private "cvs" Supabase Storage bucket (no public access
 // and no storage RLS policies: only this server, via the service-role
@@ -13,8 +12,8 @@
 // candidate, and deliberately without the original filename, which is
 // often the candidate's name (keeps PII out of storage paths and logs).
 // The display name lives in candidates.cv_filename; the storage path in
-// candidates.cv_file_url (an existing, previously unused column - it holds
-// a bucket path, not a URL).
+// candidates.cv_file_url (despite its name, it holds a bucket path, not a
+// URL).
 import "server-only";
 import { supabase } from "@/lib/supabase";
 

@@ -89,7 +89,7 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="Screen a CV" actionHref="/analyse" />
       ) : (
         <>
-          {/* A wrapping grid on a phone (the row used to scroll inside the card,
+          {/* A wrapping grid on a phone (a single row would scroll inside the card,
               with the conversion labels overlapping the boxes); one row with
               stage-to-stage conversion from tablet width up. */}
           <div className="grid grid-cols-3 gap-1.5 pb-1 sm:flex sm:items-stretch">

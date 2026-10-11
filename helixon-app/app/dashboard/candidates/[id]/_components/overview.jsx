@@ -193,5 +193,5 @@ export function FullAnalysis({ analysis, candidateName }) {
 
 /* ------------------------------------------------------------------------
  * Email - draft, edit and send an AI-written email about this candidate,
- * any time (it used to be offered only on the Analyse screen after a run).
+ * any time, not only on the Analyse screen after a run.
  * ---------------------------------------------------------------------- */

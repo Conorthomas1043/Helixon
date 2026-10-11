@@ -22,10 +22,8 @@ function EmployeeLoginForm() {
   // for why they were suddenly signed out.
   const passwordChanged = searchParams.get("passwordChanged") === "1";
 
-  // Already signed in? Skip the form entirely, same check the /employee
-  // landing page does - previously this page had no such check, so a
-  // logged-in employee hitting /employee/login directly just saw the form
-  // again instead of being sent straight to their dashboard.
+  // Already signed in? Skip the form and go straight to the dashboard -
+  // the same check the /employee landing page does.
   useEffect(() => {
     (async () => {
       try {

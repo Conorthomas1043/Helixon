@@ -72,10 +72,10 @@ export async function POST(request, { params }) {
   const comment = cleanText(body.comment, { max: 2000 }) || null;
   const by = cleanLine(body.name, 200) || share.recipient_name || "Client";
 
-  // The page now saves a decision the moment it's tapped (so one tap is an
-  // answer - a selected-but-unsent choice used to be lost). A change of
-  // mind or an added comment within a few minutes is a correction, not a
-  // new answer: it updates quietly instead of alerting the recruiter again.
+  // The page saves a decision the moment it's tapped, so one tap is an
+  // answer. A change of mind or an added comment within a few minutes is a
+  // correction, not a new answer: it updates quietly instead of alerting
+  // the recruiter again.
   const { data: prior } = await supabase
     .from("shortlist_candidates")
     .select("client_decision, client_decided_at, client_decided_by")
