@@ -1,28 +1,21 @@
 // Judges the parts of a match that are genuinely a matter of judgement, not
 // a checklist - industry relevance, career trajectory, achievement quality
-// - by asking Claude directly, instead of the keyword/regex heuristics this
-// replaces:
-//   - industryEngine.js scored 100 only on an exact industry-name string
-//     match, 50 for everything else (no match, no data, adjacent domain -
-//     all identical).
-//   - progressionEngine.js matched job titles against a 10-word English
-//     ladder ("intern".."director"); any title outside that list (Analyst,
-//     Consultant, Specialist, Coordinator, VP, Partner...) silently scored
-//     as level 0 (intern-equivalent).
-//   - achievementEngine.js scored achievement quality by counting lines
-//     that contained a number or one of 10 impact verbs.
+// - by asking Claude directly. Keyword/regex heuristics do these badly: an
+// exact industry-name match can't tell an adjacent domain from no match, a
+// title ladder can't place a title it doesn't list, and counting lines with
+// a number or an impact verb says little about achievement quality.
 // If Claude is unavailable or every sample fails to parse, the three score
 // as a neutral 50 (see heuristicFallback), so an outage degrades scoring
 // rather than breaking it, and the result says so.
 //
 // One sample by default, anchored by explicit score bands in the prompt
-// (fitJudgmentPrompt.js). This used to take the median of 3 samples to
-// smooth out run-to-run variance; the anchors do most of that job for a
-// third of the calls, which matters most in bulk runs where 3 judge calls
-// per CV were the bulk of the Anthropic rate-limit usage and the main
-// source of 429 retries. Set CV_FIT_JUDGE_SAMPLES (1-5) to sample more if
-// your own evaluation shows the extra consistency is worth it; with more
-// than one sample the median score per component is used, as before.
+// (fitJudgmentPrompt.js). The anchors do most of the work of smoothing out
+// run-to-run variance at a third of the calls of a 3-sample median, which
+// matters most in bulk runs, where judge calls are the bulk of the Anthropic
+// rate-limit usage and the main source of 429 retries. Set
+// CV_FIT_JUDGE_SAMPLES (1-5) to sample more if your own evaluation shows the
+// extra consistency is worth it; with more than one sample the median score
+// per component is used.
 import askClaude from "../anthropic/askClaude.js";
 import { JUDGMENT_EFFORT } from "../config.js";
 import { fitJudgmentPrompt } from "../prompts/fitJudgmentPrompt.js";
@@ -66,10 +59,10 @@ function isValidJudgment(j) {
 // normal, honest product explanation rather than an engineering log line -
 // no "Claude", no internal reason codes.
 // When Claude's judgement is unavailable, the three judged components score
-// a neutral 50 ("unknown") rather than the old keyword heuristics: an
-// exact industry-name match (100 or 50) and a 10-title seniority ladder
-// were so much cruder than the judgement that candidates scored during an
-// outage weren't comparable with the rest of the same job. The result is
+// a neutral 50 ("unknown") rather than keyword heuristics (an exact
+// industry-name match, a title ladder): those are so much cruder than the
+// judgement that candidates scored during an outage wouldn't be comparable
+// with the rest of the same job. The result is
 // marked method "heuristic_fallback" and scoreCandidate adds a warning
 // telling the recruiter to re-screen.
 function heuristicFallback() {
@@ -142,10 +135,9 @@ export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } 
       Array.from({ length: SAMPLES }, () => askClaude(prompt, { effort: JUDGMENT_EFFORT }))
     );
   } catch (err) {
-    // Covers prompt-building failures too (not just the Claude calls) -
-    // previously fitJudgmentPrompt() ran outside this try/catch, so a
-    // malformed candidate/job object could throw uncaught here and crash
-    // the whole analysis instead of degrading to the fallback below.
+    // Covers prompt-building failures too (not just the Claude calls), so a
+    // malformed candidate/job object degrades to the fallback below instead
+    // of crashing the whole analysis.
     console.error("[fitJudgeEngine] judgeFit failed before/during sampling:", err.message);
     return heuristicFallback();
   }
@@ -159,8 +151,8 @@ export async function judgeFit(candidate, job, cvText, { unmatchedSkills = [] } 
   }
 
   // Rationale text comes from the sample whose scores sit closest to the
-  // medians, so the explanation shown argues for the score shown. (It used
-  // to always be sample 0, which could explain a 40 next to a displayed 75.)
+  // medians, so the explanation shown argues for the score shown (not, say,
+  // a 40 next to a displayed 75).
   const medians = {
     industry_relevance: clamp(median(valid.map((v) => v.industry_relevance.score))),
     career_trajectory: clamp(median(valid.map((v) => v.career_trajectory.score))),

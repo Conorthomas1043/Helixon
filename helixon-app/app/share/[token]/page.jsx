@@ -10,9 +10,9 @@ import ClientProfileDocument from "@/components/dashboard/ClientProfileDocument"
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
 
-// One tap is an answer. The choice used to be only a selection until a
-// separate "Send" was pressed, so a client who tapped "Interview" and closed
-// the tab had silently answered nothing. Saving on selection follows
+// One tap is an answer: the choice saves on selection, with no separate
+// "Send", so a client who taps "Interview" and closes the tab has still
+// answered. Saving on selection follows
 // Nielsen's "error prevention" and "visibility of system status" heuristics
 // (Nielsen, 1994, "Enhancing the explanatory power of usability heuristics", Proc. CHI '94): the state on screen is the state
 // the recruiter sees. The comment is optional and saved separately.

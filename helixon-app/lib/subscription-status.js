@@ -8,8 +8,8 @@
 // past_due is a grace period: Stripe is still retrying a failed renewal, so
 // the agency keeps working while it's fixed (the app shows a payment-failed
 // banner meanwhile). Access stops once Stripe gives up and the status moves
-// to unpaid or canceled. Before, one declined card locked the whole agency
-// out on the spot and sent them to the pricing page to buy again.
+// to unpaid or canceled, so one declined card doesn't lock the whole agency
+// out on the spot and send them to the pricing page to buy again.
 export const ACCESS_STATUSES = new Set(["active", "past_due"]);
 
 // Statuses where Stripe is still billing (or will again): a workspace in one

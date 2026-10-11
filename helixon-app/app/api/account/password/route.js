@@ -9,8 +9,7 @@ const PasswordInput = fields({ currentPassword: text(400), newPassword: text(400
 
 // POST /api/account/password { currentPassword, newPassword } - changes the
 // signed-in person's password through Clerk's backend API, after Clerk
-// re-verifies the current one. (It used to sit at app/api/route.js, which
-// served it at /api itself.)
+// re-verifies the current one.
 export async function POST(request) {
   const { userId } = await auth();
 

@@ -1,10 +1,8 @@
 "use client";
 // app/employee/_shared/EmployeeShell.jsx
 // Page frame for every signed-in employee page: skip link, the portal nav
-// and a <main> landmark. The nav used to be copied into each page with a
-// different set of links on each one (calendar linked to goals but not ops,
-// ops only to settings...), so where you could get to depended on where you
-// were. Now every section is one click from everywhere.
+// and a <main> landmark. The nav is defined once, here, so every page has
+// the same links and every section is one click from everywhere.
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";

@@ -1,9 +1,8 @@
 // Every environment variable the server needs, in one place, checked once
-// when the server starts (instrumentation.js). A missing or malformed value
-// used to show up only when the feature that reads it was first used - an
-// email that silently didn't send, a webhook rejected - and in whichever of
-// the 70-odd files read it. Now the deploy's logs (and Sentry) list what's
-// wrong at boot. .env.example documents each one.
+// when the server starts (instrumentation.js), so the deploy's logs (and
+// Sentry) list what's wrong at boot, rather than a missing or malformed value
+// showing up only when a feature first reads it - an email that silently
+// doesn't send, a webhook rejected. .env.example documents each one.
 //
 // The check reports; it never stops the server. A missing optional
 // integration only disables that integration, and taking the whole site down

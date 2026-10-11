@@ -4,9 +4,8 @@ import Link from "next/link";
  * Shared chrome for /login and /signup: the ambient mesh background, the
  * dark-forest branding panel (dot grid + diagonal lines + drifting blur
  * orbs + logo), and the right-hand column that hosts the actual auth card.
- * Previously ~130 lines of this were copy-pasted identically between the
- * two pages - only the branding panel's middle/bottom content and its
- * width actually differ per page, so those are the only two slots exposed.
+ * Only the branding panel's middle/bottom content and its width differ
+ * between the two pages, so those are the only two slots exposed.
  *
  * The panelIn/driftA/driftB keyframes and reduced-motion override live in
  * app/globals.css (.auth-panel-in / .auth-drift-a / .auth-drift-b) instead

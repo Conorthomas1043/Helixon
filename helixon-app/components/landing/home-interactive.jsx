@@ -67,9 +67,8 @@ export function RecruiterWorkspaceDemo() {
   const containerRef = useRef(null);
   // "static" (server render, no JS, reduced motion, or already on screen at
   // load) shows the finished card. Only a card that starts off screen - the
-  // hero on a phone - is blanked, and it fills in once, when scrolled to.
-  // Previously it blanked and replayed in front of desktop visitors on load
-  // and again every time it came back into view.
+  // hero on a phone - is blanked, and it fills in once, the first time it's
+  // scrolled to, rather than replaying each time it comes back into view.
   const phase = useScrollEntrance(containerRef);
   const [stepCount, setStepCount] = useState(0);
   const [breakdownShown, setBreakdownShown] = useState(false);

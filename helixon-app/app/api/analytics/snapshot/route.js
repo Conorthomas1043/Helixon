@@ -12,11 +12,10 @@ import { reportError } from "@/lib/report-error";
 // the same figures for the period before (for "vs previous" changes), and
 // analysed/placed/fees over time. Filters: see readAnalyticsFilters.
 //
-// This used to be worked out in the browser from every candidate, fetched
-// 200 at a time one request after another, and the funnel only looked at
-// each candidate's current stage - so anyone rejected counted as never
-// having been shortlisted or interviewed. Here it uses the stage-change
-// history to count how far each candidate actually got.
+// Worked out here rather than in the browser, so the page doesn't have to
+// fetch every candidate. The funnel uses the stage-change history to count
+// how far each candidate actually got, not just their current stage: someone
+// rejected after an interview still counts as shortlisted and interviewed.
 
 const COLUMNS = "id, job_id, created_at, stage, processing_status, match_score, recruiter_id, last_activity_at";
 

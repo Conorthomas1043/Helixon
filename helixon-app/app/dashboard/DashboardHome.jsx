@@ -26,9 +26,8 @@ async function fetchDashboardData() {
 }
 
 function toDashboardData(raw) {
-  // The page reads agencyName/plan at the top level - these used to be
-  // nested under `agency`, so the header never showed the agency name and
-  // the plan card always said "No plan limit on file".
+  // /api/dashboard-stats returns { agencyName, plan, analyses } flat, and
+  // the page reads agencyName/plan at the top level too (not under `agency`).
   return {
     agencyName: raw.agencyName ?? null,
     plan: raw.plan ?? null,
@@ -162,17 +161,10 @@ export default function DashboardHome({ initialStats = null }) {
     return { ...stats, jobStats, recruiters, hasTeammates, mineOnly: Boolean(mineOnly), everyone };
   }, [data, stageOrder, lastStageKey, scope, myId]);
 
-  // /api/dashboard-stats returns { agencyName, plan, analyses } flat -
-  // this used to read data.agency.name/data.agency.plan, a key that never
-  // existed in the response, so the header silently always showed the
-  // "your agency" fallback and UsageSummary always got plan=null. Nothing
-  // threw (optional chaining swallows it), so it shipped unnoticed.
-  //
   // The greeting is for the person, so it uses their own first name from Clerk
   // (available immediately, and independent of whether an agency row exists).
   // The agency name is shown separately and only when it's a real name - the
-  // "your agency" placeholder that used to be spliced into the greeting is
-  // never displayed.
+  // "your agency" placeholder is never displayed.
   // The business view follows the same Mine/Team switch.
   const opsScope = model.mineOnly ? "mine" : "team";
   useEffect(() => {

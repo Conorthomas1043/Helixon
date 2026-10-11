@@ -13,14 +13,13 @@
 // requests. The admin controls both on the Traffic page.
 //
 // Guarded by a shared-secret header (INTERNAL_EDGE_LOG_SECRET) that only
-// proxy.ts knows, checked with a timing-safe comparison. Previously this
-// route had no auth at all: it inserted caller-supplied ip/country/geo
-// straight into request_logs, so anyone who found the URL could POST
-// forged rows and poison the data every SEO/security/pentester admin page
-// reads from. Set INTERNAL_EDGE_LOG_SECRET in the environment (any long
-// random string) - proxy.ts sends the same value on every call. Fails
-// closed: if the secret isn't set, or doesn't match, the request is
-// rejected rather than silently trusted.
+// proxy.ts knows, checked with a timing-safe comparison. The route writes
+// caller-supplied ip/country/geo straight into request_logs, so without it
+// anyone who found the URL could POST forged rows and poison the data every
+// SEO/security/pentester admin page reads from. Set INTERNAL_EDGE_LOG_SECRET
+// in the environment (any long random string) - proxy.ts sends the same
+// value on every call. Fails closed: if the secret isn't set, or doesn't
+// match, the request is rejected rather than silently trusted.
 
 import { timingSafeEqualStr } from "@/lib/timing-safe";
 import { after } from "next/server";
@@ -137,7 +136,7 @@ export async function POST(request) {
     // Order matters: the admin's allow list beats everything (so they
     // can't lock out their own office), then country blocks, then blocked
     // IP ranges, then path / user-agent blocks (this request only - the IP
-    // isn't listed), then individual IP blocks (expired ones no longer
+    // isn't listed), then individual IP blocks (expired ones don't
     // count), then the strict firewall policy, which scores this request
     // against the same signature rules the admin Pentester page displays
     // and auto-blocks / emails an alert when it crosses the admin-set

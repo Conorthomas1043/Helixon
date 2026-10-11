@@ -140,8 +140,8 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("skills") && (
-            // One line, not three: the chips used to wrap one per line in the
-            // 160px column and triple the row's height.
+            // One line: two chips and a "+N" count, so they can't wrap one
+            // per line and triple the row's height.
             <div className="hidden lg:flex items-center gap-1 w-48 shrink-0 min-w-0 overflow-hidden" title={candidate.skills.join(", ")}>
               {candidate.skills.slice(0, 2).map((s) => (
                 <span key={s} className="text-[12px] px-1.5 py-0.5 rounded-full truncate max-w-[5.75rem]" style={{ background: "var(--mist)", color: INK_MUTED }}>

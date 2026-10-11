@@ -12,9 +12,9 @@ export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Invite teammates into the agency's Clerk Organization (see
 // lib/clerk-org.js) and manage pending invites against the seat cap.
-// Every state is shown - it used to render nothing at all unless the seat
-// lookup succeeded, so an Individual-plan account or any server error just
-// left the page with no way to add anyone and no hint why.
+// Every state is shown, including an Individual-plan account and a failed
+// seat lookup, so the page never leaves someone with no way to add anyone
+// and no hint why.
 export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat, removingId, members, onAssigned }) {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -313,9 +313,9 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
   );
 }
 
-// Replaces a bare confirm(): removing someone who owns candidates now asks
-// who takes them over, instead of leaving them attached to a person who's
-// gone (their card vanished and the candidates dropped out of the team view).
+// Not a bare confirm(): removing someone who owns candidates asks who takes
+// them over, so the candidates aren't left attached to a person who's gone
+// and dropped from the team view.
 export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConfirm }) {
   const others = members.filter((m) => m.id !== target.id);
   const owns = target.totalCandidates || 0;

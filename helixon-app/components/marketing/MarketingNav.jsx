@@ -61,8 +61,8 @@ export default function MarketingNav({ active, showTagline = true }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen]);
 
-  // The account menu used to close only on mouse-leave, which a keyboard or
-  // touch user can't do. Escape and a click/tap outside now close it too.
+  // The account menu also closes on Escape and a click/tap outside, not just
+  // on mouse-leave, which a keyboard or touch user can't do.
   useEffect(() => {
     if (!accountOpen) return undefined;
     function onPointerDown(e) {

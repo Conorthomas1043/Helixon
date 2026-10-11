@@ -4,10 +4,9 @@ import "server-only";
 // listing, banning, demo access, agency provisioning and the rest. The route
 // checks the admin session and CSRF token, then calls these.
 //
-// Customers now sign in through Clerk, so real accounts live in Clerk (mirrored
-// in `profiles` by clerk_user_id). This route used to manage ONLY Supabase Auth
-// users - the pre-migration accounts - which meant an admin couldn't see, ban or
-// delete any actual customer. It now lists and manages both:
+// Customers sign in through Clerk, so real accounts live in Clerk (mirrored in
+// `profiles` by clerk_user_id); the pre-migration accounts are Supabase Auth
+// users. Both are listed and managed here:
 //   - Clerk users        ids look like "user_2abc..."   (provider: "clerk")
 //   - legacy Supabase    ids are UUIDs                  (provider: "supabase")
 // Which one an action applies to is decided by the shape of the id.
@@ -179,8 +178,8 @@ export async function listClerkUsers(supabase, { page, perPage, search }) {
 }
 
 // Every Clerk account, a page at a time. The console filters and counts in
-// the browser, so it needs the whole list - it used to load only the first
-// 100, which hid everyone after that and made every count wrong.
+// the browser, so it needs the whole list: stopping at the first page would
+// hide everyone after it and make every count wrong.
 const CLERK_PAGE = 200;
 const MAX_USERS = 5000;
 

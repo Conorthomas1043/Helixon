@@ -6,11 +6,11 @@
 // candidate's relevant experience compares with what the role asks for.
 // That works for any job: a care assistant and a solicitor get their own
 // markets, and hourly-paid work stays hourly (£12.60/hour, not a made-up
-// annual figure). It used to be one fixed set of UK tech salary bands picked by
-// years of experience, so e.g. ten years as a care worker came out at
+// annual figure). One fixed set of UK tech salary bands picked by years of
+// experience can't do that: ten years as a care worker would come out at
 // £120k-£180k.
 //
-// For a job parsed before market_salary existed, the old years-based bands
+// For a job parsed before market_salary existed, the years-based tech bands
 // are still used - but only for technology roles (or an unknown family),
 // since that's the only market they describe; otherwise no estimate.
 

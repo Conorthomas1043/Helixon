@@ -26,7 +26,7 @@ const CLIENT_TAGS = [
   { value: "good_partnership", label: "Good partnership overall" },
 ];
 
-// The shared public-page frame; this page used to carry its own copy.
+// The shared public-page frame.
 function Card({ children }) {
   return <PublicCard width={512}>{children}</PublicCard>;
 }

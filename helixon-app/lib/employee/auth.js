@@ -32,11 +32,9 @@ const LOGIN_TYPE = "employee";
 
 // Idle timeout, mirroring the sliding-window pattern lib/admin/session.js
 // uses: expires_at slides forward on each active check, capped at
-// SESSION_HOURS from the session's created_at. Previously expires_at was set
-// once at login and never touched again, so a session was a flat 12-hour
-// window from login regardless of activity - an actively-working employee
-// got signed out mid-shift exactly 12 hours after logging in, and a session
-// left open but idle stayed valid for the same fixed 12 hours either way.
+// SESSION_HOURS from the session's created_at. A session left open but idle
+// expires after IDLE_TIMEOUT_MS, and none outlives SESSION_HOURS however
+// active it is.
 const IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 const ABSOLUTE_TIMEOUT_MS = SESSION_HOURS * 60 * 60 * 1000;
 
@@ -243,13 +241,11 @@ const SESSION_SELECT =
 // Re-checks is_active on every call (not just at login), so deactivating an
 // employee immediately invalidates any session they're still holding.
 //
-// Also slides expires_at forward on each active call (using the session as
+// Also slides expires_at forward on each active call (using the session
 // counts as activity), capped at ABSOLUTE_TIMEOUT_MS from created_at - same
-// sliding-window shape as lib/admin/session.js's idle/absolute pair. Without
-// this, expires_at was set once at login and never touched again, so an
-// actively-working employee got signed out exactly SESSION_HOURS after
-// login regardless of activity, and an idle-but-open session stayed valid
-// for that same fixed window instead of a shorter idle cutoff.
+// sliding-window shape as lib/admin/session.js's idle/absolute pair - so an
+// idle-but-open session expires at the idle cutoff rather than lasting the
+// full SESSION_HOURS.
 export async function getEmployeeSession({ refresh = true } = {}) {
   try {
     const cookieStore = await cookies();

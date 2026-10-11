@@ -11,10 +11,9 @@ import { agencyDisplayName } from "@/lib/agency-display";
 
 // Server component: it renders client components (DashboardNav, SettingsNav,
 // PageTransition) but doesn't need interactivity itself, so it stays out
-// of the client bundle. Now async so it can resolve the signed-in user's
-// real agency name server-side instead of the "Acme Recruiting" hardcode
-// that used to sit here - same getCustomerContext() + agencies lookup
-// pattern api/dashboard-stats uses, so the two can't show different names.
+// of the client bundle. Async so it can resolve the signed-in user's real
+// agency name server-side, with the same getCustomerContext() + agencies
+// lookup api/dashboard-stats uses, so the two can't show different names.
 export default async function AccountLayout({ children }) {
   const { agencyId, profile } = await getCustomerContext();
 
@@ -31,9 +30,8 @@ export default async function AccountLayout({ children }) {
 
   return (
     <main className="min-h-screen scroll-smooth" style={{ background: "var(--mist)" }}>
-      {/* Same navigation as the rest of the signed-in app. This used to be a
-          different component ("Scoring | Dashboard") from the dashboard's
-          ("Overview | Analyse | Candidates ..."). */}
+      {/* The dashboard's own navigation, so the whole signed-in app shares
+          one set of links. */}
       <DashboardNav />
 
       <section className="max-w-[880px] mx-auto px-6 pt-14 pb-8">

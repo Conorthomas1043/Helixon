@@ -10,12 +10,11 @@ export const metadata = {
 
 // Decides on the SERVER whether to draw the console chrome.
 //
-// This layout used to be a client component that drew the full sidebar - every
-// nav label, the "Console connected" badge - around EVERY /admin page, the login
-// page included, so anyone who reached the login form was shown the console's
-// structure. Now the shell only renders when there is a valid admin session
-// (read here from the cookie, not extended); without one, whatever page is being
-// shown (the login form) appears on its own, styled but with no navigation.
+// The shell (every nav label, the "Console connected" badge) only renders when
+// there is a valid admin session (read here from the cookie, not extended), so
+// someone who reaches the login form isn't shown the console's structure.
+// Without one, whatever page is being shown (the login form) appears on its
+// own, styled but with no navigation.
 //
 // /admin/mobile is the exception even when signed in: it's its own compact,
 // tab-bar-driven surface built for a phone screen (app/admin/mobile), not

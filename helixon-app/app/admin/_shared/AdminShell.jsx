@@ -166,8 +166,8 @@ export default function AdminShell({ children, initialUsername }) {
                 })}
               </div>
             ))}
-            {/* These used to sit in the footer, which grew so tall that it
-                covered the last nav items on a 900px-high screen. */}
+            {/* In the nav, not the footer: a taller footer would cover the
+                last nav items on a 900px-high screen. */}
             <div>
               <div className="side-nav-group">Other views</div>
               <button type="button" className="side-link" onClick={openStaffPortal} title="Open the staff portal signed in as you">

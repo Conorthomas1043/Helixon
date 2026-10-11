@@ -34,8 +34,8 @@ const MENU_ITEM_BASE =
   "flex w-full items-center px-3 py-2 rounded-[8px] text-left text-[14px] font-medium hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]";
 const MENU_ITEM = `${MENU_ITEM_BASE} text-[var(--ink)]`;
 
-// The header used to show nine equal-weight actions in a row. The everyday
-// ones stay visible; the occasional ones live here. A disclosure, not an ARIA
+// The everyday actions stay visible in the header; the occasional ones live
+// here, so they don't all compete at equal weight. A disclosure, not an ARIA
 // menu: Tab moves through the items, Escape or a click outside closes it.
 function MoreActions({ children }) {
   const [open, setOpen] = useState(false);

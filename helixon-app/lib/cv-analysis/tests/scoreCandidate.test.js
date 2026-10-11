@@ -157,7 +157,7 @@ describe("scoring rule fixes", () => {
     expect(result.breakdown.RequiredSkills).toBe(0);
     expect(result.breakdown.PreferredSkills).toBe(0);
     expect(result.skill_score).toBeNull();
-    // Everyone used to get the free 50 skill points; now the rest carry 100.
+    // No free 50 skill points for everyone: the other parts carry all 100.
     expect(result.breakdown.Experience).toBe(40); // 6 years = full credit, 20/50 x 100
     expect(result.warnings.some((w) => /doesn't name specific skills/.test(w))).toBe(true);
   });

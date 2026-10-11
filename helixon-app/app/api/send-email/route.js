@@ -287,8 +287,8 @@ export async function POST(request) {
     }
 
     // On the candidate's timeline, and counted with the rest of their
-    // outreach in Analytics ("Emails") - sends from Helixon used to leave
-    // no trace outside the draft itself.
+    // outreach in Analytics ("Emails"), so a send from Helixon leaves a
+    // trace beyond the draft itself.
     if (artifact.candidate_id) {
       await logActivity(
         supabase,

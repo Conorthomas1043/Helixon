@@ -16,11 +16,10 @@ export function getGreeting() {
 
 /* ─── First run ─────────────────────────────────────────────────────────── */
 
-// What a brand-new account sees instead of a wall of zeros. It used to open
-// on five empty business KPIs, an "All clear" risks panel and an empty
-// agenda, with the one useful action ("Upload your first CV") below the
-// fold. A short checklist gives the first session a clear goal; the
-// workspace step starts ticked, because it's done (paying and naming the
+// What a brand-new account sees instead of a wall of zeros (empty KPIs, an
+// "All clear" risks panel, an empty agenda), with the one useful action -
+// screening a CV - in view. A short checklist gives the first session a
+// clear goal; the workspace step starts ticked, because it's done (paying and naming the
 // agency created it) and a list that's already under way is one people
 // finish. It goes away by itself once the first CV has been screened.
 export function GettingStarted({ hasJob, showTeam }) {
@@ -205,7 +204,7 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
       </div>
 
       {/* Shrinkable so its buttons wrap onto a second line on a phone instead
-          of running off the card ("+ Screen a CV" used to be cut off). */}
+          of running off the card. */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 1, minWidth: 0, maxWidth: "100%", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         <Link href="/dashboard/candidates" style={{
           display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,

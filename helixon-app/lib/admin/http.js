@@ -12,9 +12,9 @@ export function adminJson(data, status = 200) {
 
 // Turns anything thrown inside a route into a response. "Unauthorized" (from
 // requireAdminSession) is a 401; everything else is logged in full on the
-// server and reported to the client as a generic 500. Routes previously
-// echoed `error.message` back, which leaks database/driver internals - table
-// and column names, constraint names, JSON parse errors - to the browser.
+// server and reported to the client as a generic 500. Echoing `error.message`
+// back would leak database/driver internals - table and column names,
+// constraint names, JSON parse errors - to the browser.
 export function adminErrorResponse(scope, error) {
   if (error?.message === "Unauthorized") {
     return adminJson({ error: "Unauthorized" }, 401);

@@ -15,9 +15,9 @@ import { parseBody } from "@/lib/api/body";
 const NoteInput = fields({ body: text(20000) });
 const NoteUpdateInput = fields({ noteId: id, body: text(20000), pinned: flag });
 
-// Team notes on a candidate. The text lives in candidate_notes.note - this
-// route used to write a `body` column that doesn't exist (and no
-// agency_id), so every note failed to save and none were ever stored.
+// Team notes on a candidate. The text lives in candidate_notes.note (the
+// table has no `body` column; `body` is only the API's name for it), and
+// every row carries the agency_id.
 //
 // POST { body }            add a note
 // PATCH { noteId, body }   edit your own note

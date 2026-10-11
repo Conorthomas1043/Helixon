@@ -17,15 +17,14 @@ import { debug, error, summarise } from "../utils/logger.js";
 
 // Transient API failures (429, 5xx/529 overloaded, dropped connections,
 // timeouts) are retried by the Anthropic client itself - see anthropic.js
-// maxRetries - which also honours the API's retry-after header. This used
-// to wrap a second 3-retry loop around the client's own default 2 retries,
-// so one struggling request could be attempted up to 12 times and blow
-// straight through the route's time limit.
+// maxRetries - which also honours the API's retry-after header. There's no
+// second loop for those here: wrapped around the client's own retries, it
+// would multiply the attempts and could blow through the route's time limit.
 //
 // What the client can't know to retry is a response that arrived fine but
 // isn't usable JSON. The model samples, so that's not deterministic - a
-// second attempt almost always parses - and one bad sample used to fail the
-// whole analysis with a 500.
+// second attempt almost always parses - so one bad sample gets one retry
+// rather than failing the whole analysis with a 500.
 const MALFORMED_OUTPUT_RETRIES = 1;
 
 async function withRetry(fn) {
@@ -49,14 +48,13 @@ function malformed(message) {
 
 
 
-// No `temperature`: claude-sonnet-5 (config.js MODEL) removed the sampling
-// parameters and rejects any request that sends one with a 400. This used
-// to pass temperature: 0 on every call, so every extraction failed and
-// /api/run answered 500 before a candidate was ever saved.
+// No `temperature`: claude-sonnet-5 (config.js MODEL) has no sampling
+// parameters and rejects any request that sends one with a 400, which would
+// fail every extraction before a candidate was saved.
 //
 // effort: how much Sonnet 5 thinks before answering. Left unset, it thinks
-// at "high" on every call - most of the latency of a structured-extraction
-// call was thinking tokens the task didn't need. Extraction (copying facts
+// at "high" on every call, and most of a structured-extraction call's latency
+// is then thinking tokens the task doesn't need. Extraction (copying facts
 // out of a CV/job into a schema) runs at "low"; judgement calls pass
 // "medium". See config.js EXTRACTION_EFFORT / JUDGMENT_EFFORT.
 export default async function askClaude(userPrompt, { effort = EXTRACTION_EFFORT } = {}){

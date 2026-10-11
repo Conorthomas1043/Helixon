@@ -1,8 +1,8 @@
-// The strict firewall policy: turns the existing signature-based threat
-// scoring (threat-score.js) - previously a triage aid a human had to act
-// on manually from the admin Pentester page - into automatic enforcement,
-// plus an email alert so an attack doesn't just sit unnoticed in a table
-// until someone happens to open the admin panel.
+// The strict firewall policy: turns the signature-based threat scoring
+// (threat-score.js), which the admin Pentester page also shows for a human
+// to triage, into automatic enforcement, plus an email alert so an attack
+// doesn't just sit unnoticed in a table until someone happens to open the
+// admin panel.
 //
 // Called from /api/internal/edge-log on every request (proxy.ts calls that
 // route before deciding whether to bounce the request to /rate-limited),

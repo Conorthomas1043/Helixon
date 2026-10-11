@@ -2,9 +2,9 @@ import { skillMatch, containsPhrase, normaliseSkill } from "../utils/skillNormal
 
 
 // Verbs that show the candidate doing the work, not just listing it.
-// Spans professions - it used to be engineering verbs only (built,
-// deployed, architected...), so a sales CV's "exceeded quota" or a care
-// CV's "supported residents" never counted as strong evidence.
+// Spans professions, not just engineering (built, deployed, architected...),
+// so a sales CV's "exceeded quota" or a care CV's "supported residents"
+// counts as strong evidence too.
 const HIGH_CONFIDENCE = [
   "built", "developed", "implemented", "designed", "architected", "created",
   "deployed", "maintained", "migrated", "owned", "led", "managed",

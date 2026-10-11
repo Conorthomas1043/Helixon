@@ -12,10 +12,9 @@ export function track(event, properties) {
 // is the paying customer, so activation, retention and seat usage are
 // read per agency (PostHog group analytics), not per person.
 //
-// Identify used to run once, on mount, and only if PostHog was already
-// running - so anyone who accepted cookies on that page was never
-// identified for the rest of the session. It now also runs when consent
-// arrives (the init listener in instrumentation-client.js runs first).
+// Identify runs on mount and again when consent arrives (the init listener
+// in instrumentation-client.js runs first), so someone who accepts cookies
+// partway through a session is identified from then on.
 export function useAnalyticsIdentity({ userId, email, name, agencyId, agencyName, plan }) {
   useEffect(() => {
     if (!userId) return undefined;

@@ -27,8 +27,8 @@ import { revokeMemberTokens } from "@/lib/member-tokens";
 //
 // agencyName/username/firstName/lastName arrive via `unsafeMetadata`,
 // which the signup form (app/signup) sets on the Clerk sign-up attempt
-// before submitting. It's client-supplied, exactly like the old signup
-// route's request body was - so it's still validated here, same as before.
+// before submitting. It's client-supplied, like any request body, so it's
+// validated here.
 
 const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 
@@ -168,8 +168,7 @@ async function handleUserCreated(clerkUser) {
     profileUsername = await generateUsername(username);
   }
 
-  // ── Case 2: brand-new signup - create the agency + profile, same shape
-  // as the old app/api/auth/signup/route.js did.
+  // ── Case 2: brand-new signup - create the agency + profile.
   const { profileId } = await createProfileAndAgency({
     clerkUserId,
     email,
@@ -259,11 +258,10 @@ async function handleOrganizationMembershipCreated(membership) {
     // The owner (their own org) - or a teammate already attached.
     if (existingProfile.agency_id === agency.id) return;
 
-    // Someone who already had an account when they accepted. This used to
-    // return here unconditionally, so they stayed in whatever agency they
-    // had and never actually joined the team that invited them - most
-    // often a stray empty agency the user.created handler made for them
-    // when they signed up outside the invite flow.
+    // Someone who already had an account when they accepted - most often
+    // with a stray empty agency the user.created handler made for them when
+    // they signed up outside the invite flow. If that agency is theirs alone
+    // and unbilled, they're moved so they actually join the inviting team.
     if (await canMoveToInvitingAgency(existingProfile)) {
       if (!existingProfile.agency_id) {
         const { error: moveError } = await supabase
@@ -275,8 +273,8 @@ async function handleOrganizationMembershipCreated(membership) {
       }
 
       // Bring their old workspace's candidates, jobs, scores, notes etc.
-      // with them. Re-pointing only the profile used to strand all of it on
-      // an agency nobody belonged to any more. One database transaction
+      // with them; re-pointing only the profile would strand it all on an
+      // agency nobody belongs to any more. One database transaction
       // (supabase/migrations/*_move_member_into_agency.sql), so a failure
       // moves nothing and Clerk's retry of this webhook can try again.
       const { data: moved, error: moveError } = await supabase.rpc("move_member_into_agency", {

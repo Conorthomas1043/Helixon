@@ -3,39 +3,26 @@ import { containsPhrase, normaliseSkill } from "../utils/skillNormaliser.js";
 // Applies a job's hard pass/fail requirements (job.knockout_requirements,
 // extracted by jobExtractor.js and restricted to config.js's
 // ALLOWED_KNOCKOUT_FIELDS - see validateJob.js) against the candidate.
-//
-// Previously this did `candidate[rule.field]` directly, but the candidate-
-// extraction schema (candidateExtractionPrompt.js) has no field literally
-// named right_to_work / work_authorization / security_clearance /
-// background_check / certification (singular) / license - so that lookup
-// was always undefined -> "" for every one of those, which always failed
-// `.includes(rule.value)`, which - because `required` defaults to true -
-// capped every candidate's score to <=40 and marked them "Not suitable"
-// the moment a job had ANY such requirement, regardless of whether the
-// candidate actually met it. Confirmed live-reachable (validateJob.js lets
-// these field names straight through) but not yet triggered in production
-// as of this fix (no job in the live database had a populated
-// knockout_requirements list yet).
-//
-// The fix has two parts:
-//  1. Fields the CV extraction genuinely captures (years of experience,
-//     location, willingness to relocate, certifications) are checked
-//     against the real field, properly typed - not string-`.includes()`
-//     against something that was never a string.
+// A failed required rule caps the score at 40 and marks the candidate
+// "Not suitable", so a rule only fails on real evidence:
+//  1. Each field has its own check against what the CV extraction
+//     (candidateExtractionPrompt.js) actually captures, properly typed.
+//     There's no candidate field literally named right_to_work,
+//     security_clearance, license and so on, so a plain
+//     `candidate[rule.field]` lookup would always come back empty.
 //  2. Fields a CV essentially never states explicitly (right to work,
 //     security clearance, background check, visa sponsorship) are marked
-//     "unverifiable from the CV" rather than auto-failed. Silently
-//     rejecting a candidate over a fact their CV was never going to
-//     contain isn't just inaccurate, it's a fairness problem - it rejects
-//     good candidates for a reason that has nothing to do with whether
-//     they meet the requirement, and the recruiter never even sees that
-//     the rejection was manufactured rather than real. Unverified
-//     requirements are surfaced back to the recruiter to check manually
-//     (e.g. at interview) instead of silently deciding "no".
+//     "unverifiable from the CV" rather than auto-failed. Rejecting a
+//     candidate over a fact their CV was never going to contain isn't just
+//     inaccurate, it's a fairness problem - it rejects good candidates for
+//     a reason that has nothing to do with whether they meet the
+//     requirement, and the recruiter never even sees that the rejection
+//     was manufactured rather than real. Unverified requirements are
+//     surfaced back to the recruiter to check manually (e.g. at interview)
+//     instead of silently deciding "no".
 // Returns "pass", "fail" or "unverifiable" - three states, not two, because
 // several of these fields (right_to_work, security_clearance, etc.) have no
-// corresponding candidate field at all, and treating "we don't know" the
-// same as "fail" is exactly the bug this file used to have.
+// corresponding candidate field at all, and "we don't know" isn't "fail".
 const CERT_FILLER = new Set([
   "certified", "certification", "certificate", "certificates", "cert",
   "professional", "the", "of", "in", "and", "for", "a", "an", "level",
@@ -115,12 +102,12 @@ function evaluateRule(rule, candidate, context = {}) {
       const required = parseFloat(rule.value);
       if (!Number.isFinite(required)) return "unverifiable";
       // A CV without dates (common for hourly and hands-on work) gives no
-      // way to count years - that's unknown, not zero. It used to read as 0
-      // and fail the requirement, capping the candidate at 40.
+      // way to count years - that's unknown, not zero, so it mustn't fail
+      // the requirement and cap the candidate at 40.
       if (!yearsKnown(candidate)) return "unverifiable";
       // The same years the experience points use: relevant to this role
-      // when the judgement gave a figure, total career otherwise. Ten years
-      // in an unrelated field no longer passes "5 years' experience".
+      // when the judgement gave a figure, total career otherwise, so ten
+      // years in an unrelated field doesn't pass "5 years' experience".
       const actual = Number.isFinite(context.relevantYears) ? context.relevantYears : Number(candidate.years_experience) || 0;
       return actual >= required ? "pass" : "fail";
     }
@@ -134,9 +121,9 @@ function evaluateRule(rule, candidate, context = {}) {
       if (containsPhrase(location, value) || containsPhrase(value, location)) return "pass";
       // No text overlap isn't proof of a mismatch: "UK" vs "London",
       // "Bay Area" vs "San Francisco" or "EMEA" vs "Berlin" share no words
-      // but satisfy each other. This used to be a hard fail - capping a
-      // qualified candidate at 40 and marking them "Not suitable" - so
-      // anything short of a textual match is left for the recruiter.
+      // but satisfy each other. A hard fail would cap a qualified candidate
+      // at 40 and mark them "Not suitable", so anything short of a textual
+      // match is left for the recruiter.
       return "unverifiable";
     }
 
@@ -144,18 +131,15 @@ function evaluateRule(rule, candidate, context = {}) {
       // Compared by significant words rather than one exact substring: the
       // same certification is written many ways ("AWS Certified Solutions
       // Architect" vs "AWS Solutions Architect - Associate"), and an
-      // exact-string miss used to hard-fail the candidate.
+      // exact-string miss shouldn't hard-fail the candidate.
       const held = heldCredentials(candidate);
       const match = credentialMatch(value, held);
       if (match === "pass") return "pass";
       if (match === "partial") return "unverifiable";
-      // Only a real "no" when the CV does list its certifications and this
-      // isn't among them. A CV listing none at all is common in many
-      // fields (care, retail, hospitality, trades) and says nothing either
-      // way - it used to hard-fail, capping the candidate at 40.
       // Not shown on the CV is "can't confirm", not "doesn't hold it" -
-      // whether or not the candidate lists other certificates. It used to
-      // fail only candidates who listed some, so listing more was punished.
+      // whether or not the candidate lists other certificates. Many CVs
+      // (care, retail, hospitality, trades) list none at all, and failing
+      // only those that list some would punish listing more.
       return "unverifiable";
     }
 
