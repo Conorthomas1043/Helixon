@@ -43,6 +43,7 @@ After adding a table with an `agency_id` column, re-run the migration's policy b
 ## When something breaks
 
 1. **See it.** Sentry gets unhandled errors, route-level crashes (`error.js` boundaries) and handled API errors (`reportError`). Each event is tagged with the route's `[scope]`. Vercel → Logs has the raw request log. `/admin/health` shows the state of each external service.
+   - Browser stack traces need `SENTRY_AUTH_TOKEN` in the Vercel build environment. The build uploads maps for shared chunks; `scripts/obfuscate-build.mjs` uploads maps for the obfuscated app chunks after obfuscating them, then deletes every client map so none is public. Its build-log lines start `[obfuscate-build]`.
 2. **Contain it.**
    - Site-wide problem: switch on **Maintenance mode** at `/admin/site`. Admins and staff can still get in.
    - A bad deploy: Vercel → Deployments → the previous good deployment → **Promote to production**. This takes seconds and needs no code change.

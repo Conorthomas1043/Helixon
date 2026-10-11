@@ -40,58 +40,54 @@
 // layout. The real cost is build time (webpack is slower than Turbopack);
 // `next dev` is unaffected either way since this script only ever runs
 // after a production build.
-import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
+//
+// Source maps: Sentry's build plugin uploads maps for every chunk except
+// these (next.config.mjs ignores .next/static/chunks/app), and leaves the
+// client maps on disk. This script obfuscates each app chunk, writes a map
+// that runs from the obfuscated code back to the original source
+// (scripts/lib/obfuscate-chunk.mjs), uploads those maps with sentry-cli when
+// SENTRY_AUTH_TOKEN is set, and then deletes every client map so none is
+// served publicly.
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync, statSync } from "node:fs";
 import path from "node:path";
-import JavaScriptObfuscator from "javascript-obfuscator";
+import { spawnSync } from "node:child_process";
+import { obfuscateChunk } from "./lib/obfuscate-chunk.mjs";
 
-const APP_CHUNKS_DIR = path.join(process.cwd(), ".next", "static", "chunks", "app");
+const STATIC_DIR = path.join(process.cwd(), ".next", "static");
+const APP_CHUNKS_DIR = path.join(STATIC_DIR, "chunks", "app");
 
-const OBFUSCATOR_OPTIONS = {
-  compact: true,
-  controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.5,
-  deadCodeInjection: true,
-  deadCodeInjectionThreshold: 0.2,
-  identifierNamesGenerator: "hexadecimal",
-  numbersToExpressions: true,
-  simplify: true,
-  splitStrings: true,
-  splitStringsChunkLength: 8,
-  stringArray: true,
-  stringArrayEncoding: ["base64"],
-  stringArrayThreshold: 0.75,
-  rotateStringArray: true,
-  shuffleStringArray: true,
-  // Deliberately off: selfDefending/debugProtection work by freezing the
-  // tab or corrupting output whenever devtools are open, which hits real
-  // users (support debugging their own extensions, screen readers,
-  // accessibility tooling) as hard as it hits anyone trying to reverse the
-  // bundle, for a protection that's trivially stripped by feeding the file
-  // back through a generic AST beautifier.
-  selfDefending: false,
-  debugProtection: false,
-  disableConsoleOutput: false,
-  renameGlobals: false,
-};
-
-function walkJsFiles(dir) {
+function walk(dir, keep) {
   const out = [];
   for (const entry of readdirSync(dir)) {
     const full = path.join(dir, entry);
-    const stat = statSync(full);
-    if (stat.isDirectory()) {
-      out.push(...walkJsFiles(full));
-    } else if (entry.endsWith(".js") && !entry.endsWith(".js.map")) {
-      out.push(full);
-    }
+    if (statSync(full).isDirectory()) out.push(...walk(full, keep));
+    else if (keep(entry)) out.push(full);
   }
   return out;
+}
+
+function uploadMaps() {
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    console.log("[obfuscate-build] SENTRY_AUTH_TOKEN not set; source maps not uploaded.");
+    return;
+  }
+  const cli = path.join(process.cwd(), "node_modules", ".bin", "sentry-cli");
+  const run = (args) => spawnSync(cli, args, { stdio: "inherit", env: process.env }).status === 0;
+  // `inject` gives any chunk without a debug ID one (in the code and its
+  // map); chunks that already carry one keep it. `upload` then matches each
+  // map to its chunk by that ID.
+  const ok =
+    run(["sourcemaps", "inject", APP_CHUNKS_DIR]) &&
+    run(["sourcemaps", "upload", "--org", "helixon", "--project", "helixon", APP_CHUNKS_DIR]);
+  // Like the build plugin: a failed upload costs readable stack traces, not
+  // the deploy.
+  if (!ok) console.error("[obfuscate-build] Source map upload failed; stack traces from app chunks won't be readable for this build.");
 }
 
 function main() {
   let files;
   try {
-    files = walkJsFiles(APP_CHUNKS_DIR);
+    files = walk(APP_CHUNKS_DIR, (name) => name.endsWith(".js"));
   } catch (err) {
     console.error(`[obfuscate-build] Could not read ${APP_CHUNKS_DIR}:`, err.message);
     process.exit(1);
@@ -103,23 +99,36 @@ function main() {
   }
 
   let failures = 0;
+  let mapped = 0;
   for (const file of files) {
     try {
-      const source = readFileSync(file, "utf8");
-      const obfuscated = JavaScriptObfuscator.obfuscate(source, OBFUSCATOR_OPTIONS).getObfuscatedCode();
-      writeFileSync(file, obfuscated, "utf8");
+      const mapFile = `${file}.map`;
+      const inputMap = existsSync(mapFile) ? JSON.parse(readFileSync(mapFile, "utf8")) : null;
+      const { code, map } = obfuscateChunk(readFileSync(file, "utf8"), { fileName: path.basename(file), inputMap });
+      writeFileSync(file, code, "utf8");
+      if (map) {
+        writeFileSync(mapFile, JSON.stringify(map), "utf8");
+        mapped += 1;
+      }
     } catch (err) {
       failures += 1;
       console.error(`[obfuscate-build] FAILED on ${path.relative(process.cwd(), file)}:`, err.message);
     }
   }
 
-  console.log(`[obfuscate-build] Obfuscated ${files.length - failures}/${files.length} app chunk(s).`);
+  console.log(`[obfuscate-build] Obfuscated ${files.length - failures}/${files.length} app chunk(s), ${mapped} with source maps.`);
 
   if (failures > 0) {
     console.error(`[obfuscate-build] ${failures} file(s) failed to obfuscate - failing the build rather than shipping partial protection.`);
     process.exit(1);
   }
+
+  if (mapped > 0) uploadMaps();
+
+  // Always, uploaded or not: a public map would undo the obfuscation.
+  const maps = walk(STATIC_DIR, (name) => name.endsWith(".map"));
+  for (const map of maps) rmSync(map);
+  if (maps.length) console.log(`[obfuscate-build] Deleted ${maps.length} client source map(s).`);
 }
 
 main();

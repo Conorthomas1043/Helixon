@@ -98,6 +98,16 @@ export default withSentryConfig(nextConfig, {
   // Upload a larger set of source maps for prettier stack traces (increases build time)
   widenClientFileUpload: true,
 
+  // The app's own route chunks are obfuscated after the build, which would
+  // leave the maps uploaded here describing code that no longer ships.
+  // scripts/obfuscate-build.mjs uploads maps for those chunks after
+  // obfuscating them, and deletes every client map once it's done.
+  sourcemaps: {
+    // Absolute, like the plugin's own patterns.
+    ignore: [path.posix.join(appRoot.split(path.sep).join("/"), ".next/static/chunks/app/**")],
+    deleteSourcemapsAfterUpload: false,
+  },
+
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
