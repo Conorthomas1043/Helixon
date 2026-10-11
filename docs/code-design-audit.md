@@ -218,6 +218,25 @@ Priority = (Impact + Risk) × (6 − Effort). Each is scored 1 to 5; for effort,
 2. **Next month:** D4 and D5 together, area by area (validate and test each route in the same change). Then D8.
 3. **This quarter:** D9, starting with the API boundary, plus D10 and D11 as files are touched.
 
+### Fix status (11 October)
+
+All twelve are done in code. Three need a setting changed outside the repo before they take full effect (marked **needs you**).
+
+| # | Status | Commit | What changed |
+|---|---|---|---|
+| D1 | Done in code, **needs you** | `f70d7b1` | Database-level separation is on by default, behind a probe: every 5 minutes it checks that the agency-scoped client really sees only its own agency, and falls back to the service-role client if not. Production keeps falling back until the `agency_member_rls` and `audit_fixes` migrations are applied (Actions → Apply database migrations) and `SUPABASE_JWT_SECRET` is set in Vercel |
+| D2 | Done in code, **needs you** | `8fd5270` | Source maps are composed through the obfuscation step and uploaded after it, with Sentry debug IDs. Uploading needs `SENTRY_AUTH_TOKEN` in the Vercel build environment |
+| D3 | Done in the repo, **needs you** | `22ec2e9` | `CONTRIBUTING.md`, a pull request template, and a CI job that warns on a pull request over 40 files or 1,000 lines. Protecting `main` so CI must pass is a repository setting; the steps are in the runbook |
+| D4 | Done | `ca58eb3` | Every route that reads a JSON body reads it through a schema naming its fields (`lib/api/schemas.js`); unknown keys are dropped. Webhooks keep reading the raw body for signature checks, and uploads read form data. `test/request-schemas.test.js` keeps it that way |
+| D5 | Done | `103d69c` | Route tests against the in-memory database for billing, invoices, team roles, erasure and the screening run |
+| D6 | Done | `b1163cb` | The 14 "table missing" fallbacks are gone (the admin tables were confirmed in production first) |
+| D7 | Done | `0c1a3b4` | CI reports coverage on every run, with no threshold |
+| D8 | Done | `741c522` | `POST /api/run` is 97 lines over named steps in `lib/screening/`; the user operations of `admin/users` live in `lib/admin/users.js` |
+| D9 | Done for candidates, jobs and billing | `d180f0d` | Response contracts in `lib/contracts/` type both the server code that builds a response and the client call that reads it, and `app/api/contracts.test.js` checks real responses against them. `lib/contracts`, `lib/api` and `lib/api-client` type-check in strict mode with no allowed errors. Other responses move onto contracts as they're touched |
+| D10 | Done | `ecf1abf` | 117 of 133 top-level `lib/` modules are in domain folders; 16 shared ones stay at the top (map in `architecture.md`) |
+| D11 | Done for the hook and the worst component | `4dd54f5` | `useResource` (a keyed, session-cached loader) on 9 dashboard pages, 2 profile cards and /analyse; /analyse's 29 `useState` calls are one tested reducer. The 27 in `candidate-extras.jsx` turned out to be six small cards, not one component, so they didn't need a reducer. The remaining pages move onto the hook as they're touched |
+| D12 | Done | `a1f62e3`, `d09f873`, `ff5d423` | 127 history comments rewritten to give the current behaviour and its reason. What still matches "no longer" describes behaviour now (an expired demo no longer grants access) |
+
 With D1 to D9 done, the API and front-end areas read senior, and the overall rating moves to **senior**. The step to **staff** is less about code and more about system shape:
 - typed contracts end to end;
 - domain services other features build on;
