@@ -28,7 +28,15 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm test
+      - name: Unit tests, with a coverage report
+        run: npm run test:coverage
+      # Report only, no threshold: the numbers go on the run's summary page.
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e 'const t=require("./coverage/coverage-summary.json").total;const r=(k)=>`| ${k} | ${t[k].pct}% | ${t[k].covered} / ${t[k].total} |`;console.log(["### Test coverage","","| | Covered | |","|---|---:|---:|",r("lines"),r("statements"),r("functions"),r("branches")].join("\n"))' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Migration file names are unique and ordered
         run: node scripts/check-migrations.mjs
 

@@ -7,6 +7,16 @@ export default defineConfig({
   test: {
     // Playwright runs e2e/ (npm run test:e2e).
     exclude: ["**/node_modules/**", "**/.next/**", "e2e/**"],
+    // `npm run test:coverage` (CI runs it and posts the summary on the run).
+    // Report only: no thresholds, so it shows where tests are thin without
+    // blocking a change.
+    coverage: {
+      provider: "v8",
+      include: ["app/**/*.{js,jsx}", "lib/**/*.{js,jsx}", "components/**/*.{js,jsx}"],
+      exclude: ["**/*.test.{js,jsx,mjs}", "**/node_modules/**"],
+      reporter: ["text-summary", "json-summary"],
+      reportsDirectory: "coverage",
+    },
   },
   resolve: {
     alias: {
