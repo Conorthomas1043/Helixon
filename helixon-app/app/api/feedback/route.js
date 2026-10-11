@@ -12,10 +12,9 @@ const ScoreFeedbackInput = fields({ rating: text(10), reason: text(4000), commen
 
 // Thumbs up/down on an analysis (see the feedback buttons in app/analyse).
 //
-// Previously this had no authentication, no length limit and no validation, so
-// anyone could POST unlimited rows of arbitrary text into the feedback table.
-// It now needs a signed-in user (the page that calls it already does), is
-// rate-limited per user, and stores only cleaned, length-capped text.
+// Needs a signed-in user (the page that calls it already has one), is
+// rate-limited per user, and stores only cleaned, length-capped text, so the
+// feedback table can't be flooded with arbitrary rows.
 //
 // The client sends the free-text explanation as `reason`; older callers sent
 // `comment`. Both are accepted.
@@ -62,12 +61,11 @@ export async function POST(request) {
     else if (rating === "up" && !expectedBand && BANDS.has(score.recommendation)) expectedBand = score.recommendation;
   }
 
-  // The feedback table's columns are score_id / agency_id / user_id. This route
-  // used to insert an `analysis_id` column that doesn't exist, so every
-  // submission failed and nothing was ever saved. user_id is left null on
-  // purpose: it is a foreign key to auth.users (the old Supabase Auth table),
-  // which a Clerk user's id can never satisfy - the agency is what identifies
-  // who the feedback came from.
+  // The feedback table's link columns are score_id / agency_id / user_id
+  // (there is no analysis_id column). user_id is left null on purpose: it is
+  // a foreign key to auth.users (the old Supabase Auth table), which a Clerk
+  // user's id can never satisfy - the agency is what identifies who the
+  // feedback came from.
   const { error } = await supabase.from("feedback").insert({
     agency_id: auth.agencyId,
     user_id: null,

@@ -87,8 +87,7 @@ const STATUS_LABELS = {
   canceled: "Cancelled",
 };
 
-// Previously entirely missing - DashboardNav and the account-menu dropdown
-// both already linked to /billing, but no page existed here at all (404).
+// /billing - linked from DashboardNav and the account-menu dropdown.
 export default function BillingPage() {
   const [state, setState] = useState({ loading: true, error: "", data: null });
   const [portalLoading, setPortalLoading] = useState(false);
@@ -134,9 +133,9 @@ export default function BillingPage() {
   const statusLabel = STATUS_LABELS[status] || status;
   const hasSubscription = Boolean(state.data?.subscription?.hasStripeCustomer);
   // A failed renewal. past_due keeps access while Stripe retries; unpaid
-  // has stopped it (lib/subscription-status.js). This page used to show it
-  // only as a plain "Past due" status line - or "You're not on a paid plan
-  // yet" with a link to buy again.
+  // has stopped it (lib/subscription-status.js). Either way the page leads
+  // with an alert explaining it, and doesn't show "You're not on a paid
+  // plan yet" with a link to buy again.
   const paymentFailed = status === "past_due" || status === "unpaid";
 
   return (

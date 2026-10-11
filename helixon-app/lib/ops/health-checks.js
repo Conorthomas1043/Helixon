@@ -31,8 +31,8 @@ async function timedFetch(url, options = {}) {
 }
 
 /** Round-trip latency + reachability for the actual product database - every
- * other admin page reads through it, but nothing previously checked it live
- * (the Command page's "Supabase" row was a hardcoded "Connected", true or not). */
+ * other admin page reads through it, so it is checked live rather than
+ * assumed to be connected. */
 export async function getDatabaseSnapshot() {
   try {
     const supabase = getAdminSupabase();

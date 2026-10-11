@@ -3,16 +3,12 @@ import { requireAdminSession } from "@/lib/admin/auth";
 import { getAdminOpsData, OPS_RANGE_HOURS } from "../../../../lib/ops/admin-data";
 import { reportError } from "@/lib/report-error";
 
-// Was previously gated by isAllowedAdmin(), a second, separately-implemented
-// auth check expecting a Supabase Bearer token - but the real admin login
-// (lib/admin/auth.js) is a hardcoded-credential system that only ever
-// produces the httpOnly helixon_admin_session cookie, never a Supabase
-// token. That meant every admin, on every load, got 403'd on the four pages
-// that call this route (sales, ops, seo, security/investigate) - a wiring
-// bug, not a missing feature. Swapped to the same requireAdminSession() used
-// by every other /api/admin/* route, which reads that cookie correctly.
+// Uses requireAdminSession(), like every other /api/admin/* route: the admin
+// login (lib/admin/auth.js) only issues the httpOnly helixon_admin_session
+// cookie, never a Supabase token. Called by the sales, ops, seo and
+// security/investigate pages.
 // ?range=24h|7d|30d|90d limits the request/lead data to that window (see
-// getAdminOpsData); without it the newest rows are used, as before.
+// getAdminOpsData); without it the newest rows are used.
 export async function GET(request) {
   try {
     await requireAdminSession();

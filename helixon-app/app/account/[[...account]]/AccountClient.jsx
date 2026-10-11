@@ -9,20 +9,15 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 // This renders inside app/account/layout.jsx's content slot - the shared
 // header (AppNav), page hero, and tab sidebar (SettingsNav) all come from
-// the layout already. This file used to duplicate all of that itself
-// (its own header, its own sidebar, its own hero) wrapped around this
-// same Clerk widget, which is why the account pages showed two stacked
-// copies of the whole shell. Only the tab-specific content belongs here.
+// the layout, so only the tab-specific content belongs here.
 //
 // Clerk's <UserProfile path="/account" routing="path"> only recognises
 // two of the four SettingsNav tabs as real internal sections: the base
 // path (/account) for Profile, and /account/security for Security.
 // Notifications and Danger zone aren't Clerk concepts, so each gets its
-// own Helixon-built component below instead of falling through to
-// Clerk's widget (which used to silently render its default Profile view
-// under whichever tab's heading was selected - a real, user-visible bug:
-// the nav showed "Notifications" as active while the content was Profile
-// again). DangerZone does real account deletion via /api/account/delete;
+// own Helixon-built component below. Left to Clerk's widget, they would
+// show its default Profile view under the "Notifications" or "Danger zone"
+// heading. DangerZone does real account deletion via /api/account/delete;
 // NotificationsInfo holds the follow-up reminder switch (the one optional
 // email) and says plainly that everything else is transactional.
 const TAB_COPY = {
@@ -60,9 +55,8 @@ export default function AccountPage() {
   return (
     <>
       {/* The page's only <h1> ("Account settings") and its intro live in
-          app/account/layout.jsx. This used to add an eyebrow, a second <h1>
-          ("Your profile.") and its own intro on top of that - three stacked
-          headings for one page. Now just a section heading for the tab. */}
+          app/account/layout.jsx, so this adds just a section heading for
+          the tab. */}
       <div
         className="mb-6"
         style={{ animation: `profileIn 700ms ${EASE} both` }}

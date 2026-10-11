@@ -30,11 +30,11 @@ export async function writeAdminAudit({
   const userAgent =
     request?.headers?.get("user-agent") || null;
 
-  // admin_audit_logs.target_id is a uuid column. Targets that aren't uuids -
-  // Clerk user ids ("user_2abc..."), IP addresses - used to make the insert
-  // fail *after* the action had already happened, so the admin saw a 500 for a
-  // change that had gone through. Those identifiers are kept in metadata
-  // instead and target_id is left empty.
+  // admin_audit_logs.target_id is a uuid column, and the insert runs *after*
+  // the action has happened, so a non-uuid there would show the admin a 500
+  // for a change that went through. Targets that aren't uuids - Clerk user
+  // ids ("user_2abc..."), IP addresses - are kept in metadata instead and
+  // target_id is left empty.
   const uuidTarget =
     typeof targetId === "string" &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)

@@ -12,10 +12,9 @@ const ArtifactInput = fields({ artifactId: id, finalText: text(100000) });
 // Records the text a recruiter finally sent after editing an AI-drafted email,
 // and whether they kept the draft largely as written (see draft-email).
 //
-// Previously this had no authentication and no agency check, so anyone who had
-// or guessed an artifact id could overwrite any agency's saved draft. It now
-// requires a signed-in user, only touches artifacts belonging to that user's
-// agency, and stores cleaned, length-capped text.
+// Requires a signed-in user and only touches artifacts belonging to that
+// user's agency, so an artifact id alone can't overwrite another agency's
+// draft. Stores cleaned, length-capped text.
 export async function POST(request) {
   const auth = await requireCustomerContext();
   if (!auth.ok) {

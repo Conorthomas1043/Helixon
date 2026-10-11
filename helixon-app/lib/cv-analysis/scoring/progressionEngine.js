@@ -1,8 +1,8 @@
 // Seniority by title keyword, for any profession - highest level first.
 // Only used as the fallback when the Claude judgement is unavailable (see
-// fitJudgeEngine.js). It used to be a 10-word tech ladder ("intern" ...
-// "developer", "engineer" ... "director"), so "Nurse", "Sales Executive"
-// or "Store Manager" all scored as level 0, the same as an intern.
+// fitJudgeEngine.js). The keywords span care, kitchens, trades and retail
+// as well as office and tech titles, so a "Store Manager" or "Charge Nurse"
+// isn't scored like an intern.
 const LEVELS=[
 [8,["chief","ceo","cfo","coo","cto","cmo","founder","owner","managing director","partner","president"]],
 [7,["director","vice president","vp","head of"]],

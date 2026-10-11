@@ -7,16 +7,16 @@
 //   2. proxy.ts - runs on the Edge Runtime. Edge Runtime does not support
 //      Node's built-in `crypto` module; importing it there causes a
 //      build-time error ("A Node.js API is used ... not supported in the
-//      Edge Runtime"). This is why proxy.ts previously had no way to check
-//      the admin session at all and /admin rendered for anyone.
+//      Edge Runtime"). This file is how proxy.ts checks the admin session
+//      before /admin renders.
 //
-// Signing (issuing new session tokens) still happens in lib/admin/auth.js
+// Signing (issuing new session tokens) happens in lib/admin/auth.js
 // using Node's `crypto` - that only ever runs in the login route, a
 // Node.js context, so there's no restriction there. This file only
 // *re-derives* the same HMAC-SHA256 to check a token that's already been
 // issued. Web Crypto (crypto.subtle) computes byte-identical HMAC-SHA256
 // output to Node's crypto.createHmac for the same key/data, so a token
-// signed by admin-auth.js verifies correctly here, and vice versa.
+// signed by lib/admin/auth.js verifies correctly here, and vice versa.
 
 export const ADMIN_SESSION_COOKIE = "helixon_admin_session";
 
@@ -39,8 +39,8 @@ function sessionsValidAfter() {
 }
 
 // Same idea as sessionsValidAfter(), scoped to one admin - ADMIN_USERS has no
-// server-side session store to revoke from individually, so the global kill
-// switch was previously the only lever, and it logs out every admin at once.
+// server-side session store to revoke from individually, and the global kill
+// switch logs out every admin at once.
 // Set ADMIN_SESSION_VALID_AFTER_<USERNAME> (same date/epoch-ms format) after
 // rotating just that admin's ADMIN_PASSWORD_HASH_<USERNAME> and redeploy:
 // their existing session(s) stop working immediately, while every other
@@ -72,8 +72,8 @@ function bytesToHex(bytes) {
 }
 
 // Constant-time comparison over two equal-length hex strings, to avoid
-// timing attacks - same property Node's crypto.timingSafeEqual gave the
-// original implementation.
+// timing attacks - the same property Node's crypto.timingSafeEqual gives
+// lib/admin/auth.js.
 function timingSafeEqualHex(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;

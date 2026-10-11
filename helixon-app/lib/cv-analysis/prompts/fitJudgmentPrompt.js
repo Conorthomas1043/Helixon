@@ -3,12 +3,9 @@ import { wrapUntrusted, jsonForPrompt } from "../../prompt-safety.js";
 // Only the fields judgment actually needs - keeps the prompt small and
 // avoids re-sending the full candidate object (name/email/phone/etc, which
 // this judgment has no legitimate use for anyway).
-// Was 6,000 - on a typical 2-3 page CV that cut off everything past the
-// most recent role or two, so achievement quality and career trajectory
-// were judged on a fraction of the evidence.
 // Same limit as candidate extraction, so the judgement sees everything the
-// extraction did (it used to stop at 20,000 - achievements late in a long
-// CV were never judged).
+// extraction did. A lower cut-off drops the later roles of a long CV, so
+// achievements and career trajectory get judged on part of the evidence.
 export const MAX_CV_CHARS = 34000;
 
 export function fitJudgmentPrompt({ candidate, job, cvText, unmatchedSkills = [] }) {

@@ -1,7 +1,7 @@
 "use client";
 
-// Loading data in a client component: one hook instead of the
-// useState/useEffect/cancelled-flag block each page used to write.
+// Loading data in a client component: one hook in place of a
+// useState/useEffect/cancelled-flag block in each page.
 //
 //   const { data: interviews, error, loading, reload } = useResource(
 //     `interviews:${scope}`,

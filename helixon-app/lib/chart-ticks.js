@@ -13,7 +13,7 @@ export function niceTicks(max) {
 }
 
 // £ labels for the fees axis: whole thousands from £10k, one decimal below
-// (£4,500 used to read "£5k").
+// so £4,500 reads "£4.5k", not "£5k".
 export function axisMoney(v) {
   if (v >= 10000) return `£${Math.round(v / 1000)}k`;
   if (v >= 1000) return `£${(v / 1000).toFixed(1).replace(/\.0$/, "")}k`;

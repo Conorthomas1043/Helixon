@@ -1,16 +1,13 @@
 // lib/employee/store.js
 // Read-only stats snapshot shown on the employee dashboard.
 //
-// Previously this returned hardcoded numbers (totalUsers: 4213,
-// activeToday: 318, uptimePct: 99.97, openTickets: 12) - none of it real.
-// Now it's computed from request_logs and profiles, the same tables the
-// admin stats route (app/api/admin/stats/route.js) reads from, just a
-// narrower, lower-privilege slice safe for employee eyes: no IPs, no
-// per-request detail, no revenue/subscription numbers.
+// Computed from request_logs and profiles, the same tables the admin stats
+// route (app/api/admin/stats/route.js) reads from, just a narrower,
+// lower-privilege slice safe for employee eyes: no IPs, no per-request
+// detail, no revenue/subscription numbers.
 //
-// uptimePct and openTickets were dropped rather than kept as different
-// fake numbers - there's no uptime monitor or support-ticket table backing
-// either of them yet. Add them back for real once those exist.
+// There's no uptime or open-tickets figure: no uptime monitor or
+// support-ticket table backs either yet. Add them once those exist.
 
 import "server-only";
 import { supabase } from "@/lib/supabase";

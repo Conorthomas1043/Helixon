@@ -249,10 +249,9 @@ export function useAdminUsers() {
     load();
   }, [load]);
 
-  // Confirms success with a toast (it used to reload silently, so an admin
-  // couldn't tell whether a click had done anything) and reports failures
-  // as a toast too - the page-top error notice is often scrolled out of view.
-  // Resolves true on success.
+  // Confirms success with a toast, so an admin can tell a click did
+  // something, and reports failures as a toast too - the page-top error
+  // notice is often scrolled out of view. Resolves true on success.
   const action = useCallback(
     async (userId, actionName, extra = {}) => {
       setBusy(true);

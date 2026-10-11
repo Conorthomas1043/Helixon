@@ -21,7 +21,7 @@ const ID_CHUNK = 200;
 //   jobId, recruiterId, clientId
 export function readAnalyticsFilters(params, now = Date.now()) {
   const period = ["all", "30d", "90d", "365d", "custom"].includes(params.get("period")) ? params.get("period") : "all";
-  // The timing endpoint used to take ?days=N - still accepted.
+  // Older callers of the timing endpoint send ?days=N - still accepted.
   const days = Number(params.get("days"));
   const legacyPeriod = period === "all" && [30, 90, 365].includes(days) ? `${days}d` : null;
   return {

@@ -232,10 +232,9 @@ export default function BlogPage() {
               Our posts are on the way. In the meantime, the product updates page lists what we&apos;ve shipped recently.
             </p>
 
-            {/* This used to be an email signup form that wasn't connected to
-                anything - it collected an address and did nothing with it. A
-                real one needs a stored list with consent and an unsubscribe
-                link, so until that exists this points somewhere that works. */}
+            {/* No email signup form: a real one needs a stored list with
+                consent and an unsubscribe link, so until that exists this
+                points somewhere that works. */}
             <div className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto justify-center">
               <Link
                 href="/updates"

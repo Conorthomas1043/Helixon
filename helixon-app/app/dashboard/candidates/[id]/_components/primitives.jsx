@@ -203,8 +203,8 @@ export function StateMessage({ title, body, retryLabel, onRetry }) {
 
 /* ------------------------------------------------------------------------
  * Full analysis - the same report the Analyse screen shows straight after
- * screening, rebuilt from the saved analysis. It used to be unreachable once
- * you left that screen.
+ * screening, rebuilt from the saved analysis so it can be read again after
+ * leaving that screen.
  * ---------------------------------------------------------------------- */
 
 // A titled, collapsible group of panels on the candidate profile. Showing

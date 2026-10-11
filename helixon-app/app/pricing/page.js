@@ -40,8 +40,8 @@ export default function PricingPage() {
   const [error, setError] = useState("");
   // The app sends people here (?reason=subscription_required) when their
   // subscription stops granting access - most often a failed renewal
-  // payment. They used to get the plain sales page, i.e. an invitation to
-  // buy a second subscription, with no hint that a card update would do.
+  // payment. They get a notice pointing them to Billing to update their
+  // card, so the sales page doesn't read as an invitation to buy again.
   const [lapsed, setLapsed] = useState(false);
   useEffect(() => {
     // Read after mount so the page can still be pre-rendered statically.

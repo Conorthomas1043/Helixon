@@ -21,10 +21,9 @@ import { getCached as getCachedJob, setCached as setCachedJob } from "../cache/j
 // Job extraction, reusing a result when we already have one: the caller's
 // parsed job (a saved job being re-used - every CV after the first in a
 // bulk run), or this server instance's cache of recently parsed job texts.
-// A bulk upload of 50 CVs against one role used to send the identical job
-// description through Claude 50 times, and each run could read the role
-// slightly differently, so candidates in the same batch weren't scored
-// against quite the same requirements.
+// That saves a Claude call per CV in a bulk upload, and since each call can
+// read the role slightly differently, it keeps every candidate in a batch
+// scored against the same requirements.
 async function parseJob(jobText, knownJob) {
 
     if (knownJob && Array.isArray(knownJob.required_skills)) {
@@ -137,8 +136,7 @@ export default async function analyseCV(
 
 
     // Run together - candidate and job extraction don't depend on each
-    // other, and each is a full Claude round trip. They used to run one
-    // after the other.
+    // other, and each is a full Claude round trip.
     const [extracted, jobParsed] =
         await Promise.all([
             knownExtracted && typeof knownExtracted === "object" && Object.keys(knownExtracted).length
@@ -196,10 +194,10 @@ export default async function analyseCV(
         ? buildBlindCvText(cvText, extracted)
         : cvText;
 
-    // Same for the structured candidate: scoring used to get the full
-    // extraction, so in blind mode the judgement prompt still received
-    // every employer name (positions[].employer), and result.summary -
-    // shown to the recruiter - opened with the candidate's real name.
+    // Same for the structured candidate: the name and employers are blanked,
+    // so the judgement prompt never sees an employer (positions[].employer)
+    // and result.summary - shown to the recruiter - can't open with the
+    // candidate's real name.
     const scoringCandidate = blind
         ? {
             ...extracted,

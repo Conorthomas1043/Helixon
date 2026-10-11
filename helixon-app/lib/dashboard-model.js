@@ -129,8 +129,8 @@ export function computeCandidateStats(candidates, now = Date.now()) {
       });
     });
 
-  // Strong match should surface whether or not it's been staged yet -
-  // requiring stage === firstStageKey used to hide unstaged strong matches.
+  // A strong match surfaces whether or not it's been staged yet - in the
+  // first stage or with no stage at all.
   completed
     .filter((a) => a.score !== null && a.score >= STRONG_MATCH_MIN && (a.stage === firstStageKey || a.stage === null))
     .forEach((a) => {
@@ -200,9 +200,9 @@ export function computeCandidateStats(candidates, now = Date.now()) {
     return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0);
   });
 
-  // Strong matches not already in the visible "Needs your attention" list.
-  // The two panels used to list largely the same people, and the count
-  // behind "N more strong candidates" included every scored candidate.
+  // Strong matches not already in the visible "Needs your attention" list,
+  // so the two panels don't repeat the same people. The count behind
+  // "N more strong candidates" comes from this list too.
   const shownInAttention = new Set(attentionItems.slice(0, 6).map((i) => i.candidateKey));
   const topCandidatesAll = strongMatches
     .filter((a) => !shownInAttention.has(a.candidateId ?? a.id))

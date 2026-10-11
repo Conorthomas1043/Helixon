@@ -10,10 +10,9 @@ import { reportError } from "@/lib/report-error";
 // to personalize the header/account menu and to drive the one-time
 // "Welcome back" banner after login.
 //
-// This used to also return `isAdmin` from a lookup of the `admins` table by
-// Clerk user id - but that column holds old Supabase auth uuids, so it never
-// matched anyone, and nothing read the flag. Admin access is the separate
-// credential login in lib/admin/auth.js.
+// It doesn't say whether the user is an admin: admin access is the separate
+// credential login in lib/admin/auth.js, and the `admins` table holds old
+// Supabase auth uuids, which never match a Clerk user id.
 export async function GET() {
   const { userId } = await auth();
 

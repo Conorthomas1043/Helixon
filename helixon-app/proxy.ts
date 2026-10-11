@@ -132,33 +132,24 @@ export const config = {
 
 // IMPORTANT: this must be named `proxy` (or a default export) and live in
 // proxy.ts - Next.js 16 renamed the middleware.ts/middleware() convention
-// to proxy.ts/proxy(). Having both middleware.ts and proxy.ts in the repo
-// at once is a build error ("Both middleware file... and proxy file...
-// detected"), which is why the build was failing. middleware.ts had the
-// up-to-date logic (session refresh, cookie copying) but the wrong
-// file name/export for this Next.js version; proxy.ts had the correct
-// file name but the older, buggy logic. This file merges them: correct
-// name, correct export, current logic. Delete middleware.ts once this is
-// in place - don't keep both.
+// to proxy.ts/proxy(). Don't add a middleware.ts alongside it: having both
+// in the repo is a build error ("Both middleware file... and proxy file...
+// detected").
 //
-// Auth: identity now comes from Clerk instead of Supabase Auth. The whole
-// handler below runs *inside* clerkMiddleware() so that `auth()` (used
-// here, and in server components/route handlers via `@clerk/nextjs/server`)
-// has a request context to read from. Clerk manages its own session
-// cookies internally - there's no more manual cookie-copying dance like
-// the old Supabase refresh-token flow required.
+// Auth: identity comes from Clerk. The whole handler below runs *inside*
+// clerkMiddleware() so that `auth()` (used here, and in server
+// components/route handlers via `@clerk/nextjs/server`) has a request
+// context to read from. Clerk manages its own session cookies, so nothing
+// here copies cookies by hand.
 export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   const { pathname } = request.nextUrl;
 
   // ── 0. Maintenance gate - checked first, before anything else ────────────
-  // Fix: previously this only checked whether the helixon_dev_unlocked
-  // cookie was PRESENT. httpOnly stops JS from setting it, but it doesn't
-  // stop a visitor from opening devtools → Application → Cookies and
-  // typing the name/value in by hand - that's a plain text match with no
-  // secret involved, so anyone could "unlock" the site without ever
-  // knowing the password. The cookie now carries an HMAC signature
-  // (lib/site-gate.ts) that only the server can produce, so a hand-typed
-  // cookie fails verification and gets bounced back to the gate.
+  // The helixon_dev_unlocked cookie carries an HMAC signature
+  // (lib/site-gate.ts) that only the server can produce. httpOnly stops JS
+  // from setting it, but not a visitor typing the name/value into devtools,
+  // so a cookie that is merely present proves nothing: a hand-typed one
+  // fails verification and gets bounced back to the gate.
   if (
     DEV_MODE &&
     pathname !== "/under-development" &&
@@ -295,11 +286,8 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
       }
     }
     // API callers need a JSON error they can parse; browser page
-    // navigations need an actual page - previously this returned raw JSON
-    // for both, so a blocked visitor hitting any page saw unstyled JSON
-    // text instead of a page. /rate-limited already exists for exactly
-    // this (components/landing/TooManyRequestsPage) and just wasn't used
-    // here.
+    // navigations need an actual page, so they go to /rate-limited
+    // (components/landing/TooManyRequestsPage) instead of raw JSON.
     if (pathname.startsWith("/api")) {
       return new NextResponse(
         JSON.stringify({ ok: false, error: "Your IP has been blocked." }),
@@ -324,24 +312,24 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   }
 
   // ── 3. Gate /analyse behind authentication ────────────────────────────────
-  // Trial access has been removed - there is no more anonymous/cookie-based
-  // path into /analyse. A signed-in session is required just to reach the
-  // page at all. Whether that user is actually on an active paid plan is
+  // There is no anonymous/cookie-based path into /analyse: a signed-in
+  // session is required just to reach the page at all. Whether that user
+  // is actually on an active paid plan is
   // checked deeper in (in /api/run, which does the real subscription-status
   // query) - middleware only answers "are they logged in", since doing a
   // second DB round-trip for subscription status on every request here
   // would be redundant with that check.
   // /dashboard, /account and /billing are gated the same way: their pages
   // render a shell and only find out they're signed out when the data call
-  // returns 401, which showed logged-out visitors a broken "Unable to load
-  // dashboard" screen instead of the login page.
+  // returns 401, so without this a logged-out visitor would see a broken
+  // "Unable to load dashboard" screen instead of the login page.
   if (SIGNED_IN_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const { userId } = await auth();
     if (!userId) {
       // Carry the original destination through so <SignIn/>'s
       // fallbackRedirectUrl (app/login) is overridden by Clerk's own
-      // redirect_url handling - previously this always sent a logged-in
-      // user to /dashboard regardless of what they were trying to reach.
+      // redirect_url handling - after signing in, the user lands where they
+      // were heading rather than always on /dashboard.
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect_url", pathname + request.nextUrl.search);
       report({ outcome: "redirected", statusCode: 307, location: "/login", rule: "sign_in" });
@@ -350,9 +338,8 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
   }
 
   // ── 3b. Gate /admin behind a valid admin session ──────────────────────────
-  // Unaffected by the Clerk migration - admin auth is a deliberately
-  // separate system (env-var credentials + its own signed session cookie),
-  // never built on Supabase Auth or Clerk. This uses the same signed,
+  // Admin auth is a deliberately separate system (env-var credentials + its
+  // own signed session cookie), not built on Clerk. This uses the same signed,
   // httpOnly helixon_admin_session cookie the API routes check (verified
   // here via lib/admin/session.js, an Edge-Runtime-safe reimplementation of
   // the same check lib/admin/auth.js uses server-side - see that file for
@@ -367,7 +354,7 @@ export default clerkMiddleware(async (auth, request: NextRequest, event) => {
       response.headers.set("Content-Security-Policy", policy);
       return response;
     }
-    // The default URL no longer exists.
+    // The default login URL 404s, so only the slug reaches the login page.
     if (pathname === ADMIN_LOGIN_PATH) {
       report({ outcome: "not_found", statusCode: 404, rule: "admin" });
       return notFoundResponse(request);

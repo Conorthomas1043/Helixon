@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 /**
- * Shared brand mark, used by MarketingNav and MarketingFooter. Previously
- * duplicated as inline SVG in app/page.js, app/about, app/pricing, etc.
+ * Shared brand mark, used by MarketingNav and MarketingFooter, so pages
+ * don't need their own inline copy of the SVG.
  */
 export default function Logo({ size = "nav", showTagline = false, href = "/" }) {
   const box = size === "footer" ? "w-7 h-7 rounded-[8px]" : "w-8 h-8 rounded-[9px]";

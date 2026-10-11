@@ -16,12 +16,12 @@ function selectSubscriptions(build) {
 
 // Identity comes from Clerk (auth() reads the session Clerk's middleware
 // already validated for this request). Everything else - profile, agency,
-// subscription/billing status - still lives in Postgres via Supabase, which
-// is why `supabase` (the service-role client) is still used here even
-// though Supabase Auth itself is no longer the identity provider.
+// subscription/billing status - lives in Postgres via Supabase, which is
+// why `supabase` (the service-role client) is used here even though
+// Supabase Auth isn't the identity provider.
 //
-// Rows are looked up by `clerk_user_id` rather than the old `id` (which
-// used to be the Supabase auth.users uuid). See
+// Rows are looked up by `clerk_user_id`, never by `id` (a uuid - on older
+// rows, the Supabase auth.users id). See
 // supabase/migrations/*_add_clerk_user_id.sql - existing rows need that
 // column backfilled as part of the user migration to Clerk.
 export async function getCustomerContext() {
@@ -55,9 +55,9 @@ export async function getCustomerContext() {
 
   // subscriptions.user_id is a uuid FK to profiles.id - it is never the
   // Clerk user id (e.g. "user_..."), so there is nothing to look up
-  // without a profile row. Querying with the Clerk id here previously
-  // caused `invalid input syntax for type uuid` whenever a profile
-  // hadn't been created/linked yet (e.g. before the Clerk webhook fires).
+  // without a profile row - querying with the Clerk id would fail with
+  // `invalid input syntax for type uuid` whenever a profile hasn't been
+  // created/linked yet (e.g. before the Clerk webhook fires).
   let subscription = null;
 
   if (profile?.id) {

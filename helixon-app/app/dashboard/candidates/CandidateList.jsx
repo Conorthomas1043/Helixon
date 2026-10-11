@@ -85,7 +85,7 @@ function CandidateDatabaseContent({ initialData }) {
   //
   // Every filter is mirrored back into the address bar, so Back from a
   // profile returns to the same filtered list and a filtered view can be
-  // shared. They used to be read once and then lost.
+  // shared.
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialFilters = useMemo(
@@ -310,8 +310,8 @@ function CandidateDatabaseContent({ initialData }) {
 
   const hasAnyFilter = activeFilterCount > 0 || filters.search.trim().length > 0;
 
-  // One request per bulk action (app/api/candidates/bulk). These used to
-  // fire one request per candidate and swallow any failures.
+  // One request per bulk action (app/api/candidates/bulk), not one per
+  // candidate, and a failure is shown rather than swallowed.
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkError, setBulkError] = useState("");
   const runBulk = useCallback(
@@ -652,8 +652,8 @@ function CandidateDatabaseContent({ initialData }) {
 
         {/* Results */}
         <div className="rounded-[14px] p-4 sm:p-5" style={CARD}>
-          {/* Wraps on a phone: the count, select-all, columns and sort used to
-              share one line and push the sort menu off the edge. */}
+          {/* Wraps on a phone, so the count, select-all and columns don't
+              push the sort menu off the edge of a single line. */}
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
             <p className="text-[13px] whitespace-nowrap" style={{ color: INK_MUTED }}>
               {status === "ready" && result ? `Showing ${result.items.length === 0 ? 0 : (result.page - 1) * result.pageSize + 1}–${Math.min(result.page * result.pageSize, result.total)} of ${result.total}` : "\u00A0"}

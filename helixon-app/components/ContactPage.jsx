@@ -49,8 +49,8 @@ const CHANNELS = [
 ];
 
 // Topic select - each value is a key of TOPIC_ROUTING in app/api/contact,
-// which picks the inbox. (It used to send the inbox address itself, which
-// the route didn't recognise, so every message landed in hello@.)
+// which picks the inbox. The route sends anything it doesn't recognise to
+// hello@, so these must match its keys exactly.
 const TOPICS = ["Support", "Sales & pricing", "Something else"];
 
 // `role` comes from /contact?role=<title>, which each job on the careers

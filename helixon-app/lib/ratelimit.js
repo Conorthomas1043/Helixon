@@ -1,8 +1,8 @@
 import { getRedis } from "@/lib/redis";
 import { reportError } from "@/lib/report-error";
 
-// Same x-forwarded-for/x-real-ip extraction previously duplicated inline
-// in app/api/run - shared here now that more routes need it.
+// Client IP from x-forwarded-for, else x-real-ip - shared by every route
+// that needs it.
 export function getClientIp(request) {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||

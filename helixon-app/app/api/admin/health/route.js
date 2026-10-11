@@ -79,8 +79,8 @@ export async function GET() {
   }
 }
 
-// { muted: ["gemini", ...] } - checks that stay visible but no longer
-// affect the overall status.
+// { muted: ["gemini", ...] } - checks that stay visible but don't count
+// towards the overall status.
 export async function PATCH(request) {
   try {
     const admin = await requireAdminSession();

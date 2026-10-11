@@ -80,8 +80,8 @@ describe("applyKnockouts", () => {
   });
 
   it("treats a certification the CV doesn't show as unconfirmed, whether or not others are listed", () => {
-    // Listing other certificates used to turn this into a fail, so a
-    // candidate who listed more was treated worse than one who listed none.
+    // Listing other certificates mustn't turn this into a fail, or a
+    // candidate who listed more would be treated worse than one who listed none.
     for (const candidate of [{ certifications: [{ name: "PRINCE2 Foundation" }] }, { certifications: [] }]) {
       const out = applyKnockouts(candidate, job("certification", "CISSP"), 80);
       expect(out.failed).toHaveLength(0);

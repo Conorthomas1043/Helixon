@@ -1,14 +1,10 @@
 // app/api/employee/shared-todos/route.js
 // Team-visible task list - see lib/employee/shared-todos.js.
 //
-// Previously this route authenticated via a Supabase Auth Bearer token and
-// looked the caller up by `employees.email` - but employees don't have
-// Supabase Auth accounts or an email column; they log in through
-// lib/employee/auth.js's own username/password + cookie-session system
-// (see lib/session.js). That mismatch meant this route could never
-// actually be called by the employee dashboard: it 403'd unconditionally.
-// Rewritten to use the same employeeAccess() session check every
-// other /api/employee/* route uses.
+// Uses the same employeeAccess() session check as every other
+// /api/employee/* route. Employees have no Supabase Auth account or email
+// column; they log in through lib/employee/auth.js's own username/password
+// + cookie-session system (see lib/session.js).
 
 import { NextResponse } from "next/server";
 import { employeeAccess } from "@/lib/session";

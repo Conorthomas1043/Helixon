@@ -4,11 +4,10 @@
  * /dashboard/pipeline - kanban board of every completed candidate by stage.
  *
  * - Loads EVERY matching candidate (getPipelineCandidates pages through the
- *   API, 200 at a time). It used to request pageSize: 500 and silently show
- *   only the top 50 by score.
- * - Moves are optimistic: the card jumps immediately, and snaps back with a
- *   visible error if the server refuses. Previously each move reloaded the
- *   whole board (skeleton flash, lost scroll) and failures were swallowed.
+ *   API, 200 at a time); one request would only return the first page.
+ * - Moves are optimistic: the card jumps immediately, with no board reload
+ *   (no skeleton flash, scroll kept), and snaps back with a visible error if
+ *   the server refuses.
  * - Cards can be dragged between columns on desktop, or moved with the
  *   arrow buttons (keyboard/touch). Dropping on "Rejected" rejects; the
  *   arrows only walk the funnel.

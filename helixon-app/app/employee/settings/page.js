@@ -1,8 +1,7 @@
 "use client";
 // app/employee/settings/page.js
 // Self-service account settings - currently just "change your password",
-// the one thing every employee needs that previously had no UI anywhere
-// (only an admin could reset a password for someone, from app/admin/employees).
+// so employees don't need an admin to reset it for them (app/admin/employees).
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
