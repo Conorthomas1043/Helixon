@@ -17,6 +17,7 @@ export const HEALTH_CHECKS = [
   { key: "redis", label: "Redis", critical: false, pick: (h) => h?.redis },
   { key: "resend", label: "Resend", critical: false, pick: (h) => h?.resend },
   { key: "sentry", label: "Sentry", critical: false, pick: (h) => h?.sentry },
+  { key: "agencySeparation", label: "Agency separation", critical: false, pick: (h) => h?.agencySeparation },
   { key: "pages", label: "Public pages", critical: false, pick: (h) => h?.pages },
 ];
 

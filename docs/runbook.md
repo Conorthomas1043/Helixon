@@ -21,18 +21,19 @@ To apply them:
 
 Never paste migration SQL into the dashboard editor: the migration history then no longer matches the database, and `db push` will try to apply it again. `supabase/manual/` holds the one historical script that had to be run by hand.
 
-Some routes still fall back when a column is missing (Postgres error `42703`). Once every migration is confirmed applied in production, those fallbacks can be removed.
+## Database-level agency separation
 
-## Switching on database-level agency separation
+Customer API routes query agency tables through `lib/agency-db.js`. With `SUPABASE_JWT_SECRET` set, those queries run as the `agency_member` database role with a token the server signs for the member's agency, and Postgres refuses any other agency's rows even if a query forgets its `agency_id` filter. Browsers can't obtain that token, so the Supabase REST API stays closed to them.
 
-Customer API routes query agency tables through `lib/agency-db.js`. While it is off (the default), that is the service-role client, as before. Switched on, those queries run as the `agency_member` database role with a token the server signs for the member's agency, and Postgres refuses any other agency's rows even if a query forgets its `agency_id` filter. Browsers can't obtain that token, so the Supabase REST API stays closed to them.
+It's on by default whenever the secret is set. Before using it, the server probes that the database really enforces it (a token for an unknown agency must see no rows), re-checking every five minutes. If the probe fails, queries use the service-role client with the app's own filters, Sentry gets one `[agency-db]` error, and `/admin/health` shows **Agency separation** as not working. `/admin/health` always shows the current state.
 
+To turn it on in an environment:
 1. Apply migration `20261005000000_agency_member_rls.sql` (the migrations workflow above).
 2. In the Supabase SQL editor, check no rows would be hidden: `select * from public.agency_rls_readiness() where rows_without_agency > 0;` must return nothing. Fill in any `agency_id`s it reports first.
-3. In Vercel, add `SUPABASE_JWT_SECRET` (Supabase → Project Settings → JWT Keys → legacy JWT secret) and `SUPABASE_ANON_KEY` if it isn't set, then `SUPABASE_AGENCY_RLS=1`, and redeploy.
-4. Smoke-test the dashboard, a candidate profile, jobs, clients and placements. Errors mentioning `row-level security` or `permission denied` in Sentry mean a query needs looking at.
+3. In Vercel, add `SUPABASE_JWT_SECRET` (Supabase → Project Settings → JWT Keys → legacy JWT secret) and `SUPABASE_ANON_KEY` if it isn't set, and redeploy. (Leave `SUPABASE_AGENCY_RLS` unset.)
+4. Check `/admin/health` shows Agency separation working, then smoke-test the dashboard, a candidate profile, jobs, clients and placements. Errors mentioning `row-level security` or `permission denied` in Sentry mean a query needs looking at.
 
-To switch off, remove `SUPABASE_AGENCY_RLS` and redeploy. The migration can stay.
+To switch it off, set `SUPABASE_AGENCY_RLS=0` and redeploy. The migration can stay.
 
 After adding a table with an `agency_id` column, re-run the migration's policy block (or the whole migration, which is safe to repeat) so the new table gets the policy.
 

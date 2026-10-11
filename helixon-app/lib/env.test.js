@@ -5,7 +5,7 @@ const complete = Object.fromEntries(REQUIRED.map((v) => [v.name, v.check ? "http
 
 describe("checkEnv", () => {
   it("passes a complete production setup", () => {
-    expect(checkEnv({ ...complete, REDIS_URL: "redis://x", INTERNAL_EDGE_LOG_SECRET: "s", SECURITY_ALERT_EMAIL: "a@b.c" }, { production: true })).toEqual({ errors: [], warnings: [] });
+    expect(checkEnv({ ...complete, REDIS_URL: "redis://x", INTERNAL_EDGE_LOG_SECRET: "s", SECURITY_ALERT_EMAIL: "a@b.c", SUPABASE_JWT_SECRET: "s" }, { production: true })).toEqual({ errors: [], warnings: [] });
   });
 
   it("names each missing required variable, as errors only in production", () => {

@@ -14,6 +14,7 @@
 import "server-only";
 import { getAdminSupabase } from "@/lib/admin/supabase";
 import { isAdminRouteHidden } from "@/lib/admin/auth";
+import { getAgencySeparationSnapshot } from "@/lib/agency-db";
 
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -180,10 +181,11 @@ export async function getPageChecks() {
 
 /** Everything above, fetched in parallel and tolerant of individual failures. */
 export async function getFullHealthChecksSnapshot() {
-  const [database, aiProviders, pages] = await Promise.all([
+  const [database, aiProviders, pages, agencySeparation] = await Promise.all([
     getDatabaseSnapshot(),
     getAiProvidersSnapshot(),
     getPageChecks(),
+    getAgencySeparationSnapshot(),
   ]);
-  return { database, aiProviders, pages };
+  return { database, aiProviders, pages, agencySeparation };
 }

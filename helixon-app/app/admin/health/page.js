@@ -231,7 +231,7 @@ export default function HealthPage() {
       </div>
 
       <div className="grid-3 section">
-        <Panel title="Core infrastructure" sub="If either of these is down, nothing else works">
+        <Panel title="Core infrastructure" sub="If the database or Redis is down, nothing else works">
           <div className="bar-list">
             <ServiceStatus
               label="Database"
@@ -249,6 +249,20 @@ export default function HealthPage() {
                   : health?.redis?.configured
                     ? "Configured, unreachable - rate limiting fails open"
                     : "Not configured - rate limiting fails open"
+              }
+            />
+            <ServiceStatus
+              label="Agency separation"
+              snapshot={health?.agencySeparation}
+              ok={health?.agencySeparation?.connected}
+              note={
+                health?.agencySeparation?.connected
+                  ? "The database refuses other agencies' rows"
+                  : health?.agencySeparation?.configured
+                    ? "Not working - app-level filters only. Apply the agency_member_rls migration"
+                    : health?.agencySeparation?.switchedOff
+                      ? "Switched off (SUPABASE_AGENCY_RLS=0) - app-level filters only"
+                      : "Off - set SUPABASE_JWT_SECRET to switch on"
               }
             />
           </div>

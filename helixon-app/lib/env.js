@@ -44,6 +44,7 @@ export const RECOMMENDED = [
   { name: "REDIS_URL", alt: "UPSTASH_REDIS_REDIS_URL", what: "rate limiting (falls back to per-instance memory)" },
   { name: "INTERNAL_EDGE_LOG_SECRET", what: "request logging for admin Traffic" },
   { name: "SECURITY_ALERT_EMAIL", what: "firewall alerts" },
+  { name: "SUPABASE_JWT_SECRET", what: "database-level agency separation (lib/agency-db.js) stays off without it" },
 ];
 
 // Features that need several variables: all or none. Half a set is a
@@ -65,7 +66,7 @@ export const FORMATS = [
   { name: "ADMIN_LOGIN_SLUG", check: (v) => /^[A-Za-z0-9_-]{8,}$/.test(v.replace(/^\/+|\/+$/g, "")), hint: "8+ letters, digits, - or _ (otherwise the default /admin/login stays)" },
   { name: "FIREWALL_BLOCK_THRESHOLD", check: number, hint: "a number" },
   { name: "FIREWALL_ALERT_THRESHOLD", check: number, hint: "a number" },
-  { name: "SUPABASE_AGENCY_RLS", check: (v) => v === "1" || v === "0", hint: '"1" to switch on, otherwise leave unset' },
+  { name: "SUPABASE_AGENCY_RLS", check: (v) => v === "1" || v === "0", hint: '"0" to switch off; otherwise on whenever SUPABASE_JWT_SECRET is set' },
 ];
 
 const OAUTH_INTEGRATIONS = ["XERO_CLIENT_ID", "QUICKBOOKS_CLIENT_ID", "GMAIL_CLIENT_ID", "OUTLOOK_CLIENT_ID"];
