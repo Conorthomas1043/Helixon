@@ -4,11 +4,22 @@ Day-to-day operations for `helixon-app`. Architecture background is in [`archite
 
 ## Shipping a change
 
-1. Open a pull request (or push to a branch). CI runs lint, the type-check ratchet, unit tests, the migration-name check and a production build.
-2. Merge when CI is green. Vercel deploys `main` to production automatically.
+1. Open a pull request from a branch ([`CONTRIBUTING.md`](../CONTRIBUTING.md)). CI runs lint, both type checks, unit tests with coverage, the migration-name check, a production build and the end-to-end tests, and notes the pull request's size.
+2. Merge when CI is green and the change is reviewed. Vercel deploys `main` to production automatically.
 3. If the change adds a migration, apply it (next section) **before** the code that needs it is relied on.
 
-Recommended repository setting: protect `main` (Settings → Branches) so it only accepts merges with the `CI` checks passing.
+### Protecting `main` (one-off, by a repository admin)
+
+This is what makes CI a gate instead of a report.
+1. Go to GitHub → the repository → **Settings** → **Rules** → **Rulesets** → **New branch ruleset**. (Classic alternative: Settings → Branches → Add rule.)
+2. Name it `main`, set **Enforcement** to *Active*, and add the target **Include default branch**.
+3. Tick these rules:
+   - **Restrict deletions** and **Block force pushes**.
+   - **Require a pull request before merging**. With a second engineer, also set **Required approvals** to 1.
+   - **Require status checks to pass**, adding `Lint, types, tests` and `Production build and e2e`. Tick **Require branches to be up to date before merging**.
+4. Leave the bypass list empty, or add only the admin role for emergencies.
+
+Once it's on, every change reaches `main` through a pull request with green checks.
 
 ## Database migrations
 

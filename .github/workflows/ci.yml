@@ -40,6 +40,31 @@ jobs:
       - name: Migration file names are unique and ordered
         run: node scripts/check-migrations.mjs
 
+  # A nudge towards small pull requests: a warning on the run, never a
+  # failure (CONTRIBUTING.md).
+  size:
+    name: Pull request size
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Warn on a large pull request
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          files=$(git diff --name-only "$BASE"...HEAD -- . ':!**/package-lock.json' | wc -l)
+          lines=$(git diff --numstat "$BASE"...HEAD -- . ':!**/package-lock.json' | awk '{ s += $1 + $2 } END { print s + 0 }')
+          echo "### Pull request size: $files files, $lines lines changed" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$files" -gt 40 ] || [ "$lines" -gt 1000 ]; then
+            echo "::warning::This pull request changes $files files and $lines lines. Consider splitting it (see CONTRIBUTING.md)."
+          fi
+
   build:
     name: Production build and e2e
     runs-on: ubuntu-latest
