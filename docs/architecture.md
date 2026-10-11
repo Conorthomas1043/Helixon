@@ -48,13 +48,13 @@ A second, independent check sits in the database: customer API routes run their 
 
 ## CV screening pipeline
 
-`app/api/run` receives CVs and a job, then calls `lib/cv-analysis`:
+`app/api/run` checks the request (`lib/screening/input.js`), runs `lib/cv-analysis` and saves the result (`lib/screening/save.js`). The analysis itself:
 1. **Extraction** (`extraction/`, `lib/document/` for PDF/DOCX): text, then structured fields via the AI model.
 2. **Scoring** (`scoring/scoreCandidate.js`): separate engines for evidence, gaps, knockouts, progression, salary, certifications, industry, semantic and embedding match, and an AI "fit judge". Weights are fitted by `npm run calibrate`.
 3. **Explanation** (`explainabilityEngine.js`, `interviewQuestions.js`): the evidence quotes and interview questions shown in the report.
 4. **Blind screening** (`blindRedaction.js`) removes identifying details before scoring when the agency asks for it.
 
-Results are stored in `scores`, and the candidate record in `candidates`. The pipeline has the best test coverage in the repo (`lib/cv-analysis/tests`), plus evaluation scripts (`npm run eval:*`).
+Results are stored in `scores`, and the candidate record in `candidates`. The pipeline has the best test coverage in the repo (`lib/cv-analysis/tests`), plus evaluation scripts (`npm run eval:*`); `app/api/run/route.test.js` covers the request checks and what a screening writes.
 
 ## Scheduled jobs
 

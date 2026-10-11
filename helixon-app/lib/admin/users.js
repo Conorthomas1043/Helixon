@@ -1,0 +1,511 @@
+import "server-only";
+
+// Customer accounts for the admin console's Users page (app/api/admin/users):
+// listing, banning, demo access, agency provisioning and the rest. The route
+// checks the admin session and CSRF token, then calls these.
+//
+// Customers now sign in through Clerk, so real accounts live in Clerk (mirrored
+// in `profiles` by clerk_user_id). This route used to manage ONLY Supabase Auth
+// users - the pre-migration accounts - which meant an admin couldn't see, ban or
+// delete any actual customer. It now lists and manages both:
+//   - Clerk users        ids look like "user_2abc..."   (provider: "clerk")
+//   - legacy Supabase    ids are UUIDs                  (provider: "supabase")
+// Which one an action applies to is decided by the shape of the id.
+
+import { clerkClient } from "@clerk/nextjs/server";
+import { writeAdminAuditSafe as writeAdminAudit } from "@/lib/admin/audit";
+import { cleanLine, cleanUuid } from "@/lib/sanitize";
+import { createProfileAndAgency, generateUsername, insertAgency } from "@/lib/create-profile";
+import { reportError } from "@/lib/report-error";
+import { BILLING_STATUSES } from "@/lib/subscription-status";
+
+const MIN_PASSWORD_LENGTH = 12;
+export const PASSWORD_ERROR = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+
+// "Banned" is shown in the UI as a date; Clerk only has a boolean.
+const CLERK_BANNED_MARKER = "9999-12-31T00:00:00.000Z";
+
+export function validatePassword(password) {
+  return typeof password === "string" && password.length >= MIN_PASSWORD_LENGTH && password.length <= 200;
+}
+
+export function isClerkId(id) {
+  return typeof id === "string" && /^user_[A-Za-z0-9]+$/.test(id);
+}
+
+function iso(ms) {
+  return typeof ms === "number" ? new Date(ms).toISOString() : null;
+}
+
+export function primaryEmail(user) {
+  const emails = user.emailAddresses || [];
+  return emails.find((e) => e.id === user.primaryEmailAddressId) || emails[0] || null;
+}
+
+// ── Listing ─────────────────────────────────────────────────────────────────
+
+// id -> name for the agencies the listed users belong to, so the console can
+// show "Acme Recruitment" instead of a bare uuid prefix.
+async function agencyNames(supabase, ids) {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (!unique.length) return new Map();
+  const { data, error } = await supabase.from("agencies").select("id,name").in("id", unique);
+  if (error) throw new Error(error.message);
+  return new Map((data || []).map((a) => [a.id, a.name]));
+}
+
+export async function listLegacyUsers(supabase, { page, perPage, search }) {
+  const { data: authData, error: authError } = await supabase.auth.admin.listUsers({ page, perPage });
+  if (authError) throw new Error(authError.message);
+
+  let users = authData?.users || [];
+
+  if (search) {
+    users = users.filter((user) => {
+      const haystack = [
+        user.email,
+        user.id,
+        user.user_metadata?.first_name,
+        user.user_metadata?.last_name,
+      ]
+        .map((v) => (v || "").toLowerCase());
+      return haystack.some((v) => v.includes(search));
+    });
+  }
+
+  const ids = users.map((u) => u.id);
+  if (!ids.length) return [];
+
+  const [profileResult, subscriptionResult] = await Promise.all([
+    supabase.from("profiles").select("id,username,first_name,last_name,agency_id,created_at").in("id", ids),
+    supabase
+      .from("subscriptions")
+      .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at,demo_expires_at")
+      .in("user_id", ids),
+  ]);
+  if (profileResult.error) throw new Error(profileResult.error.message);
+  if (subscriptionResult.error) throw new Error(subscriptionResult.error.message);
+
+  const profileMap = new Map((profileResult.data || []).map((p) => [p.id, p]));
+  const subscriptionMap = new Map((subscriptionResult.data || []).map((s) => [s.user_id, s]));
+  const legacyAgencyNames = await agencyNames(supabase, (profileResult.data || []).map((p) => p.agency_id));
+
+  return users.map((user) => {
+    const profile = profileMap.get(user.id);
+    return {
+      provider: "supabase",
+      id: user.id,
+      email: user.email,
+      createdAt: user.created_at,
+      updatedAt: user.updated_at,
+      lastSignInAt: user.last_sign_in_at,
+      emailConfirmedAt: user.email_confirmed_at,
+      phoneConfirmedAt: user.phone_confirmed_at,
+      bannedUntil: user.banned_until,
+      isAnonymous: Boolean(user.is_anonymous),
+      firstName: profile?.first_name || user.user_metadata?.first_name || "",
+      lastName: profile?.last_name || user.user_metadata?.last_name || "",
+      username: profile?.username || "",
+      agency: profile?.agency_id ? { id: profile.agency_id, name: legacyAgencyNames.get(profile.agency_id) || null } : null,
+      subscription: shapeSubscription(subscriptionMap.get(user.id)),
+      isTestUser: Boolean(user.user_metadata?.is_test_user),
+      testLabel: user.user_metadata?.test_label || null,
+    };
+  });
+}
+
+export async function listClerkUsers(supabase, { page, perPage, search }) {
+  const client = await clerkClient();
+  const { data: clerkUsers, totalCount } = await client.users.getUserList({
+    limit: perPage,
+    offset: (page - 1) * perPage,
+    orderBy: "-created_at",
+    ...(search ? { query: search } : {}),
+  });
+
+  const clerkIds = clerkUsers.map((u) => u.id);
+  let profiles = [];
+  let subscriptions = [];
+
+  if (clerkIds.length) {
+    const profileResult = await supabase
+      .from("profiles")
+      .select("id,clerk_user_id,username,first_name,last_name,agency_id,created_at")
+      .in("clerk_user_id", clerkIds);
+    if (profileResult.error) throw new Error(profileResult.error.message);
+    profiles = profileResult.data || [];
+
+    const profileIds = profiles.map((p) => p.id);
+    if (profileIds.length) {
+      const subscriptionResult = await supabase
+        .from("subscriptions")
+        .select("id,user_id,stripe_customer_id,stripe_subscription_id,status,plan,created_at,updated_at,demo_expires_at")
+        .in("user_id", profileIds);
+      if (subscriptionResult.error) throw new Error(subscriptionResult.error.message);
+      subscriptions = subscriptionResult.data || [];
+    }
+  }
+
+  const profileByClerkId = new Map(profiles.map((p) => [p.clerk_user_id, p]));
+  const clerkAgencyNames = await agencyNames(supabase, profiles.map((p) => p.agency_id));
+  const subscriptionByProfileId = new Map(subscriptions.map((s) => [s.user_id, s]));
+
+  const users = clerkUsers.map((user) => {
+    const profile = profileByClerkId.get(user.id);
+    const email = primaryEmail(user);
+    return {
+      provider: "clerk",
+      id: user.id,
+      email: email?.emailAddress || "",
+      createdAt: iso(user.createdAt),
+      updatedAt: iso(user.updatedAt),
+      lastSignInAt: iso(user.lastSignInAt),
+      emailConfirmedAt: email?.verification?.status === "verified" ? iso(user.createdAt) : null,
+      phoneConfirmedAt: null,
+      bannedUntil: user.banned ? CLERK_BANNED_MARKER : null,
+      banReason: user.banned ? user.privateMetadata?.ban_reason || null : null,
+      isAnonymous: false,
+      firstName: profile?.first_name || user.firstName || "",
+      lastName: profile?.last_name || user.lastName || "",
+      username: profile?.username || user.username || "",
+      agency: profile?.agency_id ? { id: profile.agency_id, name: clerkAgencyNames.get(profile.agency_id) || null } : null,
+      subscription: shapeSubscription(profile ? subscriptionByProfileId.get(profile.id) : null),
+      isTestUser: Boolean(user.publicMetadata?.is_test_user),
+      testLabel: user.publicMetadata?.test_label || null,
+    };
+  });
+
+  return { users, totalCount };
+}
+
+// Every Clerk account, a page at a time. The console filters and counts in
+// the browser, so it needs the whole list - it used to load only the first
+// 100, which hid everyone after that and made every count wrong.
+const CLERK_PAGE = 200;
+const MAX_USERS = 5000;
+
+export async function listAllClerkUsers(supabase, search) {
+  const users = [];
+  let totalCount = 0;
+  for (let page = 1; users.length < MAX_USERS; page++) {
+    const result = await listClerkUsers(supabase, { page, perPage: CLERK_PAGE, search });
+    totalCount = result.totalCount;
+    users.push(...result.users);
+    if (result.users.length < CLERK_PAGE || users.length >= totalCount) break;
+  }
+  return { users, totalCount, truncated: totalCount > users.length };
+}
+
+// End dates for time-limited bans (public.timed_bans), attached to the
+// banned users in a listing.
+export async function attachBanEnds(supabase, users) {
+  const banned = users.filter((u) => u.bannedUntil).map((u) => u.id);
+  if (!banned.length) return users;
+  const ends = new Map();
+  for (let i = 0; i < banned.length; i += 200) {
+    const { data, error } = await supabase.from("timed_bans").select("user_id,until").in("user_id", banned.slice(i, i + 200));
+    if (error) {
+      reportError("[admin/users] Ban end dates failed to load:", error.message);
+      return users;
+    }
+    for (const row of data || []) ends.set(row.user_id, row.until);
+  }
+  return users.map((u) => (ends.has(u.id) ? { ...u, banEndsAt: ends.get(u.id) } : u));
+}
+
+// Admin actions on one account, newest first. Clerk ids aren't uuids, so
+// writeAdminAudit keeps them in metadata.targetRef; legacy ids are in
+// target_id.
+export async function userHistory(supabase, userId) {
+  let query = supabase.from("admin_audit_logs").select("id,admin_username,action,metadata,created_at").order("created_at", { ascending: false }).limit(30);
+  query = isClerkId(userId) ? query.eq("metadata->>targetRef", userId) : query.eq("target_id", userId);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data || []).map((row) => ({ id: row.id, admin: row.admin_username, action: row.action, reason: row.metadata?.reason || null, at: row.created_at }));
+}
+
+function shapeSubscription(subscription) {
+  if (!subscription) return null;
+  return {
+    id: subscription.id,
+    status: subscription.status,
+    plan: subscription.plan,
+    stripeCustomerId: subscription.stripe_customer_id,
+    stripeSubscriptionId: subscription.stripe_subscription_id,
+    createdAt: subscription.created_at,
+    updatedAt: subscription.updated_at,
+    demoExpiresAt: subscription.stripe_subscription_id ? null : subscription.demo_expires_at || null,
+  };
+}
+
+// ── Update ──────────────────────────────────────────────────────────────────
+
+// A ban can end on its own: `days` (1-365) records an end date in
+// public.timed_bans, which /api/cron/admin-daily lifts once passed. No
+// `days` (or unbanning) clears any end date.
+export function banEnd(body) {
+  const days = Number(body?.days);
+  return Number.isFinite(days) && days >= 1 ? new Date(Date.now() + Math.min(days, 365) * 86400e3).toISOString() : null;
+}
+
+async function setBanEnd(supabase, userId, body, admin) {
+  const until = banEnd(body);
+  const { error } = until
+    ? await supabase.from("timed_bans").upsert({ user_id: userId, until, reason: cleanLine(body.reason, 300) || null, created_by: admin?.username || null, created_at: new Date().toISOString() }, { onConflict: "user_id" })
+    : await supabase.from("timed_bans").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+}
+
+export async function applyClerkAction({ client, supabase, userId, action, body, admin }) {
+  if (action === "ban") {
+    await client.users.banUser(userId);
+    // Why, and by whom - shown in the user drawer. Clerk only stores a flag.
+    await client.users.updateUserMetadata(userId, {
+      privateMetadata: { ban_reason: cleanLine(body.reason, 300) || null, banned_by: admin?.username || null, banned_at: new Date().toISOString() },
+    });
+    await setBanEnd(supabase, userId, body, admin);
+  } else if (action === "unban") {
+    await client.users.unbanUser(userId);
+    await client.users.updateUserMetadata(userId, { privateMetadata: { ban_reason: null, banned_by: null, banned_at: null } });
+    await setBanEnd(supabase, userId, {}, admin);
+  } else if (action === "revoke_sessions") {
+    // Signs them out on every device; they can sign straight back in.
+    // Clerk pages this list (10 by default), so ask for plenty.
+    const { data: sessions } = await client.sessions.getSessionList({ userId, status: "active", limit: 100 });
+    await Promise.all((sessions || []).map((session) => client.sessions.revokeSession(session.id)));
+  } else if (action === "set_agency") {
+    const agencyId = body.agencyId ? cleanUuid(body.agencyId) : null;
+    if (body.agencyId && !agencyId) return { status: 400, error: "agencyId is not valid." };
+    if (agencyId) {
+      const { data: agency, error } = await supabase.from("agencies").select("id").eq("id", agencyId).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!agency) return { status: 404, error: "Agency not found." };
+    }
+    const { data: updated, error: profileError } = await supabase
+      .from("profiles")
+      .update({ agency_id: agencyId })
+      .eq("clerk_user_id", userId)
+      .select("id");
+    if (profileError) throw new Error(profileError.message);
+    if (!updated?.length) return { status: 404, error: "This account has no profile yet - use “Set up agency” first." };
+  } else if (action === "reset_password") {
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!validatePassword(password)) return { status: 400, error: PASSWORD_ERROR };
+    try {
+      await client.users.updateUser(userId, { password });
+    } catch (err) {
+      // Clerk enforces its own password rules (e.g. rejects breached
+      // passwords). That message is about the admin's input and safe to show.
+      const reason = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message;
+      if (err?.status === 422 || err?.status === 400) {
+        return { status: 400, error: reason || "Clerk rejected that password." };
+      }
+      throw err;
+    }
+  } else if (action === "update_profile") {
+    const firstName = cleanLine(body.firstName, 80);
+    const lastName = cleanLine(body.lastName, 80);
+    const agencyId = body.agencyId ? cleanUuid(body.agencyId) : null;
+    if (body.agencyId && !agencyId) return { status: 400, error: "agencyId is not valid." };
+
+    if (agencyId) {
+      const { data: agency, error } = await supabase.from("agencies").select("id").eq("id", agencyId).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!agency) return { status: 404, error: "Agency not found." };
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ first_name: firstName || null, last_name: lastName || null, agency_id: agencyId })
+      .eq("clerk_user_id", userId);
+    if (profileError) throw new Error(profileError.message);
+
+    await client.users.updateUser(userId, { firstName, lastName });
+  } else if (action === "provision_agency") {
+    return provisionAgency({ client, supabase, userId, body });
+  } else if (action === "grant_demo_access") {
+    return grantDemoAccess({ client, supabase, userId, plan: body.plan, days: body.days });
+  } else if (action === "revoke_demo_access") {
+    return revokeDemoAccess({ supabase, userId });
+  } else if (action === "confirm_email") {
+    return { status: 400, error: "Clerk verifies email addresses itself - there is nothing to confirm." };
+  } else {
+    return { status: 400, error: "Unknown admin user action." };
+  }
+  return null;
+}
+
+// Gives a Clerk account the agency + profile rows the app needs. Normally these
+// are created by the Clerk webhook / checkout; when that never happened (a
+// missed webhook, an account that signed up without checking out) the person
+// can sign in but every agency-scoped page answers 403. This is the support
+// tool for that. It does NOT create a subscription - billing is unchanged.
+async function provisionAgency({ client, supabase, userId, body }) {
+  const agencyName = cleanLine(body.agencyName, 100);
+  if (!agencyName) return { status: 400, error: "An agency name is required." };
+
+  const { data: existing, error: lookupError } = await supabase
+    .from("profiles")
+    .select("id,agency_id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  if (lookupError) throw new Error(lookupError.message);
+  if (existing?.agency_id) return { status: 409, error: "This account already has an agency." };
+
+  const user = await client.users.getUser(userId);
+  const email = primaryEmail(user)?.emailAddress || null;
+
+  if (!existing) {
+    const username = await generateUsername(user.username || email?.split("@")[0] || user.firstName);
+    await createProfileAndAgency({
+      clerkUserId: userId,
+      email,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      username,
+      agencyName,
+      plan: null,
+    });
+    return null;
+  }
+
+  // A profile exists but was never given an agency.
+  const agency = await insertAgency({ name: agencyName, email, plan: "solo" });
+
+  const { error: linkError } = await supabase.from("profiles").update({ agency_id: agency.id }).eq("id", existing.id);
+  if (linkError) {
+    await supabase.from("agencies").delete().eq("id", agency.id); // don't leave an orphan behind
+    throw new Error(linkError.message);
+  }
+  return null;
+}
+
+// Unlocks full paid access for a demo/sales account with no real payment -
+// app/api/run's requireCustomerContext({ requireSubscription: true }) only
+// checks for a `subscriptions` row with status "active"; it has no idea
+// whether Stripe was ever involved. This writes exactly that row, with no
+// Stripe subscription id (a former customer's Stripe customer id is kept),
+// and tags the account in Clerk's
+// publicMetadata.is_test_user (the same flag the Users table's "Test" pill
+// already reads - see listClerkUsers above). Billing is completely
+// untouched: no Stripe object is created, so there's nothing to cancel or
+// refund later, only this row to revoke.
+export const DEMO_PLAN = "agency"; // the fuller of the two real plans - a demo should show everything
+export const DEMO_PLANS = new Set(["agency", "individual"]);
+
+async function grantDemoAccess({ client, supabase, userId, plan, days }) {
+  const demoPlan = DEMO_PLANS.has(plan) ? plan : DEMO_PLAN;
+  // Optional end date (1-365 days); none = until revoked.
+  const length = Number(days);
+  const demoExpiresAt = Number.isFinite(length) && length >= 1 ? new Date(Date.now() + Math.min(length, 365) * 86400e3).toISOString() : null;
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, agency_id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  if (profileError) throw new Error(profileError.message);
+  if (!profile) return { status: 404, error: "This account has no profile yet." };
+  if (!profile.agency_id) {
+    return { status: 409, error: "This account has no agency yet - use “Set up agency” first." };
+  }
+
+  // Never over a live Stripe subscription: that would detach it
+  // (stripe_subscription_id = null), so Stripe's later webhooks would match
+  // nothing and the paying customer's billing state would be lost.
+  const { data: current, error: currentError } = await supabase
+    .from("subscriptions")
+    .select("stripe_subscription_id, status")
+    .eq("user_id", profile.id)
+    .maybeSingle();
+  if (currentError) throw new Error(currentError.message);
+  if (current?.stripe_subscription_id && BILLING_STATUSES.has(current.status)) {
+    return { status: 409, error: "This account has a live Stripe subscription. Demo access would replace it - cancel it in Stripe first if that's intended." };
+  }
+
+  const { error } = await supabase.from("subscriptions").upsert(
+    {
+      user_id: profile.id,
+      plan: demoPlan,
+      // stripe_customer_id is left as it is, so a former customer given a
+      // demo keeps their link to Stripe.
+      stripe_subscription_id: null,
+      status: "active",
+      demo_expires_at: demoExpiresAt,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+  if (error) throw new Error(error.message);
+
+  await client.users.updateUser(userId, {
+    publicMetadata: { is_test_user: true, test_label: "Demo access (no payment)" },
+  });
+
+  return null;
+}
+
+// The mirror of grantDemoAccess - deliberately scoped to rows with no
+// Stripe subscription id, so this can never cancel a real paying
+// customer's subscription even if called on the wrong account by mistake.
+async function revokeDemoAccess({ supabase, userId }) {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
+  if (profileError) throw new Error(profileError.message);
+  if (!profile) return null;
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ status: "canceled", updated_at: new Date().toISOString() })
+    .eq("user_id", profile.id)
+    .is("stripe_subscription_id", null);
+  if (error) throw new Error(error.message);
+
+  return null;
+}
+
+export async function applyLegacyAction({ supabase, userId, action, body, currentUser }) {
+  if (action === "confirm_email") {
+    const { error } = await supabase.auth.admin.updateUserById(userId, { email_confirm: true });
+    if (error) throw new Error(error.message);
+  } else if (action === "ban") {
+    // Supabase Auth bans take a duration directly.
+    const until = banEnd(body);
+    const hours = until ? Math.ceil((Date.parse(until) - Date.now()) / 3600e3) : 876000;
+    const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: `${hours}h` });
+    if (error) throw new Error(error.message);
+  } else if (action === "unban") {
+    const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: "none" });
+    if (error) throw new Error(error.message);
+  } else if (action === "reset_password") {
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!validatePassword(password)) return { status: 400, error: PASSWORD_ERROR };
+    const { error } = await supabase.auth.admin.updateUserById(userId, { password });
+    if (error) throw new Error(error.message);
+  } else if (action === "update_profile") {
+    const firstName = cleanLine(body.firstName, 80);
+    const lastName = cleanLine(body.lastName, 80);
+    const agencyId = body.agencyId ? cleanUuid(body.agencyId) : null;
+    if (body.agencyId && !agencyId) return { status: 400, error: "agencyId is not valid." };
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ first_name: firstName || null, last_name: lastName || null, agency_id: agencyId })
+      .eq("id", userId);
+    if (profileError) throw new Error(profileError.message);
+
+    const { error: usersError } = await supabase
+      .from("users")
+      .update({
+        full_name: `${firstName} ${lastName}`.trim() || currentUser.email || "",
+        agency_id: agencyId,
+      })
+      .eq("id", userId);
+    if (usersError) throw new Error(usersError.message);
+  } else {
+    return { status: 400, error: "Unknown admin user action." };
+  }
+  return null;
+}
