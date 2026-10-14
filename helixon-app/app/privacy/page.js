@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/ui";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import PrivacyToc, { PrintButton } from "./PrivacyToc";
@@ -108,42 +109,8 @@ const RIGHTS = ["Access", "Correction", "Erasure", "Restriction", "Objection", "
 
 /* ── Small pieces ─────────────────────────────────────────────────────── */
 
-const ICONS = {
-  shield: <path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z" />,
-  pin: (
-    <>
-      <path d="M12 21s7-6.3 7-12a7 7 0 1 0-14 0c0 5.7 7 12 7 12z" />
-      <circle cx="12" cy="9" r="2.5" />
-    </>
-  ),
-  people: (
-    <>
-      <circle cx="9" cy="8" r="3.5" />
-      <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
-      <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
-    </>
-  ),
-  check: <path d="m5 12 5 5 9-10" />,
-  clock: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </>
-  ),
-  key: (
-    <>
-      <circle cx="8" cy="15" r="4" />
-      <path d="m11 12 9-9M17 6l3 3M15 8l2 2" />
-    </>
-  ),
-};
-
 function Glyph({ name, size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {ICONS[name]}
-    </svg>
-  );
+  return <Icon name={name === "people" ? "users" : name} size={size} strokeWidth={1.8} />;
 }
 
 function Section({ id, index, title, children }) {

@@ -71,13 +71,42 @@ const ICONS = {
   printer: <><path d="M6 9V3h12v6" /><rect x="3" y="9" width="18" height="8" rx="2" /><path d="M6 14h12v7H6z" /></>,
   eye: <><path d="M2 12c1.5-3.5 5.5-7 10-7s8.5 3.5 10 7c-1.5 3.5-5.5 7-10 7S3.5 15.5 2 12z" /><circle cx="12" cy="12" r="3" /></>,
   inbox: <><path d="M3 13h5l1.5 3h5l1.5-3h5" /><path d="M5 5h14l2 8v6H3v-6z" /></>,
+  // Merged from the admin console, staff portal and privacy page sets.
+  command: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></>,
+  traffic: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  bug: <><path d="m8 2 1.88 1.88M14.12 3.88 16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" /><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" /><path d="M12 20v-9M6.53 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M20.97 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4" /></>,
+  trending: <><path d="m22 7-8.5 8.5-5-5L2 17" /><path d="M16 7h6v6" /></>,
+  building: <><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" /></>,
+  card: <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></>,
+  scroll: <><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" /><path d="M19 17V5a2 2 0 0 0-2-2H4" /></>,
+  logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></>,
+  menu: <path d="M4 6h16M4 12h16M4 18h16" />,
+  chevronRight: <path d="m9 18 6-6-6-6" />,
+  chevronLeft: <path d="m15 18-6-6 6-6" />,
+  arrowUp: <path d="m5 12 7-7 7 7M12 19V5" />,
+  arrowDown: <path d="M12 5v14m7-7-7 7-7-7" />,
+  lock: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>,
+  key: <><circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3" /></>,
+  globe: <><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></>,
+  user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
+  userPlus: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></>,
+  ban: <><circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" /></>,
+  sparkles: <path d="M9.94 14.06 8 20l-1.94-5.94L0 12l6.06-2.06L8 4l1.94 5.94L16 12zM19 3v4M21 5h-4M19 17v4M21 19h-4" />,
+  activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+  todo: <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />,
+  chart: <><path d="M3 3v18h18" /><path d="M18 17V9M13 17V5M8 17v-4" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
+  calendar: <><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>,
+  folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />,
 };
 
-export function Icon({ name, size = 16, className = "", strokeWidth = 1.7 }) {
+// The app's one icon set. `size={null}` leaves the size to CSS (the admin
+// console sizes icons from its stylesheet).
+export function Icon({ name, size = 16, className = "", strokeWidth = 1.7, ...rest }) {
   return (
     <svg
-      width={size}
-      height={size}
+      width={size ?? undefined}
+      height={size ?? undefined}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -86,8 +115,9 @@ export function Icon({ name, size = 16, className = "", strokeWidth = 1.7 }) {
       strokeLinejoin="round"
       className={cx("shrink-0", className)}
       aria-hidden="true"
+      {...rest}
     >
-      {ICONS[name]}
+      {ICONS[name] ?? ICONS.info}
     </svg>
   );
 }
@@ -104,6 +134,8 @@ export const BUTTON_SIZES = {
   sm: "min-h-8 px-3 text-14",
   md: "min-h-9 px-3.5 text-14",
   lg: "min-h-11 px-5 text-15",
+  // Marketing calls to action.
+  xl: "min-h-12 px-6 text-15",
 };
 
 export const BUTTON_VARIANTS = {
@@ -114,6 +146,8 @@ export const BUTTON_VARIANTS = {
   dark: "bg-[var(--ui-text)] border-[var(--ui-text)] text-[var(--ui-surface)] hover:opacity-90",
   danger: "bg-[var(--ui-surface)] border-[var(--ui-border)] text-[var(--ui-danger)] hover:bg-[var(--ui-danger-soft)]",
   dangerSolid: "bg-[var(--ui-danger)] border-[var(--ui-danger)] text-[var(--ui-on-danger)] hover:opacity-90",
+  // On a solid accent background (a forest call-to-action band).
+  inverse: "bg-[var(--ui-surface)] border-[var(--ui-surface)] text-[var(--ui-accent)] hover:bg-[var(--ui-surface-muted)] hover:border-[var(--ui-surface-muted)]",
 };
 
 export function Spinner({ size = 16, label }) {
@@ -474,46 +508,74 @@ export function ErrorState({ title = "Something went wrong", body, onRetry }) {
 
 // toast(message, tone?, { action?: { label, onClick }, duration? }) - an
 // action (e.g. Undo) shows as a button and keeps the toast up longer.
+// Toasts: short notices at the bottom of the screen, the app's one toast
+// system (the staff portal and admin console render theirs with it too).
+//   const { toasts, toast, notify, dismiss } = useToasts();
+//   toast("Saved");                          // tone as the 2nd argument
+//   notify("Deleted", { tone: "info", action: { label: "Undo", onClick } });
+//   <Toasts toasts={toasts} onDismiss={dismiss} />
+// Tones: "ok" (default for toast), "info" (default for notify), "warn", "error".
 export function useToasts() {
   const [toasts, setToasts] = useState([]);
-  const dismiss = useCallback((id) => setToasts((list) => list.filter((t) => t.id !== id)), []);
-  const toast = useCallback(
-    (message, tone = "ok", { action, duration } = {}) => {
-      const id = Date.now() + Math.random();
+  const timers = useRef(new Map());
+  const dismiss = useCallback((id) => {
+    setToasts((list) => list.filter((t) => t.id !== id));
+    clearTimeout(timers.current.get(id));
+    timers.current.delete(id);
+  }, []);
+  const notify = useCallback(
+    (message, { tone = "info", action, duration } = {}) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       setToasts((list) => [...list.slice(-2), { id, message, tone, action }]);
-      setTimeout(() => dismiss(id), duration ?? (action ? 6000 : 3200));
+      timers.current.set(id, setTimeout(() => dismiss(id), duration ?? (action ? 6000 : tone === "error" ? 7000 : 3600)));
       return id;
     },
     [dismiss]
   );
-  return { toasts, toast, dismiss };
+  const toast = useCallback((message, tone = "ok", options = {}) => notify(message, { ...options, tone }), [notify]);
+  useEffect(() => {
+    const map = timers.current;
+    return () => map.forEach((t) => clearTimeout(t));
+  }, []);
+  return { toasts, toast, notify, dismiss };
 }
+
+const TOAST_TONES = {
+  ok: { icon: "check", cls: "bg-[var(--ui-text)] text-[var(--ui-surface)] border-transparent" },
+  info: { icon: "info", cls: "bg-[var(--ui-text)] text-[var(--ui-surface)] border-transparent" },
+  warn: { icon: "alert", cls: "bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] border-[var(--ui-warn)]/30" },
+  error: { icon: "alert", cls: "bg-[var(--ui-danger)] text-[var(--ui-on-danger)] border-transparent" },
+};
 
 export function Toasts({ toasts, onDismiss }) {
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none" role="status" aria-live="polite">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-btn text-14 font-medium shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
-          style={t.tone === "error" ? { background: "var(--ui-danger)", color: "var(--ui-on-danger)" } : { background: "var(--ink)", color: "white" }}
-        >
-          <Icon name={t.tone === "error" ? "alert" : "check"} size={14} />
-          {t.message}
-          {t.action && (
-            <button
-              type="button"
-              onClick={() => {
-                t.action.onClick();
-                onDismiss?.(t.id);
-              }}
-              className="pointer-events-auto ml-1.5 font-semibold underline underline-offset-2"
-            >
-              {t.action.label}
-            </button>
-          )}
-        </div>
-      ))}
+    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[1300] flex flex-col items-center gap-2 w-[min(440px,calc(100vw-2rem))] pointer-events-none" role="status" aria-live="polite">
+      {toasts.map((t) => {
+        const tone = TOAST_TONES[t.tone] || TOAST_TONES.ok;
+        return (
+          <div key={t.id} className={cx("fade-up-in pointer-events-auto flex items-center gap-2.5 max-w-full pl-3.5 pr-1.5 py-1.5 min-h-10 rounded-btn border text-14 font-medium shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]", tone.cls)}>
+            <Icon name={tone.icon} size={14} />
+            <span className="flex-1 min-w-0 py-0.5">{t.message}</span>
+            {t.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  t.action.onClick();
+                  onDismiss?.(t.id);
+                }}
+                className={cx("shrink-0 px-2 py-1 rounded-md font-semibold underline underline-offset-2", FOCUS_RING)}
+              >
+                {t.action.label}
+              </button>
+            )}
+            {onDismiss && (
+              <button type="button" onClick={() => onDismiss(t.id)} aria-label="Dismiss" className={cx("shrink-0 w-7 h-7 rounded-md flex items-center justify-center opacity-70 hover:opacity-100", FOCUS_RING)}>
+                <Icon name="x" size={13} strokeWidth={2.2} />
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

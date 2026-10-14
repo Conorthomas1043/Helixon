@@ -503,7 +503,7 @@ button.pill{cursor:pointer;font:inherit;font-size:12px}
 .stat-list-row:last-child{border-bottom:0}
 .stat-list-row b{font-variant-numeric:tabular-nums}
 
-/* ── Overlays: modal, drawer, palette, toasts ──────────────────────────── */
+/* ── Overlays: modal, drawer, palette ──────────────────────────── */
 
 .modal-overlay{position:fixed;inset:0;background:rgba(3,5,8,.66);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fade .15s ease}
 .modal-card{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;padding:22px;width:400px;max-width:92vw;box-shadow:var(--shadow-pop);animation:pop .18s ease}
@@ -545,17 +545,6 @@ button.pill{cursor:pointer;font:inherit;font-size:12px}
 .palette-item small{margin-left:auto;color:var(--text-faint);font-size:12px}
 .palette-foot{display:flex;gap:16px;padding:9px 16px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px}
 
-.toast-host{position:fixed;right:20px;bottom:20px;z-index:1200;display:flex;flex-direction:column;gap:9px;align-items:flex-end;pointer-events:none}
-.toast{
-  pointer-events:auto;display:flex;align-items:flex-start;gap:10px;max-width:380px;
-  padding:11px 14px;border-radius:11px;background:var(--surface-hover);border:1px solid var(--border-strong);
-  box-shadow:var(--shadow-pop);font-size:13px;animation:pop .2s ease
-}
-.toast svg{width:16px;height:16px;flex-shrink:0;margin-top:2px}
-.toast.ok svg{color:var(--ok)}
-.toast.error svg{color:var(--critical)}
-.toast.warn svg{color:var(--warn)}
-.toast.info svg{color:var(--info)}
 
 /* ── Skeletons ─────────────────────────────────────────────────────────── */
 
