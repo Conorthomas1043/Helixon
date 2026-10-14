@@ -23,7 +23,10 @@ const SUPABASE_STUB = `
   create function auth.jwt() returns jsonb language sql stable as $$
     select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
   $$;
-  grant usage on schema auth to anon, authenticated, public;
+  -- As on Supabase: only the API roles may use the auth schema (checked
+  -- against production's grants), though anyone may execute auth.jwt().
+  revoke all on schema auth from public;
+  grant usage on schema auth to anon, authenticated;
   grant execute on function auth.jwt() to public;
 
   create table public.agencies (id uuid primary key, name text);

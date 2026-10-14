@@ -40,13 +40,20 @@ $$;
 grant usage on schema public to agency_member;
 
 -- The agency this request acts for: the server-signed `agency_id` claim.
+-- Read from the claims PostgREST sets for the request (what auth.jwt()
+-- reads) rather than through auth.jwt(): on Supabase only the API roles may
+-- use the auth schema, so agency_member calling auth.jwt() would be refused
+-- on every query.
 create or replace function public.request_agency_id()
 returns uuid
 language sql
 stable
 set search_path = ''
 as $$
-  select nullif(auth.jwt() ->> 'agency_id', '')::uuid
+  select nullif(
+    coalesce(nullif(pg_catalog.current_setting('request.jwt.claims', true), ''), '{}')::jsonb ->> 'agency_id',
+    ''
+  )::uuid
 $$;
 
 revoke execute on function public.request_agency_id() from public, anon, authenticated;
