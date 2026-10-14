@@ -80,7 +80,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
   }
 
   if (state === "loading") {
-    return <div className="rounded-card p-5 h-[132px] animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" aria-label="Loading team seats" />;
+    return <div className="rounded-card p-5 h-[132px] animate-pulse motion-reduce:animate-none" style={CARD} role="status" aria-busy="true" aria-label="Loading team seats" />;
   }
 
   if (state === "upgrade") {

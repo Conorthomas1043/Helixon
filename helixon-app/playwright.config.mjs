@@ -16,6 +16,9 @@ export default defineConfig({
   ],
   webServer: {
     command: `npx next start -p ${PORT}`,
+    // Turns on /ui-gallery, which e2e/screens.spec.js renders the signed-in
+    // screens from. It is a 404 wherever this isn't set (production).
+    env: { UI_GALLERY: "1" },
     url: `http://127.0.0.1:${PORT}/pricing`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

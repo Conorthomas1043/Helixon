@@ -162,6 +162,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
               value={nextActionLabel}
               onChange={(e) => setNextActionLabel(e.target.value)}
               placeholder="e.g. Call candidate"
+              aria-label="Next action"
               className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             />
@@ -170,6 +171,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
                 type="date"
                 value={nextActionDue}
                 onChange={(e) => setNextActionDue(e.target.value)}
+                aria-label="Due date"
                 className="flex-1 text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />

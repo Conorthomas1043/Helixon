@@ -136,7 +136,7 @@ export function CopyButton({ text, label }) {
 
 export function ProfileSkeleton() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Loading candidate">
+    <div className="space-y-6" role="status" aria-busy="true" aria-label="Loading candidate">
       <div className="rounded-2xl p-8" style={CARD}>
         <Block className="h-4 w-32 mb-6" />
         <div className="flex gap-4">

@@ -28,7 +28,7 @@ export function StatCard({ label, value, sub, accent, onClick, active }) {
 
 export function PoolSkeleton() {
   return (
-    <Card className="divide-y divide-[var(--border-soft)]" aria-busy="true" aria-label="Loading talent pool">
+    <Card className="divide-y divide-[var(--border-soft)]" role="status" aria-busy="true" aria-label="Loading talent pool">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-5 py-5">
           <div className="w-10 h-10 rounded-full shimmer-block" />

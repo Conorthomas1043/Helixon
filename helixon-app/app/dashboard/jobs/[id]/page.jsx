@@ -198,7 +198,7 @@ function RankedCandidateRow({ candidate, rank }) {
 
 function JobDetailSkeleton() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Loading job">
+    <div className="space-y-6" role="status" aria-busy="true" aria-label="Loading job">
       <div className="rounded-2xl p-8" style={CARD}>
         <Block className="h-4 w-32 mb-4" />
         <Block className="h-6 w-64 mb-2" />

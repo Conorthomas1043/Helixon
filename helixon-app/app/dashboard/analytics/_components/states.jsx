@@ -7,7 +7,7 @@ import { Skeleton as Block } from "@/components/ui";
 
 export function AnalyticsSkeleton() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Loading analytics">
+    <div className="space-y-6" role="status" aria-busy="true" aria-label="Loading analytics">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="rounded-card p-5" style={CARD}>

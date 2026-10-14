@@ -115,7 +115,7 @@ export default function ShortlistsPage() {
         {status !== "error" && <NewShortlistForm jobs={jobs} onCreated={(l) => router.push(`/dashboard/shortlists/${l.id}`)} />}
 
         {status === "loading" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true" aria-label="Loading shortlists">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="status" aria-busy="true" aria-label="Loading shortlists">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="rounded-card p-5" style={CARD}>
                 <Block className="h-4 w-40 mb-2" />

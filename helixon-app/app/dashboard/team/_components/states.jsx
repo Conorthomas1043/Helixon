@@ -7,7 +7,7 @@ import { CARD, INK, INK_MUTED } from "@/lib/candidates/format";
 
 export function TeamSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" aria-busy="true" aria-label="Loading team">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="status" aria-busy="true" aria-label="Loading team">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="rounded-card p-5" style={CARD}>
           <Block className="h-11 w-11 rounded-full mb-4" />

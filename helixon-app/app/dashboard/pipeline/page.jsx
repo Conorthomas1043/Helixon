@@ -150,7 +150,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
 
 function PipelineSkeleton() {
   return (
-    <div className="flex gap-3 overflow-hidden" aria-busy="true" aria-label="Loading pipeline">
+    <div className="flex gap-3 overflow-hidden" role="status" aria-busy="true" aria-label="Loading pipeline">
       {BOARD_STAGES.map((s) => (
         <div key={s} className="rounded-card p-3 w-[264px] shrink-0 lg:flex-1 lg:w-auto lg:min-w-0" style={CARD}>
           <Block className="h-4 w-20 mb-3" />

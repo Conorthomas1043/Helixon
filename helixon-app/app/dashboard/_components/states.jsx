@@ -27,7 +27,7 @@ export function EmptyState({ title, body, actionLabel, actionHref }) {
 
 export function DashboardSkeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }} aria-busy="true" aria-label="Loading dashboard">
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }} role="status" aria-busy="true" aria-label="Loading dashboard">
       <div style={{ ...CARD, padding: 28 }}>
         <Block style={{ height: 14, width: 120, marginBottom: 14 }} />
         <Block style={{ height: 28, width: 280, marginBottom: 10 }} />

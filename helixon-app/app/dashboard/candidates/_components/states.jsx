@@ -11,7 +11,7 @@ import { INK, INK_MUTED } from "@/lib/candidates/format";
 
 export function ListSkeleton() {
   return (
-    <div className="space-y-2.5" aria-busy="true" aria-label="Loading candidates">
+    <div className="space-y-2.5" role="status" aria-busy="true" aria-label="Loading candidates">
       {Array.from({ length: 8 }).map((_, i) => (
         <Block key={i} className="h-14 w-full" />
       ))}
