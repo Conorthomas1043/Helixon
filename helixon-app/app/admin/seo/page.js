@@ -54,8 +54,8 @@ export default function SeoPage() {
         description="Channel mix, campaign performance and landing pages for the selected window, compared with the window before. Derived from UTM and referrer data, no synthetic traffic."
       >
         <RangeControl range={range} setRange={setRange} options={["24h", "7d", "30d", "90d"]} />
-        <button className="btn small" onClick={exportCsv} disabled={!seo}>Export CSV</button>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={exportCsv} disabled={!seo}>Export CSV</button>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" size={13} /> Refresh
         </button>
       </PageHeader>

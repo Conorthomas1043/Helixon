@@ -108,7 +108,7 @@ function AgencyPicker({ user, busy, run }) {
         {agencies.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         {current && !agencies.some((a) => a.id === current) && <option value={current}>{user.agency?.name || current}</option>}
       </select>
-      <button className="btn small" disabled={busy || selected === current} onClick={() => run("set_agency", user, { agencyId: selected || null }).then(() => setValue(null))}>
+      <button type="button" className="btn small" disabled={busy || selected === current} onClick={() => run("set_agency", user, { agencyId: selected || null }).then(() => setValue(null))}>
         Move
       </button>
     </div>
@@ -181,7 +181,7 @@ function UserDrawer({ user, busy, onClose, run }) {
                 </select>
               </>
             )}
-            <button className={`btn ${primary.primary ? "primary" : ""}`} disabled={busy} onClick={() => run(primary.key, user, { plan: demoPlan, days: demoDays })}>
+            <button type="button" className={`btn ${primary.primary ? "primary" : ""}`} disabled={busy} onClick={() => run(primary.key, user, { plan: demoPlan, days: demoDays })}>
               {primary.label}
             </button>
           </div>
@@ -196,24 +196,24 @@ function UserDrawer({ user, busy, onClose, run }) {
       <section className="drawer-section">
         <h3>Manage</h3>
         <div className="actions" style={{ flexWrap: "wrap", gap: 8 }}>
-          <button className="btn small" disabled={busy} onClick={() => run("edit_name", user)}>
+          <button type="button" className="btn small" disabled={busy} onClick={() => run("edit_name", user)}>
             <Icon name="user" /> Edit name
           </button>
-          <button className="btn small" disabled={busy} onClick={() => run("reset_password", user)}>
+          <button type="button" className="btn small" disabled={busy} onClick={() => run("reset_password", user)}>
             Reset password
           </button>
           {clerk && user.subscription?.status === "active" && user.isTestUser && (
-            <button className="btn small" disabled={busy} onClick={() => run("revoke_demo_access", user)}>
+            <button type="button" className="btn small" disabled={busy} onClick={() => run("revoke_demo_access", user)}>
               Revoke demo access
             </button>
           )}
           {clerk && (
-            <button className="btn small" disabled={busy} onClick={() => run("revoke_sessions", user)}>
+            <button type="button" className="btn small" disabled={busy} onClick={() => run("revoke_sessions", user)}>
               Sign out everywhere
             </button>
           )}
           {!clerk && !user.emailConfirmedAt && (
-            <button className="btn small" disabled={busy} onClick={() => run("confirm_email", user)}>
+            <button type="button" className="btn small" disabled={busy} onClick={() => run("confirm_email", user)}>
               Confirm email
             </button>
           )}
@@ -237,16 +237,16 @@ function UserDrawer({ user, busy, onClose, run }) {
         <h3>Danger zone</h3>
         <div className="actions" style={{ flexWrap: "wrap", gap: 8 }}>
           {user.bannedUntil ? (
-            <button className="btn small" disabled={busy} onClick={() => run("unban", user)}>Unban</button>
+            <button type="button" className="btn small" disabled={busy} onClick={() => run("unban", user)}>Unban</button>
           ) : (
             <span className="inline-form">
               <select className="select-input" value={banDays} onChange={(e) => setBanDays(Number(e.target.value))} aria-label="Ban length">
                 {BAN_LENGTHS.map(([days, label]) => <option key={days} value={days}>{label}</option>)}
               </select>
-              <button className="btn small" disabled={busy} onClick={() => run("ban", user, { days: banDays })}>Ban</button>
+              <button type="button" className="btn small" disabled={busy} onClick={() => run("ban", user, { days: banDays })}>Ban</button>
             </span>
           )}
-          <button className="btn small danger" disabled={busy} onClick={() => run("delete", user)}>
+          <button type="button" className="btn small danger" disabled={busy} onClick={() => run("delete", user)}>
             <Icon name="trash" /> Delete user
           </button>
         </div>
@@ -456,11 +456,11 @@ export default function UsersPage() {
         return (
           <div className="actions" onClick={(e) => e.stopPropagation()}>
             {primary && (
-              <button className={`btn small ${primary.primary ? "primary" : ""}`} onClick={() => run(primary.key, user)} disabled={busy}>
+              <button type="button" className={`btn small ${primary.primary ? "primary" : ""}`} onClick={() => run(primary.key, user)} disabled={busy}>
                 {primary.label}
               </button>
             )}
-            <button className="btn small" onClick={() => setSelectedId(user.id)} aria-label={`Manage ${user.email || "user"}`}>
+            <button type="button" className="btn small" onClick={() => setSelectedId(user.id)} aria-label={`Manage ${user.email || "user"}`}>
               Manage
             </button>
           </div>
@@ -473,10 +473,10 @@ export default function UsersPage() {
     <>
       <PageHeader title="Users" description="Everyone with a Helixon account. Click a row to manage it.">
         <div className="muted">{users.length} accounts</div>
-        <button className="btn small" onClick={() => exportUsers(rows)} disabled={!rows.length}>
+        <button type="button" className="btn small" onClick={() => exportUsers(rows)} disabled={!rows.length}>
           <Icon name="external" /> Export CSV
         </button>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>
@@ -523,17 +523,17 @@ export default function UsersPage() {
       {picked.size > 0 ? (
         <div className="bulk-bar" role="region" aria-label="Bulk actions">
           <b>{picked.size} selected</b>
-          <button className="btn small" disabled={busy} onClick={() => runBulk("revoke_sessions")}>Sign out everywhere</button>
-          <button className="btn small danger" disabled={busy} onClick={() => runBulk("ban")}>Ban</button>
-          <button className="btn small" disabled={busy} onClick={() => runBulk("unban")}>Unban</button>
-          <button className="btn small" onClick={() => exportUsers(pickedUsers)}>Export selected</button>
-          <button className="btn small ghost" onClick={() => setPicked(new Set())}>Clear</button>
+          <button type="button" className="btn small" disabled={busy} onClick={() => runBulk("revoke_sessions")}>Sign out everywhere</button>
+          <button type="button" className="btn small danger" disabled={busy} onClick={() => runBulk("ban")}>Ban</button>
+          <button type="button" className="btn small" disabled={busy} onClick={() => runBulk("unban")}>Unban</button>
+          <button type="button" className="btn small" onClick={() => exportUsers(pickedUsers)}>Export selected</button>
+          <button type="button" className="btn small ghost" onClick={() => setPicked(new Set())}>Clear</button>
         </div>
       ) : (
         rows.length > 0 && (
           <div className="faint" style={{ fontSize: 13, marginBottom: 8 }}>
             Tick accounts for bulk actions, or{" "}
-            <button className="panel-link" style={{ marginLeft: 0 }} onClick={() => setPicked(new Set(rows.map((u) => u.id)))}>
+            <button type="button" className="panel-link" style={{ marginLeft: 0 }} onClick={() => setPicked(new Set(rows.map((u) => u.id)))}>
               select all {rows.length} shown
             </button>
             .

@@ -115,9 +115,9 @@ export default function ContactPage({ role = "" }) {
           <div className="space-y-4">
             <h2 className="sr-only">Email us directly</h2>
             {CHANNELS.map((c) => (
-              <div key={c.title} className="rounded-[14px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div key={c.title} className="rounded-card p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
+                  <div className="w-9 h-9 rounded-btn flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{c.icon}</svg>
                   </div>
                   <div className="min-w-0">
@@ -131,10 +131,10 @@ export default function ContactPage({ role = "" }) {
           </div>
 
           {/* ── Form ──────────────────────────────────────────────────── */}
-          <div className="rounded-[16px] p-7" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+          <div className="rounded-2xl p-7" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
             {sent ? (
               <div className="text-center py-10">
-                <div className="w-12 h-12 rounded-[12px] flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round"><path d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
                 <h2 className="font-semibold mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Message sent</h2>
@@ -147,7 +147,7 @@ export default function ContactPage({ role = "" }) {
                 <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>Send us a message</h2>
 
                 {error && (
-                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-btn" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
                     <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
@@ -204,7 +204,7 @@ export default function ContactPage({ role = "" }) {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="text-sm font-semibold px-5 py-3 rounded-[10px] text-white transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
+                  className="text-sm font-semibold px-5 py-3 rounded-btn text-white transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
                   style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
                   onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = "var(--forest-deep)"; }}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}

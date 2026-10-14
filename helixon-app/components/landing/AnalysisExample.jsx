@@ -129,7 +129,7 @@ function Pill({ status }) {
   const s = STATUS_STYLE[status];
   return (
     <span
-      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="inline-flex items-center gap-1 text-11 font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
     >
       <span aria-hidden="true">{s.icon}</span>
@@ -140,7 +140,7 @@ function Pill({ status }) {
 
 function Label({ children }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
+    <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
       {children}
     </p>
   );
@@ -168,10 +168,10 @@ function ScoreRing({ score }) {
         />
       </svg>
       <span className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[24px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
+        <span className="text-24 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
           {score}
         </span>
-        <span className="text-[10px] mt-0.5" style={{ color: "var(--ink-faint)" }}>/ 100</span>
+        <span className="text-11 mt-0.5" style={{ color: "var(--ink-faint)" }}>/ 100</span>
       </span>
     </div>
   );
@@ -185,9 +185,9 @@ function Report({ ex }) {
         <div className="flex items-center gap-4">
           <ScoreRing score={ex.score} />
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold truncate" style={{ color: "var(--ink)" }}>{ex.candidate}</p>
-            <p className="text-[12px] truncate" style={{ color: "var(--ink-faint)" }}>{ex.current}</p>
-            <span className="inline-block mt-2 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <p className="text-15 font-semibold truncate" style={{ color: "var(--ink)" }}>{ex.candidate}</p>
+            <p className="text-12 truncate" style={{ color: "var(--ink-faint)" }}>{ex.current}</p>
+            <span className="inline-block mt-2 text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
               {ex.verdict}
             </span>
           </div>
@@ -198,7 +198,7 @@ function Report({ ex }) {
           <ul className="space-y-2.5">
             {ex.breakdown.map((b) => (
               <li key={b.label}>
-                <div className="flex items-baseline justify-between text-[12px]">
+                <div className="flex items-baseline justify-between text-12">
                   <span style={{ color: "var(--ink-soft)" }}>{b.label}</span>
                   <span className="tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--ink)" }}>
                     {b.value}<span style={{ color: "var(--ink-faint)" }}>/{b.max}</span>
@@ -212,10 +212,10 @@ function Report({ ex }) {
           </ul>
         </div>
 
-        <div className="mt-6 rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+        <div className="mt-6 rounded-btn p-3" style={{ background: "var(--mist)" }}>
           <Label>Pay guide</Label>
-          <p className="text-[14px] font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{ex.pay}</p>
-          <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>{ex.payNote}</p>
+          <p className="text-14 font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{ex.pay}</p>
+          <p className="text-11 mt-0.5" style={{ color: "var(--ink-faint)" }}>{ex.payNote}</p>
         </div>
       </div>
 
@@ -227,16 +227,16 @@ function Report({ ex }) {
             {ex.requirements.map((r) => (
               <li key={r.skill} className="py-2 first:pt-0">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[13px] min-w-0" style={{ color: "var(--ink)" }}>
+                  <span className="text-13 min-w-0" style={{ color: "var(--ink)" }}>
                     {r.skill}
                     {r.importance && (
-                      <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>{r.importance}</span>
+                      <span className="ml-1.5 text-11 font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>{r.importance}</span>
                     )}
                   </span>
                   <Pill status={r.status} />
                 </div>
                 {r.quote && (
-                  <p className="text-[11px] italic mt-1" style={{ color: "var(--ink-faint)" }}>
+                  <p className="text-11 italic mt-1" style={{ color: "var(--ink-faint)" }}>
                     From the CV: &ldquo;{r.quote}&rdquo;
                   </p>
                 )}
@@ -250,9 +250,9 @@ function Report({ ex }) {
           <ul className="space-y-1.5">
             {ex.mustHaves.map((m) => (
               <li key={m.text} className="flex items-center justify-between gap-3">
-                <span className="text-[13px]" style={{ color: "var(--ink)" }}>
+                <span className="text-13" style={{ color: "var(--ink)" }}>
                   {m.text}
-                  {m.note && <span className="block text-[11px]" style={{ color: "var(--ink-faint)" }}>{m.note}</span>}
+                  {m.note && <span className="block text-11" style={{ color: "var(--ink-faint)" }}>{m.note}</span>}
                 </span>
                 <Pill status={m.status} />
               </li>
@@ -265,7 +265,7 @@ function Report({ ex }) {
             <Label>Strengths</Label>
             <ul className="space-y-1">
               {ex.strengths.map((s) => (
-                <li key={s} className="text-[12px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
+                <li key={s} className="text-12 flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
                   <span style={{ color: "var(--forest)" }}>✓</span>{s}
                 </li>
               ))}
@@ -275,7 +275,7 @@ function Report({ ex }) {
             <Label>Worth a second look</Label>
             <ul className="space-y-1">
               {ex.concerns.map((s) => (
-                <li key={s} className="text-[12px] flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
+                <li key={s} className="text-12 flex gap-1.5" style={{ color: "var(--ink-soft)" }}>
                   <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{s}
                 </li>
               ))}
@@ -283,9 +283,9 @@ function Report({ ex }) {
           </div>
         </div>
 
-        <div className="rounded-[10px] p-3" style={{ border: "1px dashed var(--border)" }}>
+        <div className="rounded-btn p-3" style={{ border: "1px dashed var(--border)" }}>
           <Label>Suggested interview question</Label>
-          <p className="text-[12px] leading-relaxed" style={{ color: "var(--ink)" }}>{ex.question}</p>
+          <p className="text-12 leading-relaxed" style={{ color: "var(--ink)" }}>{ex.question}</p>
         </div>
       </div>
     </div>
@@ -306,18 +306,18 @@ export default function AnalysisExample() {
     <div>
       <div className="flex flex-wrap justify-center gap-2 mb-6" role="tablist" aria-label="Example roles">
         {EXAMPLES.map((e, i) => (
-          <button
+          <button type="button"
             key={e.id}
             {...tabProps(i)}
-            className="text-left px-4 py-2.5 rounded-[12px] transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-left px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
               background: active === i ? "var(--forest)" : "white",
               color: active === i ? "white" : "var(--ink)",
               border: `1px solid ${active === i ? "var(--forest)" : "var(--border)"}`,
             }}
           >
-            <span className="block text-[13px] font-semibold leading-tight">{e.tab}</span>
-            <span className="block text-[11px] leading-tight mt-0.5" style={{ color: active === i ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
+            <span className="block text-13 font-semibold leading-tight">{e.tab}</span>
+            <span className="block text-11 leading-tight mt-0.5" style={{ color: active === i ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
               {e.kind}
             </span>
           </button>
@@ -326,17 +326,17 @@ export default function AnalysisExample() {
 
       <div
         {...panelProps}
-        className="rounded-[18px] overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="rounded-2xl overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
       >
         <div className="flex items-center gap-1.5 px-4 py-3" style={{ borderBottom: "1px solid var(--border-soft)", background: "var(--mist)" }}>
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} aria-hidden="true" />
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} aria-hidden="true" />
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} aria-hidden="true" />
-          <span className="ml-2 text-[11px] truncate" style={{ color: "var(--ink-faint)" }}>
+          <span className="ml-2 text-11 truncate" style={{ color: "var(--ink-faint)" }}>
             Analyse · {ex.role} · {ex.client}
           </span>
-          <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "white", color: "var(--ink-faint)", border: "1px solid var(--border)" }}>
+          <span className="ml-auto text-11 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "white", color: "var(--ink-faint)", border: "1px solid var(--border)" }}>
             Example · sample data
           </span>
         </div>

@@ -10,7 +10,6 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 function EmployeeLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,24 +21,24 @@ function EmployeeLoginForm() {
   // for why they were suddenly signed out.
   const passwordChanged = searchParams.get("passwordChanged") === "1";
 
-  // Already signed in? Skip the form and go straight to the dashboard -
-  // the same check the /employee landing page does.
+  // Already signed in? Go straight to the dashboard - the same check the
+  // /employee landing page does. It runs in the background: the form shows
+  // at once, so a slow or failed check never leaves a blank spinner.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/employee/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.ok) {
-            router.replace("/employee/dashboard");
-            return;
-          }
-        }
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data.ok && !cancelled) router.replace("/employee/dashboard");
       } catch {
-        // ignore - treat as signed out
+        // Treat as signed out: the form is already showing.
       }
-      setChecking(false);
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   async function handleSubmit(e) {
@@ -73,17 +72,6 @@ function EmployeeLoginForm() {
     }
   }
 
-  if (checking) {
-    return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
-        <div
-          className="w-8 h-8 rounded-full animate-spin"
-          style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }}
-        />
-      </main>
-    );
-  }
-
   function fieldStyle(name) {
     const focused = focusedField === name;
     return {
@@ -98,7 +86,7 @@ function EmployeeLoginForm() {
       <div className="w-full max-w-sm">
         <Link href="/" className="flex items-center gap-3 justify-center mb-8 group" aria-label="Helixon home">
           <div
-            className="w-8 h-8 rounded-[9px] flex items-center justify-center transition-transform group-hover:scale-105"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
             style={{ background: "var(--forest)" }}
           >
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
@@ -113,10 +101,10 @@ function EmployeeLoginForm() {
         </Link>
 
         <div
-          className="rounded-[20px] p-6 sm:p-7"
+          className="rounded-panel p-6 sm:p-7"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.18)" }}
         >
-          <div className="w-11 h-11 rounded-[12px] flex items-center justify-center mb-5" style={{ background: "var(--mint)" }}>
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5" style={{ background: "var(--mint)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="10" rx="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
@@ -126,20 +114,20 @@ function EmployeeLoginForm() {
           <h1 className="text-lg font-semibold tracking-tight mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Employee sign in
           </h1>
-          <p className="text-[14px] leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-14 leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>
             Use your Helixon employee account.
           </p>
 
           {passwordChanged && (
             <div
               role="status"
-              className="flex items-start gap-2.5 p-3 rounded-[10px] mb-4"
+              className="flex items-start gap-2.5 p-3 rounded-btn mb-4"
               style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
             >
               <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
               </svg>
-              <p className="text-[14px]" style={{ color: "var(--forest)" }}>
+              <p className="text-14" style={{ color: "var(--forest)" }}>
                 Password updated. Sign in with your new password.
               </p>
             </div>
@@ -147,10 +135,11 @@ function EmployeeLoginForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
+              <label htmlFor="employee-username" className="block text-13 font-medium mb-1.5 text-[var(--ink-soft)]">
                 Username
               </label>
               <input
+                id="employee-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -160,15 +149,16 @@ function EmployeeLoginForm() {
                 autoFocus
                 autoComplete="username"
                 placeholder="yourusername"
-                className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
+                className="w-full bg-transparent rounded-xl px-3.5 py-2.5 text-sm outline-none"
                 style={{ color: "var(--ink)", ...fieldStyle("username") }}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
+              <label htmlFor="employee-password" className="block text-13 font-medium mb-1.5 text-[var(--ink-soft)]">
                 Password
               </label>
               <input
+                id="employee-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -177,17 +167,17 @@ function EmployeeLoginForm() {
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
+                className="w-full bg-transparent rounded-xl px-3.5 py-2.5 text-sm outline-none"
                 style={{ color: "var(--ink)", ...fieldStyle("password") }}
               />
             </div>
 
             {error && (
-              <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+              <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 p-3 rounded-btn bg-[var(--ui-danger-soft)] border border-[var(--ui-danger)]/30">
                 <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
-                <p className="text-[14px]" style={{ color: "var(--score-low)" }}>{error}</p>
+                <p className="text-14" style={{ color: "var(--score-low)" }}>{error}</p>
               </div>
             )}
 
@@ -195,7 +185,7 @@ function EmployeeLoginForm() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              className="btn-forest w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
+              className="btn-forest w-full text-white font-semibold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
               style={{
                 background: loading ? "var(--ink-mute)" : "var(--forest)",
                 cursor: loading ? "not-allowed" : "pointer",

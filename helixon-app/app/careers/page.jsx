@@ -56,8 +56,8 @@ export default function CareersPage() {
         <h2 className="sr-only">How we work</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {VALUES.map((v) => (
-            <div key={v.title} className="rounded-[14px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <div className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
+            <div key={v.title} className="rounded-card p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div className="w-9 h-9 rounded-btn flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{v.icon}</svg>
               </div>
               <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{v.title}</h3>
@@ -69,7 +69,7 @@ export default function CareersPage() {
 
       {/* ── Benefits ─────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
-        <div className="rounded-[16px] p-8" style={{ background: "var(--forest)" }}>
+        <div className="rounded-2xl p-8" style={{ background: "var(--forest)" }}>
           <h2 className="text-lg font-semibold mb-5 text-white" style={{ fontFamily: "var(--font-display)" }}>What you get</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
             {BENEFITS.map((b) => (
@@ -93,7 +93,7 @@ export default function CareersPage() {
           </h2>
         </div>
 
-        <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
           {ROLES.map((role, i) => (
             <a
               key={role.title}

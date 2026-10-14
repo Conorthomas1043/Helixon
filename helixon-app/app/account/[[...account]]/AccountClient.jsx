@@ -1,6 +1,8 @@
 "use client";
 
 import { UserProfile } from "@clerk/nextjs";
+import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
+import { CLERK_COLORS } from "@/lib/ui/clerk-appearance";
 import { usePathname } from "next/navigation";
 import DangerZone from "@/components/account/DangerZone";
 import NotificationsInfo from "@/components/account/NotificationsInfo";
@@ -61,31 +63,33 @@ export default function AccountPage() {
         className="mb-6"
         style={{ animation: `profileIn 700ms ${EASE} both` }}
       >
-        <h2 className="text-[20px] font-semibold tracking-[-0.02em]" style={{ color: "#10221d" }}>
+        <h2 className="text-20 font-semibold tracking-[-0.02em]" style={{ color: "#10221d" }}>
           {copy.eyebrow}
         </h2>
-        <p className="mt-1.5 max-w-[560px] text-[14px] leading-6 text-[var(--ink-faint)]">
+        <p className="mt-1.5 max-w-[560px] text-14 leading-6 text-[var(--ink-faint)]">
           {copy.body}
         </p>
       </div>
 
       {/* Clerk (Profile / Security) or an honest placeholder (Notifications / Danger zone) */}
       <div
-        className="overflow-hidden rounded-[28px] border border-white/80 bg-white/65 shadow-[0_25px_80px_rgba(35,87,70,0.10)] backdrop-blur-[28px]"
+        className="overflow-hidden rounded-3xl border border-white/80 bg-white/65 shadow-[0_25px_80px_rgba(35,87,70,0.10)] backdrop-blur-[28px]"
         style={{ animation: `profileIn 800ms ${EASE} 80ms both` }}
       >
         {isClerkRoute ? (
+          <>
+          <ClerkWidgetStates what="Your profile" />
           <UserProfile
             path="/account"
             routing="path"
             appearance={{
               variables: {
-                colorPrimary: "#087a5b",
-                colorText: "#10221d",
-                colorTextSecondary: "#648178",
+                colorPrimary: CLERK_COLORS.primary,
+                colorText: CLERK_COLORS.text,
+                colorTextSecondary: CLERK_COLORS.textSecondary,
                 colorBackground: "transparent",
                 colorInputBackground: "rgba(255,255,255,0.72)",
-                colorInputText: "#10221d",
+                colorInputText: CLERK_COLORS.text,
                 borderRadius: "14px",
                 fontFamily: "inherit",
               },
@@ -137,14 +141,15 @@ export default function AccountPage() {
               },
             }}
           />
+          </>
         ) : pathname === "/account/danger" ? (
           <DangerZone />
         ) : pathname === "/account/notifications" ? (
           <NotificationsInfo />
         ) : (
           <div className="px-8 py-14 text-center sm:px-14">
-            <p className="mx-auto mb-2 text-[15px] font-semibold text-[#10221d]">Page not found</p>
-            <p className="mx-auto max-w-[420px] text-[14px] leading-6 text-[var(--ink-faint)]">
+            <p className="mx-auto mb-2 text-15 font-semibold text-[#10221d]">Page not found</p>
+            <p className="mx-auto max-w-[420px] text-14 leading-6 text-[var(--ink-faint)]">
               This settings page doesn&apos;t exist. Use the menu to pick Profile, Security, Notifications or Delete account.
             </p>
           </div>
@@ -196,15 +201,15 @@ export default function AccountPage() {
 
 function InfoCard({ icon, eyebrow, title, text }) {
   return (
-    <div className="rounded-[24px] border border-white/80 bg-white/55 p-6 shadow-[0_15px_45px_rgba(35,87,70,0.06)] backdrop-blur-xl">
+    <div className="rounded-3xl border border-white/80 bg-white/55 p-6 shadow-[0_15px_45px_rgba(35,87,70,0.06)] backdrop-blur-xl">
       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6f3ef] text-[#087a5b]">
         {icon}
       </div>
-      <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+      <p className="mb-2 text-12 font-semibold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
         {eyebrow}
       </p>
-      <h2 className="text-[17px] font-semibold tracking-[-0.02em]">{title}</h2>
-      <p className="mt-2 text-[14px] leading-6 text-[var(--ink-faint)]">{text}</p>
+      <h2 className="text-16 font-semibold tracking-[-0.02em]">{title}</h2>
+      <p className="mt-2 text-14 leading-6 text-[var(--ink-faint)]">{text}</p>
     </div>
   );
 }

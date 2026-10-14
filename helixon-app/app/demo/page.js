@@ -42,7 +42,7 @@ function FloatField({
   return (
     <div className="mb-3.5">
       <div
-        className="relative rounded-[12px]"
+        className="relative rounded-xl"
         style={{
           border: `1.5px solid ${error ? "rgba(192,57,43,0.6)" : focused ? "var(--forest)" : "var(--border)"}`,
           boxShadow: focused ? "0 0 0 4px var(--mint)" : "none",
@@ -92,7 +92,7 @@ function FloatField({
           what to fix without hunting, and a screen reader announces it
           with the field (via aria-describedby above). */}
       {error && (
-        <p id={`${id}-error`} className="text-[12px] mt-1.5 ml-1" style={{ color: "var(--score-low)" }}>
+        <p id={`${id}-error`} className="text-12 mt-1.5 ml-1" style={{ color: "var(--score-low)" }}>
           {error}
         </p>
       )}
@@ -246,7 +246,7 @@ export default function DemoRequestPage() {
             <section aria-labelledby="demo-expect" className="order-2 lg:order-1">
               <h2
                 id="demo-expect"
-                className="text-[11px] font-semibold uppercase tracking-widest mb-5"
+                className="text-11 font-semibold uppercase tracking-widest mb-5"
                 style={{ color: "var(--ink-faint)" }}
               >
                 What happens next
@@ -262,7 +262,7 @@ export default function DemoRequestPage() {
                       {i + 1}
                     </span>
                     <span>
-                      <span className="block text-[15px] font-semibold" style={{ color: "var(--ink)" }}>{step.title}</span>
+                      <span className="block text-15 font-semibold" style={{ color: "var(--ink)" }}>{step.title}</span>
                       <span className="block text-sm leading-relaxed mt-0.5" style={{ color: "var(--ink-soft)" }}>{step.body}</span>
                     </span>
                   </li>
@@ -270,7 +270,7 @@ export default function DemoRequestPage() {
               </ol>
               <ul className="flex flex-wrap gap-2 mt-8">
                 {["Swiss-hosted", "GDPR-ready", "Never used to train AI"].map((chip) => (
-                  <li key={chip} className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full" style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+                  <li key={chip} className="inline-flex items-center gap-1.5 text-12 font-medium px-3 py-1.5 rounded-full" style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
                     <CheckIcon size={12} />
                     {chip}
                   </li>
@@ -280,7 +280,7 @@ export default function DemoRequestPage() {
 
             <div className="order-1 lg:order-2 w-full max-w-[480px] mx-auto">
               <div
-                className="rounded-[22px] p-8 sm:p-10"
+                className="rounded-panel p-8 sm:p-10"
                 style={{
                   background: "white",
                   border: "1px solid var(--border)",
@@ -296,13 +296,13 @@ export default function DemoRequestPage() {
                     <h1
                       ref={successRef}
                       tabIndex={-1}
-                      className="text-[1.5rem] font-semibold tracking-tight mb-2 outline-none"
+                      className="text-24 font-semibold tracking-tight mb-2 outline-none"
                       style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
                     >
                       Request sent
                     </h1>
 
-                    <p className="text-[14px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+                    <p className="text-14 leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
                       Thanks, {name.trim().split(" ")[0]}. Someone from our team will reach out to {email.trim()} within
                       one business day to find a time.
                     </p>
@@ -312,7 +312,7 @@ export default function DemoRequestPage() {
                     <div className="flex flex-col gap-2.5">
                       <Link
                         href="/#example"
-                        className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-[12px] text-sm min-h-[44px]"
+                        className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm min-h-[44px]"
                         style={{ background: "var(--forest)" }}
                       >
                         See an example analysis
@@ -325,13 +325,13 @@ export default function DemoRequestPage() {
                 ) : (
                   <>
                     <h1
-                      className="text-2xl sm:text-[28px] font-semibold tracking-tight leading-[1.1] mb-2"
+                      className="text-2xl sm:text-28 font-semibold tracking-tight leading-[1.1] mb-2"
                       style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
                     >
                       See Helixon on your own CVs
                     </h1>
 
-                    <p className="text-[14px] leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
+                    <p className="text-14 leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
                       Tell us a bit about your team. We&apos;ll reply within one business day and walk you
                       through how Helixon fits your screening process.
                     </p>
@@ -339,7 +339,7 @@ export default function DemoRequestPage() {
                     {error && (
                       <div
                         role="alert"
-                        className="mb-4 flex items-start gap-2.5 p-3 rounded-[10px]"
+                        className="mb-4 flex items-start gap-2.5 p-3 rounded-btn"
                         style={{ background: "#fef2f2", border: "1px solid #fecaca" }}
                       >
                         <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2} aria-hidden="true">
@@ -349,7 +349,7 @@ export default function DemoRequestPage() {
                             d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                           />
                         </svg>
-                        <p className="text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>
+                        <p className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>
                       </div>
                     )}
 
@@ -399,7 +399,7 @@ export default function DemoRequestPage() {
                         textarea
                       />
 
-                      <label className="flex items-start gap-2.5 text-[13px] mb-3 cursor-pointer" style={{ color: "var(--ink-soft)" }}>
+                      <label className="flex items-start gap-2.5 text-13 mb-3 cursor-pointer" style={{ color: "var(--ink-soft)" }}>
                         <input type="checkbox" checked={researchOptIn} onChange={(e) => setResearchOptIn(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
                         I&apos;m also happy to be invited to give feedback on new features (optional).
                       </label>
@@ -408,7 +408,7 @@ export default function DemoRequestPage() {
                         type="submit"
                         disabled={loading}
                         aria-busy={loading}
-                        className="btn-forest w-full text-white font-semibold py-3.5 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2 mt-2 min-h-[48px]"
+                        className="btn-forest w-full text-white font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 mt-2 min-h-[48px]"
                         style={{
                           background: "var(--forest)",
                           boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",
@@ -434,7 +434,7 @@ export default function DemoRequestPage() {
                         )}
                       </button>
 
-                      <p className="text-[11px] leading-relaxed text-center mt-3" style={{ color: "var(--ink-faint)" }}>
+                      <p className="text-11 leading-relaxed text-center mt-3" style={{ color: "var(--ink-faint)" }}>
                         We&apos;ll use these details to arrange your demo. See our{" "}
                         <Link href="/privacy" className="underline">privacy policy</Link>.
                       </p>
@@ -456,10 +456,10 @@ export default function DemoRequestPage() {
 
       <footer className="border-t" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
+          <span className="text-11" style={{ color: "var(--ink-faint)" }}>
             © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
           </span>
-          <Link href="/privacy" className="text-[11px] hover:underline" style={{ color: "var(--ink-faint)" }}>
+          <Link href="/privacy" className="text-11 hover:underline" style={{ color: "var(--ink-faint)" }}>
             Privacy Policy
           </Link>
         </div>

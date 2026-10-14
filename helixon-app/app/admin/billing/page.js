@@ -125,10 +125,10 @@ export default function BillingPage() {
       <PageHeader title="Billing" description="Revenue from paying subscriptions, who's on which plan, and what changed. Demo access is listed but never counted as revenue.">
         <div className="segmented" role="group" aria-label="Range">
           {RANGES.map(([key, label]) => (
-            <button key={key} className={range === key ? "active" : ""} aria-pressed={range === key} onClick={() => setRange(key)}>{label}</button>
+            <button type="button" key={key} className={range === key ? "active" : ""} aria-pressed={range === key} onClick={() => setRange(key)}>{label}</button>
           ))}
         </div>
-        <button className="btn small" onClick={reload} disabled={loading}><Icon name="refresh" size={13} /> Refresh</button>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}><Icon name="refresh" size={13} /> Refresh</button>
       </PageHeader>
 
       {error && <div className="notice error section">{error}</div>}
@@ -156,10 +156,10 @@ export default function BillingPage() {
           <input className="search-input no-icon" placeholder="Search customer, agency or Stripe id" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search subscriptions" />
           <div className="segmented" role="group" aria-label="Filter">
             {FILTERS.map(([key, label]) => (
-              <button key={key} className={filter === key ? "active" : ""} aria-pressed={filter === key} onClick={() => setFilter(key)}>{label}</button>
+              <button type="button" key={key} className={filter === key ? "active" : ""} aria-pressed={filter === key} onClick={() => setFilter(key)}>{label}</button>
             ))}
           </div>
-          <button className="btn small" style={{ marginLeft: "auto" }} onClick={exportCsv} disabled={!rows.length}>Export CSV</button>
+          <button type="button" className="btn small" style={{ marginLeft: "auto" }} onClick={exportCsv} disabled={!rows.length}>Export CSV</button>
         </div>
         <DataTable
           columns={columns}

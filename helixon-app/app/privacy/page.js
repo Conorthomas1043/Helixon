@@ -149,13 +149,13 @@ function Glyph({ name, size = 18 }) {
 function Section({ id, index, title, children }) {
   return (
     <section id={id} className="scroll-mt-28 py-9 first:pt-0 border-b last:border-b-0 last:pb-0" style={{ borderColor: "var(--border)" }}>
-      <h2 className="flex items-baseline gap-3 text-[21px] font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
-        <span className="text-[13px] font-semibold tabular-nums" style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>
+      <h2 className="flex items-baseline gap-3 text-20 font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <span className="text-13 font-semibold tabular-nums" style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>
           {String(index).padStart(2, "0")}
         </span>
         {title}
       </h2>
-      <div className="space-y-4 text-[15px] leading-[1.75]" style={{ color: "var(--ink-soft)" }}>
+      <div className="space-y-4 text-15 leading-[1.75]" style={{ color: "var(--ink-soft)" }}>
         {children}
       </div>
     </section>
@@ -178,13 +178,13 @@ function Bullets({ items }) {
 // Two-column "label | detail" rows - for bases and retention.
 function Rows({ rows, head }) {
   return (
-    <div className="rounded-[14px] border overflow-hidden" style={{ borderColor: "var(--border)" }}>
-      <div className="hidden sm:grid grid-cols-[200px_1fr] gap-4 text-[11px] font-semibold uppercase tracking-widest px-5 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+    <div className="rounded-card border overflow-hidden" style={{ borderColor: "var(--border)" }}>
+      <div className="hidden sm:grid grid-cols-[200px_1fr] gap-4 text-11 font-semibold uppercase tracking-widest px-5 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
         <span>{head[0]}</span>
         <span>{head[1]}</span>
       </div>
       {rows.map(([k, v], i) => (
-        <div key={k} className="grid sm:grid-cols-[200px_1fr] gap-1 sm:gap-4 px-5 py-3.5 text-[14px]" style={{ background: i % 2 ? "var(--mist)" : "white" }}>
+        <div key={k} className="grid sm:grid-cols-[200px_1fr] gap-1 sm:gap-4 px-5 py-3.5 text-14" style={{ background: i % 2 ? "var(--mist)" : "white" }}>
           <span className="font-semibold" style={{ color: "var(--ink)" }}>
             {k}
           </span>
@@ -197,7 +197,7 @@ function Rows({ rows, head }) {
 
 function Callout({ children, tone = "mint" }) {
   return (
-    <div className="rounded-[14px] px-5 py-4 text-[14px] leading-relaxed" style={{ background: tone === "mint" ? "var(--mint)" : "var(--mist)", color: "var(--ink)" }}>
+    <div className="rounded-card px-5 py-4 text-14 leading-relaxed" style={{ background: tone === "mint" ? "var(--mint)" : "var(--mist)", color: "var(--ink)" }}>
       {children}
     </div>
   );
@@ -216,7 +216,7 @@ export default function Privacy() {
 
       <header className="bg-white border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1120px] mx-auto px-6 pt-14 pb-12">
-          <p className="text-[12px] font-medium mb-4" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-12 font-medium mb-4" style={{ color: "var(--ink-faint)" }}>
             <Link href="/" className="hover:underline">
               Helixon
             </Link>
@@ -225,11 +225,11 @@ export default function Privacy() {
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Privacy Policy
           </h1>
-          <p className="text-[16px] leading-relaxed max-w-2xl mb-6" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-16 leading-relaxed max-w-2xl mb-6" style={{ color: "var(--ink-soft)" }}>
             How Helixon handles the personal data of candidates, the recruiters who use Helixon, and visitors to this website - in plain
             English, under UK GDPR and EU GDPR.
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px]" style={{ color: "var(--ink-soft)" }}>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-12" style={{ color: "var(--ink-soft)" }}>
             <span>
               <strong style={{ color: "var(--ink)" }}>Last updated:</strong> {UPDATED}
             </span>
@@ -246,20 +246,20 @@ export default function Privacy() {
 
       {/* At a glance */}
       <section aria-labelledby="glance" className="max-w-[1120px] mx-auto px-6 pt-12">
-        <h2 id="glance" className="text-[11px] font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--ink-faint)" }}>
+        <h2 id="glance" className="text-11 font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--ink-faint)" }}>
           At a glance
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {GLANCE.map((g) => (
-            <div key={g.title} className="rounded-[16px] bg-white border p-5 flex gap-4" style={{ borderColor: "var(--border)" }}>
-              <span className="w-10 h-10 rounded-[11px] flex items-center justify-center shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <div key={g.title} className="rounded-2xl bg-white border p-5 flex gap-4" style={{ borderColor: "var(--border)" }}>
+              <span className="w-10 h-10 rounded-btn flex items-center justify-center shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <Glyph name={g.icon} />
               </span>
               <span>
-                <span className="block text-[15px] font-semibold leading-snug" style={{ color: "var(--ink)" }}>
+                <span className="block text-15 font-semibold leading-snug" style={{ color: "var(--ink)" }}>
                   {g.title}
                 </span>
-                <span className="block text-[13px] leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
+                <span className="block text-13 leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
                   {g.body}
                 </span>
               </span>
@@ -275,7 +275,7 @@ export default function Privacy() {
           <PrivacyToc sections={SECTIONS} />
         </aside>
 
-        <article className="bg-white rounded-[20px] border px-6 sm:px-10 py-10 min-w-0" style={{ borderColor: "var(--border)" }}>
+        <article className="bg-white rounded-panel border px-6 sm:px-10 py-10 min-w-0" style={{ borderColor: "var(--border)" }}>
           <Section id="who" index={1} title="Who we are">
             <p>
               Helixon provides AI-assisted CV screening and recruitment workflow software to recruitment agencies. Where this notice says
@@ -297,18 +297,18 @@ export default function Privacy() {
                 ["Candidate data", "The recruitment agency", "When an agency uploads a CV or adds a candidate, the agency decides how that data is used - it is the data controller. We process it on its behalf under our Data Processing Agreement. Candidates should contact the agency about their data; we help agencies answer those requests."],
                 ["Customers and visitors", "Helixon", "For the recruiters and agency staff who use Helixon, and for visitors to this website, we are the data controller. The rest of this notice covers both roles."],
               ].map(([what, who, body]) => (
-                <div key={what} className="rounded-[16px] border p-5" style={{ borderColor: "var(--border)" }}>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--ink-faint)" }}>
+                <div key={what} className="rounded-2xl border p-5" style={{ borderColor: "var(--border)" }}>
+                  <p className="text-11 font-semibold uppercase tracking-widest" style={{ color: "var(--ink-faint)" }}>
                     {what}
                   </p>
-                  <p className="text-[15px] font-semibold mt-1" style={{ color: "var(--ink)" }}>
+                  <p className="text-15 font-semibold mt-1" style={{ color: "var(--ink)" }}>
                     Controller: <span style={{ color: "var(--forest)" }}>{who}</span>
                   </p>
-                  <p className="text-[14px] leading-relaxed mt-2">{body}</p>
+                  <p className="text-14 leading-relaxed mt-2">{body}</p>
                 </div>
               ))}
             </div>
-            <p className="text-[14px]">
+            <p className="text-14">
               See the{" "}
               <a href="/dpa" className="font-semibold underline underline-offset-2" style={{ color: "var(--forest)" }}>
                 Data Processing Agreement
@@ -322,10 +322,10 @@ export default function Privacy() {
               {DATA_GROUPS.map((g) => (
                 <div key={g.heading}>
                   <p className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>
+                    <span className="text-15 font-semibold" style={{ color: "var(--ink)" }}>
                       {g.heading}
                     </span>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                    <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                       {g.tag}
                     </span>
                   </p>
@@ -363,21 +363,21 @@ export default function Privacy() {
               These providers help us run Helixon. Each is bound by a data processing agreement and none may use the data for its own
               purposes. We don&apos;t sell personal data, and we don&apos;t use CV data to train AI models.
             </p>
-            <div className="rounded-[14px] border overflow-hidden" style={{ borderColor: "var(--border)" }}>
-              <div className="hidden sm:grid grid-cols-[170px_1fr_150px] gap-4 text-[11px] font-semibold uppercase tracking-widest px-5 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <div className="rounded-card border overflow-hidden" style={{ borderColor: "var(--border)" }}>
+              <div className="hidden sm:grid grid-cols-[170px_1fr_150px] gap-4 text-11 font-semibold uppercase tracking-widest px-5 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <span>Provider</span>
                 <span>What for</span>
                 <span>Where</span>
               </div>
               {PROCESSORS.map(([name, purpose, where], i) => (
-                <div key={name} className="grid sm:grid-cols-[170px_1fr_150px] gap-1 sm:gap-4 items-center px-5 py-3 text-[14px]" style={{ background: i % 2 ? "var(--mist)" : "white" }}>
+                <div key={name} className="grid sm:grid-cols-[170px_1fr_150px] gap-1 sm:gap-4 items-center px-5 py-3 text-14" style={{ background: i % 2 ? "var(--mist)" : "white" }}>
                   <span className="font-semibold" style={{ color: "var(--ink)" }}>
                     {name}
                   </span>
                   <span className="leading-snug">{purpose}</span>
                   <span>
                     <span
-                      className="inline-block text-[12px] font-semibold px-2 py-0.5 rounded-full"
+                      className="inline-block text-12 font-semibold px-2 py-0.5 rounded-full"
                       style={{ background: US_ONLY(where) ? "#fdf6e9" : "var(--mint)", color: US_ONLY(where) ? "#8a5a12" : "var(--forest)" }}
                     >
                       {where}
@@ -386,7 +386,7 @@ export default function Privacy() {
                 </div>
               ))}
             </div>
-            <p className="text-[13px]" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-13" style={{ color: "var(--ink-faint)" }}>
               Transfers to the United States are protected as described in the next section.
             </p>
           </Section>
@@ -408,7 +408,7 @@ export default function Privacy() {
           <Section id="rights" index={9} title="Your rights">
             <div className="flex flex-wrap gap-2">
               {RIGHTS.map((r) => (
-                <span key={r} className="text-[13px] font-semibold px-3 py-1.5 rounded-full border bg-white" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                <span key={r} className="text-13 font-semibold px-3 py-1.5 rounded-full border bg-white" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
                   {r}
                 </span>
               ))}
@@ -460,16 +460,16 @@ export default function Privacy() {
           </Section>
 
           <Section id="contact" index={13} title="Contact us">
-            <div className="rounded-[16px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: "var(--forest)", color: "white" }}>
+            <div className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: "var(--forest)", color: "white" }}>
               <div>
-                <p className="text-[16px] font-semibold">Privacy questions or requests</p>
-                <p className="text-[14px] mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
+                <p className="text-16 font-semibold">Privacy questions or requests</p>
+                <p className="text-14 mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
                   We reply within one month - usually much sooner.
                 </p>
               </div>
               <a
                 href={`mailto:${CONTACT}`}
-                className="inline-flex items-center justify-center text-[14px] font-semibold px-5 py-2.5 rounded-full bg-white shrink-0"
+                className="inline-flex items-center justify-center text-14 font-semibold px-5 py-2.5 rounded-full bg-white shrink-0"
                 style={{ color: "var(--forest)" }}
               >
                 {CONTACT}

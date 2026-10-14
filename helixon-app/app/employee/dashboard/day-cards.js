@@ -11,7 +11,7 @@ import { Card, CardHeader, Chip, EmptyLine, HeaderLink, ProgressBar } from "../_
 function ListSkeleton({ rows = 2 }) {
   return (
     <div className="px-5 pb-5 space-y-2" aria-hidden="true">
-      {Array.from({ length: rows }, (_, i) => <div key={i} className="shimmer-block h-10 rounded-[10px]" />)}
+      {Array.from({ length: rows }, (_, i) => <div key={i} className="shimmer-block h-10 rounded-btn" />)}
     </div>
   );
 }
@@ -24,7 +24,7 @@ function EventRow({ event, todayKey, showDay }) {
   return (
     <li className="flex gap-3 px-5 py-2.5">
       <div className="w-[62px] shrink-0 text-right">
-        {showDay && <p className="text-[12px] font-semibold" style={{ color: "var(--ink-soft)" }}>{relativeDayLabel(startKey, todayKey)}</p>}
+        {showDay && <p className="text-12 font-semibold" style={{ color: "var(--ink-soft)" }}>{relativeDayLabel(startKey, todayKey)}</p>}
         <p className="text-xs tabular-nums" style={{ color: "var(--ink-faint)", fontFamily: "var(--font-mono)" }}>{when}</p>
       </div>
       <div className="min-w-0 border-l-2 pl-3" style={{ borderColor: "var(--forest)" }}>
@@ -56,7 +56,7 @@ export function AgendaCard({ events, loaded, todayKey }) {
           )}
           {next.length > 0 && (
             <div className="border-t pb-2" style={{ borderColor: "var(--border-soft)" }}>
-              <p className="px-5 pt-3 pb-1 text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>Coming up</p>
+              <p className="px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>Coming up</p>
               <ul>{next.map((e) => <EventRow key={e.id} event={e} todayKey={todayKey} showDay />)}</ul>
             </div>
           )}
@@ -99,9 +99,9 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
               { label: "This week", value: me?.thisWeek ?? 0 },
               { label: "Team rank", value: rank ? `#${rank}` : "-" },
             ].map((s) => (
-              <div key={s.label} className="rounded-[10px] px-3 py-2" style={{ background: "var(--mist)" }}>
+              <div key={s.label} className="rounded-btn px-3 py-2" style={{ background: "var(--mist)" }}>
                 <p className="text-lg font-semibold leading-tight tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>{s.value}</p>
-                <p className="text-[12px]" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
+                <p className="text-12" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -136,7 +136,7 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
 
           {board.length > 1 && (
             <div className="border-t px-5 py-3" style={{ borderColor: "var(--border-soft)" }}>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] mb-2" style={{ color: "var(--ink-faint)" }}>This week</p>
+              <p className="text-12 font-semibold uppercase tracking-[0.08em] mb-2" style={{ color: "var(--ink-faint)" }}>This week</p>
               <ol className="space-y-1.5">
                 {board.slice(0, 3).map((r, i) => (
                   <li key={r.employeeId} className="flex items-center justify-between text-sm">
@@ -220,8 +220,8 @@ export function PlatformCard({ stats }) {
       <CardHeader id="platform-title" eyebrow="Platform" title="Right now" action={<HeaderLink href="/employee/ops">Details</HeaderLink>} />
       <dl className="grid grid-cols-2 gap-2 px-5 pb-5">
         {items.map((s) => (
-          <div key={s.label} className="flex flex-col-reverse rounded-[10px] px-3 py-2" style={{ background: "var(--mist)" }}>
-            <dt className="text-[12px]" style={{ color: "var(--ink-faint)" }}>{s.label}</dt>
+          <div key={s.label} className="flex flex-col-reverse rounded-btn px-3 py-2" style={{ background: "var(--mist)" }}>
+            <dt className="text-12" style={{ color: "var(--ink-faint)" }}>{s.label}</dt>
             <dd className="text-lg font-semibold leading-tight tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>
               {typeof s.value === "number" ? s.value.toLocaleString("en-GB") : "-"}
             </dd>

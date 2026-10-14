@@ -14,12 +14,12 @@ export default function CtaBand({
 }) {
   return (
     <section className="max-w-[1100px] mx-auto px-6 pb-24">
-      <div className="rounded-[20px] px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
+      <div className="rounded-panel px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
           {heading}
         </h2>
         {body && (
-          <p className="text-[15px] leading-relaxed mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
+          <p className="text-15 leading-relaxed mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
             {body}
           </p>
         )}

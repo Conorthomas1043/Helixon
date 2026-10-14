@@ -6,6 +6,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import SiteAnnouncement from "@/components/SiteAnnouncement";
 import { connection } from "next/server";
 import { cookies } from "next/headers";
+import { CLERK_PROVIDER_APPEARANCE } from "@/lib/ui/clerk-appearance";
 import "./globals.css";
 
 // Every font the site uses, self-hosted through next/font rather than a Google
@@ -67,16 +68,7 @@ export default async function RootLayout({ children }) {
       signInUrl="/login"
       signUpUrl="/signup"
       afterSignOutUrl="/login"
-      appearance={{
-        variables: {
-          colorPrimary: "#0b6e4f",
-          colorText: "#13201b",
-          colorTextSecondary: "#4a6658",
-          colorBackground: "#ffffff",
-          borderRadius: "12px",
-          fontFamily: "var(--font-geist-mono), monospace",
-        },
-      }}
+      appearance={CLERK_PROVIDER_APPEARANCE}
       localization={{
         signIn: {
           start: {
@@ -93,7 +85,7 @@ export default async function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} h-full`} data-ws-tabs={hasWorkspaceTabs ? "" : undefined}>
+      <html lang="en-GB" className={`${outfit.variable} ${inter.variable} ${geistMono.variable} h-full`} data-ws-tabs={hasWorkspaceTabs ? "" : undefined}>
         <body className="min-h-full flex flex-col antialiased">
           {/* Admin-set banner (/admin/site); renders nothing unless one is on. */}
           <SiteAnnouncement />

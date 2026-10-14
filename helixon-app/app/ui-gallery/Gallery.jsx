@@ -140,7 +140,7 @@ export default function Gallery() {
         <h2 className="text-lg font-semibold mb-4">Workspace tabs and split view</h2>
         <WorkspaceDemo />
       </section>
-      <section className="rounded-[16px] p-6 text-[var(--ui-text)]" style={ADMIN_THEME}>
+      <section className="rounded-2xl p-6 text-[var(--ui-text)]" style={ADMIN_THEME}>
         <h2 className="text-lg font-semibold mb-4">Admin console theme</h2>
         <Kit />
       </section>

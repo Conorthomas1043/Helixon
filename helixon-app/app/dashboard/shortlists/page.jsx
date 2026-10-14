@@ -36,24 +36,24 @@ function NewShortlistForm({ jobs, onCreated }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-[14px] p-4 flex flex-wrap items-end gap-3" style={CARD}>
+    <form onSubmit={submit} className="rounded-card p-4 flex flex-wrap items-end gap-3" style={CARD}>
       <label className="flex-1 min-w-[200px]">
-        <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>New shortlist</span>
+        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>New shortlist</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           placeholder="e.g. Acme - Senior Engineer, round 1"
-          className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
       </label>
       <label className="min-w-[180px]">
-        <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>For job (optional)</span>
+        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>For job (optional)</span>
         <select
           value={jobId}
           onChange={(e) => setJobId(e.target.value)}
-          className="w-full text-[14px] px-3 py-2 rounded-[8px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           <option value="">No job</option>
@@ -67,12 +67,12 @@ function NewShortlistForm({ jobs, onCreated }) {
       <button
         type="submit"
         disabled={saving || !name.trim()}
-        className="text-[14px] font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         {saving ? "Creating…" : "Create"}
       </button>
-      {error && <p className="w-full text-[13px]" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p className="w-full text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
     </form>
   );
 }
@@ -96,13 +96,13 @@ export default function ShortlistsPage() {
       <DashboardNav />
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header>
-          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             Client submissions
           </p>
           <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
             Client shortlists
           </h1>
-          <p className="text-[14px] mt-1 max-w-2xl" style={{ color: INK_MUTED }}>
+          <p className="text-14 mt-1 max-w-2xl" style={{ color: INK_MUTED }}>
             Not the same as the Shortlisted stage: a client shortlist is what you send. Group the people you&apos;re putting forward, add a line on why each one, and print a client-ready pack. Add
             people from their profile, or select several on{" "}
             <Link href="/dashboard/candidates" className="underline font-semibold" style={{ color: "var(--forest)" }}>
@@ -117,7 +117,7 @@ export default function ShortlistsPage() {
         {status === "loading" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true" aria-label="Loading shortlists">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-[14px] p-5" style={CARD}>
+              <div key={i} className="rounded-card p-5" style={CARD}>
                 <Block className="h-4 w-40 mb-2" />
                 <Block className="h-3 w-28" />
               </div>
@@ -126,12 +126,12 @@ export default function ShortlistsPage() {
         )}
 
         {status === "error" && (
-          <div className="rounded-[16px] p-10 flex flex-col items-center text-center" style={CARD}>
+          <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
             <p className="text-base font-semibold mb-1" style={{ color: INK }}>Unable to load shortlists</p>
             <button
               type="button"
               onClick={retry}
-              className="mt-3 text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="mt-3 text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               Try again
@@ -140,9 +140,9 @@ export default function ShortlistsPage() {
         )}
 
         {status === "ready" && lists.length === 0 && (
-          <div className="rounded-[16px] py-12 px-6 text-center" style={CARD}>
+          <div className="rounded-2xl py-12 px-6 text-center" style={CARD}>
             <p className="text-sm font-semibold mb-1" style={{ color: INK }}>No shortlists yet</p>
-            <p className="text-[14px]" style={{ color: INK_MUTED }}>Name one above, or use &quot;Add to client shortlist&quot; on a candidate.</p>
+            <p className="text-14" style={{ color: INK_MUTED }}>Name one above, or use &quot;Add to client shortlist&quot; on a candidate.</p>
           </div>
         )}
 
@@ -155,7 +155,7 @@ export default function ShortlistsPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search shortlists, jobs or clients…"
                 aria-label="Search shortlists"
-                className="text-[14px] px-4 py-2 rounded-full bg-white w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
             )}
@@ -164,14 +164,14 @@ export default function ShortlistsPage() {
                 <li key={l.id}>
                   <Link
                     href={`/dashboard/shortlists/${l.id}`}
-                    className="block rounded-[14px] p-5 h-full transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="block rounded-card p-5 h-full transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={CARD}
                   >
                     <p className="text-sm font-semibold truncate" style={{ color: INK }}>{l.name}</p>
-                    <p className="text-[13px] truncate mt-0.5" style={{ color: INK_MUTED }}>
+                    <p className="text-13 truncate mt-0.5" style={{ color: INK_MUTED }}>
                       {l.jobTitle ? `${l.jobTitle}${l.client ? ` · ${l.client}` : ""}` : "Not linked to a job"}
                     </p>
-                    <div className="flex items-center justify-between mt-4 text-[13px]" style={{ color: INK_FAINT }}>
+                    <div className="flex items-center justify-between mt-4 text-13" style={{ color: INK_FAINT }}>
                       <span>
                         <span className="font-semibold tabular-nums" style={{ color: INK }}>{l.count}</span> {l.count === 1 ? "person" : "people"}
                       </span>

@@ -23,7 +23,7 @@ export function TagChip({ label, active, onClick, onDelete }) {
         type="button"
         onClick={onClick}
         aria-pressed={active}
-        className={`text-[12px] font-semibold py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${onDelete ? "pl-2.5 pr-1" : "px-2.5"}`}
+        className={`text-12 font-semibold py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${onDelete ? "pl-2.5 pr-1" : "px-2.5"}`}
       >
         {label}
       </button>
@@ -33,7 +33,7 @@ export function TagChip({ label, active, onClick, onDelete }) {
           onClick={onDelete}
           aria-label={`Delete the tag ${label}`}
           title="Delete this tag"
-          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-[12px] hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
+          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-12 hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
         >
           ×
         </button>
@@ -49,7 +49,7 @@ export function ScorePill({ score }) {
       <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span className="text-[12px] whitespace-nowrap" style={{ color: INK_FAINT }}>
+      <span className="text-12 whitespace-nowrap" style={{ color: INK_FAINT }}>
         {score === null || score === undefined ? "" : scoreLabel(score).split(" ")[0]}
       </span>
     </div>
@@ -59,21 +59,21 @@ export function ScorePill({ score }) {
 export function StageBadge({ stage, status }) {
   if (status === "failed") {
     return (
-      <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
+      <span className="inline-flex items-center text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
         Failed
       </span>
     );
   }
   if (status === "processing") {
     return (
-      <span className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
+      <span className="inline-flex items-center text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: AMBER_BG, color: AMBER }}>
         Processing
       </span>
     );
   }
   if (!stage || !STAGE_LABELS[stage]) {
     return (
-      <span className="text-[12px]" style={{ color: INK_FAINT }}>
+      <span className="text-12" style={{ color: INK_FAINT }}>
         No stage
       </span>
     );
@@ -81,7 +81,7 @@ export function StageBadge({ stage, status }) {
   const isPlaced = stage === STAGE_ORDER[STAGE_ORDER.length - 1];
   return (
     <span
-      className="inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+      className="inline-flex items-center text-12 font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
       style={{ background: isPlaced ? GREEN_BG : "var(--mist)", color: isPlaced ? "var(--forest)" : INK_MUTED }}
     >
       {STAGE_LABELS[stage]}
@@ -104,7 +104,7 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
   return (
     <li>
       <div
-        className="flex items-center gap-3 py-3.5 -mx-2 px-2 rounded-[10px] transition-colors hover:bg-[var(--mist)] focus-within:bg-[var(--mist)]"
+        className="flex items-center gap-3 py-3.5 -mx-2 px-2 rounded-btn transition-colors hover:bg-[var(--mist)] focus-within:bg-[var(--mist)]"
       >
         <input
           type="checkbox"
@@ -121,13 +121,13 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
             <p className="text-sm font-semibold truncate" style={{ color: INK }}>
               {candidate.fullName}
               {candidate.inTalentPool && (
-                <span className="ml-1.5 align-middle text-[12px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
+                <span className="ml-1.5 align-middle text-12 font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
                   ☆ Pool
                 </span>
               )}
               {candidate.aiWritten && <AiWritingBadge className="ml-1.5 align-middle" />}
             </p>
-            <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
+            <p className="text-13 truncate" style={{ color: INK_MUTED }}>
               {candidate.jobTitle}
               {candidate.company ? ` · ${candidate.company}` : ""}
               {candidate.location ? ` · ${candidate.location}` : ""}
@@ -136,7 +136,7 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           </div>
 
           {show("currentRole") && (
-            <div className="hidden lg:block w-40 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden lg:block w-40 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
               {[candidate.currentTitle, candidate.currentCompany].filter(Boolean).join(" at ") || "-"}
             </div>
           )}
@@ -146,24 +146,24 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
             // per line and triple the row's height.
             <div className="hidden lg:flex items-center gap-1 w-48 shrink-0 min-w-0 overflow-hidden" title={candidate.skills.join(", ")}>
               {candidate.skills.slice(0, 2).map((s) => (
-                <span key={s} className="text-[12px] px-1.5 py-0.5 rounded-full truncate max-w-[5.75rem]" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                <span key={s} className="text-12 px-1.5 py-0.5 rounded-full truncate max-w-[5.75rem]" style={{ background: "var(--mist)", color: INK_MUTED }}>
                   {s}
                 </span>
               ))}
               {candidate.skills.length > 2 && (
-                <span className="text-[12px] shrink-0 text-[var(--ink-soft)]">+{candidate.skills.length - 2}</span>
+                <span className="text-12 shrink-0 text-[var(--ink-soft)]">+{candidate.skills.length - 2}</span>
               )}
             </div>
           )}
 
           {show("recruiter") && (
-            <div className="hidden md:block w-24 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
               {candidate.recruiterName ?? "Unassigned"}
             </div>
           )}
 
           {show("source") && (
-            <div className="hidden md:block w-24 shrink-0 text-[13px] truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
               {candidate.source || "-"}
             </div>
           )}
@@ -175,19 +175,19 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("lastActivity") && (
-            <div className="hidden md:block w-24 shrink-0 text-[12px] truncate" style={{ color: INK_FAINT }} title="Last activity">
+            <div className="hidden md:block w-24 shrink-0 text-12 truncate" style={{ color: INK_FAINT }} title="Last activity">
               {candidate.lastActivityAt ? formatRelativeTime(candidate.lastActivityAt) : "-"}
             </div>
           )}
 
           {show("added") && (
-            <div className="hidden md:block w-16 shrink-0 text-[12px]" style={{ color: INK_FAINT }} title="Added">
+            <div className="hidden md:block w-16 shrink-0 text-12" style={{ color: INK_FAINT }} title="Added">
               {shortDate(candidate.createdAt)}
             </div>
           )}
 
           {show("nextAction") && (
-            <div className="hidden xl:block w-40 shrink-0 text-[12px] truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
+            <div className="hidden xl:block w-40 shrink-0 text-12 truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
               {candidate.nextAction ? `${overdue ? "Overdue: " : "Next: "}${candidate.nextAction.label}` : ""}
             </div>
           )}

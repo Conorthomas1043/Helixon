@@ -160,8 +160,8 @@ export default function TrafficTimeline({ timeline, since, busy, selected, onSel
           </div>
         </div>
         <div className="segmented" role="group" aria-label="Show as">
-          <button className={view === "chart" ? "active" : ""} aria-pressed={view === "chart"} onClick={() => setView("chart")}>Chart</button>
-          <button className={view === "table" ? "active" : ""} aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
+          <button type="button" className={view === "chart" ? "active" : ""} aria-pressed={view === "chart"} onClick={() => setView("chart")}>Chart</button>
+          <button type="button" className={view === "table" ? "active" : ""} aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
         </div>
       </div>
 
@@ -170,10 +170,10 @@ export default function TrafficTimeline({ timeline, since, busy, selected, onSel
           <table className="table">
             <thead>
               <tr>
-                <th>{bucket === "day" ? "Day (UTC)" : "Hour"}</th>
-                <th className="num">Requests</th>
-                <th className="num">Blocked</th>
-                <th className="num">Flagged</th>
+                <th scope="col">{bucket === "day" ? "Day (UTC)" : "Hour"}</th>
+                <th scope="col" className="num">Requests</th>
+                <th scope="col" className="num">Blocked</th>
+                <th scope="col" className="num">Flagged</th>
               </tr>
             </thead>
             <tbody>

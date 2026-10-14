@@ -105,7 +105,7 @@ function MoreActions({ actions }) {
         </svg>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-[40px] z-30 min-w-[240px] rounded-[12px] bg-white border border-[var(--border)] shadow-lg py-1.5">
+        <div role="menu" className="absolute right-0 top-[40px] z-30 min-w-[240px] rounded-xl bg-white border border-[var(--border)] shadow-lg py-1.5">
           {actions.map((a) => (
             <button
               key={a.label}
@@ -115,7 +115,7 @@ function MoreActions({ actions }) {
                 setOpen(false);
                 a.onSelect();
               }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-[14px] text-[var(--ink)] hover:bg-[var(--mint)] focus-visible:bg-[var(--mint)] outline-none"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-14 text-[var(--ink)] hover:bg-[var(--mint)] focus-visible:bg-[var(--mint)] outline-none"
             >
               <Icon name={a.icon} size={15} />
               {a.label}
@@ -442,19 +442,19 @@ export default function AnalyseWorkspace() {
           <div className="min-w-0">
             {inReport ? (
               <>
-                <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-[14px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
+                <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-14 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
                   <Icon name="arrowLeft" size={14} /> Screen another CV
                 </button>
-                <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
                   Screening report
                 </h1>
               </>
             ) : (
               <>
-                <h1 className="text-[24px] font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
                   {comparing ? "Compare a second candidate" : rerunning ? "Re-score candidate" : "Screen a CV"}
                 </h1>
-                <p className="text-[15px] text-[var(--ink-soft)] mt-1">
+                <p className="text-15 text-[var(--ink-soft)] mt-1">
                   {mode === "bulk"
                     ? "Score a whole batch of CVs against one role."
                     : comparing
@@ -533,9 +533,9 @@ export default function AnalyseWorkspace() {
             <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start">
               {comparing ? (
                 <Card className="px-5 py-5">
-                  <p className="text-[13px] font-medium text-[var(--ink-soft)]">Job</p>
-                  <p className="text-[15px] font-semibold text-[var(--ink)] mt-1">{roleLabel || "Same role as before"}</p>
-                  <p className="text-[14px] text-[var(--ink-soft)] mt-2">
+                  <p className="text-13 font-medium text-[var(--ink-soft)]">Job</p>
+                  <p className="text-15 font-semibold text-[var(--ink)] mt-1">{roleLabel || "Same role as before"}</p>
+                  <p className="text-14 text-[var(--ink-soft)] mt-2">
                     Comparing against <span className="text-[var(--ink)] font-medium">{result?.blind_mode ? "the blind-screened candidate" : result?.name || "the first candidate"}</span> ({result?.match_score}/100).
                   </p>
                   <Button size="sm" variant="ghost" className="mt-3 -ml-2" onClick={() => dispatch({ type: "stopComparing" })} icon="arrowLeft">
@@ -595,7 +595,7 @@ export default function AnalyseWorkspace() {
               {duplicate && (
                 <div
                   role="status"
-                  className="print-hide rounded-[12px] px-4 py-3 text-[14px] border"
+                  className="print-hide rounded-xl px-4 py-3 text-14 border"
                   style={duplicate.sameJobCandidateId
                     ? { background: "#fff8e6", borderColor: "#f1dfb5", color: "#7a4f0a" }
                     : { background: "var(--mint)", borderColor: "var(--border)", color: "var(--ink)" }}
@@ -626,7 +626,7 @@ export default function AnalyseWorkspace() {
               {candidateId && <NotesCard key={`notes-${candidateId}`} candidateId={candidateId} toast={toast} />}
               <EmailCard email={email} />
               <FeedbackCard feedback={{ ...feedback, submit: submitFeedback }} />
-              <p className="text-[13px] text-[var(--ink-faint)] px-1">
+              <p className="text-13 text-[var(--ink-faint)] px-1">
                 Saved to your pipeline.{" "}
                 <Link href="/dashboard/candidates" className="font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
                   All candidates

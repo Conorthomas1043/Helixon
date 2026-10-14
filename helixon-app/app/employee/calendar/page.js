@@ -293,7 +293,7 @@ function CalendarPageContent() {
               The shared team calendar - visible to every employee.
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={openAdd}
             className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
             style={{ background: "var(--forest)", color: "white" }}
@@ -304,22 +304,22 @@ function CalendarPageContent() {
 
         {banner && (
           <div
-            className="rounded-[14px] px-4 py-3 text-sm mb-6 flex items-center justify-between gap-3"
+            className="rounded-card px-4 py-3 text-sm mb-6 flex items-center justify-between gap-3"
             style={banner.tone === "ok" ? { background: "var(--mint)", border: "1px solid var(--border)", color: "var(--forest)" } : { background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}
           >
             <span>{banner.message}</span>
-            <button onClick={() => setBanner(null)} className="opacity-70 hover:opacity-100" aria-label="Dismiss">✕</button>
+            <button type="button" onClick={() => setBanner(null)} className="opacity-70 hover:opacity-100" aria-label="Dismiss">✕</button>
           </div>
         )}
 
         {error && (
-          <div className="rounded-[14px] px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div className="rounded-[16px] p-5 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-5 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -398,7 +398,7 @@ function CalendarPageContent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* ── Agenda ──────────────────────────────────────────────────── */}
-          <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
             {loading ? (
               <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</div>
             ) : grouped.length === 0 ? (
@@ -428,8 +428,8 @@ function CalendarPageContent() {
                             </div>
                             {canEdit && (
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                <button onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
-                                <button onClick={() => handleDelete(ev.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
+                                <button type="button" onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
+                                <button type="button" onClick={() => handleDelete(ev.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
                               </div>
                             )}
                           </div>
@@ -444,7 +444,7 @@ function CalendarPageContent() {
 
           {/* ── Connect panel ───────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
               <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 Subscribe from Google or Apple
               </h2>
@@ -460,10 +460,10 @@ function CalendarPageContent() {
                       readOnly
                       value={feedUrl}
                       onFocus={(e) => e.target.select()}
-                      className="flex-1 min-w-0 text-[12px] rounded-lg px-2.5 py-2 font-mono"
+                      className="flex-1 min-w-0 text-12 rounded-lg px-2.5 py-2 font-mono"
                       style={{ border: "1px solid var(--border)", color: "var(--ink-soft)", background: "var(--mist)" }}
                     />
-                    <button onClick={copyFeedUrl} className="text-xs font-semibold px-3 py-2 rounded-lg shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                    <button type="button" onClick={copyFeedUrl} className="text-xs font-semibold px-3 py-2 rounded-lg shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                       {copied ? "Copied" : "Copy"}
                     </button>
                   </div>
@@ -472,14 +472,14 @@ function CalendarPageContent() {
                     <p className="mt-2"><b>Google Calendar</b> - Settings → Add calendar → From URL → paste the link.</p>
                     <p className="mt-1.5"><b>Apple Calendar</b> - File → New Calendar Subscription → paste the link.</p>
                   </details>
-                  <button onClick={regenerateFeed} className="text-xs mt-3" style={{ color: "var(--ink-faint)" }}>
+                  <button type="button" onClick={regenerateFeed} className="text-xs mt-3" style={{ color: "var(--ink-faint)" }}>
                     Regenerate link
                   </button>
                 </>
               )}
             </div>
 
-            <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
               <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 Google Calendar (two-way)
               </h2>
@@ -501,10 +501,10 @@ function CalendarPageContent() {
                     )}
                   </p>
                   <div className="flex gap-2">
-                    <button onClick={syncGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                    <button type="button" onClick={syncGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                       {googleBusy ? "Working…" : "Sync now"}
                     </button>
-                    <button onClick={disconnectGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+                    <button type="button" onClick={disconnectGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
                       Disconnect
                     </button>
                   </div>

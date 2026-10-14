@@ -21,7 +21,7 @@ export function CandidateFacts({ candidate }) {
   const stale = !contact || now - contact.at > 14 * 86400000;
   if (!contact && inStage == null) return null;
   return (
-    <p className="text-[13px] mt-2" style={{ color: INK_FAINT }}>
+    <p className="text-13 mt-2" style={{ color: INK_FAINT }}>
       <span style={{ color: stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "var(--score-mid)" : INK_FAINT }}>
         {contact ? `Last contacted ${agoLabel(contact.at, now)}` : "No contact logged yet"}
       </span>
@@ -31,7 +31,7 @@ export function CandidateFacts({ candidate }) {
 }
 
 const MENU_ITEM_BASE =
-  "flex w-full items-center px-3 py-2 rounded-[8px] text-left text-[14px] font-medium hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]";
+  "flex w-full items-center px-3 py-2 rounded-lg text-left text-14 font-medium hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]";
 const MENU_ITEM = `${MENU_ITEM_BASE} text-[var(--ink)]`;
 
 // The everyday actions stay visible in the header; the occasional ones live
@@ -62,7 +62,7 @@ function MoreActions({ children }) {
         aria-expanded={open}
         aria-controls="candidate-more-actions"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full border text-[var(--ink)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center gap-1.5 text-14 font-semibold px-4 py-2 rounded-full border text-[var(--ink)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         More
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
@@ -72,7 +72,7 @@ function MoreActions({ children }) {
       {open && (
         <div
           id="candidate-more-actions"
-          className="absolute right-0 top-full mt-2 z-20 w-56 p-1.5 rounded-[12px] bg-white border shadow-[0_16px_40px_-16px_rgba(19,32,27,0.3)]"
+          className="absolute right-0 top-full mt-2 z-20 w-56 p-1.5 rounded-xl bg-white border shadow-[0_16px_40px_-16px_rgba(19,32,27,0.3)]"
           onClick={(e) => {
             if (e.target.closest("a,button")) setOpen(false);
           }}
@@ -91,11 +91,11 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
   const upcomingStage = candidate.status === "completed" ? nextStageAfter(candidate.stage) : null;
 
   return (
-    <header className="rounded-[16px] p-6 sm:p-8" style={CARD}>
+    <header className="rounded-2xl p-6 sm:p-8" style={CARD}>
       <div className="flex items-center justify-between mb-6">
         <Link
           href="/dashboard/candidates"
-          className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
           style={{ color: "var(--forest)" }}
         >
           ← All candidates
@@ -104,7 +104,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <Link
             href={prevId ? `/dashboard/candidates/${prevId}` : "#"}
             aria-disabled={!prevId}
-            className="text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: prevId ? INK : INK_FAINT, pointerEvents: prevId ? "auto" : "none" }}
           >
             ← Prev
@@ -112,7 +112,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <Link
             href={nextId ? `/dashboard/candidates/${nextId}` : "#"}
             aria-disabled={!nextId}
-            className="text-[13px] font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: nextId ? INK : INK_FAINT, pointerEvents: nextId ? "auto" : "none" }}
           >
             Next →
@@ -132,11 +132,11 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
               {candidate.currentTitle}
               {candidate.currentCompany ? ` @ ${candidate.currentCompany}` : ""}
             </p>
-            <p className="text-[13px] mt-1" style={{ color: INK_FAINT }}>
+            <p className="text-13 mt-1" style={{ color: INK_FAINT }}>
               Assessed for {candidate.jobTitle}
               {candidate.company ? ` @ ${candidate.company}` : ""}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[13px]" style={{ color: INK_MUTED }}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-13" style={{ color: INK_MUTED }}>
               {candidate.location && <span>{candidate.location}</span>}
               {candidate.email && (
                 <span className="inline-flex items-center gap-1">
@@ -166,14 +166,14 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
               <p className="text-3xl font-semibold tabular-nums leading-none" style={{ fontFamily: "var(--font-mono)", color: scoreColor(score) }}>
                 {score}
               </p>
-              <p className="text-[12px] font-semibold mt-1" style={{ color: scoreColor(score) }}>
+              <p className="text-12 font-semibold mt-1" style={{ color: scoreColor(score) }}>
                 {scoreLabel(score)}
               </p>
             </div>
           ) : (
             <div className="text-right">
               <p
-                className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
+                className="text-12 font-semibold px-2.5 py-1 rounded-full"
                 style={{
                   background: candidate.status === "failed" ? RED_BG : AMBER_BG,
                   color: candidate.status === "failed" ? RED_STRONG : AMBER,
@@ -185,7 +185,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           )}
           {candidate.stage && (
             <span
-              className="text-[12px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+              className="text-12 font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
               style={{
                 background: candidate.stage === "Placed" ? GREEN_BG : "var(--mist)",
                 color: candidate.stage === "Placed" ? "var(--forest)" : INK_MUTED,
@@ -202,7 +202,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <button
             type="button"
             onClick={onQuickShortlist}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             Shortlist
@@ -212,7 +212,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <button
             type="button"
             onClick={() => onMoveNext(upcomingStage)}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Move to {STAGE_LABELS[upcomingStage]} →
@@ -221,7 +221,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         <button
           type="button"
           onClick={onFocusNote}
-          className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Add note
@@ -231,20 +231,20 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
             candidateIds={[candidate.id]}
             jobId={candidate.jobId}
             defaultName={candidate.jobId ? `${candidate.jobTitle}${candidate.company ? ` - ${candidate.company}` : ""}` : ""}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors border border-[var(--border)] text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           />
         )}
         {candidate.email && (
           <a
             href={`mailto:${candidate.email}`}
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Email candidate
           </a>
         )}
         {candidate.nextAction && (
-          <span className="text-[13px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
+          <span className="text-13" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
             {overdue ? "Overdue: " : "Next: "}
             {candidate.nextAction.label}
           </span>

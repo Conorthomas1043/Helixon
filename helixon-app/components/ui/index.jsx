@@ -101,9 +101,9 @@ export const BUTTON_BASE = cx(
 );
 
 export const BUTTON_SIZES = {
-  sm: "min-h-8 px-3 text-[14px]",
-  md: "min-h-9 px-3.5 text-[14px]",
-  lg: "min-h-11 px-5 text-[15px]",
+  sm: "min-h-8 px-3 text-14",
+  md: "min-h-9 px-3.5 text-14",
+  lg: "min-h-11 px-5 text-15",
 };
 
 export const BUTTON_VARIANTS = {
@@ -147,6 +147,8 @@ export const Button = forwardRef(function Button(
     );
   }
   return (
+    // The kit passes its own `type` prop through; it defaults to "button".
+    // eslint-disable-next-line react/button-has-type
     <button ref={ref} type={type} className={cls} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
       {content}
     </button>
@@ -167,12 +169,12 @@ export function CardHeader({ title, eyebrow, description, count, action, id, cla
   return (
     <div className={cx("flex items-start justify-between gap-4 px-5 pt-5", className)}>
       <div className="min-w-0">
-        {eyebrow && <p className="text-[12px] font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ui-text-faint)]">{eyebrow}</p>}
-        <h2 id={id} className="text-[15px] font-semibold tracking-tight flex items-center gap-2 text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
+        {eyebrow && <p className="text-12 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ui-text-faint)]">{eyebrow}</p>}
+        <h2 id={id} className="text-15 font-semibold tracking-tight flex items-center gap-2 text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
           {title}
           {typeof count === "number" && count > 0 && <Pill>{count}</Pill>}
         </h2>
-        {description && <p className="text-[14px] mt-0.5 text-[var(--ui-text-soft)]">{description}</p>}
+        {description && <p className="text-14 mt-0.5 text-[var(--ui-text-soft)]">{description}</p>}
       </div>
       {action}
     </div>
@@ -190,7 +192,7 @@ export function Pill({ tone = "neutral", color, background, className = "", chil
   const t = PILL_TONES[tone] || PILL_TONES.neutral;
   return (
     <span
-      className={cx("inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap tabular-nums", className)}
+      className={cx("inline-flex items-center gap-1 text-12 font-semibold px-2 py-0.5 rounded-full whitespace-nowrap tabular-nums", className)}
       style={{ background: background || t.background, color: color || t.color }}
     >
       {children}
@@ -223,7 +225,7 @@ export function SectionHeading({ eyebrow, title, action, className = "" }) {
   return (
     <div className={cx("flex items-end justify-between gap-4 mb-4", className)}>
       <div className="min-w-0">
-        {eyebrow && <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ui-text-faint)]">{eyebrow}</p>}
+        {eyebrow && <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ui-text-faint)]">{eyebrow}</p>}
         <h2 className="text-base font-semibold text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
           {title}
         </h2>
@@ -239,7 +241,7 @@ export function Divider() {
 
 export function Kbd({ children }) {
   return (
-    <kbd className="inline-flex items-center h-5 px-1.5 rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-surface)] text-[12px] font-medium text-[var(--ui-text-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
+    <kbd className="inline-flex items-center h-5 px-1.5 rounded-sm border border-[var(--ui-border)] bg-[var(--ui-surface)] text-12 font-medium text-[var(--ui-text-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
       {children}
     </kbd>
   );
@@ -249,7 +251,7 @@ export function Kbd({ children }) {
 
 // 16px on phones: iOS Safari zooms the page into any field smaller than that.
 export const FIELD_BASE = cx(
-  "w-full bg-[var(--ui-surface)] rounded-input border border-[var(--ui-border)] text-[16px] sm:text-[15px] text-[var(--ui-text)]",
+  "w-full bg-[var(--ui-surface)] rounded-input border border-[var(--ui-border)] text-16 sm:text-15 text-[var(--ui-text)]",
   "placeholder:text-[var(--ui-text-faint)] outline-none transition-shadow",
   "focus:border-[var(--ui-accent)] focus:shadow-[0_0_0_3px_var(--ui-accent-soft)]",
   "disabled:bg-[var(--ui-surface-muted)] disabled:cursor-not-allowed",
@@ -281,8 +283,8 @@ export const Select = forwardRef(function Select({ options, className = "", chil
 export function Label({ htmlFor, children, hint }) {
   return (
     <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-2 mb-1.5">
-      <span className="text-[14px] font-medium text-[var(--ui-text)]">{children}</span>
-      {hint && <span className="text-[13px] text-[var(--ui-text-faint)]">{hint}</span>}
+      <span className="text-14 font-medium text-[var(--ui-text)]">{children}</span>
+      {hint && <span className="text-13 text-[var(--ui-text-faint)]">{hint}</span>}
     </label>
   );
 }
@@ -302,10 +304,10 @@ export function Field({ label, hint, error, children, className = "" }) {
     : children;
   return (
     <label className={cx("block", className)}>
-      <span className="block text-[12px] font-semibold uppercase tracking-widest mb-1.5 text-[var(--ui-text-faint)]">{label}</span>
+      <span className="block text-13 font-medium mb-1.5 text-[var(--ui-text-soft)]">{label}</span>
       {control}
       {note && (
-        <span id={noteId} role={error ? "alert" : undefined} className={cx("block text-[12px] mt-1", error ? "font-medium text-[var(--ui-danger)]" : "text-[var(--ui-text-faint)]")}>
+        <span id={noteId} role={error ? "alert" : undefined} className={cx("block text-12 mt-1", error ? "font-medium text-[var(--ui-danger)]" : "text-[var(--ui-text-faint)]")}>
           {note}
         </span>
       )}
@@ -316,7 +318,7 @@ export function Field({ label, hint, error, children, className = "" }) {
 export function ErrorText({ children }) {
   if (!children) return null;
   return (
-    <p className="text-[14px] text-[var(--ui-danger)]" role="alert">
+    <p className="text-14 text-[var(--ui-danger)]" role="alert">
       {children}
     </p>
   );
@@ -347,10 +349,10 @@ export function Switch({ checked, onChange, label, description, disabled = false
   );
   const text = label && (
     <span className="min-w-0">
-      <span id={labelId} className="block text-[14px] font-medium text-[var(--ui-text)]">
+      <span id={labelId} className="block text-14 font-medium text-[var(--ui-text)]">
         {label}
       </span>
-      {description && <span className="block text-[13px] mt-0.5 text-[var(--ui-text-soft)]">{description}</span>}
+      {description && <span className="block text-13 mt-0.5 text-[var(--ui-text-soft)]">{description}</span>}
     </span>
   );
   return (
@@ -363,7 +365,7 @@ export function Switch({ checked, onChange, label, description, disabled = false
 // Segmented control - for switching between a few peer views.
 export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) {
   return (
-    <div role="tablist" aria-label={ariaLabel} className="inline-flex p-0.5 rounded-[9px] bg-[var(--ui-surface-muted)] border border-[var(--ui-border)]">
+    <div role="tablist" aria-label={ariaLabel} className="inline-flex p-0.5 rounded-lg bg-[var(--ui-surface-muted)] border border-[var(--ui-border)]">
       {options.map((o) => {
         const active = value === o.value;
         return (
@@ -374,14 +376,14 @@ export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) 
             aria-selected={active}
             onClick={() => onChange(o.value)}
             className={cx(
-              "inline-flex items-center gap-1.5 rounded-[7px] font-medium transition-colors",
-              size === "sm" ? "h-7 px-2.5 text-[13px]" : "h-8 px-3 text-[14px]",
+              "inline-flex items-center gap-1.5 rounded-md font-medium transition-colors",
+              size === "sm" ? "h-7 px-2.5 text-13" : "h-8 px-3 text-14",
               active ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ui-text-soft)] hover:text-[var(--ui-text)]"
             )}
           >
             {o.icon && <Icon name={o.icon} size={14} />}
             {o.label}
-            {o.count != null && <span className="text-[12px] tabular-nums text-[var(--ui-text-faint)]">{o.count}</span>}
+            {o.count != null && <span className="text-12 tabular-nums text-[var(--ui-text-faint)]">{o.count}</span>}
           </button>
         );
       })}
@@ -403,7 +405,7 @@ export function Notice({ tone = "info", children, action, onDismiss, className =
   return (
     <div
       role={tone === "error" ? "alert" : undefined}
-      className={cx("flex items-start gap-2.5 rounded-[10px] px-3.5 py-2.5 text-[14px] leading-relaxed", className)}
+      className={cx("flex items-start gap-2.5 rounded-btn px-3.5 py-2.5 text-14 leading-relaxed", className)}
       style={{ background: t.bg, color: t.fg, border: `1px solid ${t.border}` }}
     >
       <Icon name={t.icon} size={15} className="mt-[2px]" />
@@ -422,7 +424,7 @@ export function Skeleton({ className = "", width, height, style }) {
   return (
     <span
       aria-hidden="true"
-      className={cx("block animate-pulse motion-reduce:animate-none rounded-[10px] bg-[var(--ui-surface-muted)]", className)}
+      className={cx("block animate-pulse motion-reduce:animate-none rounded-btn bg-[var(--ui-surface-muted)]", className)}
       style={{ width, height, ...style }}
     />
   );
@@ -445,12 +447,12 @@ export function EmptyState({ icon, title, body, children, action, framed = true,
   return (
     <Frame className={cx("py-12 px-6 text-center", className)}>
       {icon && (
-        <span className="mx-auto mb-3 flex w-11 h-11 items-center justify-center rounded-[12px] bg-[var(--ui-surface-muted)] text-[var(--ui-text-faint)]">
+        <span className="mx-auto mb-3 flex w-11 h-11 items-center justify-center rounded-xl bg-[var(--ui-surface-muted)] text-[var(--ui-text-faint)]">
           {typeof icon === "string" ? <Icon name={icon} size={20} /> : icon}
         </span>
       )}
-      <p className="text-[15px] font-semibold mb-1 text-[var(--ui-text)]">{title}</p>
-      {(body || children) && <div className="text-[14px] max-w-md mx-auto text-[var(--ui-text-soft)]">{body || children}</div>}
+      <p className="text-15 font-semibold mb-1 text-[var(--ui-text)]">{title}</p>
+      {(body || children) && <div className="text-14 max-w-md mx-auto text-[var(--ui-text-soft)]">{body || children}</div>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </Frame>
   );
@@ -460,7 +462,7 @@ export function ErrorState({ title = "Something went wrong", body, onRetry }) {
   return (
     <Card className="p-10 text-center">
       <p className="font-semibold mb-1 text-[var(--ui-text)]">{title}</p>
-      {body && <p className="text-[14px] mb-4 text-[var(--ui-text-soft)]">{body}</p>}
+      {body && <p className="text-14 mb-4 text-[var(--ui-text-soft)]">{body}</p>}
       {onRetry && (
         <Button variant="primary" onClick={onRetry}>
           Try again
@@ -493,7 +495,7 @@ export function Toasts({ toasts, onDismiss }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-[14px] font-medium shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
+          className="fade-up-in flex items-center gap-2 px-3.5 py-2 rounded-btn text-14 font-medium shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
           style={t.tone === "error" ? { background: "var(--ui-danger)", color: "var(--ui-on-danger)" } : { background: "var(--ink)", color: "white" }}
         >
           <Icon name={t.tone === "error" ? "alert" : "check"} size={14} />
@@ -551,7 +553,7 @@ export function Dialog({ title, onClose, children, width = 560, busy = false }) 
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-h-[92vh] overflow-y-auto rounded-[16px] p-6 bg-[var(--ui-surface)] shadow-xl"
+        className="w-full max-h-[92vh] overflow-y-auto rounded-2xl p-6 bg-[var(--ui-surface)] shadow-xl"
         style={{ maxWidth: width }}
       >
         <h2 className="text-base font-semibold mb-4 text-[var(--ui-text)]">{title}</h2>

@@ -77,7 +77,7 @@ export default function EmployeeOpsPage() {
           </div>
         ) : error ? (
           <div
-            className="rounded-[14px] px-4 py-3 text-sm"
+            className="rounded-card px-4 py-3 text-sm"
             style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}
           >
             {error}
@@ -93,7 +93,7 @@ export default function EmployeeOpsPage() {
                 { label: "Analyses run", value: data.kpis.analyses },
                 { label: "Demo leads", value: data.kpis.leads },
               ].map((s) => (
-                <div key={s.label} className="rounded-[14px] p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+                <div key={s.label} className="rounded-card p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
                   <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                     {s.value}
                   </p>
@@ -104,7 +104,7 @@ export default function EmployeeOpsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* ── Agencies by plan ────────────────────────────────────── */}
-              <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                   Agencies by plan
                 </h2>
@@ -116,7 +116,7 @@ export default function EmployeeOpsPage() {
               </div>
 
               {/* ── Lead acquisition channels ───────────────────────────── */}
-              <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                   Demo leads by channel
                 </h2>
@@ -128,7 +128,7 @@ export default function EmployeeOpsPage() {
               </div>
             </div>
 
-            <p className="text-[12px] mt-8" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-12 mt-8" style={{ color: "var(--ink-faint)" }}>
               Signed in as {data.employee.display_name || data.employee.username}. This view
               excludes revenue, per-agency detail, IP/security data, and audit logs - see the admin console for those.
             </p>

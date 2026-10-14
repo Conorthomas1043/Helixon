@@ -5,7 +5,7 @@ import Link from "next/link";
  * don't need their own inline copy of the SVG.
  */
 export default function Logo({ size = "nav", showTagline = false, href = "/" }) {
-  const box = size === "footer" ? "w-7 h-7 rounded-[8px]" : "w-8 h-8 rounded-[9px]";
+  const box = size === "footer" ? "w-7 h-7 rounded-lg" : "w-8 h-8 rounded-lg";
   const icon = size === "footer" ? 15 : 18;
 
   return (
@@ -25,7 +25,7 @@ export default function Logo({ size = "nav", showTagline = false, href = "/" }) 
           Helixon
         </span>
         {showTagline && (
-          <span className="hidden sm:block text-[11px] font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
+          <span className="hidden sm:block text-11 font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
             Built for recruitment agencies
           </span>
         )}

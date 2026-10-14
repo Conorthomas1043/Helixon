@@ -58,11 +58,11 @@ export default function TermsPage() {
         <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
           The rules for using Helixon, written to be read in one sitting.
         </p>
-        <p className="text-[11px] mt-4" style={{ color: "var(--ink-faint)" }}>Last updated: August 2026</p>
+        <p className="text-11 mt-4" style={{ color: "var(--ink-faint)" }}>Last updated: August 2026</p>
       </section>
 
       <section className="max-w-[900px] mx-auto px-6 pb-24">
-        <div className="rounded-[16px] p-8" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-8" style={{ background: "white", border: "1px solid var(--border)" }}>
           <div className="space-y-10">
             {SECTIONS.map((s) => (
               <div key={s.id} id={s.id}>

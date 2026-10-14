@@ -161,7 +161,7 @@ function GateForm() {
       <div className="relative w-full max-w-[440px]">
         <div className="flex items-center justify-center gap-3 mb-10">
           <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+            className="w-9 h-9 rounded-btn flex items-center justify-center"
             style={{ background: "var(--forest)" }}
           >
             <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
@@ -179,7 +179,7 @@ function GateForm() {
         </div>
 
         <div
-          className="rounded-[22px] p-8 sm:p-10 text-center transition-all duration-500"
+          className="rounded-panel p-8 sm:p-10 text-center transition-all duration-500"
           style={{
             background: "rgba(255,255,255,0.92)",
             backdropFilter: "blur(24px)",
@@ -202,7 +202,7 @@ function GateForm() {
               >
                 You&apos;re in
               </h1>
-              <p className="text-[14px]" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-14" style={{ color: "var(--ink-soft)" }}>
                 Taking you through now.
               </p>
             </>
@@ -211,19 +211,19 @@ function GateForm() {
               <DiggingScene />
 
               <h1
-                className="text-[28px] sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
+                className="text-28 sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
                 style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
               >
                 Under construction
               </h1>
 
-              <p className="text-[14px] leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-14 leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
                 {siteSettings?.maintenance?.message || "We're making some changes behind the scenes."} If you have the password, you can get through now.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
                 <div
-                  className="relative rounded-[12px] mb-3.5"
+                  className="relative rounded-xl mb-3.5 focus-within:ring-2 focus-within:ring-[var(--forest)] focus-within:ring-offset-1"
                   style={{
                     border: `1.5px solid ${error ? "rgba(192,57,43,0.5)" : "var(--border)"}`,
                     animation: shake ? "shake 0.4s ease" : "none",
@@ -251,7 +251,7 @@ function GateForm() {
                   <p
                     id="dev-gate-error"
                     role="alert"
-                    className="text-[13px] mb-4"
+                    className="text-13 mb-4"
                     style={{ color: "var(--score-low)" }}
                   >
                     {error}
@@ -262,7 +262,7 @@ function GateForm() {
                   type="submit"
                   disabled={loading}
                   aria-busy={loading}
-                  className="btn-forest w-full text-white font-semibold py-3.5 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
+                  className="btn-forest w-full text-white font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
                   style={{
                     background: loading ? "var(--ink-mute)" : "var(--forest)",
                     boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",
@@ -286,7 +286,7 @@ function GateForm() {
           )}
         </div>
 
-        <p className="text-center text-[11px] mt-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-center text-11 mt-6" style={{ color: "var(--ink-faint)" }}>
           © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
         </p>
       </div>

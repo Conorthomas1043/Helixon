@@ -62,11 +62,11 @@ function quickDates(todayKey) {
 
 function PriorityPicker({ value, onChange, name }) {
   return (
-    <div className="flex rounded-[10px] p-0.5 gap-0.5" style={{ background: "var(--mist)" }} role="radiogroup" aria-label="Priority">
+    <div className="flex rounded-btn p-0.5 gap-0.5" style={{ background: "var(--mist)" }} role="radiogroup" aria-label="Priority">
       {PRIORITIES.map((p) => (
         <label
           key={p.key}
-          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-[8px] cursor-pointer transition focus-within:ring-2 focus-within:ring-[var(--forest)]"
+          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg cursor-pointer transition focus-within:ring-2 focus-within:ring-[var(--forest)]"
           style={value === p.key ? { background: "white", color: "var(--ink)", boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : { color: "var(--ink-soft)" }}
         >
           <input type="radio" name={name} value={p.key} checked={value === p.key} onChange={() => onChange(p.key)} className="sr-only" />
@@ -82,7 +82,7 @@ function DuePicker({ value, onChange, todayKey }) {
   const options = quickDates(todayKey);
   const custom = value && !options.some((o) => o.value === value);
   const chip = (active) =>
-    `text-xs font-medium px-2.5 py-1.5 rounded-[8px] transition ${active ? "" : "hover:bg-[var(--mist)]"}`;
+    `text-xs font-medium px-2.5 py-1.5 rounded-lg transition ${active ? "" : "hover:bg-[var(--mist)]"}`;
   const chipStyle = (active) => (active ? { background: "var(--mint)", color: "var(--forest)" } : { color: "var(--ink-soft)" });
   return (
     <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Due date">
@@ -99,7 +99,7 @@ function DuePicker({ value, onChange, todayKey }) {
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         aria-label="Pick a due date"
-        className="text-xs rounded-[8px] px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
+        className="text-xs rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
         style={{ border: `1px solid ${custom ? "var(--forest)" : "var(--border)"}`, color: "var(--ink)" }}
       />
     </div>
@@ -153,13 +153,13 @@ function RescheduleMenu({ todo, todayKey, onPick }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="text-xs font-medium px-2 py-1.5 rounded-[8px] hover:bg-[var(--mist)]"
+        className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)]"
         style={{ color: "var(--ink-soft)" }}
       >
         Reschedule
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-9 z-20 w-40 rounded-[12px] py-1 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 28px -12px rgba(19,32,27,0.3)" }}>
+        <div role="menu" className="absolute right-0 top-9 z-20 w-40 rounded-xl py-1 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 28px -12px rgba(19,32,27,0.3)" }}>
           {options.map((o) => (
             <button
               key={o.key}
@@ -208,7 +208,7 @@ function EditRow({ todo, todayKey, onSave, onCancel }) {
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           aria-label="Task title"
-          className="w-full bg-white rounded-[10px] px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
+          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
           style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
         />
         <textarea
@@ -217,7 +217,7 @@ function EditRow({ todo, todayKey, onSave, onCancel }) {
           placeholder="Notes"
           aria-label="Notes"
           rows={2}
-          className="w-full bg-white rounded-[10px] px-3.5 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
+          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
           style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
         />
         <div className="flex flex-wrap items-center gap-2">
@@ -226,10 +226,10 @@ function EditRow({ todo, todayKey, onSave, onCancel }) {
         </div>
         {error && <p className="text-xs" role="alert" style={{ color: "#a83226" }}>{error}</p>}
         <div className="flex items-center gap-2">
-          <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-[10px] text-white disabled:opacity-60" style={{ background: "var(--forest)" }}>
+          <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-btn text-white disabled:opacity-60" style={{ background: "var(--forest)" }}>
             {saving ? "Saving…" : "Save"}
           </button>
-          <button type="button" onClick={onCancel} className="text-sm px-3 py-2 rounded-[10px] hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+          <button type="button" onClick={onCancel} className="text-sm px-3 py-2 rounded-btn hover:bg-white" style={{ color: "var(--ink-soft)" }}>
             Cancel
           </button>
         </div>
@@ -260,7 +260,7 @@ function TaskRow({ todo, todayKey, bucket, onToggle, onEdit, onReschedule, onDel
         {(!todo.done || due) && (
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
             {!todo.done && (
-              <span className="inline-flex items-center gap-1 text-[12px] font-medium" style={{ color: "var(--ink-soft)" }}>
+              <span className="inline-flex items-center gap-1 text-12 font-medium" style={{ color: "var(--ink-soft)" }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: pm.dot }} aria-hidden="true" />
                 {pm.label}
               </span>
@@ -271,10 +271,10 @@ function TaskRow({ todo, todayKey, bucket, onToggle, onEdit, onReschedule, onDel
       </div>
       <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition">
         {!todo.done && <RescheduleMenu todo={todo} todayKey={todayKey} onPick={onReschedule} />}
-        <button type="button" onClick={() => onEdit(todo)} className="text-xs font-medium px-2 py-1.5 rounded-[8px] hover:bg-[var(--mist)]" style={{ color: "var(--ink-soft)" }}>
+        <button type="button" onClick={() => onEdit(todo)} className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)]" style={{ color: "var(--ink-soft)" }}>
           Edit
         </button>
-        <button type="button" onClick={() => onDelete(todo)} aria-label={`Delete "${todo.title}"`} className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-red-50" style={{ color: "#a83226" }}>
+        <button type="button" onClick={() => onDelete(todo)} aria-label={`Delete "${todo.title}"`} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50" style={{ color: "#a83226" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
           </svg>
@@ -445,7 +445,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
       {/* Quick add */}
       <form onSubmit={addTask} className="p-4 sm:p-5 border-b" style={{ borderColor: "var(--border-soft)" }}>
         <h2 id="my-tasks-title" className="sr-only">My tasks</h2>
-        <div className="flex items-center gap-2 rounded-[12px] pl-3.5 pr-1.5 py-1.5 bg-white focus-within:ring-2 focus-within:ring-[var(--forest)]" style={{ border: "1px solid var(--border)" }}>
+        <div className="flex items-center gap-2 rounded-xl pl-3.5 pr-1.5 py-1.5 bg-white focus-within:ring-2 focus-within:ring-[var(--forest)]" style={{ border: "1px solid var(--border)" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             <path d="M12 5v14M5 12h14" />
           </svg>
@@ -459,11 +459,11 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             className="flex-1 min-w-0 text-sm py-1.5 bg-transparent focus:outline-none"
             style={{ color: "var(--ink)" }}
           />
-          <kbd className="hidden sm:inline text-[11px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>N</kbd>
+          <kbd className="hidden sm:inline text-11 font-semibold px-1.5 py-0.5 rounded" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>N</kbd>
           <button
             type="submit"
             disabled={!draft.title.trim() || adding}
-            className="text-sm font-semibold px-3.5 py-1.5 rounded-[9px] text-white transition disabled:opacity-40"
+            className="text-sm font-semibold px-3.5 py-1.5 rounded-lg text-white transition disabled:opacity-40"
             style={{ background: "var(--forest)" }}
           >
             Add
@@ -488,7 +488,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tasks (/)"
             aria-label="Search tasks"
-            className="w-full text-sm rounded-[10px] pl-8 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
+            className="w-full text-sm rounded-btn pl-8 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
             style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
           />
         </div>
@@ -497,7 +497,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
           id="task-priority-filter"
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="text-sm rounded-[10px] px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
+          className="text-sm rounded-btn px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
           style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
         >
           <option value="all">All priorities</option>
@@ -508,7 +508,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
       {/* Sections */}
       {!loaded ? (
         <div className="px-5 pb-6 space-y-2" aria-hidden="true">
-          {[0, 1, 2].map((i) => <div key={i} className="shimmer-block h-12 rounded-[10px]" />)}
+          {[0, 1, 2].map((i) => <div key={i} className="shimmer-block h-12 rounded-btn" />)}
         </div>
       ) : (
         <div className="pb-2">
@@ -533,7 +533,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             if (list.length === 0) return null;
             return (
               <section key={s.key} aria-labelledby={`tasks-${s.key}`}>
-                <h3 id={`tasks-${s.key}`} className="flex items-center gap-2 px-5 pt-3 pb-1 text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: s.key === "overdue" ? "#a83226" : "var(--ink-faint)" }}>
+                <h3 id={`tasks-${s.key}`} className="flex items-center gap-2 px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em]" style={{ color: s.key === "overdue" ? "#a83226" : "var(--ink-faint)" }}>
                   {s.title}
                   <span className="tabular-nums">{list.length}</span>
                 </h3>
@@ -550,7 +550,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
                   id="tasks-done"
                   onClick={() => setDoneOpen((v) => !v)}
                   aria-expanded={showDone}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em]"
+                  className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-[0.08em]"
                   style={{ color: "var(--ink-faint)" }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ transform: showDone ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>

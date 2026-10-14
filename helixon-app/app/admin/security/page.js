@@ -104,8 +104,8 @@ function PolicyPanel({ policy, onSaved }) {
           />
           {dirty && (
             <div className="actions">
-              <button className="btn small primary" onClick={save} disabled={saving}>Save policy</button>
-              <button className="btn small ghost" onClick={() => setDraft(null)}>Discard</button>
+              <button type="button" className="btn small primary" onClick={save} disabled={saving}>Save policy</button>
+              <button type="button" className="btn small ghost" onClick={() => setDraft(null)}>Discard</button>
             </div>
           )}
         </div>
@@ -150,8 +150,8 @@ function AlertsPanel({ alerts, onSaved }) {
         </div>
         {draft !== null && draft !== current && (
           <div className="actions">
-            <button className="btn small primary" disabled={saving} onClick={() => save({ recipients: text }, "Alert recipients saved")}>Save recipients</button>
-            <button className="btn small ghost" onClick={() => setDraft(null)}>Discard</button>
+            <button type="button" className="btn small primary" disabled={saving} onClick={() => save({ recipients: text }, "Alert recipients saved")}>Save recipients</button>
+            <button type="button" className="btn small ghost" onClick={() => setDraft(null)}>Discard</button>
           </div>
         )}
         <Switch
@@ -268,7 +268,7 @@ export default function SecurityPage() {
     <>
       <PageHeader title="Security" description="The firewall policy, blocked IPs, the allow list and country blocks. Changes apply everywhere within about 30 seconds.">
         <RangeControl range={range} setRange={setRange} />
-        <button className="btn small" onClick={() => { reload(); firewall.reload(); }} disabled={busy}>
+        <button type="button" className="btn small" onClick={() => { reload(); firewall.reload(); }} disabled={busy}>
           <Icon name="refresh" size={13} /> Refresh
         </button>
       </PageHeader>
@@ -287,7 +287,7 @@ export default function SecurityPage() {
       {myIp && myIp !== "unknown" && !myIpAllowed && firewall.data && (
         <div className="notice section" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <span>Your IP is <b className="mono">{myIp}</b>. Allow-listing it means no rule here can lock you out.</span>
-          <button className="btn small" disabled={working} onClick={() => addRule("allow_ip", myIp, "Admin (added from Security page)", 0, "Your IP is on the allow list")}>
+          <button type="button" className="btn small" disabled={working} onClick={() => addRule("allow_ip", myIp, "Admin (added from Security page)", 0, "Your IP is on the allow list")}>
             Allow my IP
           </button>
         </div>
@@ -300,7 +300,7 @@ export default function SecurityPage() {
           <form onSubmit={submitAllow} className="inline-form" style={{ marginTop: 12 }}>
             <input className="search-input no-icon" placeholder="IP address" value={allowForm.ip} onChange={(e) => setAllowForm((f) => ({ ...f, ip: e.target.value }))} aria-label="IP address to allow" required />
             <input className="search-input no-icon" placeholder="Note (optional)" value={allowForm.note} onChange={(e) => setAllowForm((f) => ({ ...f, note: e.target.value }))} aria-label="Note" />
-            <button className="btn small primary" disabled={working || !allowForm.ip.trim()}>Allow</button>
+            <button type="submit" className="btn small primary" disabled={working || !allowForm.ip.trim()}>Allow</button>
           </form>
           {allowList.length === 0 ? (
             <div className="empty" style={{ padding: "20px 0 6px" }}>Nothing on the allow list.</div>
@@ -312,7 +312,7 @@ export default function SecurityPage() {
                     <div className="mono">{r.value}{r.value === myIp && <span className="pill good bare" style={{ marginLeft: 6 }}>You</span>}</div>
                     <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
-                  <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
+                  <button type="button" className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
                 </div>
               ))}
             </div>
@@ -327,7 +327,7 @@ export default function SecurityPage() {
           <select className="select-input" value={blockForm.hours} onChange={(e) => setBlockForm((f) => ({ ...f, hours: Number(e.target.value) }))} aria-label="How long">
             {DURATIONS.map((d) => <option key={d.hours} value={d.hours}>{d.label}</option>)}
           </select>
-          <button className="btn small danger" disabled={busy || !blockForm.ip.trim()}>Block IP</button>
+          <button type="submit" className="btn small danger" disabled={busy || !blockForm.ip.trim()}>Block IP</button>
         </form>
         {blocked.length === 0 ? (
           <div className="empty" style={{ padding: "20px 0 6px" }}>No blocked IPs.</div>
@@ -335,7 +335,7 @@ export default function SecurityPage() {
           <div className="table-wrap" style={{ marginTop: 12 }}>
             <table className="table">
               <thead>
-                <tr><th>IP</th><th>Reason</th><th>By</th><th>Since</th><th>Expires</th><th><span className="sr-only">Actions</span></th></tr>
+                <tr><th scope="col">IP</th><th scope="col">Reason</th><th scope="col">By</th><th scope="col">Since</th><th scope="col">Expires</th><th scope="col"><span className="sr-only">Actions</span></th></tr>
               </thead>
               <tbody>
                 {blocked.map((item) => (
@@ -345,7 +345,7 @@ export default function SecurityPage() {
                     <td>{item.created_by === "firewall" ? <span className="pill bad">Firewall</span> : <span className="muted">{item.created_by || "-"}</span>}</td>
                     <td className="muted" title={formatDateTime(item.created_at)}>{timeAgo(item.created_at)}</td>
                     <td className="muted"><Expiry at={item.expires_at} /></td>
-                    <td><button className="btn small" onClick={() => unblock(item.ip)} disabled={busy}>Unblock</button></td>
+                    <td><button type="button" className="btn small" onClick={() => unblock(item.ip)} disabled={busy}>Unblock</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -362,7 +362,7 @@ export default function SecurityPage() {
             <select className="select-input" value={countryForm.hours} onChange={(e) => setCountryForm((f) => ({ ...f, hours: Number(e.target.value) }))} aria-label="How long">
               {DURATIONS.map((d) => <option key={d.hours} value={d.hours}>{d.label}</option>)}
             </select>
-            <button className="btn small danger" disabled={working || countryForm.code.trim().length !== 2}>Block country</button>
+            <button type="submit" className="btn small danger" disabled={working || countryForm.code.trim().length !== 2}>Block country</button>
           </form>
           {countryBlocks.length === 0 ? (
             <div className="empty" style={{ padding: "20px 0 6px" }}>No countries blocked.</div>
@@ -374,7 +374,7 @@ export default function SecurityPage() {
                     <div><b>{r.value}</b> <span className="faint" style={{ fontSize: 13 }}>· <Expiry at={r.expires_at} /></span></div>
                     <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
-                  <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Unblock</button>
+                  <button type="button" className="btn small" onClick={() => removeRule(r)} disabled={working}>Unblock</button>
                 </div>
               ))}
             </div>
@@ -387,7 +387,7 @@ export default function SecurityPage() {
           ) : (
             <div className="table-wrap" style={{ marginTop: 8 }}>
               <table className="table">
-                <thead><tr><th>Country</th><th>Requests</th><th>Denied</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">Country</th><th scope="col">Requests</th><th scope="col">Denied</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                   {countries.map((c) => (
                     <tr key={c.country}>
@@ -398,7 +398,7 @@ export default function SecurityPage() {
                         {blockedCountrySet.has(c.country) ? (
                           <span className="pill bad bare">Blocked</span>
                         ) : (
-                          <button className="btn small ghost" onClick={() => blockCountry(c.country)} disabled={working}>Block</button>
+                          <button type="button" className="btn small ghost" onClick={() => blockCountry(c.country)} disabled={working}>Block</button>
                         )}
                       </td>
                     </tr>
@@ -430,7 +430,7 @@ export default function SecurityPage() {
             <select className="select-input" value={requestForm.hours} onChange={(e) => setRequestForm((f) => ({ ...f, hours: Number(e.target.value) }))} aria-label="How long">
               {DURATIONS.map((d) => <option key={d.hours} value={d.hours}>{d.label}</option>)}
             </select>
-            <button className="btn small danger" disabled={working || requestForm.value.trim().length < 2}>Block</button>
+            <button type="submit" className="btn small danger" disabled={working || requestForm.value.trim().length < 2}>Block</button>
           </form>
           {requestBlocks.length === 0 ? (
             <div className="empty" style={{ padding: "20px 0 6px" }}>No range, path or user-agent blocks.</div>
@@ -446,7 +446,7 @@ export default function SecurityPage() {
                     </div>
                     <div className="faint truncate" style={{ fontSize: 13 }}>{r.note || "No note"} · by {r.created_by || "-"}</div>
                   </div>
-                  <button className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
+                  <button type="button" className="btn small" onClick={() => removeRule(r)} disabled={working}>Remove</button>
                 </div>
               ))}
             </div>

@@ -80,21 +80,21 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
   }
 
   if (state === "loading") {
-    return <div className="rounded-[14px] p-5 h-[132px] animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" aria-label="Loading team seats" />;
+    return <div className="rounded-card p-5 h-[132px] animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" aria-label="Loading team seats" />;
   }
 
   if (state === "upgrade") {
     return (
-      <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
+      <div className="rounded-card p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
         <div className="flex-1">
           <p className="text-sm font-semibold" style={{ color: INK }}>Add your team</p>
-          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-14 mt-0.5" style={{ color: INK_MUTED }}>
             Team seats are part of the Agency plan - up to 5 people sharing one workspace, jobs and pipeline.
           </p>
         </div>
         <Link
           href="/billing"
-          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: "var(--forest)", color: "white" }}
         >
           Upgrade to Agency
@@ -105,15 +105,15 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
 
   if (state === "error") {
     return (
-      <div className="rounded-[14px] p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
+      <div className="rounded-card p-5 flex flex-col sm:flex-row sm:items-center gap-4" style={CARD}>
         <div className="flex-1">
           <p className="text-sm font-semibold" style={{ color: INK }}>Couldn&apos;t load team seats</p>
-          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>{loadError}</p>
+          <p className="text-14 mt-0.5" style={{ color: INK_MUTED }}>{loadError}</p>
         </div>
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         >
           Try again
@@ -128,18 +128,18 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
   const outside = usage.outsideMembers || [];
 
   return (
-    <div className="rounded-[14px] p-5" style={CARD}>
+    <div className="rounded-card p-5" style={CARD}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-sm font-semibold" style={{ color: INK }}>{canManage ? "Add a team member" : "Team seats"}</p>
-          <p className="text-[14px] mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-14 mt-0.5" style={{ color: INK_MUTED }}>
             {canManage
               ? "They'll get an email with a link to join your workspace."
               : "Only the workspace owner can invite or remove people."}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[13px] font-semibold tabular-nums" style={{ color: INK }}>
+          <p className="text-13 font-semibold tabular-nums" style={{ color: INK }}>
             {usage.used} of {usage.limit} seats
           </p>
           <div className="w-24 h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "var(--mist)" }} aria-hidden="true">
@@ -157,13 +157,13 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
           placeholder="teammate@youragency.com"
           disabled={full || sending}
           aria-label="Teammate email address"
-          className="flex-1 text-sm px-3.5 py-2.5 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="flex-1 text-sm px-3.5 py-2.5 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
         <button
           type="submit"
           disabled={full || sending || !email.trim()}
-          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {sending ? "Sending…" : "Send invite"}
@@ -172,25 +172,25 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
       )}
 
       {canManage && full && (
-        <p className="text-[13px] mt-2" style={{ color: INK_MUTED }}>
+        <p className="text-13 mt-2" style={{ color: INK_MUTED }}>
           All {usage.limit} seats are in use or pending. Cancel a pending invite or remove someone to free a seat.
         </p>
       )}
-      {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
-      {notice && <p role="status" className="text-[13px] mt-2" style={{ color: "var(--forest)" }}>{notice}</p>}
+      {error && <p role="alert" className="text-13 mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {notice && <p role="status" className="text-13 mt-2" style={{ color: "var(--forest)" }}>{notice}</p>}
 
       {usage.pendingInvites.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: INK_FAINT }}>
             Waiting to accept
           </p>
           <ul className="space-y-1">
             {usage.pendingInvites.map((inv) => (
-              <li key={inv.id} className="flex items-center justify-between gap-3 text-[14px] py-1.5">
+              <li key={inv.id} className="flex items-center justify-between gap-3 text-14 py-1.5">
                 <span className="min-w-0">
                   <span className="block truncate" style={{ color: INK }}>{inv.email}</span>
                   {inv.createdAt && (
-                    <span className="block text-[13px]" style={{ color: INK_FAINT }}>
+                    <span className="block text-13" style={{ color: INK_FAINT }}>
                       Invited {new Date(inv.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
                   )}
@@ -201,7 +201,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
                     type="button"
                     onClick={() => handleResend(inv)}
                     disabled={busyId === inv.id}
-                    className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                     style={{ color: "var(--forest)" }}
                   >
                     Resend
@@ -210,7 +210,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
                     type="button"
                     onClick={() => handleCancel(inv)}
                     disabled={busyId === inv.id}
-                    className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                    className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                     style={{ color: INK_FAINT }}
                   >
                     {busyId === inv.id ? "Working…" : "Cancel"}
@@ -229,21 +229,21 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
 
       {canManage && outside.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
             Holding a seat elsewhere
           </p>
-          <p className="text-[13px] mb-2" style={{ color: INK_MUTED }}>
+          <p className="text-13 mb-2" style={{ color: INK_MUTED }}>
             These people accepted an invite but already have their own Helixon workspace, so they aren&apos;t in yours. They still use a seat.
           </p>
           <ul className="space-y-1">
             {outside.map((m) => (
-              <li key={m.userId} className="flex items-center justify-between gap-3 text-[14px] py-1.5">
+              <li key={m.userId} className="flex items-center justify-between gap-3 text-14 py-1.5">
                 <span className="min-w-0 block truncate" style={{ color: INK }}>{m.name || m.email || "Unknown user"}</span>
                 <button
                   type="button"
                   onClick={() => onRemoveSeat({ id: m.userId, name: m.name || m.email || "this person" })}
                   disabled={removingId === m.userId}
-                  className="text-[13px] font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                  className="text-13 font-semibold shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                   style={{ color: INK_FAINT }}
                 >
                   {removingId === m.userId ? "Removing…" : "Free seat"}
@@ -280,10 +280,10 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
 
   return (
     <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-      <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-12 font-semibold uppercase tracking-wide mb-1" style={{ color: INK_FAINT }}>
         Unassigned candidates
       </p>
-      <p className="text-[13px] mb-2" style={{ color: INK_MUTED }}>
+      <p className="text-13 mb-2" style={{ color: INK_MUTED }}>
         {count} candidate{count === 1 ? " isn't" : "s aren't"} assigned to anyone on the team, so {count === 1 ? "it doesn't" : "they don't"} show in anyone&apos;s workload.
       </p>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -291,7 +291,7 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
           value={to}
           onChange={(e) => setTo(e.target.value)}
           aria-label="Assign unassigned candidates to"
-          className="flex-1 text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex-1 text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
         >
           {members.map((m) => (
@@ -302,13 +302,13 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
           type="button"
           onClick={assign}
           disabled={busy || !to}
-          className="inline-flex items-center justify-center text-[14px] font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {busy ? "Assigning…" : `Assign ${count === 1 ? "it" : `all ${count}`}`}
         </button>
       </div>
-      {error && <p role="alert" className="text-[13px] mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p role="alert" className="text-13 mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
     </div>
   );
 }
@@ -335,23 +335,23 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-[16px] p-6 bg-white shadow-xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-2xl p-6 bg-white shadow-xl">
         <h2 id="remove-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
           Remove {target.name}?
         </h2>
-        <p className="text-[14px] mb-4" style={{ color: INK_MUTED }}>
+        <p className="text-14 mb-4" style={{ color: INK_MUTED }}>
           They&apos;ll lose access to this workspace immediately, and their seat is freed.
         </p>
 
         {owns > 0 && (
           <label className="block mb-5">
-            <span className="block text-[14px] font-semibold mb-1.5" style={{ color: INK }}>
+            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>
               Hand their {owns} candidate{owns === 1 ? "" : "s"} to
             </span>
             <select
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
             >
               {others.map((m) => (
@@ -368,7 +368,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             Cancel
@@ -377,7 +377,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
             type="button"
             onClick={() => onConfirm(owns > 0 ? to || null : undefined)}
             disabled={busy}
-            className="text-[14px] font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ background: RED_STRONG, color: "white" }}
           >
             {busy ? "Removing…" : "Remove"}

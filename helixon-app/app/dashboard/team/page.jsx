@@ -187,14 +187,14 @@ export default function TeamPage() {
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Team workspace
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
               Team
             </h1>
             {status === "ready" && (
-              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] mt-1" style={{ color: INK_MUTED }}>
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-14 mt-1" style={{ color: INK_MUTED }}>
                 {presenceOn && (
                 <span className="inline-flex items-center gap-1.5">
                   <PresenceDot state="active" size={8} ring="transparent" />
@@ -215,7 +215,7 @@ export default function TeamPage() {
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
             style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
           >
             ← Dashboard
@@ -232,7 +232,7 @@ export default function TeamPage() {
         )}
 
         {removeError && (
-          <p role="alert" className="text-[13px]" style={{ color: "var(--score-low)" }}>{removeError}</p>
+          <p role="alert" className="text-13" style={{ color: "var(--score-low)" }}>{removeError}</p>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
@@ -252,17 +252,17 @@ export default function TeamPage() {
                       type="button"
                       onClick={() => setFilter(k)}
                       aria-pressed={on}
-                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                     >
                       {label}
-                      <span className="text-[12px] tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(0,0,0,0.2)" : "var(--mist)" }}>
+                      <span className="text-12 tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(0,0,0,0.2)" : "var(--mist)" }}>
                         {count}
                       </span>
                     </button>
                   );
                 })}
-                <span className="ml-auto text-[13px]" style={{ color: INK_FAINT }}>
+                <span className="ml-auto text-13" style={{ color: INK_FAINT }}>
                   Updates live
                 </span>
               </div>
@@ -271,7 +271,7 @@ export default function TeamPage() {
             {status === "loading" && <TeamSkeleton />}
             {status === "error" && <ErrorState onRetry={retry} />}
             {status === "ready" && shown.length === 0 && (
-              <div className="rounded-[14px] p-8 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
+              <div className="rounded-card p-8 text-center text-14" style={{ ...CARD, color: INK_MUTED }}>
                 No one is {filter === "online" ? "online" : filter === "busy" ? "busy or away" : "offline"} right now.
               </div>
             )}

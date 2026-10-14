@@ -22,15 +22,15 @@ async function loadPlacements() {
 
 function Stat({ label, value, hint, tone }) {
   return (
-    <div className="rounded-[12px] px-4 py-3" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+    <div className="rounded-xl px-4 py-3" style={{ background: "white", border: "1px solid var(--border)" }}>
+      <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         {label}
       </p>
       <p className="text-xl font-semibold tabular-nums mt-0.5" style={{ color: tone || INK }}>
         {value}
       </p>
       {hint && (
-        <p className="text-[12px]" style={{ color: INK_MUTED }}>
+        <p className="text-12" style={{ color: INK_MUTED }}>
           {hint}
         </p>
       )}
@@ -154,7 +154,7 @@ export default function PlacementsPage() {
           </>
         }
       />
-      {exportNote && <p className="text-[13px]" style={{ color: INK_MUTED }}>{exportNote}</p>}
+      {exportNote && <p className="text-13" style={{ color: INK_MUTED }}>{exportNote}</p>}
 
       {error && !data ? (
         <ErrorState body="Placements couldn't be loaded." onRetry={reload} />
@@ -246,21 +246,21 @@ export default function PlacementsPage() {
             >
               <ErrorText>{invoiceError}</ErrorText>
               {invoices.length === 0 ? (
-                <p className="text-[14px]" style={{ color: INK_MUTED }}>
+                <p className="text-14" style={{ color: INK_MUTED }}>
                   No invoices here.
                 </p>
               ) : (
                 <div className="overflow-x-auto -mx-5 sm:-mx-6">
-                  <table className="w-full text-[14px]">
+                  <table className="w-full text-14">
                     <thead>
-                      <tr className="text-left text-[12px] uppercase tracking-widest" style={{ color: INK_FAINT }}>
-                        <th className="px-5 sm:px-6 py-2 font-semibold">Number</th>
-                        <th className="px-2 py-2 font-semibold">Client</th>
-                        <th className="px-2 py-2 font-semibold">Issued</th>
-                        <th className="px-2 py-2 font-semibold">Due</th>
-                        <th className="px-2 py-2 font-semibold text-right">Total</th>
-                        <th className="px-2 py-2 font-semibold">Status</th>
-                        <th className="px-5 sm:px-6 py-2" />
+                      <tr className="text-left text-12 uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                        <th scope="col" className="px-5 sm:px-6 py-2 font-semibold">Number</th>
+                        <th scope="col" className="px-2 py-2 font-semibold">Client</th>
+                        <th scope="col" className="px-2 py-2 font-semibold">Issued</th>
+                        <th scope="col" className="px-2 py-2 font-semibold">Due</th>
+                        <th scope="col" className="px-2 py-2 font-semibold text-right">Total</th>
+                        <th scope="col" className="px-2 py-2 font-semibold">Status</th>
+                        <th scope="col" className="px-5 sm:px-6 py-2" />
                       </tr>
                     </thead>
                     <tbody>

@@ -43,7 +43,7 @@ const PERIODS = [
   { value: "custom", label: "Custom range…" },
 ];
 
-const DATE_INPUT_CLASS = "text-[14px] px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+const DATE_INPUT_CLASS = "text-14 px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 function fmtDay(iso) {
   return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
@@ -55,7 +55,7 @@ function FilterSelect({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ border: `1px solid ${value !== "all" ? "var(--forest)" : "var(--border)"}`, color: INK }}
     >
       {options.map((o) => (
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Recruitment analytics
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
             style={{ border: "1px solid var(--border)", color: INK }}
           >
             ← Dashboard
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
           {period === "custom" && (
             <>
               <input type="date" aria-label="From" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
-              <span className="text-[13px]" style={{ color: INK_FAINT }}>to</span>
+              <span className="text-13" style={{ color: INK_FAINT }}>to</span>
               <input type="date" aria-label="To" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className={DATE_INPUT_CLASS} style={{ border: "1px solid var(--border)", color: INK }} />
             </>
           )}
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
                 setClientId("all");
                 setOfficeId("all");
               }}
-              className="text-[14px] font-semibold px-2"
+              className="text-14 font-semibold px-2"
               style={{ color: "var(--forest)" }}
             >
               Clear
@@ -225,7 +225,7 @@ export default function AnalyticsPage() {
             type="button"
             disabled={status !== "ready"}
             onClick={() => printSection("analytics-report")}
-            className="ml-auto inline-flex items-center gap-1.5 text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="ml-auto inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK_MUTED }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
             onClick={() =>
               downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, analyticsCsvRows(snapshot, filterLabel || "All time"))
             }
-            className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ border: "1px solid var(--border)", color: INK_MUTED }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -249,12 +249,12 @@ export default function AnalyticsPage() {
           </button>
         </div>
         {filtered && (
-          <p className="text-[13px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-13 -mt-3" style={{ color: INK_FAINT }}>
             Showing candidates for {filterLabel}. Channel figures follow the job and client filters; client and candidate feedback is agency-wide.
           </p>
         )}
         {customPending && (
-          <p className="text-[13px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-13 -mt-3" style={{ color: INK_FAINT }}>
             Pick a start or end date - showing all time until then.
           </p>
         )}
@@ -266,13 +266,13 @@ export default function AnalyticsPage() {
           <div id="analytics-report" className="space-y-6">
             <div className="hidden print:block">
               <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>Recruitment analytics</h2>
-              <p className="text-[13px]" style={{ color: INK_MUTED }}>
+              <p className="text-13" style={{ color: INK_MUTED }}>
                 {filterLabel || "All time"} · generated {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
 
             {snapshot.truncated && (
-              <p role="status" className="rounded-[12px] px-4 py-3 text-[14px]" style={{ background: GREEN_BG, color: INK }}>
+              <p role="status" className="rounded-xl px-4 py-3 text-14" style={{ background: GREEN_BG, color: INK }}>
                 This is more data than can be counted at once, so the oldest candidates are left out. Narrow the period or pick a job to see exact figures.
               </p>
             )}
@@ -304,13 +304,13 @@ export default function AnalyticsPage() {
               />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading
                 eyebrow="Over time"
                 title={snapshot.trends?.unit === "week" ? "Week by week" : "Month by month"}
                 action={
                   typeof snapshot.placedInPeriod === "number" && (
-                    <span className="text-[13px]" style={{ color: INK_MUTED }}>
+                    <span className="text-13" style={{ color: INK_MUTED }}>
                       <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{snapshot.placedInPeriod}</strong> placed in this period
                     </span>
                   )
@@ -324,41 +324,41 @@ export default function AnalyticsPage() {
               <TimingRow timing={snapshot.timing} />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Funnel" title="Furthest stage each candidate reached" />
               <FunnelChart funnel={snapshot.funnel} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <div className="rounded-card p-5 sm:p-6" style={CARD}>
                 <SectionHeading eyebrow="Candidate quality" title="Score distribution" />
                 <QualityDistribution quality={snapshot.quality} />
               </div>
-              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <div className="rounded-card p-5 sm:p-6" style={CARD}>
                 <SectionHeading eyebrow="Conversion" title="Stage conversion rates" />
                 <div className="grid grid-cols-2 gap-3">
                   <StatCard label="Interview rate" value={`${snapshot.conversion.interviewRate}%`} delta={<Delta value={snapshot.deltas?.interviewRate} unit=" pts" against={against} />} />
                   <StatCard label="Offer rate" value={`${snapshot.conversion.offerRate}%`} delta={<Delta value={snapshot.deltas?.offerRate} unit=" pts" against={against} />} />
                 </div>
-                <p className="text-[12px] mt-3" style={{ color: INK_FAINT }}>
+                <p className="text-12 mt-3" style={{ color: INK_FAINT }}>
                   Counts how far each candidate got, including those later rejected.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Does the score work?" title="Score vs. actual outcome" />
               <ScoreCalibration calibration={snapshot.calibration} />
               <RecruiterVerdicts verdicts={snapshot.timing?.recruiterVerdicts} />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading
                 eyebrow="Pipeline health"
                 title="Where candidates are now"
                 action={
                   snapshot.pipeline.stalled > 0 && (
-                    <span className="text-[13px] font-semibold" style={{ color: AMBER }}>
+                    <span className="text-13 font-semibold" style={{ color: AMBER }}>
                       {snapshot.pipeline.stalled} stalled 5+ days
                     </span>
                   )
@@ -367,23 +367,23 @@ export default function AnalyticsPage() {
               <PipelineBar pipeline={snapshot.pipeline} />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Bottlenecks" title="Median time spent in each stage" />
               <TimeInStage timeInStage={snapshot.timing?.timeInStage} />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading
                 eyebrow="Team"
                 title="Recruiter summary"
                 action={
-                  <Link href="/dashboard/team" className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
+                  <Link href="/dashboard/team" className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded" style={{ color: "var(--forest)" }}>
                     Full team view →
                   </Link>
                 }
               />
               {snapshot.team.length === 0 && (
-                <p className="text-[14px]" style={{ color: INK_MUTED }}>No candidates assigned to anyone for these filters.</p>
+                <p className="text-14" style={{ color: INK_MUTED }}>No candidates assigned to anyone for these filters.</p>
               )}
               <ul className="divide-y">
                 {snapshot.team.map((r) => (
@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
                     <p className="text-sm font-semibold truncate" style={{ color: INK }}>
                       {r.name}
                     </p>
-                    <div className="flex items-center gap-4 text-[13px] shrink-0" style={{ color: INK_MUTED }}>
+                    <div className="flex items-center gap-4 text-13 shrink-0" style={{ color: INK_MUTED }}>
                       <span>
                         <strong style={{ color: INK, fontFamily: "var(--font-mono)" }}>{r.activeCandidates}</strong> active
                       </span>
@@ -404,44 +404,44 @@ export default function AnalyticsPage() {
               </ul>
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Activity" title="Outreach logged" />
               <OutreachRow outreach={snapshot.timing?.outreach} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <div className="rounded-card p-5 sm:p-6" style={CARD}>
                 <SectionHeading eyebrow="Sourcing" title="Source of hire" />
                 <RankedList items={snapshot.timing?.source} emptyLabel="No candidates have a source set yet - set one from a candidate's profile." rateLabel="placed" />
               </div>
-              <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+              <div className="rounded-card p-5 sm:p-6" style={CARD}>
                 <SectionHeading eyebrow="Diagnosis" title="Why candidates fall through" />
                 <RankedList items={snapshot.timing?.rejectionReasons} emptyLabel="No rejection reasons recorded yet." />
               </div>
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Sourcing" title="Advertising & campaign performance" />
               <AdvertisingTable advertising={snapshot.timing?.advertising} />
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Commercial" title="Financials" />
               {snapshot.timing?.financial ? (
                 <FinancialRow financial={snapshot.timing.financial} />
               ) : snapshot.timing?.financialsHidden ? (
-                <p className="text-[14px]" style={{ color: INK_MUTED }}>Fee income and margins are only visible to the owner and admins.</p>
+                <p className="text-14" style={{ color: INK_MUTED }}>Fee income and margins are only visible to the owner and admins.</p>
               ) : null}
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Quality" title="Retention & reuse" />
               {snapshot.timing?.retention && snapshot.timing?.reuse && (
                 <RetentionAndReuse retention={snapshot.timing.retention} reuse={snapshot.timing.reuse} />
               )}
             </div>
 
-            <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+            <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <SectionHeading eyebrow="Sentiment" title="Candidate & client feedback" />
               {snapshot.timing?.feedback && <FeedbackRow feedback={snapshot.timing.feedback} />}
             </div>

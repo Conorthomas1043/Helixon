@@ -112,7 +112,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                 aria-expanded={accountOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
-                className="w-8 h-8 rounded-full text-white text-[11px] font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
+                className="w-8 h-8 rounded-full text-white text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
                 style={{ background: "var(--forest)" }}
               >
                 {initials}
@@ -120,7 +120,7 @@ export default function MarketingNav({ active, showTagline = true }) {
               {accountOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-11 w-48 rounded-[14px] py-1.5 z-50"
+                  className="absolute right-0 top-11 w-48 rounded-card py-1.5 z-50"
                   style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}
                   onMouseLeave={() => setAccountOpen(false)}
                 >
@@ -152,7 +152,7 @@ export default function MarketingNav({ active, showTagline = true }) {
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="md:hidden w-10 h-10 rounded-[8px] flex items-center justify-center"
+            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center"
             style={{ color: "var(--ink)" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -177,7 +177,7 @@ export default function MarketingNav({ active, showTagline = true }) {
               key={key}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center"
+              className="text-sm px-2.5 py-3 rounded-lg min-h-[44px] flex items-center"
               style={{ color: active === key ? "var(--forest)" : "var(--ink-soft)", fontWeight: active === key ? 600 : 400, background: active === key ? "var(--mint)" : "transparent" }}
             >
               {label}
@@ -186,7 +186,7 @@ export default function MarketingNav({ active, showTagline = true }) {
 
           {signedIn ? (
             <>
-              <Link href="/account" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
+              <Link href="/account" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-lg min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
                 Account settings
               </Link>
               <Button as="a" href="/dashboard" variant="primary" size="sm" onClick={() => setMobileOpen(false)} className="mt-1 min-h-[44px]">
@@ -195,7 +195,7 @@ export default function MarketingNav({ active, showTagline = true }) {
             </>
           ) : (
             <>
-              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-[8px] min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-sm px-2.5 py-3 rounded-lg min-h-[44px] flex items-center" style={{ color: "var(--ink-soft)" }}>
                 Login
               </Link>
               <Button as="a" href="/demo" variant="primary" size="sm" onClick={() => setMobileOpen(false)} className="mt-1 min-h-[44px]">

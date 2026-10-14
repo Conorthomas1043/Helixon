@@ -69,7 +69,7 @@ export function ActiveJobs({ jobs, total, statsByJob }) {
       )}
       {jobs.some((job) => (statsByJob.get(job.id)?.stageSegments || []).some((seg) => seg.pct > 0)) && (
         // What the bar colours mean - they had no key.
-        <p className="flex flex-wrap gap-x-3.5 gap-y-1 mt-3 pt-2.5 border-t text-[12px] text-[var(--ink-faint)]">
+        <p className="flex flex-wrap gap-x-3.5 gap-y-1 mt-3 pt-2.5 border-t text-12 text-[var(--ink-faint)]">
           {FUNNEL_ORDER.map((key) => (
             <span key={key} className="inline-flex items-center gap-1.5">
               <span aria-hidden="true" className="w-2 h-2 rounded-full" style={{ background: STAGE_COLORS[key] }} />

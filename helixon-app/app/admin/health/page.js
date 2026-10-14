@@ -132,7 +132,7 @@ function ScoringPanel() {
           <div className="table-wrap" style={{ marginTop: 14 }}>
             <table className="table compact">
               <thead>
-                <tr><th>Role type</th><th className="num">Labels</th><th>Ranking quality (AUC)</th><th>Suggested weights</th></tr>
+                <tr><th scope="col">Role type</th><th scope="col" className="num">Labels</th><th scope="col">Ranking quality (AUC)</th><th scope="col">Suggested weights</th></tr>
               </thead>
               <tbody>
                 {data.roles.map((r) => (
@@ -195,7 +195,7 @@ export default function HealthPage() {
         title="System health"
         description="Everything the site depends on, checked live: the database, the AI providers the product runs on, Stripe/Clerk/Redis/Resend/Sentry, and a curated set of public pages."
       >
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           Refresh
         </button>
       </PageHeader>
@@ -324,9 +324,9 @@ export default function HealthPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Issue</th>
-                  <th>Level</th>
-                  <th>Events</th>
+                  <th scope="col">Issue</th>
+                  <th scope="col">Level</th>
+                  <th scope="col">Events</th>
                 </tr>
               </thead>
               <tbody>
@@ -357,9 +357,9 @@ export default function HealthPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Path</th>
-                  <th>Status</th>
-                  <th>Latency</th>
+                  <th scope="col">Path</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Latency</th>
                 </tr>
               </thead>
               <tbody>

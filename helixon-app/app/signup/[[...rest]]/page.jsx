@@ -5,6 +5,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignUp, useUser } from "@clerk/nextjs";
+import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
+import { AUTH_CARD_VARIABLES } from "@/lib/ui/clerk-appearance";
 import AuthShell from "@/components/auth/AuthShell";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing used across the flow
@@ -67,7 +69,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
 
   return (
     <div
-      className="relative rounded-[12px] transition-all"
+      className="relative rounded-xl transition-all"
       style={{
         border: `1.5px solid ${focused ? "var(--forest)" : "var(--border)"}`,
         background: "rgba(255,255,255,0.6)",
@@ -134,7 +136,7 @@ function MagneticButton({ children, disabled }) {
       disabled={disabled}
       onMouseMove={handleMouseMove}
       onMouseLeave={reset}
-      className="flex-1 relative text-white font-semibold py-3 rounded-[12px] text-sm flex items-center justify-center gap-2 overflow-hidden"
+      className="flex-1 relative text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 overflow-hidden"
       style={{
         background: "var(--forest)",
         opacity: disabled ? 0.55 : 1,
@@ -216,7 +218,7 @@ export default function SignupPage() {
         brandMiddle={
           <div className="relative z-10 min-h-[260px]">
             <div className="auth-panel-in" style={{ animationDuration: "0.6s" }}>
-              <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
+              <div className="w-14 h-14 rounded-card flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
                 <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
                   <circle cx="16" cy="17" r="5.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" />
                   <path d="M4 34c1.4-6.8 5.8-10.5 12-10.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
@@ -224,11 +226,11 @@ export default function SignupPage() {
                   <path d="M22 34c1.1-5.6 4.6-8.5 9.5-8.5S39 28.4 40 34" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
               </div>
-              <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>Team invite</p>
-              <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
+              <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>Team invite</p>
+              <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
                 Join your<br />team on Helixon.
               </h1>
-              <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+              <p className="text-15 leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
                 Set a username and password to finish joining - you&apos;ll land straight in the shared dashboard.
               </p>
             </div>
@@ -236,7 +238,7 @@ export default function SignupPage() {
         }
       >
         <div
-          className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden"
+          className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden"
           style={{
             background: "rgba(255,255,255,0.68)",
             backdropFilter: "blur(26px)",
@@ -245,6 +247,7 @@ export default function SignupPage() {
             boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
           }}
         >
+          <ClerkWidgetStates what="Sign-up" />
           <SignUp
             path="/signup"
             signInUrl="/login"
@@ -252,31 +255,23 @@ export default function SignupPage() {
             unsafeMetadata={{ viaOrgInvite: true }}
             appearance={{
               layout: { socialButtonsPlacement: "top" },
-              variables: {
-                colorPrimary: "#0b3a2a",
-                colorText: "#13201b",
-                colorTextSecondary: "#4a6658",
-                colorInputBackground: "rgba(255,255,255,0.6)",
-                colorInputText: "#13201b",
-                borderRadius: "12px",
-                fontFamily: "inherit",
-              },
+              variables: AUTH_CARD_VARIABLES,
               elements: {
                 rootBox: "!w-full !min-w-0",
                 cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
                 card: "!w-full !min-w-0 !max-w-full !box-border !shadow-none !bg-transparent !p-0 !gap-4",
                 header: "!px-0",
-                headerTitle: "text-[1.5rem] font-semibold tracking-tight",
-                headerSubtitle: "text-[13px]",
+                headerTitle: "text-24 font-semibold tracking-tight",
+                headerSubtitle: "text-13",
                 form: "!w-full gap-3.5",
                 formFieldRow: "flex-col gap-3.5",
                 formField: "!w-full !min-w-0",
-                formFieldInput: "!w-full box-border rounded-[12px]",
-                socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
+                formFieldInput: "!w-full box-border rounded-xl",
+                socialButtonsBlockButton: "!w-full box-border rounded-xl",
                 formButtonPrimary:
-                  "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
+                  "normal-case text-sm font-semibold rounded-xl py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
                 footer: "!bg-transparent !px-0",
-                footerAction: "!flex !flex-col !items-center !gap-1 text-[13px] text-center",
+                footerAction: "!flex !flex-col !items-center !gap-1 text-13 text-center",
                 dividerRow: "my-4",
               },
             }}
@@ -327,12 +322,12 @@ export default function SignupPage() {
       brandMiddle={
         <div className="relative z-10 min-h-[260px]">
           <div key={step} className="auth-panel-in" style={{ animationDuration: "0.6s" }}>
-            <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
+            <div className="w-14 h-14 rounded-card flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
               <StepMark step={step} />
             </div>
-            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>{copy.eyebrow}</p>
-            <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>{copy.title}</h1>
-            <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
+            <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>{copy.eyebrow}</p>
+            <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>{copy.title}</h1>
+            <p className="text-15 leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
           </div>
         </div>
       }
@@ -345,14 +340,14 @@ export default function SignupPage() {
               style={{ width: i === step ? "22px" : "6px", height: "6px", background: i <= step ? "var(--mint)" : "rgba(255,255,255,0.2)", transitionDuration: "0.4s", transitionTimingFunction: EASE }}
             />
           ))}
-          <span className="text-[11px] ml-1 tabular-nums" style={{ color: "rgba(255,255,255,0.4)" }}>{step + 1}/{STEPS.length}</span>
+          <span className="text-11 ml-1 tabular-nums" style={{ color: "rgba(255,255,255,0.4)" }}>{step + 1}/{STEPS.length}</span>
         </div>
       }
     >
       <div
         ref={cardRef}
         onMouseMove={handleCardMouseMove}
-        className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden"
+        className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden"
         style={{
           background: "rgba(255,255,255,0.68)",
           backdropFilter: "blur(26px)",
@@ -396,8 +391,8 @@ export default function SignupPage() {
                 noValidate
               >
                 <div className="mb-5">
-                  <h2 className="text-[1.5rem] font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
-                  <p className="text-[13px] mt-0.5" style={{ color: "var(--ink-soft)" }}>
+                  <h2 className="text-24 font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
+                  <p className="text-13 mt-0.5" style={{ color: "var(--ink-soft)" }}>
                     {isPostCheckoutCompletion
                       ? "Payment's done - just need this to finish setting up your workspace."
                       : "We'll use this to set up your workspace."}
@@ -407,7 +402,7 @@ export default function SignupPage() {
                 <FloatField label="Agency name" value={agencyName} onChange={setAgencyName} autoFocus autoComplete="organization" />
 
                 {completeError && (
-                  <p role="alert" className="text-[13px] mt-3" style={{ color: "var(--score-low)" }}>{completeError}</p>
+                  <p role="alert" className="text-13 mt-3" style={{ color: "var(--score-low)" }}>{completeError}</p>
                 )}
 
                 <div className="flex items-center gap-3 mt-6">
@@ -418,7 +413,7 @@ export default function SignupPage() {
                 </div>
 
                 {!isPostCheckoutCompletion && (
-                  <p className="text-[13px] text-center mt-6" style={{ color: "var(--ink-soft)" }}>
+                  <p className="text-13 text-center mt-6" style={{ color: "var(--ink-soft)" }}>
                     Already have an account?{" "}
                     <Link href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</Link>
                   </p>
@@ -426,6 +421,7 @@ export default function SignupPage() {
               </form>
             ) : (
               <>
+                <ClerkWidgetStates what="Sign-up" />
                 <SignUp
                   path="/signup"
                   signInUrl="/login"
@@ -445,31 +441,23 @@ export default function SignupPage() {
                     layout: {
                       socialButtonsPlacement: "top",
                     },
-                    variables: {
-                      colorPrimary: "#0b3a2a",
-                      colorText: "#13201b",
-                      colorTextSecondary: "#4a6658",
-                      colorInputBackground: "rgba(255,255,255,0.6)",
-                      colorInputText: "#13201b",
-                      borderRadius: "12px",
-                      fontFamily: "inherit",
-                    },
+                    variables: AUTH_CARD_VARIABLES,
                     elements: {
                       rootBox: "!w-full !min-w-0",
                       cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
                       card: "!w-full !min-w-0 !max-w-full !box-border !shadow-none !bg-transparent !p-0 !gap-4",
                       header: "!px-0",
-                      headerTitle: "text-[1.5rem] font-semibold tracking-tight",
-                      headerSubtitle: "text-[13px]",
+                      headerTitle: "text-24 font-semibold tracking-tight",
+                      headerSubtitle: "text-13",
                       form: "!w-full gap-3.5",
                       formFieldRow: "flex-col gap-3.5",
                       formField: "!w-full !min-w-0",
-                      formFieldInput: "!w-full box-border rounded-[12px]",
-                      socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
+                      formFieldInput: "!w-full box-border rounded-xl",
+                      socialButtonsBlockButton: "!w-full box-border rounded-xl",
                       formButtonPrimary:
-                        "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
+                        "normal-case text-sm font-semibold rounded-xl py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
                       footer: "!bg-transparent !px-0",
-                      footerAction: "!flex !flex-col !items-center !gap-1 text-[13px] text-center",
+                      footerAction: "!flex !flex-col !items-center !gap-1 text-13 text-center",
                       dividerRow: "my-4",
                     },
                   }}

@@ -4,6 +4,8 @@ import { SignIn } from "@clerk/nextjs";
 import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
+import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
+import { AUTH_CARD_ELEMENTS, AUTH_CARD_VARIABLES } from "@/lib/ui/clerk-appearance";
 
 // Clerk's hosted <SignIn/> replaces the old custom login form + api/auth/login
 // + api/auth/mfa-verify. reCAPTCHA/bot-detection, rate limiting, "forgot
@@ -43,29 +45,27 @@ function LoginContent() {
       brandMiddle={
         <div className="relative z-10 space-y-9 auth-panel-in" style={{ animationDuration: "0.6s" }}>
           <div className="space-y-4">
-            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--mint)" }}>
-              AI-powered recruitment
+            <p className="text-11 font-semibold tracking-[0.18em] uppercase text-[var(--mint)]">
+              AI CV screening for agencies
             </p>
-            <h1 className="text-white text-[40px] font-semibold leading-[1.08] tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-              Match the right<br />candidate, faster.
+            <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight font-display">
+              Screen every CV for a role in the time it takes to read one.
             </h1>
-            <p className="text-[15px] leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
-              Helixon analyses CVs against job requirements in under a minute, giving your team an objective match score and recommendation.
+            <p className="text-15 leading-relaxed max-w-sm text-white/70">
+              Every CV scored against your job spec, with the evidence behind each score and a ranked shortlist at the end.
             </p>
           </div>
 
-          {/* Only figures the product can stand behind - the same ones the
-              homepage uses. "94% match accuracy" and "10x faster" were here
-              with nothing to back them. */}
+          {/* The same three proof points as the homepage's stats strip. */}
           <div className="flex gap-9">
             {[
-              { value: "<1 min", label: "Per CV" },
               { value: "50", label: "CVs per bulk upload" },
-              { value: "∞", label: "Analyses / month" },
+              { value: "< 1 min", label: "To score a CV" },
+              { value: "Swiss", label: "Hosted and encrypted" },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-white text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)" }}>{s.value}</p>
-                <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.62)" }}>{s.label}</p>
+                <p className="text-white text-24 font-semibold tabular-nums font-display">{s.value}</p>
+                <p className="text-11 mt-1 text-white/60">{s.label}</p>
               </div>
             ))}
           </div>
@@ -80,8 +80,7 @@ function LoginContent() {
       {intent === "reset" && (
         <div
           role="status"
-          className="w-full max-w-sm mb-4 rounded-[12px] px-4 py-3 text-[13px]"
-          style={{ background: "rgba(11,58,42,0.08)", color: "#0b3a2a", border: "1px solid rgba(11,58,42,0.15)" }}
+          className="w-full max-w-sm mb-4 rounded-xl px-4 py-3 text-13 bg-[var(--mint)] text-[var(--forest-deep)] border border-[var(--border)]"
         >
           To reset your password, enter your email below and click <strong>&ldquo;Forgot password?&rdquo;</strong>.
         </div>
@@ -89,8 +88,7 @@ function LoginContent() {
       {intent === "verify" && (
         <div
           role="status"
-          className="w-full max-w-sm mb-4 rounded-[12px] px-4 py-3 text-[13px]"
-          style={{ background: "rgba(11,58,42,0.08)", color: "#0b3a2a", border: "1px solid rgba(11,58,42,0.15)" }}
+          className="w-full max-w-sm mb-4 rounded-xl px-4 py-3 text-13 bg-[var(--mint)] text-[var(--forest-deep)] border border-[var(--border)]"
         >
           If you already finished creating your account, sign in below. Still partway through signing up? The verification code is on the signup screen itself - check your email for it.
         </div>
@@ -99,7 +97,7 @@ function LoginContent() {
       <div
         ref={cardRef}
         onMouseMove={handleCardMouseMove}
-        className="w-full max-w-sm relative rounded-[22px] p-7 sm:p-9 overflow-hidden auth-panel-in"
+        className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden auth-panel-in"
         style={{
           background: "rgba(255,255,255,0.68)",
           backdropFilter: "blur(26px)",
@@ -114,40 +112,12 @@ function LoginContent() {
         />
 
         <div className="relative flex justify-center">
+          <ClerkWidgetStates what="Sign-in" />
           <SignIn
             path="/login"
             signUpUrl="/pricing"
             fallbackRedirectUrl="/dashboard?welcome=1"
-            appearance={{
-              layout: {
-                socialButtonsPlacement: "top",
-              },
-              variables: {
-                colorPrimary: "#0b3a2a",
-                colorText: "#13201b",
-                colorTextSecondary: "#4a6658",
-                colorInputBackground: "rgba(255,255,255,0.6)",
-                colorInputText: "#13201b",
-                borderRadius: "12px",
-                fontFamily: "inherit",
-              },
-              elements: {
-                rootBox: "!w-full !min-w-0",
-                cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
-                card: "!w-full !min-w-0 !max-w-full !box-border !shadow-none !bg-transparent !p-0 !gap-4",
-                headerTitle: "tracking-tight",
-                headerSubtitle: "text-[13px]",
-                form: "!w-full gap-3.5",
-                formField: "!w-full !min-w-0",
-                formFieldInput: "!w-full box-border rounded-[12px]",
-                socialButtonsBlockButton: "!w-full box-border rounded-[12px]",
-                formButtonPrimary:
-                  "normal-case text-sm font-semibold rounded-[12px] py-3 shadow-[0_12px_24px_-10px_rgba(11,58,42,0.55)] hover:brightness-95",
-                footerAction: "!flex !flex-col !items-center !gap-1 text-[13px] text-center",
-                footer: "!bg-transparent !px-0",
-                dividerRow: "my-4",
-              },
-            }}
+            appearance={{ layout: { socialButtonsPlacement: "top" }, variables: AUTH_CARD_VARIABLES, elements: AUTH_CARD_ELEMENTS }}
           />
         </div>
       </div>

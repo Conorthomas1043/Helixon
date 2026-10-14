@@ -180,7 +180,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
   }
 
   return (
-    <section className="rounded-[16px] mb-6 overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-label="Call list">
+    <section className="rounded-2xl mb-6 overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-label="Call list">
       {confirmDialog}
       <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border-soft)" }}>
         <div>
@@ -213,7 +213,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
       )}
 
       {preview && (
-        <div className="mx-5 mt-4 rounded-[12px] p-4" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
+        <div className="mx-5 mt-4 rounded-xl p-4" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
           <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
             {preview.contacts.length} contact{preview.contacts.length === 1 ? "" : "s"} ready to import from {preview.fileName}
           </p>
@@ -229,7 +229,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
               <thead>
                 <tr style={{ color: "var(--ink-faint)" }}>
                   {["Name", "Company", "Phone", "Email"].map((h) => (
-                    <th key={h} className="text-left font-semibold px-3 py-2">{h}</th>
+                    <th scope="col" key={h} className="text-left font-semibold px-3 py-2">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -246,11 +246,11 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
             </table>
           </div>
           {preview.contacts.length > 5 && (
-            <p className="text-[12px] mt-1.5" style={{ color: "var(--ink-faint)" }}>…and {preview.contacts.length - 5} more</p>
+            <p className="text-12 mt-1.5" style={{ color: "var(--ink-faint)" }}>…and {preview.contacts.length - 5} more</p>
           )}
           <div className="mt-3 flex flex-col sm:flex-row sm:items-end gap-2">
             <label className="flex-1">
-              <span className="block text-[12px] font-medium mb-1" style={{ color: "var(--ink-soft)" }}>List name (optional)</span>
+              <span className="block text-12 font-medium mb-1" style={{ color: "var(--ink-soft)" }}>List name (optional)</span>
               <input
                 type="text"
                 value={preview.batchLabel}
@@ -326,10 +326,10 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                         {row.contact_name || row.company || "Unnamed contact"}
                       </p>
                       {mine && (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>You&apos;re calling</span>
+                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>You&apos;re calling</span>
                       )}
                       {takenByOther && (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fdf5e9", color: "#b8791f" }}>
+                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fdf5e9", color: "#b8791f" }}>
                           {personName(row.claimer)} is calling
                         </span>
                       )}

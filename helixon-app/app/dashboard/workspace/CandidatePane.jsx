@@ -40,7 +40,7 @@ export default function CandidatePane({ id, view, onView, onClose }) {
       aria-label={name}
       className={cx(
         // On a laptop the pane fills its grid cell and scrolls inside.
-        "flex min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--border)] bg-white lg:h-full lg:min-h-0"
+        "flex min-w-0 flex-col overflow-hidden rounded-card border border-[var(--border)] bg-white lg:h-full lg:min-h-0"
       )}
     >
       <header className="flex flex-wrap items-center gap-2 border-b border-[var(--border)] px-4 py-2.5">
@@ -61,7 +61,7 @@ export default function CandidatePane({ id, view, onView, onClose }) {
           type="button"
           onClick={onClose}
           aria-label={`Close ${name}`}
-          className="rounded-[8px] p-1.5 text-[var(--ink-soft)] hover:bg-[var(--mist)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+          className="rounded-lg p-1.5 text-[var(--ink-soft)] hover:bg-[var(--mist)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
         >
           <Icon name="x" size={14} />
         </button>

@@ -53,12 +53,12 @@ export default function MarketingFooter() {
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
               {col.title}
             </p>
             {/* 13px text with a 36px-tall hit area: the links were ~13px tall,
                 too small to tap reliably on a phone. */}
-            <ul className="text-[13px]" style={{ color: "var(--ink-soft)" }}>
+            <ul className="text-13" style={{ color: "var(--ink-soft)" }}>
               {col.links.map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="inline-flex items-center min-h-[36px] hover:underline">

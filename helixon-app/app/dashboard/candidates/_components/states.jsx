@@ -44,13 +44,13 @@ export function ErrorState({ onRetry, message }) {
       <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
         Unable to load candidates
       </p>
-      <p className="text-[14px] max-w-sm mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-14 max-w-sm mb-4" style={{ color: INK_MUTED }}>
         {message || "Something went wrong while loading the candidate database."}
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-[14px] font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--forest)", color: "white" }}
       >
         Try again

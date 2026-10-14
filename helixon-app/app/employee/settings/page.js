@@ -5,9 +5,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+// A text field with a visible focus state: forest border plus a mint halo.
+const FIELD =
+  "w-full bg-transparent rounded-xl px-3.5 py-2.5 text-sm text-[var(--ink)] border-[1.5px] border-[var(--border)] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[var(--forest)] focus:shadow-[0_0_0_4px_var(--mint)]";
 import EmployeeShell from "../_shared/EmployeeShell";
 
-const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 const MIN_PASSWORD_LENGTH = 12;
 
 const ROLE_LABELS = {
@@ -111,10 +114,6 @@ export default function EmployeeSettingsPage() {
     );
   }
 
-  function fieldStyle() {
-    return { border: "1.5px solid var(--border)", transition: `all 0.2s ${EASE}` };
-  }
-
   return (
     <EmployeeShell>
       <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-10">
@@ -128,25 +127,25 @@ export default function EmployeeSettingsPage() {
         </div>
 
         {/* ── Profile ───────────────────────────────────────────────────── */}
-        <div className="rounded-[16px] p-6 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-6 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
           <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Profile
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Name</dt>
+              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Name</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.fullName || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Username</dt>
+              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Username</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.username}</dd>
             </div>
             <div>
-              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Role</dt>
+              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Role</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{ROLE_LABELS[employee?.role] || employee?.role || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[12px] font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Last signed in</dt>
+              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Last signed in</dt>
               <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{formatDateTime(employee?.lastLogin)}</dd>
             </div>
           </dl>
@@ -156,7 +155,7 @@ export default function EmployeeSettingsPage() {
         </div>
 
         {/* ── Change password ──────────────────────────────────────────── */}
-        <div className="rounded-[16px] p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
           <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Change password
           </h2>
@@ -167,7 +166,7 @@ export default function EmployeeSettingsPage() {
           {done ? (
             <div
               role="status"
-              className="flex items-center gap-2.5 rounded-[12px] px-4 py-3"
+              className="flex items-center gap-2.5 rounded-xl px-4 py-3"
               style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
@@ -180,58 +179,58 @@ export default function EmployeeSettingsPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
+                <label htmlFor="current-password" className="block text-13 font-medium mb-1.5 text-[var(--ink-soft)]">
                   Current password
                 </label>
                 <input
+                  id="current-password"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
-                  style={{ color: "var(--ink)", ...fieldStyle() }}
+                  className={FIELD}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
+                <label htmlFor="new-password" className="block text-13 font-medium mb-1.5 text-[var(--ink-soft)]">
                   New password
                 </label>
                 <input
+                  id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   minLength={MIN_PASSWORD_LENGTH}
                   required
-                  className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
-                  style={{ color: "var(--ink)", ...fieldStyle() }}
+                  className={FIELD}
                 />
-                <p className="text-[12px] mt-1" style={{ color: "var(--ink-faint)" }}>
+                <p className="text-12 mt-1" style={{ color: "var(--ink-faint)" }}>
                   At least {MIN_PASSWORD_LENGTH} characters.
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-faint)" }}>
+                <label htmlFor="confirm-password" className="block text-13 font-medium mb-1.5 text-[var(--ink-soft)]">
                   Confirm new password
                 </label>
                 <input
+                  id="confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   required
-                  className="w-full bg-transparent rounded-[12px] px-3.5 py-2.5 text-sm outline-none"
-                  style={{ color: "var(--ink)", ...fieldStyle() }}
+                  className={FIELD}
                 />
               </div>
 
               {error && (
-                <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 p-3 rounded-[10px]" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 p-3 rounded-btn bg-[var(--ui-danger-soft)] border border-[var(--ui-danger)]/30">
                   <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
-                  <p className="text-[14px]" style={{ color: "var(--score-low)" }}>{error}</p>
+                  <p className="text-14" style={{ color: "var(--score-low)" }}>{error}</p>
                 </div>
               )}
 
@@ -239,7 +238,7 @@ export default function EmployeeSettingsPage() {
                 type="submit"
                 disabled={saving}
                 aria-busy={saving}
-                className="btn-forest text-white font-semibold py-2.5 px-5 rounded-[12px] text-sm transition-all flex items-center justify-center gap-2"
+                className="btn-forest text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
                 style={{
                   background: saving ? "var(--ink-mute)" : "var(--forest)",
                   cursor: saving ? "not-allowed" : "pointer",

@@ -101,7 +101,7 @@ export default function SiteControlsPage() {
   return (
     <>
       <PageHeader title="Site controls" description="Switch parts of the public site on and off, post a banner, or take the site down for maintenance. Changes reach every server within about 30 seconds.">
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" size={13} /> Refresh
         </button>
       </PageHeader>
@@ -141,8 +141,8 @@ export default function SiteControlsPage() {
             </div>
             {dirty("maintenance") && (
               <div className="actions">
-                <button className="btn small primary" disabled={saving === "maintenance"} onClick={() => save("maintenance", maintenance, "Message saved")}>Save message</button>
-                <button className="btn small ghost" onClick={() => setDrafts((d) => ({ ...d, maintenance: undefined }))}>Discard</button>
+                <button type="button" className="btn small primary" disabled={saving === "maintenance"} onClick={() => save("maintenance", maintenance, "Message saved")}>Save message</button>
+                <button type="button" className="btn small ghost" onClick={() => setDrafts((d) => ({ ...d, maintenance: undefined }))}>Discard</button>
               </div>
             )}
           </div>
@@ -218,7 +218,7 @@ export default function SiteControlsPage() {
           )}
           {dirty("announcement") && (
             <div className="actions">
-              <button className="btn small primary" disabled={saving === "announcement"}>
+              <button type="submit" className="btn small primary" disabled={saving === "announcement"}>
                 {announcement.enabled ? "Publish banner" : settings?.announcement?.enabled ? "Take banner down" : "Save"}
               </button>
               <button type="button" className="btn small ghost" onClick={() => setDrafts((d) => ({ ...d, announcement: undefined }))}>Discard</button>

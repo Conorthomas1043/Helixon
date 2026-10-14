@@ -259,7 +259,7 @@ export default function ColdCallsPage() {
               Import a call list, work through it together and log outcomes across the sales team. You logged <b>{todayTotal}</b> today.
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={openAdd}
             className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
             style={{ background: "var(--forest)", color: "white" }}
@@ -269,13 +269,13 @@ export default function ColdCallsPage() {
         </div>
 
         {error && (
-          <div className="rounded-[14px] px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div ref={formRef} className="rounded-[16px] p-5 mb-6 scroll-mt-20" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div ref={formRef} className="rounded-2xl p-5 mb-6 scroll-mt-20" style={{ background: "white", border: "1px solid var(--border)" }}>
             {callListId && (
               <p className="text-xs font-semibold mb-3" style={{ color: "var(--forest)" }}>
                 Logging a call from the call list - saving ticks this contact off.
@@ -383,7 +383,7 @@ export default function ColdCallsPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-3">
               {["team", "mine"].map((s) => (
-                <button
+                <button type="button"
                   key={s}
                   onClick={() => setScope(s)}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
@@ -394,7 +394,7 @@ export default function ColdCallsPage() {
               ))}
             </div>
 
-            <div className="rounded-[16px] overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
               {loading ? (
                 <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</div>
               ) : grouped.length === 0 ? (
@@ -425,7 +425,7 @@ export default function ColdCallsPage() {
                                     <select
                                       value={call.outcome}
                                       onChange={(e) => setOutcome(call, e.target.value)}
-                                      className="text-[11px] font-semibold pl-2 pr-1 py-0.5 rounded-full"
+                                      className="text-11 font-semibold pl-2 pr-1 py-0.5 rounded-full"
                                       style={{ background: meta.bg, color: meta.color, border: "none" }}
                                     >
                                       {Object.entries(OUTCOME_META).map(([value, m]) => (
@@ -433,7 +433,7 @@ export default function ColdCallsPage() {
                                       ))}
                                     </select>
                                   ) : (
-                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
+                                    <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
                                       {meta.label}
                                     </span>
                                   )}
@@ -448,8 +448,8 @@ export default function ColdCallsPage() {
                               </div>
                               {canEdit && (
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                  <button onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
-                                  <button onClick={() => handleDelete(call.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
+                                  <button type="button" onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
+                                  <button type="button" onClick={() => handleDelete(call.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
                                 </div>
                               )}
                             </div>
@@ -465,7 +465,7 @@ export default function ColdCallsPage() {
 
           {/* ── Leaderboard ─────────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
               <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                 This week
               </h2>
@@ -488,7 +488,7 @@ export default function ColdCallsPage() {
             </div>
 
             {stats && Object.keys(stats.byOutcomeThisWeek).length > 0 && (
-              <div className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
                   Outcomes this week
                 </h2>

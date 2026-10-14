@@ -97,10 +97,10 @@ export default function AppUpdatesPage() {
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-8">
-          <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> What&apos;s new
           </p>
-          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             What&apos;s new in Helixon
           </h1>
           <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
@@ -112,9 +112,9 @@ export default function AppUpdatesPage() {
       {/* ── Filters ─────────────────────────────────────────────────────── */}
       <div className="sticky top-[56px] z-30 bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
-          <button
+          <button type="button"
             onClick={() => setFilter("all")}
-            className="text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
+            className="text-11 font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
             style={{
               background: filter === "all" ? "var(--ink)" : "transparent",
               color: filter === "all" ? "white" : "var(--ink-soft)",
@@ -124,10 +124,10 @@ export default function AppUpdatesPage() {
             All updates
           </button>
           {Object.entries(TYPES).map(([key, t]) => (
-            <button
+            <button type="button"
               key={key}
               onClick={() => setFilter(key)}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
+              className="text-11 font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
               style={{
                 background: filter === key ? t.color : "transparent",
                 color: filter === key ? "white" : t.color,
@@ -148,7 +148,7 @@ export default function AppUpdatesPage() {
 
         {groupedMonths.map((month) => (
           <div key={month} className="mb-12 last:mb-0">
-            <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-5 sticky top-[104px]" style={{ color: "var(--ink-faint)" }}>
+            <h2 className="text-11 font-semibold uppercase tracking-widest mb-5 sticky top-[104px]" style={{ color: "var(--ink-faint)" }}>
               {month}
             </h2>
 
@@ -158,21 +158,21 @@ export default function AppUpdatesPage() {
                 return (
                   <article
                     key={u.version}
-                    className="rounded-[14px] p-6 bg-white border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)]"
+                    className="rounded-card p-6 bg-white border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)]"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <div className="flex items-center gap-2.5 mb-3">
                       <span
-                        className="text-[11px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
+                        className="text-11 font-bold uppercase tracking-wide px-2 py-1 rounded-full"
                         style={{ background: t.bg, color: t.color }}
                       >
                         {t.label}
                       </span>
-                      <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>{u.date}</span>
-                      <span className="text-[11px] ml-auto" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-faint)" }}>v{u.version}</span>
+                      <span className="text-11" style={{ color: "var(--ink-faint)" }}>{u.date}</span>
+                      <span className="text-11 ml-auto" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-faint)" }}>v{u.version}</span>
                     </div>
                     <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{u.title}</h3>
-                    <p className="text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{u.body}</p>
+                    <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{u.body}</p>
                   </article>
                 );
               })}
@@ -184,7 +184,7 @@ export default function AppUpdatesPage() {
           <p className="text-xs mb-3" style={{ color: "var(--ink-faint)" }}>Have a feature request?</p>
           <a
             href="mailto:hello@helixon.co.uk"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[10px]"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-btn"
             style={{ background: "var(--mint)", color: "var(--forest)" }}
           >
             Tell us what you need

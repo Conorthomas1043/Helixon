@@ -42,13 +42,13 @@ export default function CandidateCard({
         )}
 
         {file ? (
-          <div className="flex items-center gap-3 px-3.5 py-3 rounded-[12px] border border-[var(--border)] bg-[var(--mist)]">
-            <span className="w-10 h-10 rounded-[9px] bg-white border border-[var(--border)] flex items-center justify-center text-[var(--forest)]">
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl border border-[var(--border)] bg-[var(--mist)]">
+            <span className="w-10 h-10 rounded-lg bg-white border border-[var(--border)] flex items-center justify-center text-[var(--forest)]">
               <Icon name="file" size={18} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{file.name}</span>
-              <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(file.size)}</span>
+              <span className="block text-15 font-medium text-[var(--ink)] truncate">{file.name}</span>
+              <span className="block text-13 text-[var(--ink-faint)]">{formatBytes(file.size)}</span>
             </span>
             {!rerunOf && (
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
@@ -71,15 +71,15 @@ export default function CandidateCard({
               onFile(e.dataTransfer.files?.[0] || null);
             }}
             className={cx(
-              "w-full flex flex-col items-center justify-center gap-2 py-12 rounded-[12px] border border-dashed transition-colors",
+              "w-full flex flex-col items-center justify-center gap-2 py-12 rounded-xl border border-dashed transition-colors",
               dragging ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
             )}
           >
             <span className="w-10 h-10 rounded-full bg-[var(--mist)] border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
               <Icon name="upload" size={18} />
             </span>
-            <span className="text-[14px] font-medium text-[var(--ink)]">Drop a CV here, or browse</span>
-            <span className="text-[13px] text-[var(--ink-faint)]">PDF or Word (.docx) · up to 10 MB</span>
+            <span className="text-14 font-medium text-[var(--ink)]">Drop a CV here, or browse</span>
+            <span className="text-13 text-[var(--ink-faint)]">PDF or Word (.docx) · up to 10 MB</span>
           </button>
         )}
         <input
@@ -126,7 +126,7 @@ export default function CandidateCard({
             onChange={(e) => setConsent(e.target.checked)}
             className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]"
           />
-          <span className="text-[14px] leading-relaxed text-[var(--ink-soft)]">
+          <span className="text-14 leading-relaxed text-[var(--ink-soft)]">
             I have a lawful basis (for example the candidate&apos;s consent or legitimate interest under UK GDPR) to screen this CV.
           </span>
         </label>
@@ -135,7 +135,7 @@ export default function CandidateCard({
           <Button variant="primary" size="lg" className="w-full" disabled={!canAnalyse} onClick={onAnalyse} iconRight="arrowRight">
             {compare ? "Screen and compare" : rerunOf ? "Re-score candidate" : "Screen candidate"}
           </Button>
-          <p className="text-[13px] text-center mt-2 text-[var(--ink-faint)]">
+          <p className="text-13 text-center mt-2 text-[var(--ink-faint)]">
             {missing ? (
               missing
             ) : (

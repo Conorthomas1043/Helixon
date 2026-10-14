@@ -25,7 +25,7 @@ export function Chip({ children, tone = "plain", title }) {
     miss: "bg-[#fbefed] text-[#a83226]",
   };
   return (
-    <span title={title} className={cx("inline-flex items-center gap-1 text-[12px] font-medium px-2 py-0.5 rounded-full", styles[tone])}>
+    <span title={title} className={cx("inline-flex items-center gap-1 text-12 font-medium px-2 py-0.5 rounded-full", styles[tone])}>
       {tone === "match" && <Icon name="check" size={10} strokeWidth={2.4} />}
       {tone === "miss" && <Icon name="x" size={10} strokeWidth={2.4} />}
       {children}
@@ -54,11 +54,11 @@ export function FitRing({ fit, size = 52 }) {
             strokeDashoffset={c * (1 - (fit ?? 0) / 100)}
           />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold tabular-nums" style={{ color: tone.fg }}>
+        <span className="absolute inset-0 flex items-center justify-center text-14 font-semibold tabular-nums" style={{ color: tone.fg }}>
           {fit == null ? "–" : fit}
         </span>
       </div>
-      <span className="text-[12px] mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
+      <span className="text-12 mt-1 text-[var(--ink-faint)] whitespace-nowrap">{tone.label}</span>
     </div>
   );
 }
@@ -68,7 +68,7 @@ export function RoleLink({ role }) {
   return (
     <Link
       href={`/dashboard/candidates/${role.candidateId}`}
-      className="inline-flex items-center gap-1.5 text-[13px] px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
+      className="inline-flex items-center gap-1.5 text-13 px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
       title={`Screened for ${role.jobTitle}`}
     >
       <span className="truncate max-w-[160px] text-[var(--ink-soft)]">{role.jobTitle}</span>
@@ -85,20 +85,20 @@ export function RowStatus({ item, screened, screening }) {
   const status = screening?.status;
   if (status === "running")
     return (
-      <span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-soft)]">
+      <span className="inline-flex items-center gap-1.5 text-13 text-[var(--ink-soft)]">
         <Spinner size={12} /> Screening…
       </span>
     );
-  if (status === "queued") return <span className="text-[13px] text-[var(--ink-faint)]">Queued</span>;
-  if (status === "failed") return <span className="text-[13px] text-[#a83226] max-w-[200px] sm:text-right">{screening.error}</span>;
+  if (status === "queued") return <span className="text-13 text-[var(--ink-faint)]">Queued</span>;
+  if (status === "failed") return <span className="text-13 text-[#a83226] max-w-[200px] sm:text-right">{screening.error}</span>;
   if (screened)
     return (
-      <Link href={`/dashboard/candidates/${screened.candidateId}`} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--forest)] hover:underline">
+      <Link href={`/dashboard/candidates/${screened.candidateId}`} className="inline-flex items-center gap-1 text-13 font-semibold text-[var(--forest)] hover:underline">
         Screened{screened.score != null ? `: ${screened.score}` : ""}
         <Icon name="arrowRight" size={12} />
       </Link>
     );
-  if (!item.hasCv) return <span className="text-[12px] text-[var(--ink-faint)]">No CV text on file</span>;
+  if (!item.hasCv) return <span className="text-12 text-[var(--ink-faint)]">No CV text on file</span>;
   return null;
 }
 
@@ -125,13 +125,13 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-            <Link href={`/dashboard/candidates/${item.id}`} className="text-[15px] font-semibold text-[var(--ink)] hover:underline">
+            <Link href={`/dashboard/candidates/${item.id}`} className="text-15 font-semibold text-[var(--ink)] hover:underline">
               {item.name}
             </Link>
             <AvailabilityPicker value={item.status} disabled={busy} onChange={(v) => onUpdate(item, { status: v })} />
             <CheckInPicker value={item.checkIn} disabled={busy} onChange={(v) => onUpdate(item, { checkIn: v })} />
           </div>
-          <p className="text-[14px] text-[var(--ink-soft)] mt-1">
+          <p className="text-14 text-[var(--ink-soft)] mt-1">
             {[item.currentTitle, item.currentCompany].filter(Boolean).join(" · ") || "No current role on file"}
             <span className="text-[var(--ink-faint)]">
               {[item.location, item.yearsExperience != null && `${item.yearsExperience} yrs`]
@@ -163,7 +163,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
                 {item.skills.slice(0, 7).map((s) => (
                   <Chip key={s}>{s}</Chip>
                 ))}
-                {item.skills.length > 7 && <span className="text-[12px] text-[var(--ink-faint)] self-center">+{item.skills.length - 7}</span>}
+                {item.skills.length > 7 && <span className="text-12 text-[var(--ink-faint)] self-center">+{item.skills.length - 7}</span>}
               </div>
             )
           )}
@@ -173,7 +173,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
               <button
                 type="button"
                 onClick={() => onMatchJob(item.bestMatch.jobId)}
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
+                className="inline-flex items-center gap-1.5 text-13 font-semibold pl-2 pr-2.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)] hover:brightness-95"
                 title="Their best fit among your open jobs - click to match the pool against it"
               >
                 <Icon name="sparkle" size={11} />
@@ -182,13 +182,13 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
             )}
             {item.roles.length > 0 && (
               <span className="inline-flex flex-wrap items-center gap-1.5">
-                <span className="text-[12px] text-[var(--ink-faint)]">Screened for</span>
+                <span className="text-12 text-[var(--ink-faint)]">Screened for</span>
                 {item.roles.map((r) => (
                   <RoleLink key={r.candidateId} role={r} />
                 ))}
               </span>
             )}
-            <span className="text-[12px] text-[var(--ink-faint)]">
+            <span className="text-12 text-[var(--ink-faint)]">
               Saved {formatRelativeTime(item.savedAt)}
               {item.savedBy ? ` by ${item.savedBy}` : ""}
             </span>
@@ -197,7 +197,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
 
           {/* Fit and status under the name on phones - the side column is too tight there. */}
           {job && (
-            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[14px]">
+            <div className="sm:hidden flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-14">
               <span className="font-semibold tabular-nums" style={{ color: fitTone(item.fit).fg }}>
                 {item.fit == null ? "No fit score" : `${item.fit}% fit`}
               </span>
@@ -215,18 +215,18 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
           ) : (
             <details className="relative">
               <summary className="list-none cursor-pointer px-2 py-1 rounded-full text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)]" aria-label={`More for ${item.name}`}>
-                <span aria-hidden="true" className="text-[16px] leading-none">⋯</span>
+                <span aria-hidden="true" className="text-16 leading-none">⋯</span>
               </summary>
-              <div className="absolute right-0 mt-1 w-48 rounded-[10px] p-1 z-20 bg-white border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
-                <Link href={`/dashboard/candidates/${item.id}`} className="block text-[14px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+              <div className="absolute right-0 mt-1 w-48 rounded-btn p-1 z-20 bg-white border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
+                <Link href={`/dashboard/candidates/${item.id}`} className="block text-14 px-2.5 py-1.5 rounded-lg hover:bg-[var(--mist)]">
                   Open profile
                 </Link>
                 {item.bestMatch && (
-                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-[14px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)]">
+                  <button type="button" onClick={() => onMatchJob(item.bestMatch.jobId)} className="w-full text-left text-14 px-2.5 py-1.5 rounded-lg hover:bg-[var(--mist)]">
                     Match to {item.bestMatch.title}
                   </button>
                 )}
-                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-[14px] px-2.5 py-1.5 rounded-[8px] text-[#a83226] hover:bg-[#fbefed]">
+                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-14 px-2.5 py-1.5 rounded-lg text-[#a83226] hover:bg-[#fbefed]">
                   Remove from pool
                 </button>
               </div>

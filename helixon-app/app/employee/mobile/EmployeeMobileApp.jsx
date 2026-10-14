@@ -51,14 +51,14 @@ export default function EmployeeMobileApp({ employee }) {
         }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
-            <span className="text-white text-[12px] font-bold">H</span>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--forest)" }}>
+            <span className="text-white text-12 font-bold">H</span>
           </div>
           <div className="leading-none">
-            <div className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
+            <div className="text-14 font-semibold" style={{ color: "var(--ink)" }}>
               Staff
             </div>
-            <div className="text-[11px]" style={{ color: "var(--ink-faint)" }}>
+            <div className="text-11" style={{ color: "var(--ink-faint)" }}>
               {employee?.display_name || employee?.full_name || employee?.username}
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function EmployeeMobileApp({ employee }) {
           <Link
             href="/employee/settings"
             aria-label="Account settings"
-            className="w-9 h-9 flex items-center justify-center rounded-[10px]"
+            className="w-9 h-9 flex items-center justify-center rounded-btn"
             style={{ color: "var(--ink-soft)" }}
           >
             <Icon path={ICONS.settings} size={18} />
@@ -76,7 +76,7 @@ export default function EmployeeMobileApp({ employee }) {
             type="button"
             onClick={signOut}
             aria-label="Sign out"
-            className="w-9 h-9 flex items-center justify-center rounded-[10px]"
+            className="w-9 h-9 flex items-center justify-center rounded-btn"
             style={{ color: "var(--ink-soft)" }}
           >
             <Icon path={ICONS.logout} size={18} />
@@ -119,7 +119,7 @@ export default function EmployeeMobileApp({ employee }) {
               aria-current={active ? "page" : undefined}
             >
               <Icon path={ICONS[t.icon]} size={20} strokeWidth={active ? 2.4 : 2} />
-              <span className="text-[11px] font-medium">{t.label}</span>
+              <span className="text-11 font-medium">{t.label}</span>
             </button>
           );
         })}

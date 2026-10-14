@@ -364,7 +364,7 @@ function CandidateDatabaseContent({ initialData }) {
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
               Candidate database
             </p>
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
@@ -374,14 +374,14 @@ function CandidateDatabaseContent({ initialData }) {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               ← Dashboard
             </Link>
             <Link
               href="/analyse"
-              className="inline-flex items-center text-[14px] font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", color: "white" }}
             >
               + Screen a CV
@@ -390,7 +390,7 @@ function CandidateDatabaseContent({ initialData }) {
         </header>
 
         {/* Search + filters */}
-        <div className="rounded-[14px] p-4 sm:p-5 space-y-4" style={CARD}>
+        <div className="rounded-card p-4 sm:p-5 space-y-4" style={CARD}>
           <div className="relative">
             <input
               type="search"
@@ -401,7 +401,7 @@ function CandidateDatabaseContent({ initialData }) {
               style={{ border: "1px solid var(--border)", color: INK }}
               aria-label="Search candidates, jobs or recruiters"
             />
-            <p className="text-[12px] mt-1.5 px-2" style={{ color: INK_FAINT }}>
+            <p className="text-12 mt-1.5 px-2" style={{ color: INK_FAINT }}>
               {result?.searchMode === "boolean" ? (
                 <span style={{ color: "var(--forest)" }}>Boolean search across CVs and profiles. </span>
               ) : null}
@@ -429,7 +429,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
               aria-expanded={filtersOpen}
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
+              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
               style={{
                 background: activeFilterCount > 0 ? "var(--mint)" : "white",
                 color: activeFilterCount > 0 ? "var(--forest)" : INK_MUTED,
@@ -441,7 +441,7 @@ function CandidateDatabaseContent({ initialData }) {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-[12px] font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
+                <span className="text-12 font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
                   {activeFilterCount}
                 </span>
               )}
@@ -464,7 +464,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
               style={{ background: "white", color: INK_MUTED, border: "1px solid var(--border)" }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -475,7 +475,7 @@ function CandidateDatabaseContent({ initialData }) {
           </div>
 
           {exportError && (
-            <p role="alert" className="text-[13px]" style={{ color: RED }}>{exportError}</p>
+            <p role="alert" className="text-13" style={{ color: RED }}>{exportError}</p>
           )}
 
           {filtersOpen && (
@@ -508,7 +508,7 @@ function CandidateDatabaseContent({ initialData }) {
                   placeholder="Near town or postcode"
                   aria-label="Near a town or postcode"
                   maxLength={100}
-                  className="text-[13px] px-3 py-1.5 rounded-full w-44 bg-white"
+                  className="text-13 px-3 py-1.5 rounded-full w-44 bg-white"
                   style={{ border: "1px solid var(--border)", color: INK }}
                 />
                 <Select
@@ -536,7 +536,7 @@ function CandidateDatabaseContent({ initialData }) {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-[13px] font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  className="text-13 font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
                   style={{ color: "var(--forest)" }}
                 >
                   Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
@@ -548,8 +548,8 @@ function CandidateDatabaseContent({ initialData }) {
 
         {/* Bulk action bar */}
         {selectedIds.size > 0 && (
-          <div className="rounded-[14px] p-3.5 sm:p-4 flex flex-wrap items-center gap-3" style={{ ...CARD, background: "var(--mist)" }}>
-            <span className="text-[14px] font-semibold" style={{ color: INK }}>
+          <div className="rounded-card p-3.5 sm:p-4 flex flex-wrap items-center gap-3" style={{ ...CARD, background: "var(--mist)" }}>
+            <span className="text-14 font-semibold" style={{ color: INK }}>
               {selectedIds.size} selected
             </span>
             <Select
@@ -568,7 +568,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={() => runBulk({ action: "pool" })}
               disabled={bulkBusy}
-              className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
               style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
             >
               ☆ Save to talent pool
@@ -578,7 +578,7 @@ function CandidateDatabaseContent({ initialData }) {
                 type="button"
                 onClick={() => runBulk({ action: "unpool" }, { clearSelection: true })}
                 disabled={bulkBusy}
-                className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+                className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
                 style={{ color: INK_MUTED }}
               >
                 Remove from pool
@@ -587,7 +587,7 @@ function CandidateDatabaseContent({ initialData }) {
             <button
               type="button"
               onClick={() => setComposing(true)}
-              className="text-[13px] font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             >
               Email…
@@ -608,7 +608,7 @@ function CandidateDatabaseContent({ initialData }) {
             {selectedIds.size >= 2 && selectedIds.size <= 4 && (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}
-                className="text-[13px] font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-13 font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 Compare
               </Link>
@@ -622,28 +622,28 @@ function CandidateDatabaseContent({ initialData }) {
                 Open side by side
               </Link>
             ) : selectedIds.size > 4 ? (
-              <span className="text-[13px]" style={{ color: INK_MUTED }}>Select up to 4 to compare or open side by side</span>
+              <span className="text-13" style={{ color: INK_MUTED }}>Select up to 4 to compare or open side by side</span>
             ) : null}
             <button
               type="button"
               onClick={bulkDelete}
               disabled={bulkBusy}
-              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: RED }}
             >
               Delete…
             </button>
-            {bulkBusy && <span className="text-[13px]" style={{ color: INK_MUTED }}>Working…</span>}
+            {bulkBusy && <span className="text-13" style={{ color: INK_MUTED }}>Working…</span>}
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-[13px] font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-13 font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: INK_MUTED }}
             >
               Clear selection
             </button>
             {bulkNotice && (
-              <p role="status" className="w-full text-[13px]" style={{ color: INK_MUTED }}>
+              <p role="status" className="w-full text-13" style={{ color: INK_MUTED }}>
                 {bulkNotice}
               </p>
             )}
@@ -655,22 +655,22 @@ function CandidateDatabaseContent({ initialData }) {
               />
             )}
             {bulkError && (
-              <p role="alert" className="w-full text-[13px]" style={{ color: RED }}>{bulkError}</p>
+              <p role="alert" className="w-full text-13" style={{ color: RED }}>{bulkError}</p>
             )}
           </div>
         )}
 
         {/* Results */}
-        <div className="rounded-[14px] p-4 sm:p-5" style={CARD}>
+        <div className="rounded-card p-4 sm:p-5" style={CARD}>
           {/* Wraps on a phone, so the count, select-all and columns don't
               push the sort menu off the edge of a single line. */}
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
-            <p className="text-[13px] whitespace-nowrap" style={{ color: INK_MUTED }}>
+            <p className="text-13 whitespace-nowrap" style={{ color: INK_MUTED }}>
               {status === "ready" && result ? `Showing ${result.items.length === 0 ? 0 : (result.page - 1) * result.pageSize + 1}–${Math.min(result.page * result.pageSize, result.total)} of ${result.total}` : "\u00A0"}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               {status === "ready" && result && result.items.length > 0 && (
-                <label className="flex items-center gap-1.5 text-[13px] font-semibold mr-2 whitespace-nowrap" style={{ color: INK_MUTED }}>
+                <label className="flex items-center gap-1.5 text-13 font-semibold mr-2 whitespace-nowrap" style={{ color: INK_MUTED }}>
                   <input
                     type="checkbox"
                     className="w-4 h-4 accent-[var(--forest)]"
@@ -706,19 +706,19 @@ function CandidateDatabaseContent({ initialData }) {
                 type="button"
                 disabled={result.page <= 1}
                 onClick={() => setPage(result.page - 1)}
-                className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 ← Previous
               </button>
-              <span className="text-[13px] tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>
+              <span className="text-13 tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>
                 Page {result.page} of {result.totalPages}
               </span>
               <button
                 type="button"
                 disabled={result.page >= result.totalPages}
                 onClick={() => setPage(result.page + 1)}
-                className="text-[13px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               >
                 Next →

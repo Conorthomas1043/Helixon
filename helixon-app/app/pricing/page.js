@@ -69,7 +69,7 @@ export default function PricingPage() {
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-20">
         <div className="text-center mb-12">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
             Pricing
           </p>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
@@ -77,7 +77,7 @@ export default function PricingPage() {
             <br />
             the bottleneck
           </h1>
-          <p className="text-[15px] leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
             Unlimited screening on both plans. Monthly billing, no contract, cancel anytime.
           </p>
         </div>
@@ -85,10 +85,10 @@ export default function PricingPage() {
         {lapsed && (
           <div
             role="status"
-            className="max-w-xl mx-auto mb-8 rounded-[14px] p-5 text-left"
+            className="max-w-xl mx-auto mb-8 rounded-card p-5 text-left"
             style={{ border: "1px solid #f1dfb5", background: "#fff8e6" }}
           >
-            <p className="text-[15px] font-semibold" style={{ color: "#7a4f0a" }}>Your Helixon subscription isn&rsquo;t active</p>
+            <p className="text-15 font-semibold" style={{ color: "#7a4f0a" }}>Your Helixon subscription isn&rsquo;t active</p>
             <p className="text-sm leading-relaxed mt-1" style={{ color: "#7a4f0a" }}>
               If you already had a plan, the most likely cause is a renewal payment that didn&rsquo;t go through.
               Update your payment method in Billing to restore access, with no need to buy again.
@@ -103,7 +103,7 @@ export default function PricingPage() {
         {error && (
           <div
             role="alert"
-            className="max-w-lg mx-auto mb-6 rounded-[10px] p-3.5 text-sm text-center"
+            className="max-w-lg mx-auto mb-6 rounded-btn p-3.5 text-sm text-center"
             style={{ border: "1px solid #fecaca", background: "#fff7f7", color: "var(--score-low)" }}
           >
             {error}
@@ -116,7 +116,7 @@ export default function PricingPage() {
             return (
               <article
                 key={plan.id}
-                className="rounded-[18px] p-7 relative flex flex-col"
+                className="rounded-2xl p-7 relative flex flex-col"
                 style={{
                   background: plan.highlight ? "var(--forest)" : "white",
                   border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
@@ -125,7 +125,7 @@ export default function PricingPage() {
               >
                 {plan.highlight && (
                   <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
                     style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
                   >
                     Recommended for agencies
@@ -157,7 +157,7 @@ export default function PricingPage() {
                   disabled={loading}
                   onClick={() => choosePlan(plan.id)}
                   aria-busy={loading}
-                  className="w-full mt-6 rounded-[10px] py-3.5 text-sm font-semibold transition-colors min-h-[48px]"
+                  className="w-full mt-6 rounded-btn py-3.5 text-sm font-semibold transition-colors min-h-[48px]"
                   style={{
                     background: plan.highlight ? "white" : "var(--forest)",
                     color: plan.highlight ? "var(--forest)" : "white",
@@ -167,7 +167,7 @@ export default function PricingPage() {
                 >
                   {loading ? "Opening checkout…" : `Choose ${plan.name}`}
                 </button>
-                <p className="text-[11px] text-center mt-2" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
+                <p className="text-11 text-center mt-2" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
                   Billed monthly · Cancel anytime
                 </p>
 
@@ -191,16 +191,16 @@ export default function PricingPage() {
         </p>
 
         {/* A way forward for anyone not ready to pay today, instead of a dead end. */}
-        <div className="max-w-2xl mx-auto mt-10 rounded-[16px] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="max-w-2xl mx-auto mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: "white", border: "1px solid var(--border)" }}>
           <div>
-            <p className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>Not sure which plan fits?</p>
+            <p className="text-15 font-semibold" style={{ color: "var(--ink)" }}>Not sure which plan fits?</p>
             <p className="text-sm leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
               Get a demo and see Helixon run on your own CVs first. No obligation.
             </p>
           </div>
           <Link
             href="/demo"
-            className="inline-flex items-center justify-center shrink-0 text-sm font-semibold px-5 rounded-[10px] min-h-[44px] w-full sm:w-auto transition-colors hover:bg-[var(--mint)]"
+            className="inline-flex items-center justify-center shrink-0 text-sm font-semibold px-5 rounded-btn min-h-[44px] w-full sm:w-auto transition-colors hover:bg-[var(--mint)]"
             style={{ border: "1.5px solid var(--border)", color: "var(--ink)" }}
           >
             Get a demo

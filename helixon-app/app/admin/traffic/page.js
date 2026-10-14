@@ -87,12 +87,12 @@ function TopIpsPanel({ topIps, blockedSet }) {
           <table className="table compact">
             <thead>
               <tr>
-                <th>IP</th>
-                <th className="num">Requests</th>
-                <th className="num">Blocked</th>
-                <th>Worst threat</th>
-                <th>Country</th>
-                <th>Last seen</th>
+                <th scope="col">IP</th>
+                <th scope="col" className="num">Requests</th>
+                <th scope="col" className="num">Blocked</th>
+                <th scope="col">Worst threat</th>
+                <th scope="col">Country</th>
+                <th scope="col">Last seen</th>
               </tr>
             </thead>
             <tbody>
@@ -239,11 +239,11 @@ function SettingsPanel({ capture, onSaved }) {
             Detail (headers, query, body) is cleared first; the whole line - IP, browser, location, page - is deleted after the second period, as the privacy policy says. Never recorded: the body of requests that were let through, and anything the app sends back.
           </p>
           <div className="actions" style={{ marginTop: 10 }}>
-            <button className="btn small primary" disabled={!dirty || saving} onClick={save}>
+            <button type="button" className="btn small primary" disabled={!dirty || saving} onClick={save}>
               {saving ? "Saving…" : "Save"}
             </button>
             {dirty && (
-              <button className="btn small ghost" onClick={() => setDraft(null)} disabled={saving}>
+              <button type="button" className="btn small ghost" onClick={() => setDraft(null)} disabled={saving}>
                 Discard
               </button>
             )}
@@ -458,7 +458,7 @@ export default function TrafficPage() {
     <>
       <PageHeader title="Traffic" description="Every request to the site, who sent it, where it came from, and what the firewall did with it. Click any request to inspect it, or any row in a panel to filter to it.">
         <RangeControl range={range} setRange={changeRange} options={RANGES} />
-        <button
+        <button type="button"
           className={`btn small ${live ? "toggled" : ""}`}
           aria-pressed={live}
           onClick={() => setLive((v) => !v)}
@@ -467,7 +467,7 @@ export default function TrafficPage() {
           {live && <span className="status-dot pulse" aria-hidden="true" />}
           {live ? "Live" : "Go live"}
         </button>
-        <button className="btn small" onClick={reload} disabled={busy}>
+        <button type="button" className="btn small" onClick={reload} disabled={busy}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>
@@ -477,13 +477,13 @@ export default function TrafficPage() {
       <div className="filter-row section" style={{ marginTop: 0 }}>
         <div className="segmented" role="group" aria-label="Whose traffic">
           {AUDIENCES.map((a) => (
-            <button key={a.value} className={audience === a.value ? "active" : ""} aria-pressed={audience === a.value} onClick={() => setAudience(a.value)}>
+            <button type="button" key={a.value} className={audience === a.value ? "active" : ""} aria-pressed={audience === a.value} onClick={() => setAudience(a.value)}>
               {a.label}
             </button>
           ))}
         </div>
         {!AUDIENCES.some((a) => a.value === audience) && (
-          <button className="pill info" onClick={() => setAudience("all")} aria-label="Show all traffic">
+          <button type="button" className="pill info" onClick={() => setAudience("all")} aria-label="Show all traffic">
             Only {AUDIENCE_LABEL[audience]} ✕
           </button>
         )}
@@ -507,11 +507,11 @@ export default function TrafficPage() {
               </option>
             ))}
           </select>
-          <button className="btn small" onClick={saveView}>
+          <button type="button" className="btn small" onClick={saveView}>
             Save view
           </button>
           {views.length > 0 && (
-            <button
+            <button type="button"
               className="btn small ghost"
               onClick={() => {
                 const name = window.prompt(`Delete which view? (${views.map((v) => v.name).join(", ")})`, views[views.length - 1].name);
@@ -521,7 +521,7 @@ export default function TrafficPage() {
               Delete view
             </button>
           )}
-          <button className="btn small ghost" onClick={copyLink}>
+          <button type="button" className="btn small ghost" onClick={copyLink}>
             <Icon name="copy" /> Copy link
           </button>
         </div>
@@ -585,7 +585,7 @@ export default function TrafficPage() {
                       {b.reason || "Admin block"}{b.created_by ? ` · by ${b.created_by}` : ""}{b.expires_at ? ` · lifts ${new Date(b.expires_at).toLocaleString()}` : " · permanent"}
                     </div>
                   </div>
-                  <button className="btn small" onClick={() => unblock(b.ip)} disabled={busy}>Unblock</button>
+                  <button type="button" className="btn small" onClick={() => unblock(b.ip)} disabled={busy}>Unblock</button>
                 </div>
               ))}
             </div>
@@ -654,7 +654,7 @@ export default function TrafficPage() {
             </div>
           </div>
           <div className="page-controls">
-            <button className="btn small" onClick={exportCsv} disabled={!rows.length}>
+            <button type="button" className="btn small" onClick={exportCsv} disabled={!rows.length}>
               <Icon name="arrowDown" /> Export CSV
             </button>
           </div>
@@ -663,12 +663,12 @@ export default function TrafficPage() {
         <div className="filter-row">
           <div className="segmented" role="group" aria-label="Outcome">
             {OUTCOME_FILTERS.map((o) => (
-              <button key={o.value || "all"} className={outcome === o.value ? "active" : ""} aria-pressed={outcome === o.value} onClick={() => setOutcome(o.value)}>
+              <button type="button" key={o.value || "all"} className={outcome === o.value ? "active" : ""} aria-pressed={outcome === o.value} onClick={() => setOutcome(o.value)}>
                 {o.label}
               </button>
             ))}
           </div>
-          <button className={`btn small ${flagged ? "toggled" : ""}`} aria-pressed={flagged} onClick={() => setFlagged((v) => !v)}>
+          <button type="button" className={`btn small ${flagged ? "toggled" : ""}`} aria-pressed={flagged} onClick={() => setFlagged((v) => !v)}>
             Flagged only
           </button>
           <select className="select-input" aria-label="Method" value={method} onChange={(e) => setMethod(e.target.value)}>
@@ -680,12 +680,12 @@ export default function TrafficPage() {
             ))}
           </select>
           {selected && (
-            <button className="pill info" onClick={() => setSelected(null)} aria-label={`Clear country filter ${selected.country}`}>
+            <button type="button" className="pill info" onClick={() => setSelected(null)} aria-label={`Clear country filter ${selected.country}`}>
               Country: {selected.country} ✕
             </button>
           )}
           {slice && (
-            <button className="pill info" onClick={() => setSlice(null)} aria-label="Clear the time filter">
+            <button type="button" className="pill info" onClick={() => setSlice(null)} aria-label="Clear the time filter">
               {slice.label} ✕
             </button>
           )}
@@ -725,7 +725,7 @@ export default function TrafficPage() {
               {!hasOlder ? "That's every matching request in this range." : live ? "Pause live updates to load older requests." : "Older requests in this range aren't shown yet."}
             </span>
             {hasOlder && !live && (
-              <button className="btn small" onClick={loadOlder} disabled={busy}>
+              <button type="button" className="btn small" onClick={loadOlder} disabled={busy}>
                 {busy ? "Loading…" : "Load older"}
               </button>
             )}

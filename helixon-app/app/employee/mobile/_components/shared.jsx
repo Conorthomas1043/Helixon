@@ -80,7 +80,7 @@ export const ICONS = {
 
 export function SectionTitle({ children }) {
   return (
-    <h2 className="text-[12px] font-semibold uppercase tracking-wide mb-2.5 mt-5 first:mt-0" style={{ color: "var(--ink-faint)" }}>
+    <h2 className="text-12 font-semibold uppercase tracking-wide mb-2.5 mt-5 first:mt-0" style={{ color: "var(--ink-faint)" }}>
       {children}
     </h2>
   );
@@ -89,7 +89,7 @@ export function SectionTitle({ children }) {
 export function ErrorNotice({ message }) {
   if (!message) return null;
   return (
-    <div className="text-[13px] rounded-[10px] px-3 py-2.5 mb-3" style={{ background: "#fdf1f0", color: RED, border: "1px solid #f6d6d3" }}>
+    <div className="text-13 rounded-btn px-3 py-2.5 mb-3" style={{ background: "#fdf1f0", color: RED, border: "1px solid #f6d6d3" }}>
       {message}
     </div>
   );
@@ -99,8 +99,8 @@ export function ErrorNotice({ message }) {
 
 export function Kpi({ label, value }) {
   return (
-    <div className="rounded-[14px] p-3.5" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <div className="text-[11px] font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
+    <div className="rounded-card p-3.5" style={{ background: "white", border: "1px solid var(--border)" }}>
+      <div className="text-11 font-medium mb-1" style={{ color: "var(--ink-faint)" }}>
         {label}
       </div>
       <div className="text-xl font-semibold tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>

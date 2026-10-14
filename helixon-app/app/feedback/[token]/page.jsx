@@ -41,7 +41,7 @@ function TagPicker({ options, selected, onToggle }) {
             key={t.value}
             type="button"
             onClick={() => onToggle(t.value)}
-            className="text-[13px] font-medium px-3 py-1.5 rounded-full transition"
+            className="text-13 font-medium px-3 py-1.5 rounded-full transition"
             style={
               active
                 ? { background: "var(--forest)", color: "white" }
@@ -65,7 +65,7 @@ function NpsScale({ value, onChange }) {
           type="button"
           onClick={() => onChange(n)}
           aria-label={`Score ${n}`}
-          className="aspect-square rounded-[8px] text-[13px] font-semibold transition flex items-center justify-center"
+          className="aspect-square rounded-lg text-13 font-semibold transition flex items-center justify-center"
           style={
             value === n
               ? { background: "var(--forest)", color: "white" }
@@ -88,7 +88,7 @@ function StarScale({ value, onChange }) {
           type="button"
           onClick={() => onChange(n)}
           aria-label={`${n} out of 5`}
-          className="w-11 h-11 rounded-[10px] text-base font-semibold transition"
+          className="w-11 h-11 rounded-btn text-base font-semibold transition"
           style={
             value !== null && n <= value
               ? { background: "var(--forest)", color: "white" }
@@ -205,21 +205,21 @@ export default function FeedbackPage({ params }) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             {isNps ? "How likely are you to recommend this agency to a friend? (0-10)" : "Overall fit for the role (1-5)"}
           </p>
           {isNps ? <NpsScale value={rating} onChange={setRating} /> : <StarScale value={rating} onChange={setRating} />}
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             What stood out? (optional)
           </p>
           <TagPicker options={isNps ? CANDIDATE_TAGS : CLIENT_TAGS} selected={tags} onToggle={toggleTag} />
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
             Anything else? (optional)
           </p>
           <textarea
@@ -228,13 +228,13 @@ export default function FeedbackPage({ params }) {
             rows={3}
             maxLength={2000}
             placeholder={isNps ? "Communication, clarity, the interview itself…" : "Candidate quality, speed, anything else…"}
-            className="w-full text-sm px-3.5 py-2.5 rounded-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 resize-none"
+            className="w-full text-sm px-3.5 py-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 resize-none"
             style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
           />
         </div>
 
         {submitError && (
-          <p className="text-[14px] rounded-[10px] px-3 py-2" style={{ background: "#fef2f2", color: "#b91c1c" }}>
+          <p className="text-14 rounded-btn px-3 py-2" style={{ background: "#fef2f2", color: "#b91c1c" }}>
             {submitError}
           </p>
         )}
@@ -242,7 +242,7 @@ export default function FeedbackPage({ params }) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full font-semibold py-3 rounded-[12px] text-sm transition-all disabled:opacity-60"
+          className="w-full font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-60"
           style={{ background: "var(--forest)", color: "white" }}
         >
           {submitting ? "Sending…" : "Send feedback"}

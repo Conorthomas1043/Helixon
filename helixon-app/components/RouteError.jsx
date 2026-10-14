@@ -25,7 +25,7 @@ export default function RouteError({ error, retry, reset }) {
         <h1 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           This page didn&apos;t load
         </h1>
-        <p className="text-[15px] leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-15 leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
           Something went wrong on our side. Nothing you saved has been lost. Try again, and if it keeps happening,
           contact support{error?.digest ? <> and quote <code className="font-mono">{error.digest}</code></> : null}.
         </p>

@@ -89,7 +89,7 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-10 text-center">
           <span
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6"
+            className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6"
             style={{
               background: "var(--mint)",
               color: "var(--forest)",
@@ -164,7 +164,7 @@ export default function BlogPage() {
               // Give each post a real page and turn this back into a <Link>.
               <article
                 key={post.title}
-                className="rounded-[16px] p-6 flex flex-col"
+                className="rounded-2xl p-6 flex flex-col"
                 style={{
                   background: "white",
                   border: "1px solid var(--border)",
@@ -173,7 +173,7 @@ export default function BlogPage() {
                 }}
               >
                 <span
-                  className="inline-flex text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start"
+                  className="inline-flex text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start"
                   style={{
                     background: "var(--mint)",
                     color: "var(--forest)",
@@ -200,7 +200,7 @@ export default function BlogPage() {
                 </p>
 
                 <div
-                  className="flex items-center gap-2 text-[11px]"
+                  className="flex items-center gap-2 text-11"
                   style={{ color: "var(--ink-faint)" }}
                 >
                   <span>{post.date}</span>
@@ -215,7 +215,7 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pb-24">
           <div
-            className="rounded-[20px] px-8 py-14 text-center"
+            className="rounded-panel px-8 py-14 text-center"
             style={{ background: "var(--forest)" }}
           >
             <h2
@@ -238,14 +238,14 @@ export default function BlogPage() {
             <div className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto justify-center">
               <Link
                 href="/updates"
-                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-[10px] transition-transform hover:scale-[1.02]"
+                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-btn transition-transform hover:scale-[1.02]"
                 style={{ background: "white", color: "var(--forest)" }}
               >
                 Product updates
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-[10px]"
+                className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-btn"
                 style={{ border: "1px solid rgba(255,255,255,0.5)", color: "white" }}
               >
                 Get in touch

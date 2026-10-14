@@ -24,7 +24,7 @@ export function RangeControl({ range, setRange, options = ["24h", "7d", "30d"] }
   return (
     <div className="segmented">
       {options.map((item) => (
-        <button
+        <button type="button"
           key={item}
           className={range === item ? "active" : ""}
           onClick={() => setRange(item)}
@@ -163,7 +163,7 @@ export function Drawer({ open, onClose, title, subtitle, children }) {
             <h2>{title}</h2>
             {subtitle && <p>{subtitle}</p>}
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
             <Icon name="x" />
           </button>
         </div>

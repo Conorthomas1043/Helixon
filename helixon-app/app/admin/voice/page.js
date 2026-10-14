@@ -63,12 +63,12 @@ export default function VoiceOfCustomerPage() {
       <PageHeader title="Voice of customer" description="Score disagreements, survey answers, cancellation reasons, visitor questions and what demo leads want to solve.">
         <div className="segmented" role="group" aria-label="Range">
           {RANGES.map(([value, label]) => (
-            <button key={value} className={range === value ? "active" : ""} aria-pressed={range === value} onClick={() => setRange(value)}>
+            <button type="button" key={value} className={range === value ? "active" : ""} aria-pressed={range === value} onClick={() => setRange(value)}>
               {label}
             </button>
           ))}
         </div>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>

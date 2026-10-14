@@ -18,7 +18,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
   const availableTags = tags.filter((t) => !candidate.tags.includes(t.id));
 
   return (
-    <div className="rounded-[14px] p-5 sm:p-6 space-y-5" style={CARD}>
+    <div className="rounded-card p-5 sm:p-6 space-y-5" style={CARD}>
       <SectionHeading eyebrow="Recruiter workspace" title="Manage this candidate" />
 
       <div>
@@ -30,14 +30,14 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
               type="button"
               onClick={() => onLogActivity(a.type)}
               disabled={loggingActivity === a.type}
-              className="text-[12px] font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-12 font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
             >
               {loggingActivity === a.type ? "Logging…" : a.label}
             </button>
           ))}
         </div>
-        <p className="text-[12px] mt-1.5" style={{ color: INK_FAINT }}>
+        <p className="text-12 mt-1.5" style={{ color: INK_FAINT }}>
           Records that you did this, for your own activity metrics - not sent from Helixon.
         </p>
       </div>
@@ -82,7 +82,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
             return (
               <span
                 key={tagId}
-                className="inline-flex items-center gap-1 text-[12px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full"
+                className="inline-flex items-center gap-1 text-12 font-semibold pl-2.5 pr-1.5 py-1 rounded-full"
                 style={{ background: "var(--mist)", color: INK_MUTED }}
               >
                 {t?.label ?? tagId}
@@ -99,19 +99,19 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
           })}
           <details className="relative">
             <summary
-              className="list-none cursor-pointer text-[12px] font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="list-none cursor-pointer text-12 font-semibold px-2.5 py-1 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px dashed var(--border)", color: "var(--forest)" }}
             >
               + Add tag
             </summary>
-            <div className="absolute left-0 mt-2 w-48 rounded-[10px] p-1.5 z-20" style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}>
+            <div className="absolute left-0 mt-2 w-48 rounded-btn p-1.5 z-20" style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}>
               <div className="max-h-56 overflow-y-auto">
                 {availableTags.map((t) => (
                   <button
                     key={t.id}
                     type="button"
                     onClick={() => onAddTag(t.id)}
-                    className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-[8px] hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="w-full text-left text-13 px-2.5 py-1.5 rounded-lg hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ color: INK }}
                   >
                     {t.label}
@@ -127,12 +127,12 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
       <div>
         <FieldLabel>Next action</FieldLabel>
         {candidate.nextAction ? (
-          <div className="flex items-start justify-between gap-3 rounded-[10px] p-3" style={{ background: overdue ? RED_BG : "var(--mist)" }}>
+          <div className="flex items-start justify-between gap-3 rounded-btn p-3" style={{ background: overdue ? RED_BG : "var(--mist)" }}>
             <div className="min-w-0">
-              <p className="text-[14px] font-semibold" style={{ color: INK }}>
+              <p className="text-14 font-semibold" style={{ color: INK }}>
                 {candidate.nextAction.label}
               </p>
-              <p className="text-[12px]" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
+              <p className="text-12" style={{ color: overdue ? RED_STRONG : INK_MUTED }}>
                 {overdue ? "Overdue · " : "Due "}
                 {formatDateOnly(candidate.nextAction.dueAt)}
               </p>
@@ -140,7 +140,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
             <button
               type="button"
               onClick={onCompleteNextAction}
-              className="text-[12px] font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="text-12 font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
             >
               Mark done
@@ -162,7 +162,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
               value={nextActionLabel}
               onChange={(e) => setNextActionLabel(e.target.value)}
               placeholder="e.g. Call candidate"
-              className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ border: "1px solid var(--border)", color: INK }}
             />
             <div className="flex gap-2">
@@ -170,13 +170,13 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
                 type="date"
                 value={nextActionDue}
                 onChange={(e) => setNextActionDue(e.target.value)}
-                className="flex-1 text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="flex-1 text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
               <button
                 type="submit"
                 disabled={!nextActionLabel.trim()}
-                className="text-[13px] font-semibold px-3 py-2 rounded-[10px] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-13 font-semibold px-3 py-2 rounded-btn disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: "var(--forest)", color: "white" }}
               >
                 Add
@@ -231,7 +231,7 @@ export function RetentionToggle({ value, onChange }) {
           key={o.value}
           type="button"
           onClick={() => onChange(value === o.value ? null : o.value)}
-          className="text-[13px] font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="text-13 font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={
             value === o.value
               ? { background: o.value === "retained" ? "var(--forest)" : RED, color: "white" }
@@ -242,7 +242,7 @@ export function RetentionToggle({ value, onChange }) {
         </button>
       ))}
       {!value && (
-        <span className="text-[12px]" style={{ color: INK_FAINT }}>
+        <span className="text-12" style={{ color: INK_FAINT }}>
           Not checked yet
         </span>
       )}
@@ -267,7 +267,7 @@ export function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
   const isPlaced = candidate.stage === "Placed";
 
   return (
-    <div className="rounded-[14px] p-5 sm:p-6 space-y-5" style={CARD}>
+    <div className="rounded-card p-5 sm:p-6 space-y-5" style={CARD}>
       <SectionHeading eyebrow="Reporting" title="Source & outcome" />
 
       <div>
@@ -289,7 +289,7 @@ export function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
             onChange={(v) => onUpdateDetails({ rejectionReason: v || null })}
             options={REJECTION_REASON_OPTIONS}
           />
-          <p className="text-[12px] mt-1.5" style={{ color: INK_FAINT }}>
+          <p className="text-12 mt-1.5" style={{ color: INK_FAINT }}>
             Feeds the &quot;why we lose candidates&quot; breakdown in Analytics - add detail in Notes if useful.
           </p>
         </div>
@@ -309,7 +309,7 @@ export function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
                 onChange={(e) => setFee(e.target.value)}
                 onBlur={() => onUpdateDetails({ placementFee: fee === "" ? null : Number(fee) })}
                 placeholder="0.00"
-                className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
             </div>
@@ -324,12 +324,12 @@ export function OutcomeReportingPanel({ candidate, onUpdateDetails }) {
                 onChange={(e) => setCost(e.target.value)}
                 onBlur={() => onUpdateDetails({ placementCost: cost === "" ? null : Number(cost) })}
                 placeholder="0.00"
-                className="w-full text-sm px-3 py-2 rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ border: "1px solid var(--border)", color: INK }}
               />
             </div>
           </div>
-          <p className="text-[12px] -mt-3" style={{ color: INK_FAINT }}>
+          <p className="text-12 -mt-3" style={{ color: INK_FAINT }}>
             Feeds fee income/margin figures in Analytics. Recording the offer above fills in the fee for you.
           </p>
 

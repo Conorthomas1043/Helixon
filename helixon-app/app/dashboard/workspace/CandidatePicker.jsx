@@ -38,7 +38,7 @@ export default function CandidatePicker({ exclude, onPick }) {
       <label htmlFor={`${listId}-input`} className="sr-only">
         Add a candidate
       </label>
-      <div className="flex items-center gap-2 rounded-[10px] border border-[var(--border)] bg-white px-3 focus-within:ring-2 focus-within:ring-[var(--forest)]">
+      <div className="flex items-center gap-2 rounded-btn border border-[var(--border)] bg-white px-3 focus-within:ring-2 focus-within:ring-[var(--forest)]">
         <Icon name="plus" size={14} className="text-[var(--ink-soft)]" />
         <input
           id={`${listId}-input`}
@@ -75,7 +75,7 @@ export default function CandidatePicker({ exclude, onPick }) {
         {loading && <Spinner size={14} />}
       </div>
       {showList && (
-        <ul id={listId} role="listbox" className="absolute left-0 right-0 z-30 mt-1 max-h-80 overflow-y-auto rounded-[10px] border border-[var(--border)] bg-white py-1 shadow-lg">
+        <ul id={listId} role="listbox" className="absolute left-0 right-0 z-30 mt-1 max-h-80 overflow-y-auto rounded-btn border border-[var(--border)] bg-white py-1 shadow-lg">
           {results.length === 0 ? (
             <li className="px-3 py-2 text-sm text-[var(--ink-soft)]">No one matches &quot;{search}&quot;.</li>
           ) : (

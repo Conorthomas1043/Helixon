@@ -133,11 +133,11 @@ function AgencyDrawer({ id, onClose, onChanged }) {
           )}
 
           <div className="actions">
-            <button className="btn small" onClick={rename} disabled={busy}><Icon name="building" size={13} /> Rename</button>
+            <button type="button" className="btn small" onClick={rename} disabled={busy}><Icon name="building" size={13} /> Rename</button>
             {agency.suspendedAt ? (
-              <button className="btn small primary" onClick={() => run({ action: "unsuspend" }, "Agency reactivated")} disabled={busy}>Reactivate</button>
+              <button type="button" className="btn small primary" onClick={() => run({ action: "unsuspend" }, "Agency reactivated")} disabled={busy}>Reactivate</button>
             ) : (
-              <button className="btn small danger" onClick={suspend} disabled={busy}><Icon name="ban" size={13} /> Suspend</button>
+              <button type="button" className="btn small danger" onClick={suspend} disabled={busy}><Icon name="ban" size={13} /> Suspend</button>
             )}
             <Link className="btn small ghost" href={`/admin/audit?target=${agency.id}`}>Audit log</Link>
           </div>
@@ -183,7 +183,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
               }}
             >
               <input className="search-input no-icon" type="number" min={1} max={100000} placeholder="No cap" value={cap} onChange={(e) => setCapDraft(e.target.value)} aria-label="Monthly screening cap" style={{ maxWidth: 160 }} />
-              <button className="btn small" disabled={busy || cap === (agency.screeningCap ? String(agency.screeningCap) : "")}>Save cap</button>
+              <button type="submit" className="btn small" disabled={busy || cap === (agency.screeningCap ? String(agency.screeningCap) : "")}>Save cap</button>
               {agency.screeningCap && (
                 <button type="button" className="btn small ghost" disabled={busy} onClick={() => run({ action: "set_cap", cap: null }, "Cap removed")}>Remove cap</button>
               )}
@@ -206,7 +206,7 @@ function AgencyDrawer({ id, onClose, onChanged }) {
                     </span>
                     <span className="actions" style={{ gap: 6 }}>
                       {m.clerkUserId && <Link className="btn small ghost" href={`/admin/users?q=${encodeURIComponent(m.clerkUserId)}`}>User</Link>}
-                      <button className="btn small" onClick={() => removeMember(m)} disabled={busy}>Remove</button>
+                      <button type="button" className="btn small" onClick={() => removeMember(m)} disabled={busy}>Remove</button>
                     </span>
                   </div>
                 ))}
@@ -360,8 +360,8 @@ export default function AgenciesPage() {
   return (
     <>
       <PageHeader title="Agencies" description="Every customer workspace: plan, team, usage and activity. Open one to rename it, cap its screenings, suspend it or manage its members.">
-        <button className="btn small" onClick={exportCsv} disabled={!rows.length}>Export CSV</button>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={exportCsv} disabled={!rows.length}>Export CSV</button>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>
@@ -381,7 +381,7 @@ export default function AgenciesPage() {
         <input className="search-input" placeholder="Search agencies..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} aria-label="Search agencies" />
         <div className="segmented" role="group" aria-label="Filter agencies">
           {FILTERS.map(([key, label]) => (
-            <button key={key} className={filter === key ? "active" : ""} aria-pressed={filter === key} onClick={() => setFilter(key)}>
+            <button type="button" key={key} className={filter === key ? "active" : ""} aria-pressed={filter === key} onClick={() => setFilter(key)}>
               {label} <span style={{ opacity: 0.6 }}>{counts[key] ?? 0}</span>
             </button>
           ))}

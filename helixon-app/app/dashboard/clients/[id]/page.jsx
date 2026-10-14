@@ -189,7 +189,7 @@ function ContactDialog({ clientId, contact, onClose, onSaved }) {
             <TextArea maxLength={2000} value={f.notes} onChange={set("notes")} />
           </Field>
         </div>
-        <label className="flex items-center gap-2 text-[14px]" style={{ color: INK }}>
+        <label className="flex items-center gap-2 text-14" style={{ color: INK }}>
           <input type="checkbox" checked={f.isPrimary} onChange={(e) => setF((v) => ({ ...v, isPrimary: e.target.checked }))} className="accent-[var(--forest)]" />
           Main contact for this client
         </label>
@@ -371,23 +371,23 @@ export default function ClientDetailPage({ params }) {
         <div className="space-y-6 min-w-0">
           <Card title="Jobs" eyebrow={`${jobs.length} total`}>
             {jobs.length === 0 ? (
-              <p className="text-[14px]" style={{ color: INK_MUTED }}>
+              <p className="text-14" style={{ color: INK_MUTED }}>
                 No jobs for {client.name} yet.
               </p>
             ) : (
               <ul className="divide-y">
                 {jobs.map((j) => (
                   <li key={j.id}>
-                    <Link href={`/dashboard/jobs/${j.id}`} className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-[10px] hover:bg-[var(--mist)]">
+                    <Link href={`/dashboard/jobs/${j.id}`} className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-btn hover:bg-[var(--mist)]">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold truncate" style={{ color: INK }}>
                           {j.title}
                         </p>
-                        <p className="text-[13px] truncate" style={{ color: INK_MUTED }}>
+                        <p className="text-13 truncate" style={{ color: INK_MUTED }}>
                           {[j.location, j.salaryRange, `added ${formatDateOnly(j.createdAt)}`].filter(Boolean).join(" · ")}
                         </p>
                       </div>
-                      <span className="text-[13px] tabular-nums whitespace-nowrap" style={{ color: INK_MUTED }}>
+                      <span className="text-13 tabular-nums whitespace-nowrap" style={{ color: INK_MUTED }}>
                         {j.candidates} cand · {j.inProcess} in process · {j.placed} placed
                       </span>
                       <Pill color={j.status === "open" ? "var(--forest)" : INK_FAINT} background={j.status === "open" ? "var(--mint)" : "var(--mist)"}>
@@ -402,13 +402,13 @@ export default function ClientDetailPage({ params }) {
 
           <Card title="Placements" eyebrow={formatMoney(fees)}>
             {placements.length === 0 ? (
-              <p className="text-[14px]" style={{ color: INK_MUTED }}>
+              <p className="text-14" style={{ color: INK_MUTED }}>
                 No placements yet.
               </p>
             ) : (
               <ul className="divide-y">
                 {placements.map((p) => (
-                  <li key={p.candidateId} className="py-2.5 flex items-center gap-3 text-[14px]">
+                  <li key={p.candidateId} className="py-2.5 flex items-center gap-3 text-14">
                     <Link href={`/dashboard/candidates/${p.candidateId}`} className="font-semibold hover:underline flex-1 min-w-0 truncate" style={{ color: INK }}>
                       {p.candidateName}
                     </Link>
@@ -428,7 +428,7 @@ export default function ClientDetailPage({ params }) {
             <Card title="Invoices" eyebrow={outstanding ? `${formatMoney(outstanding)} outstanding` : "All paid"}>
               <ul className="divide-y">
                 {invoices.map((i) => (
-                  <li key={i.id} className="py-2.5 flex items-center gap-3 text-[14px]">
+                  <li key={i.id} className="py-2.5 flex items-center gap-3 text-14">
                     <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                       {i.number}
                     </Link>
@@ -448,18 +448,18 @@ export default function ClientDetailPage({ params }) {
           <Card title="Timeline">
             <LogActivity clientId={id} onLogged={reload} />
             {activity.length === 0 ? (
-              <p className="text-[14px]" style={{ color: INK_MUTED }}>
+              <p className="text-14" style={{ color: INK_MUTED }}>
                 Nothing logged yet.
               </p>
             ) : (
               <ul className="space-y-3">
                 {activity.map((a) => (
-                  <li key={a.id} className="text-[14px]">
+                  <li key={a.id} className="text-14">
                     <span className="font-semibold" style={{ color: INK }}>
                       {ACTIVITY_LABELS[a.type] ?? a.type}
                     </span>
                     {a.meta?.note && <span style={{ color: INK }}> - {a.meta.note}</span>}
-                    <span className="block text-[12px]" style={{ color: INK_FAINT }}>
+                    <span className="block text-12" style={{ color: INK_FAINT }}>
                       {a.actor ? `${a.actor} · ` : ""}
                       {formatRelativeTime(a.createdAt)}
                     </span>
@@ -489,13 +489,13 @@ export default function ClientDetailPage({ params }) {
             }
           >
             {contacts.length === 0 ? (
-              <p className="text-[14px]" style={{ color: INK_MUTED }}>
+              <p className="text-14" style={{ color: INK_MUTED }}>
                 No contacts yet. Add the hiring managers you deal with - their email is used for client emails and feedback requests.
               </p>
             ) : (
               <ul className="space-y-4">
                 {contacts.map((c) => (
-                  <li key={c.id} className="text-[14px]">
+                  <li key={c.id} className="text-14">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="font-semibold" style={{ color: INK }}>
@@ -513,7 +513,7 @@ export default function ClientDetailPage({ params }) {
                           </a>
                         )}
                       </div>
-                      <div className="flex gap-2 text-[12px] font-semibold shrink-0">
+                      <div className="flex gap-2 text-12 font-semibold shrink-0">
                         <button type="button" onClick={() => setContactDialog(c)} style={{ color: "var(--forest)" }}>
                           Edit
                         </button>
@@ -544,7 +544,7 @@ export default function ClientDetailPage({ params }) {
           />
 
           <Card title="Terms" action={<Button size="sm" onClick={() => setEditing(true)}>Edit</Button>}>
-            <dl className="text-[14px] space-y-2">
+            <dl className="text-14 space-y-2">
               {[
                 ["Fee", client.feePercent != null ? `${client.feePercent}% of salary` : null],
                 ["Payment terms", client.paymentTermsDays != null ? `${client.paymentTermsDays} days` : null],
@@ -561,7 +561,7 @@ export default function ClientDetailPage({ params }) {
               ))}
             </dl>
             {client.termsNotes && (
-              <p className="text-[13px] mt-3 whitespace-pre-line" style={{ color: INK_MUTED }}>
+              <p className="text-13 mt-3 whitespace-pre-line" style={{ color: INK_MUTED }}>
                 {client.termsNotes}
               </p>
             )}

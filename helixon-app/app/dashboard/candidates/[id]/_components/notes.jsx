@@ -14,17 +14,17 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
 
   if (editing) {
     return (
-      <li className="text-[14px] rounded-[10px] p-3" style={{ background: "var(--mist)" }}>
+      <li className="text-14 rounded-btn p-3" style={{ background: "var(--mist)" }}>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={3}
           aria-label="Edit note"
-          className="w-full text-sm p-2.5 rounded-[8px] resize-none bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-full text-sm p-2.5 rounded-lg resize-none bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
         <div className="flex justify-end gap-2 mt-2">
-          <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-[13px] font-semibold px-3 py-1 rounded-full" style={{ color: INK_MUTED }}>
+          <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-13 font-semibold px-3 py-1 rounded-full" style={{ color: INK_MUTED }}>
             Cancel
           </button>
           <button
@@ -36,7 +36,7 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-[13px] font-semibold px-3 py-1 rounded-full disabled:opacity-40"
+            className="text-13 font-semibold px-3 py-1 rounded-full disabled:opacity-40"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Save"}
@@ -48,20 +48,20 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
 
   return (
     <li
-      className="group text-[14px] rounded-[10px] p-3"
+      className="group text-14 rounded-btn p-3"
       style={{ background: note.pinnedAt ? "var(--mint)" : "var(--mist)", border: note.pinnedAt ? "1px solid var(--forest)" : "1px solid transparent" }}
     >
       {note.pinnedAt && (
-        <p className="text-[12px] font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
+        <p className="text-12 font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--forest)" }}>
           Pinned
         </p>
       )}
       <p className="whitespace-pre-wrap" style={{ color: INK }}>{note.body}</p>
       <div className="flex items-center justify-between gap-2 mt-1.5">
-        <p className="text-[12px]" style={{ color: INK_FAINT }}>
+        <p className="text-12" style={{ color: INK_FAINT }}>
           - {note.author} · {formatRelativeTime(note.createdAt)}
         </p>
-        <span className="flex items-center gap-2 text-[12px] font-semibold">
+        <span className="flex items-center gap-2 text-12 font-semibold">
           <button type="button" onClick={() => onPin(note.id, !note.pinnedAt)} className="hover:underline" style={{ color: INK_MUTED }}>
             {note.pinnedAt ? "Unpin" : "Pin"}
           </button>
@@ -97,7 +97,7 @@ export function NotesPanel({ candidateId, notes, currentUserId, onAddNote, onEdi
   const [saving, setSaving] = useState(false);
 
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Working notes" title="Notes" />
       <form
         onSubmit={async (e) => {
@@ -116,14 +116,14 @@ export function NotesPanel({ candidateId, notes, currentUserId, onAddNote, onEdi
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Add a note for the team… (type @name to notify someone)"
           rows={3}
-          className="w-full text-sm p-3 rounded-[10px] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="w-full text-sm p-3 rounded-btn resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ border: "1px solid var(--border)", color: INK }}
         />
         <div className="flex justify-end mt-2">
           <button
             type="submit"
             disabled={!draft.trim() || saving}
-            className="text-[13px] font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Add note"}
@@ -132,7 +132,7 @@ export function NotesPanel({ candidateId, notes, currentUserId, onAddNote, onEdi
       </form>
 
       {notes.length === 0 ? (
-        <p className="text-[14px]" style={{ color: INK_MUTED }}>
+        <p className="text-14" style={{ color: INK_MUTED }}>
           No notes yet.
         </p>
       ) : (

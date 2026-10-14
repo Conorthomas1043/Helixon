@@ -41,7 +41,7 @@ export default function AuthShell({
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-10 blur-3xl auth-drift-b" style={{ background: "var(--signal)" }} />
 
         <Link href="/" className="relative z-10 flex items-center gap-3" aria-label="Helixon home">
-          <div className="w-9 h-9 bg-white rounded-[10px] flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 bg-white rounded-btn flex items-center justify-center shadow-sm">
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--forest)" opacity="0.55" />
               <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--forest)" />
@@ -58,13 +58,13 @@ export default function AuthShell({
       {/* Right panel - hosts the auth card */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
         <Link href="/" className={`flex lg:hidden items-center gap-2.5 ${mobileLogoClassName}`} aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center" style={{ background: "var(--forest)" }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--forest)" }}>
             <span className="text-white text-sm font-bold">H</span>
           </div>
           <span className="text-base font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
         </Link>
         {mobileTagline && (
-          <p className="flex lg:hidden text-[12px] mb-6 text-center max-w-xs" style={{ color: "var(--ink-soft)" }}>
+          <p className="flex lg:hidden text-12 mb-6 text-center max-w-xs" style={{ color: "var(--ink-soft)" }}>
             {mobileTagline}
           </p>
         )}

@@ -16,9 +16,9 @@ export function CardHeader({ title, eyebrow, count, action, id }) {
     <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>{eyebrow}</p>
+          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>{eyebrow}</p>
         )}
-        <h2 id={id} className="text-[15px] font-semibold flex items-center gap-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h2 id={id} className="text-15 font-semibold flex items-center gap-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           {title}
           {typeof count === "number" && count > 0 && (
             <Pill>{count}</Pill>
@@ -65,14 +65,14 @@ export function ProgressBar({ pct, tone = "var(--forest)", label }) {
 export function Kpi({ label, value, sub, tone, index = 0, href }) {
   const body = (
     <>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-2.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
-      <p className="text-[28px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: tone || "var(--ink)" }}>
+      <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-2.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
+      <p className="text-28 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: tone || "var(--ink)" }}>
         {typeof value === "number" ? <CountUp value={value} /> : value ?? "-"}
       </p>
       {sub && <p className="text-xs mt-2" style={{ color: "var(--ink-faint)" }}>{sub}</p>}
     </>
   );
-  const className = "fade-up-in block rounded-[16px] bg-white p-4 sm:p-5";
+  const className = "fade-up-in block rounded-2xl bg-white p-4 sm:p-5";
   const style = { border: "1px solid var(--border)", "--stagger-delay": `${index * 60}ms` };
   if (href) {
     return (

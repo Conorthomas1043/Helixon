@@ -34,12 +34,12 @@ export default async function AgencyJobsPage({ params, searchParams }) {
           Current vacancies
         </h1>
         {agency.careers_intro && (
-          <p className="text-[15px] leading-relaxed mb-8 max-w-2xl whitespace-pre-line" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed mb-8 max-w-2xl whitespace-pre-line" style={{ color: "var(--ink-soft)" }}>
             {agency.careers_intro}
           </p>
         )}
         {jobs.length === 0 ? (
-          <p className="text-[15px] rounded-[14px] bg-white p-8 text-center" style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}>
+          <p className="text-15 rounded-card bg-white p-8 text-center" style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}>
             No open vacancies right now - check back soon.
           </p>
         ) : (
@@ -48,11 +48,11 @@ export default async function AgencyJobsPage({ params, searchParams }) {
               <li key={j.id}>
                 <Link
                   href={`/jobs/${slug}/${j.id}${srcQuery}`}
-                  className="block rounded-[14px] bg-white p-5 transition-shadow hover:shadow-md"
+                  className="block rounded-card bg-white p-5 transition-shadow hover:shadow-md"
                   style={{ border: "1px solid var(--border)" }}
                 >
-                  <h2 className="text-[17px] font-semibold" style={{ color: "var(--ink)" }}>{j.title}</h2>
-                  <p className="text-[13px] mt-1" style={{ color: "var(--ink-soft)" }}>
+                  <h2 className="text-16 font-semibold" style={{ color: "var(--ink)" }}>{j.title}</h2>
+                  <p className="text-13 mt-1" style={{ color: "var(--ink-soft)" }}>
                     {[j.client, j.location, j.employmentType, j.salary].filter(Boolean).join(" · ")}
                   </p>
                 </Link>

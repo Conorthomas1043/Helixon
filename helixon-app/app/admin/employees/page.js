@@ -124,7 +124,7 @@ function CreateEmployee({ open, onClose, create, busy }) {
           </div>
 
           <div className="actions">
-            <button className="btn primary" disabled={busy}>Create account</button>
+            <button type="submit" className="btn primary" disabled={busy}>Create account</button>
             <button type="button" className="btn ghost" onClick={close}>Cancel</button>
           </div>
         </form>
@@ -219,17 +219,17 @@ export default function EmployeesPage() {
         description={view === "staff" ? "Staff accounts, what each person can do in the portal, and where they're signed in." : "SEO, marketing, and sales-facing numbers - kept simple for the sales team."}
       >
         <div className="segmented" role="group" aria-label="View">
-          <button className={view === "staff" ? "active" : ""} aria-pressed={view === "staff"} onClick={() => setView("staff")}>Staff</button>
-          <button className={view === "sales" ? "active" : ""} aria-pressed={view === "sales"} onClick={() => setView("sales")}>Sales &amp; marketing</button>
+          <button type="button" className={view === "staff" ? "active" : ""} aria-pressed={view === "staff"} onClick={() => setView("staff")}>Staff</button>
+          <button type="button" className={view === "sales" ? "active" : ""} aria-pressed={view === "sales"} onClick={() => setView("sales")}>Sales &amp; marketing</button>
         </div>
         {view === "sales" ? (
           <RangeControl range={range} setRange={setRange} options={["7d", "30d", "90d"]} />
         ) : (
           <>
-            <button className="btn small" onClick={() => openPortal()} disabled={busy} title="Sign in to the staff portal with your own admin-linked account">
+            <button type="button" className="btn small" onClick={() => openPortal()} disabled={busy} title="Sign in to the staff portal with your own admin-linked account">
               <Icon name="external" size={13} /> Open employee portal
             </button>
-            <button className="btn small primary" onClick={() => setCreating(true)}>
+            <button type="button" className="btn small primary" onClick={() => setCreating(true)}>
               <Icon name="userPlus" size={13} /> Add employee
             </button>
           </>
@@ -263,7 +263,7 @@ export default function EmployeesPage() {
                   ["online", "Signed in"],
                   ["disabled", "Deactivated"],
                 ].map(([key, label]) => (
-                  <button key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>{label}</button>
+                  <button type="button" key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>{label}</button>
                 ))}
               </div>
               <span className="faint" style={{ marginLeft: "auto", fontSize: 14 }}>{rows.length} of {employees.length}</span>

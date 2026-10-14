@@ -50,17 +50,17 @@ function CancelDialog({ plan, onClose, onContinue, busy }) {
         </div>
       </fieldset>
       <label className="block mt-4">
-        <span className="block text-[14px] mb-1" style={{ color: COLORS.muted }}>Anything else? (optional)</span>
-        <textarea value={detail} onChange={(e) => setDetail(e.target.value)} maxLength={500} rows={3} className="w-full text-sm rounded-[10px] px-3 py-2" style={{ border: "1px solid var(--border)", color: COLORS.ink }} />
+        <span className="block text-14 mb-1" style={{ color: COLORS.muted }}>Anything else? (optional)</span>
+        <textarea value={detail} onChange={(e) => setDetail(e.target.value)} maxLength={500} rows={3} className="w-full text-sm rounded-btn px-3 py-2" style={{ border: "1px solid var(--border)", color: COLORS.ink }} />
       </label>
       {/* Exit interviews: a yes here lets someone from Helixon ask what
           would have kept them. Opt-in, unticked by default. */}
-      <label className="flex items-start gap-2.5 mt-4 text-[14px] cursor-pointer" style={{ color: COLORS.ink }}>
+      <label className="flex items-start gap-2.5 mt-4 text-14 cursor-pointer" style={{ color: COLORS.ink }}>
         <input type="checkbox" checked={canTalk} onChange={(e) => setCanTalk(e.target.checked)} className="mt-0.5 accent-[var(--forest)]" />
         I&apos;m happy for someone from Helixon to email me about a 15-minute chat about this.
       </label>
       {offer && (
-        <div className="mt-4 rounded-[12px] p-4 text-sm" style={{ background: "var(--mint)", color: COLORS.ink }}>
+        <div className="mt-4 rounded-xl p-4 text-sm" style={{ background: "var(--mint)", color: COLORS.ink }}>
           <p>{offer.text}</p>
           {offer.href ? (
             <a href={offer.href} className="inline-block mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</a>
@@ -153,8 +153,8 @@ export default function BillingPage() {
 
       <div className="max-w-[880px] mx-auto px-6 pb-20">
         {paymentFailed && (
-          <div role="alert" className="mb-6 rounded-[14px] p-5" style={{ border: "1px solid #fecaca", background: "#fff7f7" }}>
-            <p className="text-[15px] font-semibold" style={{ color: "var(--score-low)" }}>Your last payment didn&apos;t go through</p>
+          <div role="alert" className="mb-6 rounded-card p-5" style={{ border: "1px solid #fecaca", background: "#fff7f7" }}>
+            <p className="text-15 font-semibold" style={{ color: "var(--score-low)" }}>Your last payment didn&apos;t go through</p>
             <p className="text-sm leading-relaxed mt-1" style={{ color: COLORS.ink }}>
               {status === "unpaid"
                 ? "Screening and sending emails are paused until it's paid. Your workspace, candidates and history are all still here; update your payment method to pick up where you left off."
@@ -179,7 +179,7 @@ export default function BillingPage() {
               <p className="text-sm mb-4" style={{ color: COLORS.muted }}>
                 You&apos;re not on a paid plan yet.
               </p>
-              <Link href="/pricing" className="inline-flex items-center justify-center rounded-[10px] font-semibold text-sm px-4 py-2.5 text-white" style={{ background: "var(--forest)" }}>View plans</Link>
+              <Link href="/pricing" className="inline-flex items-center justify-center rounded-btn font-semibold text-sm px-4 py-2.5 text-white" style={{ background: "var(--forest)" }}>View plans</Link>
             </>
           ) : (
             <div className="space-y-4 max-w-sm">
@@ -208,7 +208,7 @@ export default function BillingPage() {
                     {portalLoading ? "Opening…" : "Manage billing"}
                   </Button>
                   {status !== "canceled" && (
-                    <button type="button" onClick={() => setCancelOpen(true)} className="text-[14px] underline min-h-[32px]" style={{ color: COLORS.muted }}>
+                    <button type="button" onClick={() => setCancelOpen(true)} className="text-14 underline min-h-[32px]" style={{ color: COLORS.muted }}>
                       Cancel subscription
                     </button>
                   )}

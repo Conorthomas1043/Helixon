@@ -29,7 +29,7 @@ export function InlineAlert({ message }) {
 export function PageCard({ title, description, danger, children }) {
   return (
     <Card
-      className="rounded-[18px] p-7 sm:p-9 shadow-[0_16px_32px_-20px_rgba(19,32,27,0.28)]"
+      className="rounded-2xl p-7 sm:p-9 shadow-[0_16px_32px_-20px_rgba(19,32,27,0.28)]"
       style={danger ? { borderColor: "var(--ui-danger)" } : undefined}
     >
       <h2

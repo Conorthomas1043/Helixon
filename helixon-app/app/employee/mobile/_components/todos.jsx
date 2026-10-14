@@ -107,13 +107,13 @@ export function TodosTab() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="What needs doing?"
-          className="flex-1 text-[14px] rounded-[10px] px-3 py-2.5"
+          className="flex-1 text-14 rounded-btn px-3 py-2.5"
           style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
         />
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="w-11 h-11 flex items-center justify-center rounded-[10px] shrink-0"
+          className="w-11 h-11 flex items-center justify-center rounded-btn shrink-0"
           style={{ background: "var(--forest)", color: "white" }}
           aria-label="Add task"
         >
@@ -125,11 +125,11 @@ export function TodosTab() {
 
       <SectionTitle>Open ({open.length})</SectionTitle>
       {loading ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Loading…
         </p>
       ) : open.length === 0 ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Nothing open. Nice.
         </p>
       ) : (
@@ -157,7 +157,7 @@ export function TodosTab() {
 export function TodoRow({ todo, onToggle, onDelete }) {
   return (
     <div
-      className="flex items-center gap-3 px-3.5 py-3 rounded-[12px]"
+      className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
       style={{ background: "white", border: "1px solid var(--border)" }}
     >
       <button
@@ -179,7 +179,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
       />
       <div className="min-w-0 flex-1">
         <div
-          className="text-[14px] font-medium truncate"
+          className="text-14 font-medium truncate"
           style={{
             color: todo.done ? "var(--ink-faint)" : "var(--ink)",
             textDecoration: todo.done ? "line-through" : "none",
@@ -188,7 +188,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
           {todo.title}
         </div>
         {todo.due_date && (
-          <div className="text-[12px]" style={{ color: "var(--ink-faint)" }}>
+          <div className="text-12" style={{ color: "var(--ink-faint)" }}>
             Due {new Date(todo.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </div>
         )}
@@ -197,7 +197,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
         type="button"
         onClick={() => onDelete(todo)}
         aria-label="Delete task"
-        className="w-8 h-8 flex items-center justify-center rounded-[8px] shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0"
         style={{ color: "var(--ink-faint)" }}
       >
         <Icon path={ICONS.trash} size={15} />

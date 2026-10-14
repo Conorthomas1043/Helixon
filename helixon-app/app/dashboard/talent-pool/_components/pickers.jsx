@@ -21,7 +21,7 @@ export function AvailabilityPicker({ value, onChange, disabled }) {
   const a = AVAILABILITY[value] || UNKNOWN;
   return (
     <label
-      className="relative inline-flex items-center gap-1.5 text-[13px] font-semibold pl-2 pr-6 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"
+      className="relative inline-flex items-center gap-1.5 text-13 font-semibold pl-2 pr-6 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"
       style={{ color: a.fg, background: a.bg, borderColor: value ? "transparent" : "var(--border)" }}
     >
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: a.dot }} aria-hidden="true" />
@@ -53,7 +53,7 @@ export function CheckInPicker({ value, onChange, disabled }) {
     <span className="inline-flex items-center">
       <label
         className={cx(
-          "relative inline-flex items-center gap-1 text-[13px] font-medium px-2 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
+          "relative inline-flex items-center gap-1 text-13 font-medium px-2 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
           overdue
             ? "bg-[#fbefed] text-[#a83226] border-transparent font-semibold"
             : value
@@ -101,7 +101,7 @@ export function NoteEditor({ note, onSave }) {
           maxLength={500}
           placeholder="Why keep them? e.g. great closer, wants remote, salary £60k+"
           aria-label="Why keep them"
-          className="flex-1 min-w-0 text-[14px] px-3 py-2 rounded-[10px] border border-[var(--border)] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)]"
+          className="flex-1 min-w-0 text-14 px-3 py-2 rounded-btn border border-[var(--border)] resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)]"
         />
         <div className="flex flex-col gap-1">
           <button
@@ -113,7 +113,7 @@ export function NoteEditor({ note, onSave }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-[13px] font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-white disabled:opacity-50"
+            className="text-13 font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-white disabled:opacity-50"
           >
             {saving ? "…" : "Save"}
           </button>
@@ -123,7 +123,7 @@ export function NoteEditor({ note, onSave }) {
               setEditing(false);
               setText(note || "");
             }}
-            className="text-[13px] font-semibold px-3 py-1 text-[var(--ink-soft)]"
+            className="text-13 font-semibold px-3 py-1 text-[var(--ink-soft)]"
           >
             Cancel
           </button>
@@ -133,11 +133,11 @@ export function NoteEditor({ note, onSave }) {
   }
   return note ? (
     <button type="button" onClick={() => setEditing(true)} className="group mt-2 flex items-start gap-1.5 text-left" title="Edit note">
-      <span className="text-[14px] text-[var(--ink)] italic leading-snug">“{note}”</span>
-      <span className="text-[12px] font-semibold not-italic text-[var(--ink-faint)] opacity-0 group-hover:opacity-100 transition-opacity">Edit</span>
+      <span className="text-14 text-[var(--ink)] italic leading-snug">“{note}”</span>
+      <span className="text-12 font-semibold not-italic text-[var(--ink-faint)] opacity-0 group-hover:opacity-100 transition-opacity">Edit</span>
     </button>
   ) : (
-    <button type="button" onClick={() => setEditing(true)} className="mt-1.5 text-[13px] font-medium text-[var(--ink-faint)] hover:text-[var(--forest)]">
+    <button type="button" onClick={() => setEditing(true)} className="mt-1.5 text-13 font-medium text-[var(--ink-faint)] hover:text-[var(--forest)]">
       + Add a note
     </button>
   );
@@ -152,13 +152,13 @@ export function PoolExpiry({ expiresAt, onExtend, disabled }) {
   const date = new Date(expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   if (days > 30) {
     return (
-      <span className="text-[12px] text-[var(--ink-faint)]" title="Taken out of the pool on this date unless extended - your retention policy">
+      <span className="text-12 text-[var(--ink-faint)]" title="Taken out of the pool on this date unless extended - your retention policy">
         · kept until {date}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
+    <span className="inline-flex items-center gap-1.5 text-12 font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
       <Icon name="clock" size={11} />
       Leaves the pool {days <= 0 ? "today" : `in ${days} day${days === 1 ? "" : "s"}`}
       <button type="button" onClick={onExtend} disabled={disabled} className="underline underline-offset-2 disabled:opacity-50">

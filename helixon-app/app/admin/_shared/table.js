@@ -13,13 +13,13 @@ export function RequestTable({ rows, blockedSet, onBlock, onOpen, emptyLabel }) 
       <table className="table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Source</th>
-            <th>Request</th>
-            <th>Location</th>
-            <th>Outcome</th>
-            <th>Threat</th>
-            <th>Action</th>
+            <th scope="col">Time</th>
+            <th scope="col">Source</th>
+            <th scope="col">Request</th>
+            <th scope="col">Location</th>
+            <th scope="col">Outcome</th>
+            <th scope="col">Threat</th>
+            <th scope="col">Action</th>
           </tr>
         </thead>
 
@@ -75,7 +75,7 @@ export function RequestTable({ rows, blockedSet, onBlock, onOpen, emptyLabel }) 
 
                 <td>
                   {row.ip && !row.blocked && !blockedSet.has(row.ip) ? (
-                    <button
+                    <button type="button"
                       className="btn small danger"
                       onClick={(e) => {
                         stop(e);

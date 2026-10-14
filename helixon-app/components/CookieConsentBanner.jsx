@@ -67,7 +67,7 @@ export default function CookieConsentBanner({ embedded = false }) {
       data-visible={mounted && visible ? "true" : "false"}
     >
       <div
-        className="max-w-[720px] mx-auto rounded-[14px] sm:rounded-[16px] p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
+        className="max-w-[720px] mx-auto rounded-card sm:rounded-2xl p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
         style={{
           background: "rgba(255,255,255,0.96)",
           backdropFilter: "blur(12px)",
@@ -88,7 +88,7 @@ export default function CookieConsentBanner({ embedded = false }) {
           <button
             type="button"
             onClick={() => setConsent("essential-only")}
-            className="btn-outline flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-[10px] min-h-[44px] transition-colors"
+            className="btn-outline flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-btn min-h-[44px] transition-colors"
             style={{ border: "1.5px solid var(--border)", color: "var(--ink)" }}
           >
             Essential only
@@ -96,7 +96,7 @@ export default function CookieConsentBanner({ embedded = false }) {
           <button
             type="button"
             onClick={() => setConsent("all")}
-            className="btn-forest flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-[10px] text-white min-h-[44px] transition-colors"
+            className="btn-forest flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-btn text-white min-h-[44px] transition-colors"
             style={{ background: "var(--forest)" }}
           >
             Accept all

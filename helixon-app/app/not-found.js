@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import DocumentTitle from "@/components/DocumentTitle";
 import { auth } from "@clerk/nextjs/server";
 import { after } from "next/server";
 import { LOG_UID_HEADER, markRequestStatus } from "@/lib/ops/request-status";
@@ -22,8 +23,9 @@ export default async function NotFound() {
   const secondary = signedIn ? { href: "/", label: "Back to homepage" } : { href: "/how-it-works", label: "See how Helixon works" };
   return (
     <main className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--mist)" }}>
+      <DocumentTitle title="Page not found | Helixon" />
       <div className="text-center max-w-sm">
-        <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mx-auto mb-6" style={{ background: "var(--mint)" }}>
+        <div className="w-14 h-14 rounded-card flex items-center justify-center mx-auto mb-6" style={{ background: "var(--mint)" }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.6" strokeLinecap="round">
             <circle cx="11" cy="11" r="7" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -37,10 +39,10 @@ export default async function NotFound() {
           We scored a lot of CVs, but not whatever page you were looking for. It may have moved, or the link&apos;s out of date.
         </p>
         <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
-          <Link href={primary.href} className="text-sm font-semibold px-5 py-3 rounded-[10px] text-white transition-colors" style={{ background: "var(--forest)" }}>
+          <Link href={primary.href} className="text-sm font-semibold px-5 py-3 rounded-btn text-white transition-colors" style={{ background: "var(--forest)" }}>
             {primary.label}
           </Link>
-          <Link href={secondary.href} className="text-sm font-semibold px-5 py-3 rounded-[10px] transition-colors" style={{ border: "1px solid var(--border)", color: "#13201b" }}>
+          <Link href={secondary.href} className="text-sm font-semibold px-5 py-3 rounded-btn transition-colors" style={{ border: "1px solid var(--border)", color: "#13201b" }}>
             {secondary.label}
           </Link>
         </div>

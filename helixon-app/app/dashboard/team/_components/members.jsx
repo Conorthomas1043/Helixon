@@ -43,7 +43,7 @@ export function Metric({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-[12px] uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-12 uppercase tracking-wide" style={{ color: INK_FAINT }}>
         {label}
       </p>
     </div>
@@ -56,17 +56,17 @@ export function SummaryTile({ label, value, sub, dot, active, onClick }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="text-left rounded-[14px] p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
+      className="text-left rounded-card p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
       style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
     >
-      <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
         {dot && <PresenceDot state={dot} size={8} />}
         {label}
       </p>
-      <p className="text-[24px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
+      <p className="text-24 font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
         {value}
       </p>
-      {sub && <p className="text-[13px] mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
+      {sub && <p className="text-13 mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
     </button>
   );
 }
@@ -79,39 +79,39 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
   // No fade for offline members: the avatar and presence dot already say so,
   // and fading the whole card took its grey text below 4.5:1.
   return (
-    <div className="rounded-[14px] p-5 flex flex-col" style={CARD}>
+    <div className="rounded-card p-5 flex flex-col" style={CARD}>
       <div className="flex items-start gap-3">
         <Avatar name={member.name} state={state} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="text-[15px] font-semibold truncate" style={{ color: INK }}>
+            <p className="text-15 font-semibold truncate" style={{ color: INK }}>
               {member.name}
               {isYou && <span className="font-normal" style={{ color: INK_FAINT }}> (you)</span>}
             </p>
-            <span className="text-[12px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="text-12 font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
               {ROLE_LABELS[member.role] || "Member"}
             </span>
           </div>
           {presence && (
-            <p className="flex items-center gap-1.5 text-[14px] font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
+            <p className="flex items-center gap-1.5 text-14 font-semibold mt-1" style={{ color: PRESENCE_TEXT[state] || INK_FAINT }}>
               {state !== "offline" && state !== "hidden" && <PresenceDot state={state} size={7} ring="transparent" />}
               {line}
             </p>
           )}
           {presence?.message && (
-            <p className="text-[14px] mt-1 italic" style={{ color: INK }}>
+            <p className="text-14 mt-1 italic" style={{ color: INK }}>
               “{presence.message}”
             </p>
           )}
         </div>
         {member.overdue > 0 && (
-          <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
+          <span className="text-12 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: RED_BG, color: RED_STRONG }}>
             {member.overdue} overdue
           </span>
         )}
       </div>
 
-      <p className="text-[13px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-13 mt-3" style={{ color: INK_FAINT }}>
         {member.lastWorkedAt ? `Last worked on a candidate ${timeAgo(member.lastWorkedAt, now)}` : "No candidate activity yet"}
         {member.screenedToday > 0 ? ` · ${member.screenedToday} screened today` : ""}
       </p>
@@ -126,7 +126,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
       <div className="flex items-center justify-between mt-4 pt-1">
         <Link
           href={`/dashboard/candidates?recruiterId=${encodeURIComponent(member.id)}`}
-          className="inline-flex items-center text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+          className="inline-flex items-center text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
           style={{ color: "var(--forest)" }}
         >
           {isYou ? "Your candidates →" : `${member.name.split(" ")[0]}'s candidates →`}
@@ -139,7 +139,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
               onClick={() => onChangeRole(member, member.role === "admin" ? "member" : "admin")}
               disabled={changingRole}
               title={member.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
-              className="text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: INK_MUTED }}
             >
               {changingRole ? "Saving…" : member.role === "admin" ? "Make member" : "Make admin"}
@@ -150,7 +150,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
               type="button"
               onClick={() => onRemove(member)}
               disabled={removing}
-              className="text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
+              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
               style={{ color: INK_FAINT }}
             >
               {removing ? "Removing…" : "Remove"}

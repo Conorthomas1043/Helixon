@@ -80,7 +80,7 @@ export function CommandPalette({ open, onClose, onLogout }) {
         <div className="palette-list" role="listbox">
           {items.length === 0 && <div className="empty">Nothing matches &ldquo;{query}&rdquo;.</div>}
           {items.map((item, i) => (
-            <button
+            <button type="button"
               key={item.key}
               role="option"
               aria-selected={i === active}

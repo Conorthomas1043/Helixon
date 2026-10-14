@@ -90,7 +90,7 @@ export default function PrivacyToc({ sections }) {
 
       {/* Desktop: sticky side list. */}
       <nav aria-label="On this page" className="hidden lg:block sticky top-[88px] max-h-[calc(100vh-110px)] overflow-y-auto pr-2 print:hidden">
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
           On this page
         </p>
         {sections.map((s, i) => {
@@ -99,7 +99,7 @@ export default function PrivacyToc({ sections }) {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="flex gap-2 text-[13px] py-1.5 pl-3 border-l-2 transition-colors leading-snug hover:text-[var(--ink)]"
+              className="flex gap-2 text-13 py-1.5 pl-3 border-l-2 transition-colors leading-snug hover:text-[var(--ink)]"
               style={{ borderColor: on ? "var(--forest)" : "var(--border)", color: on ? "var(--forest)" : "var(--ink-soft)", fontWeight: on ? 600 : 400 }}
             >
               <span className="tabular-nums w-4 shrink-0" style={{ color: on ? "var(--forest)" : "var(--ink-faint)" }}>

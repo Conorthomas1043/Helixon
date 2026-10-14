@@ -97,7 +97,7 @@ function LeadDrawer({ lead, me, onClose, onChanged }) {
             <h3>Status</h3>
             <div className="segmented" role="radiogroup" aria-label="Lead status" style={{ flexWrap: "wrap" }}>
               {STATUSES.map((s) => (
-                <button
+                <button type="button"
                   key={s.key}
                   role="radio"
                   aria-checked={lead.status === s.key}
@@ -126,8 +126,8 @@ function LeadDrawer({ lead, me, onClose, onChanged }) {
               </div>
               {dirty && (
                 <div className="actions">
-                  <button className="btn small primary" disabled={busy} onClick={() => save({ owner, notes }, "Lead saved")}>Save</button>
-                  <button className="btn small ghost" onClick={() => setDrafts((d) => ({ ...d, [lead.id]: undefined }))}>Discard</button>
+                  <button type="button" className="btn small primary" disabled={busy} onClick={() => save({ owner, notes }, "Lead saved")}>Save</button>
+                  <button type="button" className="btn small ghost" onClick={() => setDrafts((d) => ({ ...d, [lead.id]: undefined }))}>Discard</button>
                 </div>
               )}
             </div>
@@ -151,7 +151,7 @@ function LeadDrawer({ lead, me, onClose, onChanged }) {
                 {lead.emailSent === false ? (
                   <span className="actions" style={{ gap: 8 }}>
                     <span className="pill bad">Notification email failed</span>
-                    <button className="btn small" disabled={busy} onClick={() => save({ action: "resend_notification" }, "Notification sent to sales")}>Resend</button>
+                    <button type="button" className="btn small" disabled={busy} onClick={() => save({ action: "resend_notification" }, "Notification sent to sales")}>Resend</button>
                   </span>
                 ) : (
                   <span className="pill good">Emailed</span>
@@ -195,16 +195,16 @@ function LeadDrawer({ lead, me, onClose, onChanged }) {
             >
               <Icon name="mail" /> Reply
             </a>
-            <button className="btn" onClick={() => copy(lead.email, "Email")}>
+            <button type="button" className="btn" onClick={() => copy(lead.email, "Email")}>
               <Icon name="copy" /> Copy email
             </button>
             {lead.status !== "spam" && (
-              <button className="btn" disabled={busy} onClick={() => invite()}>
+              <button type="button" className="btn" disabled={busy} onClick={() => invite()}>
                 <Icon name="userPlus" /> Invite to sign up
               </button>
             )}
             {lead.status !== "spam" && (
-              <button className="btn ghost" disabled={busy} onClick={() => save({ status: "spam" }, "Marked as spam")}>
+              <button type="button" className="btn ghost" disabled={busy} onClick={() => save({ status: "spam" }, "Marked as spam")}>
                 Mark spam
               </button>
             )}
@@ -300,13 +300,13 @@ export default function LeadsPage() {
       <PageHeader title="Leads" description="Demo requests as a pipeline: who's handling each one, where it's up to, and where they found you.">
         <div className="segmented" role="group" aria-label="Range">
           {RANGES.map(([value, label]) => (
-            <button key={value} className={range === value ? "active" : ""} aria-pressed={range === value} onClick={() => setRange(value)}>
+            <button type="button" key={value} className={range === value ? "active" : ""} aria-pressed={range === value} onClick={() => setRange(value)}>
               {label}
             </button>
           ))}
         </div>
-        <button className="btn small" onClick={exportCsv} disabled={!leads.length}>Export CSV</button>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={exportCsv} disabled={!leads.length}>Export CSV</button>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>
@@ -333,7 +333,7 @@ export default function LeadsPage() {
             <input className="search-input" placeholder="Search name, email, company, notes..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} aria-label="Search leads" />
             <div className="segmented" role="group" aria-label="Filter by status" style={{ flexWrap: "wrap" }}>
               {statusTabs.map(([key, label, count]) => (
-                <button key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>
+                <button type="button" key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>
                   {label} <span style={{ opacity: 0.6 }}>{count}</span>
                 </button>
               ))}

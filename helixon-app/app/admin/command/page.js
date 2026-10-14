@@ -83,7 +83,7 @@ export default function CommandPage() {
         description="Live snapshot of traffic, product usage, revenue, and security - sourced directly from Stripe, Clerk, Redis, Resend, and Sentry wherever a live source beats the database mirror."
       >
         <RangeControl range={range} setRange={setRange} />
-        <button className="btn small" onClick={refresh} disabled={busy}>
+        <button type="button" className="btn small" onClick={refresh} disabled={busy}>
           Refresh
         </button>
       </PageHeader>
@@ -236,7 +236,7 @@ export default function CommandPage() {
                         <td className="mono">{item.ip}</td>
                         <td className="muted">{item.reason || "Admin block"}</td>
                         <td>
-                          <button className="btn small" onClick={() => unblock(item.ip)}>
+                          <button type="button" className="btn small" onClick={() => unblock(item.ip)}>
                             Unblock
                           </button>
                         </td>

@@ -72,7 +72,7 @@ export default function AppNav({ active }) {
   const topLink = (key, label, href) => (
     <Link
       href={href}
-      className={`px-3 py-1.5 rounded-[8px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] ${
+      className={`px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] ${
         active === key ? "font-semibold" : "font-medium hover:bg-[var(--mint)]"
       }`}
       style={{ color: active === key ? COLORS.ink : COLORS.muted, background: active === key ? "var(--mint)" : "transparent" }}
@@ -86,7 +86,7 @@ export default function AppNav({ active }) {
       <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
               <svg width="18" height="18" viewBox="0 0 28 28" fill="none" aria-hidden="true">
                 <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
                 <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
@@ -98,7 +98,7 @@ export default function AppNav({ active }) {
                 Helixon
               </span>
               {me?.agencyName && (
-                <span className="hidden sm:block text-[11px] font-medium mt-0.5 truncate max-w-[180px]" style={{ color: COLORS.muted }}>
+                <span className="hidden sm:block text-11 font-medium mt-0.5 truncate max-w-[180px]" style={{ color: COLORS.muted }}>
                   {me.agencyName}
                 </span>
               )}
@@ -130,7 +130,7 @@ export default function AppNav({ active }) {
           </button>
 
           {menuOpen && (
-            <div role="menu" className="absolute right-0 mt-2 w-52 rounded-[14px] py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
+            <div role="menu" className="absolute right-0 mt-2 w-52 rounded-card py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
               <div className="px-3.5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
                 <p className="text-sm font-medium truncate" style={{ color: COLORS.ink }}>{displayName}</p>
                 {displayEmail && (

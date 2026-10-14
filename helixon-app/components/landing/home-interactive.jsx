@@ -87,17 +87,17 @@ export function RecruiterWorkspaceDemo() {
   return (
     <div
       ref={containerRef}
-      className="rounded-[18px] p-6 w-full max-w-sm mx-auto lg:mx-0"
+      className="rounded-2xl p-6 w-full max-w-sm mx-auto lg:mx-0"
       style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
       aria-label="Example recruiter workspace showing ranked candidates for one role"
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{WORKSPACE_ROLE}</span>
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
+        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
       </div>
-      <p className="text-[11px] mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
+      <p className="text-11 mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
 
-      <div className="rounded-[12px] overflow-hidden mb-5" style={{ border: "1px solid var(--border)" }}>
+      <div className="rounded-xl overflow-hidden mb-5" style={{ border: "1px solid var(--border)" }}>
         {WORKSPACE_CANDIDATES.map((c, i) => {
           const shown = i < revealedCount;
           return (
@@ -109,11 +109,11 @@ export function RecruiterWorkspaceDemo() {
                 background: i % 2 === 0 ? "white" : "var(--mist)",
               }}
             >
-              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>
+              <span className="text-11 font-medium truncate" style={{ color: "var(--ink)" }}>
                 {shown ? c.name : <span aria-hidden="true" className="inline-block h-2.5 w-28 rounded-full align-middle" style={{ background: "var(--border)" }} />}
               </span>
               <span className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] font-semibold" style={{ color: scoreColor(c.score) }}>{shown ? scoreLabel(c.score) : ""}</span>
+                <span className="text-11 font-semibold" style={{ color: scoreColor(c.score) }}>{shown ? scoreLabel(c.score) : ""}</span>
                 <span className="text-xs font-semibold w-6 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>
                   {shown ? c.score : "-"}
                 </span>
@@ -124,7 +124,7 @@ export function RecruiterWorkspaceDemo() {
       </div>
 
       <div
-        className="rounded-[10px] p-4 transition-all duration-500"
+        className="rounded-btn p-4 transition-all duration-500"
         style={{
           background: "var(--mist)",
           opacity: breakdownVisible ? 1 : 0.3,
@@ -132,17 +132,17 @@ export function RecruiterWorkspaceDemo() {
         }}
       >
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
+          <span className="text-11 font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
           <span className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{topCandidate.score}</span>
         </div>
         <ul className="space-y-1">
           {WORKSPACE_TOP_BREAKDOWN.strengths.map((s) => (
-            <li key={s} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
+            <li key={s} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
               <span style={{ color: "var(--forest)" }}>✓</span>{s}
             </li>
           ))}
           {WORKSPACE_TOP_BREAKDOWN.watch.map((w) => (
-            <li key={w} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
+            <li key={w} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
               <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{w}
             </li>
           ))}
@@ -204,7 +204,7 @@ export function DashboardPreview() {
   return (
     <div
       ref={containerRef}
-      className="rounded-[18px] overflow-hidden w-full"
+      className="rounded-2xl overflow-hidden w-full"
       style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
       aria-label="Example Helixon dashboard showing pipeline metrics for one agency"
     >
@@ -213,7 +213,7 @@ export function DashboardPreview() {
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-        <span className="ml-2 text-[11px]" style={{ color: "var(--ink-faint)" }}>Dashboard</span>
+        <span className="ml-2 text-11" style={{ color: "var(--ink-faint)" }}>Dashboard</span>
       </div>
 
       <div className="p-5">
@@ -222,10 +222,10 @@ export function DashboardPreview() {
           {DASH_KPIS.map((k, i) => (
             <div
               key={k.label}
-              className="rounded-[10px] p-3"
+              className="rounded-btn p-3"
               style={{ border: "1px solid var(--border)", background: "white" }}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{k.label}</p>
+              <p className="text-11 font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{k.label}</p>
               <p
                 className="text-xl font-semibold tabular-nums leading-none"
                 style={{ fontFamily: "var(--font-mono)", color: k.accent ? "var(--forest)" : "var(--ink)" }}
@@ -244,7 +244,7 @@ export function DashboardPreview() {
                   />
                 </div>
               )}
-              <p className="text-[10px] mt-1.5" style={{ color: "var(--ink-faint)" }}>{k.sub}</p>
+              <p className="text-11 mt-1.5" style={{ color: "var(--ink-faint)" }}>{k.sub}</p>
             </div>
           ))}
         </div>
@@ -252,16 +252,16 @@ export function DashboardPreview() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-5">
           {/* Pipeline snapshot */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Where candidates stand</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Where candidates stand</p>
             <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
               {DASH_STAGES.map((s, i) => (
                 <div key={s.label} className="flex flex-col items-center min-w-0">
-                  <span className="text-[13px] font-semibold tabular-nums leading-none" style={{ fontFamily: "var(--font-mono)", color: "var(--ink)" }}>
+                  <span className="text-13 font-semibold tabular-nums leading-none" style={{ fontFamily: "var(--font-mono)", color: "var(--ink)" }}>
                     <CountUp value={live ? s.count : 0} duration={900} />
                   </span>
-                  <div className="w-full flex items-end rounded-[4px] overflow-hidden mt-2 mb-1.5" style={{ height: 44, background: "var(--border-soft)" }}>
+                  <div className="w-full flex items-end rounded-sm overflow-hidden mt-2 mb-1.5" style={{ height: 44, background: "var(--border-soft)" }}>
                     <div
-                      className="w-full rounded-b-[4px]"
+                      className="w-full rounded-b-sm"
                       style={{
                         height: live ? `${Math.max(10, (s.count / maxStage) * 100)}%` : 0,
                         background: i === DASH_STAGES.length - 1 ? "var(--forest)" : "#a9c4b5",
@@ -272,7 +272,7 @@ export function DashboardPreview() {
                   {/* Sentence case, not uppercase: at this size uppercase is
                       both wider (these five labels collided at 1440px) and
                       harder to read. */}
-                  <span className="text-[10px] font-medium text-center leading-tight tracking-tight" style={{ color: "var(--ink-faint)" }}>{s.label}</span>
+                  <span className="text-11 font-medium text-center leading-tight tracking-tight" style={{ color: "var(--ink-faint)" }}>{s.label}</span>
                 </div>
               ))}
             </div>
@@ -280,12 +280,12 @@ export function DashboardPreview() {
 
           {/* Needs attention */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Needs your attention</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Needs your attention</p>
             <ul className="space-y-1.5">
               {DASH_ATTENTION.map((a, i) => (
                 <li
                   key={a.name}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-[8px]"
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg"
                   style={{
                     background: "var(--mist)",
                     opacity: live ? 1 : 0,
@@ -294,16 +294,16 @@ export function DashboardPreview() {
                   }}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[11px] font-semibold truncate" style={{ color: "var(--ink)" }}>{a.name}</span>
-                    <span className="block text-[10px] truncate" style={{ color: "var(--ink-faint)" }}>{a.role}</span>
+                    <span className="block text-11 font-semibold truncate" style={{ color: "var(--ink)" }}>{a.name}</span>
+                    <span className="block text-11 truncate" style={{ color: "var(--ink-faint)" }}>{a.role}</span>
                   </span>
                   <span
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                    className="text-11 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
                     style={{ background: DASH_TONES[a.tone].bg, color: DASH_TONES[a.tone].fg }}
                   >
                     {a.reason}
                   </span>
-                  <span className="text-[11px] font-semibold tabular-nums shrink-0 w-5 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}>
+                  <span className="text-11 font-semibold tabular-nums shrink-0 w-5 text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(a.score) }}>
                     {a.score}
                   </span>
                 </li>
@@ -314,9 +314,9 @@ export function DashboardPreview() {
 
         {/* Open roles - the jobs list the real dashboard leads with */}
         <div className="mt-5">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
-          <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
+          <div className="rounded-btn overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-11 font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
               <span>Role</span>
               <span className="text-right">Candidates</span>
               <span className="text-right">Top</span>
@@ -333,14 +333,14 @@ export function DashboardPreview() {
                 }}
               >
                 <span className="min-w-0">
-                  <span className="block text-[11px] font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
-                  <span className="block text-[10px] truncate" style={{ color: "var(--ink-faint)" }}>{r.client}</span>
+                  <span className="block text-11 font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
+                  <span className="block text-11 truncate" style={{ color: "var(--ink-faint)" }}>{r.client}</span>
                 </span>
-                <span className="text-[11px] tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-soft)" }}>{r.candidates}</span>
-                <span className="text-[11px] font-semibold tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(r.top) }}>{r.top}</span>
+                <span className="text-11 tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-soft)" }}>{r.candidates}</span>
+                <span className="text-11 font-semibold tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(r.top) }}>{r.top}</span>
                 <span className="hidden sm:block text-right">
                   <span
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                    className="text-11 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                     style={r.status === "Open" ? { background: "var(--mint)", color: "var(--forest)" } : { background: "#fff8e6", color: "#92620f" }}
                   >
                     {r.status}
@@ -379,7 +379,7 @@ export function BuyPlanButton({ plan, label, highlight }) {
         onClick={handleClick}
         disabled={loading}
         aria-busy={loading}
-        className="text-center text-sm font-semibold py-3 rounded-[10px] transition-all w-full min-h-[44px]"
+        className="text-center text-sm font-semibold py-3 rounded-btn transition-all w-full min-h-[44px]"
         style={{
           background: highlight ? "white" : "var(--forest)",
           color: highlight ? "var(--forest)" : "white",
@@ -390,7 +390,7 @@ export function BuyPlanButton({ plan, label, highlight }) {
         {loading ? "Redirecting…" : label}
       </button>
       {error && (
-        <p role="alert" aria-live="polite" className="text-[11px] text-center" style={{ color: highlight ? "#f2d7d5" /* light tint of --score-low, for contrast on the dark forest card */ : "var(--score-low)" }}>
+        <p role="alert" aria-live="polite" className="text-11 text-center" style={{ color: highlight ? "#f2d7d5" /* light tint of --score-low, for contrast on the dark forest card */ : "var(--score-low)" }}>
           {error}
         </p>
       )}
@@ -427,22 +427,22 @@ function UploadTabContent() {
   const files = ["A. Chen - CV.pdf", "R. Osei - CV.pdf", "M. Laurent - CV.docx"];
   return (
     <div>
-      <div className="rounded-[12px] p-6 text-center mb-4" style={{ border: "1.5px dashed var(--border)" }}>
+      <div className="rounded-xl p-6 text-center mb-4" style={{ border: "1.5px dashed var(--border)" }}>
         <svg className="mx-auto mb-2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 16V4m0 0L7 9m5-5 5 5" />
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </svg>
         <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>Drop up to 50 CVs</p>
-        <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word (.docx)</p>
+        <p className="text-11 mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word (.docx)</p>
       </div>
       <div className="space-y-1.5">
         {files.map((f) => (
-          <div key={f} className="flex items-center gap-2 text-[11px] px-3 py-2 rounded-[8px]" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+          <div key={f} className="flex items-center gap-2 text-11 px-3 py-2 rounded-lg" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
             {f}
           </div>
         ))}
-        <p className="text-[11px] text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
+        <p className="text-11 text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
       </div>
     </div>
   );
@@ -455,15 +455,15 @@ function AnalyseTabContent() {
         <span className="text-xs font-semibold" style={{ color: "var(--ink)" }}>Match score</span>
         <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>92</span>
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
+      <p className="text-11 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
       <ul className="space-y-1 mb-4">
         {["5 years' React experience", "TypeScript", "SaaS product experience"].map((s) => (
-          <li key={s} className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--forest)" }}>✓</span>{s}</li>
+          <li key={s} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--forest)" }}>✓</span>{s}</li>
         ))}
       </ul>
-      <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
+      <p className="text-11 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
       <ul className="space-y-1">
-        <li className="text-[11px] flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>2-month notice period</li>
+        <li className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>2-month notice period</li>
       </ul>
     </div>
   );
@@ -471,12 +471,12 @@ function AnalyseTabContent() {
 
 function CompareTabContent() {
   return (
-    <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+    <div className="rounded-btn overflow-hidden" style={{ border: "1px solid var(--border)" }}>
       {WORKSPACE_CANDIDATES.map((c, i) => (
         <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "white" : "var(--mist)" }}>
-          <span className="text-[11px] font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
+          <span className="text-11 font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
           <span className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
+            <span className="text-11 font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
             <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>{c.score}</span>
           </span>
         </div>
@@ -490,7 +490,7 @@ function ActTabContent() {
   return (
     <div className="flex flex-wrap gap-2">
       {actions.map((a) => (
-        <span key={a} className="text-[11px] font-medium px-3 py-2 rounded-[8px]" style={{ background: "var(--mint)", color: "var(--forest)" }}>{a}</span>
+        <span key={a} className="text-11 font-medium px-3 py-2 rounded-lg" style={{ background: "var(--mint)", color: "var(--forest)" }}>{a}</span>
       ))}
     </div>
   );
@@ -513,18 +513,18 @@ export function ProductWorkflowSection() {
       <div className="max-w-[1100px] mx-auto px-6">
       <Reveal>
         <div className="text-center mb-12">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>How it works</p>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>How it works</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             From CV to shortlist, in one workflow
           </h2>
-          <p className="text-[15px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
             Four steps, from the first upload to the candidate you pick up the phone to.
           </p>
         </div>
       </Reveal>
 
       <Reveal>
-        <div className="rounded-[18px] overflow-hidden max-w-lg mx-auto" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
+        <div className="rounded-2xl overflow-hidden max-w-lg mx-auto" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
           <div className="flex items-center gap-1 px-3 pt-3" aria-hidden="true">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
@@ -532,10 +532,10 @@ export function ProductWorkflowSection() {
           </div>
           <div className="flex gap-1 px-3 pt-3 overflow-x-auto" role="tablist" aria-label="Product workflow steps">
             {WORKFLOW_TABS.map((tab, i) => (
-              <button
+              <button type="button"
                 key={tab}
                 {...tabProps(i)}
-                className="text-xs font-semibold px-3.5 py-2 rounded-t-[8px] whitespace-nowrap transition-colors min-h-[40px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+                className="text-xs font-semibold px-3.5 py-2 rounded-t-lg whitespace-nowrap transition-colors min-h-[40px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
                 style={{
                   color: activeTab === i ? "var(--forest)" : "var(--ink-soft)",
                   background: activeTab === i ? "var(--mist)" : "transparent",
@@ -592,17 +592,17 @@ export function BulkPreviewCard() {
   return (
     <div
       ref={containerRef}
-      className="rounded-[18px] p-6 w-full max-w-sm mx-auto"
+      className="rounded-2xl p-6 w-full max-w-sm mx-auto"
       style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
       aria-label="Example bulk-upload run showing several candidates queued for one role"
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{BULK_PREVIEW_ROLE}</span>
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Bulk upload</span>
+        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Bulk upload</span>
       </div>
-      <p className="text-[11px] mb-4" style={{ color: "var(--ink-faint)" }}>{total} CVs · one role</p>
+      <p className="text-11 mb-4" style={{ color: "var(--ink-faint)" }}>{total} CVs · one role</p>
 
-      <div className="rounded-[12px] overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
+      <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
         {BULK_PREVIEW_ROWS.map((row, i) => {
           const status = statusFor(row, i);
           return (
@@ -614,17 +614,17 @@ export function BulkPreviewCard() {
                 background: status === "processing" ? "var(--mint)" : i % 2 === 0 ? "white" : "var(--mist)",
               }}
             >
-              <span className="text-[11px] font-medium truncate" style={{ color: "var(--ink)" }}>{row.name}</span>
+              <span className="text-11 font-medium truncate" style={{ color: "var(--ink)" }}>{row.name}</span>
               {status === "done" && (
                 <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(row.score) }}>{row.score}</span>
               )}
               {status === "processing" && (
-                <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--forest)" }}>
+                <span className="flex items-center gap-1.5 text-11 font-medium" style={{ color: "var(--forest)" }}>
                   <span className="pulse-dot" aria-hidden="true" style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--forest)", display: "inline-block" }} />
                   Analysing…
                 </span>
               )}
-              {status === "queued" && <span className="text-[11px]" style={{ color: "var(--ink-faint)" }}>Queued</span>}
+              {status === "queued" && <span className="text-11" style={{ color: "var(--ink-faint)" }}>Queued</span>}
             </div>
           );
         })}
@@ -640,7 +640,7 @@ export function BulkPreviewCard() {
           }}
         />
       </div>
-      <p className="text-[10px]" style={{ color: "var(--ink-faint)" }}>{doneCount} of {total} analysed</p>
+      <p className="text-11" style={{ color: "var(--ink-faint)" }}>{doneCount} of {total} analysed</p>
     </div>
   );
 }
@@ -657,7 +657,7 @@ function FaqItem({ id, q, a, open, onToggle }) {
         aria-controls={`${id}-a`}
         className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
       >
-        <span className="text-[15px] font-medium" style={{ color: "var(--ink)" }}>{q}</span>
+        <span className="text-15 font-medium" style={{ color: "var(--ink)" }}>{q}</span>
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round"
           aria-hidden="true"
@@ -725,7 +725,7 @@ export function TrustStrip() {
             <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: typeof m.val === "number" ? "var(--font-mono)" : "var(--font-display)", color: "var(--forest)" }}>
               {typeof m.val === "number" ? <CountUp value={played ? m.val : 0} duration={1000} /> : m.display}
             </p>
-            <p className="text-[13px] mt-1.5 leading-relaxed max-w-[15rem] mx-auto" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
+            <p className="text-13 mt-1.5 leading-relaxed max-w-[15rem] mx-auto" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
           </div>
         ))}
       </div>
@@ -762,7 +762,7 @@ export function HeroActions() {
         <CtaButtons secondaryLabel="See an example analysis" secondaryHref="#example" signedIn={signedIn} />
       </div>
       {!signedIn && (
-        <p className="fade-up-in text-[13px] mt-4" style={{ color: "var(--ink-faint)", "--stagger-delay": "280ms" }}>
+        <p className="fade-up-in text-13 mt-4" style={{ color: "var(--ink-faint)", "--stagger-delay": "280ms" }}>
           See it on your own CVs, no obligation. Plans from &pound;249 a month.
         </p>
       )}

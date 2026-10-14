@@ -43,9 +43,9 @@ export function TeamPresenceList() {
     <>
       <SectionTitle>Team</SectionTitle>
       {loading && team.length === 0 ? (
-        <p className="text-[13px] text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-13 text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : (
-        <div className="rounded-[14px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-card" style={{ background: "white", border: "1px solid var(--border)" }}>
           {sorted.map((person, i) => (
             <div
               key={person.id}
@@ -54,9 +54,9 @@ export function TeamPresenceList() {
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: PRESENCE_DOT[person.status] }} />
-                <span className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
+                <span className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
               </div>
-              <span className="text-[12px] shrink-0" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-12 shrink-0" style={{ color: "var(--ink-faint)" }}>
                 {PRESENCE_LABEL[person.status]}
                 {person.signedInSince ? ` · ${formatSignedIn(person.signedInSince)}` : ""}
               </span>
@@ -97,7 +97,7 @@ export function StatsTab() {
       <SectionTitle>Platform snapshot, today</SectionTitle>
       <ErrorNotice message={error} />
       {loading && !stats ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
           Loading…
         </p>
       ) : (
@@ -111,7 +111,7 @@ export function StatsTab() {
       <button
         type="button"
         onClick={load}
-        className="mt-4 w-full flex items-center justify-center gap-1.5 text-[13px] font-medium py-2.5 rounded-[10px]"
+        className="mt-4 w-full flex items-center justify-center gap-1.5 text-13 font-medium py-2.5 rounded-btn"
         style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
       >
         <Icon path={ICONS.refresh} size={14} />

@@ -142,7 +142,7 @@ export function CalendarTab({ employee }) {
         <button
           type="button"
           onClick={showAddForm ? () => setShowAddForm(false) : openAdd}
-          className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+          className="text-12 font-semibold px-3 py-1.5 rounded-full"
           style={{ background: "var(--mint)", color: "var(--forest)" }}
         >
           {showAddForm ? "Cancel" : "+ New event"}
@@ -150,17 +150,17 @@ export function CalendarTab({ employee }) {
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleSave} className="rounded-[14px] p-3.5 mb-3 flex flex-col gap-2.5" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5" style={{ background: "white", border: "1px solid var(--border)" }}>
           <input
             autoFocus
             type="text"
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Event title"
-            className="text-[14px] rounded-[10px] px-3 py-2.5"
+            className="text-14 rounded-btn px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
-          <label className="flex items-center gap-2 text-[13px] font-medium" style={{ color: "var(--ink-soft)" }}>
+          <label className="flex items-center gap-2 text-13 font-medium" style={{ color: "var(--ink-soft)" }}>
             <input type="checkbox" checked={form.all_day} onChange={(e) => setForm((f) => ({ ...f, all_day: e.target.checked }))} />
             All-day event
           </label>
@@ -169,24 +169,24 @@ export function CalendarTab({ employee }) {
               type={form.all_day ? "date" : "datetime-local"}
               value={form.start_at}
               onChange={(e) => setForm((f) => ({ ...f, start_at: e.target.value }))}
-              className="text-[13px] rounded-[10px] px-2.5 py-2"
+              className="text-13 rounded-btn px-2.5 py-2"
               style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
             />
             <input
               type={form.all_day ? "date" : "datetime-local"}
               value={form.end_at}
               onChange={(e) => setForm((f) => ({ ...f, end_at: e.target.value }))}
-              className="text-[13px] rounded-[10px] px-2.5 py-2"
+              className="text-13 rounded-btn px-2.5 py-2"
               style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
             />
           </div>
           {formError && (
-            <p className="text-[12px] rounded-[8px] px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
+            <p className="text-12 rounded-lg px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
           )}
           <button
             type="submit"
             disabled={saving}
-            className="text-[14px] font-semibold py-2.5 rounded-[10px] disabled:opacity-50"
+            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50"
             style={{ background: "var(--forest)", color: "white" }}
           >
             {saving ? "Saving…" : "Add event"}
@@ -197,28 +197,28 @@ export function CalendarTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : grouped.length === 0 ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>No events in the next few months.</p>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>No events in the next few months.</p>
       ) : (
         <div className="flex flex-col gap-3.5">
           {grouped.map(([dayKey, dayEvents]) => (
             <div key={dayKey}>
-              <div className="text-[12px] font-semibold mb-1.5" style={{ color: "var(--ink-faint)" }}>
+              <div className="text-12 font-semibold mb-1.5" style={{ color: "var(--ink-faint)" }}>
                 {formatDayHeading(dayEvents[0].start_at)}
               </div>
               <div className="flex flex-col gap-2">
                 {dayEvents.map((ev) => {
                   const canDelete = ev.created_by === employee?.id;
                   return (
-                    <div key={ev.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
-                      <span className="text-[12px] font-medium tabular-nums w-12 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                    <div key={ev.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl" style={{ background: "white", border: "1px solid var(--border)" }}>
+                      <span className="text-12 font-medium tabular-nums w-12 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
                         {formatEventTime(ev.start_at, ev.all_day)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{ev.title}</div>
+                        <div className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>{ev.title}</div>
                         {(ev.location || ev.creator?.full_name || ev.creator?.display_name) && (
-                          <div className="text-[12px] mt-0.5 truncate" style={{ color: "var(--ink-faint)" }}>
+                          <div className="text-12 mt-0.5 truncate" style={{ color: "var(--ink-faint)" }}>
                             {ev.location ? `${ev.location} · ` : ""}
                             {ev.creator?.full_name || ev.creator?.display_name || ""}
                           </div>
@@ -240,10 +240,10 @@ export function CalendarTab({ employee }) {
 
       <Link
         href="/employee/calendar"
-        className="flex items-center justify-between px-3.5 py-3 rounded-[12px] mt-4"
+        className="flex items-center justify-between px-3.5 py-3 rounded-xl mt-4"
         style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
-        <span className="text-[13px] font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
+        <span className="text-13 font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
         <Icon path={ICONS.chevronRight} size={16} />
       </Link>
     </div>

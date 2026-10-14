@@ -12,16 +12,16 @@ export function StatCard({ label, value, sub, accent, onClick, active }) {
       onClick={onClick}
       aria-pressed={onClick ? active : undefined}
       className={cx(
-        "text-left rounded-[14px] p-4 sm:p-5 bg-white border transition-colors",
+        "text-left rounded-card p-4 sm:p-5 bg-white border transition-colors",
         active ? "border-[var(--forest)] ring-1 ring-[var(--forest)]" : "border-[var(--border)]",
         onClick && "hover:border-[var(--ink-mute)]"
       )}
     >
-      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
-      <p className="text-[26px] font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
+      <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">{label}</p>
+      <p className="text-24 font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: accent || "var(--ink)" }}>
         {value}
       </p>
-      {sub && <p className="text-[13px] text-[var(--ink-faint)] mt-2">{sub}</p>}
+      {sub && <p className="text-13 text-[var(--ink-faint)] mt-2">{sub}</p>}
     </Tag>
   );
 }

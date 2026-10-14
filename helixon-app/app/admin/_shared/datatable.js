@@ -79,7 +79,7 @@ export function DataTable({
             {columns.map((column) => {
               const active = sort?.key === column.key;
               return (
-                <th
+                <th scope="col"
                   key={column.key}
                   className={`${column.sortable ? "sortable" : ""} ${column.align === "right" ? "num" : ""}`}
                   style={column.width ? { width: column.width } : undefined}
@@ -153,10 +153,10 @@ export function DataTable({
             Showing {start + 1}-{Math.min(start + pageSize, sorted.length)} of {sorted.length}
           </span>
           <span className="actions">
-            <button className="btn small" disabled={current <= 1} onClick={() => setPage(current - 1)}>
+            <button type="button" className="btn small" disabled={current <= 1} onClick={() => setPage(current - 1)}>
               <Icon name="chevronLeft" /> Previous
             </button>
-            <button className="btn small" disabled={current >= pages} onClick={() => setPage(current + 1)}>
+            <button type="button" className="btn small" disabled={current >= pages} onClick={() => setPage(current + 1)}>
               Next <Icon name="chevronRight" />
             </button>
           </span>

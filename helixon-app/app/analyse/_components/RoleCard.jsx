@@ -39,7 +39,7 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                 aria-pressed={active}
                 onClick={() => onSelect(job)}
                 className={cx(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-left transition-colors border",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-btn text-left transition-colors border",
                   active ? "border-[var(--forest)] bg-[#f4faf7]" : "border-transparent hover:bg-[var(--mist)]"
                 )}
               >
@@ -50,8 +50,8 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                   {active && <Icon name="check" size={10} strokeWidth={3} className="text-white" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{job.title}</span>
-                  <span className="block text-[13px] text-[var(--ink-faint)] truncate">
+                  <span className="block text-15 font-medium text-[var(--ink)] truncate">{job.title}</span>
+                  <span className="block text-13 text-[var(--ink-faint)] truncate">
                     {[job.company, job.candidateCount ? `${job.candidateCount} candidate${job.candidateCount === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ") || "No client set"}
                   </span>
                 </span>
@@ -59,7 +59,7 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
             </li>
           );
         })}
-        {visible.length === 0 && <li className="px-3 py-6 text-center text-[14px] text-[var(--ink-faint)]">No jobs match.</li>}
+        {visible.length === 0 && <li className="px-3 py-6 text-center text-14 text-[var(--ink-faint)]">No jobs match.</li>}
       </ul>
     </div>
   );
@@ -135,11 +135,11 @@ export default function RoleCard({
             <div className="mt-3 space-y-2">
               <SpecChecklist text={jobText} />
               <div className="flex items-center justify-between">
-                <span className={cx("text-[13px] tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
+                <span className={cx("text-13 tabular-nums", charCount > 0 && charCount < MIN_JOB_CHARS ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]")}>
                   {charCount > 0 && charCount < MIN_JOB_CHARS ? `${MIN_JOB_CHARS - charCount} more characters needed` : charCount > 0 ? `${charCount.toLocaleString()} characters` : ""}
                 </span>
                 {charCount >= MIN_JOB_CHARS && (
-                  <button type="button" onClick={onSaveTemplate} className="text-[13px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
+                  <button type="button" onClick={onSaveTemplate} className="text-13 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
                     Save as template
                   </button>
                 )}
@@ -150,13 +150,13 @@ export default function RoleCard({
 
         {mode === "upload" &&
           (jobFile ? (
-            <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] border border-[var(--border)] bg-[var(--mist)]">
-              <span className="w-9 h-9 rounded-[8px] bg-white border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
+            <div className="flex items-center gap-3 px-3.5 py-3 rounded-btn border border-[var(--border)] bg-[var(--mist)]">
+              <span className="w-9 h-9 rounded-lg bg-white border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
                 <Icon name="file" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
-                <span className="block text-[13px] text-[var(--ink-faint)]">{formatBytes(jobFile.size)} · read when you analyse</span>
+                <span className="block text-15 font-medium text-[var(--ink)] truncate">{jobFile.name}</span>
+                <span className="block text-13 text-[var(--ink-faint)]">{formatBytes(jobFile.size)} · read when you analyse</span>
               </span>
               <Button size="sm" variant="ghost" onClick={() => onJobFile(null)}>
                 Remove
@@ -177,13 +177,13 @@ export default function RoleCard({
                 onJobFile(e.dataTransfer.files?.[0] || null);
               }}
               className={cx(
-                "w-full flex flex-col items-center justify-center gap-2 py-10 rounded-[12px] border border-dashed transition-colors",
+                "w-full flex flex-col items-center justify-center gap-2 py-10 rounded-xl border border-dashed transition-colors",
                 dragging ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
               )}
             >
               <Icon name="upload" size={20} className="text-[var(--ink-soft)]" />
-              <span className="text-[15px] font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
-              <span className="text-[13px] text-[var(--ink-faint)]">PDF, Word or .txt · up to 10 MB · a photo of a printed advert won&apos;t work - paste the text instead</span>
+              <span className="text-15 font-medium text-[var(--ink)]">Drop the job spec, or browse</span>
+              <span className="text-13 text-[var(--ink-faint)]">PDF, Word or .txt · up to 10 MB · a photo of a printed advert won&apos;t work - paste the text instead</span>
             </button>
           ))}
         <input ref={fileRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { onJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
@@ -214,10 +214,10 @@ export default function RoleCard({
           <div>
             <Label htmlFor="client-email" hint="Optional">Client email</Label>
             <Input id="client-email" type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="hiring.manager@client.com" />
-            <p className="text-[13px] text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
+            <p className="text-13 text-[var(--ink-faint)] mt-1.5">Used to send shortlist updates and feedback chasers from the report.</p>
           </div>
         ) : (
-          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
+          <button type="button" onClick={() => setShowClientEmail(true)} className="inline-flex items-center gap-1.5 text-14 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]">
             <Icon name="plus" size={14} /> Add client email
           </button>
         )}

@@ -57,7 +57,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-16" style={{ background: "var(--mist)" }}>
       <div
-        className="w-full max-w-sm rounded-[22px] p-8 sm:p-9 text-center"
+        className="w-full max-w-sm rounded-panel p-8 sm:p-9 text-center"
         style={{
           background: "white",
           border: "1px solid var(--border)",
@@ -74,22 +74,22 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                 <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="text-[22px] font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
               We couldn&apos;t confirm that payment
             </h1>
-            <p className="text-[13px] leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-13 leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
               {error || "This checkout session hasn't completed yet. If you were charged, it'll be reflected on your account shortly."}
             </p>
             <Link
               href="/#pricing"
-              className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all"
+              className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm transition-all"
               style={{ background: "var(--forest)" }}
             >
               Back to pricing
             </Link>
             {/* Someone who may have just been charged needs a person to
                 talk to, not only a way back to the price list. */}
-            <p className="text-[12px] mt-4" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-12 mt-4" style={{ color: "var(--ink-faint)" }}>
               Think something&apos;s gone wrong?{" "}
               <Link href="/contact" className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                 Contact us
@@ -108,14 +108,14 @@ export default async function CheckoutSuccessPage({ searchParams }) {
               </svg>
             </div>
 
-            <h1 className="text-[22px] font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
               You&apos;re all set
             </h1>
-            <p className="text-[13px] leading-relaxed mb-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-13 leading-relaxed mb-1" style={{ color: "var(--ink-soft)" }}>
               Your {planLabel} plan is now active.
             </p>
             {email && (
-              <p className="text-[12px] mb-7" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-12 mb-7" style={{ color: "var(--ink-faint)" }}>
                 A receipt has been sent to {email}.
               </p>
             )}
@@ -124,7 +124,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             <div className="flex flex-col gap-2.5">
               <Link
                 href="/analyse"
-                className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-[12px] text-sm transition-all"
+                className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm transition-all"
                 style={{ background: "var(--forest)" }}
               >
                 Start screening candidates
@@ -134,7 +134,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
               </Link>
               <Link
                 href="/"
-                className="btn-outline inline-flex items-center justify-center gap-2 w-full font-semibold py-3 rounded-[12px] text-sm transition-all"
+                className="btn-outline inline-flex items-center justify-center gap-2 w-full font-semibold py-3 rounded-xl text-sm transition-all"
                 style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
               >
                 Back to homepage

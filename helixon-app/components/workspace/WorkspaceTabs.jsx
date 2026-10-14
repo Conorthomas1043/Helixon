@@ -79,7 +79,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
               <li key={key} className="shrink-0">
                 <span
                   className={cx(
-                    "group flex items-center rounded-[8px] border text-sm",
+                    "group flex items-center rounded-lg border text-sm",
                     active
                       ? "border-[var(--border)] bg-white text-[var(--ink)] shadow-sm"
                       : "border-transparent text-[var(--ink-soft)] hover:bg-white hover:text-[var(--ink)]"
@@ -91,7 +91,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
                     onClick={() => markTabReturn(key)}
                     aria-current={active ? "page" : undefined}
                     title={`${kind.label}: ${tab.title}`}
-                    className="flex max-w-[220px] items-center gap-1.5 rounded-l-[8px] py-1 pl-2.5 pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+                    className="flex max-w-[220px] items-center gap-1.5 rounded-l-lg py-1 pl-2.5 pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
                   >
                     <Icon name={kind.icon} size={13} className="shrink-0 opacity-70" />
                     <span className={cx("truncate", active && "font-semibold")}>{tab.title}</span>
@@ -100,7 +100,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
                     type="button"
                     onClick={() => onClose(key)}
                     aria-label={`Close ${tab.title}`}
-                    className="rounded-r-[8px] px-1.5 py-1.5 opacity-50 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+                    className="rounded-r-lg px-1.5 py-1.5 opacity-50 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
                   >
                     <Icon name="x" size={12} />
                   </button>
@@ -112,7 +112,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
         {splitIds.length >= 2 && (
           <Link
             href={splitViewHref(splitIds)}
-            className="flex shrink-0 items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-sm font-semibold text-[var(--forest)] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-semibold text-[var(--forest)] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
           >
             <Icon name="compare" size={14} />
             <span className="hidden sm:inline">Split view</span>
@@ -121,7 +121,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
         <button
           type="button"
           onClick={onCloseAll}
-          className="shrink-0 rounded-[8px] px-2 py-1 text-xs text-[var(--ink-soft)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+          className="shrink-0 rounded-lg px-2 py-1 text-xs text-[var(--ink-soft)] hover:text-[var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
         >
           Close all
         </button>

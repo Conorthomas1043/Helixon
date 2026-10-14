@@ -205,10 +205,10 @@ function AuditView() {
   return (
     <>
       <PageHeader title="Audit log" description="A record of every privileged action and every admin sign-in attempt: who did it, to what, from where, and when. Entries can't be edited from here.">
-        <button className="btn small" onClick={exportCsv} disabled={exporting || !data?.total}>
+        <button type="button" className="btn small" onClick={exportCsv} disabled={exporting || !data?.total}>
           {exporting ? "Exporting…" : "Export CSV"}
         </button>
-        <button className="btn small" onClick={reload} disabled={loading}>
+        <button type="button" className="btn small" onClick={reload} disabled={loading}>
           <Icon name="refresh" /> Refresh
         </button>
       </PageHeader>
@@ -273,11 +273,11 @@ function AuditView() {
           </label>
           <input className="search-input" placeholder="Search email, username, IP, reason..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} aria-label="Search the audit log" />
           {targetId && (
-            <button className="pill info" onClick={() => { setTargetId(""); setPage(1); }} aria-label="Clear record filter">
+            <button type="button" className="pill info" onClick={() => { setTargetId(""); setPage(1); }} aria-label="Clear record filter">
               One record only ✕
             </button>
           )}
-          {filtered && <button className="btn small ghost" onClick={clearFilters}>Clear filters</button>}
+          {filtered && <button type="button" className="btn small ghost" onClick={clearFilters}>Clear filters</button>}
         </div>
         {data && <span className="muted">{data.total.toLocaleString()} {data.total === 1 ? "entry" : "entries"}</span>}
       </div>
@@ -314,7 +314,7 @@ function AuditView() {
                       <span title={formatDateTime(entry.at)}>{timeAgo(entry.at)}</span>
                       {entry.ip && <> &middot; {entry.ip}</>}
                       {" "}
-                      <button className="panel-link" style={{ marginLeft: 6 }} onClick={() => setOpen(expanded ? null : entry.id)}>
+                      <button type="button" className="panel-link" style={{ marginLeft: 6 }} onClick={() => setOpen(expanded ? null : entry.id)}>
                         {expanded ? "Hide details" : "Details"}
                       </button>
                     </div>
@@ -332,10 +332,10 @@ function AuditView() {
               Page {page} of {pages}
             </span>
             <span className="actions">
-              <button className="btn small" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+              <button type="button" className="btn small" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 <Icon name="chevronLeft" /> Newer
               </button>
-              <button className="btn small" disabled={page >= pages} onClick={() => setPage(page + 1)}>
+              <button type="button" className="btn small" disabled={page >= pages} onClick={() => setPage(page + 1)}>
                 Older <Icon name="chevronRight" />
               </button>
             </span>

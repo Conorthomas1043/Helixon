@@ -80,7 +80,7 @@ export default function InterviewsPage() {
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className="text-[13px] font-semibold px-3 py-1.5 rounded-full"
+      className="text-13 font-semibold px-3 py-1.5 rounded-full"
       style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
     >
       {l}
@@ -100,7 +100,7 @@ export default function InterviewsPage() {
           viewTab("week", "Week"),
           tab("mine", "Mine"),
           tab("all", "Everyone"),
-          <Link key="cal" href="/dashboard/settings/connections" className="text-[13px] font-semibold px-2" style={{ color: "var(--forest)" }}>
+          <Link key="cal" href="/dashboard/settings/connections" className="text-13 font-semibold px-2" style={{ color: "var(--forest)" }}>
             Add to my calendar →
           </Link>,
         ]}
@@ -141,7 +141,7 @@ export default function InterviewsPage() {
             </Card>
           )}
           {groups.byDay.length === 0 && (
-            <p className="text-[14px]" style={{ color: INK }}>Nothing coming up.</p>
+            <p className="text-14" style={{ color: INK }}>Nothing coming up.</p>
           )}
         </>
       )}

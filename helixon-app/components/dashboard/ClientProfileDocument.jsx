@@ -16,7 +16,7 @@ const STATUS = {
 
 function Heading({ children }) {
   return (
-    <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: FAINT }}>
+    <h3 className="text-12 font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: FAINT }}>
       {children}
     </h3>
   );
@@ -33,32 +33,32 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
   ].filter(Boolean);
 
   return (
-    <article className="client-profile-page bg-white rounded-[14px] p-8 sm:p-10 text-[14px] leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
+    <article className="client-profile-page bg-white rounded-card p-8 sm:p-10 text-14 leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
       <header className="flex items-start justify-between gap-6 pb-5 mb-6" style={{ borderBottom: `2px solid ${INK}` }}>
         <div className="min-w-0">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: FAINT }}>
             Candidate profile{p.job?.title ? ` · ${p.job.title}` : ""}{p.job?.client && !p.blind ? ` · ${p.job.client}` : ""}
           </p>
-          <h2 className="text-[26px] font-semibold leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="text-24 font-semibold leading-tight" style={{ fontFamily: "var(--font-display)" }}>
             {p.name}
           </h2>
           {(p.currentTitle || p.currentEmployer) && (
-            <p className="text-[14px] mt-1" style={{ color: MUTED }}>
+            <p className="text-14 mt-1" style={{ color: MUTED }}>
               {[p.currentTitle, p.currentEmployer].filter(Boolean).join(" at ")}
             </p>
           )}
           {facts.length > 0 && (
-            <p className="text-[13px] mt-2" style={{ color: MUTED }}>
+            <p className="text-13 mt-2" style={{ color: MUTED }}>
               {facts.join(" · ")}
             </p>
           )}
         </div>
         {showScore && p.score != null && (
           <div className="text-center shrink-0">
-            <div className="text-[34px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "#0f6b4f" }}>
+            <div className="text-36 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "#0f6b4f" }}>
               {p.score}
             </div>
-            <div className="text-[12px] uppercase tracking-[0.12em] mt-1" style={{ color: FAINT }}>Match</div>
+            <div className="text-12 uppercase tracking-[0.12em] mt-1" style={{ color: FAINT }}>Match</div>
           </div>
         )}
       </header>
@@ -159,7 +159,7 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
         </section>
       )}
 
-      <footer className="pt-4 mt-2 text-[12px] flex flex-wrap justify-between gap-2" style={{ borderTop: `1px solid ${RULE}`, color: FAINT }}>
+      <footer className="pt-4 mt-2 text-12 flex flex-wrap justify-between gap-2" style={{ borderTop: `1px solid ${RULE}`, color: FAINT }}>
         <span>
           Presented by {agencyName}
           {preparedBy ? ` · ${preparedBy}` : ""}

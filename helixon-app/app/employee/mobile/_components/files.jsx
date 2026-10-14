@@ -136,7 +136,7 @@ export function FilesTab({ employee }) {
           <button
             type="button"
             onClick={() => setShowNewFolder((v) => !v)}
-            className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+            className="text-12 font-semibold px-3 py-1.5 rounded-full"
             style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
           >
             + Folder
@@ -145,7 +145,7 @@ export function FilesTab({ employee }) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="text-[12px] font-semibold px-3 py-1.5 rounded-full disabled:opacity-50"
+            className="text-12 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50"
             style={{ background: "var(--mint)", color: "var(--forest)" }}
           >
             {uploading ? "Uploading…" : "Upload"}
@@ -154,14 +154,14 @@ export function FilesTab({ employee }) {
         </div>
       </div>
 
-      <div className="flex items-center flex-wrap gap-1 mb-2.5 text-[12px]" style={{ color: "var(--ink-faint)" }}>
-        <button onClick={() => setFolderId(null)} className="font-medium" style={{ color: folderId ? "var(--ink-soft)" : "var(--forest)" }}>
+      <div className="flex items-center flex-wrap gap-1 mb-2.5 text-12" style={{ color: "var(--ink-faint)" }}>
+        <button type="button" onClick={() => setFolderId(null)} className="font-medium" style={{ color: folderId ? "var(--ink-soft)" : "var(--forest)" }}>
           Files
         </button>
         {breadcrumb.map((crumb, i) => (
           <span key={crumb.id} className="flex items-center gap-1">
             <span>/</span>
-            <button onClick={() => setFolderId(crumb.id)} className="font-medium" style={{ color: i === breadcrumb.length - 1 ? "var(--forest)" : "var(--ink-soft)" }}>
+            <button type="button" onClick={() => setFolderId(crumb.id)} className="font-medium" style={{ color: i === breadcrumb.length - 1 ? "var(--forest)" : "var(--ink-soft)" }}>
               {crumb.name}
             </button>
           </span>
@@ -176,10 +176,10 @@ export function FilesTab({ employee }) {
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder="Folder name"
-            className="flex-1 text-[14px] rounded-[10px] px-3 py-2.5"
+            className="flex-1 text-14 rounded-btn px-3 py-2.5"
             style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
           />
-          <button type="submit" className="text-[13px] font-semibold px-3 py-2 rounded-[10px]" style={{ background: "var(--forest)", color: "white" }}>
+          <button type="submit" className="text-13 font-semibold px-3 py-2 rounded-btn" style={{ background: "var(--forest)", color: "white" }}>
             Add
           </button>
         </form>
@@ -188,18 +188,18 @@ export function FilesTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
       ) : folders.length === 0 && files.length === 0 ? (
-        <p className="text-[13px] text-center py-6" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file.</p>
+        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {folders.map((folder) => {
             const canDelete = folder.created_by === employee?.id;
             return (
-              <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.folder} size={16} /></span>
-                <button onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
-                  <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</div>
+                <button type="button" onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
+                  <div className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</div>
                 </button>
                 {canDelete && (
                   <button type="button" onClick={() => deleteFolder(folder)} aria-label="Delete folder" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
@@ -212,11 +212,11 @@ export function FilesTab({ employee }) {
           {files.map((file) => {
             const canDelete = file.uploaded_by === employee?.id;
             return (
-              <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-[12px]" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl" style={{ background: "white", border: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--ink-faint)" }}><Icon path={ICONS.file} size={16} /></span>
                 <a href={`/api/employee/files/${file.id}/download`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0">
-                  <div className="text-[14px] font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</div>
-                  <div className="text-[12px] mt-0.5" style={{ color: "var(--ink-faint)" }}>{formatBytes(file.size_bytes)}</div>
+                  <div className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</div>
+                  <div className="text-12 mt-0.5" style={{ color: "var(--ink-faint)" }}>{formatBytes(file.size_bytes)}</div>
                 </a>
                 {canDelete && (
                   <button type="button" onClick={() => deleteFile(file)} aria-label="Delete file" className="shrink-0" style={{ color: "var(--ink-faint)" }}>

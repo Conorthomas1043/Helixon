@@ -7,7 +7,11 @@ const eslintConfig = defineConfig([
     // The app is plain JavaScript, so this is the check that catches a
     // variable used outside the block that declares it.
     files: ["**/*.{js,jsx,mjs}"],
-    rules: { "no-undef": "error" },
+    rules: {
+      "no-undef": "error",
+      // A <button> without a type submits the form around it. Say which.
+      "react/button-has-type": "error",
+    },
   },
   {
     // Playwright fixtures call `use()`, which isn't a React hook.

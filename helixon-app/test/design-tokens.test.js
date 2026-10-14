@@ -20,7 +20,9 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = path.resolve(__dirname, "..");
 const BASELINE = path.join(__dirname, "design-tokens.baseline.json");
-const EXEMPT = [/^app\/admin\/_shared\/styles\.js$/, /^emails\//, /^app\/opengraph-image\.js$/, /\.test\.jsx?$/];
+// lib/ui/clerk-appearance.js: Clerk computes shades from its colours, so it
+// needs literal values (the same as the tokens).
+const EXEMPT = [/^app\/admin\/_shared\/styles\.js$/, /^emails\//, /^app\/opengraph-image\.js$/, /^lib\/ui\/clerk-appearance\.js$/, /\.test\.jsx?$/];
 
 function files(dir, out = []) {
   for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
@@ -53,6 +55,19 @@ function current() {
 describe("design tokens", () => {
   it("counts hex colours and inline styles", () => {
     expect(count('<div style={{ color: "#13201b" }} className="text-[#fff] text-[13px]" />')).toEqual({ hex: 2, inlineStyles: 1, fontSizes: 1 });
+  });
+
+  it("no arbitrary font sizes or corner radii: every one is on the scale", () => {
+    // The scales are the --text-* and --radius-* tokens in app/globals.css
+    // (text-11 ... text-52, rounded-sm ... rounded-3xl). Add a step there if
+    // a design genuinely needs one, rather than a one-off value here.
+    const ARBITRARY = /\btext-\[[0-9.]+(?:px|rem)\]|\brounded(?:-[a-z]{1,2})?-\[[0-9.]+(?:px|rem)\]/g;
+    const found = [];
+    for (const f of ["app", "components", "lib"].flatMap((d) => files(d))) {
+      const hits = fs.readFileSync(path.join(ROOT, f), "utf8").match(ARBITRARY);
+      if (hits) found.push(`${f}: ${[...new Set(hits)].join(", ")}`);
+    }
+    expect(found).toEqual([]);
   });
 
   it("no half-pixel font sizes", () => {

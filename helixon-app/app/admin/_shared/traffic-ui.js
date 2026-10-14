@@ -143,11 +143,11 @@ function InspectorBody({ r, onBlock, blocked }) {
           </Link>
         )}
         {r.ip && onBlock && !blocked && (
-          <button className="btn small danger" onClick={() => onBlock(r.ip)}>
+          <button type="button" className="btn small danger" onClick={() => onBlock(r.ip)}>
             <Icon name="ban" /> Block IP
           </button>
         )}
-        <button className="btn small ghost" onClick={copy}>
+        <button type="button" className="btn small ghost" onClick={copy}>
           <Icon name="copy" /> Copy as JSON
         </button>
       </div>

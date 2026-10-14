@@ -11,7 +11,7 @@ import AiWritingNotice from "@/components/dashboard/AiWritingNotice";
 
 export function MatchOverview({ candidate }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Match overview" title="Why they match" />
       {candidate.status !== "completed" ? (
         <p className="text-sm" style={{ color: INK_MUTED }}>
@@ -30,11 +30,11 @@ export function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Strengths</FieldLabel>
               {candidate.strengths.length === 0 ? (
-                <p className="text-[14px]" style={{ color: INK_FAINT }}>None recorded.</p>
+                <p className="text-14" style={{ color: INK_FAINT }}>None recorded.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.strengths.map((s) => (
-                    <li key={s} className="text-[14px] flex items-start gap-2" style={{ color: INK }}>
+                    <li key={s} className="text-14 flex items-start gap-2" style={{ color: INK }}>
                       <span style={{ color: "var(--forest)" }}>✓</span>
                       {s}
                     </li>
@@ -45,11 +45,11 @@ export function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Potential concerns</FieldLabel>
               {candidate.concerns.length === 0 ? (
-                <p className="text-[14px]" style={{ color: INK_FAINT }}>No concerns flagged.</p>
+                <p className="text-14" style={{ color: INK_FAINT }}>No concerns flagged.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.concerns.map((c) => (
-                    <li key={c} className="text-[14px] flex items-start gap-2" style={{ color: INK }}>
+                    <li key={c} className="text-14 flex items-start gap-2" style={{ color: INK }}>
                       <span style={{ color: AMBER }}>△</span>
                       {c}
                     </li>
@@ -70,7 +70,7 @@ export function MatchOverview({ candidate }) {
 
 export function ExperienceSection({ candidate }) {
   return (
-    <div className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Background" title="Experience" />
 
       {candidate.skills.length > 0 && (
@@ -78,7 +78,7 @@ export function ExperienceSection({ candidate }) {
           <FieldLabel>Skills</FieldLabel>
           <div className="flex flex-wrap gap-1.5">
             {candidate.skills.map((s) => (
-              <span key={s} className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+              <span key={s} className="text-12 px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
                 {s}
               </span>
             ))}
@@ -95,11 +95,11 @@ export function ExperienceSection({ candidate }) {
                 <p className="text-sm font-semibold" style={{ color: INK }}>
                   {w.title} <span style={{ color: INK_MUTED, fontWeight: 500 }}>· {w.company}</span>
                 </p>
-                <p className="text-[12px]" style={{ color: INK_FAINT }}>
+                <p className="text-12" style={{ color: INK_FAINT }}>
                   {w.start}{w.end ? ` – ${w.end}` : ""}
                 </p>
                 {w.description && (
-                  <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-14 mt-1" style={{ color: INK_MUTED }}>
                     {w.description}
                   </p>
                 )}
@@ -114,7 +114,7 @@ export function ExperienceSection({ candidate }) {
           <FieldLabel>Education</FieldLabel>
           <ul className="space-y-1.5">
             {candidate.education.map((e, i) => (
-              <li key={i} className="text-[14px]" style={{ color: INK }}>
+              <li key={i} className="text-14" style={{ color: INK }}>
                 {e.degree}
                 {e.school && <span style={{ color: INK_MUTED }}> · {e.school}</span>}
                 {e.years && <span style={{ color: INK_FAINT }}> ({e.years})</span>}
@@ -125,7 +125,7 @@ export function ExperienceSection({ candidate }) {
       )}
 
       {candidate.skills.length === 0 && candidate.workHistory.length === 0 && candidate.education.length === 0 && (
-        <p className="text-[14px]" style={{ color: INK_MUTED }}>
+        <p className="text-14" style={{ color: INK_MUTED }}>
           No background details on file yet.
         </p>
       )}
@@ -151,7 +151,7 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
   }
 
   return (
-    <div ref={boxRef} className="rounded-[14px] p-5 sm:p-6" style={CARD}>
+    <div ref={boxRef} className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading
         eyebrow={candidateName ? `Full analysis · ${candidateName}` : "Full analysis"}
         title="Screening report"
@@ -160,7 +160,7 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
             <button
               type="button"
               onClick={print}
-              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: INK_MUTED }}
               title="Print, or choose Save as PDF to send it"
             >
@@ -170,7 +170,7 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
               style={{ color: "var(--forest)" }}
             >
               {open ? "Hide report" : "Show full report"}
@@ -178,7 +178,7 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
           </span>
         }
       />
-      <p className="text-[14px]" style={{ color: INK_MUTED }}>
+      <p className="text-14" style={{ color: INK_MUTED }}>
         Score breakdown, requirements met, skills, red flags, interview questions and salary estimate
         {role ? ` for ${role}` : ""}
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.

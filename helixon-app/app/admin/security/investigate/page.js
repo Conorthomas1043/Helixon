@@ -113,7 +113,7 @@ function IntelPanel({ intel, fetchedAt, looking, error, onRefresh }) {
       title="Who is this?"
       sub="Public records only: reverse DNS, the network that announces the address, its registry entry and the Tor exit list. Nothing is sent to the address itself."
       action={
-        <button className="btn small" onClick={onRefresh} disabled={looking}>
+        <button type="button" className="btn small" onClick={onRefresh} disabled={looking}>
           <Icon name="refresh" /> {looking ? "Looking up…" : "Look up again"}
         </button>
       }
@@ -274,7 +274,7 @@ function Conversation({ rows, onOpen, hasOlder, onLoadOlder, loadingOlder }) {
             ["blocked", "Blocked"],
             ["flagged", "Flagged"],
           ].map(([value, label]) => (
-            <button key={value} className={show === value ? "active" : ""} aria-pressed={show === value} onClick={() => setShow(value)}>
+            <button type="button" key={value} className={show === value ? "active" : ""} aria-pressed={show === value} onClick={() => setShow(value)}>
               {label}
             </button>
           ))}
@@ -287,7 +287,7 @@ function Conversation({ rows, onOpen, hasOlder, onLoadOlder, loadingOlder }) {
       {hasOlder && (
         <div className="table-foot" style={{ border: 0, background: "transparent", padding: "12px 2px 0" }}>
           <span>Showing the newest {rows.length.toLocaleString()} requests.</span>
-          <button className="btn small" onClick={onLoadOlder} disabled={loadingOlder}>
+          <button type="button" className="btn small" onClick={onLoadOlder} disabled={loadingOlder}>
             {loadingOlder ? "Loading…" : "Load older"}
           </button>
         </div>
@@ -307,7 +307,7 @@ function Neighbours({ neighbours, blockedRange, onBlockRange, working }) {
         blockedRange ? (
           <span className="pill bad">Blocked by {blockedRange}</span>
         ) : (
-          <button className="btn small danger" onClick={onBlockRange} disabled={working}>
+          <button type="button" className="btn small danger" onClick={onBlockRange} disabled={working}>
             Block {cidr}
           </button>
         )
@@ -475,7 +475,7 @@ function IpDossier({ ip }) {
           </div>
           <div className="actions" style={{ alignItems: "center" }}>
             {status.blocked ? (
-              <button className="btn small" onClick={unblockIp} disabled={working}>
+              <button type="button" className="btn small" onClick={unblockIp} disabled={working}>
                 Unblock
               </button>
             ) : (
@@ -487,27 +487,27 @@ function IpDossier({ ip }) {
                     </option>
                   ))}
                 </select>
-                <button className="btn small danger" onClick={blockIp} disabled={working}>
+                <button type="button" className="btn small danger" onClick={blockIp} disabled={working}>
                   <Icon name="ban" /> Block
                 </button>
               </>
             )}
             {status.allowListed ? (
-              <button className="btn small" onClick={removeAllow} disabled={working}>
+              <button type="button" className="btn small" onClick={removeAllow} disabled={working}>
                 Remove from allow list
               </button>
             ) : (
-              <button className="btn small" onClick={allowIp} disabled={working}>
+              <button type="button" className="btn small" onClick={allowIp} disabled={working}>
                 <Icon name="check" /> Allow-list
               </button>
             )}
             {status.dismissed ? (
-              <button className="btn small ghost" onClick={restore} disabled={working}>
+              <button type="button" className="btn small ghost" onClick={restore} disabled={working}>
                 Show findings again
               </button>
             ) : (
               worst >= 20 && (
-                <button className="btn small ghost" onClick={dismiss} disabled={working}>
+                <button type="button" className="btn small ghost" onClick={dismiss} disabled={working}>
                   Dismiss findings
                 </button>
               )
@@ -626,13 +626,13 @@ function SearchResults({ query }) {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>IP</th>
-                  <th>Country</th>
-                  <th>Request</th>
-                  <th>User agent</th>
-                  <th>Threat</th>
-                  <th>Outcome</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">IP</th>
+                  <th scope="col">Country</th>
+                  <th scope="col">Request</th>
+                  <th scope="col">User agent</th>
+                  <th scope="col">Threat</th>
+                  <th scope="col">Outcome</th>
                 </tr>
               </thead>
               <tbody>

@@ -42,7 +42,7 @@ export function TimeInStage({ timeInStage }) {
   const withData = (timeInStage || []).filter((s) => s.count > 0);
   if (withData.length === 0) {
     return (
-      <p className="text-[14px]" style={{ color: INK_MUTED }}>
+      <p className="text-14" style={{ color: INK_MUTED }}>
         Fills in as candidates move through stages - this reads real stage-change history, not just current position.
       </p>
     );
@@ -52,18 +52,18 @@ export function TimeInStage({ timeInStage }) {
     <div className="space-y-2.5">
       {withData.map((s) => (
         <div key={s.key} className="flex items-center gap-3">
-          <span className="text-[12px] w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
+          <span className="text-12 w-20 shrink-0 truncate" style={{ color: INK_MUTED }}>
             {s.label}
           </span>
-          <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+          <div className="flex-1 h-6 rounded-md overflow-hidden" style={{ background: "var(--mist)" }}>
             <div
-              className="h-full rounded-[6px] flex items-center justify-end px-2"
+              className="h-full rounded-md flex items-center justify-end px-2"
               style={{ width: `${Math.max(4, Math.round(((s.medianDays || 0) / max) * 100))}%`, background: MUTED_BAR }}
             >
-              <span className="text-[12px] font-semibold tabular-nums" style={{ color: INK }}>{s.medianDays}d</span>
+              <span className="text-12 font-semibold tabular-nums" style={{ color: INK }}>{s.medianDays}d</span>
             </div>
           </div>
-          <span className="text-[12px] w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
+          <span className="text-12 w-20 text-right shrink-0" style={{ color: INK_FAINT }}>
             {s.count} sample{s.count === 1 ? "" : "s"}
           </span>
         </div>
@@ -77,7 +77,7 @@ export function TimeInStage({ timeInStage }) {
 export function RankedList({ items, emptyLabel, rateLabel }) {
   if (!items || items.length === 0) {
     return (
-      <p className="text-[14px]" style={{ color: INK_MUTED }}>
+      <p className="text-14" style={{ color: INK_MUTED }}>
         {emptyLabel}
       </p>
     );
@@ -90,19 +90,19 @@ export function RankedList({ items, emptyLabel, rateLabel }) {
         const pct = Math.max(4, Math.round((value / max) * 100));
         return (
           <div key={item.key} className="flex items-center gap-3">
-            <span className="text-[13px] w-32 shrink-0 truncate" style={{ color: INK_MUTED }}>
+            <span className="text-13 w-32 shrink-0 truncate" style={{ color: INK_MUTED }}>
               {item.label}
             </span>
-            <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: "var(--mist)" }}>
+            <div className="flex-1 h-6 rounded-md overflow-hidden" style={{ background: "var(--mist)" }}>
               <div
-                className="h-full rounded-[6px] flex items-center justify-end px-2"
+                className="h-full rounded-md flex items-center justify-end px-2"
                 style={{ width: `${pct}%`, background: MUTED_BAR }}
               >
-                <span className="text-[12px] font-semibold tabular-nums" style={{ color: INK }}>{value}</span>
+                <span className="text-12 font-semibold tabular-nums" style={{ color: INK }}>{value}</span>
               </div>
             </div>
             {rateLabel && item.placementRate !== null && item.placementRate !== undefined && (
-              <span className="text-[12px] w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
+              <span className="text-12 w-24 text-right shrink-0" style={{ color: INK_FAINT }}>
                 {item.placementRate}% {rateLabel}
               </span>
             )}
@@ -116,7 +116,7 @@ export function RankedList({ items, emptyLabel, rateLabel }) {
 export function OutreachRow({ outreach }) {
   if (!outreach || outreach.total === 0) {
     return (
-      <p className="text-[14px]" style={{ color: INK_MUTED }}>
+      <p className="text-14" style={{ color: INK_MUTED }}>
         No outreach logged yet - use &quot;Log a call/email/meeting&quot; on a candidate&apos;s profile.
       </p>
     );
@@ -133,22 +133,22 @@ export function OutreachRow({ outreach }) {
 export function AdvertisingTable({ advertising }) {
   if (!advertising || advertising.length === 0) {
     return (
-      <p className="text-[14px]" style={{ color: INK_MUTED }}>
+      <p className="text-14" style={{ color: INK_MUTED }}>
         Log clicks/spend per channel on a job&apos;s page to see apply rate and cost per applicant here.
       </p>
     );
   }
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[13px]">
+      <table className="w-full text-13">
         <thead>
           <tr style={{ color: INK_FAINT }}>
-            <th className="text-left font-semibold pb-2">Channel</th>
-            <th className="text-right font-semibold pb-2">Clicks</th>
-            <th className="text-right font-semibold pb-2">Spend</th>
-            <th className="text-right font-semibold pb-2">Applicants</th>
-            <th className="text-right font-semibold pb-2">Apply rate</th>
-            <th className="text-right font-semibold pb-2">Cost/applicant</th>
+            <th scope="col" className="text-left font-semibold pb-2">Channel</th>
+            <th scope="col" className="text-right font-semibold pb-2">Clicks</th>
+            <th scope="col" className="text-right font-semibold pb-2">Spend</th>
+            <th scope="col" className="text-right font-semibold pb-2">Applicants</th>
+            <th scope="col" className="text-right font-semibold pb-2">Apply rate</th>
+            <th scope="col" className="text-right font-semibold pb-2">Cost/applicant</th>
           </tr>
         </thead>
         <tbody className="divide-y">
@@ -182,15 +182,15 @@ export function FinancialRow({ financial }) {
         <ul className="divide-y">
           {financial.byRecruiter.map((r) => (
             <li key={r.name} className="flex items-center justify-between gap-3 py-2">
-              <span className="text-[14px] font-medium" style={{ color: INK }}>{r.name}</span>
-              <span className="text-[13px]" style={{ color: INK_MUTED }}>
+              <span className="text-14 font-medium" style={{ color: INK }}>{r.name}</span>
+              <span className="text-13" style={{ color: INK_MUTED }}>
                 <strong style={{ color: "var(--forest)", fontFamily: "var(--font-mono)" }}>{fmt(r.total)}</strong> · {r.placements} placement{r.placements === 1 ? "" : "s"}
               </span>
             </li>
           ))}
         </ul>
       )}
-      <p className="text-[12px] mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-12 mt-3" style={{ color: INK_FAINT }}>
         Self-reported, entered per placement on the candidate&apos;s profile - Helixon has no independent way to verify these.
       </p>
     </>
@@ -259,7 +259,7 @@ export function PipelineBar({ pipeline }) {
             <div className="w-full rounded-full mt-2 mb-2 flex items-end" style={{ height: 36, background: "var(--mist)" }}>
               <div className="w-full rounded-full" style={{ height: `${heightPct}%`, background: isPlaced ? "var(--forest)" : MUTED_BAR }} />
             </div>
-            <span className="text-[12px] font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
+            <span className="text-12 font-semibold uppercase tracking-wide text-center leading-tight" style={{ color: INK_MUTED }}>
               {STAGE_LABELS[key]}
             </span>
           </div>

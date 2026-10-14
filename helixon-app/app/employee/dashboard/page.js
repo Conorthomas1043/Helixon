@@ -246,7 +246,7 @@ export default function EmployeeDashboard() {
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* ── Header ──────────────────────────────────────────────────── */}
         <header
-          className="relative overflow-hidden rounded-[18px] p-6 sm:p-7 mb-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5"
+          className="relative overflow-hidden rounded-2xl p-6 sm:p-7 mb-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5"
           style={{ background: "linear-gradient(135deg, #ffffff 0%, rgba(var(--forest-rgb),0.07) 100%)", border: "1px solid var(--border)" }}
         >
           <div
@@ -258,10 +258,10 @@ export default function EmployeeDashboard() {
             <p className="text-xs font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: "var(--forest)" }}>
               {justLoggedIn ? "Welcome back" : dateLine}
             </p>
-            <h1 className="text-[26px] sm:text-[30px] font-semibold tracking-tight leading-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 sm:text-28 font-semibold tracking-tight leading-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
               {greeting()}{name ? `, ${name}` : ""}
             </h1>
-            <p className="text-[15px] mt-1.5" style={{ color: "var(--ink-soft)" }} aria-live="polite">{summaryText}</p>
+            <p className="text-15 mt-1.5" style={{ color: "var(--ink-soft)" }} aria-live="polite">{summaryText}</p>
             <div className="flex items-center gap-3 mt-2 min-h-[20px]">
               {loadError ? (
                 <p className="text-xs" style={{ color: "#a83226" }} role="alert">
@@ -314,14 +314,14 @@ export default function EmployeeDashboard() {
             {shownTaskView && (
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Tasks</h2>
-              <div className="flex rounded-[10px] p-0.5 gap-0.5 bg-white" style={{ border: "1px solid var(--border)" }} role="group" aria-label="Which tasks">
+              <div className="flex rounded-btn p-0.5 gap-0.5 bg-white" style={{ border: "1px solid var(--border)" }} role="group" aria-label="Which tasks">
                 {taskViews.map((t) => (
                   <button
                     key={t.key}
                     type="button"
                     onClick={() => setTaskView(t.key)}
                     aria-pressed={shownTaskView === t.key}
-                    className="text-sm px-3.5 py-1.5 rounded-[8px] font-medium transition"
+                    className="text-sm px-3.5 py-1.5 rounded-lg font-medium transition"
                     style={shownTaskView === t.key ? { background: "var(--forest)", color: "white" } : { color: "var(--ink-soft)" }}
                   >
                     {t.label}

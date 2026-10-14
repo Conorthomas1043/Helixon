@@ -120,10 +120,10 @@ export default function AdminShell({ children, initialUsername }) {
               <b style={{ color: "var(--warn)", fontVariantNumeric: "tabular-nums" }}>{formatCountdown(secondsLeft)}</b>.
             </p>
             <div className="modal-actions">
-              <button className="btn" onClick={signOut}>
+              <button type="button" className="btn" onClick={signOut}>
                 Sign out now
               </button>
-              <button className="btn primary" onClick={staySignedIn} autoFocus>
+              <button type="button" className="btn primary" onClick={staySignedIn} autoFocus>
                 Stay signed in
               </button>
             </div>
@@ -205,7 +205,7 @@ export default function AdminShell({ children, initialUsername }) {
 
         <div className="main-col">
           <header className="topbar">
-            <button className="icon-btn menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
+            <button type="button" className="icon-btn menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
               <Icon name="menu" />
             </button>
             {/* The page's own header carries the big title; this is just
@@ -220,7 +220,7 @@ export default function AdminShell({ children, initialUsername }) {
               <span className="topbar-title" aria-current="page">{title}</span>
             </nav>
 
-            <button className="search-trigger" onClick={() => setPaletteOpen(true)} aria-label="Jump to a page">
+            <button type="button" className="search-trigger" onClick={() => setPaletteOpen(true)} aria-label="Jump to a page">
               <Icon name="search" />
               <span>Jump to...</span>
               <span className="kbd">Ctrl K</span>

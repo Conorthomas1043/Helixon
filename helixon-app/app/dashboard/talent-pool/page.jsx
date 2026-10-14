@@ -321,11 +321,11 @@ function TalentPoolContent() {
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[12px] font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
             <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
               Talent pool
             </h1>
-            <p className="text-[14px] text-[var(--ink-soft)] mt-1 max-w-2xl">
+            <p className="text-14 text-[var(--ink-soft)] mt-1 max-w-2xl">
               People worth keeping for future roles. When a new job comes in, match it against the pool and screen the best from
               the CVs you already have.
             </p>
@@ -361,8 +361,8 @@ function TalentPoolContent() {
             <span className="mx-auto w-12 h-12 rounded-full bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center mb-4">
               <Icon name="bookmark" size={20} />
             </span>
-            <p className="text-[16px] font-semibold text-[var(--ink)]">Start building your talent pool</p>
-            <p className="text-[14px] text-[var(--ink-soft)] mt-1.5 max-w-md mx-auto">
+            <p className="text-16 font-semibold text-[var(--ink)]">Start building your talent pool</p>
+            <p className="text-14 text-[var(--ink-soft)] mt-1.5 max-w-md mx-auto">
               Save strong candidates who weren&apos;t right this time - from their profile, the report after an analysis, or by selecting
               several on the Candidates list. When a new job comes in, they&apos;re matched to it automatically.
             </p>
@@ -372,12 +372,12 @@ function TalentPoolContent() {
                 ["sparkle", "Match", "Every open job is checked against the pool for free."],
                 ["refresh", "Screen", "Score the best fits from their CV on file - no re-upload."],
               ].map(([icon, title, body]) => (
-                <div key={title} className="rounded-[12px] border border-[var(--border)] p-3.5">
+                <div key={title} className="rounded-xl border border-[var(--border)] p-3.5">
                   <span className="text-[var(--forest)]">
                     <Icon name={icon} size={16} />
                   </span>
-                  <p className="text-[14px] font-semibold text-[var(--ink)] mt-1.5">{title}</p>
-                  <p className="text-[13px] text-[var(--ink-soft)] mt-0.5">{body}</p>
+                  <p className="text-14 font-semibold text-[var(--ink)] mt-1.5">{title}</p>
+                  <p className="text-13 text-[var(--ink-soft)] mt-0.5">{body}</p>
                 </div>
               ))}
             </div>
@@ -423,12 +423,12 @@ function TalentPoolContent() {
               <Card className="p-4 sm:p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   <div className="flex items-start gap-3 min-w-0 flex-1">
-                    <span className="w-10 h-10 rounded-[10px] bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center shrink-0">
+                    <span className="w-10 h-10 rounded-btn bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center shrink-0">
                       <Icon name="briefcase" size={18} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
-                      <p className="text-[16px] font-semibold text-[var(--ink)] truncate">
+                      <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Matching the pool against</p>
+                      <p className="text-16 font-semibold text-[var(--ink)] truncate">
                         {job.title}
                         {job.client && <span className="font-normal text-[var(--ink-soft)]"> · {job.client}</span>}
                       </p>
@@ -438,7 +438,7 @@ function TalentPoolContent() {
                         ))}
                         {job.minYearsExperience ? <Chip>{job.minYearsExperience}+ yrs</Chip> : null}
                         {job.requiredSkills.length === 0 && !job.minYearsExperience && (
-                          <span className="text-[13px] text-[var(--ink-soft)]">
+                          <span className="text-13 text-[var(--ink-soft)]">
                             No requirements listed on this job, so there&apos;s nothing to pre-check - screening still works.
                           </span>
                         )}
@@ -451,7 +451,7 @@ function TalentPoolContent() {
                       onChange={(e) => setJob(e.target.value)}
                       disabled={running}
                       aria-label="Change job"
-                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
+                      className="text-14 font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white max-w-[220px] disabled:opacity-60"
                     >
                       {!jobs.some((j) => j.id === jobId) && <option value={jobId}>{job.title}</option>}
                       {jobs.map((j) => (
@@ -486,8 +486,8 @@ function TalentPoolContent() {
                 <section aria-labelledby="open-jobs-title">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-3 mb-2.5">
                     <div>
-                      <p className="text-[12px] font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
-                      <h2 id="open-jobs-title" className="text-[15px] font-semibold text-[var(--ink)]">
+                      <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">Match to a job</p>
+                      <h2 id="open-jobs-title" className="text-15 font-semibold text-[var(--ink)]">
                         Open jobs you could fill from the pool
                       </h2>
                     </div>
@@ -495,7 +495,7 @@ function TalentPoolContent() {
                       value=""
                       onChange={(e) => e.target.value && setJob(e.target.value)}
                       aria-label="Match against any job"
-                      className="self-start sm:self-auto text-[13px] font-semibold px-3 py-1.5 rounded-full border border-[var(--border)] bg-white"
+                      className="self-start sm:self-auto text-13 font-semibold px-3 py-1.5 rounded-full border border-[var(--border)] bg-white"
                     >
                       <option value="">Any job…</option>
                       {jobs.map((j) => (
@@ -512,20 +512,20 @@ function TalentPoolContent() {
                         key={j.id}
                         type="button"
                         onClick={() => setJob(j.id)}
-                        className="snap-start shrink-0 w-[250px] text-left rounded-[14px] bg-white border border-[var(--border)] p-4 hover:border-[var(--forest)] hover:shadow-[0_6px_20px_-12px_rgba(19,32,27,0.35)] transition"
+                        className="snap-start shrink-0 w-[250px] text-left rounded-card bg-white border border-[var(--border)] p-4 hover:border-[var(--forest)] hover:shadow-[0_6px_20px_-12px_rgba(19,32,27,0.35)] transition"
                       >
-                        <p className="text-[14px] font-semibold text-[var(--ink)] truncate">{j.title}</p>
-                        <p className="text-[13px] text-[var(--ink-soft)] truncate">{j.client || "No client set"}</p>
+                        <p className="text-14 font-semibold text-[var(--ink)] truncate">{j.title}</p>
+                        <p className="text-13 text-[var(--ink-soft)] truncate">{j.client || "No client set"}</p>
                         <div className="flex items-center justify-between mt-3">
                           {j.likely > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[13px] font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)]">
+                            <span className="inline-flex items-center gap-1 text-13 font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest-deep)]">
                               <Icon name="sparkle" size={11} />
                               {j.likely} likely fit{j.likely === 1 ? "" : "s"}
                             </span>
                           ) : (
-                            <span className="text-[13px] text-[var(--ink-faint)]">{j.requiredSkills.length ? "No likely fits yet" : "No requirements to check"}</span>
+                            <span className="text-13 text-[var(--ink-faint)]">{j.requiredSkills.length ? "No likely fits yet" : "No requirements to check"}</span>
                           )}
-                          <span className="text-[13px] font-semibold text-[var(--forest)] inline-flex items-center gap-1">
+                          <span className="text-13 font-semibold text-[var(--forest)] inline-flex items-center gap-1">
                             Match <Icon name="arrowRight" size={12} />
                           </span>
                         </div>
@@ -549,7 +549,7 @@ function TalentPoolContent() {
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search name, role, skill, location or note…"
                       aria-label="Search the talent pool"
-                      className="w-full text-[15px] pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
+                      className="w-full text-15 pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -557,7 +557,7 @@ function TalentPoolContent() {
                       value={skill}
                       onChange={(e) => setSkill(e.target.value)}
                       aria-label="Filter by skill"
-                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
+                      className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white min-w-0 flex-1 md:flex-none md:w-44"
                       style={{ border: `1px solid ${skill ? "var(--forest)" : "var(--border)"}` }}
                     >
                       <option value="">Any skill</option>
@@ -571,7 +571,7 @@ function TalentPoolContent() {
                       value={effectiveSort}
                       onChange={(e) => setSortBy(e.target.value)}
                       aria-label="Sort"
-                      className="text-[14px] font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
+                      className="text-14 font-semibold px-3.5 py-2 rounded-full border border-[var(--border)] bg-white min-w-0 flex-1 md:flex-none md:w-48"
                     >
                       {Object.entries(SORTS)
                         .filter(([k]) => k !== "fit" || job)
@@ -593,13 +593,13 @@ function TalentPoolContent() {
                         onClick={() => setAvailability(k)}
                         aria-pressed={on}
                         className={cx(
-                          "shrink-0 inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-full border transition-colors",
+                          "shrink-0 inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full border transition-colors",
                           on ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "bg-white border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
                         )}
                       >
                         {AVAILABILITY[k] && <span className="w-1.5 h-1.5 rounded-full" style={{ background: on ? "white" : AVAILABILITY[k].dot }} />}
                         {label}
-                        <span className={cx("text-[12px] tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
+                        <span className={cx("text-12 tabular-nums px-1.5 rounded-full", on ? "bg-white/25" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
                           {counts[k]}
                         </span>
                       </button>
@@ -613,7 +613,7 @@ function TalentPoolContent() {
                         setSkill("");
                         setAvailability("all");
                       }}
-                      className="shrink-0 text-[13px] font-semibold text-[var(--forest)] px-2"
+                      className="shrink-0 text-13 font-semibold text-[var(--forest)] px-2"
                     >
                       Clear filters
                     </button>
@@ -621,7 +621,7 @@ function TalentPoolContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-[13px] text-[var(--ink-soft)]">
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-13 text-[var(--ink-soft)]">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -654,7 +654,7 @@ function TalentPoolContent() {
               </div>
 
               {items.length === 0 ? (
-                <p className="p-10 text-center text-[14px] text-[var(--ink-soft)]">No one in the pool matches these filters.</p>
+                <p className="p-10 text-center text-14 text-[var(--ink-soft)]">No one in the pool matches these filters.</p>
               ) : (
                 <ul className="divide-y divide-[var(--border-soft)]">
                   {items.map((item) => (
@@ -676,7 +676,7 @@ function TalentPoolContent() {
             </Card>
 
             {job && (
-              <p className="text-[13px] text-[var(--ink-faint)]">
+              <p className="text-13 text-[var(--ink-faint)]">
                 Fit is a quick check of which of the job&apos;s requirements appear in each CV - free and instant, but only a guide. Screening
                 gives the real match score, and puts them in the pipeline under this job.
               </p>
@@ -688,10 +688,10 @@ function TalentPoolContent() {
       {/* Selection tray */}
       {(selected.length > 0 || running) && (
         <div className="fixed bottom-5 inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
-          <div className="pointer-events-auto w-full max-w-[760px] flex flex-wrap items-center gap-2.5 rounded-[16px] bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
-            <span className="text-[14px] font-semibold">{running ? `Screening for ${job?.title}…` : `${selected.length} selected`}</span>
+          <div className="pointer-events-auto w-full max-w-[760px] flex flex-wrap items-center gap-2.5 rounded-2xl bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
+            <span className="text-14 font-semibold">{running ? `Screening for ${job?.title}…` : `${selected.length} selected`}</span>
             {!running && (
-              <button type="button" onClick={() => setSelected([])} className="text-[13px] font-medium text-white/70 hover:text-white">
+              <button type="button" onClick={() => setSelected([])} className="text-13 font-medium text-white/70 hover:text-white">
                 Clear
               </button>
             )}
@@ -703,7 +703,7 @@ function TalentPoolContent() {
                     onClick={() => {
                       stopRef.current = true;
                     }}
-                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
+                    className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20"
                   >
                     Stop
                   </button>
@@ -712,7 +712,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={screenSelected}
                     disabled={selected.length === 0}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-14 font-semibold px-4 py-2 rounded-full bg-[var(--forest)] hover:bg-[var(--forest-deep)] disabled:opacity-50"
                   >
                     <Icon name="sparkle" size={13} />
                     Screen {selected.length} for {job.title}
@@ -725,7 +725,7 @@ function TalentPoolContent() {
                     disabled={bulkBusy}
                     onChange={(e) => bulkAvailability(e.target.value)}
                     aria-label="Set availability for the selected"
-                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
+                    className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white/10 text-white border border-white/15 [&>option]:text-[var(--ink)]"
                   >
                     <option value="">Set availability…</option>
                     {Object.entries(AVAILABILITY).map(([k, v]) => (
@@ -739,7 +739,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={bulkRemove}
                     disabled={bulkBusy}
-                    className="text-[14px] font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
+                    className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
                   >
                     Remove from pool
                   </button>

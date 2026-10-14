@@ -44,6 +44,7 @@
   --radius-card:  14px;
   --radius-btn:   10px;
   --radius-input: 10px;
+  --radius-panel: 20px;
   --font-display: var(--font-outfit), system-ui, sans-serif;
   --font-body:    var(--font-inter), system-ui, sans-serif;
   --font-mono:    var(--font-geist-mono), monospace;
@@ -117,9 +118,38 @@
   --font-body:    var(--font-inter), system-ui, sans-serif;
   --font-mono:    var(--font-geist-mono), monospace;
 
-  /* Micro type scale used for text-2xs/text-3xs on nav labels, badges, etc. */
-  --text-2xs: 0.75rem;   /* 12px */
-  --text-3xs: 0.625rem;  /* 10px */
+  /* ── Type scale ────────────────────────────────────────────────────────
+     Every font size in the app is one of these steps: text-11 ... text-52.
+     They set the size only and leave line height to the element (the same as
+     the text-[13px] values they replaced), so line height stays a separate,
+     deliberate choice (leading-*). test/design-tokens.test.js rejects any
+     arbitrary text-[Npx] size.
+       11  micro labels, badges        12  captions, eyebrows
+       13  dense UI text, meta         14  body in the app, buttons
+       15  lead text, card titles      16  body on marketing pages
+       20 24 28 36 40 52               headings, from section to hero */
+  --text-11: 0.6875rem;
+  --text-12: 0.75rem;
+  --text-13: 0.8125rem;
+  --text-14: 0.875rem;
+  --text-15: 0.9375rem;
+  --text-16: 1rem;
+  --text-20: 1.25rem;
+  --text-24: 1.5rem;
+  --text-28: 1.75rem;
+  --text-36: 2.25rem;
+  --text-40: 2.5rem;
+  --text-52: 3.25rem;
+
+  /* ── Radius scale ──────────────────────────────────────────────────────
+     Tailwind's own steps plus the three named ones above:
+       rounded-sm 4   chips inside rows       rounded-md 6   small controls
+       rounded-lg 8   nav items, menu rows    rounded-btn 10 buttons, inputs
+       rounded-xl 12  inner panels            rounded-card 14 cards
+       rounded-2xl 16 large cards, dialogs    rounded-panel 20 hero panels
+       rounded-3xl 24 the largest feature surfaces
+     test/design-tokens.test.js rejects any arbitrary rounded-[Npx]. */
+  --radius-panel: 20px;
 }
 
 /* ── Default border colour ──────────────────────────────────────────────────

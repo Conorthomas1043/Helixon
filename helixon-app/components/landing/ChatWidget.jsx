@@ -183,7 +183,7 @@ export default function ChatWidget() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-ink font-display leading-tight">Helixon Assistant</p>
-              <p className="text-2xs text-ink-soft">Ask about pricing, scoring, or how it works</p>
+              <p className="text-12 text-ink-soft">Ask about pricing, scoring, or how it works</p>
             </div>
           </div>
 

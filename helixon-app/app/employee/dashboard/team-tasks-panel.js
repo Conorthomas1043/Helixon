@@ -6,6 +6,7 @@
 // this component just doesn't render controls the API would reject).
 
 import { useConfirm } from "@/components/dashboard/use-confirm";
+import { Notice } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee/day";
 import { Card } from "../_shared/ui";
@@ -14,8 +15,9 @@ const PRIORITY_DOT = { high: "#c0392b", medium: "#b45309", low: "#8a9a92" };
 
 export default function TeamTasksPanel({ currentEmployeeId, notify }) {
   const [ask, confirmDialog] = useConfirm();
-  // Errors go to the page's toasts when it has them, else a plain alert.
-  const report = (message) => (notify ? notify(message, { tone: "error" }) : alert(message));
+  // Errors go to the page's toasts when it has them, else a notice in the panel.
+  const [panelError, setPanelError] = useState("");
+  const report = (message) => (notify ? notify(message, { tone: "error" }) : setPanelError(message));
   const [todos, setTodos] = useState([]);
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,12 +115,17 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
   return (
     <Card className="overflow-hidden" aria-labelledby="team-tasks-title">
       {confirmDialog}
+      {panelError && (
+        <Notice tone="error" onDismiss={() => setPanelError("")} className="m-4 mb-0">
+          {panelError}
+        </Notice>
+      )}
       <div
         className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         style={{ borderColor: "var(--border-soft)" }}
       >
         <div className="flex items-center gap-2">
-          <h2 id="team-tasks-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 id="team-tasks-title" className="text-15 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Shared with the team
           </h2>
           {loading && (
@@ -131,7 +138,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
             type="button"
             onClick={() => setOnlyMine((v) => !v)}
             aria-pressed={onlyMine}
-            className="text-sm px-3 py-1.5 rounded-[10px] font-medium transition"
+            className="text-sm px-3 py-1.5 rounded-btn font-medium transition"
             style={onlyMine ? { background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" } : { border: "1px solid var(--border)", color: "var(--ink-soft)" }}
           >
             {onlyMine ? "Only mine" : "Everyone's"}
@@ -140,7 +147,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
             type="button"
             onClick={() => setShowAddForm((v) => !v)}
             aria-expanded={showAddForm}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-[10px] transition hover:opacity-90"
+            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-btn transition hover:opacity-90"
             style={{ background: "var(--forest)", color: "white" }}
           >
             <span className="text-base leading-none" aria-hidden="true">+</span> Add team task
@@ -285,7 +292,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
 
               {canDelete && (
                 <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition shrink-0">
-                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-[8px] transition hover:bg-red-50" style={{ color: "#a83226" }}>
+                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-lg transition hover:bg-red-50" style={{ color: "#a83226" }}>
                     Delete
                   </button>
                 </div>

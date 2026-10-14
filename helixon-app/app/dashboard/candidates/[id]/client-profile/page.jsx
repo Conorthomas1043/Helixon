@@ -62,11 +62,11 @@ export default function ClientProfilePage({ params }) {
           onPrint={print}
           disabled={status !== "ready"}
         />
-        {status === "loading" && <div className="rounded-[14px] h-96 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
+        {status === "loading" && <div className="rounded-card h-96 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
         {(status === "error" || status === "not-found") && (
-          <div className="rounded-[14px] p-10 text-center" style={CARD}>
+          <div className="rounded-card p-10 text-center" style={CARD}>
             <p className="font-semibold" style={{ color: INK }}>{status === "not-found" ? "Candidate not found" : "Unable to build the profile"}</p>
-            <p className="text-[14px] mt-1" style={{ color: INK_MUTED }}>{status === "not-found" ? "They may have been removed." : "Please try again."}</p>
+            <p className="text-14 mt-1" style={{ color: INK_MUTED }}>{status === "not-found" ? "They may have been removed." : "Please try again."}</p>
           </div>
         )}
         {status === "ready" && data && (

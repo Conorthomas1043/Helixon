@@ -58,10 +58,10 @@ function ConfirmBody({ request, onDone }) {
     <>
       <p className="modal-message">{request.message}</p>
       <div className="modal-actions">
-        <button className="btn small" onClick={() => onDone(false)}>
+        <button type="button" className="btn small" onClick={() => onDone(false)}>
           Cancel
         </button>
-        <button
+        <button type="button"
           className={`btn small ${request.danger ? "danger" : ""}`}
           onClick={() => onDone(true)}
         >
@@ -110,10 +110,10 @@ function PasswordBody({ request, onDone }) {
       />
       {error && <div className="notice error" style={{ marginTop: 8 }}>{error}</div>}
       <div className="modal-actions">
-        <button className="btn small" onClick={() => onDone(null)}>
+        <button type="button" className="btn small" onClick={() => onDone(null)}>
           Cancel
         </button>
-        <button className="btn small" onClick={submit}>
+        <button type="button" className="btn small" onClick={submit}>
           Set password
         </button>
       </div>
@@ -135,10 +135,10 @@ function TextBody({ request, onDone }) {
         autoFocus
       />
       <div className="modal-actions">
-        <button className="btn small" onClick={() => onDone(null)}>
+        <button type="button" className="btn small" onClick={() => onDone(null)}>
           Cancel
         </button>
-        <button className="btn small" onClick={() => onDone(value)}>
+        <button type="button" className="btn small" onClick={() => onDone(value)}>
           Confirm
         </button>
       </div>

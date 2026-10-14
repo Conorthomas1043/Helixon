@@ -55,7 +55,7 @@ export default function FaqPage() {
       <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M6 4v2.5M6 8h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           Frequently asked
         </span>
@@ -73,8 +73,8 @@ export default function FaqPage() {
         <div className="space-y-8">
           {FAQ_GROUPS.map((group) => (
             <div key={group.group}>
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>{group.group}</p>
-              <div className="rounded-[14px] px-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>{group.group}</p>
+              <div className="rounded-card px-6" style={{ background: "white", border: "1px solid var(--border)" }}>
                 {group.items.map((item, i) => {
                   const key = `${group.group}-${i}`;
                   return (

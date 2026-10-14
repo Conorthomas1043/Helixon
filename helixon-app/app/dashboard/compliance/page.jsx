@@ -28,7 +28,7 @@ function Person({ id, name }) {
 
 function Empty({ children }) {
   return (
-    <p className="text-[14px]" style={{ color: INK_MUTED }}>
+    <p className="text-14" style={{ color: INK_MUTED }}>
       {children}
     </p>
   );
@@ -92,8 +92,8 @@ export default function CompliancePage() {
               ["Privacy notices due", data.notices.length, data.notices.some((n) => n.overdue)],
               ["References awaited", data.references.length, false],
             ].map(([label, n, alarm]) => (
-              <div key={label} className="rounded-[12px] px-4 py-3 bg-white" style={{ border: "1px solid var(--border)" }}>
-                <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <div key={label} className="rounded-xl px-4 py-3 bg-white" style={{ border: "1px solid var(--border)" }}>
+                <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
                   {label}
                 </p>
                 <p className="text-xl font-semibold tabular-nums" style={{ color: alarm ? "var(--score-low)" : INK }}>
@@ -109,7 +109,7 @@ export default function CompliancePage() {
             ) : (
               <ul className="divide-y">
                 {data.missingRtw.map((m) => (
-                  <li key={m.candidateId} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
+                  <li key={m.candidateId} className="py-2.5 flex flex-wrap items-center gap-2 text-14">
                     <Person id={m.candidateId} name={m.candidateName} />
                     <span style={{ color: INK_MUTED }}>{[m.jobTitle, m.client].filter(Boolean).join(" · ")}</span>
                     <Pill color={m.stage === "Placed" ? "var(--score-low)" : INK_MUTED} background={m.stage === "Placed" ? "#fbeaea" : undefined}>
@@ -127,11 +127,11 @@ export default function CompliancePage() {
             ) : (
               <ul className="divide-y">
                 {checks.map((c) => (
-                  <li key={c.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
+                  <li key={c.id} className="py-2.5 flex flex-wrap items-center gap-2 text-14">
                     <Person id={c.candidateId} name={c.candidateName} />
                     <span style={{ color: INK }}>{c.label || CHECK_KINDS[c.kind]}</span>
                     <CheckStatePill state={c.state} />
-                    <span className="text-[13px]" style={{ color: INK_MUTED }}>
+                    <span className="text-13" style={{ color: INK_MUTED }}>
                       {c.expiresOn ? `expires ${fmt(c.expiresOn)}` : ""}
                       {c.followUpOn ? ` · re-check by ${fmt(c.followUpOn)}` : ""}
                     </span>
@@ -159,7 +159,7 @@ export default function CompliancePage() {
           >
             <ErrorText>{sendError}</ErrorText>
             {notice && (
-              <p className="text-[13px] mb-2" role="status" style={{ color: "var(--forest)" }}>
+              <p className="text-13 mb-2" role="status" style={{ color: "var(--forest)" }}>
                 {notice}
               </p>
             )}
@@ -168,17 +168,17 @@ export default function CompliancePage() {
             ) : (
               <ul className="divide-y">
                 {data.notices.map((n) => (
-                  <li key={n.candidateId} className="py-2 flex flex-wrap items-center gap-2 text-[14px]">
+                  <li key={n.candidateId} className="py-2 flex flex-wrap items-center gap-2 text-14">
                     {/* Padded label: a 24px hit area around the 18px box. */}
                     <label className="inline-flex p-[3px] -m-[3px] cursor-pointer">
                       <input type="checkbox" aria-label={`Select ${n.candidateName}`} disabled={!n.email} checked={selected.has(n.candidateId)} onChange={() => toggle(n.candidateId)} />
                     </label>
                     <Person id={n.candidateId} name={n.candidateName} />
-                    <span className="text-[13px]" style={{ color: n.overdue ? "var(--score-low)" : INK_MUTED }}>
+                    <span className="text-13" style={{ color: n.overdue ? "var(--score-low)" : INK_MUTED }}>
                       {n.overdue ? "Overdue" : "Due"} {fmt(n.dueOn)}
                     </span>
                     {!n.email && (
-                      <span className="text-[13px]" style={{ color: INK_FAINT }}>
+                      <span className="text-13" style={{ color: INK_FAINT }}>
                         no email on file
                       </span>
                     )}
@@ -194,13 +194,13 @@ export default function CompliancePage() {
             ) : (
               <ul className="divide-y">
                 {data.references.map((r) => (
-                  <li key={r.id} className="py-2.5 flex flex-wrap items-center gap-2 text-[14px]">
+                  <li key={r.id} className="py-2.5 flex flex-wrap items-center gap-2 text-14">
                     <Person id={r.candidateId} name={r.candidateName} />
                     <span style={{ color: INK_MUTED }}>
                       from {r.refereeName}
                       {r.refereeCompany ? `, ${r.refereeCompany}` : ""}
                     </span>
-                    <span className="text-[13px]" style={{ color: r.expired ? "var(--score-low)" : INK_FAINT }}>
+                    <span className="text-13" style={{ color: r.expired ? "var(--score-low)" : INK_FAINT }}>
                       {r.expired ? "link expired" : r.requestedAt ? `asked ${fmt(r.requestedAt)}` : "not sent yet"}
                     </span>
                   </li>

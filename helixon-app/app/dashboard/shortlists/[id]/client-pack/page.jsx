@@ -73,20 +73,20 @@ export default function ClientPackPage({ params }) {
           onPrint={print}
           disabled={status !== "ready" || !profiles?.length}
         />
-        {status === "loading" && <div className="rounded-[14px] h-96 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
+        {status === "loading" && <div className="rounded-card h-96 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
         {(status === "error" || status === "not-found") && (
-          <div className="rounded-[14px] p-10 text-center" style={CARD}>
+          <div className="rounded-card p-10 text-center" style={CARD}>
             <p className="font-semibold" style={{ color: INK }}>{status === "not-found" ? "Shortlist not found" : "Unable to build the pack"}</p>
           </div>
         )}
         {status === "ready" && profiles.length === 0 && (
-          <div className="rounded-[14px] p-10 text-center text-[14px]" style={{ ...CARD, color: INK_MUTED }}>
+          <div className="rounded-card p-10 text-center text-14" style={{ ...CARD, color: INK_MUTED }}>
             Nobody on this shortlist yet.
           </div>
         )}
         {status === "ready" && profiles.length > 0 && (
           <div ref={docRef} className="space-y-6">
-            <p className="print-hide text-[13px]" style={{ color: INK_MUTED }}>
+            <p className="print-hide text-13" style={{ color: INK_MUTED }}>
               {shortlist.name} · {profiles.length} {profiles.length === 1 ? "profile" : "profiles"}, one per printed page
             </p>
             {profiles.map((p) => (

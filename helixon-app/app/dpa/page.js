@@ -71,7 +71,7 @@ function Section({ id, title, children }) {
       <h2 className="text-lg font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
         {title}
       </h2>
-      <div className="space-y-3 text-[13px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+      <div className="space-y-3 text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
         {children}
       </div>
     </section>
@@ -91,17 +91,17 @@ export default function DpaPage() {
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-[11px] font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
           </p>
-          <h1 className="text-3xl sm:text-[38px] font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             Data Processing Agreement
           </h1>
           <p className="text-sm leading-relaxed max-w-xl mb-6" style={{ color: "var(--ink-soft)" }}>
             This DPA forms part of the agreement between Helixon and any organisation using Helixon to process
             personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-11" style={{ color: "var(--ink-soft)" }}>
             <span><strong style={{ color: "var(--ink)" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
             <span><strong style={{ color: "var(--ink)" }}>Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
@@ -148,12 +148,12 @@ export default function DpaPage() {
         {/* Sticky TOC */}
         <aside className="hidden lg:block">
           <nav className="sticky top-[80px] space-y-0.5 pr-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>On this page</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>On this page</p>
             {SECTIONS.map((s) => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="block text-[12px] py-1.5 pl-3 border-l-2 transition-colors leading-snug"
+                className="block text-12 py-1.5 pl-3 border-l-2 transition-colors leading-snug"
                 style={{
                   borderColor: active === s.id ? "var(--forest)" : "transparent",
                   color: active === s.id ? "var(--forest)" : "var(--ink-soft)",
@@ -167,7 +167,7 @@ export default function DpaPage() {
         </aside>
 
         {/* Content */}
-        <article className="max-w-[640px] bg-white rounded-[16px] border p-8 sm:p-10" style={{ borderColor: "var(--border)" }}>
+        <article className="max-w-[640px] bg-white rounded-2xl border p-8 sm:p-10" style={{ borderColor: "var(--border)" }}>
 
           <Section id="parties" title="1. Parties & scope">
             <p>This Data Processing Agreement (“DPA”) is entered into between the organisation using the Helixon
@@ -291,7 +291,7 @@ export default function DpaPage() {
           </Section>
 
           <Section id="annex-a" title="Annex A - Processing details">
-            <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: "var(--border)" }}>
+            <div className="rounded-btn overflow-hidden border" style={{ borderColor: "var(--border)" }}>
               {[
                 ["Subject matter", "Provision of the Helixon CV screening service"],
                 ["Duration", "Term of the underlying agreement"],
@@ -300,7 +300,7 @@ export default function DpaPage() {
                 ["Data subjects", "Job candidates; Customer personnel"],
                 ["Categories of data", "CV contents, contact details, employment history"],
               ].map(([k, v], i) => (
-                <div key={k} className="grid grid-cols-[130px_1fr] text-[12px]" style={{ background: i % 2 === 0 ? "var(--mist)" : "white" }}>
+                <div key={k} className="grid grid-cols-[130px_1fr] text-12" style={{ background: i % 2 === 0 ? "var(--mist)" : "white" }}>
                   <div className="px-4 py-3 font-semibold" style={{ color: "var(--ink)" }}>{k}</div>
                   <div className="px-4 py-3 border-l" style={{ color: "var(--ink-soft)", borderColor: "var(--border)" }}>{v}</div>
                 </div>
@@ -309,12 +309,12 @@ export default function DpaPage() {
           </Section>
 
           <Section id="annex-b" title="Annex B - Sub-processors">
-            <div className="rounded-[10px] overflow-hidden border" style={{ borderColor: "var(--border)" }}>
-              <div className="grid grid-cols-[1fr_1fr_120px] text-[11px] font-semibold uppercase tracking-wide px-4 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <div className="rounded-btn overflow-hidden border" style={{ borderColor: "var(--border)" }}>
+              <div className="grid grid-cols-[1fr_1fr_120px] text-11 font-semibold uppercase tracking-wide px-4 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                 <span>Sub-processor</span><span>Purpose</span><span>Location</span>
               </div>
               {SUBPROCESSORS.map((sp, i) => (
-                <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-[12px] px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "var(--ink-soft)" }}>
+                <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-12 px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "var(--ink-soft)" }}>
                   <span style={{ color: "var(--ink)", fontWeight: 500 }}>{sp.name}</span>
                   <span>{sp.purpose}</span>
                   <span>{sp.location}</span>
@@ -339,7 +339,7 @@ export default function DpaPage() {
             </ul>
           </Section>
 
-          <div className="pt-4 mt-2 border-t text-[12px]" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
+          <div className="pt-4 mt-2 border-t text-12" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
             Questions about this DPA? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
           </div>
         </article>

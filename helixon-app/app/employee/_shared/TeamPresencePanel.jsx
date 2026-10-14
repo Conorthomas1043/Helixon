@@ -76,11 +76,11 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
   const onlineCount = team.filter((t) => t.status !== "offline").length;
 
   return (
-    <section className="rounded-[16px] bg-white" style={{ border: "1px solid var(--border)" }} aria-labelledby="team-presence-title">
+    <section className="rounded-2xl bg-white" style={{ border: "1px solid var(--border)" }} aria-labelledby="team-presence-title">
       <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>Team</p>
-          <h2 id="team-presence-title" className="text-[15px] font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>Team</p>
+          <h2 id="team-presence-title" className="text-15 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
             {loading && team.length === 0 ? "Who's around" : `${onlineCount} of ${team.length} online`}
           </h2>
         </div>
@@ -104,7 +104,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
 
       {loading && team.length === 0 ? (
         <div className="px-5 pb-5 space-y-2" aria-hidden="true">
-          {[0, 1].map((i) => <div key={i} className="shimmer-block h-9 rounded-[10px]" />)}
+          {[0, 1].map((i) => <div key={i} className="shimmer-block h-9 rounded-btn" />)}
         </div>
       ) : sorted.length === 0 ? (
         <p className="px-5 pb-5 text-sm" style={{ color: "var(--ink-faint)" }}>No active employees yet.</p>
@@ -118,7 +118,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
               <li key={person.id} className="px-5 py-1.5 flex items-center gap-3">
                 <span className="relative shrink-0">
                   <span
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-semibold"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-12 font-semibold"
                     style={person.status === "offline" ? { background: "var(--mist)", color: "var(--ink-faint)" } : { background: "var(--mint)", color: "var(--forest)" }}
                     aria-hidden="true"
                   >

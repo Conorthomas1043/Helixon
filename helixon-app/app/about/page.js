@@ -79,7 +79,7 @@ const TONES = {
 function ExampleReport() {
   return (
     <div
-      className="rounded-[16px] p-6 w-full max-w-sm mx-auto lg:mx-0 bg-white"
+      className="rounded-2xl p-6 w-full max-w-sm mx-auto lg:mx-0 bg-white"
       style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-raise)" }}
     >
       <div className="flex items-center justify-between gap-3 mb-5">
@@ -91,7 +91,7 @@ function ExampleReport() {
         </span>
       </div>
       <div className="flex items-center gap-4 mb-5">
-        <span className="text-[36px] font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
+        <span className="text-36 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
           88
         </span>
         <div>
@@ -265,14 +265,14 @@ export default function AboutPage() {
           {VALUES.map((v) => (
             <div
               key={v.title}
-              className="rounded-[14px] p-6"
+              className="rounded-card p-6"
               style={{
                 background: "white",
                 border: "1px solid var(--border)",
               }}
             >
               <div
-                className="w-8 h-8 rounded-[9px] flex items-center justify-center mb-4"
+                className="w-8 h-8 rounded-lg flex items-center justify-center mb-4"
                 style={{ background: "var(--mint)" }}
               >
                 <svg

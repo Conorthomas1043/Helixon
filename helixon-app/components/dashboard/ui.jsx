@@ -46,12 +46,12 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {back && (
-          <Link href={back.href} className="inline-block text-[13px] font-semibold mb-2" style={{ color: INK_MUTED }}>
+          <Link href={back.href} className="inline-block text-13 font-semibold mb-2" style={{ color: INK_MUTED }}>
             ← {back.label}
           </Link>
         )}
         {eyebrow && (
-          <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
             {eyebrow}
           </p>
         )}
@@ -59,7 +59,7 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
           {title}
         </h1>
         {subtitle && (
-          <div className="text-[14px] mt-1 max-w-3xl" style={{ color: INK_MUTED }}>
+          <div className="text-14 mt-1 max-w-3xl" style={{ color: INK_MUTED }}>
             {subtitle}
           </div>
         )}
@@ -77,7 +77,7 @@ export function Card({ title, eyebrow, action, children, className = "", padded 
         <div className="flex items-end justify-between gap-3 mb-4">
           <div className="min-w-0">
             {eyebrow && (
-              <p className="text-[12px] font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+              <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
                 {eyebrow}
               </p>
             )}

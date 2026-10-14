@@ -44,7 +44,7 @@ export function Toaster({ toasts, onDismiss }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="fade-up-in pointer-events-auto w-full flex items-center gap-3 rounded-[12px] pl-4 pr-2 py-2.5 text-sm"
+          className="fade-up-in pointer-events-auto w-full flex items-center gap-3 rounded-xl pl-4 pr-2 py-2.5 text-sm"
           style={{
             background: t.tone === "error" ? "#fbefed" : "var(--ink)",
             color: t.tone === "error" ? "#a83226" : "white",
@@ -57,7 +57,7 @@ export function Toaster({ toasts, onDismiss }) {
             <button
               type="button"
               onClick={() => { t.action.onClick(); onDismiss(t.id); }}
-              className="font-semibold px-2.5 py-1 rounded-[8px] shrink-0"
+              className="font-semibold px-2.5 py-1 rounded-lg shrink-0"
               style={{ color: t.tone === "error" ? "#a83226" : "#9fe0c4" }}
             >
               {t.action.label}
@@ -67,7 +67,7 @@ export function Toaster({ toasts, onDismiss }) {
             type="button"
             onClick={() => onDismiss(t.id)}
             aria-label="Dismiss"
-            className="w-7 h-7 rounded-[8px] flex items-center justify-center shrink-0 opacity-70 hover:opacity-100"
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 opacity-70 hover:opacity-100"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <path d="M18 6 6 18M6 6l12 12" />

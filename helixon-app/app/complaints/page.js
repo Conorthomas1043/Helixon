@@ -49,7 +49,7 @@ export default function ComplaintsPolicyPage() {
       <main id="main-content">
 
       <section className="max-w-[720px] mx-auto px-6 pt-16 pb-10">
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
+        <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           Complaints policy
         </h1>
@@ -59,7 +59,7 @@ export default function ComplaintsPolicyPage() {
       </section>
 
       <section className="max-w-[720px] mx-auto px-6 pb-20">
-        <div className="rounded-[16px] p-2 sm:p-4" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+        <div className="rounded-2xl p-2 sm:p-4" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
           {SECTIONS.map((s, i) => (
             <div
               key={s.n}
@@ -67,7 +67,7 @@ export default function ComplaintsPolicyPage() {
               style={{ borderBottom: i < SECTIONS.length - 1 ? "1px solid var(--border)" : "none" }}
             >
               <div className="flex items-start gap-4">
-                <span className="w-7 h-7 rounded-[8px] flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
                   {s.n}
                 </span>
                 <div>
@@ -79,7 +79,7 @@ export default function ComplaintsPolicyPage() {
           ))}
         </div>
 
-        <div className="rounded-[14px] p-5 mt-5 flex items-start gap-3.5" style={{ background: "var(--mint)" }}>
+        <div className="rounded-card p-5 mt-5 flex items-start gap-3.5" style={{ background: "var(--mint)" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.8" strokeLinecap="round" className="mt-0.5 shrink-0">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
           </svg>

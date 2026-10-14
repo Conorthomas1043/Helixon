@@ -226,7 +226,7 @@ export default function EmployeeGoalsPage() {
               Shared team goals, with a status, a deadline, notes, and a checklist of micro-goals under each one.
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={() => setShowAddForm((v) => !v)}
             className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
             style={{ background: "var(--forest)", color: "white" }}
@@ -236,13 +236,13 @@ export default function EmployeeGoalsPage() {
         </div>
 
         {error && (
-          <div className="rounded-[14px] px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div className="rounded-[16px] p-5 mb-8" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-5 mb-8" style={{ background: "white", border: "1px solid var(--border)" }}>
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -313,7 +313,7 @@ export default function EmployeeGoalsPage() {
             <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-[16px] px-6 py-16 text-center" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl px-6 py-16 text-center" style={{ background: "white", border: "1px solid var(--border)" }}>
             <p className="text-sm" style={{ color: "var(--ink-faint)" }}>No goals yet - add the first one above.</p>
           </div>
         ) : (
@@ -340,7 +340,7 @@ export default function EmployeeGoalsPage() {
                       const doneItems = goal.items.filter((i) => i.done).length;
 
                       return (
-                        <div key={goal.id} className="rounded-[16px] p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+                        <div key={goal.id} className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>{goal.title}</p>
@@ -360,7 +360,7 @@ export default function EmployeeGoalsPage() {
                                 value={goal.status}
                                 onChange={(e) => setStatus(goal, e.target.value)}
                                 disabled={!canEdit}
-                                className="text-[12px] font-semibold px-2.5 py-1.5 rounded-full disabled:opacity-60"
+                                className="text-12 font-semibold px-2.5 py-1.5 rounded-full disabled:opacity-60"
                                 style={{ background: meta.bg, color: meta.color, border: "none" }}
                               >
                                 {STATUS_ORDER.map((s) => (
@@ -368,7 +368,7 @@ export default function EmployeeGoalsPage() {
                                 ))}
                               </select>
                               {canDelete && (
-                                <button onClick={() => handleDelete(goal.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>
+                                <button type="button" onClick={() => handleDelete(goal.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>
                                   Delete
                                 </button>
                               )}
@@ -378,7 +378,7 @@ export default function EmployeeGoalsPage() {
                           {/* Micro-goals */}
                           <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
+                              <p className="text-12 font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
                                 Micro-goals {goal.items.length > 0 ? `· ${doneItems}/${goal.items.length}` : ""}
                               </p>
                             </div>
@@ -387,7 +387,7 @@ export default function EmployeeGoalsPage() {
                               <div className="space-y-1.5 mb-2">
                                 {goal.items.map((item) => (
                                   <div key={item.id} className="flex items-center gap-2.5 group">
-                                    <button
+                                    <button type="button"
                                       onClick={() => canEdit && toggleItem(goal, item)}
                                       disabled={!canEdit}
                                       className="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition disabled:cursor-not-allowed"
@@ -404,9 +404,9 @@ export default function EmployeeGoalsPage() {
                                       {item.title}
                                     </span>
                                     {canEdit && (
-                                      <button
+                                      <button type="button"
                                         onClick={() => deleteItem(goal, item)}
-                                        className="text-[12px] opacity-0 group-hover:opacity-100 transition"
+                                        className="text-12 opacity-0 group-hover:opacity-100 transition"
                                         style={{ color: "#e0554f" }}
                                       >
                                         Remove

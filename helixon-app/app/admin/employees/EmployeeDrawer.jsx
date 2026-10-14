@@ -163,7 +163,7 @@ export default function EmployeeDrawer({ employee: row, onClose, patch, openPort
           </div>
           {profileDirty && (
             <div className="actions">
-              <button className="btn small primary" disabled={busy || !fullName.trim()}>Save profile</button>
+              <button type="submit" className="btn small primary" disabled={busy || !fullName.trim()}>Save profile</button>
               <button type="button" className="btn small ghost" onClick={() => setDraft({ fullName: undefined, email: undefined })}>Cancel</button>
             </div>
           )}
