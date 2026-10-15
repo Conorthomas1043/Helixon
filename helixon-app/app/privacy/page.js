@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Icon } from "@/components/ui";
 import MarketingNav from "@/components/marketing/MarketingNav";
+import LegalHeader, { LEGAL_WIDTH } from "@/components/marketing/LegalHeader";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import PrivacyToc, { PrintButton } from "./PrivacyToc";
 
@@ -181,22 +181,12 @@ export default function Privacy() {
       <MarketingNav active="privacy" />
       <main id="main-content">
 
-      <header className="bg-white border-b border-[var(--border)]">
-        <div className="max-w-[1120px] mx-auto px-6 pt-14 pb-12">
-          <p className="text-12 font-medium mb-4 text-[var(--ink-faint)]">
-            <Link href="/" className="hover:underline">
-              Helixon
-            </Link>
-            <span className="mx-1.5">/</span>Legal
-          </p>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 text-[var(--ink)] font-display">
-            Privacy Policy
-          </h1>
-          <p className="text-16 leading-relaxed max-w-2xl mb-6 text-[var(--ink-soft)]">
-            How Helixon handles the personal data of candidates, the recruiters who use Helixon, and visitors to this website - in plain
-            English, under UK GDPR and EU GDPR.
-          </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-12 text-[var(--ink-soft)]">
+      <LegalHeader
+        width="wide"
+        title="Privacy Policy"
+        intro="How Helixon handles the personal data of candidates, the recruiters who use Helixon, and visitors to this website - in plain English, under UK GDPR and EU GDPR."
+        meta={
+          <>
             <span>
               <strong className="text-[var(--ink)]">Last updated:</strong> {UPDATED}
             </span>
@@ -207,12 +197,12 @@ export default function Privacy() {
               </a>
             </span>
             <PrintButton />
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* At a glance */}
-      <section aria-labelledby="glance" className="max-w-[1120px] mx-auto px-6 pt-12">
+      <section aria-labelledby="glance" className="max-w-[1100px] mx-auto px-6 pt-12">
         <h2 id="glance" className="text-11 font-semibold uppercase tracking-widest mb-4 text-[var(--ink-faint)]">
           At a glance
         </h2>
@@ -235,7 +225,7 @@ export default function Privacy() {
         </div>
       </section>
 
-      <div className="max-w-[1120px] mx-auto px-6 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)] gap-0 lg:gap-14 items-start">
+      <div className="max-w-[1100px] mx-auto px-6 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)] gap-0 lg:gap-14 items-start">
         {/* Sticky under the nav on small screens (the contents bar), and a
             full-height column on large ones (the side list sticks in it). */}
         <aside className="sticky top-[56px] z-30 lg:static lg:z-auto lg:self-stretch">

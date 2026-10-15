@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
+import LegalHeader, { LEGAL_WIDTH } from "@/components/marketing/LegalHeader";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import { useEffect, useState } from "react";
 import { CONSENT_KEY } from "@/components/CookieConsentBanner";
@@ -111,26 +111,14 @@ export default function CookiePolicyPage() {
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
-            <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
-          </p>
-          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4 text-[var(--ink)] font-display">
-            Cookie Policy
-          </h1>
-          <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">
-            This explains what cookies Helixon sets, why, and how to control them. It applies to helixon.co.uk and
-            the Helixon app.
-          </p>
-          <p className="text-11 mt-5 text-[var(--ink-soft)]">
-            <strong className="text-[var(--ink)]">Effective:</strong> 1 August 2026 · last updated 29 September 2026
-          </p>
-        </div>
-      </header>
+      <LegalHeader
+        title="Cookie Policy"
+        intro="This explains what cookies Helixon sets, why, and how to control them. It applies to helixon.co.uk and the Helixon app."
+        meta={<span><strong className="text-[var(--ink)]">Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>}
+      />
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
-      <div className="max-w-[680px] mx-auto px-6 py-14">
+      <div className={`${LEGAL_WIDTH.narrow} mx-auto px-6 py-14`}>
 
         <section className="mb-10">
           <h2 className="text-lg font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">

@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
 import MarketingNav from "@/components/marketing/MarketingNav";
+import LegalHeader, { LEGAL_WIDTH } from "@/components/marketing/LegalHeader";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import { useEffect, useState } from "react";
 
@@ -89,19 +89,12 @@ export default function DpaPage() {
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
-            <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
-          </p>
-          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4 text-[var(--ink)] font-display">
-            Data Processing Agreement
-          </h1>
-          <p className="text-sm leading-relaxed max-w-xl mb-6 text-[var(--ink-soft)]">
-            This DPA forms part of the agreement between Helixon and any organisation using Helixon to process
-            personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
-          </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-11 text-[var(--ink-soft)]">
+      <LegalHeader
+        width="wide"
+        title="Data Processing Agreement"
+        intro="This DPA forms part of the agreement between Helixon and any organisation using Helixon to process personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR."
+        meta={
+          <>
             <span><strong className="text-[var(--ink)]">Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
             <span><strong className="text-[var(--ink)]">Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
@@ -114,9 +107,9 @@ export default function DpaPage() {
               Print or save as PDF
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" /></svg>
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* ── Mobile TOC toggle ───────────────────────────────────────────── */}
       <div className="lg:hidden sticky top-[56px] z-30 bg-white border-b border-[var(--border)]">

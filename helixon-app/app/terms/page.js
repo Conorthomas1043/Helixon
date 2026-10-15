@@ -1,5 +1,6 @@
 "use client";
 import MarketingNav from "@/components/marketing/MarketingNav";
+import LegalHeader, { LEGAL_WIDTH } from "@/components/marketing/LegalHeader";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 
 const SECTIONS = [
@@ -51,17 +52,13 @@ export default function TermsPage() {
       <MarketingNav active="terms" />
       <main id="main-content">
 
-      <section className="max-w-[900px] mx-auto px-6 pt-16 pb-14">
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 text-[var(--ink)] font-display">
-          Terms of Service
-        </h1>
-        <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">
-          The rules for using Helixon, written to be read in one sitting.
-        </p>
-        <p className="text-11 mt-4 text-[var(--ink-faint)]">Last updated: August 2026</p>
-      </section>
+      <LegalHeader
+        title="Terms of Service"
+        intro="The rules for using Helixon, written to be read in one sitting."
+        meta={<span><strong className="text-[var(--ink)]">Last updated:</strong> August 2026</span>}
+      />
 
-      <section className="max-w-[900px] mx-auto px-6 pb-24">
+      <section className={`${LEGAL_WIDTH.narrow} mx-auto px-6 py-14`}>
         <div className="rounded-2xl p-8 bg-white border border-[var(--border)]">
           <div className="space-y-10">
             {SECTIONS.map((s) => (

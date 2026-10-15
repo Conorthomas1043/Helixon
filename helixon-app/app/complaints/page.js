@@ -1,5 +1,6 @@
 "use client";
 import MarketingNav from "@/components/marketing/MarketingNav";
+import LegalHeader, { LEGAL_WIDTH } from "@/components/marketing/LegalHeader";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -48,17 +49,13 @@ export default function ComplaintsPolicyPage() {
       <MarketingNav active="complaints" />
       <main id="main-content">
 
-      <section className="max-w-[720px] mx-auto px-6 pt-16 pb-10">
-        <p className="text-11 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">Policy</p>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mb-4 text-[var(--ink)] font-display">
-          Complaints policy
-        </h1>
-        <p className="text-sm leading-relaxed text-[var(--ink-soft)]">
-          Last updated August 2026. This policy explains how to raise a complaint about Helixon and what you can expect from us in response.
-        </p>
-      </section>
+      <LegalHeader
+        title="Complaints policy"
+        intro="How to raise a complaint about Helixon and what you can expect from us in response."
+        meta={<span><strong className="text-[var(--ink)]">Last updated:</strong> August 2026</span>}
+      />
 
-      <section className="max-w-[720px] mx-auto px-6 pb-20">
+      <section className={`${LEGAL_WIDTH.narrow} mx-auto px-6 py-14`}>
         <div className="rounded-2xl p-2 sm:p-4" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
           {SECTIONS.map((s, i) => (
             <div
