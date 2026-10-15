@@ -48,10 +48,13 @@ function AnalysisExampleSection() {
 }
 
 
-/* ── Pain / before-after: two workflows, side by side ────────────────────── */
+/* ── Screening: by hand versus with Helixon, then the batch view ──────────
+   One section for the process story. It used to be two (before/after, then
+   three numbered "bulk screening" cards repeating the Helixon column), which
+   made the page several screens longer on a phone. */
 
 const MANUAL_STEPS = ["Open the CV", "Read it top to bottom", "Open the job description", "Compare by eye", "Note it down somewhere", "Decide", "Repeat, 50 times"];
-const HELIXON_STEPS = ["Upload the CVs", "Helixon analyses each one", "Candidates are ranked", "Review the strongest matches", "Shortlist and move on"];
+const HELIXON_STEPS = ["Upload up to 50 CVs for a role", "Helixon scores each one against the same spec", "Candidates are ranked, with the reasons", "Review the strongest matches", "Shortlist and move on"];
 
 function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
@@ -71,7 +74,7 @@ function TimelineColumn({ label, steps, tone }) {
   );
 }
 
-function BeforeAfterSection() {
+function ScreeningSection() {
   return (
     <section className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
@@ -85,64 +88,20 @@ function BeforeAfterSection() {
           </p>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-14">
         <Reveal><TimelineColumn label="Screening by hand" steps={MANUAL_STEPS} tone="muted" /></Reveal>
         <Reveal delay={80}><TimelineColumn label="Screening with Helixon" steps={HELIXON_STEPS} tone="forest" /></Reveal>
       </div>
-    </section>
-  );
-}
-
-
-/* ── Bulk screening - the volume story, told without invented numbers ────── */
-
-
-function BulkScreeningSection() {
-  const stages = [
-    { label: "Upload the batch", detail: "Up to 50 CVs at once, against a single role" },
-    { label: "Helixon scores each one", detail: "Every CV compared against the same job spec" },
-    { label: "Review a ranked list", detail: "Sorted by fit, with the reasoning attached" },
-  ];
-
-  const nodes = stages.flatMap((s, i) => {
-    const items = [
-      <Reveal key={`stage-${i}`} delay={i * 80}>
-        <div className="rounded-card p-6 text-center h-full bg-white border border-[var(--border)]">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold mb-3 bg-[var(--mint)] text-[var(--forest)]">{i + 1}</span>
-          <p className="text-15 font-semibold mb-1.5 text-[var(--ink)]">{s.label}</p>
-          <p className="text-13 leading-relaxed text-[var(--ink-soft)]">{s.detail}</p>
-        </div>
-      </Reveal>,
-    ];
-    if (i < stages.length - 1) {
-      items.push(
-        <svg key={`arrow-${i}`} className="hidden sm:block self-center" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-      );
-    }
-    return items;
-  });
-
-  return (
-    <section className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Bulk screening</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
-            One role. Dozens of CVs. One ranked shortlist.
-          </h2>
+          <h3 className="text-20 sm:text-24 font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">One role. Dozens of CVs. One ranked shortlist.</h3>
           <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
-            Every candidate for a role is scored against the same spec, so the comparison
-            holds up — and a weak CV never blocks the rest of the batch.
+            Every candidate is scored against the same spec, so the comparison holds up — and a weak CV never blocks the rest of the batch.
           </p>
         </div>
       </Reveal>
-      {/* Stretch, not centre: the cards match heights when one title wraps. */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 max-w-3xl mx-auto items-stretch mb-12">
-        {nodes}
-      </div>
-      <Reveal delay={stages.length * 80}>
+      <Reveal>
         <BulkPreviewCard />
       </Reveal>
     </section>
@@ -430,17 +389,14 @@ export default function LandingPage() {
         {/* ── Trust strip ─────────────────────────────────────────────────── */}
         <TrustStrip />
 
-        {/* ── Pain → before/after ─────────────────────────────────────────── */}
-        <BeforeAfterSection />
+        {/* ── Example analysis report: the strongest proof, straight after the hero ── */}
+        <AnalysisExampleSection />
+
+        {/* ── Screening by hand vs with Helixon, and the batch view ───────── */}
+        <ScreeningSection />
 
         {/* ── Product workflow (interactive) ──────────────────────────────── */}
         <ProductWorkflowSection />
-
-        {/* ── Example analysis report ─────────────────────────────────────── */}
-        <AnalysisExampleSection />
-
-        {/* ── Bulk screening ───────────────────────────────────────────────── */}
-        <BulkScreeningSection />
 
         {/* ── Dashboard (the manage-the-desk half of the product) ──────────── */}
         <DashboardSection />
