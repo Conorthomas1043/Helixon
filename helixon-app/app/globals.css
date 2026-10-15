@@ -530,6 +530,18 @@ body {
   }
 }
 
+/* Phones: the dashboard's tab bar (components/dashboard/MobileTabBar.jsx) is
+   fixed to the bottom of the screen. --tabbar-h is its height there and 0
+   elsewhere; the page pads itself by it, and anything else fixed to the
+   bottom (toasts, floating action bars, the cookie banner) sits above it. */
+:root { --tabbar-h: 0px; }
+@media (max-width: 767px) {
+  body:has(.mobile-tabbar) {
+    --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+    padding-bottom: var(--tabbar-h);
+  }
+}
+
 /* A horizontal scroller that fades out at its right edge, so a row cut off
    mid-word reads as "more this way". Pair with right padding (pr-4 or more)
    so the last item can scroll clear of the fade. */

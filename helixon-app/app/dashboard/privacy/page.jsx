@@ -537,7 +537,7 @@ function PrivacyContent() {
 
       {/* Selection tray, like the talent pool's */}
       {selected.length > 0 && tab === "deletions" && (
-        <div className="fixed bottom-5 inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
+        <div className="fixed bottom-[calc(1.25rem+var(--tabbar-h))] inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
           <div className="pointer-events-auto w-full max-w-[560px] flex items-center gap-3 rounded-2xl bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
             <span className="text-14 font-semibold">{selected.length} selected</span>
             <button type="button" onClick={() => setSelected([])} className="text-13 font-medium text-white/70 hover:text-white">

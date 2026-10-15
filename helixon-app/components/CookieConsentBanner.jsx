@@ -61,7 +61,7 @@ export default function CookieConsentBanner({ embedded = false }) {
 
   return (
     <div
-      className={`${embedded ? "relative z-30 px-4 pt-4" : "fixed bottom-0 left-0 right-0 z-50 px-3 pb-3 sm:px-4 sm:pb-6"} cookie-banner`}
+      className={`${embedded ? "relative z-30 px-4 pt-4" : "fixed bottom-[var(--tabbar-h)] left-0 right-0 z-50 px-3 pb-3 sm:px-4 sm:pb-6"} cookie-banner`}
       role="region"
       aria-label="Cookie consent"
       data-visible={mounted && visible ? "true" : "false"}

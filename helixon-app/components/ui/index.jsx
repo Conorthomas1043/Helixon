@@ -549,7 +549,7 @@ const TOAST_TONES = {
 
 export function Toasts({ toasts, onDismiss }) {
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[1300] flex flex-col items-center gap-2 w-[min(440px,calc(100vw-2rem))] pointer-events-none" role="status" aria-live="polite">
+    <div className="fixed bottom-[calc(1.25rem+var(--tabbar-h))] left-1/2 -translate-x-1/2 z-[1300] flex flex-col items-center gap-2 w-[min(440px,calc(100vw-2rem))] pointer-events-none" role="status" aria-live="polite">
       {toasts.map((t) => {
         const tone = TOAST_TONES[t.tone] || TOAST_TONES.ok;
         return (

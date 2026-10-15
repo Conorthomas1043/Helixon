@@ -11,6 +11,7 @@ import { PRESENCE_LABELS, computePresence } from "@/lib/agency/presence";
 import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/compliance/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
+import MobileTabBar, { MOBILE_PRIMARY_HREFS } from "@/components/dashboard/MobileTabBar";
 import { SIGNED_OUT_EVENT } from "@/lib/api-client/errors";
 import { clearResources } from "@/lib/hooks/useResource";
 import WorkspaceTabs from "@/components/workspace/WorkspaceTabs";
@@ -69,6 +70,13 @@ const MORE = [
 ];
 
 const MORE_LINKS = MORE.flatMap((g) => g.links);
+
+// The phone tab bar's "More" sheet: the top-bar tabs that don't fit in the
+// bar, then the same groups as the desktop "More" menu.
+const MOBILE_GROUPS = [
+  { group: "Work", links: TABS.filter((t) => !MOBILE_PRIMARY_HREFS.includes(t.href)) },
+  ...MORE,
+];
 
 // The link for the current page: the most specific match, so
 // /analyse/compare lights up "Compare" rather than both it and "Analyse".
@@ -287,7 +295,7 @@ function DashboardNavContent() {
 
   return (
     <>
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]">
+    <nav aria-label="Workspace" className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group min-w-0" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 shrink-0 bg-[var(--forest)]">
@@ -397,30 +405,13 @@ function DashboardNavContent() {
         </div>
       </div>
 
-      {/* Mobile tab row: the tabs scroll; "More" stays put at the end. */}
-      <div className="md:hidden flex items-center gap-1 px-4 pb-2 text-xs font-medium text-[var(--ink-soft)]">
-        {/* Fades out at the right edge so a cut-off tab ("Pipelir") reads as
-            "scroll for more" rather than a broken label. */}
-        <div className="scroll-fade-x flex overflow-x-auto gap-1 min-w-0 pr-4">
-        {TABS.map((t) => {
-          const active = t.href === activeHref;
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              className="px-3 py-1.5 rounded-lg whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
-              style={active ? { background: "var(--mint)", color: "var(--forest)", fontWeight: 600 } : {}}
-            >
-              {t.label}
-            </Link>
-          );
-        })}
-        </div>
-        <MoreMenu activeHref={activeHref} compact plan={me?.plan} />
-      </div>
       <SignedOutBanner />
       {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
     </nav>
+    {/* Phones: the destinations are in a tab bar at the bottom instead
+        (components/dashboard/MobileTabBar.jsx). Outside the top bar, whose
+        backdrop blur would otherwise pin it to the top bar. */}
+    <MobileTabBar activeHref={activeHref} groups={MOBILE_GROUPS} plan={me?.plan} />
     <WorkspaceTabs />
     </>
   );
