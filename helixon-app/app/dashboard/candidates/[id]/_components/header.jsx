@@ -21,8 +21,8 @@ export function CandidateFacts({ candidate }) {
   const stale = !contact || now - contact.at > 14 * 86400000;
   if (!contact && inStage == null) return null;
   return (
-    <p className="text-13 mt-2" style={{ color: INK_FAINT }}>
-      <span style={{ color: stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "var(--score-mid)" : INK_FAINT }}>
+    <p className="text-13 mt-2 text-[var(--ink-faint)]">
+      <span className={`${stale && candidate.stage !== "Placed" && candidate.stage !== "Rejected" ? "text-[var(--score-mid)]" : "text-[var(--ink-faint)]"}`}>
         {contact ? `Last contacted ${agoLabel(contact.at, now)}` : "No contact logged yet"}
       </span>
       {inStage != null && candidate.stage && ` · In ${candidate.stage} for ${inStage} day${inStage === 1 ? "" : "s"}`}
@@ -125,18 +125,18 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         <div className="flex items-start gap-4 min-w-0">
           <Avatar name={candidate.fullName} />
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold leading-tight" style={{ fontFamily: "var(--font-display)", color: INK }}>
+            <h1 className="text-2xl font-semibold leading-tight font-display text-[var(--ink)]">
               {candidate.fullName}
             </h1>
-            <p className="text-sm mt-1" style={{ color: INK_MUTED }}>
+            <p className="text-sm mt-1 text-[var(--ink-soft)]">
               {candidate.currentTitle}
               {candidate.currentCompany ? ` @ ${candidate.currentCompany}` : ""}
             </p>
-            <p className="text-13 mt-1" style={{ color: INK_FAINT }}>
+            <p className="text-13 mt-1 text-[var(--ink-faint)]">
               Assessed for {candidate.jobTitle}
               {candidate.company ? ` @ ${candidate.company}` : ""}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-13" style={{ color: INK_MUTED }}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-13 text-[var(--ink-soft)]">
               {candidate.location && <span>{candidate.location}</span>}
               {candidate.email && (
                 <span className="inline-flex items-center gap-1">
@@ -197,13 +197,12 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mt-6 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
+      <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-t-[var(--border)]">
         {candidate.status === "completed" && candidate.stage !== "Shortlisted" && (
           <button
             type="button"
             onClick={onQuickShortlist}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
           >
             Shortlist
           </button>
@@ -212,8 +211,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <button
             type="button"
             onClick={() => onMoveNext(upcomingStage)}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           >
             Move to {STAGE_LABELS[upcomingStage]} →
           </button>
@@ -221,8 +219,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         <button
           type="button"
           onClick={onFocusNote}
-          className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         >
           Add note
         </button>
@@ -237,8 +234,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         {candidate.email && (
           <a
             href={`mailto:${candidate.email}`}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           >
             Email candidate
           </a>

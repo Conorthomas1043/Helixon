@@ -54,7 +54,7 @@ function Section({ id, title, meta, children }) {
   return (
     <section id={id} className="scroll-mt-24 px-6 sm:px-8 py-7 border-t border-[var(--border-soft)]">
       <div className="flex items-baseline justify-between gap-3 mb-4">
-        <h3 className="text-15 font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
+        <h3 className="text-15 font-semibold tracking-tight text-[var(--ink)] font-display">
           {title}
         </h3>
         {meta && <span className="text-13 text-[var(--ink-faint)]">{meta}</span>}
@@ -190,7 +190,7 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               {blind && <Icon name="eyeOff" size={16} className="text-[var(--ink-soft)]" />}
-              <h2 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+              <h2 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight font-display">
                 {name}
               </h2>
             </div>
@@ -307,8 +307,7 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
             {requirements.map((r, i) => (
               <li key={`${r.requirement}-${i}`} className="flex gap-3 py-3">
                 <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ background: r.met ? "var(--mint)" : "#fbefed", color: r.met ? "var(--forest)" : "var(--score-low)" }}
+                  className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${r.met ? "bg-[var(--mint)]" : "bg-[var(--ui-danger-soft)]"} ${r.met ? "text-[var(--forest)]" : "text-[var(--score-low)]"}`}
                   aria-label={r.met ? "Met" : "Not met"}
                 >
                   <Icon name={r.met ? "check" : "x"} size={11} strokeWidth={2.6} />
@@ -403,11 +402,11 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
       {sections.some((s) => s.id === "evidence") && (
         <Section id={sectionId("evidence")} title="Evidence">
           {result.red_flags?.length > 0 && (
-            <div className="rounded-btn border border-[#f2d2cd] bg-[#fdf6f5] px-4 py-3.5 mb-6">
-              <p className="text-14 font-semibold text-[#a83226] mb-2 flex items-center gap-1.5">
+            <div className="rounded-btn border border-[var(--danger-line)] bg-[var(--ui-danger-soft)] px-4 py-3.5 mb-6">
+              <p className="text-14 font-semibold text-[var(--score-low)] mb-2 flex items-center gap-1.5">
                 <Icon name="alert" size={14} /> Worth raising on the call
               </p>
-              <BulletList items={result.red_flags} tone="#c0392b" />
+              <BulletList items={result.red_flags} tone="var(--score-low)" />
             </div>
           )}
           <div className="grid gap-6 sm:grid-cols-2">
@@ -479,7 +478,7 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
           {result.salary_estimate && (
             <div>
               <p className="text-13 font-medium text-[var(--ink-soft)] mb-1">{result.salary_estimate.period === "hour" || result.salary_estimate.period === "day" ? "Estimated pay" : "Estimated salary"}</p>
-              <p className="text-24 font-semibold tracking-tight text-[var(--ink)] tabular-nums" style={{ fontFamily: "var(--font-display)" }}>
+              <p className="text-24 font-semibold tracking-tight text-[var(--ink)] tabular-nums font-display">
                 {fmtSalary(result.salary_estimate.low, result.salary_estimate.currency, result.salary_estimate.period)}
                 {result.salary_estimate.high !== result.salary_estimate.low && <> – {fmtSalary(result.salary_estimate.high, result.salary_estimate.currency, result.salary_estimate.period)}</>}
                 {PAY_PERIOD_SUFFIX[result.salary_estimate.period] || ""}

@@ -45,7 +45,7 @@ function TagPicker({ options, selected, onToggle }) {
             style={
               active
                 ? { background: "var(--forest)", color: "white" }
-                : { border: "1px solid var(--border)", color: "var(--ink-soft, #4a6658)", background: "white" }
+                : { border: "1px solid var(--border)", color: "var(--ink-soft)", background: "white" }
             }
           >
             {t.label}
@@ -168,7 +168,7 @@ export default function FeedbackPage({ params }) {
   if (status === "error") {
     return (
       <Card>
-        <p className="text-sm" style={{ color: "var(--ink)" }}>
+        <p className="text-sm text-[var(--ink)]">
           {info?.error || "This link isn't valid."}
         </p>
       </Card>
@@ -178,10 +178,10 @@ export default function FeedbackPage({ params }) {
   if (status === "already-responded" || status === "submitted") {
     return (
       <Card>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)] font-display">
           Thanks for the feedback
         </h1>
-        <p className="text-sm" style={{ color: "var(--ink-soft, #4a6658)" }}>
+        <p className="text-sm text-[var(--ink-soft)]">
           {status === "submitted"
             ? `Your response has been sent to ${info.agencyName}.`
             : "This link has already been used - thanks for getting back to us."}
@@ -194,10 +194,10 @@ export default function FeedbackPage({ params }) {
 
   return (
     <Card>
-      <h1 className="text-lg font-semibold mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+      <h1 className="text-lg font-semibold mb-1.5 text-[var(--ink)] font-display">
         {isNps ? "How was your experience?" : `How was ${info.candidateName}?`}
       </h1>
-      <p className="text-sm mb-6" style={{ color: "var(--ink-soft, #4a6658)" }}>
+      <p className="text-sm mb-6 text-[var(--ink-soft)]">
         {isNps
           ? `A quick, honest read on applying${info.jobTitle ? ` for ${info.jobTitle}` : ""} with ${info.agencyName}. Takes under a minute.`
           : `For the ${info.jobTitle || "role"}${info.company ? ` at ${info.company}` : ""} - your read helps ${info.agencyName} improve future submissions.`}
@@ -205,21 +205,21 @@ export default function FeedbackPage({ params }) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2 text-[var(--ink-faint)]">
             {isNps ? "How likely are you to recommend this agency to a friend? (0-10)" : "Overall fit for the role (1-5)"}
           </p>
           {isNps ? <NpsScale value={rating} onChange={setRating} /> : <StarScale value={rating} onChange={setRating} />}
         </div>
 
         <div>
-          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2 text-[var(--ink-faint)]">
             What stood out? (optional)
           </p>
           <TagPicker options={isNps ? CANDIDATE_TAGS : CLIENT_TAGS} selected={tags} onToggle={toggleTag} />
         </div>
 
         <div>
-          <p className="text-12 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint, #587364)" }}>
+          <p className="text-12 font-semibold uppercase tracking-wide mb-2 text-[var(--ink-faint)]">
             Anything else? (optional)
           </p>
           <textarea
@@ -228,13 +228,12 @@ export default function FeedbackPage({ params }) {
             rows={3}
             maxLength={2000}
             placeholder={isNps ? "Communication, clarity, the interview itself…" : "Candidate quality, speed, anything else…"}
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 resize-none"
-            style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+            className="w-full text-sm px-3.5 py-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 resize-none border border-[var(--border)] text-[var(--ink)]"
           />
         </div>
 
         {submitError && (
-          <p className="text-14 rounded-btn px-3 py-2" style={{ background: "#fef2f2", color: "#b91c1c" }}>
+          <p className="text-14 rounded-btn px-3 py-2 bg-[var(--ui-danger-soft)] text-[var(--score-low)]">
             {submitError}
           </p>
         )}
@@ -242,8 +241,7 @@ export default function FeedbackPage({ params }) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-60"
-          style={{ background: "var(--forest)", color: "white" }}
+          className="w-full font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-60 bg-[var(--forest)] text-white"
         >
           {submitting ? "Sending…" : "Send feedback"}
         </button>

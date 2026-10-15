@@ -322,7 +322,7 @@ function TalentPoolContent() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Candidate database</p>
-            <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl font-semibold text-[var(--ink)] font-display">
               Talent pool
             </h1>
             <p className="text-14 text-[var(--ink-soft)] mt-1 max-w-2xl">
@@ -621,7 +621,7 @@ function TalentPoolContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-13 text-[var(--ink-soft)]">
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 bg-[var(--mist)] border-b border-[var(--border-soft)] text-13 text-[var(--ink-soft)]">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -739,7 +739,7 @@ function TalentPoolContent() {
                     type="button"
                     onClick={bulkRemove}
                     disabled={bulkBusy}
-                    className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[#a83226] disabled:opacity-50"
+                    className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white/10 hover:bg-[var(--score-low)] disabled:opacity-50"
                   >
                     Remove from pool
                   </button>

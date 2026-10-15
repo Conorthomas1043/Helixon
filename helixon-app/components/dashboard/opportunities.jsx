@@ -143,7 +143,7 @@ export function OpportunityDialog({ opportunity = null, clientId = null, onClose
           )}
           {opportunity && confirmingDelete && (
             <span className="ml-auto flex items-center gap-2" role="group" aria-label="Confirm delete">
-              <span className="text-13" style={{ color: "var(--ink-soft)" }}>Delete this deal?</span>
+              <span className="text-13 text-[var(--ink-soft)]">Delete this deal?</span>
               <Button size="sm" onClick={() => setConfirmingDelete(false)} disabled={busy}>
                 Keep
               </Button>
@@ -181,9 +181,9 @@ export function ClientDealsCard({ clientId }) {
   return (
     <Card title="Deals" action={<Button size="sm" onClick={() => setDialog("new")}>+ Add</Button>}>
       {deals === null ? (
-        <p className="text-14" style={{ color: INK_FAINT }}>Loading…</p>
+        <p className="text-14 text-[var(--ink-faint)]">Loading…</p>
       ) : deals.length === 0 ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           No deals yet. Track new business with this client - from first contact to signed terms.
         </p>
       ) : (
@@ -192,10 +192,10 @@ export function ClientDealsCard({ clientId }) {
             <li key={d.id}>
               <button type="button" onClick={() => setDialog(d)} className="w-full text-left text-14">
                 <span className="flex items-center justify-between gap-2">
-                  <span className="font-semibold truncate" style={{ color: INK }}>{d.title}</span>
+                  <span className="font-semibold truncate text-[var(--ink)]">{d.title}</span>
                   <StagePill stage={d.stage} />
                 </span>
-                <span className="block text-13" style={{ color: INK_MUTED }}>
+                <span className="block text-13 text-[var(--ink-soft)]">
                   {d.value != null ? formatMoney(d.value) : "No value"}
                   {d.stage !== "won" && d.stage !== "lost" ? ` · ${effectiveProbability(d)}%` : ""}
                   {d.expectedClose ? ` · close ${formatDateOnly(d.expectedClose)}` : ""}
@@ -237,9 +237,9 @@ export function ClientFollowUpCard({ clientId, nextAction, onChange }) {
     <Card title="Next follow-up">
       {nextAction ? (
         <div className="text-14">
-          <p className="font-semibold" style={{ color: INK }}>{nextAction.label}</p>
+          <p className="font-semibold text-[var(--ink)]">{nextAction.label}</p>
           {nextAction.dueAt && (
-            <p style={{ color: overdue ? "var(--score-low)" : INK_MUTED }}>
+            <p className={`${overdue ? "text-[var(--score-low)]" : "text-[var(--ink-soft)]"}`}>
               {overdue ? "Overdue · " : "Due "}
               {new Date(nextAction.dueAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>

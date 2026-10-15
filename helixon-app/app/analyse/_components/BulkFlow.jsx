@@ -533,7 +533,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
               className={cx(
                 "w-full flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed transition-colors",
                 queue.length ? "py-5" : "py-12",
-                dragActive ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+                dragActive ? "border-[var(--forest)] bg-[var(--mint)]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
               )}
             >
               <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
@@ -622,7 +622,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
               {ranked.map((item) => {
                 const tone = scoreTone(item.score);
                 return (
-                  <li key={item.id} className={cx("flex items-center gap-3 py-2.5", item.status === "processing" && "bg-[#f4faf7] -mx-5 px-5")}>
+                  <li key={item.id} className={cx("flex items-center gap-3 py-2.5", item.status === "processing" && "bg-[var(--mint)] -mx-5 px-5")}>
                     {item.status === "done" && item.candidateId && !running ? (
                       <input
                         type="checkbox"
@@ -642,7 +642,7 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
                       </p>
                       {item.aiWritten && <AiWritingBadge className="mt-1" />}
                       {item.duplicate && (
-                        <p className="text-13 truncate" style={{ color: item.duplicate.sameJobCandidateId ? "var(--score-mid)" : "var(--forest)" }}>
+                        <p className={`text-13 truncate ${item.duplicate.sameJobCandidateId ? "text-[var(--score-mid)]" : "text-[var(--forest)]"}`}>
                           {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}
                         </p>
                       )}

@@ -63,9 +63,9 @@ function CancelDialog({ plan, onClose, onContinue, busy }) {
         <div className="mt-4 rounded-xl p-4 text-sm" style={{ background: "var(--mint)", color: COLORS.ink }}>
           <p>{offer.text}</p>
           {offer.href ? (
-            <a href={offer.href} className="inline-block mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</a>
+            <a href={offer.href} className="inline-block mt-2 font-semibold underline text-[var(--forest)]">{offer.label}</a>
           ) : (
-            <button type="button" onClick={() => onContinue(reason, detail, "switch", canTalk)} disabled={busy} className="mt-2 font-semibold underline" style={{ color: "var(--forest)" }}>{offer.label}</button>
+            <button type="button" onClick={() => onContinue(reason, detail, "switch", canTalk)} disabled={busy} className="mt-2 font-semibold underline text-[var(--forest)]">{offer.label}</button>
           )}
         </div>
       )}
@@ -139,22 +139,22 @@ export default function BillingPage() {
   const paymentFailed = status === "past_due" || status === "unpaid";
 
   return (
-    <main className="min-h-screen scroll-smooth" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen scroll-smooth bg-[var(--mist)]">
       <DashboardNav />
 
       <section className="max-w-[880px] mx-auto px-6 pt-14 pb-8">
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] text-[var(--ink)] font-display">
           Billing
         </h1>
-        <p className="text-sm mt-3 max-w-md" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm mt-3 max-w-md text-[var(--ink-soft)]">
           Your plan and subscription details.
         </p>
       </section>
 
       <div className="max-w-[880px] mx-auto px-6 pb-20">
         {paymentFailed && (
-          <div role="alert" className="mb-6 rounded-card p-5" style={{ border: "1px solid #fecaca", background: "#fff7f7" }}>
-            <p className="text-15 font-semibold" style={{ color: "var(--score-low)" }}>Your last payment didn&apos;t go through</p>
+          <div role="alert" className="mb-6 rounded-card p-5 border border-[var(--danger-line)] bg-[var(--ui-danger-soft)]">
+            <p className="text-15 font-semibold text-[var(--score-low)]">Your last payment didn&apos;t go through</p>
             <p className="text-sm leading-relaxed mt-1" style={{ color: COLORS.ink }}>
               {status === "unpaid"
                 ? "Screening and sending emails are paused until it's paid. Your workspace, candidates and history are all still here; update your payment method to pick up where you left off."

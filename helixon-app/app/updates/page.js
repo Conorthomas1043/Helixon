@@ -89,28 +89,28 @@ export default function AppUpdatesPage() {
   const groupedMonths = useMemo(() => [...new Set(filtered.map((u) => u.month))], [filtered]);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="updates" />
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
+      <header className="border-b bg-white border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-8">
-          <p className="text-11 font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> What&apos;s new
           </p>
-          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4 text-[var(--ink)] font-display">
             What&apos;s new in Helixon
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">
             Every scoring improvement, new feature, and fix - in one place. Shipped continuously, logged here weekly.
           </p>
         </div>
       </header>
 
       {/* ── Filters ─────────────────────────────────────────────────────── */}
-      <div className="sticky top-[56px] z-30 bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
+      <div className="sticky top-[56px] z-30 bg-white/95 backdrop-blur border-b border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
           <button type="button"
             onClick={() => setFilter("all")}
@@ -143,12 +143,12 @@ export default function AppUpdatesPage() {
       {/* ── Timeline ────────────────────────────────────────────────────── */}
       <div className="max-w-[760px] mx-auto px-6 py-14">
         {groupedMonths.length === 0 && (
-          <p className="text-sm text-center py-16" style={{ color: "var(--ink-faint)" }}>No updates in this category yet.</p>
+          <p className="text-sm text-center py-16 text-[var(--ink-faint)]">No updates in this category yet.</p>
         )}
 
         {groupedMonths.map((month) => (
           <div key={month} className="mb-12 last:mb-0">
-            <h2 className="text-11 font-semibold uppercase tracking-widest mb-5 sticky top-[104px]" style={{ color: "var(--ink-faint)" }}>
+            <h2 className="text-11 font-semibold uppercase tracking-widest mb-5 sticky top-[104px] text-[var(--ink-faint)]">
               {month}
             </h2>
 
@@ -158,8 +158,7 @@ export default function AppUpdatesPage() {
                 return (
                   <article
                     key={u.version}
-                    className="rounded-card p-6 bg-white border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)]"
-                    style={{ borderColor: "var(--border)" }}
+                    className="rounded-card p-6 bg-white border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)] border-[var(--border)]"
                   >
                     <div className="flex items-center gap-2.5 mb-3">
                       <span
@@ -168,11 +167,11 @@ export default function AppUpdatesPage() {
                       >
                         {t.label}
                       </span>
-                      <span className="text-11" style={{ color: "var(--ink-faint)" }}>{u.date}</span>
-                      <span className="text-11 ml-auto" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-faint)" }}>v{u.version}</span>
+                      <span className="text-11 text-[var(--ink-faint)]">{u.date}</span>
+                      <span className="text-11 ml-auto font-mono text-[var(--ink-faint)]">v{u.version}</span>
                     </div>
-                    <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{u.title}</h3>
-                    <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{u.body}</p>
+                    <h3 className="text-sm font-semibold mb-1.5 text-[var(--ink)]">{u.title}</h3>
+                    <p className="text-13 leading-relaxed text-[var(--ink-soft)]">{u.body}</p>
                   </article>
                 );
               })}
@@ -180,12 +179,11 @@ export default function AppUpdatesPage() {
           </div>
         ))}
 
-        <div className="mt-14 pt-8 border-t text-center" style={{ borderColor: "var(--border)" }}>
-          <p className="text-xs mb-3" style={{ color: "var(--ink-faint)" }}>Have a feature request?</p>
+        <div className="mt-14 pt-8 border-t text-center border-[var(--border)]">
+          <p className="text-xs mb-3 text-[var(--ink-faint)]">Have a feature request?</p>
           <a
             href="mailto:hello@helixon.co.uk"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-btn"
-            style={{ background: "var(--mint)", color: "var(--forest)" }}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-btn bg-[var(--mint)] text-[var(--forest)]"
           >
             Tell us what you need
           </a>

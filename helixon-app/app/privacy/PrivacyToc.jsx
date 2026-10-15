@@ -11,8 +11,7 @@ export function PrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="inline-flex items-center gap-1.5 font-semibold print:hidden"
-      style={{ color: "var(--forest)" }}
+      className="inline-flex items-center gap-1.5 font-semibold print:hidden text-[var(--forest)]"
     >
       Print or save as PDF
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -64,13 +63,12 @@ export default function PrivacyToc({ sections }) {
   return (
     <>
       {/* Phones and tablets: a collapsible bar under the nav. */}
-      <div className="lg:hidden -mx-6 mb-6 bg-white border-y shadow-[0_6px_16px_-12px_rgba(19,32,27,0.35)] print:hidden" style={{ borderColor: "var(--border)" }}>
+      <div className="lg:hidden -mx-6 mb-6 bg-white border-y shadow-[0_6px_16px_-12px_rgba(19,32,27,0.35)] print:hidden border-[var(--border)]">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="w-full px-6 py-3 flex items-center justify-between text-xs font-semibold"
-          style={{ color: "var(--ink)" }}
+          className="w-full px-6 py-3 flex items-center justify-between text-xs font-semibold text-[var(--ink)]"
         >
           On this page
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }}>
@@ -80,7 +78,7 @@ export default function PrivacyToc({ sections }) {
         {open && (
           <div className="px-6 pb-3 flex flex-col gap-0.5 max-h-72 overflow-y-auto">
             {sections.map((s, i) => (
-              <a key={s.id} href={`#${s.id}`} onClick={() => setOpen(false)} className="text-xs py-1.5" style={{ color: active === s.id ? "var(--forest)" : "var(--ink-soft)", fontWeight: active === s.id ? 600 : 400 }}>
+              <a key={s.id} href={`#${s.id}`} onClick={() => setOpen(false)} className={`text-xs py-1.5 ${active === s.id ? "text-[var(--forest)]" : "text-[var(--ink-soft)]"} ${active === s.id ? "font-semibold" : "font-normal"}`}>
                 {i + 1}. {s.title}
               </a>
             ))}
@@ -90,7 +88,7 @@ export default function PrivacyToc({ sections }) {
 
       {/* Desktop: sticky side list. */}
       <nav aria-label="On this page" className="hidden lg:block sticky top-[88px] max-h-[calc(100vh-110px)] overflow-y-auto pr-2 print:hidden">
-        <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">
           On this page
         </p>
         {sections.map((s, i) => {
@@ -102,7 +100,7 @@ export default function PrivacyToc({ sections }) {
               className="flex gap-2 text-13 py-1.5 pl-3 border-l-2 transition-colors leading-snug hover:text-[var(--ink)]"
               style={{ borderColor: on ? "var(--forest)" : "var(--border)", color: on ? "var(--forest)" : "var(--ink-soft)", fontWeight: on ? 600 : 400 }}
             >
-              <span className="tabular-nums w-4 shrink-0" style={{ color: on ? "var(--forest)" : "var(--ink-faint)" }}>
+              <span className={`tabular-nums w-4 shrink-0 ${on ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>
                 {i + 1}
               </span>
               {s.title}

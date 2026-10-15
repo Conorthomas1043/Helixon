@@ -11,7 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { relativeDayLabel, dayKey, toDayKey } from "@/lib/employee/day";
 import { Card } from "../_shared/ui";
 
-const PRIORITY_DOT = { high: "#c0392b", medium: "#b45309", low: "#8a9a92" };
+const PRIORITY_DOT = { high: "var(--score-low)", medium: "var(--score-mid)", low: "var(--ink-faint)" };
 
 export default function TeamTasksPanel({ currentEmployeeId, notify }) {
   const [ask, confirmDialog] = useConfirm();
@@ -121,11 +121,10 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
         </Notice>
       )}
       <div
-        className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-        style={{ borderColor: "var(--border-soft)" }}
+        className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-[var(--border-soft)]"
       >
         <div className="flex items-center gap-2">
-          <h2 id="team-tasks-title" className="text-15 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 id="team-tasks-title" className="text-15 font-semibold text-[var(--ink)] font-display">
             Shared with the team
           </h2>
           {loading && (
@@ -147,8 +146,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
             type="button"
             onClick={() => setShowAddForm((v) => !v)}
             aria-expanded={showAddForm}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-btn transition hover:opacity-90"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-btn transition hover:opacity-90 bg-[var(--forest)] text-white"
           >
             <span className="text-base leading-none" aria-hidden="true">+</span> Add team task
           </button>
@@ -156,28 +154,26 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
       </div>
 
       {showAddForm && (
-        <div className="border-b px-5 py-5" style={{ borderColor: "var(--border-soft)", background: "var(--mist)" }}>
+        <div className="border-b px-5 py-5 border-[var(--border-soft)] bg-[var(--mist)]">
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Task title *</label>
+                <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Task title *</label>
                 <input
                   autoFocus
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="What needs doing?"
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                  style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Assign to</label>
+                <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Assign to</label>
                 <select
                   value={form.assigned_to}
                   onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                  style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="">Unassigned (team)</option>
                   {team.map((member) => (
@@ -186,12 +182,11 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Priority</label>
+                <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Priority</label>
                 <select
                   value={form.priority}
                   onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                  style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -199,19 +194,18 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Due date</label>
+                <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Due date</label>
                 <input
                   type="date"
                   value={form.due_date}
                   onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                  style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 />
               </div>
             </div>
 
             {formError && (
-              <p role="alert" className="text-xs rounded-lg px-3 py-2" style={{ color: "#a83226", background: "#fbefed", border: "1px solid #f2d2cd" }}>
+              <p role="alert" className="text-xs rounded-lg px-3 py-2 text-[var(--score-low)] bg-[var(--ui-danger-soft)] border border-[var(--danger-line)]">
                 {formError}
               </p>
             )}
@@ -220,16 +214,14 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
               <button
                 type="submit"
                 disabled={saving}
-                className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90"
-                style={{ background: "var(--forest)", color: "white" }}
+                className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white"
               >
                 {saving ? "Saving…" : "Add task"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="text-sm px-4 py-2 rounded-lg transition hover:bg-white"
-                style={{ color: "var(--ink-soft)" }}
+                className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]"
               >
                 Cancel
               </button>
@@ -241,7 +233,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
       <ul className="divide-y divide-[var(--border-soft)]">
         {visible.length === 0 && (
           <li className="px-5 py-12 text-center">
-            <p className="text-sm" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-sm text-[var(--ink-faint)]">
               {onlyMine ? "No tasks assigned to or created by you." : "No team tasks yet - add one above."}
             </p>
           </li>
@@ -254,7 +246,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
           const creatorName = todo.creator?.full_name || todo.creator?.display_name;
 
           return (
-            <li key={todo.id} className="px-5 py-3 flex items-start gap-3 group transition hover:bg-[#fafcfb]">
+            <li key={todo.id} className="px-5 py-3 flex items-start gap-3 group transition hover:bg-[var(--mist)]">
               <button
                 type="button"
                 role="checkbox"
@@ -267,7 +259,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
               >
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: `2px solid ${canEdit ? "#b9c7c0" : "var(--border)"}`, background: canEdit ? "white" : "var(--mist)" }}
+                  style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: `2px solid ${canEdit ? "var(--ink-mute)" : "var(--border)"}`, background: canEdit ? "white" : "var(--mist)" }}
                 >
                   {todo.done && (
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -278,11 +270,11 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
               </button>
 
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium leading-snug ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? "var(--ink-faint)" : "var(--ink)" }}>
+                <p className={`text-sm font-medium leading-snug ${todo.done ? "line-through" : ""} ${todo.done ? "text-[var(--ink-faint)]" : "text-[var(--ink)]"}`}>
                   {todo.title}
                 </p>
-                {todo.notes && !todo.done && <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--ink-soft)" }}>{todo.notes}</p>}
-                <p className="text-xs mt-1 flex flex-wrap items-center gap-x-1.5" style={{ color: "var(--ink-faint)" }}>
+                {todo.notes && !todo.done && <p className="text-xs mt-0.5 line-clamp-2 text-[var(--ink-soft)]">{todo.notes}</p>}
+                <p className="text-xs mt-1 flex flex-wrap items-center gap-x-1.5 text-[var(--ink-faint)]">
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: PRIORITY_DOT[todo.priority] || PRIORITY_DOT.medium }} aria-hidden="true" />
                   <span>{assigneeName ? (todo.assigned_to === currentEmployeeId ? "Assigned to you" : `Assigned to ${assigneeName}`) : "Unassigned"}</span>
                   {creatorName && <span>· added by {todo.created_by === currentEmployeeId ? "you" : creatorName}</span>}
@@ -292,7 +284,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
 
               {canDelete && (
                 <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition shrink-0">
-                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-lg transition hover:bg-red-50" style={{ color: "#a83226" }}>
+                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-lg transition hover:bg-red-50 text-[var(--score-low)]">
                     Delete
                   </button>
                 </div>

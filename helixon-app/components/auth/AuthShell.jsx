@@ -37,8 +37,8 @@ export default function AuthShell({
       <div className={`hidden lg:flex ${brandPanelWidthClass} flex-col justify-between p-12 relative overflow-hidden`} style={{ background: "linear-gradient(160deg, #0b3a2a 0%, var(--forest) 55%, #0e4531 100%)" }}>
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: "30px 30px" }} />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `repeating-linear-gradient(115deg, white 0px, white 1px, transparent 1px, transparent 64px)` }} />
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl auth-drift-a" style={{ background: "var(--mint)" }} />
-        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-10 blur-3xl auth-drift-b" style={{ background: "var(--signal)" }} />
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl auth-drift-a bg-[var(--mint)]" />
+        <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-10 blur-3xl auth-drift-b bg-[var(--signal)]" />
 
         <Link href="/" className="relative z-10 flex items-center gap-3" aria-label="Helixon home">
           <div className="w-9 h-9 bg-white rounded-btn flex items-center justify-center shadow-sm">
@@ -48,7 +48,7 @@ export default function AuthShell({
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
-          <span className="text-white text-lg font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Helixon</span>
+          <span className="text-white text-lg font-semibold tracking-tight font-display">Helixon</span>
         </Link>
 
         {brandMiddle}
@@ -58,13 +58,13 @@ export default function AuthShell({
       {/* Right panel - hosts the auth card */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 relative z-10">
         <Link href="/" className={`flex lg:hidden items-center gap-2.5 ${mobileLogoClassName}`} aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--forest)" }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--forest)]">
             <span className="text-white text-sm font-bold">H</span>
           </div>
-          <span className="text-base font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
+          <span className="text-base font-semibold text-[var(--ink)] font-display">Helixon</span>
         </Link>
         {mobileTagline && (
-          <p className="flex lg:hidden text-12 mb-6 text-center max-w-xs" style={{ color: "var(--ink-soft)" }}>
+          <p className="flex lg:hidden text-12 mb-6 text-center max-w-xs text-[var(--ink-soft)]">
             {mobileTagline}
           </p>
         )}

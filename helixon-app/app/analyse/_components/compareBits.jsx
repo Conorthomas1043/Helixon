@@ -127,7 +127,7 @@ export function StagePicker({ candidateId, stage, onChanged }) {
         </select>
         <Icon name="arrowRight" size={11} className="absolute right-2.5 rotate-90 text-[var(--ink-faint)] pointer-events-none" />
       </label>
-      {error && <p className="text-12 text-[#a83226] mt-1">{error}</p>}
+      {error && <p className="text-12 text-[var(--score-low)] mt-1">{error}</p>}
     </div>
   );
 }

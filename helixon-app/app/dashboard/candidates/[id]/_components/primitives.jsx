@@ -16,8 +16,7 @@ export function NewTagForm({ onCreate }) {
   const [saving, setSaving] = useState(false);
   return (
     <form
-      className="flex items-center gap-1 mt-1 pt-1.5"
-      style={{ borderTop: "1px solid var(--border)" }}
+      className="flex items-center gap-1 mt-1 pt-1.5 border-t border-t-[var(--border)]"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!label.trim() || saving) return;
@@ -33,10 +32,9 @@ export function NewTagForm({ onCreate }) {
         maxLength={30}
         placeholder="New tag…"
         aria-label="New tag name"
-        className="min-w-0 flex-1 text-13 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
-        style={{ border: "1px solid var(--border)", color: INK }}
+        className="min-w-0 flex-1 text-13 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2 border border-[var(--border)] text-[var(--ink)]"
       />
-      <button type="submit" disabled={!label.trim() || saving} className="text-12 font-semibold px-2 py-1 rounded-md disabled:opacity-40" style={{ color: "var(--forest)" }}>
+      <button type="submit" disabled={!label.trim() || saving} className="text-12 font-semibold px-2 py-1 rounded-md disabled:opacity-40 text-[var(--forest)]">
         {saving ? "…" : "Add"}
       </button>
     </form>
@@ -49,7 +47,7 @@ export function Avatar({ name, size = 56 }) {
 
 export function FieldLabel({ children }) {
   return (
-    <p className="text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">
       {children}
     </p>
   );
@@ -62,8 +60,7 @@ export function SelectField({ value, onChange, options, ariaLabel, disabled }) {
       value={value ?? ""}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full text-sm px-3 py-2 rounded-btn bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ border: "1px solid var(--border)", color: INK }}
+      className="w-full text-sm px-3 py-2 rounded-btn bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -78,8 +75,7 @@ export function ShortcutsHint() {
   return (
     <details className="relative">
       <summary
-        className="list-none cursor-pointer text-12 font-semibold px-2.5 py-1.5 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+        className="list-none cursor-pointer text-12 font-semibold px-2.5 py-1.5 rounded-full select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
       >
         Shortcuts
       </summary>
@@ -88,20 +84,20 @@ export function ShortcutsHint() {
         style={{ ...CARD, boxShadow: "0 12px 32px rgba(19,32,27,0.14)" }}
       >
         <div className="flex justify-between gap-3">
-          <span style={{ color: INK_MUTED }}>Next / previous candidate</span>
-          <kbd className="font-mono text-12" style={{ color: INK }}>J / K</kbd>
+          <span className="text-[var(--ink-soft)]">Next / previous candidate</span>
+          <kbd className="font-mono text-12 text-[var(--ink)]">J / K</kbd>
         </div>
         <div className="flex justify-between gap-3">
-          <span style={{ color: INK_MUTED }}>Shortlist</span>
-          <kbd className="font-mono text-12" style={{ color: INK }}>S</kbd>
+          <span className="text-[var(--ink-soft)]">Shortlist</span>
+          <kbd className="font-mono text-12 text-[var(--ink)]">S</kbd>
         </div>
         <div className="flex justify-between gap-3">
-          <span style={{ color: INK_MUTED }}>Focus note field</span>
-          <kbd className="font-mono text-12" style={{ color: INK }}>N</kbd>
+          <span className="text-[var(--ink-soft)]">Focus note field</span>
+          <kbd className="font-mono text-12 text-[var(--ink)]">N</kbd>
         </div>
         <div className="flex justify-between gap-3">
-          <span style={{ color: INK_MUTED }}>Close menus</span>
-          <kbd className="font-mono text-12" style={{ color: INK }}>Esc</kbd>
+          <span className="text-[var(--ink-soft)]">Close menus</span>
+          <kbd className="font-mono text-12 text-[var(--ink)]">Esc</kbd>
         </div>
       </div>
     </details>
@@ -126,8 +122,7 @@ export function CopyButton({ text, label }) {
           setTimeout(() => setCopied(false), 1200);
         })
       }
-      className="text-12 font-semibold px-1.5 py-0.5 rounded"
-      style={{ background: "var(--mist)", color: copied ? "var(--forest)" : INK_FAINT }}
+      className={`text-12 font-semibold px-1.5 py-0.5 rounded bg-[var(--mist)] ${copied ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}
     >
       {copied ? "Copied" : "Copy"}
     </button>
@@ -168,10 +163,10 @@ export function ProfileSkeleton() {
 export function StateMessage({ title, body, retryLabel, onRetry }) {
   return (
     <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-base font-semibold mb-1 text-[var(--ink)]">
         {title}
       </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+      <p className="text-sm mb-5 max-w-sm text-[var(--ink-soft)]">
         {body}
       </p>
       <div className="flex items-center gap-3">
@@ -179,8 +174,7 @@ export function StateMessage({ title, body, retryLabel, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
           >
             {retryLabel ?? "Try again"}
           </button>
@@ -232,10 +226,10 @@ export function PanelGroup({ id, title, summary, defaultOpen = false, children }
     >
       <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-xl px-4 py-3 min-h-[44px] bg-white border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
-          <span className="block text-14 font-semibold" style={{ color: "var(--ink)" }}>{title}</span>
-          {summary && <span className="block text-13 group-open/panel:hidden" style={{ color: "var(--ink-faint)" }}>{summary}</span>}
+          <span className="block text-14 font-semibold text-[var(--ink)]">{title}</span>
+          {summary && <span className="block text-13 group-open/panel:hidden text-[var(--ink-faint)]">{summary}</span>}
         </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 transition-transform group-open/panel:rotate-180" style={{ color: "var(--ink-faint)" }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 transition-transform group-open/panel:rotate-180 text-[var(--ink-faint)]">
           <path d="M6 9l6 6 6-6" />
         </svg>
       </summary>

@@ -226,8 +226,8 @@ export default function SignupPage() {
                   <path d="M22 34c1.1-5.6 4.6-8.5 9.5-8.5S39 28.4 40 34" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
               </div>
-              <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>Team invite</p>
-              <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
+              <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--mint)]">Team invite</p>
+              <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4 font-display">
                 Join your<br />team on Helixon.
               </h1>
               <p className="text-15 leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
@@ -325,8 +325,8 @@ export default function SignupPage() {
             <div className="w-14 h-14 rounded-card flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
               <StepMark step={step} />
             </div>
-            <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4" style={{ color: "var(--mint)" }}>{copy.eyebrow}</p>
-            <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>{copy.title}</h1>
+            <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--mint)]">{copy.eyebrow}</p>
+            <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4 font-display">{copy.title}</h1>
             <p className="text-15 leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
           </div>
         </div>
@@ -365,7 +365,7 @@ export default function SignupPage() {
           {/* Progress */}
           <div className="flex items-center gap-1.5 mb-8">
             {STEPS.map((s, i) => (
-              <div key={s.key} className="h-[3px] flex-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+              <div key={s.key} className="h-[3px] flex-1 rounded-full overflow-hidden bg-[var(--border)]">
                 <div
                   className="h-full rounded-full"
                   style={{ width: i <= step ? "100%" : "0%", background: i <= step ? "var(--forest)" : "transparent", transition: `width 0.5s ${EASE}` }}
@@ -391,8 +391,8 @@ export default function SignupPage() {
                 noValidate
               >
                 <div className="mb-5">
-                  <h2 className="text-24 font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>What&apos;s your agency called?</h2>
-                  <p className="text-13 mt-0.5" style={{ color: "var(--ink-soft)" }}>
+                  <h2 className="text-24 font-semibold tracking-tight text-[var(--ink)] font-display">What&apos;s your agency called?</h2>
+                  <p className="text-13 mt-0.5 text-[var(--ink-soft)]">
                     {isPostCheckoutCompletion
                       ? "Payment's done - just need this to finish setting up your workspace."
                       : "We'll use this to set up your workspace."}
@@ -402,7 +402,7 @@ export default function SignupPage() {
                 <FloatField label="Agency name" value={agencyName} onChange={setAgencyName} autoFocus autoComplete="organization" />
 
                 {completeError && (
-                  <p role="alert" className="text-13 mt-3" style={{ color: "var(--score-low)" }}>{completeError}</p>
+                  <p role="alert" className="text-13 mt-3 text-[var(--score-low)]">{completeError}</p>
                 )}
 
                 <div className="flex items-center gap-3 mt-6">
@@ -413,7 +413,7 @@ export default function SignupPage() {
                 </div>
 
                 {!isPostCheckoutCompletion && (
-                  <p className="text-13 text-center mt-6" style={{ color: "var(--ink-soft)" }}>
+                  <p className="text-13 text-center mt-6 text-[var(--ink-soft)]">
                     Already have an account?{" "}
                     <Link href="/login" className="font-semibold hover:underline transition" style={{ color: "var(--forest)" }}>Sign in</Link>
                   </p>
@@ -466,8 +466,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => goTo(0)}
-                  className="w-full text-sm py-1.5 mt-3 transition rounded"
-                  style={{ color: "var(--ink-soft)" }}
+                  className="w-full text-sm py-1.5 mt-3 transition rounded text-[var(--ink-soft)]"
                   onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-soft)")}
                 >

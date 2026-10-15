@@ -51,21 +51,21 @@ const DETAILS = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="how" />
       <main id="main-content">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-14 text-center">
-        <span className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)]">
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           Under a minute per CV
         </span>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-2xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-2xl mx-auto text-[var(--ink)] font-display">
           From CV to decision, in three steps.
         </h1>
-        <p className="text-15 leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-15 leading-relaxed max-w-md mx-auto text-[var(--ink-soft)]">
           No spreadsheets, no manual comparison. Here&apos;s exactly what happens between dropping in a CV and having a scored, ready-to-act-on candidate.
         </p>
       </section>
@@ -76,17 +76,17 @@ export default function HowItWorksPage() {
           {STEPS.map((s, i) => (
             <div key={s.n} className="rounded-2xl p-7 flex flex-col sm:flex-row gap-6 items-start" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
               <div className="flex items-center gap-4 sm:flex-col sm:items-start shrink-0">
-                <span className="w-10 h-10 rounded-btn flex items-center justify-center text-sm font-bold" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                <span className="w-10 h-10 rounded-btn flex items-center justify-center text-sm font-bold bg-[var(--mint)] text-[var(--forest)]">
                   {s.n}
                 </span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden" aria-hidden="true">{s.icon}</svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>{s.title}</h2>
-                <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
+                <h2 className="text-base font-semibold mb-2 text-[var(--ink)] font-display">{s.title}</h2>
+                <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">{s.body}</p>
               </div>
               {i < STEPS.length - 1 && (
-                <div className="hidden sm:flex ml-auto self-center shrink-0" style={{ color: "var(--ink-mute)" }}>
+                <div className="hidden sm:flex ml-auto self-center shrink-0 text-[var(--ink-mute)]">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M6 4l8 8-8 8" />
                   </svg>
@@ -100,16 +100,16 @@ export default function HowItWorksPage() {
       {/* ── Under the hood ──────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
         <div className="text-center mb-12">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Under the hood</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">Under the hood</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
             What&apos;s actually happening at each step
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {DETAILS.map((d) => (
-            <div key={d.title} className="rounded-card p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{d.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d.body}</p>
+            <div key={d.title} className="rounded-card p-6 bg-white border border-[var(--border)]">
+              <h3 className="text-sm font-semibold mb-1.5 text-[var(--ink)]">{d.title}</h3>
+              <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{d.body}</p>
             </div>
           ))}
         </div>

@@ -180,15 +180,15 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
   }
 
   return (
-    <section className="rounded-2xl mb-6 overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-label="Call list">
+    <section className="rounded-2xl mb-6 overflow-hidden bg-white border border-[var(--border)]" aria-label="Call list">
       {confirmDialog}
-      <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderBottom: "1px solid var(--border-soft)" }}>
+      <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-b-[var(--border-soft)]">
         <div>
-          <h2 className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-sm font-semibold text-[var(--ink)] font-display">
             Call list
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
-            <b style={{ color: "var(--ink)" }}>{counts.pending}</b> to call · <b style={{ color: "var(--forest)" }}>{counts.doneToday}</b> done today
+          <p className="text-xs mt-0.5 text-[var(--ink-faint)]">
+            <b className="text-[var(--ink)]">{counts.pending}</b> to call · <b className="text-[var(--forest)]">{counts.doneToday}</b> done today
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
       {(error || notice) && (
         <div
           className="mx-5 mt-4 rounded-lg px-3 py-2 text-xs"
-          style={error ? { background: "#fdf1f0", color: "#c0392b", border: "1px solid #f4d4d2" } : { background: "var(--mint)", color: "var(--forest)" }}
+          style={error ? { background: "var(--ui-danger-soft)", color: "var(--score-low)", border: "1px solid var(--danger-line)" } : { background: "var(--mint)", color: "var(--forest)" }}
           role={error ? "alert" : "status"}
         >
           {error || notice}
@@ -213,21 +213,21 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
       )}
 
       {preview && (
-        <div className="mx-5 mt-4 rounded-xl p-4" style={{ background: "var(--mist)", border: "1px solid var(--border)" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
+        <div className="mx-5 mt-4 rounded-xl p-4 bg-[var(--mist)] border border-[var(--border)]">
+          <p className="text-sm font-semibold text-[var(--ink)]">
             {preview.contacts.length} contact{preview.contacts.length === 1 ? "" : "s"} ready to import from {preview.fileName}
           </p>
-          <p className="text-xs mt-1" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-xs mt-1 text-[var(--ink-soft)]">
             {preview.skipped > 0 && `${preview.skipped} row${preview.skipped === 1 ? "" : "s"} without a phone number skipped. `}
             {preview.duplicates > 0 && `${preview.duplicates} duplicate number${preview.duplicates === 1 ? "" : "s"} removed. `}
             {preview.hasHeader
               ? `Columns used: ${Object.keys(preview.mapping).map((f) => FIELD_LABELS[f]).join(", ")}.`
               : "No header row found - reading columns as Name, Company, Phone."}
           </p>
-          <div className="mt-3 overflow-x-auto rounded-lg" style={{ border: "1px solid var(--border)" }}>
-            <table className="w-full text-xs" style={{ background: "white" }}>
+          <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--border)]">
+            <table className="w-full text-xs bg-white">
               <thead>
-                <tr style={{ color: "var(--ink-faint)" }}>
+                <tr className="text-[var(--ink-faint)]">
                   {["Name", "Company", "Phone", "Email"].map((h) => (
                     <th scope="col" key={h} className="text-left font-semibold px-3 py-2">{h}</th>
                   ))}
@@ -235,7 +235,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
               </thead>
               <tbody>
                 {preview.contacts.slice(0, 5).map((c, i) => (
-                  <tr key={i} style={{ borderTop: "1px solid var(--border-soft)", color: "var(--ink)" }}>
+                  <tr key={i} className="border-t border-t-[var(--border-soft)] text-[var(--ink)]">
                     <td className="px-3 py-1.5">{c.contact_name || "-"}</td>
                     <td className="px-3 py-1.5">{c.company || "-"}</td>
                     <td className="px-3 py-1.5 tabular-nums">{c.phone}</td>
@@ -246,24 +246,23 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
             </table>
           </div>
           {preview.contacts.length > 5 && (
-            <p className="text-12 mt-1.5" style={{ color: "var(--ink-faint)" }}>…and {preview.contacts.length - 5} more</p>
+            <p className="text-12 mt-1.5 text-[var(--ink-faint)]">…and {preview.contacts.length - 5} more</p>
           )}
           <div className="mt-3 flex flex-col sm:flex-row sm:items-end gap-2">
             <label className="flex-1">
-              <span className="block text-12 font-medium mb-1" style={{ color: "var(--ink-soft)" }}>List name (optional)</span>
+              <span className="block text-12 font-medium mb-1 text-[var(--ink-soft)]">List name (optional)</span>
               <input
                 type="text"
                 value={preview.batchLabel}
                 onChange={(e) => setPreview((p) => ({ ...p, batchLabel: e.target.value }))}
-                className="w-full bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
-                style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                className="w-full bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
             <div className="flex gap-2">
-              <button type="button" onClick={confirmImport} disabled={importing} className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+              <button type="button" onClick={confirmImport} disabled={importing} className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50 bg-[var(--forest)] text-white">
                 {importing ? "Importing…" : `Import ${preview.contacts.length}`}
               </button>
-              <button type="button" onClick={() => setPreview(null)} className="text-sm px-4 py-2 rounded-lg" style={{ color: "var(--ink-soft)" }}>
+              <button type="button" onClick={() => setPreview(null)} className="text-sm px-4 py-2 rounded-lg text-[var(--ink-soft)]">
                 Cancel
               </button>
             </div>
@@ -294,23 +293,22 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShown(PAGE); }}
           placeholder="Search name, company or number"
-          className="sm:ml-auto w-full sm:w-64 bg-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2"
-          style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+          className="sm:ml-auto w-full sm:w-64 bg-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
         />
       </div>
 
       <div className="px-5 py-4">
         {loading ? (
-          <p className="py-8 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+          <p className="py-8 text-center text-sm text-[var(--ink-faint)]">Loading…</p>
         ) : list.pending.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm" style={{ color: "var(--ink-soft)" }}>Nobody on the list yet.</p>
-            <p className="text-xs mt-1" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-sm text-[var(--ink-soft)]">Nobody on the list yet.</p>
+            <p className="text-xs mt-1 text-[var(--ink-faint)]">
               Import a CSV with a Phone column (Name and Company help too) - everyone on the team will see it here.
             </p>
           </div>
         ) : visible.length === 0 ? (
-          <p className="py-8 text-center text-sm" style={{ color: "var(--ink-faint)" }}>No contacts match.</p>
+          <p className="py-8 text-center text-sm text-[var(--ink-faint)]">No contacts match.</p>
         ) : (
           <ul className="divide-y divide-[var(--border-soft)]">
             {visible.slice(0, shown).map((row) => {
@@ -322,27 +320,26 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                 <li key={row.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>
+                      <p className="text-sm font-medium truncate text-[var(--ink)]">
                         {row.contact_name || row.company || "Unnamed contact"}
                       </p>
                       {mine && (
-                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>You&apos;re calling</span>
+                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest)]">You&apos;re calling</span>
                       )}
                       {takenByOther && (
-                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fdf5e9", color: "#b8791f" }}>
+                        <span className="text-11 font-semibold px-2 py-0.5 rounded-full bg-[var(--ui-warn-soft)] text-[var(--ui-warn)]">
                           {personName(row.claimer)} is calling
                         </span>
                       )}
                     </div>
-                    <p className="text-xs mt-0.5 truncate" style={{ color: "var(--ink-faint)" }}>
+                    <p className="text-xs mt-0.5 truncate text-[var(--ink-faint)]">
                       {[row.contact_name && row.company, row.email, row.batch_label && `List: ${row.batch_label}`].filter(Boolean).join(" · ")}
                     </p>
-                    {row.notes && <p className="text-xs mt-0.5 line-clamp-1" style={{ color: "var(--ink-soft)" }}>{row.notes}</p>}
+                    {row.notes && <p className="text-xs mt-0.5 line-clamp-1 text-[var(--ink-soft)]">{row.notes}</p>}
                   </div>
                   <a
                     href={`tel:${row.phone.replace(/[^\d+]/g, "")}`}
-                    className="text-sm font-semibold tabular-nums shrink-0 hover:underline"
-                    style={{ color: takenByOther ? "var(--ink-faint)" : "var(--forest)" }}
+                    className={`text-sm font-semibold tabular-nums shrink-0 hover:underline ${takenByOther ? "text-[var(--ink-faint)]" : "text-[var(--forest)]"}`}
                   >
                     {row.phone}
                   </a>
@@ -368,7 +365,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                         disabled={busy}
                         onClick={async () => (await ask({ title: "Delete this contact from the list?", confirmLabel: "Delete contact", danger: true })) && act(row, "delete")}
                         className={btn}
-                        style={{ color: "#e0554f" }}
+                        style={{ color: "var(--score-low)" }}
                         aria-label="Delete contact"
                       >
                         ×
@@ -381,27 +378,27 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
           </ul>
         )}
         {visible.length > shown && (
-          <button type="button" onClick={() => setShown((n) => n + PAGE)} className="mt-2 w-full text-xs font-semibold py-2 rounded-lg" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+          <button type="button" onClick={() => setShown((n) => n + PAGE)} className="mt-2 w-full text-xs font-semibold py-2 rounded-lg bg-[var(--mist)] text-[var(--ink-soft)]">
             Show {Math.min(PAGE, visible.length - shown)} more of {visible.length - shown}
           </button>
         )}
 
         {list.done.length > 0 && (
-          <div className="mt-4 pt-3" style={{ borderTop: "1px solid var(--border-soft)" }}>
-            <button type="button" onClick={() => setShowDone((v) => !v)} className="text-xs font-semibold" style={{ color: "var(--ink-soft)" }} aria-expanded={showDone}>
+          <div className="mt-4 pt-3 border-t border-t-[var(--border-soft)]">
+            <button type="button" onClick={() => setShowDone((v) => !v)} className="text-xs font-semibold text-[var(--ink-soft)]" aria-expanded={showDone}>
               {showDone ? "▾" : "▸"} Recently done ({list.done.length})
             </button>
             {showDone && (
               <ul className="mt-2 space-y-1.5">
                 {list.done.map((row) => (
                   <li key={row.id} className="flex items-center justify-between gap-3 text-xs">
-                    <span className="truncate" style={{ color: "var(--ink-soft)" }}>
-                      <span style={{ color: "var(--ink)" }}>{row.contact_name || row.company || row.phone}</span>
+                    <span className="truncate text-[var(--ink-soft)]">
+                      <span className="text-[var(--ink)]">{row.contact_name || row.company || row.phone}</span>
                       {" · "}
                       {row.status === "skipped" ? "Skipped" : "Called"} by {personName(row.completer)}
                       {row.completed_at ? ` ${timeAgo(row.completed_at, now)}` : ""}
                     </span>
-                    <button type="button" disabled={busyId === row.id} onClick={() => act(row, "reopen")} className="shrink-0 font-semibold" style={{ color: "var(--forest)" }}>
+                    <button type="button" disabled={busyId === row.id} onClick={() => act(row, "reopen")} className="shrink-0 font-semibold text-[var(--forest)]">
                       Put back
                     </button>
                   </li>

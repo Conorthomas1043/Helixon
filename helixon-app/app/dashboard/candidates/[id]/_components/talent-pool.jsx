@@ -44,23 +44,22 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
       />
 
       {pool ? (
-        <div className="rounded-btn p-3 mb-4" style={{ background: "var(--mint)" }}>
-          <p className="text-14 font-semibold" style={{ color: "var(--forest-deep)" }}>
+        <div className="rounded-btn p-3 mb-4 bg-[var(--mint)]">
+          <p className="text-14 font-semibold text-[var(--forest-deep)]">
             In the talent pool
           </p>
-          <p className="text-13 mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-13 mt-0.5 text-[var(--ink-soft)]">
             Saved {formatRelativeTime(new Date(pool.savedAt))}
             {pool.savedBy ? ` by ${pool.savedBy}` : ""}
           </p>
-          {pool.note && <p className="text-14 italic mt-1.5" style={{ color: INK }}>“{pool.note}”</p>}
+          {pool.note && <p className="text-14 italic mt-1.5 text-[var(--ink)]">“{pool.note}”</p>}
           <div className="grid grid-cols-2 gap-2 mt-2.5">
-            <label className="text-12 font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+            <label className="text-12 font-semibold uppercase tracking-wide text-[var(--ink-faint)]">
               Availability
               <select
                 value={pool.status || ""}
                 onChange={(e) => onUpdate({ status: e.target.value || null })}
-                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
               >
                 <option value="">Unknown</option>
                 <option value="available">Available</option>
@@ -68,14 +67,13 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
                 <option value="not_looking">Not looking</option>
               </select>
             </label>
-            <label className="text-12 font-semibold uppercase tracking-wide" style={{ color: INK_FAINT }}>
+            <label className="text-12 font-semibold uppercase tracking-wide text-[var(--ink-faint)]">
               Check in
               <input
                 type="date"
                 value={pool.checkIn || ""}
                 onChange={(e) => onUpdate({ checkIn: e.target.value || null })}
-                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
           </div>
@@ -87,8 +85,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
               setBusy(false);
             }}
             disabled={busy}
-            className="text-13 font-semibold mt-2 hover:underline disabled:opacity-50"
-            style={{ color: INK_MUTED }}
+            className="text-13 font-semibold mt-2 hover:underline disabled:opacity-50 text-[var(--ink-soft)]"
           >
             Remove from pool
           </button>
@@ -102,14 +99,13 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
             maxLength={500}
             placeholder="Why keep them? e.g. great fit for senior sales, wants remote (optional)"
             aria-label="Why keep them"
-            className="w-full text-14 p-2.5 rounded-btn resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="w-full text-14 p-2.5 rounded-btn resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           />
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={() => setNoting(false)} className="text-13 font-semibold px-3 py-1.5 rounded-full" style={{ color: INK_MUTED }}>
+            <button type="button" onClick={() => setNoting(false)} className="text-13 font-semibold px-3 py-1.5 rounded-full text-[var(--ink-soft)]">
               Cancel
             </button>
-            <button type="button" onClick={save} disabled={busy} className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+            <button type="button" onClick={save} disabled={busy} className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
               {busy ? "Saving…" : "Save to pool"}
             </button>
           </div>
@@ -119,12 +115,11 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
           <button
             type="button"
             onClick={() => setNoting(true)}
-            className="inline-flex items-center gap-1.5 text-14 font-semibold px-4 py-2 rounded-full"
-            style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
+            className="inline-flex items-center gap-1.5 text-14 font-semibold px-4 py-2 rounded-full border border-[var(--forest)] text-[var(--forest)]"
           >
             ☆ Save to talent pool
           </button>
-          <p className="text-13 mt-2" style={{ color: INK_FAINT }}>
+          <p className="text-13 mt-2 text-[var(--ink-faint)]">
             Not right for this role? Keep them - when a new job comes in, you can screen them against it without re-uploading.
           </p>
         </div>
@@ -133,8 +128,8 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
       <FieldLabel>Screened for</FieldLabel>
       <ul className="space-y-1.5 mb-4">
         <li className="flex items-center justify-between gap-2 text-14">
-          <span className="truncate" style={{ color: INK }}>
-            {candidate.jobTitle} <span style={{ color: INK_FAINT }}>(this page)</span>
+          <span className="truncate text-[var(--ink)]">
+            {candidate.jobTitle} <span className="text-[var(--ink-faint)]">(this page)</span>
           </span>
           <span className="tabular-nums font-semibold" style={{ color: scoreColor(candidate.score) }}>{candidate.score ?? "–"}</span>
         </li>
@@ -142,7 +137,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
           <li key={r.candidateId} className="flex items-center justify-between gap-2 text-14">
             <Link href={`/dashboard/candidates/${r.candidateId}`} className="truncate hover:underline" style={{ color: "var(--forest)" }}>
               {r.jobTitle}
-              {r.stage ? <span style={{ color: INK_FAINT }}> · {STAGE_LABELS[r.stage] || r.stage}</span> : null}
+              {r.stage ? <span className="text-[var(--ink-faint)]"> · {STAGE_LABELS[r.stage] || r.stage}</span> : null}
             </Link>
             <span className="tabular-nums font-semibold" style={{ color: scoreColor(r.score) }}>{r.score ?? "–"}</span>
           </li>
@@ -157,8 +152,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
             onChange={(e) => setJobId(e.target.value)}
             disabled={screening}
             aria-label="Job to screen them for"
-            className="min-w-0 flex-1 text-14 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="min-w-0 flex-1 text-14 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           >
             <option value="">{availableJobs.length ? "Choose a job…" : "No other jobs yet"}</option>
             {openJobs.length > 0 && (
@@ -185,16 +179,15 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
               setScreening(false);
               if (ok) setJobId("");
             }}
-            className="text-13 font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="text-13 font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40 bg-[var(--forest)] text-white"
           >
             {screening ? "Screening…" : "Screen"}
           </button>
         </div>
       ) : (
-        <p className="text-13" style={{ color: INK_FAINT }}>No CV text on file - upload their CV on Analyse to screen them for another job.</p>
+        <p className="text-13 text-[var(--ink-faint)]">No CV text on file - upload their CV on Analyse to screen them for another job.</p>
       )}
-      {screening && <p className="text-13 mt-2" style={{ color: INK_FAINT }}>Running a full analysis - about 20–40 seconds.</p>}
+      {screening && <p className="text-13 mt-2 text-[var(--ink-faint)]">Running a full analysis - about 20–40 seconds.</p>}
     </div>
   );
 }

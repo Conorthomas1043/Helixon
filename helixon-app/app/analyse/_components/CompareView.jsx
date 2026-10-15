@@ -43,15 +43,15 @@ function fmtPay(salary) {
 }
 
 const MUST_HAVE = {
-  met: { label: "Met", icon: "check", cls: "bg-[var(--mint)] text-[var(--forest-deep)] border-[#cfe6da]" },
-  not_met: { label: "Not met", icon: "x", cls: "bg-[#fbefed] text-[#a83226] border-[#f2d2cd]" },
+  met: { label: "Met", icon: "check", cls: "bg-[var(--mint)] text-[var(--forest-deep)] border-[var(--mint-line)]" },
+  not_met: { label: "Not met", icon: "x", cls: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]" },
   unverified: { label: "To confirm", icon: "info", cls: "bg-white text-[var(--ink-soft)] border-[var(--border)]" },
 };
 
 const SKILL = {
-  strong: "bg-[var(--mint)] text-[var(--forest-deep)] border-[#cfe6da]",
-  weak: "bg-[#fdf6e9] text-[#8a5a12] border-[#f1dfbc]",
-  missing: "bg-[#fbefed] text-[#a83226] border-[#f2d2cd]",
+  strong: "bg-[var(--mint)] text-[var(--forest-deep)] border-[var(--mint-line)]",
+  weak: "bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] border-[var(--warn-line)]",
+  missing: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]",
   unknown: "bg-white text-[var(--ink-faint)] border-[var(--border)]",
 };
 
@@ -79,7 +79,7 @@ function RowLabel({ children, hint }) {
 
 function Cell({ children, best }) {
   return (
-    <div className={cx("px-4 py-3 border-t border-[var(--border-soft)] min-w-0", best && "bg-[#f4faf7]")}>{children}</div>
+    <div className={cx("px-4 py-3 border-t border-[var(--border-soft)] min-w-0", best && "bg-[var(--mint)]")}>{children}</div>
   );
 }
 
@@ -155,7 +155,7 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
   }
 
   return (
-    <div className={cx("px-4 pt-4 pb-4 min-w-0 relative", isLeader && "bg-[#f4faf7]")}>
+    <div className={cx("px-4 pt-4 pb-4 min-w-0 relative", isLeader && "bg-[var(--mint)]")}>
       {confirmDialog}
       <div className="flex items-start gap-2.5">
         <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-white text-13 font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
@@ -195,8 +195,8 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
       <div className="mt-3">
         <StagePicker candidateId={c.id} stage={c.stage} onChanged={(stage) => onStageChanged(c.id, stage)} />
       </div>
-      {c.otherRole && <p className="text-12 mt-2 text-[#8a5a12]">Scored against a different role</p>}
-      {!c.analysed && <p className="text-12 mt-2 text-[#8a5a12]">No saved analysis</p>}
+      {c.otherRole && <p className="text-12 mt-2 text-[var(--ui-warn)]">Scored against a different role</p>}
+      {!c.analysed && <p className="text-12 mt-2 text-[var(--ui-warn)]">No saved analysis</p>}
     </div>
   );
 }
@@ -315,7 +315,7 @@ export default function CompareWorkspace() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Compare candidates</p>
-            <h1 className="text-2xl font-semibold text-[var(--ink)] truncate" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl font-semibold text-[var(--ink)] truncate font-display">
               {job && n >= 2 ? job.title : "Side by side"}
             </h1>
             <p className="text-14 text-[var(--ink-soft)] mt-1">

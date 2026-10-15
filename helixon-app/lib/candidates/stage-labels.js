@@ -24,9 +24,9 @@ export const FUNNEL_ORDER = ["Screened", "Shortlisted", "Interview", "Offer", "P
 // dots and borders, always next to the stage's name. Not for text: the
 // lighter ones are under 4.5:1.
 export const STAGE_COLORS = {
-  Screened: "#7f948a",
-  Shortlisted: "#3c9a73",
-  Interview: "#1d7a74",
+  Screened: "var(--stage-screened)",
+  Shortlisted: "var(--stage-shortlisted)",
+  Interview: "var(--teal)",
   Offer: "var(--gold)",
   Placed: "var(--forest)",
   Rejected: "var(--score-low)",

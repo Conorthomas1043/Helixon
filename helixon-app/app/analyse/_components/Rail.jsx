@@ -109,7 +109,7 @@ export function StageCard({ candidateId, toast }) {
           onClick={() => update(rejected ? "Screened" : "Rejected")}
           className={cx(
             "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-left text-14 transition-colors disabled:opacity-60",
-            rejected ? "bg-[#fbefed] text-[#a83226] font-medium" : "text-[var(--ink-soft)] hover:bg-[#fbefed] hover:text-[#a83226]"
+            rejected ? "bg-[var(--ui-danger-soft)] text-[var(--score-low)] font-medium" : "text-[var(--ink-soft)] hover:bg-[var(--ui-danger-soft)] hover:text-[var(--score-low)]"
           )}
         >
           <Icon name="x" size={13} />

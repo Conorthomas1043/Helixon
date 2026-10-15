@@ -20,7 +20,7 @@ function Progress({ actual, target }) {
   const pct = Math.min(100, Math.round((actual / target) * 100));
   return (
     <div className="mt-1" title={`${pct}% of target`}>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
+      <div className="h-1.5 rounded-full overflow-hidden bg-[var(--mist)]">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct >= 100 ? "var(--forest)" : pct >= 60 ? "var(--gold)" : "var(--score-low)" }} />
       </div>
     </div>
@@ -62,16 +62,16 @@ export default function PerformancePage() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {METRIC_KEYS.map((k) => (
-              <div key={k} className="rounded-xl px-3 py-2.5 bg-white" style={{ border: "1px solid var(--border)" }}>
-                <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <div key={k} className="rounded-xl px-3 py-2.5 bg-white border border-[var(--border)]">
+                <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
                   {METRICS[k].short}
                 </p>
-                <p className="text-lg font-semibold tabular-nums" style={{ color: INK }}>
+                <p className="text-lg font-semibold tabular-nums text-[var(--ink)]">
                   {value(k, data.team.metrics[k])}
                 </p>
                 {data.team.targets[k] ? (
                   <>
-                    <p className="text-12" style={{ color: INK_MUTED }}>
+                    <p className="text-12 text-[var(--ink-soft)]">
                       of {value(k, data.team.targets[k])}
                     </p>
                     <Progress actual={data.team.metrics[k]} target={data.team.targets[k]} />
@@ -96,7 +96,7 @@ export default function PerformancePage() {
             <div className="overflow-x-auto -mx-5 sm:-mx-6">
               <table className="w-full text-14">
                 <thead>
-                  <tr className="text-left text-12 uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-12 uppercase tracking-widest text-[var(--ink-faint)]">
                     <th scope="col" className="px-5 sm:px-6 py-2 font-semibold">Recruiter</th>
                     {METRIC_KEYS.map((k) => (
                       <th scope="col" key={k} className="px-2 py-2 font-semibold text-right whitespace-nowrap" style={k === rankBy ? { color: INK } : null}>
@@ -109,21 +109,21 @@ export default function PerformancePage() {
                 <tbody>
                   {ranked.map((p, i) => (
                     <tr key={p.id} style={{ borderTop: "1px solid var(--border)", background: p.me ? "var(--mist)" : undefined }}>
-                      <td className="px-5 sm:px-6 py-2.5 whitespace-nowrap font-semibold" style={{ color: INK }}>
+                      <td className="px-5 sm:px-6 py-2.5 whitespace-nowrap font-semibold text-[var(--ink)]">
                         <span className="inline-block w-6">{p.metrics[rankBy] > 0 ? MEDALS[i] || `${i + 1}.` : ""}</span>
                         {p.name}
                         {p.me && (
-                          <span className="ml-1 text-12 font-normal" style={{ color: INK_MUTED }}>
+                          <span className="ml-1 text-12 font-normal text-[var(--ink-soft)]">
                             (you)
                           </span>
                         )}
                       </td>
                       {METRIC_KEYS.map((k) => (
-                        <td key={k} className="px-2 py-2.5 text-right tabular-nums align-top" style={{ color: INK, minWidth: 72 }}>
+                        <td key={k} className="px-2 py-2.5 text-right tabular-nums align-top text-[var(--ink)] min-w-[72px]">
                           {value(k, p.metrics[k])}
                           {p.targets[k] ? (
                             <>
-                              <span className="block text-12" style={{ color: INK_FAINT }}>
+                              <span className="block text-12 text-[var(--ink-faint)]">
                                 / {value(k, p.targets[k])}
                               </span>
                               <Progress actual={p.metrics[k]} target={p.targets[k]} />
@@ -132,7 +132,7 @@ export default function PerformancePage() {
                         </td>
                       ))}
                       {showCommission && (
-                        <td className="px-5 sm:px-6 py-2.5 text-right tabular-nums font-semibold" style={{ color: INK }}>
+                        <td className="px-5 sm:px-6 py-2.5 text-right tabular-nums font-semibold text-[var(--ink)]">
                           {p.commission == null ? "-" : formatMoney(p.commission)}
                         </td>
                       )}
@@ -142,7 +142,7 @@ export default function PerformancePage() {
               </table>
             </div>
             {showCommission && (
-              <p className="text-12 mt-3" style={{ color: INK_FAINT }}>
+              <p className="text-12 mt-3 text-[var(--ink-faint)]">
                 Commission is an estimate on {data.commission.basis === "cash" ? "cash collected" : "fees placed"} from your plan - you see your own; the owner and admins see everyone&apos;s.
               </p>
             )}

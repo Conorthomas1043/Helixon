@@ -189,7 +189,7 @@ function ContactDialog({ clientId, contact, onClose, onSaved }) {
             <TextArea maxLength={2000} value={f.notes} onChange={set("notes")} />
           </Field>
         </div>
-        <label className="flex items-center gap-2 text-14" style={{ color: INK }}>
+        <label className="flex items-center gap-2 text-14 text-[var(--ink)]">
           <input type="checkbox" checked={f.isPrimary} onChange={(e) => setF((v) => ({ ...v, isPrimary: e.target.checked }))} className="accent-[var(--forest)]" />
           Main contact for this client
         </label>
@@ -371,7 +371,7 @@ export default function ClientDetailPage({ params }) {
         <div className="space-y-6 min-w-0">
           <Card title="Jobs" eyebrow={`${jobs.length} total`}>
             {jobs.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>
+              <p className="text-14 text-[var(--ink-soft)]">
                 No jobs for {client.name} yet.
               </p>
             ) : (
@@ -380,14 +380,14 @@ export default function ClientDetailPage({ params }) {
                   <li key={j.id}>
                     <Link href={`/dashboard/jobs/${j.id}`} className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-btn hover:bg-[var(--mist)]">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+                        <p className="text-sm font-semibold truncate text-[var(--ink)]">
                           {j.title}
                         </p>
-                        <p className="text-13 truncate" style={{ color: INK_MUTED }}>
+                        <p className="text-13 truncate text-[var(--ink-soft)]">
                           {[j.location, j.salaryRange, `added ${formatDateOnly(j.createdAt)}`].filter(Boolean).join(" · ")}
                         </p>
                       </div>
-                      <span className="text-13 tabular-nums whitespace-nowrap" style={{ color: INK_MUTED }}>
+                      <span className="text-13 tabular-nums whitespace-nowrap text-[var(--ink-soft)]">
                         {j.candidates} cand · {j.inProcess} in process · {j.placed} placed
                       </span>
                       <Pill color={j.status === "open" ? "var(--forest)" : INK_FAINT} background={j.status === "open" ? "var(--mint)" : "var(--mist)"}>
@@ -402,7 +402,7 @@ export default function ClientDetailPage({ params }) {
 
           <Card title="Placements" eyebrow={formatMoney(fees)}>
             {placements.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>
+              <p className="text-14 text-[var(--ink-soft)]">
                 No placements yet.
               </p>
             ) : (
@@ -412,10 +412,10 @@ export default function ClientDetailPage({ params }) {
                     <Link href={`/dashboard/candidates/${p.candidateId}`} className="font-semibold hover:underline flex-1 min-w-0 truncate" style={{ color: INK }}>
                       {p.candidateName}
                     </Link>
-                    <span className="truncate" style={{ color: INK_MUTED }}>
+                    <span className="truncate text-[var(--ink-soft)]">
                       {p.jobTitle}
                     </span>
-                    <span className="tabular-nums font-semibold" style={{ color: INK }}>
+                    <span className="tabular-nums font-semibold text-[var(--ink)]">
                       {p.fee != null ? formatMoney(p.fee) : "-"}
                     </span>
                   </li>
@@ -432,11 +432,11 @@ export default function ClientDetailPage({ params }) {
                     <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                       {i.number}
                     </Link>
-                    <span className="flex-1" style={{ color: INK_MUTED }}>
+                    <span className="flex-1 text-[var(--ink-soft)]">
                       {i.issued_on}
                     </span>
                     <InvoiceStatusPill invoice={i} />
-                    <span className="tabular-nums font-semibold" style={{ color: INK }}>
+                    <span className="tabular-nums font-semibold text-[var(--ink)]">
                       {formatMoney(i.total, i.currency)}
                     </span>
                   </li>
@@ -448,18 +448,18 @@ export default function ClientDetailPage({ params }) {
           <Card title="Timeline">
             <LogActivity clientId={id} onLogged={reload} />
             {activity.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>
+              <p className="text-14 text-[var(--ink-soft)]">
                 Nothing logged yet.
               </p>
             ) : (
               <ul className="space-y-3">
                 {activity.map((a) => (
                   <li key={a.id} className="text-14">
-                    <span className="font-semibold" style={{ color: INK }}>
+                    <span className="font-semibold text-[var(--ink)]">
                       {ACTIVITY_LABELS[a.type] ?? a.type}
                     </span>
-                    {a.meta?.note && <span style={{ color: INK }}> - {a.meta.note}</span>}
-                    <span className="block text-12" style={{ color: INK_FAINT }}>
+                    {a.meta?.note && <span className="text-[var(--ink)]"> - {a.meta.note}</span>}
+                    <span className="block text-12 text-[var(--ink-faint)]">
                       {a.actor ? `${a.actor} · ` : ""}
                       {formatRelativeTime(a.createdAt)}
                     </span>
@@ -489,7 +489,7 @@ export default function ClientDetailPage({ params }) {
             }
           >
             {contacts.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>
+              <p className="text-14 text-[var(--ink-soft)]">
                 No contacts yet. Add the hiring managers you deal with - their email is used for client emails and feedback requests.
               </p>
             ) : (
@@ -498,26 +498,26 @@ export default function ClientDetailPage({ params }) {
                   <li key={c.id} className="text-14">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-semibold" style={{ color: INK }}>
+                        <p className="font-semibold text-[var(--ink)]">
                           {c.name} {c.isPrimary && <Pill color="var(--forest)" background="var(--mint)">Main</Pill>}
                         </p>
-                        {c.jobTitle && <p style={{ color: INK_MUTED }}>{c.jobTitle}</p>}
+                        {c.jobTitle && <p className="text-[var(--ink-soft)]">{c.jobTitle}</p>}
                         {c.email && (
-                          <a href={`mailto:${c.email}`} className="block underline truncate" style={{ color: INK_MUTED }}>
+                          <a href={`mailto:${c.email}`} className="block underline truncate text-[var(--ink-soft)]">
                             {c.email}
                           </a>
                         )}
                         {c.phone && (
-                          <a href={`tel:${c.phone.replace(/[^\d+]/g, "")}`} className="block" style={{ color: INK_MUTED }}>
+                          <a href={`tel:${c.phone.replace(/[^\d+]/g, "")}`} className="block text-[var(--ink-soft)]">
                             {c.phone}
                           </a>
                         )}
                       </div>
                       <div className="flex gap-2 text-12 font-semibold shrink-0">
-                        <button type="button" onClick={() => setContactDialog(c)} style={{ color: "var(--forest)" }}>
+                        <button type="button" onClick={() => setContactDialog(c)} className="text-[var(--forest)]">
                           Edit
                         </button>
-                        <button type="button" onClick={() => removeContact(c)} style={{ color: INK_FAINT }}>
+                        <button type="button" onClick={() => removeContact(c)} className="text-[var(--ink-faint)]">
                           Remove
                         </button>
                       </div>
@@ -553,15 +553,15 @@ export default function ClientDetailPage({ params }) {
                 ["Address", client.address],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-3">
-                  <dt style={{ color: INK_FAINT }}>{k}</dt>
-                  <dd className="text-right" style={{ color: v ? INK : INK_FAINT }}>
+                  <dt className="text-[var(--ink-faint)]">{k}</dt>
+                  <dd className={`text-right ${v ? "text-[var(--ink)]" : "text-[var(--ink-faint)]"}`}>
                     {v || "Not set"}
                   </dd>
                 </div>
               ))}
             </dl>
             {client.termsNotes && (
-              <p className="text-13 mt-3 whitespace-pre-line" style={{ color: INK_MUTED }}>
+              <p className="text-13 mt-3 whitespace-pre-line text-[var(--ink-soft)]">
                 {client.termsNotes}
               </p>
             )}

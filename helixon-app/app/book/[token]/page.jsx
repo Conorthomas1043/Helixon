@@ -61,8 +61,8 @@ export default function BookPage({ params }) {
   if (state === "error" || state === "closed") {
     return (
       <PublicCard agencyName={info?.agencyName}>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>{state === "error" ? "Link not available" : "No times left"}</h1>
-        <p className="text-sm" style={{ color: MUTED }}>{state === "error" ? error : "The times on this link have passed or it's been closed - please ask the agency for new ones."}</p>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">{state === "error" ? "Link not available" : "No times left"}</h1>
+        <p className="text-sm text-[var(--ink-soft)]">{state === "error" ? error : "The times on this link have passed or it's been closed - please ask the agency for new ones."}</p>
       </PublicCard>
     );
   }
@@ -70,9 +70,9 @@ export default function BookPage({ params }) {
     const b = info.booked;
     return (
       <PublicCard agencyName={info.agencyName}>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>{b.cancelled ? "This interview was cancelled" : "You're booked in"}</h1>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">{b.cancelled ? "This interview was cancelled" : "You're booked in"}</h1>
         {!b.cancelled && (
-          <p className="text-sm" style={{ color: MUTED }}>
+          <p className="text-sm text-[var(--ink-soft)]">
             {dayKey(b.startsAt)} at {time(b.startsAt)} ({b.durationMinutes} minutes){info.jobTitle ? ` for ${info.jobTitle}` : ""}. A calendar invite is on its way to your inbox.
           </p>
         )}
@@ -88,10 +88,10 @@ export default function BookPage({ params }) {
 
   return (
     <PublicCard agencyName={info.agencyName} width={600}>
-      <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
+      <h1 className="text-xl font-semibold text-[var(--ink)] font-display">
         {info.firstName ? `${info.firstName}, pick` : "Pick"} a time for your interview
       </h1>
-      <p className="text-14 mt-1 mb-5" style={{ color: MUTED }}>
+      <p className="text-14 mt-1 mb-5 text-[var(--ink-soft)]">
         {info.jobTitle ? `${info.jobTitle} · ` : ""}
         {info.kind} · {info.durationMinutes} minutes{info.location ? ` · ${info.location}` : ""}
         {zone ? ` · times shown in your time zone (${zone})` : ""}
@@ -99,7 +99,7 @@ export default function BookPage({ params }) {
       <div className="space-y-4" role="radiogroup" aria-label="Interview times">
         {Object.entries(byDay).map(([day, list]) => (
           <div key={day}>
-            <p className="text-14 font-semibold mb-2" style={{ color: INK }}>{day}</p>
+            <p className="text-14 font-semibold mb-2 text-[var(--ink)]">{day}</p>
             <div className="flex flex-wrap gap-2">
               {list.map((s) => (
                 <button
@@ -118,11 +118,11 @@ export default function BookPage({ params }) {
           </div>
         ))}
       </div>
-      {error && <p role="alert" className="mt-4 text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
-      <button type="button" onClick={book} disabled={!pick || saving} className="mt-6 w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+      {error && <p role="alert" className="mt-4 text-13 text-[var(--score-low)]">{error}</p>}
+      <button type="button" onClick={book} disabled={!pick || saving} className="mt-6 w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
         {saving ? "Booking…" : pick ? `Book ${dayKey(pick)} at ${time(pick)}` : "Choose a time"}
       </button>
-      <p className="mt-3 text-12 text-center" style={{ color: MUTED }}>None of these work? Reply to the email and the agency will suggest others.</p>
+      <p className="mt-3 text-12 text-center text-[var(--ink-soft)]">None of these work? Reply to the email and the agency will suggest others.</p>
     </PublicCard>
   );
 }

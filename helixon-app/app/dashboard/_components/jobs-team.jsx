@@ -37,19 +37,19 @@ export function ActiveJobs({ jobs, total, statsByJob }) {
                   className="hover:bg-[var(--mist)] transition-colors"
                   style={{ display: "block", padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+                  <div className="flex items-center justify-between gap-3 mb-2">
                     <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${job.title}${job.client ? ` · ${job.client}` : ""}`}>
                       {job.title}
                       {job.client && <span style={{ color: TEXT_SUB, fontWeight: 400 }}> · {job.client}</span>}
                     </p>
-                    <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <span className="flex items-center gap-1.5 shrink-0">
                       {PRIORITY_LABEL[job.priority] && (job.priority === "urgent" || job.priority === "high") && (
                         <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: RED_BG, color: RED }}>{PRIORITY_LABEL[job.priority]}</span>
                       )}
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: TEXT_SUB }}>{formatNumber(job.candidates)}</span>
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div className="flex items-center gap-2">
                     <div style={{ flex: 1, height: 4, background: BORDER2, borderRadius: 9999, overflow: "hidden", display: "flex" }}>
                       {(stats?.stageSegments || []).map((seg) =>
                         seg.pct > 0 ? <div key={seg.key} title={`${STAGE_LABELS[seg.key]}: ${seg.pct}%`} style={{ width: `${seg.pct}%`, background: STAGE_COLORS[seg.key] }} /> : null
@@ -106,7 +106,7 @@ export function RecruiterPerformance({ recruiters }) {
               className="hover:bg-[var(--mist)] transition-colors"
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}
             >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+            <div className="flex items-center gap-2.5 min-w-[0px] flex-1">
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: ACCENT_BG, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: ACCENT_FG, flexShrink: 0 }}>
                 {r.name[0]}
               </div>

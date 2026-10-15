@@ -67,12 +67,12 @@ function ToggleRow({ category }) {
   }
 
   return (
-    <div className="rounded-xl border p-5" style={{ borderColor: "var(--border)", background: "white" }}>
+    <div className="rounded-xl border p-5 border-[var(--border)] bg-white">
       <div className="flex items-start justify-between gap-4 mb-2">
         <div>
-          <h3 className="text-13 font-semibold" style={{ color: "var(--ink)" }}>{category.name}</h3>
+          <h3 className="text-13 font-semibold text-[var(--ink)]">{category.name}</h3>
           {category.required && (
-            <span className="inline-block mt-1 text-11 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <span className="inline-block mt-1 text-11 font-semibold px-2 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest)]">
               Always on
             </span>
           )}
@@ -93,10 +93,10 @@ function ToggleRow({ category }) {
           />
         </button>
       </div>
-      <p className="text-12 leading-relaxed mb-3" style={{ color: "var(--ink-soft)" }}>{category.purpose}</p>
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-11" style={{ color: "var(--ink-faint)" }}>
-        <span><strong style={{ color: "var(--ink-soft)" }}>Examples:</strong> {category.examples}</span>
-        <span><strong style={{ color: "var(--ink-soft)" }}>Duration:</strong> {category.duration}</span>
+      <p className="text-12 leading-relaxed mb-3 text-[var(--ink-soft)]">{category.purpose}</p>
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-11 text-[var(--ink-faint)]">
+        <span><strong className="text-[var(--ink-soft)]">Examples:</strong> {category.examples}</span>
+        <span><strong className="text-[var(--ink-soft)]">Duration:</strong> {category.duration}</span>
       </div>
     </div>
   );
@@ -105,26 +105,26 @@ function ToggleRow({ category }) {
 export default function CookiePolicyPage() {
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="cookies" />
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
+      <header className="border-b bg-white border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-11 font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
           </p>
-          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4 text-[var(--ink)] font-display">
             Cookie Policy
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">
             This explains what cookies Helixon sets, why, and how to control them. It applies to helixon.co.uk and
             the Helixon app.
           </p>
-          <p className="text-11 mt-5" style={{ color: "var(--ink-soft)" }}>
-            <strong style={{ color: "var(--ink)" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026
+          <p className="text-11 mt-5 text-[var(--ink-soft)]">
+            <strong className="text-[var(--ink)]">Effective:</strong> 1 August 2026 · last updated 29 September 2026
           </p>
         </div>
       </header>
@@ -133,10 +133,10 @@ export default function CookiePolicyPage() {
       <div className="max-w-[680px] mx-auto px-6 py-14">
 
         <section className="mb-10">
-          <h2 className="text-lg font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">
             What are cookies?
           </h2>
-          <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-13 leading-relaxed text-[var(--ink-soft)]">
             Cookies are small text files stored on your device when you visit a website. We use them, and similar
             technologies like local storage, to keep you signed in, remember your preferences, and understand how
             the product is used so we can improve it.
@@ -144,7 +144,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-lg font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             Cookie categories
           </h2>
           <div className="space-y-3">
@@ -152,7 +152,7 @@ export default function CookiePolicyPage() {
               <ToggleRow key={c.name} category={c} />
             ))}
           </div>
-          <p className="text-xs mt-3" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-xs mt-3 text-[var(--ink-soft)]">
             These switches are your live cookie settings. Preferences and Analytics are off until you turn them on, and
             they switch together because you give (or withdraw) consent for optional cookies as one choice. Change it at
             any time here.
@@ -160,10 +160,10 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-lg font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">
             Third-party cookies
           </h2>
-          <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-13 leading-relaxed text-[var(--ink-soft)]">
             We do not use third-party advertising cookies, and we do not allow ad networks to track visitors across
             Helixon. Our analytics provider is EU-hosted and configured not to sell or share data with third
             parties.
@@ -171,14 +171,14 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-lg font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">
             Managing cookies in your browser
           </h2>
-          <p className="text-13 leading-relaxed mb-3" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-13 leading-relaxed mb-3 text-[var(--ink-soft)]">
             Most browsers let you block or delete cookies through their settings. Note that blocking strictly
             necessary cookies will prevent you from staying signed in to Helixon.
           </p>
-          <ul className="list-disc pl-5 space-y-1.5 text-13" style={{ color: "var(--ink-soft)" }}>
+          <ul className="list-disc pl-5 space-y-1.5 text-13 text-[var(--ink-soft)]">
             <li>Chrome: Settings → Privacy and security → Cookies</li>
             <li>Safari: Settings → Privacy → Manage Website Data</li>
             <li>Firefox: Settings → Privacy & Security → Cookies and Site Data</li>
@@ -186,17 +186,17 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-4">
-          <h2 className="text-lg font-semibold tracking-tight mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">
             Changes to this policy
           </h2>
-          <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-13 leading-relaxed text-[var(--ink-soft)]">
             We&apos;ll update this page if the cookies we use change, and update the effective date above. For material
             changes, we&apos;ll show a notice on your next visit.
           </p>
         </section>
 
-        <div className="pt-6 mt-6 border-t text-12" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
-          Questions about cookies? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
+        <div className="pt-6 mt-6 border-t text-12 border-[var(--border)] text-[var(--ink-faint)]">
+          Questions about cookies? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold text-[var(--forest)]">hello@helixon.co.uk</a>.
         </div>
       </div>
 

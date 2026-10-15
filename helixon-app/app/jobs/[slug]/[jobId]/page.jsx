@@ -54,23 +54,22 @@ export default async function PublicJobPage({ params, searchParams }) {
         <Link href={`/jobs/${slug}`} className="text-13 underline" style={{ color: "var(--ink-soft)" }}>
           ← All vacancies
         </Link>
-        <article className="rounded-card bg-white p-6 sm:p-8" style={{ border: "1px solid var(--border)" }}>
-          <h1 className="text-3xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <article className="rounded-card bg-white p-6 sm:p-8 border border-[var(--border)]">
+          <h1 className="text-3xl font-semibold text-[var(--ink)] font-display">
             {publicJob.title}
           </h1>
-          <p className="text-14 mt-2" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-14 mt-2 text-[var(--ink-soft)]">
             {[publicJob.client, publicJob.location, publicJob.employmentType, publicJob.seniority, publicJob.salary].filter(Boolean).join(" · ")}
           </p>
           {/* The form sits below the full description; on a phone that's a
               long scroll before an applicant sees any way to apply. */}
           <a
             href="#apply"
-            className="inline-flex items-center justify-center mt-5 min-h-[44px] text-14 font-semibold px-6 rounded-full"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="inline-flex items-center justify-center mt-5 min-h-[44px] text-14 font-semibold px-6 rounded-full bg-[var(--forest)] text-white"
           >
             Apply for this job
           </a>
-          <div className="mt-6 text-15 leading-relaxed whitespace-pre-line" style={{ color: "var(--ink)" }}>
+          <div className="mt-6 text-15 leading-relaxed whitespace-pre-line text-[var(--ink)]">
             {publicJob.description}
           </div>
         </article>

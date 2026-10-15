@@ -1,9 +1,9 @@
 // The small status dot on a teammate's avatar (lib/agency/presence.js states).
 export const PRESENCE_COLORS = {
-  active: "#1f9d61",
-  idle: "#e2a93b",
-  busy: "#d24a3c",
-  away: "#8e9b95",
+  active: "var(--forest)",
+  idle: "var(--gold)",
+  busy: "var(--score-low)",
+  away: "var(--ink-faint)",
   offline: "transparent",
 };
 
@@ -16,7 +16,7 @@ export default function PresenceDot({ state = "offline", size = 10, ring = "whit
         width: size,
         height: size,
         background: PRESENCE_COLORS[state] ?? "transparent",
-        border: offline ? "1.5px solid #9aa7a1" : "none",
+        border: offline ? "1.5px solid var(--ink-faint)" : "none",
         boxShadow: `0 0 0 2px ${ring}`,
       }}
       aria-hidden="true"

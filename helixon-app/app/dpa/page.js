@@ -68,10 +68,10 @@ function useActiveSection(ids) {
 function Section({ id, title, children }) {
   return (
     <section id={id} className="scroll-mt-24 mb-12">
-      <h2 className="text-lg font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+      <h2 className="text-lg font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
         {title}
       </h2>
-      <div className="space-y-3 text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+      <div className="space-y-3 text-13 leading-relaxed text-[var(--ink-soft)]">
         {children}
       </div>
     </section>
@@ -83,34 +83,33 @@ export default function DpaPage() {
   const [tocOpenMobile, setTocOpenMobile] = useState(false);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="dpa" />
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white" style={{ borderColor: "var(--border)" }}>
+      <header className="border-b bg-white border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-10">
-          <p className="text-11 font-medium mb-3" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> Legal
           </p>
-          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl sm:text-40 font-semibold tracking-tight leading-tight mb-4 text-[var(--ink)] font-display">
             Data Processing Agreement
           </h1>
-          <p className="text-sm leading-relaxed max-w-xl mb-6" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-sm leading-relaxed max-w-xl mb-6 text-[var(--ink-soft)]">
             This DPA forms part of the agreement between Helixon and any organisation using Helixon to process
             personal data on their behalf, and reflects our obligations as a processor under UK GDPR and EU GDPR.
           </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-11" style={{ color: "var(--ink-soft)" }}>
-            <span><strong style={{ color: "var(--ink)" }}>Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
-            <span><strong style={{ color: "var(--ink)" }}>Version:</strong> 3.1</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-11 text-[var(--ink-soft)]">
+            <span><strong className="text-[var(--ink)]">Effective:</strong> 1 August 2026 · last updated 29 September 2026</span>
+            <span><strong className="text-[var(--ink)]">Version:</strong> 3.1</span>
             {/* There is no PDF file to link to (this was href="#"). Printing the
                 page and choosing "Save as PDF" produces the same document. */}
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 font-semibold min-h-[32px]"
-              style={{ color: "var(--forest)" }}
+              className="inline-flex items-center gap-1.5 font-semibold min-h-[32px] text-[var(--forest)]"
             >
               Print or save as PDF
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" /></svg>
@@ -120,12 +119,11 @@ export default function DpaPage() {
       </header>
 
       {/* ── Mobile TOC toggle ───────────────────────────────────────────── */}
-      <div className="lg:hidden sticky top-[56px] z-30 bg-white border-b" style={{ borderColor: "var(--border)" }}>
+      <div className="lg:hidden sticky top-[56px] z-30 bg-white border-b border-[var(--border)]">
         <button
           type="button"
           onClick={() => setTocOpenMobile((v) => !v)}
-          className="w-full max-w-[1100px] mx-auto px-6 py-3 flex items-center justify-between text-xs font-semibold"
-          style={{ color: "var(--ink)" }}
+          className="w-full max-w-[1100px] mx-auto px-6 py-3 flex items-center justify-between text-xs font-semibold text-[var(--ink)]"
         >
           On this page
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: tocOpenMobile ? "rotate(180deg)" : "none", transition: "transform .2s" }}>
@@ -135,7 +133,7 @@ export default function DpaPage() {
         {tocOpenMobile && (
           <div className="px-6 pb-3 flex flex-col gap-0.5 max-h-64 overflow-y-auto">
             {SECTIONS.map((s) => (
-              <a key={s.id} href={`#${s.id}`} onClick={() => setTocOpenMobile(false)} className="text-xs py-1.5" style={{ color: active === s.id ? "var(--forest)" : "var(--ink-soft)", fontWeight: active === s.id ? 600 : 400 }}>
+              <a key={s.id} href={`#${s.id}`} onClick={() => setTocOpenMobile(false)} className={`text-xs py-1.5 ${active === s.id ? "text-[var(--forest)]" : "text-[var(--ink-soft)]"} ${active === s.id ? "font-semibold" : "font-normal"}`}>
                 {s.label}
               </a>
             ))}
@@ -148,7 +146,7 @@ export default function DpaPage() {
         {/* Sticky TOC */}
         <aside className="hidden lg:block">
           <nav className="sticky top-[80px] space-y-0.5 pr-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>On this page</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">On this page</p>
             {SECTIONS.map((s) => (
               <a
                 key={s.id}
@@ -167,7 +165,7 @@ export default function DpaPage() {
         </aside>
 
         {/* Content */}
-        <article className="max-w-[640px] bg-white rounded-2xl border p-8 sm:p-10" style={{ borderColor: "var(--border)" }}>
+        <article className="max-w-[640px] bg-white rounded-2xl border p-8 sm:p-10 border-[var(--border)]">
 
           <Section id="parties" title="1. Parties & scope">
             <p>This Data Processing Agreement (“DPA”) is entered into between the organisation using the Helixon
@@ -181,13 +179,13 @@ export default function DpaPage() {
           </Section>
 
           <Section id="definitions" title="2. Definitions">
-            <p><strong style={{ color: "var(--ink)" }}>“Data Protection Laws”</strong> means UK GDPR, EU GDPR (Regulation
+            <p><strong className="text-[var(--ink)]">“Data Protection Laws”</strong> means UK GDPR, EU GDPR (Regulation
               (EU) 2016/679), the UK Data Protection Act 2018, and any other applicable law relating to the
               processing of personal data.</p>
-            <p><strong style={{ color: "var(--ink)" }}>“Personal Data”, “Processing”, “Controller”, “Processor”, “Data
-              Subject”</strong> and <strong style={{ color: "var(--ink)" }}>“Personal Data Breach”</strong> take the
+            <p><strong className="text-[var(--ink)]">“Personal Data”, “Processing”, “Controller”, “Processor”, “Data
+              Subject”</strong> and <strong className="text-[var(--ink)]">“Personal Data Breach”</strong> take the
               meanings given in the applicable Data Protection Laws.</p>
-            <p><strong style={{ color: "var(--ink)" }}>“Sub-processor”</strong> means any third party appointed by
+            <p><strong className="text-[var(--ink)]">“Sub-processor”</strong> means any third party appointed by
               Helixon to process personal data on Customer’s behalf, as listed in Annex B.</p>
           </Section>
 
@@ -207,15 +205,15 @@ export default function DpaPage() {
           </Section>
 
           <Section id="data-types" title="5. Categories of data">
-            <p><strong style={{ color: "var(--ink)" }}>Data subjects:</strong> job candidates whose CVs are uploaded by
+            <p><strong className="text-[var(--ink)]">Data subjects:</strong> job candidates whose CVs are uploaded by
               Customer, and Customer’s own personnel (users of the platform).</p>
-            <p><strong style={{ color: "var(--ink)" }}>Categories of data:</strong> name, contact details, employment
+            <p><strong className="text-[var(--ink)]">Categories of data:</strong> name, contact details, employment
               and education history, skills, and any other information a candidate has chosen to include on their
               CV. Helixon does not knowingly process special category data and asks Customer not to upload CVs
               containing it beyond what a candidate has voluntarily disclosed within their own document. Where a
               CV contains it, it is processed only because it is in the document: the AI is instructed never to
               base any score or judgement on a protected characteristic, and Customer can screen blind.</p>
-            <p><strong style={{ color: "var(--ink)" }}>Customer personnel:</strong> account details, activity history
+            <p><strong className="text-[var(--ink)]">Customer personnel:</strong> account details, activity history
               within the workspace, and - only while Customer has team presence switched on - when each person has
               Helixon open and last used it, plus any status they set. Individuals can hide their presence and
               Customer can switch the feature off, which deletes what was recorded.</p>
@@ -253,7 +251,7 @@ export default function DpaPage() {
               produces a machine-readable file of everything held about them across every job they were screened
               for (access and portability); <em>Delete candidate</em> can erase every one of those records, their
               files included (erasure); and their details can be edited (rectification).</p>
-            <p><strong style={{ color: "var(--ink)" }}>Automated processing.</strong> Helixon’s match scores and
+            <p><strong className="text-[var(--ink)]">Automated processing.</strong> Helixon’s match scores and
               summaries are decision support. Helixon does not make decisions producing legal or similarly
               significant effects on candidates; Customer agrees that a person will review an assessment before any
               such decision, and will meet any request from a candidate for human review or an explanation.</p>
@@ -291,7 +289,7 @@ export default function DpaPage() {
           </Section>
 
           <Section id="annex-a" title="Annex A - Processing details">
-            <div className="rounded-btn overflow-hidden border" style={{ borderColor: "var(--border)" }}>
+            <div className="rounded-btn overflow-hidden border border-[var(--border)]">
               {[
                 ["Subject matter", "Provision of the Helixon CV screening service"],
                 ["Duration", "Term of the underlying agreement"],
@@ -300,22 +298,22 @@ export default function DpaPage() {
                 ["Data subjects", "Job candidates; Customer personnel"],
                 ["Categories of data", "CV contents, contact details, employment history"],
               ].map(([k, v], i) => (
-                <div key={k} className="grid grid-cols-[130px_1fr] text-12" style={{ background: i % 2 === 0 ? "var(--mist)" : "white" }}>
-                  <div className="px-4 py-3 font-semibold" style={{ color: "var(--ink)" }}>{k}</div>
-                  <div className="px-4 py-3 border-l" style={{ color: "var(--ink-soft)", borderColor: "var(--border)" }}>{v}</div>
+                <div key={k} className={`grid grid-cols-[130px_1fr] text-12 ${i % 2 === 0 ? "bg-[var(--mist)]" : "bg-white"}`}>
+                  <div className="px-4 py-3 font-semibold text-[var(--ink)]">{k}</div>
+                  <div className="px-4 py-3 border-l text-[var(--ink-soft)] border-[var(--border)]">{v}</div>
                 </div>
               ))}
             </div>
           </Section>
 
           <Section id="annex-b" title="Annex B - Sub-processors">
-            <div className="rounded-btn overflow-hidden border" style={{ borderColor: "var(--border)" }}>
-              <div className="grid grid-cols-[1fr_1fr_120px] text-11 font-semibold uppercase tracking-wide px-4 py-2.5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+            <div className="rounded-btn overflow-hidden border border-[var(--border)]">
+              <div className="grid grid-cols-[1fr_1fr_120px] text-11 font-semibold uppercase tracking-wide px-4 py-2.5 bg-[var(--mint)] text-[var(--forest)]">
                 <span>Sub-processor</span><span>Purpose</span><span>Location</span>
               </div>
               {SUBPROCESSORS.map((sp, i) => (
-                <div key={sp.name} className="grid grid-cols-[1fr_1fr_120px] text-12 px-4 py-3" style={{ background: i % 2 === 0 ? "white" : "var(--mist)", color: "var(--ink-soft)" }}>
-                  <span style={{ color: "var(--ink)", fontWeight: 500 }}>{sp.name}</span>
+                <div key={sp.name} className={`grid grid-cols-[1fr_1fr_120px] text-12 px-4 py-3 text-[var(--ink-soft)] ${i % 2 === 0 ? "bg-white" : "bg-[var(--mist)]"}`}>
+                  <span className="text-[var(--ink)] font-medium">{sp.name}</span>
                   <span>{sp.purpose}</span>
                   <span>{sp.location}</span>
                 </div>
@@ -339,8 +337,8 @@ export default function DpaPage() {
             </ul>
           </Section>
 
-          <div className="pt-4 mt-2 border-t text-12" style={{ borderColor: "var(--border)", color: "var(--ink-faint)" }}>
-            Questions about this DPA? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>hello@helixon.co.uk</a>.
+          <div className="pt-4 mt-2 border-t text-12 border-[var(--border)] text-[var(--ink-faint)]">
+            Questions about this DPA? Contact <a href="mailto:hello@helixon.co.uk" className="font-semibold text-[var(--forest)]">hello@helixon.co.uk</a>.
           </div>
         </article>
       </div>

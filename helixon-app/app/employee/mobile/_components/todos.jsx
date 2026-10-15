@@ -107,14 +107,12 @@ export function TodosTab() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="What needs doing?"
-          className="flex-1 text-14 rounded-btn px-3 py-2.5"
-          style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+          className="flex-1 text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
         />
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="w-11 h-11 flex items-center justify-center rounded-btn shrink-0"
-          style={{ background: "var(--forest)", color: "white" }}
+          className="w-11 h-11 flex items-center justify-center rounded-btn shrink-0 bg-[var(--forest)] text-white"
           aria-label="Add task"
         >
           <Icon path={ICONS.plus} size={18} />
@@ -125,11 +123,11 @@ export function TodosTab() {
 
       <SectionTitle>Open ({open.length})</SectionTitle>
       {loading ? (
-        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6 text-[var(--ink-faint)]">
           Loading…
         </p>
       ) : open.length === 0 ? (
-        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6 text-[var(--ink-faint)]">
           Nothing open. Nice.
         </p>
       ) : (
@@ -157,8 +155,7 @@ export function TodosTab() {
 export function TodoRow({ todo, onToggle, onDelete }) {
   return (
     <div
-      className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
-      style={{ background: "white", border: "1px solid var(--border)" }}
+      className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]"
     >
       <button
         type="button"
@@ -188,7 +185,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
           {todo.title}
         </div>
         {todo.due_date && (
-          <div className="text-12" style={{ color: "var(--ink-faint)" }}>
+          <div className="text-12 text-[var(--ink-faint)]">
             Due {new Date(todo.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </div>
         )}
@@ -197,8 +194,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
         type="button"
         onClick={() => onDelete(todo)}
         aria-label="Delete task"
-        className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0"
-        style={{ color: "var(--ink-faint)" }}
+        className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0 text-[var(--ink-faint)]"
       >
         <Icon path={ICONS.trash} size={15} />
       </button>

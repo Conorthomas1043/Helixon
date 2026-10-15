@@ -8,9 +8,9 @@
 import { useCallback, useEffect, useState } from "react";
 
 const STATUS_META = {
-  online: { label: "Online", dot: "#0b6e4f" },
-  busy: { label: "Busy", dot: "#d99a3a" },
-  offline: { label: "Offline", dot: "#b0c4ba" }, // dot only, never text
+  online: { label: "Online", dot: "var(--forest)" },
+  busy: { label: "Busy", dot: "var(--gold)" },
+  offline: { label: "Offline", dot: "var(--ink-mute)" }, // dot only, never text
 };
 
 const POLL_MS = 30_000;
@@ -76,11 +76,11 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
   const onlineCount = team.filter((t) => t.status !== "offline").length;
 
   return (
-    <section className="rounded-2xl bg-white" style={{ border: "1px solid var(--border)" }} aria-labelledby="team-presence-title">
+    <section className="rounded-2xl bg-white border border-[var(--border)]" aria-labelledby="team-presence-title">
       <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
         <div>
-          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>Team</p>
-          <h2 id="team-presence-title" className="text-15 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ink-faint)]">Team</p>
+          <h2 id="team-presence-title" className="text-15 font-semibold text-[var(--ink)] font-display">
             {loading && team.length === 0 ? "Who's around" : `${onlineCount} of ${team.length} online`}
           </h2>
         </div>
@@ -93,7 +93,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
             className="text-xs font-semibold px-3 py-1.5 rounded-full transition disabled:opacity-50"
             style={
               isBusy
-                ? { background: "#fdf5e9", color: "#8a5a12", border: "1px solid #f2e3c2" }
+                ? { background: "var(--ui-warn-soft)", color: "var(--ui-warn)", border: "1px solid var(--ui-warn-soft)" }
                 : { border: "1px solid var(--border)", color: "var(--ink-soft)" }
             }
           >
@@ -107,7 +107,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
           {[0, 1].map((i) => <div key={i} className="shimmer-block h-9 rounded-btn" />)}
         </div>
       ) : sorted.length === 0 ? (
-        <p className="px-5 pb-5 text-sm" style={{ color: "var(--ink-faint)" }}>No active employees yet.</p>
+        <p className="px-5 pb-5 text-sm text-[var(--ink-faint)]">No active employees yet.</p>
       ) : (
         <ul className="pb-3">
           {sorted.map((person) => {
@@ -127,11 +127,11 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
                   <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white" style={{ background: meta.dot }} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium truncate" style={{ color: person.status === "offline" ? "var(--ink-soft)" : "var(--ink)" }}>
+                  <span className={`block text-sm font-medium truncate ${person.status === "offline" ? "text-[var(--ink-soft)]" : "text-[var(--ink)]"}`}>
                     {person.name}
-                    {person.id === currentEmployeeId && <span style={{ color: "var(--ink-faint)" }}> (you)</span>}
+                    {person.id === currentEmployeeId && <span className="text-[var(--ink-faint)]"> (you)</span>}
                   </span>
-                  <span className="block text-xs" style={{ color: "var(--ink-faint)" }}>
+                  <span className="block text-xs text-[var(--ink-faint)]">
                     {meta.label}
                     {duration ? ` · on for ${duration}` : ""}
                   </span>

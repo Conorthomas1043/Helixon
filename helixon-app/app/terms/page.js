@@ -46,31 +46,31 @@ const SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="terms" />
       <main id="main-content">
 
       <section className="max-w-[900px] mx-auto px-6 pt-16 pb-14">
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 text-[var(--ink)] font-display">
           Terms of Service
         </h1>
-        <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm leading-relaxed max-w-xl text-[var(--ink-soft)]">
           The rules for using Helixon, written to be read in one sitting.
         </p>
-        <p className="text-11 mt-4" style={{ color: "var(--ink-faint)" }}>Last updated: August 2026</p>
+        <p className="text-11 mt-4 text-[var(--ink-faint)]">Last updated: August 2026</p>
       </section>
 
       <section className="max-w-[900px] mx-auto px-6 pb-24">
-        <div className="rounded-2xl p-8" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-8 bg-white border border-[var(--border)]">
           <div className="space-y-10">
             {SECTIONS.map((s) => (
               <div key={s.id} id={s.id}>
-                <h2 className="text-base font-semibold tracking-tight mb-2.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                <h2 className="text-base font-semibold tracking-tight mb-2.5 text-[var(--ink)] font-display">
                   {s.title}
                 </h2>
                 {s.body.map((p, i) => (
-                  <p key={i} className="text-xs leading-relaxed mb-2.5" style={{ color: "var(--ink-soft)" }}>{p}</p>
+                  <p key={i} className="text-xs leading-relaxed mb-2.5 text-[var(--ink-soft)]">{p}</p>
                 ))}
               </div>
             ))}

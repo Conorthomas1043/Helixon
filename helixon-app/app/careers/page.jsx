@@ -32,21 +32,21 @@ const ROLES = [
 
 export default function CareersPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="careers" />
       <main id="main-content">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-16 text-center">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)]">
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
           We&apos;re hiring - {ROLES.length} open roles
         </span>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto text-[var(--ink)] font-display">
           Help agencies hire better.
         </h1>
-        <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm leading-relaxed max-w-md mx-auto text-[var(--ink-soft)]">
           We&apos;re a small remote-first team building screening tools recruiters actually want to use. Come build it with us.
         </p>
       </section>
@@ -56,12 +56,12 @@ export default function CareersPage() {
         <h2 className="sr-only">How we work</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {VALUES.map((v) => (
-            <div key={v.title} className="rounded-card p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <div className="w-9 h-9 rounded-btn flex items-center justify-center mb-4" style={{ background: "var(--mint)" }}>
+            <div key={v.title} className="rounded-card p-6 bg-white border border-[var(--border)]">
+              <div className="w-9 h-9 rounded-btn flex items-center justify-center mb-4 bg-[var(--mint)]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{v.icon}</svg>
               </div>
-              <h3 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{v.title}</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{v.body}</p>
+              <h3 className="text-sm font-semibold mb-1.5 text-[var(--ink)]">{v.title}</h3>
+              <p className="text-xs leading-relaxed text-[var(--ink-soft)]">{v.body}</p>
             </div>
           ))}
         </div>
@@ -69,8 +69,8 @@ export default function CareersPage() {
 
       {/* ── Benefits ─────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
-        <div className="rounded-2xl p-8" style={{ background: "var(--forest)" }}>
-          <h2 className="text-lg font-semibold mb-5 text-white" style={{ fontFamily: "var(--font-display)" }}>What you get</h2>
+        <div className="rounded-2xl p-8 bg-[var(--forest)]">
+          <h2 className="text-lg font-semibold mb-5 text-white font-display">What you get</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
             {BENEFITS.map((b) => (
               <div key={b} className="flex items-center gap-2.5 text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>
@@ -87,8 +87,8 @@ export default function CareersPage() {
       {/* ── Open roles ───────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-24">
         <div className="text-center mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">Open roles</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
             Come build with us
           </h2>
         </div>
@@ -104,9 +104,9 @@ export default function CareersPage() {
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{role.title}</h3>
+                <h3 className="text-sm font-semibold mb-1 text-[var(--ink)]">{role.title}</h3>
                 <p className="text-xs leading-relaxed mb-1.5 text-[var(--ink-soft)]">{role.summary}</p>
-                <div className="flex items-center gap-2 flex-wrap text-xs" style={{ color: "var(--ink-faint)" }}>
+                <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--ink-faint)]">
                   <span>{role.team}</span>
                   <span>·</span>
                   <span>{role.location}</span>
@@ -124,7 +124,7 @@ export default function CareersPage() {
           ))}
         </div>
 
-        <p className="text-xs text-center mt-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-xs text-center mt-6 text-[var(--ink-faint)]">
           Don&apos;t see the right role? <Link href="/contact" style={{ color: "var(--forest)", fontWeight: 600 }}>Get in touch anyway</Link> - we&apos;re always open to meeting good people.
         </p>
       </section>

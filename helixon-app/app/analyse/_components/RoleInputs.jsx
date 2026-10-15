@@ -45,7 +45,7 @@ export function MethodPicker({ value, onChange, methods, counts = {} }) {
             className={cx(
               "group text-left rounded-xl border px-3 py-2.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]",
               active
-                ? "border-[var(--forest)] bg-[#f4faf7] shadow-[0_0_0_3px_rgba(11,110,79,0.10)]"
+                ? "border-[var(--forest)] bg-[var(--mint)] shadow-[0_0_0_3px_rgba(11,110,79,0.10)]"
                 : "border-[var(--border)] bg-white hover:border-[var(--ink-mute)] hover:bg-[var(--mist)]"
             )}
           >
@@ -113,7 +113,7 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
       {label && <Label htmlFor={id} hint={hint}>{label}</Label>}
       <div className="flex flex-wrap items-center gap-1.5 min-h-10 px-1.5 py-1.5 rounded-btn border border-[var(--border)] focus-within:border-[var(--forest)] focus-within:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] bg-white">
         {values.map((v) => (
-          <span key={v} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-[var(--mint)] border border-[#cfe6da] text-14 text-[var(--forest-deep)]">
+          <span key={v} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-[var(--mint)] border border-[var(--mint-line)] text-14 text-[var(--forest-deep)]">
             {v}
             <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} aria-label={`Remove ${v}`} className="p-0.5 rounded-full hover:bg-white/70">
               <Icon name="x" size={11} />
@@ -145,7 +145,7 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
               key={s}
               type="button"
               onClick={() => add(s)}
-              className="inline-flex items-center gap-1 h-6 px-2 rounded-full border border-dashed border-[var(--ink-mute)] text-13 text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] hover:bg-[#f4faf7] transition-colors"
+              className="inline-flex items-center gap-1 h-6 px-2 rounded-full border border-dashed border-[var(--ink-mute)] text-13 text-[var(--ink-soft)] hover:border-[var(--forest)] hover:text-[var(--forest)] hover:bg-[var(--mint)] transition-colors"
             >
               <Icon name="plus" size={11} />
               {s}
@@ -182,7 +182,7 @@ export function SpecChecklist({ text }) {
             title={i.done ? undefined : i.tip}
             className={cx(
               "inline-flex items-center gap-1 h-6 px-2 rounded-full text-13 border",
-              i.done ? "bg-[var(--mint)] border-[#cfe6da] text-[var(--forest-deep)]" : "bg-white border-dashed border-[var(--ink-mute)] text-[var(--ink-faint)]"
+              i.done ? "bg-[var(--mint)] border-[var(--mint-line)] text-[var(--forest-deep)]" : "bg-white border-dashed border-[var(--ink-mute)] text-[var(--ink-faint)]"
             )}
           >
             <Icon name={i.done ? "check" : "circle"} size={11} strokeWidth={i.done ? 2.6 : 1.7} />
@@ -362,7 +362,7 @@ export function RoleBuilder({ draft, onChange, onEditAsText }) {
           </span>
         </div>
         {showPreview && (
-          <pre className="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-lg bg-white border border-[var(--border)] px-3 py-2.5 text-13 leading-relaxed text-[var(--ink-soft)]" style={{ fontFamily: "var(--font-mono)" }}>
+          <pre className="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-lg bg-white border border-[var(--border)] px-3 py-2.5 text-13 leading-relaxed text-[var(--ink-soft)] font-mono">
             {text || "Nothing yet - start with the kind of work and a job title."}
           </pre>
         )}
@@ -425,7 +425,7 @@ export function TemplateGallery({ onPick }) {
                 key={t.id}
                 type="button"
                 onClick={() => onPick(t.text)}
-                className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white hover:border-[var(--forest)] hover:bg-[#f4faf7] transition-colors"
+                className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white hover:border-[var(--forest)] hover:bg-[var(--mint)] transition-colors"
               >
                 <span className="w-9 h-9 rounded-btn bg-[var(--mist)] text-[var(--ink-soft)] flex items-center justify-center shrink-0">
                   <Icon name={type?.icon || "briefcase"} size={17} />

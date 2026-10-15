@@ -83,35 +83,35 @@ export function PulseSurvey({ analysesCount }) {
 
   if (state === "sent") {
     return (
-      <section role="status" className="rounded-card p-5 text-14" style={{ background: "var(--mint)", color: "var(--ink)" }}>
+      <section role="status" className="rounded-card p-5 text-14 bg-[var(--mint)] text-[var(--ink)]">
         <strong>Thank you.</strong> We read every answer, and this helps decide what we work on next.
       </section>
     );
   }
 
   return (
-    <section className="rounded-card p-5 sm:p-6 bg-white" style={{ border: "1px solid var(--border)" }} aria-labelledby="pulse-title">
+    <section className="rounded-card p-5 sm:p-6 bg-white border border-[var(--border)]" aria-labelledby="pulse-title">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="pulse-title" className="text-16 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 id="pulse-title" className="text-16 font-semibold text-[var(--ink)] font-display">
             Two quick questions about Helixon
           </h2>
-          <p className="text-14 mt-1" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-14 mt-1 text-[var(--ink-soft)]">
             About 20 seconds. We ask at most every few months.
           </p>
         </div>
-        <button type="button" onClick={snooze} className="text-14 underline shrink-0 min-h-[32px]" style={{ color: "var(--ink-soft)" }}>
+        <button type="button" onClick={snooze} className="text-14 underline shrink-0 min-h-[32px] text-[var(--ink-soft)]">
           Not now
         </button>
       </div>
       <form onSubmit={submit} className="mt-4 space-y-4">
         {UMUX_ITEMS.map((item) => (
           <fieldset key={item.key}>
-            <legend className="text-14 font-medium mb-2" style={{ color: "var(--ink)" }}>
+            <legend className="text-14 font-medium mb-2 text-[var(--ink)]">
               {item.text}
             </legend>
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-13 w-full sm:w-auto sm:mr-1" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-13 w-full sm:w-auto sm:mr-1 text-[var(--ink-faint)]">
                 Strongly disagree
               </span>
               {SCALE.map((n) => (
@@ -132,20 +132,20 @@ export function PulseSurvey({ analysesCount }) {
                   </span>
                 </label>
               ))}
-              <span className="text-13 sm:ml-1" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-13 sm:ml-1 text-[var(--ink-faint)]">
                 Strongly agree
               </span>
             </div>
           </fieldset>
         ))}
         <label className="block">
-          <span className="block text-14 font-medium mb-1" style={{ color: "var(--ink)" }}>
+          <span className="block text-14 font-medium mb-1 text-[var(--ink)]">
             What&apos;s the one thing we should improve? (optional)
           </span>
-          <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} maxLength={2000} className="w-full text-14 px-3 py-2 rounded-btn" style={{ border: "1px solid var(--border)", color: "var(--ink)" }} />
+          <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} maxLength={2000} className="w-full text-14 px-3 py-2 rounded-btn border border-[var(--border)] text-[var(--ink)]" />
         </label>
         {error && (
-          <p role="alert" className="text-14" style={{ color: "var(--score-low)" }}>
+          <p role="alert" className="text-14 text-[var(--score-low)]">
             {error}
           </p>
         )}
@@ -197,15 +197,15 @@ export function ResearchOptIn() {
   }
 
   return (
-    <section className="rounded-card p-5 bg-white" style={{ border: "1px solid var(--border)" }}>
-      <h2 className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
+    <section className="rounded-card p-5 bg-white border border-[var(--border)]">
+      <h2 className="text-sm font-semibold text-[var(--ink)]">
         Help shape Helixon
       </h2>
-      <p className="text-14 mt-1 max-w-xl" style={{ color: "var(--ink-soft)" }}>
+      <p className="text-14 mt-1 max-w-xl text-[var(--ink-soft)]">
         Now and then we ask a few recruiters to try an idea or talk us through how they work, for about 30 minutes. Turn this on and we may email you an
         invitation. You can say no to any of them, and turn this off whenever you like.
       </p>
-      <label className="mt-3 inline-flex items-center gap-2.5 text-14 cursor-pointer min-h-[36px]" style={{ color: "var(--ink)" }}>
+      <label className="mt-3 inline-flex items-center gap-2.5 text-14 cursor-pointer min-h-[36px] text-[var(--ink)]">
         <input type="checkbox" checked={optedIn} onChange={toggle} disabled={busy} className="w-4 h-4 accent-[var(--forest)]" />
         I&apos;m happy to be invited to research sessions
       </label>

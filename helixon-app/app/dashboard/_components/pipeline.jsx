@@ -144,7 +144,7 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
             )}
             {rejected > 0 && (
               <Link href="/dashboard/pipeline?stage=Rejected" style={{ color: TEXT_SUB, textDecoration: "none" }}>
-                <b style={{ color: "var(--score-low)", fontVariantNumeric: "tabular-nums" }}>{formatNumber(rejected)}</b> rejected
+                <b className="text-[var(--score-low)] tabular-nums">{formatNumber(rejected)}</b> rejected
               </Link>
             )}
           </div>
@@ -168,7 +168,7 @@ export function TopCandidates({ candidates, total, strongCount = 0 }) {
           <EmptyState title="No strong matches yet" body={`Candidates scoring ${STRONG_MATCH_MIN} or above will appear here.`} />
         )
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul className="list-none m-0 p-0">
           {candidates.map((c, i) => (
             <li
               key={c.id}
@@ -186,7 +186,7 @@ export function TopCandidates({ candidates, total, strongCount = 0 }) {
                 }}>
                   {c.candidateName[0]}
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="min-w-[0px] flex-1">
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.candidateName}</p>
                   <p style={{ fontSize: 13, color: TEXT_SUB, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {c.jobTitle}{c.company ? ` · ${c.company}` : ""}
@@ -276,7 +276,7 @@ export function ActivityOverview({ analyses }) {
           </div>
         }
       />
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+      <div className="flex items-baseline gap-2 mb-1">
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 600, color: TEXT, fontVariantNumeric: "tabular-nums" }}>
           <CountUp value={stats.currentCount} format={formatNumber} />
         </span>

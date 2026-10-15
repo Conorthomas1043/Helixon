@@ -43,17 +43,17 @@ const SECTIONS = [
 
 export default function ComplaintsPolicyPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="complaints" />
       <main id="main-content">
 
       <section className="max-w-[720px] mx-auto px-6 pt-16 pb-10">
-        <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Policy</p>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <p className="text-11 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">Policy</p>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mb-4 text-[var(--ink)] font-display">
           Complaints policy
         </h1>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm leading-relaxed text-[var(--ink-soft)]">
           Last updated August 2026. This policy explains how to raise a complaint about Helixon and what you can expect from us in response.
         </p>
       </section>
@@ -67,24 +67,24 @@ export default function ComplaintsPolicyPage() {
               style={{ borderBottom: i < SECTIONS.length - 1 ? "1px solid var(--border)" : "none" }}
             >
               <div className="flex items-start gap-4">
-                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 bg-[var(--mint)] text-[var(--forest)]">
                   {s.n}
                 </span>
                 <div>
-                  <h2 className="text-sm font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.title}</h2>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.body}</p>
+                  <h2 className="text-sm font-semibold mb-1.5 text-[var(--ink)]">{s.title}</h2>
+                  <p className="text-xs leading-relaxed text-[var(--ink-soft)]">{s.body}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="rounded-card p-5 mt-5 flex items-start gap-3.5" style={{ background: "var(--mint)" }}>
+        <div className="rounded-card p-5 mt-5 flex items-start gap-3.5 bg-[var(--mint)]">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.8" strokeLinecap="round" className="mt-0.5 shrink-0">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
           </svg>
-          <p className="text-xs leading-relaxed" style={{ color: "var(--ink)" }}>
-            Ready to raise something? Email <a href="mailto:support@helixon.co.uk" className="font-semibold" style={{ color: "var(--forest)" }}>support@helixon.co.uk</a> or use our <a href="/contact" className="font-semibold" style={{ color: "var(--forest)" }}>Contact page</a>.
+          <p className="text-xs leading-relaxed text-[var(--ink)]">
+            Ready to raise something? Email <a href="mailto:support@helixon.co.uk" className="font-semibold text-[var(--forest)]">support@helixon.co.uk</a> or use our <a href="/contact" className="font-semibold text-[var(--forest)]">Contact page</a>.
           </p>
         </div>
       </section>

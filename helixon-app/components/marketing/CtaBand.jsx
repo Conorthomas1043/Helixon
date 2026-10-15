@@ -14,8 +14,8 @@ export default function CtaBand({
 }) {
   return (
     <section className="max-w-[1100px] mx-auto px-6 pb-24">
-      <div className="rounded-panel px-8 py-14 text-center" style={{ background: "var(--forest)" }}>
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white" style={{ fontFamily: "var(--font-display)" }}>
+      <div className="rounded-panel px-8 py-14 text-center bg-[var(--forest)]">
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white font-display">
           {heading}
         </h2>
         {body && (

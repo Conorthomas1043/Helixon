@@ -141,7 +141,7 @@ export default function InterviewsPage() {
             </Card>
           )}
           {groups.byDay.length === 0 && (
-            <p className="text-14" style={{ color: INK }}>Nothing coming up.</p>
+            <p className="text-14 text-[var(--ink)]">Nothing coming up.</p>
           )}
         </>
       )}

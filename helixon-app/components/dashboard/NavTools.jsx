@@ -105,8 +105,8 @@ export function KeyboardShortcuts() {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && setHelp(false)}>
       <div role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" className="w-full max-w-[420px] rounded-2xl bg-white shadow-xl p-6">
-        <h2 className="text-base font-semibold mb-4" style={{ color: "var(--ink)" }}>Keyboard shortcuts</h2>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14" style={{ color: "var(--ink-soft)" }}>
+        <h2 className="text-base font-semibold mb-4 text-[var(--ink)]">Keyboard shortcuts</h2>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14 text-[var(--ink-soft)]">
           <dt><kbd>Ctrl/⌘ K</kbd> or <kbd>/</kbd></dt>
           <dd>Search</dd>
           {Object.entries(GO_LABELS).map(([k, label]) => (
@@ -118,7 +118,7 @@ export function KeyboardShortcuts() {
           <dt><kbd>?</kbd></dt>
           <dd>This list</dd>
         </dl>
-        <button type="button" className="mt-5 text-13 font-semibold" style={{ color: "var(--forest)" }} onClick={() => setHelp(false)}>Close</button>
+        <button type="button" className="mt-5 text-13 font-semibold text-[var(--forest)]" onClick={() => setHelp(false)}>Close</button>
       </div>
     </div>
   );
@@ -206,15 +206,14 @@ export function SearchPalette() {
         onClick={() => setOpen(true)}
         aria-label="Search (Ctrl+K)"
         title="Search candidates, jobs and clients (Ctrl+K)"
-        className="flex items-center gap-2 h-8 px-2.5 rounded-full text-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
-        style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+        className="flex items-center gap-2 h-8 px-2.5 rounded-full text-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink-soft)]"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
         <span className="hidden lg:inline">Search</span>
-        <kbd className="hidden lg:inline text-12 px-1 rounded" style={{ background: "var(--mist)" }}>⌘K</kbd>
+        <kbd className="hidden lg:inline text-12 px-1 rounded bg-[var(--mist)]">⌘K</kbd>
       </button>
       {open && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && close()}>
@@ -239,12 +238,11 @@ export function SearchPalette() {
               aria-expanded={shown.length > 0}
               aria-controls="search-results"
               aria-activedescendant={shown[active] ? `search-${shown[active].kind}-${shown[active].id}` : undefined}
-              className="w-full px-5 py-4 text-15 outline-none focus-visible:shadow-[inset_0_-2px_0_var(--forest)]"
-              style={{ borderBottom: "1px solid var(--border)", color: "var(--ink)" }}
+              className="w-full px-5 py-4 text-15 outline-none focus-visible:shadow-[inset_0_-2px_0_var(--forest)] border-b border-b-[var(--border)] text-[var(--ink)]"
             />
             <ul id="search-results" role="listbox" className="max-h-[50vh] overflow-y-auto py-1">
-              {q.trim().length < 2 && shown.length === 0 && <li className="px-5 py-4 text-14" style={{ color: "var(--ink-faint)" }}>Type at least two letters. ↑↓ to move, Enter to open. Press ? for shortcuts.</li>}
-              {q.trim().length >= 2 && !loading && shown.length === 0 && <li className="px-5 py-4 text-14" style={{ color: "var(--ink-faint)" }}>Nothing found for “{q.trim()}”.</li>}
+              {q.trim().length < 2 && shown.length === 0 && <li className="px-5 py-4 text-14 text-[var(--ink-faint)]">Type at least two letters. ↑↓ to move, Enter to open. Press ? for shortcuts.</li>}
+              {q.trim().length >= 2 && !loading && shown.length === 0 && <li className="px-5 py-4 text-14 text-[var(--ink-faint)]">Nothing found for “{q.trim()}”.</li>}
               {shown.map((r, i) => (
                 <li
                   key={`${r.kind}-${r.id}`}
@@ -256,13 +254,12 @@ export function SearchPalette() {
                     e.preventDefault();
                     go(r);
                   }}
-                  className="flex items-center gap-3 px-5 py-2.5 cursor-pointer"
-                  style={{ background: i === active ? "var(--mist)" : "transparent" }}
+                  className={`flex items-center gap-3 px-5 py-2.5 cursor-pointer ${i === active ? "bg-[var(--mist)]" : "bg-transparent"}`}
                 >
-                  <span className="text-12 font-semibold uppercase tracking-wide w-16 shrink-0" style={{ color: "var(--ink-faint)" }}>{KIND_LABEL[r.kind]}</span>
+                  <span className="text-12 font-semibold uppercase tracking-wide w-16 shrink-0 text-[var(--ink-faint)]">{KIND_LABEL[r.kind]}</span>
                   <span className="min-w-0">
-                    <span className="block text-14 font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
-                    {r.subtitle && <span className="block text-13 truncate" style={{ color: "var(--ink-soft)" }}>{r.subtitle}</span>}
+                    <span className="block text-14 font-semibold truncate text-[var(--ink)]">{r.title}</span>
+                    {r.subtitle && <span className="block text-13 truncate text-[var(--ink-soft)]">{r.subtitle}</span>}
                   </span>
                 </li>
               ))}
@@ -343,28 +340,26 @@ export function NotificationsBell() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={state.unread ? `Notifications, ${state.unread} unread` : "Notifications"}
-        className="relative w-8 h-8 rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
-        style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+        className="relative w-8 h-8 rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink-soft)]"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
         {state.unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-12 font-bold flex items-center justify-center text-white" style={{ background: "var(--score-low)" }}>
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-12 font-bold flex items-center justify-center text-white bg-[var(--score-low)]">
             {state.unread > 9 ? "9+" : state.unread}
           </span>
         )}
       </button>
       {open && (
         <div className="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl bg-white overflow-hidden" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
-          <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
-            <p className="text-13 font-semibold" style={{ color: "var(--ink)" }}>Notifications</p>
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-b-[var(--border)]">
+            <p className="text-13 font-semibold text-[var(--ink)]">Notifications</p>
             {state.unread > 0 && (
               <button
                 type="button"
-                className="text-12 font-semibold"
-                style={{ color: "var(--forest)" }}
+                className="text-12 font-semibold text-[var(--forest)]"
                 onClick={() => {
                   setState((s) => ({ ...s, unread: 0, list: s.list.map((x) => ({ ...x, read: true })) }));
                   markRead({ all: true });
@@ -375,16 +370,16 @@ export function NotificationsBell() {
             )}
           </div>
           <ul className="max-h-[360px] overflow-y-auto">
-            {state.list.length === 0 && <li className="px-4 py-6 text-13 text-center" style={{ color: "var(--ink-faint)" }}>Nothing yet. Signatures, bookings, applications and replies show up here.</li>}
+            {state.list.length === 0 && <li className="px-4 py-6 text-13 text-center text-[var(--ink-faint)]">Nothing yet. Signatures, bookings, applications and replies show up here.</li>}
             {state.list.map((n) => (
               <li key={n.id}>
                 <button type="button" onClick={() => openItem(n)} className="w-full text-left px-4 py-2.5 flex gap-2 hover:bg-[var(--mist)]">
-                  <span aria-hidden="true" className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: n.read ? "transparent" : "var(--forest)" }} />
+                  <span aria-hidden="true" className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${n.read ? "bg-transparent" : "bg-[var(--forest)]"}`} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-14" style={{ color: "var(--ink)", fontWeight: n.read ? 400 : 600 }}>{n.title}</span>
-                    {n.body && <span className="block text-13 truncate" style={{ color: "var(--ink-soft)" }}>{n.body}</span>}
+                    <span className={`block text-14 text-[var(--ink)] ${n.read ? "font-normal" : "font-semibold"}`}>{n.title}</span>
+                    {n.body && <span className="block text-13 truncate text-[var(--ink-soft)]">{n.body}</span>}
                   </span>
-                  <span className="text-12 shrink-0" style={{ color: "var(--ink-faint)" }}>{timeAgo(n.createdAt)}</span>
+                  <span className="text-12 shrink-0 text-[var(--ink-faint)]">{timeAgo(n.createdAt)}</span>
                 </button>
               </li>
             ))}

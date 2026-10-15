@@ -145,14 +145,14 @@ function SequenceDialog({ sequence, fields, onClose, onSaved }) {
           <TextInput required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Passive candidate nurture" />
         </Field>
         {steps.map((s, i) => (
-          <div key={i} className="rounded-xl p-3 space-y-2" style={{ border: "1px solid var(--border)" }}>
-            <div className="flex flex-wrap items-center gap-2 text-13" style={{ color: INK }}>
+          <div key={i} className="rounded-xl p-3 space-y-2 border border-[var(--border)]">
+            <div className="flex flex-wrap items-center gap-2 text-13 text-[var(--ink)]">
               <span className="font-semibold">Email {i + 1}</span>
-              <span style={{ color: INK_MUTED }}>sent</span>
+              <span className="text-[var(--ink-soft)]">sent</span>
               <TextInput type="number" min={0} max={90} value={s.delayDays} onChange={(e) => setStep(i, { delayDays: e.target.value })} className="!w-20" aria-label={`Days before email ${i + 1}`} />
-              <span style={{ color: INK_MUTED }}>{i === 0 ? "days after they're added" : "days after the previous email"}</span>
+              <span className="text-[var(--ink-soft)]">{i === 0 ? "days after they're added" : "days after the previous email"}</span>
               {steps.length > 1 && (
-                <button type="button" className="ml-auto text-12 font-semibold" style={{ color: INK_FAINT }} onClick={() => setSteps((list) => list.filter((_, j) => j !== i))}>
+                <button type="button" className="ml-auto text-12 font-semibold text-[var(--ink-faint)]" onClick={() => setSteps((list) => list.filter((_, j) => j !== i))}>
                   Remove
                 </button>
               )}
@@ -174,10 +174,10 @@ function SequenceDialog({ sequence, fields, onClose, onSaved }) {
           <Button onClick={() => setSteps((list) => [...list, { delayDays: 3, subject: "", body: "" }])}>+ Add a follow-up email</Button>
         )}
         <div>
-          <p className="text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>Insert into email {focused + 1}</p>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">Insert into email {focused + 1}</p>
           <FieldChips fields={fields} onInsert={insert} />
         </div>
-        <p className="text-13" style={{ color: INK_MUTED }}>
+        <p className="text-13 text-[var(--ink-soft)]">
           Sequences stop automatically when the candidate replies (if reply capture is on), is rejected or is placed.
         </p>
         <ErrorText>{error}</ErrorText>
@@ -257,18 +257,18 @@ export default function EmailSettingsPage() {
           <ErrorText>{error}</ErrorText>
           <Card title="Templates" eyebrow={`${data.templates.length} saved`} action={<Button variant="primary" size="sm" onClick={() => setTemplateDialog("new")}>New template</Button>}>
             {data.templates.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>No templates yet - save the emails you send most, like interview invites and rejections.</p>
+              <p className="text-14 text-[var(--ink-soft)]">No templates yet - save the emails you send most, like interview invites and rejections.</p>
             ) : (
               <ul className="divide-y">
                 {data.templates.map((t) => (
                   <li key={t.id} className="py-3 flex items-center gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-14 font-semibold truncate" style={{ color: INK }}>
+                      <p className="text-14 font-semibold truncate text-[var(--ink)]">
                         {t.name} {t.audience === "client" && <Pill>Client</Pill>}
                       </p>
-                      <p className="text-13 truncate" style={{ color: INK_MUTED }}>{t.subject}</p>
+                      <p className="text-13 truncate text-[var(--ink-soft)]">{t.subject}</p>
                     </div>
-                    <span className="text-12 tabular-nums" style={{ color: INK_FAINT }}>used {t.uses}×</span>
+                    <span className="text-12 tabular-nums text-[var(--ink-faint)]">used {t.uses}×</span>
                     <Button size="sm" onClick={() => setTemplateDialog(t)}>Edit</Button>
                     <Button size="sm" variant="ghost" onClick={async () => (await ask({ title: `Delete "${t.name}"?`, confirmLabel: "Delete template", danger: true })) && run(() => deleteEmailTemplate(t.id))}>Delete</Button>
                   </li>
@@ -279,16 +279,16 @@ export default function EmailSettingsPage() {
 
           <Card title="Sequences" eyebrow={`${sequences.length} saved`} action={<Button variant="primary" size="sm" onClick={() => setSequenceDialog("new")}>New sequence</Button>}>
             {sequences.length === 0 ? (
-              <p className="text-14" style={{ color: INK_MUTED }}>No sequences yet - e.g. a three-email nurture for passive candidates, sent a few days apart.</p>
+              <p className="text-14 text-[var(--ink-soft)]">No sequences yet - e.g. a three-email nurture for passive candidates, sent a few days apart.</p>
             ) : (
               <ul className="divide-y">
                 {sequences.map((s) => (
                   <li key={s.id} className="py-3 flex flex-wrap items-center gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-14 font-semibold truncate" style={{ color: INK }}>
+                      <p className="text-14 font-semibold truncate text-[var(--ink)]">
                         {s.name} {!s.active && <Pill>Paused</Pill>}
                       </p>
-                      <p className="text-13" style={{ color: INK_MUTED }}>
+                      <p className="text-13 text-[var(--ink-soft)]">
                         {s.steps.length} email{s.steps.length === 1 ? "" : "s"} over {s.steps.reduce((a, x) => a + Number(x.delayDays || 0), 0)} days · {s.stats.active} active · {s.stats.completed} finished · {s.stats.replied} replied
                       </p>
                     </div>

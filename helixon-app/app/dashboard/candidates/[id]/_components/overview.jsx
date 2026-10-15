@@ -14,7 +14,7 @@ export function MatchOverview({ candidate }) {
     <div className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="Match overview" title="Why they match" />
       {candidate.status !== "completed" ? (
-        <p className="text-sm" style={{ color: INK_MUTED }}>
+        <p className="text-sm text-[var(--ink-soft)]">
           {candidate.status === "processing"
             ? "Analysis is still running. Strengths and concerns will appear here once it completes."
             : "This analysis failed, so no match breakdown is available. Retry the analysis from the new-analysis flow."}
@@ -22,7 +22,7 @@ export function MatchOverview({ candidate }) {
       ) : (
         <>
           {candidate.matchSummary && (
-            <p className="text-sm mb-5" style={{ color: INK_MUTED }}>
+            <p className="text-sm mb-5 text-[var(--ink-soft)]">
               {candidate.matchSummary}
             </p>
           )}
@@ -30,12 +30,12 @@ export function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Strengths</FieldLabel>
               {candidate.strengths.length === 0 ? (
-                <p className="text-14" style={{ color: INK_FAINT }}>None recorded.</p>
+                <p className="text-14 text-[var(--ink-faint)]">None recorded.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.strengths.map((s) => (
-                    <li key={s} className="text-14 flex items-start gap-2" style={{ color: INK }}>
-                      <span style={{ color: "var(--forest)" }}>✓</span>
+                    <li key={s} className="text-14 flex items-start gap-2 text-[var(--ink)]">
+                      <span className="text-[var(--forest)]">✓</span>
                       {s}
                     </li>
                   ))}
@@ -45,11 +45,11 @@ export function MatchOverview({ candidate }) {
             <div>
               <FieldLabel>Potential concerns</FieldLabel>
               {candidate.concerns.length === 0 ? (
-                <p className="text-14" style={{ color: INK_FAINT }}>No concerns flagged.</p>
+                <p className="text-14 text-[var(--ink-faint)]">No concerns flagged.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {candidate.concerns.map((c) => (
-                    <li key={c} className="text-14 flex items-start gap-2" style={{ color: INK }}>
+                    <li key={c} className="text-14 flex items-start gap-2 text-[var(--ink)]">
                       <span style={{ color: AMBER }}>△</span>
                       {c}
                     </li>
@@ -78,7 +78,7 @@ export function ExperienceSection({ candidate }) {
           <FieldLabel>Skills</FieldLabel>
           <div className="flex flex-wrap gap-1.5">
             {candidate.skills.map((s) => (
-              <span key={s} className="text-12 px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+              <span key={s} className="text-12 px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
                 {s}
               </span>
             ))}
@@ -92,14 +92,14 @@ export function ExperienceSection({ candidate }) {
           <ul className="space-y-3">
             {candidate.workHistory.map((w, i) => (
               <li key={i}>
-                <p className="text-sm font-semibold" style={{ color: INK }}>
-                  {w.title} <span style={{ color: INK_MUTED, fontWeight: 500 }}>· {w.company}</span>
+                <p className="text-sm font-semibold text-[var(--ink)]">
+                  {w.title} <span className="text-[var(--ink-soft)] font-medium">· {w.company}</span>
                 </p>
-                <p className="text-12" style={{ color: INK_FAINT }}>
+                <p className="text-12 text-[var(--ink-faint)]">
                   {w.start}{w.end ? ` – ${w.end}` : ""}
                 </p>
                 {w.description && (
-                  <p className="text-14 mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-14 mt-1 text-[var(--ink-soft)]">
                     {w.description}
                   </p>
                 )}
@@ -114,10 +114,10 @@ export function ExperienceSection({ candidate }) {
           <FieldLabel>Education</FieldLabel>
           <ul className="space-y-1.5">
             {candidate.education.map((e, i) => (
-              <li key={i} className="text-14" style={{ color: INK }}>
+              <li key={i} className="text-14 text-[var(--ink)]">
                 {e.degree}
-                {e.school && <span style={{ color: INK_MUTED }}> · {e.school}</span>}
-                {e.years && <span style={{ color: INK_FAINT }}> ({e.years})</span>}
+                {e.school && <span className="text-[var(--ink-soft)]"> · {e.school}</span>}
+                {e.years && <span className="text-[var(--ink-faint)]"> ({e.years})</span>}
               </li>
             ))}
           </ul>
@@ -125,7 +125,7 @@ export function ExperienceSection({ candidate }) {
       )}
 
       {candidate.skills.length === 0 && candidate.workHistory.length === 0 && candidate.education.length === 0 && (
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           No background details on file yet.
         </p>
       )}
@@ -160,8 +160,7 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
             <button
               type="button"
               onClick={print}
-              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-              style={{ color: INK_MUTED }}
+              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded text-[var(--ink-soft)]"
               title="Print, or choose Save as PDF to send it"
             >
               Print / PDF
@@ -170,15 +169,14 @@ export function FullAnalysis({ analysis, candidateName, candidateId = null }) {
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-              style={{ color: "var(--forest)" }}
+              className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded text-[var(--forest)]"
             >
               {open ? "Hide report" : "Show full report"}
             </button>
           </span>
         }
       />
-      <p className="text-14" style={{ color: INK_MUTED }}>
+      <p className="text-14 text-[var(--ink-soft)]">
         Score breakdown, requirements met, skills, red flags, interview questions and salary estimate
         {role ? ` for ${role}` : ""}
         {analysis.analysedAt ? `, analysed ${formatDateOnly(analysis.analysedAt)}` : ""}.

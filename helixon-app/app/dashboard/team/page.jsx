@@ -181,20 +181,20 @@ export default function TeamPage() {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       {confirmDialog}
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
               Team workspace
             </p>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+            <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
               Team
             </h1>
             {status === "ready" && (
-              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-14 mt-1" style={{ color: INK_MUTED }}>
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-14 mt-1 text-[var(--ink-soft)]">
                 {presenceOn && (
                 <span className="inline-flex items-center gap-1.5">
                   <PresenceDot state="active" size={8} ring="transparent" />
@@ -232,7 +232,7 @@ export default function TeamPage() {
         )}
 
         {removeError && (
-          <p role="alert" className="text-13" style={{ color: "var(--score-low)" }}>{removeError}</p>
+          <p role="alert" className="text-13 text-[var(--score-low)]">{removeError}</p>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
@@ -262,7 +262,7 @@ export default function TeamPage() {
                     </button>
                   );
                 })}
-                <span className="ml-auto text-13" style={{ color: INK_FAINT }}>
+                <span className="ml-auto text-13 text-[var(--ink-faint)]">
                   Updates live
                 </span>
               </div>

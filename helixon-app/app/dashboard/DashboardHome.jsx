@@ -260,7 +260,7 @@ export default function DashboardHome({ initialStats = null }) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
                   <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                  <div className="flex flex-col gap-6">
                     {/* Plan usage is the agency's, whichever view is on. */}
                     <UsageSummary plan={plan} analyses={model.everyone} />
                     <TargetsCard scope={model.mineOnly ? "mine" : "team"} />

@@ -19,10 +19,10 @@ import { isOverdue } from "./follow-ups";
 const DAY = 86400000;
 
 const TONE = {
-  red: { bg: "#fef2f2", fg: "#b91c1c" },
-  amber: { bg: "#fff8e6", fg: "#92620f" },
-  green: { bg: "#eef7f1", fg: "var(--forest)" },
-  neutral: { bg: "var(--mist)", fg: "#4a6658" },
+  red: { bg: "var(--ui-danger-soft)", fg: "var(--score-low)" },
+  amber: { bg: "var(--ui-warn-soft)", fg: "var(--ui-warn)" },
+  green: { bg: "var(--mint)", fg: "var(--forest)" },
+  neutral: { bg: "var(--mist)", fg: "var(--ink-soft)" },
 };
 
 export function computeCandidateStats(candidates, now = Date.now()) {

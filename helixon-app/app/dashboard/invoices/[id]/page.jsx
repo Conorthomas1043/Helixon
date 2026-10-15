@@ -137,18 +137,18 @@ export default function InvoicePage({ params }) {
       />
       <ErrorText>{error}</ErrorText>
       {notice && (
-        <p role="status" className="text-13" style={{ color: "var(--forest)" }}>
+        <p role="status" className="text-13 text-[var(--forest)]">
           {notice}
         </p>
       )}
       {inAccounts && !notice && (
-        <p className="text-13" style={{ color: INK_MUTED }}>
+        <p className="text-13 text-[var(--ink-soft)]">
           In {accounting.label}
           {inv.external_synced_at ? ` · checked ${longDate(inv.external_synced_at)}` : ""}
         </p>
       )}
       {missingDetails && (
-        <p className="text-13" style={{ color: INK_MUTED }}>
+        <p className="text-13 text-[var(--ink-soft)]">
           Your address or bank details aren&apos;t on this invoice yet - add them in{" "}
           <a href="/dashboard/settings/invoicing" className="underline">
             Invoice settings
@@ -157,7 +157,7 @@ export default function InvoicePage({ params }) {
         </p>
       )}
 
-      <div ref={docRef} className="bg-white rounded-card p-8 sm:p-12" style={{ border: "1px solid var(--border)", color: INK }}>
+      <div ref={docRef} className="bg-white rounded-card p-8 sm:p-12 border border-[var(--border)] text-[var(--ink)]">
         <div className="flex flex-col sm:flex-row justify-between gap-6">
           <div className="text-14 leading-relaxed">
             <p className="text-lg font-semibold mb-1">{from.companyName}</p>
@@ -167,21 +167,21 @@ export default function InvoicePage({ params }) {
             {from.vatNumber && <div>VAT no. {from.vatNumber}</div>}
           </div>
           <div className="sm:text-right">
-            <p className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            <p className="text-3xl font-semibold tracking-tight font-display">
               {inv.status === "void" ? "VOID" : "Invoice"}
             </p>
             <dl className="text-14 mt-2 space-y-0.5">
               <div>
-                <dt className="inline" style={{ color: INK_MUTED }}>Number </dt>
+                <dt className="inline text-[var(--ink-soft)]">Number </dt>
                 <dd className="inline font-semibold">{inv.number}</dd>
               </div>
               <div>
-                <dt className="inline" style={{ color: INK_MUTED }}>Date </dt>
+                <dt className="inline text-[var(--ink-soft)]">Date </dt>
                 <dd className="inline">{longDate(inv.issued_on)}</dd>
               </div>
               {inv.due_on && (
                 <div>
-                  <dt className="inline" style={{ color: INK_MUTED }}>Due </dt>
+                  <dt className="inline text-[var(--ink-soft)]">Due </dt>
                   <dd className="inline">{longDate(inv.due_on)}</dd>
                 </div>
               )}
@@ -190,7 +190,7 @@ export default function InvoicePage({ params }) {
         </div>
 
         <div className="mt-8 text-14 leading-relaxed">
-          <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
             Bill to
           </p>
           <p className="font-semibold">{inv.bill_to?.name}</p>
@@ -201,7 +201,7 @@ export default function InvoicePage({ params }) {
 
         <table className="w-full text-14 mt-8">
           <thead>
-            <tr className="text-left text-12 uppercase tracking-widest" style={{ color: INK_FAINT, borderBottom: "1px solid var(--border)" }}>
+            <tr className="text-left text-12 uppercase tracking-widest text-[var(--ink-faint)] border-b border-b-[var(--border)]">
               <th scope="col" className="py-2 font-semibold">Description</th>
               <th scope="col" className="py-2 font-semibold text-right w-20">Qty</th>
               <th scope="col" className="py-2 font-semibold text-right w-28">Rate</th>
@@ -210,7 +210,7 @@ export default function InvoicePage({ params }) {
           </thead>
           <tbody>
             {(inv.lines || []).map((l, i) => (
-              <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
+              <tr key={i} className="border-b border-b-[var(--border)]">
                 <td className="py-2.5 pr-3">{l.description}</td>
                 <td className="py-2.5 text-right tabular-nums">{l.quantity}</td>
                 <td className="py-2.5 text-right tabular-nums">{money(l.unitPrice, inv.currency)}</td>
@@ -222,24 +222,24 @@ export default function InvoicePage({ params }) {
 
         <dl className="ml-auto mt-4 w-full max-w-[260px] text-14 space-y-1">
           <div className="flex justify-between">
-            <dt style={{ color: INK_MUTED }}>Subtotal</dt>
+            <dt className="text-[var(--ink-soft)]">Subtotal</dt>
             <dd className="tabular-nums">{money(inv.subtotal, inv.currency)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt style={{ color: INK_MUTED }}>VAT ({Number(inv.vat_rate)}%)</dt>
+            <dt className="text-[var(--ink-soft)]">VAT ({Number(inv.vat_rate)}%)</dt>
             <dd className="tabular-nums">{money(inv.vat_amount, inv.currency)}</dd>
           </div>
-          <div className="flex justify-between font-semibold text-base pt-1" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="flex justify-between font-semibold text-base pt-1 border-t border-t-[var(--border)]">
             <dt>Total</dt>
             <dd className="tabular-nums">{money(inv.total, inv.currency)}</dd>
           </div>
         </dl>
 
         {(from.bankDetails || inv.notes) && (
-          <div className="mt-10 text-13 leading-relaxed space-y-3" style={{ color: INK_MUTED }}>
+          <div className="mt-10 text-13 leading-relaxed space-y-3 text-[var(--ink-soft)]">
             {from.bankDetails && (
               <div>
-                <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+                <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
                   Payment details
                 </p>
                 <Lines text={from.bankDetails} />

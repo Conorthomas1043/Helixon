@@ -31,7 +31,7 @@ import {
 
 const STATUS_STYLE = {
   active: { label: "Active", color: "var(--forest)", background: "var(--mint)" },
-  prospect: { label: "Prospect", color: "#8a5a12", background: "#fdf6e9" },
+  prospect: { label: "Prospect", color: "var(--ui-warn)", background: "var(--ui-warn-soft)" },
   inactive: { label: "Inactive", color: INK_FAINT, background: "var(--mist)" },
 };
 
@@ -70,7 +70,7 @@ function NewClientDialog({ onClose, onCreated }) {
             <TextInput type="number" min={0} max={100} step="0.5" value={f.feePercent} onChange={set("feePercent")} />
           </Field>
           <Field label="Status">
-            <select value={f.status} onChange={set("status")} className="w-full text-14 px-3 py-2 rounded-lg bg-white" style={{ border: "1px solid var(--border)", color: INK }}>
+            <select value={f.status} onChange={set("status")} className="w-full text-14 px-3 py-2 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]">
               <option value="active">Active</option>
               <option value="prospect">Prospect</option>
               <option value="inactive">Inactive</option>
@@ -185,8 +185,7 @@ export default function ClientsPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients, industries or owners…"
               aria-label="Search clients"
-              className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72 border border-[var(--border)] text-[var(--ink)]"
             />
             {[
               ["current", "Current"],
@@ -210,8 +209,7 @@ export default function ClientsPage() {
               aria-label="Sort clients"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
             >
               <option value="name">Name A–Z</option>
               <option value="openJobs">Most open jobs</option>
@@ -228,7 +226,7 @@ export default function ClientsPage() {
             <div className="rounded-card overflow-x-auto" style={CARD}>
               <table className="w-full text-14">
                 <thead>
-                  <tr className="text-left text-12 uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-12 uppercase tracking-widest text-[var(--ink-faint)]">
                     <th scope="col" className="px-5 py-3 font-semibold">Client</th>
                     <th scope="col" className="px-3 py-3 font-semibold hidden md:table-cell">Owner</th>
                     <th scope="col" className="px-3 py-3 font-semibold text-right">Open jobs</th>
@@ -241,25 +239,25 @@ export default function ClientsPage() {
                   {visible.map((c) => {
                     const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.active;
                     return (
-                      <tr key={c.id} className="hover:bg-[var(--mist)] cursor-pointer" style={{ borderTop: "1px solid var(--border)" }} onClick={() => router.push(`/dashboard/clients/${c.id}`)}>
+                      <tr key={c.id} className="hover:bg-[var(--mist)] cursor-pointer border-t border-t-[var(--border)]" onClick={() => router.push(`/dashboard/clients/${c.id}`)}>
                         <td className="px-5 py-3">
                           <Link href={`/dashboard/clients/${c.id}`} className="font-semibold hover:underline" style={{ color: INK }} onClick={(e) => e.stopPropagation()}>
                             {c.name}
                           </Link>{" "}
                           {c.status !== "active" && <Pill color={st.color} background={st.background}>{st.label}</Pill>}
-                          {c.industry && <p className="text-13" style={{ color: INK_MUTED }}>{c.industry}</p>}
+                          {c.industry && <p className="text-13 text-[var(--ink-soft)]">{c.industry}</p>}
                           {c.nextAction && (
-                            <p className="text-13" style={{ color: c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "var(--score-low)" : INK_MUTED }}>
+                            <p className={`text-13 ${c.nextAction.dueAt && new Date(c.nextAction.dueAt) < new Date() ? "text-[var(--score-low)]" : "text-[var(--ink-soft)]"}`}>
                               Follow-up: {c.nextAction.label}
                               {c.nextAction.dueAt ? ` · ${new Date(c.nextAction.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""}
                             </p>
                           )}
                         </td>
-                        <td className="px-3 py-3 hidden md:table-cell" style={{ color: INK_MUTED }}>{c.ownerName ?? "-"}</td>
-                        <td className="px-3 py-3 text-right tabular-nums" style={{ color: INK }}>{c.openJobs}</td>
-                        <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell" style={{ color: INK_MUTED }}>{c.contacts}</td>
-                        <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell" style={{ color: INK_MUTED }}>{c.placements}</td>
-                        <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: INK }}>{c.fees == null ? "Hidden" : c.fees ? formatMoney(c.fees) : "-"}</td>
+                        <td className="px-3 py-3 hidden md:table-cell text-[var(--ink-soft)]">{c.ownerName ?? "-"}</td>
+                        <td className="px-3 py-3 text-right tabular-nums text-[var(--ink)]">{c.openJobs}</td>
+                        <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell text-[var(--ink-soft)]">{c.contacts}</td>
+                        <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell text-[var(--ink-soft)]">{c.placements}</td>
+                        <td className="px-5 py-3 text-right tabular-nums font-semibold text-[var(--ink)]">{c.fees == null ? "Hidden" : c.fees ? formatMoney(c.fees) : "-"}</td>
                       </tr>
                     );
                   })}

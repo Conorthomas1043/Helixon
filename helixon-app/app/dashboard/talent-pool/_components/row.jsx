@@ -22,7 +22,7 @@ export function Chip({ children, tone = "plain", title }) {
   const styles = {
     plain: "bg-[var(--mist)] text-[var(--ink-soft)]",
     match: "bg-[var(--mint)] text-[var(--forest-deep)]",
-    miss: "bg-[#fbefed] text-[#a83226]",
+    miss: "bg-[var(--ui-danger-soft)] text-[var(--score-low)]",
   };
   return (
     <span title={title} className={cx("inline-flex items-center gap-1 text-12 font-medium px-2 py-0.5 rounded-full", styles[tone])}>
@@ -90,7 +90,7 @@ export function RowStatus({ item, screened, screening }) {
       </span>
     );
   if (status === "queued") return <span className="text-13 text-[var(--ink-faint)]">Queued</span>;
-  if (status === "failed") return <span className="text-13 text-[#a83226] max-w-[200px] sm:text-right">{screening.error}</span>;
+  if (status === "failed") return <span className="text-13 text-[var(--score-low)] max-w-[200px] sm:text-right">{screening.error}</span>;
   if (screened)
     return (
       <Link href={`/dashboard/candidates/${screened.candidateId}`} className="inline-flex items-center gap-1 text-13 font-semibold text-[var(--forest)] hover:underline">
@@ -109,7 +109,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
   const canPick = job ? !screened && item.hasCv && !screening : true;
 
   return (
-    <li className={cx("px-4 sm:px-5 py-4 transition-colors", selected ? "bg-[#f4faf7]" : "bg-white hover:bg-[#fbfcfb]")}>
+    <li className={cx("px-4 sm:px-5 py-4 transition-colors", selected ? "bg-[var(--mint)]" : "bg-white hover:bg-[var(--mist)]")}>
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
@@ -226,7 +226,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
                     Match to {item.bestMatch.title}
                   </button>
                 )}
-                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-14 px-2.5 py-1.5 rounded-lg text-[#a83226] hover:bg-[#fbefed]">
+                <button type="button" onClick={() => onRemove(item)} className="w-full text-left text-14 px-2.5 py-1.5 rounded-lg text-[var(--score-low)] hover:bg-[var(--ui-danger-soft)]">
                   Remove from pool
                 </button>
               </div>

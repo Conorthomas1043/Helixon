@@ -32,7 +32,7 @@ export { INK, INK_MUTED, INK_FAINT, CARD, trapTab };
 // `width` is "wide" or "narrow" (see ./page-frame).
 export function Page({ children, width = "wide" }) {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6" style={{ maxWidth: PAGE_WIDTHS[width] ?? PAGE_WIDTHS.wide }}>
         {children}
@@ -51,15 +51,15 @@ export function PageHeader({ eyebrow, title, subtitle, actions, back }) {
           </Link>
         )}
         {eyebrow && (
-          <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
             {eyebrow}
           </p>
         )}
-        <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+        <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
           {title}
         </h1>
         {subtitle && (
-          <div className="text-14 mt-1 max-w-3xl" style={{ color: INK_MUTED }}>
+          <div className="text-14 mt-1 max-w-3xl text-[var(--ink-soft)]">
             {subtitle}
           </div>
         )}
@@ -77,12 +77,12 @@ export function Card({ title, eyebrow, action, children, className = "", padded 
         <div className="flex items-end justify-between gap-3 mb-4">
           <div className="min-w-0">
             {eyebrow && (
-              <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+              <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
                 {eyebrow}
               </p>
             )}
             {title && (
-              <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+              <h2 className="text-base font-semibold font-display text-[var(--ink)]">
                 {title}
               </h2>
             )}

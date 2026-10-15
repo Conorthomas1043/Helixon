@@ -22,8 +22,7 @@ export function FeedbackSendForm({ defaultTo, busy, onSend, onLinkOnly, onCancel
         e.preventDefault();
         if (to.trim()) onSend(to.trim());
       }}
-      className="flex flex-wrap items-center gap-2 p-3 rounded-btn"
-      style={{ background: "var(--mist)" }}
+      className="flex flex-wrap items-center gap-2 p-3 rounded-btn bg-[var(--mist)]"
     >
       <input
         type="email"
@@ -32,23 +31,21 @@ export function FeedbackSendForm({ defaultTo, busy, onSend, onLinkOnly, onCancel
         placeholder="name@example.com"
         aria-label="Send the link to"
         autoFocus
-        className="flex-1 min-w-[180px] text-13 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2"
-        style={{ border: "1px solid var(--border)", color: INK }}
+        className="flex-1 min-w-[180px] text-13 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 border border-[var(--border)] text-[var(--ink)]"
       />
       <button
         type="submit"
         disabled={busy || !to.trim()}
-        className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         {busy ? "Sending…" : "Send email"}
       </button>
       {onLinkOnly && (
-        <button type="button" onClick={onLinkOnly} disabled={busy} className="text-13 font-semibold disabled:opacity-50" style={{ color: INK }}>
+        <button type="button" onClick={onLinkOnly} disabled={busy} className="text-13 font-semibold disabled:opacity-50 text-[var(--ink)]">
           Just create link
         </button>
       )}
-      <button type="button" onClick={onCancel} disabled={busy} className="text-13 font-semibold" style={{ color: INK_MUTED }}>
+      <button type="button" onClick={onCancel} disabled={busy} className="text-13 font-semibold text-[var(--ink-soft)]">
         Cancel
       </button>
     </form>
@@ -76,7 +73,7 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
   return (
     <div className="rounded-card p-5 sm:p-6 space-y-4" style={CARD}>
       <SectionHeading eyebrow="Feedback" title="Request feedback" />
-      <p className="text-13 -mt-2" style={{ color: INK_FAINT }}>
+      <p className="text-13 -mt-2 text-[var(--ink-faint)]">
         Emails them a link to a one-question page - no account needed on their end. Feeds candidate NPS / client
         satisfaction figures in Analytics.
       </p>
@@ -112,11 +109,11 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
             <li key={req.id} className="py-3 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-14 font-semibold" style={{ color: INK }}>
+                  <p className="text-14 font-semibold text-[var(--ink)]">
                     {FEEDBACK_KINDS[req.kind]?.title ?? "Feedback"}
-                    {req.recipientLabel && <span className="font-normal" style={{ color: INK_MUTED }}> · {req.recipientLabel}</span>}
+                    {req.recipientLabel && <span className="font-normal text-[var(--ink-soft)]"> · {req.recipientLabel}</span>}
                   </p>
-                  <p className="text-12" style={{ color: INK_MUTED }}>
+                  <p className="text-12 text-[var(--ink-soft)]">
                     {req.respondedAt
                       ? `Responded · rated ${req.rating}${req.kind === "candidate_nps" ? "/10" : "/5"}${req.comment ? ` · "${req.comment}"` : ""}`
                       : "Awaiting response"}
@@ -127,16 +124,14 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
                     <button
                       type="button"
                       onClick={() => setOpen(open === req.id ? null : req.id)}
-                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                      style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
                     >
                       Email
                     </button>
                     <button
                       type="button"
                       onClick={() => copy(req)}
-                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                      style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
                     >
                       {copiedId === req.id ? "Copied" : "Copy link"}
                     </button>

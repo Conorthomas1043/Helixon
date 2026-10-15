@@ -29,22 +29,22 @@ export default async function AccountLayout({ children }) {
   const showBadge = badgeLabel !== "your agency";
 
   return (
-    <main className="min-h-screen scroll-smooth" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen scroll-smooth bg-[var(--mist)]">
       {/* The dashboard's own navigation, so the whole signed-in app shares
           one set of links. */}
       <DashboardNav />
 
       <section className="max-w-[880px] mx-auto px-6 pt-14 pb-8">
-        {showBadge && <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        {showBadge && <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-5 bg-[var(--mint)] text-[var(--forest)]">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
             <circle cx="12" cy="8" r="4" /><path d="M4 20a8 8 0 0116 0" />
           </svg>
           {badgeLabel}
         </span>}
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]" style={{ color: "#13201b", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] text-[var(--ink)] font-display">
           Account settings
         </h1>
-        <p className="text-sm mt-3 max-w-md" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm mt-3 max-w-md text-[var(--ink-soft)]">
           Manage your profile, security, and notification preferences.
         </p>
       </section>

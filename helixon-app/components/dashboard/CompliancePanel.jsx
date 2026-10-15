@@ -22,11 +22,11 @@ import { Button, Card, Dialog, ErrorText, Field, Pill, Select, TextArea, TextInp
 import { useConfirm } from "@/components/dashboard/use-confirm";
 
 const STATE_PILL = {
-  ok: ["Verified", "#1f6f43", "#e5f4ea"],
-  expiring: ["Expiring soon", "#8a5a00", "#fdf3dc"],
-  expired: ["Expired", "var(--score-low)", "#fbeaea"],
+  ok: ["Verified", "var(--forest)", "var(--mint)"],
+  expiring: ["Expiring soon", "var(--ui-warn)", "var(--ui-warn-soft)"],
+  expired: ["Expired", "var(--score-low)", "var(--ui-danger-soft)"],
   pending: ["To do", INK_MUTED, "var(--mist)"],
-  failed: ["Failed", "var(--score-low)", "#fbeaea"],
+  failed: ["Failed", "var(--score-low)", "var(--ui-danger-soft)"],
 };
 
 export function CheckStatePill({ state }) {
@@ -187,9 +187,9 @@ function ReferenceAnswers({ answers }) {
   if (!answers) return null;
   if (answers.method === "phone") {
     return (
-      <p className="text-13 whitespace-pre-wrap mt-1" style={{ color: INK }}>
+      <p className="text-13 whitespace-pre-wrap mt-1 text-[var(--ink)]">
         {answers.comments}
-        <span className="block text-12" style={{ color: INK_FAINT }}>
+        <span className="block text-12 text-[var(--ink-faint)]">
           Taken by phone by {answers.takenBy}
         </span>
       </p>
@@ -199,13 +199,13 @@ function ReferenceAnswers({ answers }) {
     <dl className="mt-2 space-y-1.5 text-13">
       {REFERENCE_QUESTIONS.filter((q) => answers[q.id] != null).map((q) => (
         <div key={q.id}>
-          <dt style={{ color: INK_FAINT }}>{q.label}</dt>
-          <dd className="whitespace-pre-wrap" style={{ color: INK }}>
+          <dt className="text-[var(--ink-faint)]">{q.label}</dt>
+          <dd className="whitespace-pre-wrap text-[var(--ink)]">
             {q.type === "rating" ? `${answers[q.id]} / 5` : answers[q.id]}
           </dd>
         </div>
       ))}
-      <p className="text-12" style={{ color: INK_FAINT }}>
+      <p className="text-12 text-[var(--ink-faint)]">
         Completed by {answers.completedBy}
         {answers.completedByTitle ? `, ${answers.completedByTitle}` : ""}
       </p>
@@ -285,16 +285,16 @@ export default function CompliancePanel({ candidate, onChanged }) {
       {confirmDialog}
     <Card eyebrow="Compliance" title={rtw ? `Right to work: ${CHECK_STATUSES[rtw.status]}` : "Compliance"}>
       {!data ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-14 text-[var(--ink-soft)]">Loading…</p>
       ) : data.failed ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>Compliance records couldn&apos;t be loaded.</p>
+        <p className="text-14 text-[var(--ink-soft)]">Compliance records couldn&apos;t be loaded.</p>
       ) : (
         <div className="space-y-5">
           <section>
-            <p className="text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">
               Privacy
             </p>
-            <p className="text-13" style={{ color: INK }}>
+            <p className="text-13 text-[var(--ink)]">
               {p.consentGivenAt
                 ? `Consent given ${fmt(p.consentGivenAt)}${p.consentSource ? ` (${p.consentSource.replace(/_/g, " ")})` : ""}.`
                 : p.noticeSentAt
@@ -334,7 +334,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
                 Checks
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "check" })}>
@@ -342,7 +342,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
               </Button>
             </div>
             {data.checks.length === 0 ? (
-              <p className="text-13" style={{ color: INK_MUTED }}>
+              <p className="text-13 text-[var(--ink-soft)]">
                 No checks recorded. Add right to work before they start.
               </p>
             ) : (
@@ -350,34 +350,34 @@ export default function CompliancePanel({ candidate, onChanged }) {
                 {data.checks.map((c) => (
                   <li key={c.id} className="text-13">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold" style={{ color: INK }}>
+                      <span className="font-semibold text-[var(--ink)]">
                         {c.label || CHECK_KINDS[c.kind]}
                       </span>
                       <CheckStatePill state={checkState(c, data.today)} />
                     </div>
-                    <p style={{ color: INK_MUTED }}>
+                    <p className="text-[var(--ink-soft)]">
                       {[c.documentType, c.checkedOn && `checked ${fmt(c.checkedOn)}${c.checkedBy ? ` by ${c.checkedBy}` : ""}`, c.expiresOn && `expires ${fmt(c.expiresOn)}`, c.followUpOn && `re-check by ${fmt(c.followUpOn)}`]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                     {c.notes && (
-                      <p className="whitespace-pre-wrap" style={{ color: INK_MUTED }}>
+                      <p className="whitespace-pre-wrap text-[var(--ink-soft)]">
                         {c.notes}
                       </p>
                     )}
                     <div className="flex gap-3 mt-0.5">
                       {c.document && (
-                        <button type="button" className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => openDocument(c)}>
+                        <button type="button" className="font-semibold text-[var(--forest)]" onClick={() => openDocument(c)}>
                           Open document
                         </button>
                       )}
-                      <button type="button" style={{ color: INK_MUTED }} onClick={() => setDialog({ type: "check", check: c })}>
+                      <button type="button" className="text-[var(--ink-soft)]" onClick={() => setDialog({ type: "check", check: c })}>
                         Edit
                       </button>
                       <button
                         type="button"
                         disabled={busy}
-                        style={{ color: INK_FAINT }}
+                        className="text-[var(--ink-faint)]"
                         onClick={async () => (await ask({ title: "Delete this check?", body: "Any document stored with it is deleted too.", confirmLabel: "Delete check", danger: true })) && run(() => deleteComplianceCheck(candidate.id, c.id))}
                       >
                         Delete
@@ -391,7 +391,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
 
           <section>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+              <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
                 References
               </p>
               <Button size="sm" onClick={() => setDialog({ type: "reference" })}>
@@ -399,7 +399,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
               </Button>
             </div>
             {data.references.length === 0 ? (
-              <p className="text-13" style={{ color: INK_MUTED }}>
+              <p className="text-13 text-[var(--ink-soft)]">
                 None yet.
               </p>
             ) : (
@@ -407,34 +407,34 @@ export default function CompliancePanel({ candidate, onChanged }) {
                 {data.references.map((r) => (
                   <li key={r.id} className="text-13">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold" style={{ color: INK }}>
+                      <span className="font-semibold text-[var(--ink)]">
                         {r.refereeName}
                       </span>
-                      <span style={{ color: INK_MUTED }}>{[r.refereeTitle, r.refereeCompany].filter(Boolean).join(", ")}</span>
-                      <Pill color={r.status === "received" ? "#1f6f43" : r.status === "declined" ? "var(--score-low)" : INK_MUTED} background={r.status === "received" ? "#e5f4ea" : undefined}>
+                      <span className="text-[var(--ink-soft)]">{[r.refereeTitle, r.refereeCompany].filter(Boolean).join(", ")}</span>
+                      <Pill color={r.status === "received" ? "var(--forest)" : r.status === "declined" ? "var(--score-low)" : INK_MUTED} background={r.status === "received" ? "var(--mint)" : undefined}>
                         {r.status === "requested" ? (r.requestedAt ? "Awaiting" : "Not sent") : r.status === "received" ? "Received" : "Declined"}
                       </Pill>
                     </div>
                     <div className="flex flex-wrap gap-3 mt-0.5">
                       {r.status === "received" && (
-                        <button type="button" className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => setOpenRef(openRef === r.id ? null : r.id)}>
+                        <button type="button" className="font-semibold text-[var(--forest)]" onClick={() => setOpenRef(openRef === r.id ? null : r.id)}>
                           {openRef === r.id ? "Hide reference" : "Read reference"}
                         </button>
                       )}
                       {r.status === "requested" && (
                         <>
                           {r.refereeEmail && (
-                            <button type="button" disabled={busy} style={{ color: "var(--forest)" }} onClick={() => run(() => updateReference(candidate.id, r.id, { action: "resend" }), `Emailed ${r.refereeName}.`)}>
+                            <button type="button" disabled={busy} className="text-[var(--forest)]" onClick={() => run(() => updateReference(candidate.id, r.id, { action: "resend" }), `Emailed ${r.refereeName}.`)}>
                               {r.requestedAt ? "Send reminder" : "Email form"}
                             </button>
                           )}
-                          <button type="button" style={{ color: INK_MUTED }} onClick={() => copyLink(r)}>
+                          <button type="button" className="text-[var(--ink-soft)]" onClick={() => copyLink(r)}>
                             Copy link
                           </button>
                           <button
                             type="button"
                             disabled={busy}
-                            style={{ color: INK_MUTED }}
+                            className="text-[var(--ink-soft)]"
                             onClick={async () => {
                               const notes = await ask({
                                 title: "Reference taken by phone",
@@ -448,7 +448,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
                           </button>
                         </>
                       )}
-                      <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={async () => (await ask({ title: "Delete this reference?", confirmLabel: "Delete reference", danger: true })) && run(() => deleteReference(candidate.id, r.id))}>
+                      <button type="button" disabled={busy} className="text-[var(--ink-faint)]" onClick={async () => (await ask({ title: "Delete this reference?", confirmLabel: "Delete reference", danger: true })) && run(() => deleteReference(candidate.id, r.id))}>
                         Delete
                       </button>
                     </div>
@@ -460,7 +460,7 @@ export default function CompliancePanel({ candidate, onChanged }) {
           </section>
           <ErrorText>{error}</ErrorText>
           {notice && (
-            <p className="text-13" role="status" style={{ color: "var(--forest)" }}>
+            <p className="text-13 text-[var(--forest)]" role="status">
               {notice}
             </p>
           )}

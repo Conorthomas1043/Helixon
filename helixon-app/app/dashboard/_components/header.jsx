@@ -47,7 +47,7 @@ export function GettingStarted({ hasJob, showTeam }) {
         style={{ height: 4, borderRadius: 9999, background: BORDER2, overflow: "hidden", marginBottom: 8 }}>
         <div style={{ width: `${(doneCount / steps.length) * 100}%`, height: "100%", background: ACCENT, borderRadius: 9999 }} />
       </div>
-      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      <ol className="list-none m-0 p-0">
         {steps.map((st) => (
           <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderTop: `1px solid ${BORDER2}` }}>
             <span aria-hidden="true" style={{
@@ -58,7 +58,7 @@ export function GettingStarted({ hasJob, showTeam }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               )}
             </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="flex-1 min-w-[0px]">
               <p style={{ fontSize: 14, fontWeight: 600, color: st.done ? TEXT_FAINT : TEXT, margin: 0, textDecoration: st.done ? "line-through" : "none" }}>
                 {st.title}<span className="sr-only">{st.done ? " (done)" : ""}</span>
               </p>
@@ -87,7 +87,7 @@ export function TeamWelcome({ agencyName, onDismiss }) {
   ];
   return (
     <section style={{ ...CARD, padding: "22px 26px" }} aria-labelledby="team-welcome-title">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+      <div className="flex justify-between items-start gap-3 mb-3">
         <div>
           <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 4px" }}>New to the team</p>
           <h2 id="team-welcome-title" style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 600, color: TEXT, margin: 0 }}>
@@ -99,11 +99,11 @@ export function TeamWelcome({ agencyName, onDismiss }) {
           Got it
         </button>
       </div>
-      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      <ol className="list-none m-0 p-0">
         {steps.map((st, i) => (
           <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: `1px solid ${BORDER2}` }}>
             <span aria-hidden="true" style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: ACCENT_BG, color: ACCENT_FG }}>{i + 1}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="flex-1 min-w-[0px]">
               <p style={{ fontSize: 14, fontWeight: 600, color: TEXT, margin: 0 }}>{st.title}</p>
               <p style={{ fontSize: 14, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>
             </div>
@@ -152,7 +152,7 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
         }}
       />
       <div style={{ minWidth: 0, flex: 1, position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div className="flex items-center gap-2.5 mb-2.5">
           {plan && (
             <span style={{
               display: "inline-flex",
@@ -180,7 +180,7 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
         )}
         <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 520, marginBottom: 10, marginTop: 0 }}>{subtitle}</p>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 20 }} aria-live="polite">
+        <div className="flex items-center gap-3 min-h-[20px]" aria-live="polite">
           {isRefreshing && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: TEXT_FAINT }}>
               <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN_FG, display: "inline-block" }} aria-hidden="true" />
@@ -238,7 +238,7 @@ export function DashboardFooter() {
   return (
     <footer style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 20, fontSize: 13, color: TEXT_FAINT, borderTop: `1px solid ${BORDER}` }}>
       <span>Helixon - recruiter dashboard</span>
-      <nav style={{ display: "flex", alignItems: "center", gap: 20 }} aria-label="Support links">
+      <nav className="flex items-center gap-5" aria-label="Support links">
         {[["FAQ", "/faq"], ["Contact", "/contact"], ["Privacy", "/privacy"]].map(([label, href]) => (
           <Link key={href} href={href} style={{ color: TEXT_FAINT, textDecoration: "none" }} className="hover:text-[var(--ink)] transition-colors">{label}</Link>
         ))}

@@ -22,7 +22,7 @@ function Row({ c, picked, disabled, onToggle }) {
         aria-pressed={picked}
         className={cx(
           "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-45 disabled:cursor-not-allowed",
-          picked ? "bg-[#f4faf7]" : "bg-white hover:bg-[var(--mist)]"
+          picked ? "bg-[var(--mint)]" : "bg-white hover:bg-[var(--mist)]"
         )}
       >
         <span
@@ -114,7 +114,7 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
         />
       </div>
 
-      {error && <p className="text-14 text-[#a83226]">{error}</p>}
+      {error && <p className="text-14 text-[var(--score-low)]">{error}</p>}
 
       {poolRows.length > 0 && (
         <div>

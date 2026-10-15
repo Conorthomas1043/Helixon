@@ -38,23 +38,21 @@ function NewShortlistForm({ jobs, onCreated }) {
   return (
     <form onSubmit={submit} className="rounded-card p-4 flex flex-wrap items-end gap-3" style={CARD}>
       <label className="flex-1 min-w-[200px]">
-        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>New shortlist</span>
+        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">New shortlist</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           placeholder="e.g. Acme - Senior Engineer, round 1"
-          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         />
       </label>
       <label className="min-w-[180px]">
-        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>For job (optional)</span>
+        <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">For job (optional)</span>
         <select
           value={jobId}
           onChange={(e) => setJobId(e.target.value)}
-          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         >
           <option value="">No job</option>
           {jobs.map((j) => (
@@ -67,12 +65,11 @@ function NewShortlistForm({ jobs, onCreated }) {
       <button
         type="submit"
         disabled={saving || !name.trim()}
-        className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         {saving ? "Creating…" : "Create"}
       </button>
-      {error && <p className="w-full text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p className="w-full text-13 text-[var(--score-low)]">{error}</p>}
     </form>
   );
 }
@@ -92,17 +89,17 @@ export default function ShortlistsPage() {
   }, [lists, search]);
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header>
-          <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
             Client submissions
           </p>
-          <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+          <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
             Client shortlists
           </h1>
-          <p className="text-14 mt-1 max-w-2xl" style={{ color: INK_MUTED }}>
+          <p className="text-14 mt-1 max-w-2xl text-[var(--ink-soft)]">
             Not the same as the Shortlisted stage: a client shortlist is what you send. Group the people you&apos;re putting forward, add a line on why each one, and print a client-ready pack. Add
             people from their profile, or select several on{" "}
             <Link href="/dashboard/candidates" className="underline font-semibold" style={{ color: "var(--forest)" }}>
@@ -127,12 +124,11 @@ export default function ShortlistsPage() {
 
         {status === "error" && (
           <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-            <p className="text-base font-semibold mb-1" style={{ color: INK }}>Unable to load shortlists</p>
+            <p className="text-base font-semibold mb-1 text-[var(--ink)]">Unable to load shortlists</p>
             <button
               type="button"
               onClick={retry}
-              className="mt-3 text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "var(--forest)", color: "white" }}
+              className="mt-3 text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
             >
               Try again
             </button>
@@ -141,8 +137,8 @@ export default function ShortlistsPage() {
 
         {status === "ready" && lists.length === 0 && (
           <div className="rounded-2xl py-12 px-6 text-center" style={CARD}>
-            <p className="text-sm font-semibold mb-1" style={{ color: INK }}>No shortlists yet</p>
-            <p className="text-14" style={{ color: INK_MUTED }}>Name one above, or use &quot;Add to client shortlist&quot; on a candidate.</p>
+            <p className="text-sm font-semibold mb-1 text-[var(--ink)]">No shortlists yet</p>
+            <p className="text-14 text-[var(--ink-soft)]">Name one above, or use &quot;Add to client shortlist&quot; on a candidate.</p>
           </div>
         )}
 
@@ -155,8 +151,7 @@ export default function ShortlistsPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search shortlists, jobs or clients…"
                 aria-label="Search shortlists"
-                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               />
             )}
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -167,13 +162,13 @@ export default function ShortlistsPage() {
                     className="block rounded-card p-5 h-full transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={CARD}
                   >
-                    <p className="text-sm font-semibold truncate" style={{ color: INK }}>{l.name}</p>
-                    <p className="text-13 truncate mt-0.5" style={{ color: INK_MUTED }}>
+                    <p className="text-sm font-semibold truncate text-[var(--ink)]">{l.name}</p>
+                    <p className="text-13 truncate mt-0.5 text-[var(--ink-soft)]">
                       {l.jobTitle ? `${l.jobTitle}${l.client ? ` · ${l.client}` : ""}` : "Not linked to a job"}
                     </p>
-                    <div className="flex items-center justify-between mt-4 text-13" style={{ color: INK_FAINT }}>
+                    <div className="flex items-center justify-between mt-4 text-13 text-[var(--ink-faint)]">
                       <span>
-                        <span className="font-semibold tabular-nums" style={{ color: INK }}>{l.count}</span> {l.count === 1 ? "person" : "people"}
+                        <span className="font-semibold tabular-nums text-[var(--ink)]">{l.count}</span> {l.count === 1 ? "person" : "people"}
                       </span>
                       <span>{formatDateOnly(l.createdAt)}</span>
                     </div>

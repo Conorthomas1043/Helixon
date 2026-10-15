@@ -273,7 +273,7 @@ function CalendarPageContent() {
 
   if (checking) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
         <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
       </main>
     );
@@ -286,17 +286,16 @@ function CalendarPageContent() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
               Calendar
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-sm mt-1 text-[var(--ink-soft)]">
               The shared team calendar - visible to every employee.
             </p>
           </div>
           <button type="button"
             onClick={openAdd}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
           >
             <span className="text-base leading-none">+</span> New event
           </button>
@@ -305,7 +304,7 @@ function CalendarPageContent() {
         {banner && (
           <div
             className="rounded-card px-4 py-3 text-sm mb-6 flex items-center justify-between gap-3"
-            style={banner.tone === "ok" ? { background: "var(--mint)", border: "1px solid var(--border)", color: "var(--forest)" } : { background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}
+            style={banner.tone === "ok" ? { background: "var(--mint)", border: "1px solid var(--border)", color: "var(--forest)" } : { background: "var(--ui-danger-soft)", border: "1px solid var(--danger-line)", color: "var(--score-low)" }}
           >
             <span>{banner.message}</span>
             <button type="button" onClick={() => setBanner(null)} className="opacity-70 hover:opacity-100" aria-label="Dismiss">✕</button>
@@ -313,82 +312,77 @@ function CalendarPageContent() {
         )}
 
         {error && (
-          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]">
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div className="rounded-2xl p-5 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-5 mb-6 bg-white border border-[var(--border)]">
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Event title *</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Event title *</label>
                   <input
                     autoFocus
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
-                <label className="sm:col-span-2 flex items-center gap-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+                <label className="sm:col-span-2 flex items-center gap-2 text-xs font-medium text-[var(--ink-soft)]">
                   <input type="checkbox" checked={form.all_day} onChange={(e) => setForm((f) => ({ ...f, all_day: e.target.checked }))} />
                   All-day event
                 </label>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>{form.all_day ? "Start date" : "Starts"}</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">{form.all_day ? "Start date" : "Starts"}</label>
                   <input
                     type={form.all_day ? "date" : "datetime-local"}
                     value={form.start_at}
                     onChange={(e) => setForm((f) => ({ ...f, start_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>{form.all_day ? "End date" : "Ends"}</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">{form.all_day ? "End date" : "Ends"}</label>
                   <input
                     type={form.all_day ? "date" : "datetime-local"}
                     value={form.end_at}
                     onChange={(e) => setForm((f) => ({ ...f, end_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Location</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Location</label>
                   <input
                     type="text"
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                     placeholder="Optional"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Notes</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Notes</label>
                   <textarea
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     rows={2}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
 
               {formError && (
-                <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>{formError}</p>
+                <p className="text-xs rounded-lg px-3 py-2 text-[var(--score-low)] bg-[var(--ui-danger-soft)] border border-[var(--danger-line)]">{formError}</p>
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90" style={{ background: "var(--forest)", color: "white" }}>
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
                   {saving ? "Saving…" : editingId ? "Save changes" : "Add event"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -398,38 +392,38 @@ function CalendarPageContent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* ── Agenda ──────────────────────────────────────────────────── */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
             {loading ? (
-              <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</div>
+              <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
             ) : grouped.length === 0 ? (
-              <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>No events in the next few months - add one above.</div>
+              <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">No events in the next few months - add one above.</div>
             ) : (
               <div className="divide-y divide-[var(--border)]">
                 {grouped.map(([dayKey, dayEvents]) => (
                   <div key={dayKey} className="px-6 py-4">
-                    <p className="text-xs font-semibold mb-2.5" style={{ color: "var(--ink-faint)" }}>{formatDayHeading(dayEvents[0].start_at)}</p>
+                    <p className="text-xs font-semibold mb-2.5 text-[var(--ink-faint)]">{formatDayHeading(dayEvents[0].start_at)}</p>
                     <div className="space-y-2.5">
                       {dayEvents.map((ev) => {
                         const canEdit = ev.created_by === employee?.id;
                         const organiser = ev.creator?.full_name || ev.creator?.display_name;
                         return (
                           <div key={ev.id} className="flex items-start gap-3 group">
-                            <span className="text-xs font-medium tabular-nums w-16 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                            <span className="text-xs font-medium tabular-nums w-16 shrink-0 mt-0.5 text-[var(--ink-faint)]">
                               {formatTime(ev.start_at, ev.all_day)}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>{ev.title}</p>
-                              <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                              <p className="text-sm font-medium text-[var(--ink)]">{ev.title}</p>
+                              <p className="text-xs mt-0.5 text-[var(--ink-faint)]">
                                 {ev.location ? `${ev.location} · ` : ""}
                                 {organiser ? `Organised by ${organiser}` : ""}
                                 {ev.google_event_id ? " · synced from Google" : ""}
                               </p>
-                              {ev.notes && <p className="text-xs mt-1" style={{ color: "var(--ink-soft)" }}>{ev.notes}</p>}
+                              {ev.notes && <p className="text-xs mt-1 text-[var(--ink-soft)]">{ev.notes}</p>}
                             </div>
                             {canEdit && (
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                <button type="button" onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
-                                <button type="button" onClick={() => handleDelete(ev.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
+                                <button type="button" onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white text-[var(--ink-soft)]">Edit</button>
+                                <button type="button" onClick={() => handleDelete(ev.id)} className="text-xs px-2 py-1 rounded-md transition text-[var(--score-low)]">Delete</button>
                               </div>
                             )}
                           </div>
@@ -444,15 +438,15 @@ function CalendarPageContent() {
 
           {/* ── Connect panel ───────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
                 Subscribe from Google or Apple
               </h2>
-              <p className="text-xs mb-3" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-xs mb-3 text-[var(--ink-faint)]">
                 Add this link as a subscribed calendar - it updates automatically. Read-only.
               </p>
               {feedLoading ? (
-                <div className="text-xs" style={{ color: "var(--ink-faint)" }}>Loading link…</div>
+                <div className="text-xs text-[var(--ink-faint)]">Loading link…</div>
               ) : (
                 <>
                   <div className="flex gap-2 mb-2">
@@ -460,64 +454,62 @@ function CalendarPageContent() {
                       readOnly
                       value={feedUrl}
                       onFocus={(e) => e.target.select()}
-                      className="flex-1 min-w-0 text-12 rounded-lg px-2.5 py-2 font-mono"
-                      style={{ border: "1px solid var(--border)", color: "var(--ink-soft)", background: "var(--mist)" }}
+                      className="flex-1 min-w-0 text-12 rounded-lg px-2.5 py-2 font-mono border border-[var(--border)] text-[var(--ink-soft)] bg-[var(--mist)]"
                     />
-                    <button type="button" onClick={copyFeedUrl} className="text-xs font-semibold px-3 py-2 rounded-lg shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                    <button type="button" onClick={copyFeedUrl} className="text-xs font-semibold px-3 py-2 rounded-lg shrink-0 bg-[var(--mint)] text-[var(--forest)]">
                       {copied ? "Copied" : "Copy"}
                     </button>
                   </div>
-                  <details className="text-xs" style={{ color: "var(--ink-faint)" }}>
-                    <summary className="cursor-pointer font-medium" style={{ color: "var(--ink-soft)" }}>How to add it</summary>
+                  <details className="text-xs text-[var(--ink-faint)]">
+                    <summary className="cursor-pointer font-medium text-[var(--ink-soft)]">How to add it</summary>
                     <p className="mt-2"><b>Google Calendar</b> - Settings → Add calendar → From URL → paste the link.</p>
                     <p className="mt-1.5"><b>Apple Calendar</b> - File → New Calendar Subscription → paste the link.</p>
                   </details>
-                  <button type="button" onClick={regenerateFeed} className="text-xs mt-3" style={{ color: "var(--ink-faint)" }}>
+                  <button type="button" onClick={regenerateFeed} className="text-xs mt-3 text-[var(--ink-faint)]">
                     Regenerate link
                   </button>
                 </>
               )}
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
                 Google Calendar (two-way)
               </h2>
               {!googleStatus ? (
-                <p className="text-xs" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+                <p className="text-xs text-[var(--ink-faint)]">Loading…</p>
               ) : !googleStatus.configured ? (
-                <p className="text-xs" style={{ color: "var(--ink-faint)" }}>
+                <p className="text-xs text-[var(--ink-faint)]">
                   Not set up on this deployment yet - needs GOOGLE_CALENDAR_CLIENT_ID/SECRET from an admin.
                 </p>
               ) : googleStatus.connection ? (
                 <>
-                  <p className="text-xs mb-3" style={{ color: "var(--ink-soft)" }}>
+                  <p className="text-xs mb-3 text-[var(--ink-soft)]">
                     Connected as <b>{googleStatus.connection.google_email || "your Google account"}</b>.
                     {googleStatus.connection.last_synced_at
                       ? ` Last synced ${new Date(googleStatus.connection.last_synced_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`
                       : " Not synced yet."}
                     {googleStatus.connection.last_sync_error && (
-                      <span style={{ color: "#e0554f" }}> Last sync failed: {googleStatus.connection.last_sync_error}</span>
+                      <span className="text-[var(--score-low)]"> Last sync failed: {googleStatus.connection.last_sync_error}</span>
                     )}
                   </p>
                   <div className="flex gap-2">
-                    <button type="button" onClick={syncGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                    <button type="button" onClick={syncGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50 bg-[var(--mint)] text-[var(--forest)]">
                       {googleBusy ? "Working…" : "Sync now"}
                     </button>
-                    <button type="button" onClick={disconnectGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+                    <button type="button" onClick={disconnectGoogle} disabled={googleBusy} className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50 border border-[var(--border)] text-[var(--ink-soft)]">
                       Disconnect
                     </button>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-xs mb-3" style={{ color: "var(--ink-faint)" }}>
+                  <p className="text-xs mb-3 text-[var(--ink-faint)]">
                     Pulls your Google events onto the shared calendar and pushes events you organise here back to your Google Calendar.
                   </p>
                   <a
                     href="/api/employee/calendar/google/connect"
-                    className="inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg"
-                    style={{ background: "var(--forest)", color: "white" }}
+                    className="inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg bg-[var(--forest)] text-white"
                   >
                     Connect Google Calendar
                   </a>

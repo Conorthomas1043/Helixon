@@ -9,7 +9,7 @@ import { INK, INK_MUTED, CARD } from "@/lib/candidates/format";
 
 function Toggle({ checked, onChange, children }) {
   return (
-    <label className="inline-flex items-center gap-2 text-13 font-medium cursor-pointer" style={{ color: INK }}>
+    <label className="inline-flex items-center gap-2 text-13 font-medium cursor-pointer text-[var(--ink)]">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-[var(--forest)]" />
       {children}
     </label>
@@ -30,13 +30,12 @@ export default function ClientProfileToolbar({ backHref, backLabel, options, onO
         type="button"
         onClick={onPrint}
         disabled={disabled || printing}
-        className="ml-auto text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="ml-auto text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         Print / Save as PDF
       </button>
       {options.blind && (
-        <p className="w-full text-12" style={{ color: INK_MUTED }}>
+        <p className="w-full text-12 text-[var(--ink-soft)]">
           Names, employers, institutions and location are withheld, including where they appear in the text. A distinctive
           career history can still identify someone - read it through before sending.
         </p>

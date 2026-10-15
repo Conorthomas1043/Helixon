@@ -80,8 +80,7 @@ export default function BlogPage() {
   return (
     <>
       <div
-        className="min-h-screen"
-        style={{ background: "var(--mist)" }}
+        className="min-h-screen bg-[var(--mist)]"
       >
         <a href="#main-content" className="skip-link">Skip to content</a>
         <MarketingNav active="blog" />
@@ -89,11 +88,7 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-10 text-center">
           <span
-            className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6"
-            style={{
-              background: "var(--mint)",
-              color: "var(--forest)",
-            }}
+            className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)]"
           >
             <svg
               width="10"
@@ -113,18 +108,13 @@ export default function BlogPage() {
           </span>
 
           <h1
-            className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto"
-            style={{
-              color: "var(--ink)",
-              fontFamily: "var(--font-display)",
-            }}
+            className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto text-[var(--ink)] font-display"
           >
             The Helixon blog.
           </h1>
 
           <p
-            className="text-sm leading-relaxed max-w-md mx-auto"
-            style={{ color: "var(--ink-soft)" }}
+            className="text-sm leading-relaxed max-w-md mx-auto text-[var(--ink-soft)]"
           >
             Screening tips, product updates, and what we&apos;re learning from
             agencies using Helixon every day.
@@ -138,17 +128,7 @@ export default function BlogPage() {
                 key={category}
                 type="button"
                 onClick={() => setActive(category)}
-                className="text-xs font-semibold px-3.5 py-2 rounded-full transition-colors"
-                style={{
-                  background:
-                    active === category ? "var(--forest)" : "white",
-                  color:
-                    active === category ? "white" : "var(--ink-soft)",
-                  border:
-                    active === category
-                      ? "1px solid var(--forest)"
-                      : "1px solid var(--border)",
-                }}
+                className={`text-xs font-semibold px-3.5 py-2 rounded-full transition-colors ${active === category ? "bg-[var(--forest)]" : "bg-white"} ${active === category ? "text-white" : "text-[var(--ink-soft)]"} ${active === category ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
               >
                 {category}
               </button>
@@ -173,40 +153,30 @@ export default function BlogPage() {
                 }}
               >
                 <span
-                  className="inline-flex text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start"
-                  style={{
-                    background: "var(--mint)",
-                    color: "var(--forest)",
-                  }}
+                  className="inline-flex text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full mb-4 self-start bg-[var(--mint)] text-[var(--forest)]"
                 >
                   {post.category}
                 </span>
 
                 <h2
-                  className="text-sm font-semibold mb-2 leading-snug"
-                  style={{
-                    color: "var(--ink)",
-                    fontFamily: "var(--font-display)",
-                  }}
+                  className="text-sm font-semibold mb-2 leading-snug text-[var(--ink)] font-display"
                 >
                   {post.title}
                 </h2>
 
                 <p
-                  className="text-xs leading-relaxed mb-4 flex-1"
-                  style={{ color: "var(--ink-soft)" }}
+                  className="text-xs leading-relaxed mb-4 flex-1 text-[var(--ink-soft)]"
                 >
                   {post.excerpt}
                 </p>
 
                 <div
-                  className="flex items-center gap-2 text-11"
-                  style={{ color: "var(--ink-faint)" }}
+                  className="flex items-center gap-2 text-11 text-[var(--ink-faint)]"
                 >
                   <span>{post.date}</span>
                   <span>·</span>
                   <span>{post.read}</span>
-                  <span className="ml-auto font-semibold" style={{ color: "var(--forest)" }}>Coming soon</span>
+                  <span className="ml-auto font-semibold text-[var(--forest)]">Coming soon</span>
                 </div>
               </article>
             ))}
@@ -215,12 +185,10 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pb-24">
           <div
-            className="rounded-panel px-8 py-14 text-center"
-            style={{ background: "var(--forest)" }}
+            className="rounded-panel px-8 py-14 text-center bg-[var(--forest)]"
           >
             <h2
-              className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white"
-              style={{ fontFamily: "var(--font-display)" }}
+              className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white font-display"
             >
               Want to see what&apos;s new?
             </h2>

@@ -13,11 +13,7 @@ import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
 export function TagChip({ label, active, onClick, onDelete }) {
   return (
     <span
-      className="inline-flex items-center rounded-full transition-colors"
-      style={{
-        background: active ? "var(--forest)" : "var(--mist)",
-        color: active ? "white" : INK_MUTED,
-      }}
+      className={`inline-flex items-center rounded-full transition-colors ${active ? "bg-[var(--forest)]" : "bg-[var(--mist)]"} ${active ? "text-white" : "text-[var(--ink-soft)]"}`}
     >
       <button
         type="button"
@@ -49,7 +45,7 @@ export function ScorePill({ score }) {
       <span className="text-sm font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color }}>
         {score === null || score === undefined ? "-" : score}
       </span>
-      <span className="text-12 whitespace-nowrap" style={{ color: INK_FAINT }}>
+      <span className="text-12 whitespace-nowrap text-[var(--ink-faint)]">
         {score === null || score === undefined ? "" : scoreLabel(score).split(" ")[0]}
       </span>
     </div>
@@ -59,7 +55,7 @@ export function ScorePill({ score }) {
 export function StageBadge({ stage, status }) {
   if (status === "failed") {
     return (
-      <span className="inline-flex items-center text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "#b91c1c" }}>
+      <span className="inline-flex items-center text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: RED_BG, color: "var(--score-low)" }}>
         Failed
       </span>
     );
@@ -73,7 +69,7 @@ export function StageBadge({ stage, status }) {
   }
   if (!stage || !STAGE_LABELS[stage]) {
     return (
-      <span className="text-12" style={{ color: INK_FAINT }}>
+      <span className="text-12 text-[var(--ink-faint)]">
         No stage
       </span>
     );
@@ -118,16 +114,16 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
 
         <Link href={`/dashboard/candidates/${candidate.id}`} className="flex-1 min-w-0 flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+            <p className="text-sm font-semibold truncate text-[var(--ink)]">
               {candidate.fullName}
               {candidate.inTalentPool && (
-                <span className="ml-1.5 align-middle text-12 font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }} title="In the talent pool">
+                <span className="ml-1.5 align-middle text-12 font-semibold px-1.5 py-0.5 rounded-full bg-[var(--mint)] text-[var(--forest)]" title="In the talent pool">
                   ☆ Pool
                 </span>
               )}
               {candidate.aiWritten && <AiWritingBadge className="ml-1.5 align-middle" />}
             </p>
-            <p className="text-13 truncate" style={{ color: INK_MUTED }}>
+            <p className="text-13 truncate text-[var(--ink-soft)]">
               {candidate.jobTitle}
               {candidate.company ? ` · ${candidate.company}` : ""}
               {candidate.location ? ` · ${candidate.location}` : ""}
@@ -136,7 +132,7 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           </div>
 
           {show("currentRole") && (
-            <div className="hidden lg:block w-40 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden lg:block w-40 shrink-0 text-13 truncate text-[var(--ink-soft)]">
               {[candidate.currentTitle, candidate.currentCompany].filter(Boolean).join(" at ") || "-"}
             </div>
           )}
@@ -146,7 +142,7 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
             // per line and triple the row's height.
             <div className="hidden lg:flex items-center gap-1 w-48 shrink-0 min-w-0 overflow-hidden" title={candidate.skills.join(", ")}>
               {candidate.skills.slice(0, 2).map((s) => (
-                <span key={s} className="text-12 px-1.5 py-0.5 rounded-full truncate max-w-[5.75rem]" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                <span key={s} className="text-12 px-1.5 py-0.5 rounded-full truncate max-w-[5.75rem] bg-[var(--mist)] text-[var(--ink-soft)]">
                   {s}
                 </span>
               ))}
@@ -157,13 +153,13 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("recruiter") && (
-            <div className="hidden md:block w-24 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-13 truncate text-[var(--ink-soft)]">
               {candidate.recruiterName ?? "Unassigned"}
             </div>
           )}
 
           {show("source") && (
-            <div className="hidden md:block w-24 shrink-0 text-13 truncate" style={{ color: INK_MUTED }}>
+            <div className="hidden md:block w-24 shrink-0 text-13 truncate text-[var(--ink-soft)]">
               {candidate.source || "-"}
             </div>
           )}
@@ -175,19 +171,19 @@ export function CandidateRow({ candidate, selected, onToggleSelect, columns }) {
           )}
 
           {show("lastActivity") && (
-            <div className="hidden md:block w-24 shrink-0 text-12 truncate" style={{ color: INK_FAINT }} title="Last activity">
+            <div className="hidden md:block w-24 shrink-0 text-12 truncate text-[var(--ink-faint)]" title="Last activity">
               {candidate.lastActivityAt ? formatRelativeTime(candidate.lastActivityAt) : "-"}
             </div>
           )}
 
           {show("added") && (
-            <div className="hidden md:block w-16 shrink-0 text-12" style={{ color: INK_FAINT }} title="Added">
+            <div className="hidden md:block w-16 shrink-0 text-12 text-[var(--ink-faint)]" title="Added">
               {shortDate(candidate.createdAt)}
             </div>
           )}
 
           {show("nextAction") && (
-            <div className="hidden xl:block w-40 shrink-0 text-12 truncate" style={{ color: overdue ? "#b91c1c" : INK_FAINT }}>
+            <div className={`hidden xl:block w-40 shrink-0 text-12 truncate ${overdue ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]"}`}>
               {candidate.nextAction ? `${overdue ? "Overdue: " : "Next: "}${candidate.nextAction.label}` : ""}
             </div>
           )}

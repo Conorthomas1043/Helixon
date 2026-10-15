@@ -152,30 +152,29 @@ export function ActivityTimeline({ activity }) {
     <div className="rounded-card p-5 sm:p-6" style={CARD}>
       <SectionHeading eyebrow="History" title="Activity" />
       {groups.length === 0 ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           Activity will appear here as the team works this candidate.
         </p>
       ) : (
         <div className="space-y-5">
           {groups.map(([day, entries]) => (
             <div key={day}>
-              <p className="text-12 font-semibold uppercase tracking-widest mb-2.5" style={{ color: INK_FAINT }}>
+              <p className="text-12 font-semibold uppercase tracking-widest mb-2.5 text-[var(--ink-faint)]">
                 {day}
               </p>
               <ul className="space-y-3">
                 {entries.map((entry) => (
                   <li key={entry.id} className="flex items-start gap-3">
                     <span
-                      className="text-12 tabular-nums shrink-0 w-11 pt-0.5"
-                      style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}
+                      className="text-12 tabular-nums shrink-0 w-11 pt-0.5 font-mono text-[var(--ink-faint)]"
                     >
                       {formatTime(entry.timestamp)}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-14 font-semibold" style={{ color: INK }}>
+                      <p className="text-14 font-semibold text-[var(--ink)]">
                         {entry.meta?.sent_via === "helixon" ? "Email sent" : EVENT_LABELS[entry.type] ?? entry.type}
                       </p>
-                      <p className="text-13" style={{ color: INK_MUTED }}>
+                      <p className="text-13 text-[var(--ink-soft)]">
                         {activityDescription(entry)}
                         {entry.actor ? ` · ${entry.actor}` : ""}
                       </p>

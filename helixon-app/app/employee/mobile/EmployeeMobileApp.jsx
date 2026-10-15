@@ -51,14 +51,14 @@ export default function EmployeeMobileApp({ employee }) {
         }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--forest)" }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[var(--forest)]">
             <span className="text-white text-12 font-bold">H</span>
           </div>
           <div className="leading-none">
-            <div className="text-14 font-semibold" style={{ color: "var(--ink)" }}>
+            <div className="text-14 font-semibold text-[var(--ink)]">
               Staff
             </div>
-            <div className="text-11" style={{ color: "var(--ink-faint)" }}>
+            <div className="text-11 text-[var(--ink-faint)]">
               {employee?.display_name || employee?.full_name || employee?.username}
             </div>
           </div>
@@ -76,8 +76,7 @@ export default function EmployeeMobileApp({ employee }) {
             type="button"
             onClick={signOut}
             aria-label="Sign out"
-            className="w-9 h-9 flex items-center justify-center rounded-btn"
-            style={{ color: "var(--ink-soft)" }}
+            className="w-9 h-9 flex items-center justify-center rounded-btn text-[var(--ink-soft)]"
           >
             <Icon path={ICONS.logout} size={18} />
           </button>
@@ -90,7 +89,7 @@ export default function EmployeeMobileApp({ employee }) {
         {tab === "calls" && <CallsTab employee={employee} />}
         {tab === "files" && <FilesTab employee={employee} />}
         {tab === "stats" && <StatsTab />}
-        {!tab && <p className="text-sm text-center py-16" style={{ color: "var(--ink-soft)" }}>Your account doesn&rsquo;t have access to any of these sections. Ask an admin if you need it.</p>}
+        {!tab && <p className="text-sm text-center py-16 text-[var(--ink-soft)]">Your account doesn&rsquo;t have access to any of these sections. Ask an admin if you need it.</p>}
       </main>
 
       <nav
@@ -114,8 +113,7 @@ export default function EmployeeMobileApp({ employee }) {
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className="flex-1 flex flex-col items-center gap-1 py-2.5"
-              style={{ color: active ? "var(--forest)" : "var(--ink-faint)" }}
+              className={`flex-1 flex flex-col items-center gap-1 py-2.5 ${active ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}
               aria-current={active ? "page" : undefined}
             >
               <Icon path={ICONS[t.icon]} size={20} strokeWidth={active ? 2.4 : 2} />

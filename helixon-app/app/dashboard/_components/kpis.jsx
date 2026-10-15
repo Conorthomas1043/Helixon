@@ -188,10 +188,10 @@ export function TargetsCard({ scope }) {
           <Link href="/dashboard/settings/targets" style={{ color: ACCENT_FG, fontWeight: 600 }}>Set targets</Link>
         </p>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+        <ul className="list-none m-0 p-0 flex flex-col gap-3.5">
           {rows.map((r) => (
             <li key={r.key}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 14 }}>
+              <div className="flex justify-between gap-2 text-14">
                 <span style={{ color: TEXT }}>{r.label}</span>
                 <span style={{ fontFamily: "var(--font-mono)", color: TEXT_SUB, fontVariantNumeric: "tabular-nums" }}>
                   {formatMetric(r.key, r.actual)} / {formatMetric(r.key, r.target)}

@@ -11,7 +11,7 @@ import { presenceLine, timeAgo } from "@/lib/agency/presence";
 export const PRESENCE_TEXT = {
   active: "var(--score-strong)",
   hidden: INK_FAINT,
-  idle: "#9a6b12",
+  idle: "var(--ui-warn)",
   busy: "var(--score-low)",
   away: INK_MUTED,
   offline: INK_FAINT,
@@ -43,7 +43,7 @@ export function Metric({ label, value, accent }) {
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-12 uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-12 uppercase tracking-wide text-[var(--ink-faint)]">
         {label}
       </p>
     </div>
@@ -59,14 +59,14 @@ export function SummaryTile({ label, value, sub, dot, active, onClick }) {
       className="text-left rounded-card p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
       style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
     >
-      <p className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+      <p className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {dot && <PresenceDot state={dot} size={8} />}
         {label}
       </p>
-      <p className="text-24 font-semibold tabular-nums leading-none mt-2.5" style={{ fontFamily: "var(--font-mono)", color: INK }}>
+      <p className="text-24 font-semibold tabular-nums leading-none mt-2.5 font-mono text-[var(--ink)]">
         {value}
       </p>
-      {sub && <p className="text-13 mt-1.5 truncate" style={{ color: INK_FAINT }}>{sub}</p>}
+      {sub && <p className="text-13 mt-1.5 truncate text-[var(--ink-faint)]">{sub}</p>}
     </button>
   );
 }
@@ -84,11 +84,11 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
         <Avatar name={member.name} state={state} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="text-15 font-semibold truncate" style={{ color: INK }}>
+            <p className="text-15 font-semibold truncate text-[var(--ink)]">
               {member.name}
-              {isYou && <span className="font-normal" style={{ color: INK_FAINT }}> (you)</span>}
+              {isYou && <span className="font-normal text-[var(--ink-faint)]"> (you)</span>}
             </p>
-            <span className="text-12 font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="text-12 font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
               {ROLE_LABELS[member.role] || "Member"}
             </span>
           </div>
@@ -99,7 +99,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
             </p>
           )}
           {presence?.message && (
-            <p className="text-14 mt-1 italic" style={{ color: INK }}>
+            <p className="text-14 mt-1 italic text-[var(--ink)]">
               “{presence.message}”
             </p>
           )}
@@ -111,12 +111,12 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
         )}
       </div>
 
-      <p className="text-13 mt-3" style={{ color: INK_FAINT }}>
+      <p className="text-13 mt-3 text-[var(--ink-faint)]">
         {member.lastWorkedAt ? `Last worked on a candidate ${timeAgo(member.lastWorkedAt, now)}` : "No candidate activity yet"}
         {member.screenedToday > 0 ? ` · ${member.screenedToday} screened today` : ""}
       </p>
 
-      <div className="grid grid-cols-4 gap-2 pt-4 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
+      <div className="grid grid-cols-4 gap-2 pt-4 mt-3 border-t border-t-[var(--border)]">
         <Metric label="Active" value={member.activeCandidates} />
         <Metric label="To review" value={member.awaitingReview} />
         <Metric label="Interview" value={member.interviewing} />
@@ -139,8 +139,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
               onClick={() => onChangeRole(member, member.role === "admin" ? "member" : "admin")}
               disabled={changingRole}
               title={member.role === "admin" ? "They'll no longer be able to invite, remove or reassign people" : "Admins can invite, remove and reassign people, like the owner"}
-              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-              style={{ color: INK_MUTED }}
+              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50 text-[var(--ink-soft)]"
             >
               {changingRole ? "Saving…" : member.role === "admin" ? "Make member" : "Make admin"}
             </button>
@@ -150,8 +149,7 @@ export function MemberCard({ member, isYou, presence, now, canRemove, canChangeR
               type="button"
               onClick={() => onRemove(member)}
               disabled={removing}
-              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-              style={{ color: INK_FAINT }}
+              className="text-13 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50 text-[var(--ink-faint)]"
             >
               {removing ? "Removing…" : "Remove"}
             </button>

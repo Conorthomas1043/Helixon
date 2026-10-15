@@ -54,7 +54,7 @@ export default function PermissionsPage() {
       <ErrorText>{error}</ErrorText>
       {state && (
         <Card>
-          {!state.canManage && <p className="text-14 mb-4" style={{ color: INK_MUTED }}>Only the workspace owner or an admin can change these.</p>}
+          {!state.canManage && <p className="text-14 mb-4 text-[var(--ink-soft)]">Only the workspace owner or an admin can change these.</p>}
           <ul className="space-y-5">
             {OPTIONS.map((o) => (
               <li key={o.key} className="flex items-start gap-3">
@@ -67,8 +67,8 @@ export default function PermissionsPage() {
                   onChange={(e) => toggle(o.key, e.target.checked)}
                 />
                 <label htmlFor={o.key}>
-                  <span className="block text-sm font-semibold" style={{ color: INK }}>{o.label}</span>
-                  <span className="block text-14" style={{ color: INK_MUTED }}>{o.body}</span>
+                  <span className="block text-sm font-semibold text-[var(--ink)]">{o.label}</span>
+                  <span className="block text-14 text-[var(--ink-soft)]">{o.body}</span>
                 </label>
               </li>
             ))}

@@ -14,12 +14,7 @@ export function FilterChip({ active, onClick, children, count }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
-      style={{
-        background: active ? "var(--forest)" : "white",
-        color: active ? "white" : INK_MUTED,
-        border: active ? "1px solid var(--forest)" : "1px solid var(--border)",
-      }}
+      className={`inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 ${active ? "bg-[var(--forest)]" : "bg-white"} ${active ? "text-white" : "text-[var(--ink-soft)]"} ${active ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
     >
       {children}
       {typeof count === "number" && (
@@ -43,8 +38,7 @@ export function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ border: "1px solid var(--border)", color: INK }}
+      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -60,14 +54,13 @@ export function ColumnsMenu({ columns, onChange }) {
   return (
     <details className="relative">
       <summary
-        className="list-none cursor-pointer text-13 font-semibold px-3 py-1.5 rounded-full select-none"
-        style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+        className="list-none cursor-pointer text-13 font-semibold px-3 py-1.5 rounded-full select-none border border-[var(--border)] text-[var(--ink-soft)]"
       >
         Columns
       </summary>
-      <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-btn bg-white p-2 shadow-lg" style={{ border: "1px solid var(--border)" }}>
+      <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-btn bg-white p-2 shadow-lg border border-[var(--border)]">
         {CANDIDATE_COLUMNS.map((c) => (
-          <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-13 rounded hover:bg-[var(--mist)]" style={{ color: INK }}>
+          <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-13 rounded hover:bg-[var(--mist)] text-[var(--ink)]">
             <input
               type="checkbox"
               className="w-3.5 h-3.5 accent-[var(--forest)]"
@@ -85,8 +78,7 @@ export function ColumnsMenu({ columns, onChange }) {
         <button
           type="button"
           onClick={() => onChange(new Set(CANDIDATE_COLUMNS.filter((c) => c.default).map((c) => c.key)))}
-          className="w-full text-left px-1.5 pt-1.5 mt-1 text-12 font-semibold"
-          style={{ color: INK_MUTED, borderTop: "1px solid var(--border)" }}
+          className="w-full text-left px-1.5 pt-1.5 mt-1 text-12 font-semibold text-[var(--ink-soft)] border-t border-t-[var(--border)]"
         >
           Reset to default
         </button>

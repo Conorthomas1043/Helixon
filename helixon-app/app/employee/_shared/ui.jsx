@@ -16,9 +16,9 @@ export function CardHeader({ title, eyebrow, count, action, id }) {
     <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--ink-faint)" }}>{eyebrow}</p>
+          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ink-faint)]">{eyebrow}</p>
         )}
-        <h2 id={id} className="text-15 font-semibold flex items-center gap-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h2 id={id} className="text-15 font-semibold flex items-center gap-2 text-[var(--ink)] font-display">
           {title}
           {typeof count === "number" && count > 0 && (
             <Pill>{count}</Pill>
@@ -49,8 +49,7 @@ export function Chip({ tone = "neutral", children, className = "" }) {
 export function ProgressBar({ pct, tone = "var(--forest)", label }) {
   return (
     <div
-      className="h-1.5 w-full rounded-full overflow-hidden"
-      style={{ background: "var(--border-soft)" }}
+      className="h-1.5 w-full rounded-full overflow-hidden bg-[var(--border-soft)]"
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}
@@ -65,11 +64,11 @@ export function ProgressBar({ pct, tone = "var(--forest)", label }) {
 export function Kpi({ label, value, sub, tone, index = 0, href }) {
   const body = (
     <>
-      <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-2.5" style={{ color: "var(--ink-faint)" }}>{label}</p>
+      <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-2.5 text-[var(--ink-faint)]">{label}</p>
       <p className="text-28 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: tone || "var(--ink)" }}>
         {typeof value === "number" ? <CountUp value={value} /> : value ?? "-"}
       </p>
-      {sub && <p className="text-xs mt-2" style={{ color: "var(--ink-faint)" }}>{sub}</p>}
+      {sub && <p className="text-xs mt-2 text-[var(--ink-faint)]">{sub}</p>}
     </>
   );
   const className = "fade-up-in block rounded-2xl bg-white p-4 sm:p-5";
@@ -87,7 +86,7 @@ export function Kpi({ label, value, sub, tone, index = 0, href }) {
 export function EmptyLine({ children, action }) {
   return (
     <div className="px-5 pb-5 pt-1">
-      <p className="text-sm" style={{ color: "var(--ink-faint)" }}>{children}</p>
+      <p className="text-sm text-[var(--ink-faint)]">{children}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -99,7 +98,7 @@ export function Spinner({ size = 32 }) {
 
 export function FullPageSpinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
       <Spinner />
     </div>
   );

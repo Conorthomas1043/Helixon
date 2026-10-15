@@ -62,36 +62,35 @@ export default function OnboardingPanel() {
       <button
         onClick={() => setExpanded(true)}
         type="button"
-        className="w-full flex items-center justify-between rounded-card px-4 py-3 text-left transition hover:opacity-90"
-        style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+        className="w-full flex items-center justify-between rounded-card px-4 py-3 text-left transition hover:opacity-90 bg-[var(--mint)] border border-[var(--border)]"
       >
-        <span className="text-xs font-medium" style={{ color: "var(--forest)" }}>
+        <span className="text-xs font-medium text-[var(--forest)]">
           ✓ Onboarding complete: all {totalCount} steps done
         </span>
-        <span className="text-xs" style={{ color: "var(--forest)" }}>View</span>
+        <span className="text-xs text-[var(--forest)]">View</span>
       </button>
     );
   }
 
   return (
-    <section className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }} aria-labelledby="onboarding-title">
-      <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border-soft)" }}>
+    <section className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]" aria-labelledby="onboarding-title">
+      <div className="px-5 py-4 border-b flex items-center justify-between gap-3 border-[var(--border-soft)]">
         <div>
-          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: "var(--forest)" }}>Getting started</p>
-          <h2 id="onboarding-title" className="text-15 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--forest)]">Getting started</p>
+          <h2 id="onboarding-title" className="text-15 font-semibold text-[var(--ink)] font-display">
             Onboarding
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{completedCount} of {totalCount} steps complete</p>
+          <p className="text-xs mt-0.5 text-[var(--ink-faint)]">{completedCount} of {totalCount} steps complete</p>
         </div>
         {done && (
-          <button type="button" onClick={() => setExpanded(false)} className="text-xs" style={{ color: "var(--ink-soft)" }}>
+          <button type="button" onClick={() => setExpanded(false)} className="text-xs text-[var(--ink-soft)]">
             Collapse
           </button>
         )}
       </div>
 
       <div className="px-5 pt-4">
-        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
+        <div className="w-full h-2 rounded-full overflow-hidden bg-[var(--mist)]">
           <div className="h-full transition-all" style={{ width: `${pct}%`, background: "var(--forest)" }} />
         </div>
       </div>
@@ -116,11 +115,11 @@ export default function OnboardingPanel() {
               )}
             </button>
             <div className="min-w-0">
-              <p className={`text-sm font-medium ${task.completed ? "line-through" : ""}`} style={{ color: task.completed ? "var(--ink-faint)" : "var(--ink)" }}>
+              <p className={`text-sm font-medium ${task.completed ? "line-through" : ""} ${task.completed ? "text-[var(--ink-faint)]" : "text-[var(--ink)]"}`}>
                 {task.label}
               </p>
               {task.description && (
-                <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{task.description}</p>
+                <p className="text-xs mt-0.5 text-[var(--ink-faint)]">{task.description}</p>
               )}
             </div>
           </li>

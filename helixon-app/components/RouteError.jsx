@@ -16,16 +16,16 @@ export default function RouteError({ error, retry, reset }) {
   const tryAgain = retry || reset;
 
   return (
-    <main className="flex-1 flex items-center justify-center px-4 py-16" style={{ background: "var(--mist)" }}>
+    <main className="flex-1 flex items-center justify-center px-4 py-16 bg-[var(--mist)]">
       <div
         role="alert"
         className="w-full max-w-md text-center p-8"
         style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-card)" }}
       >
-        <h1 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)] font-display">
           This page didn&apos;t load
         </h1>
-        <p className="text-15 leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-15 leading-relaxed mb-6 text-[var(--ink-soft)]">
           Something went wrong on our side. Nothing you saved has been lost. Try again, and if it keeps happening,
           contact support{error?.digest ? <> and quote <code className="font-mono">{error.digest}</code></> : null}.
         </p>

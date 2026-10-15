@@ -11,10 +11,10 @@ import { addWeeks, groupByWeekday, startOfWeek, weekDays, weekLabel } from "@/li
 import { Button, Card, ErrorState, LoadingCard, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
 const STATUS_COLOUR = {
-  scheduled: "#5b4bc4",
+  scheduled: "var(--teal)",
   completed: "var(--forest)",
   cancelled: INK_FAINT,
-  no_show: "#b42318",
+  no_show: "var(--score-low)",
 };
 
 function time(iso) {
@@ -72,13 +72,12 @@ export function InterviewWeek({ scope }) {
             return (
               <div
                 key={day.toISOString()}
-                className="rounded-lg p-2 min-h-[90px]"
-                style={{ background: isToday ? "var(--mint)" : "var(--mist)" }}
+                className={`rounded-lg p-2 min-h-[90px] ${isToday ? "bg-[var(--mint)]" : "bg-[var(--mist)]"}`}
               >
-                <p className="text-12 font-semibold uppercase tracking-wide mb-1.5" style={{ color: isToday ? "var(--forest)" : INK_MUTED }}>
+                <p className={`text-12 font-semibold uppercase tracking-wide mb-1.5 ${isToday ? "text-[var(--forest)]" : "text-[var(--ink-soft)]"}`}>
                   {day.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" })}
                 </p>
-                {byDay[index].length === 0 && <p className="text-12" style={{ color: INK_FAINT }}>-</p>}
+                {byDay[index].length === 0 && <p className="text-12 text-[var(--ink-faint)]">-</p>}
                 <ul className="space-y-1.5">
                   {byDay[index].map((i) => (
                     <li
@@ -86,7 +85,7 @@ export function InterviewWeek({ scope }) {
                       className="rounded-md bg-white px-2 py-1.5"
                       style={{ borderLeft: `3px solid ${STATUS_COLOUR[i.status] || INK_MUTED}`, opacity: i.status === "cancelled" ? 0.6 : 1 }}
                     >
-                      <p className="text-12 font-semibold" style={{ color: INK_MUTED }}>
+                      <p className="text-12 font-semibold text-[var(--ink-soft)]">
                         {time(i.startsAt)} · {i.durationMinutes}m
                       </p>
                       <Link
@@ -96,7 +95,7 @@ export function InterviewWeek({ scope }) {
                       >
                         {i.candidateName}
                       </Link>
-                      <p className="text-12 truncate" style={{ color: INK_FAINT }}>
+                      <p className="text-12 truncate text-[var(--ink-faint)]">
                         {[i.jobTitle, i.client].filter(Boolean).join(" · ") || INTERVIEW_KINDS[i.kind]}
                       </p>
                     </li>

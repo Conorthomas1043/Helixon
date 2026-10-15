@@ -38,6 +38,27 @@
   --score-mid:    #b45309;   /* was amber-600 */
   --score-low:    #c0392b;   /* was red-600 */
 
+  /* Pipeline stages, grey-green to deep green (Offer is --gold, Placed
+     --forest, Rejected --score-low). Each is 3:1 on white: for fills, dots
+     and borders next to the stage's name, not for text. */
+  --stage-screened:    #7f948a;
+  --stage-shortlisted: #3c9a73;
+  --stage-interview:   #1d7a74;
+
+  /* A second accent for scheduled and automated things (interviews booked,
+     email sequences), and blue for Word documents. */
+  --teal:       #1d7a74;
+  --teal-soft:  #e7f3f2;
+  --info:       #1d4ed8;
+
+  /* Borders for tinted panels: a mint, warning or danger background reads
+     best with a border of the same hue. */
+  --mint-line:   #cfe6da;
+  /* Bars that aren't the highlighted one in a chart. */
+  --chart-muted: #a9c4b5;
+  --warn-line:   #f1dfbc;
+  --danger-line: #f4d4d2;
+
   --shadow-card:  0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
   --shadow-sm:    0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
   --shadow-raise: 0 2px 6px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.07);
@@ -104,6 +125,16 @@
   --color-score-strong:  var(--score-strong);
   --color-score-mid:     var(--score-mid);
   --color-score-low:     var(--score-low);
+  --color-stage-screened:    var(--stage-screened);
+  --color-stage-shortlisted: var(--stage-shortlisted);
+  --color-stage-interview:   var(--stage-interview);
+  --color-teal:        var(--teal);
+  --color-teal-soft:   var(--teal-soft);
+  --color-info:        var(--info);
+  --color-mint-line:   var(--mint-line);
+  --color-chart-muted: var(--chart-muted);
+  --color-warn-line:   var(--warn-line);
+  --color-danger-line: var(--danger-line);
 
   /* Literal duplicates - see note above. Keep in sync with :root. */
   --radius-card:  14px;

@@ -66,16 +66,16 @@ export default function ReferencePage({ params }) {
       state === "error" ? error : state === "expired" ? "Please ask the agency to send you a new link." : "This reference has already been given. Thank you.";
     return (
       <PublicCard agencyName={info?.agencyName}>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>{title}</h1>
-        <p className="text-sm" style={{ color: MUTED }}>{body}</p>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">{title}</h1>
+        <p className="text-sm text-[var(--ink-soft)]">{body}</p>
       </PublicCard>
     );
   }
   if (state === "done" || state === "declined") {
     return (
       <PublicCard agencyName={info?.agencyName}>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>Thank you</h1>
-        <p className="text-sm" style={{ color: MUTED }}>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">Thank you</h1>
+        <p className="text-sm text-[var(--ink-soft)]">
           {state === "done" ? `Your reference for ${info.candidateName} has been sent to ${info.agencyName || "the agency"}.` : "We've let the agency know you won't be giving a reference."}
         </p>
       </PublicCard>
@@ -84,10 +84,10 @@ export default function ReferencePage({ params }) {
 
   return (
     <PublicCard agencyName={info.agencyName} width={640}>
-      <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
+      <h1 className="text-xl font-semibold text-[var(--ink)] font-display">
         Reference for {info.candidateName}
       </h1>
-      <p className="text-14 mt-1 mb-6" style={{ color: MUTED }}>
+      <p className="text-14 mt-1 mb-6 text-[var(--ink-soft)]">
         {info.agencyName || "A recruitment agency"} has asked you for a reference. Answer what you can - it&apos;s shared with the agency and may be passed to the employer considering {info.candidateName}.
       </p>
       <form
@@ -99,7 +99,7 @@ export default function ReferencePage({ params }) {
       >
         {info.questions.map((q) => (
           <div key={q.id}>
-            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>{q.label}</span>
+            <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">{q.label}</span>
             {q.type === "rating" ? (
               <RatingPicker value={answers[q.id] ?? null} onChange={(n) => set(q.id, n)} label={q.label} />
             ) : q.type === "choice" ? (
@@ -126,36 +126,36 @@ export default function ReferencePage({ params }) {
         ))}
         <div className="grid sm:grid-cols-2 gap-3">
           <label className="block">
-            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
+            <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">Your name</span>
             <input required maxLength={200} value={who.completedBy} onChange={(e) => setWho((w) => ({ ...w, completedBy: e.target.value }))} className={input} style={inputStyle} />
           </label>
           <label className="block">
-            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>Your job title</span>
+            <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">Your job title</span>
             <input maxLength={200} value={who.completedByTitle} onChange={(e) => setWho((w) => ({ ...w, completedByTitle: e.target.value }))} className={input} style={inputStyle} />
           </label>
         </div>
-        <label className="flex items-start gap-2 text-14" style={{ color: INK }}>
+        <label className="flex items-start gap-2 text-14 text-[var(--ink)]">
           <input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="mt-0.5" />
           <span>To the best of my knowledge this reference is accurate, and I&apos;m happy for it to be shared with a prospective employer.</span>
         </label>
-        {error && <p role="alert" className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
-        <button type="submit" disabled={saving || !confirm} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+        {error && <p role="alert" className="text-13 text-[var(--score-low)]">{error}</p>}
+        <button type="submit" disabled={saving || !confirm} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
           {saving ? "Sending…" : "Send reference"}
         </button>
         {declining ? (
-          <div className="rounded-xl p-4 space-y-3" style={{ border: "1px solid var(--border)", background: "var(--mist)" }} role="group" aria-label="Decline the reference">
-            <p className="text-14" style={{ color: INK }}>Let the agency know you won&apos;t be giving a reference?</p>
+          <div className="rounded-xl p-4 space-y-3 border border-[var(--border)] bg-[var(--mist)]" role="group" aria-label="Decline the reference">
+            <p className="text-14 text-[var(--ink)]">Let the agency know you won&apos;t be giving a reference?</p>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full" style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full border border-[var(--border)] text-[var(--ink)] bg-white">
                 Go back
               </button>
-              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50" style={{ background: "var(--score-low)", color: "white" }}>
+              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50 bg-[var(--score-low)] text-white">
                 {saving ? "Sending…" : "Yes, let them know"}
               </button>
             </div>
           </div>
         ) : (
-          <button type="button" disabled={saving} onClick={() => setDeclining(true)} className="w-full text-13 underline" style={{ color: MUTED }}>
+          <button type="button" disabled={saving} onClick={() => setDeclining(true)} className="w-full text-13 underline text-[var(--ink-soft)]">
             I can&apos;t give a reference
           </button>
         )}

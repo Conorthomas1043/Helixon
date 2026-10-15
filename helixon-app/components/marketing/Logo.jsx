@@ -11,8 +11,7 @@ export default function Logo({ size = "nav", showTagline = false, href = "/" }) 
   return (
     <Link href={href} className="flex items-center gap-3 group" aria-label="Helixon home">
       <div
-        className={`${box} flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105`}
-        style={{ background: "var(--forest)" }}
+        className={`${box} flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 bg-[var(--forest)]`}
       >
         <svg width={icon} height={icon} viewBox="0 0 28 28" fill="none" aria-hidden="true">
           <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
@@ -21,11 +20,11 @@ export default function Logo({ size = "nav", showTagline = false, href = "/" }) 
         </svg>
       </div>
       <span className="flex flex-col leading-none">
-        <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <span className="text-sm font-semibold tracking-tight text-[var(--ink)] font-display">
           Helixon
         </span>
         {showTagline && (
-          <span className="hidden sm:block text-11 font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>
+          <span className="hidden sm:block text-11 font-medium mt-0.5 text-[var(--ink-faint)]">
             Built for recruitment agencies
           </span>
         )}

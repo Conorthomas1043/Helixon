@@ -90,20 +90,20 @@ export default function ContactPage({ role = "" }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="contact" />
       <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-12 text-center">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)]">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
           We usually reply within a day
         </span>
-        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 max-w-xl mx-auto text-[var(--ink)] font-display">
           Get in touch.
         </h1>
-        <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-sm leading-relaxed max-w-md mx-auto text-[var(--ink-soft)]">
           Whether it&apos;s a question before you sign up or something on an existing account, we&apos;re happy to help.
         </p>
       </section>
@@ -115,15 +115,15 @@ export default function ContactPage({ role = "" }) {
           <div className="space-y-4">
             <h2 className="sr-only">Email us directly</h2>
             {CHANNELS.map((c) => (
-              <div key={c.title} className="rounded-card p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+              <div key={c.title} className="rounded-card p-5 bg-white border border-[var(--border)]">
                 <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-btn flex items-center justify-center shrink-0" style={{ background: "var(--mint)" }}>
+                  <div className="w-9 h-9 rounded-btn flex items-center justify-center shrink-0 bg-[var(--mint)]">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{c.icon}</svg>
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{c.title}</h3>
-                    <p className="text-xs leading-relaxed mb-2" style={{ color: "var(--ink-soft)" }}>{c.body}</p>
-                    <a href={`mailto:${c.email}`} className="text-xs font-semibold" style={{ color: "var(--forest)" }}>{c.email}</a>
+                    <h3 className="text-sm font-semibold mb-1 text-[var(--ink)]">{c.title}</h3>
+                    <p className="text-xs leading-relaxed mb-2 text-[var(--ink-soft)]">{c.body}</p>
+                    <a href={`mailto:${c.email}`} className="text-xs font-semibold text-[var(--forest)]">{c.email}</a>
                   </div>
                 </div>
               </div>
@@ -134,40 +134,40 @@ export default function ContactPage({ role = "" }) {
           <div className="rounded-2xl p-7" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
             {sent ? (
               <div className="text-center py-10">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--mint)" }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-[var(--mint)]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round"><path d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
-                <h2 className="font-semibold mb-1.5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Message sent</h2>
-                <p className="text-sm max-w-xs mx-auto" style={{ color: "var(--ink-soft)" }}>
+                <h2 className="font-semibold mb-1.5 text-[var(--ink)] font-display">Message sent</h2>
+                <p className="text-sm max-w-xs mx-auto text-[var(--ink-soft)]">
                   Thanks - we&apos;ll get back to you at {email || "your email"} shortly.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>Send us a message</h2>
+                <h2 className="text-sm font-semibold mb-1 text-[var(--ink)]">Send us a message</h2>
 
                 {error && (
-                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-btn" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-                    <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
+                  <div role="alert" className="flex items-start gap-2.5 p-3 rounded-btn bg-[var(--ui-danger-soft)] border border-[var(--danger-line)]">
+                    <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth="2" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
-                    <p className="text-xs" style={{ color: "#b91c1c" }}>{error}</p>
+                    <p className="text-xs text-[var(--score-low)]">{error}</p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Name</label>
+                    <label htmlFor="name" className="block text-xs font-semibold mb-1.5 text-[var(--ink)]">Name</label>
                     <input id="name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} className="focus:outline-none transition-shadow" onFocus={inputFocus} onBlur={inputBlur} />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Email</label>
+                    <label htmlFor="email" className="block text-xs font-semibold mb-1.5 text-[var(--ink)]">Email</label>
                     <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} className="focus:outline-none transition-shadow" onFocus={inputFocus} onBlur={inputBlur} />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="topic" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Topic</label>
+                  <label htmlFor="topic" className="block text-xs font-semibold mb-1.5 text-[var(--ink)]">Topic</label>
                   <div className="relative">
                     <select
                       id="topic"
@@ -193,7 +193,7 @@ export default function ContactPage({ role = "" }) {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-xs font-semibold mb-1.5" style={{ color: "var(--ink)" }}>Message</label>
+                  <label htmlFor="message" className="block text-xs font-semibold mb-1.5 text-[var(--ink)]">Message</label>
                   <textarea
                     id="message" rows={5} value={message} onChange={(e) => setMessage(e.target.value)} required
                     style={{ ...inputStyle, resize: "vertical" }} className="focus:outline-none transition-shadow"

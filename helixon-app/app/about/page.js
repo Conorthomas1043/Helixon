@@ -83,31 +83,31 @@ function ExampleReport() {
       style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-raise)" }}
     >
       <div className="flex items-center justify-between gap-3 mb-5">
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
           Warehouse Operative
         </p>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
           Example
         </span>
       </div>
       <div className="flex items-center gap-4 mb-5">
-        <span className="text-36 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>
+        <span className="text-36 font-semibold leading-none tabular-nums font-mono text-[var(--forest)]">
           88
         </span>
         <div>
-          <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>Strong match</p>
-          <p className="text-xs" style={{ color: "var(--ink-soft)" }}>4 years in a busy distribution centre</p>
+          <p className="text-sm font-semibold text-[var(--ink)]">Strong match</p>
+          <p className="text-xs text-[var(--ink-soft)]">4 years in a busy distribution centre</p>
         </div>
       </div>
-      <ul className="divide-y" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      <ul className="divide-y list-none m-0 p-0">
         {EXAMPLE_REQUIREMENTS.map((r) => (
           <li key={r.label} className="flex items-center justify-between gap-3 py-2.5">
-            <span className="text-sm" style={{ color: "var(--ink)" }}>{r.label}</span>
+            <span className="text-sm text-[var(--ink)]">{r.label}</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={TONES[r.tone]}>{r.status}</span>
           </li>
         ))}
       </ul>
-      <p className="text-xs leading-relaxed mt-4 pt-4 border-t" style={{ color: "var(--ink-soft)" }}>
+      <p className="text-xs leading-relaxed mt-4 pt-4 border-t text-[var(--ink-soft)]">
         From the CV: &ldquo;Ran weekly stock counts across three aisles.&rdquo;
       </p>
     </div>
@@ -117,8 +117,7 @@ function ExampleReport() {
 export default function AboutPage() {
   return (
     <div
-      className="min-h-screen"
-      style={{ background: "var(--mist)" }}
+      className="min-h-screen bg-[var(--mist)]"
     >
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="about" showTagline={false} />
@@ -130,21 +129,13 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div>
             <span
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6"
-              style={{
-                background: "var(--mint)",
-                color: "var(--forest)",
-              }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)]"
             >
               About Helixon
             </span>
 
             <h1
-              className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5"
-              style={{
-                color: "var(--ink)",
-                fontFamily: "var(--font-display)",
-              }}
+              className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 text-[var(--ink)] font-display"
             >
               Screening that
               <br />
@@ -152,8 +143,7 @@ export default function AboutPage() {
             </h1>
 
             <p
-              className="text-sm leading-relaxed mb-8 max-w-md"
-              style={{ color: "var(--ink-soft)" }}
+              className="text-sm leading-relaxed mb-8 max-w-md text-[var(--ink-soft)]"
             >
               Helixon scores every CV against the job you&apos;re hiring for,
               quotes the line in the CV behind each judgement, and keeps the
@@ -171,27 +161,18 @@ export default function AboutPage() {
       {/* ── Story / approach ────────────────────────────────────────────── */}
 
       <section
-        className="border-y"
-        style={{
-          borderColor: "var(--border)",
-          background: "white",
-        }}
+        className="border-y border-[var(--border)] bg-white"
       >
         <div className="max-w-[1100px] mx-auto px-6 py-20">
           <div className="text-center mb-12">
             <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ color: "var(--ink-faint)" }}
+              className="text-xs font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]"
             >
               The idea
             </p>
 
             <h2
-              className="text-2xl sm:text-3xl font-semibold tracking-tight"
-              style={{
-                color: "var(--ink)",
-                fontFamily: "var(--font-display)",
-              }}
+              className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display"
             >
               From repetitive screening to a clearer workflow
             </h2>
@@ -205,31 +186,24 @@ export default function AboutPage() {
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span
-                    className="text-xs font-semibold"
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      color: "var(--forest)",
-                    }}
+                    className="text-xs font-semibold font-mono text-[var(--forest)]"
                   >
                     0{i + 1}
                   </span>
 
                   <span
-                    className="h-px flex-1"
-                    style={{ background: "var(--border)" }}
+                    className="h-px flex-1 bg-[var(--border)]"
                   />
                 </div>
 
                 <h3
-                  className="text-sm font-semibold mb-1.5"
-                  style={{ color: "var(--ink)" }}
+                  className="text-sm font-semibold mb-1.5 text-[var(--ink)]"
                 >
                   {t.label}
                 </h3>
 
                 <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: "var(--ink-soft)" }}
+                  className="text-xs leading-relaxed text-[var(--ink-soft)]"
                 >
                   {t.body}
                 </p>
@@ -244,18 +218,13 @@ export default function AboutPage() {
       <section className="max-w-[1100px] mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <p
-            className="text-xs font-semibold uppercase tracking-widest mb-2"
-            style={{ color: "var(--ink-faint)" }}
+            className="text-xs font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]"
           >
             What we believe
           </p>
 
           <h2
-            className="text-2xl sm:text-3xl font-semibold tracking-tight"
-            style={{
-              color: "var(--ink)",
-              fontFamily: "var(--font-display)",
-            }}
+            className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display"
           >
             Three principles behind Helixon
           </h2>
@@ -265,15 +234,10 @@ export default function AboutPage() {
           {VALUES.map((v) => (
             <div
               key={v.title}
-              className="rounded-card p-6"
-              style={{
-                background: "white",
-                border: "1px solid var(--border)",
-              }}
+              className="rounded-card p-6 bg-white border border-[var(--border)]"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center mb-4"
-                style={{ background: "var(--mint)" }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center mb-4 bg-[var(--mint)]"
               >
                 <svg
                   width="14"
@@ -299,15 +263,13 @@ export default function AboutPage() {
               </div>
 
               <h3
-                className="text-sm font-semibold mb-1.5"
-                style={{ color: "var(--ink)" }}
+                className="text-sm font-semibold mb-1.5 text-[var(--ink)]"
               >
                 {v.title}
               </h3>
 
               <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--ink-soft)" }}
+                className="text-xs leading-relaxed text-[var(--ink-soft)]"
               >
                 {v.body}
               </p>
@@ -319,33 +281,23 @@ export default function AboutPage() {
       {/* ── About / team ────────────────────────────────────────────────── */}
 
       <section
-        className="border-y"
-        style={{
-          borderColor: "var(--border)",
-          background: "white",
-        }}
+        className="border-y border-[var(--border)] bg-white"
       >
         <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
           <p
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "var(--ink-faint)" }}
+            className="text-xs font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]"
           >
             Who&apos;s behind it
           </p>
 
           <h2
-            className="text-xl sm:text-2xl font-semibold tracking-tight mb-4"
-            style={{
-              color: "var(--ink)",
-              fontFamily: "var(--font-display)",
-            }}
+            className="text-xl sm:text-2xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display"
           >
             Built for agency desks
           </h2>
 
           <p
-            className="text-sm leading-relaxed max-w-lg mx-auto"
-            style={{ color: "var(--ink-soft)" }}
+            className="text-sm leading-relaxed max-w-lg mx-auto text-[var(--ink-soft)]"
           >
             One recruiter screens and the whole team sees the result. Notes,
             tags and shortlists stay with the candidate, and every score,

@@ -83,11 +83,11 @@ export default function MarketingNav({ active, showTagline = true }) {
   const initials = signedIn ? initialsFor(user) : "";
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
+    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
       <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
         <Logo showTagline={showTagline} />
 
-        <div className="hidden md:flex items-center gap-1 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+        <div className="hidden md:flex items-center gap-1 text-xs font-medium text-[var(--ink-soft)]">
           {NAV_LINKS.map(([key, label, href]) => (
             <Link key={key} href={href} className={`nav-link ${active === key ? "nav-link--active" : ""}`}>
               {label}
@@ -112,8 +112,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                 aria-expanded={accountOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
-                className="w-8 h-8 rounded-full text-white text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
-                style={{ background: "var(--forest)" }}
+                className="w-8 h-8 rounded-full text-white text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] bg-[var(--forest)]"
               >
                 {initials}
               </button>
@@ -130,9 +129,9 @@ export default function MarketingNav({ active, showTagline = true }) {
                   <Link href="/account" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: "var(--ink-soft)" }}>
                     Account settings
                   </Link>
-                  <div className="border-t mt-1 pt-1" style={{ borderColor: "var(--border)" }}>
+                  <div className="border-t mt-1 pt-1 border-[var(--border)]">
                     <SignOutButton redirectUrl="/login">
-                      <button type="button" role="menuitem" onClick={clearLocalCandidateData} className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50" style={{ color: "var(--score-low)" }}>
+                      <button type="button" role="menuitem" onClick={clearLocalCandidateData} className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50 text-[var(--score-low)]">
                         Log out
                       </button>
                     </SignOutButton>
@@ -152,8 +151,7 @@ export default function MarketingNav({ active, showTagline = true }) {
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ color: "var(--ink)" }}
+            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-[var(--ink)]"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               {mobileOpen ? (
@@ -171,7 +169,7 @@ export default function MarketingNav({ active, showTagline = true }) {
       </div>
 
       {mobileOpen && (
-        <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white" style={{ borderColor: "var(--border)" }}>
+        <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white border-[var(--border)]">
           {NAV_LINKS.map(([key, label, href]) => (
             <Link
               key={key}

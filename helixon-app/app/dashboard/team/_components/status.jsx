@@ -39,10 +39,10 @@ export function MyStatusCard({ me, presence, enabled, onSaved }) {
   if (!enabled) {
     return (
       <div id="my-status" className="rounded-card p-5 scroll-mt-24" style={CARD}>
-        <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+        <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
           Presence
         </p>
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           Showing who&apos;s online is switched off for this workspace, so nothing about when people use Helixon is recorded.{" "}
           <Link href="/dashboard/privacy" className="font-semibold underline" style={{ color: "var(--forest)" }}>
             Data &amp; privacy settings
@@ -98,14 +98,14 @@ export function MyStatusEditor({ me, presence, onSaved }) {
 
   return (
     <div id="my-status" className="rounded-card p-5 scroll-mt-24" style={CARD}>
-      <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+      <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
         Your status
       </p>
-      <p className="flex items-center gap-2 text-14 font-semibold" style={{ color: INK }}>
+      <p className="flex items-center gap-2 text-14 font-semibold text-[var(--ink)]">
         <PresenceDot state={presence?.state === "offline" ? "active" : presence?.state || "active"} size={9} ring="transparent" />
         {presence ? (presence.state === "offline" ? "Active now" : presenceLine(presence)) : "Active now"}
       </p>
-      {presence?.message && <p className="text-14 italic mt-0.5" style={{ color: INK_MUTED }}>“{presence.message}”</p>}
+      {presence?.message && <p className="text-14 italic mt-0.5 text-[var(--ink-soft)]">“{presence.message}”</p>}
 
       <div className="grid grid-cols-3 gap-1.5 mt-4" role="radiogroup" aria-label="Status">
         {STATUS_CHOICES.map((c) => {
@@ -121,12 +121,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
                 setStatus(c.value);
                 if (!c.value) save(null);
               }}
-              className="flex items-center justify-center gap-1.5 text-14 font-semibold px-2 py-2 rounded-btn border transition-colors"
-              style={{
-                borderColor: on ? "var(--forest)" : "var(--border)",
-                background: on ? "var(--mint)" : "white",
-                color: on ? "var(--forest-deep)" : INK_MUTED,
-              }}
+              className={`flex items-center justify-center gap-1.5 text-14 font-semibold px-2 py-2 rounded-btn border transition-colors ${on ? "border-[var(--forest)]" : "border-[var(--border)]"} ${on ? "bg-[var(--mint)]" : "bg-white"} ${on ? "text-[var(--forest-deep)]" : "text-[var(--ink-soft)]"}`}
             >
               <PresenceDot state={c.dot} size={8} ring="transparent" />
               {c.label}
@@ -143,8 +138,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
             maxLength={80}
             placeholder={status === "busy" ? "What are you busy with? (optional)" : "Where are you? (optional)"}
             aria-label="Status message"
-            className="w-full text-14 px-3.5 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="w-full text-14 px-3.5 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           />
           <div className="flex flex-wrap gap-1.5">
             {MESSAGE_SUGGESTIONS.map((m) => (
@@ -164,8 +158,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               value={clearAfter}
               onChange={(e) => setClearAfter(e.target.value)}
               aria-label="Clear status"
-              className="flex-1 text-14 font-semibold px-3 py-2 rounded-full bg-white"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="flex-1 text-14 font-semibold px-3 py-2 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
             >
               {CLEAR_AFTER.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -177,21 +170,20 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               type="button"
               onClick={() => save()}
               disabled={saving}
-              className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50"
-              style={{ background: "var(--forest)", color: "white" }}
+              className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
             >
               {saving ? "Saving…" : saved ? "Saved ✓" : "Set status"}
             </button>
           </div>
         </div>
       )}
-      {!status && saved && <p className="text-13 mt-2" style={{ color: "var(--forest)" }}>Back to automatic ✓</p>}
-      {error && <p role="alert" className="text-13 mt-2" style={{ color: "var(--score-low)" }}>{error}</p>}
-      <p className="text-13 mt-3" style={{ color: INK_FAINT }}>
+      {!status && saved && <p className="text-13 mt-2 text-[var(--forest)]">Back to automatic ✓</p>}
+      {error && <p role="alert" className="text-13 mt-2 text-[var(--score-low)]">{error}</p>}
+      <p className="text-13 mt-3 text-[var(--ink-faint)]">
         Teammates see you as active while you&apos;re using Helixon, idle after 5 minutes without touching it, and offline once it&apos;s closed.
         Only those times are kept - not what you click or type.
       </p>
-      <label className="flex items-start gap-2 mt-3 pt-3 cursor-pointer" style={{ borderTop: "1px solid var(--border)" }}>
+      <label className="flex items-start gap-2 mt-3 pt-3 cursor-pointer border-t border-t-[var(--border)]">
         <input
           type="checkbox"
           checked={!hidden}
@@ -199,9 +191,9 @@ export function MyStatusEditor({ me, presence, onSaved }) {
           onChange={(e) => toggleHidden(!e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-[var(--forest)]"
         />
-        <span className="text-14" style={{ color: INK }}>
+        <span className="text-14 text-[var(--ink)]">
           Share my presence with the team
-          <span className="block text-13" style={{ color: INK_FAINT }}>
+          <span className="block text-13 text-[var(--ink-faint)]">
             {hidden ? "Hidden - nothing about when you use Helixon is being recorded." : "Untick to hide it and delete what's been recorded."}
           </span>
         </span>

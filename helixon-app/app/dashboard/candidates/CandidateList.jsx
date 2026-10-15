@@ -17,11 +17,12 @@ import { CANDIDATE_COLUMNS, parseColumns } from "@/lib/candidates/list-columns";
 import { useLocalSetting } from "@/lib/hooks/useLocalSetting";
 import { CARD, INK, INK_FAINT, INK_MUTED, RED } from "@/lib/candidates/format";
 import { STAGE_LABELS } from "@/lib/candidates/stage-labels";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { activeFilterCount as countActiveFilters, initialListState, listReducer } from "./_lib/list-state";
 import { TAG_CATALOG } from "@/lib/agency/tag-catalog";
 import { bulkUpdateCandidates, deleteTag, enrollInSequence, getCandidates, getCandidatesForExport, getEmailSequences, getJobs, getRecruiters, getStageCounts, getTags } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
-import { DEFAULT_FILTERS, filtersFromParams, paramsFromFilters } from "@/lib/candidates/list-params";
+import { filtersFromParams, paramsFromFilters } from "@/lib/candidates/list-params";
 import { reportQuietly } from "@/lib/report-error";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -94,10 +95,10 @@ function CandidateDatabaseContent({ initialData }) {
     [] // eslint-disable-line react-hooks/exhaustive-deps -- read once on mount; the UI's own filter controls take over after that
   );
 
-  const [filters, setFilters] = useState(initialFilters);
-  const [searchInput, setSearchInput] = useState(initialFilters.search);
-  const [nearInput, setNearInput] = useState(initialFilters.near);
-  const [errorMessage, setErrorMessage] = useState("");
+  // Filters, the loaded page, ticked rows and the bulk/export state: one
+  // reducer with named actions (./_lib/list-state.js).
+  const [state, dispatch] = useReducer(listReducer, null, () => initialListState(initialFilters, initialData));
+  const { filters, searchInput, nearInput, errorMessage, data, status, reloadKey, selectedIds, bulkBusy, bulkError, bulkNotice, exporting, exportError } = state;
   const [ask, confirmDialog] = useConfirm();
 
   useEffect(() => {
@@ -114,18 +115,14 @@ function CandidateDatabaseContent({ initialData }) {
       initialFilters.jobId !== "all" ||
       Boolean(initialFilters.near)
   );
-  const [data, setData] = useState(initialData); // { result, stageCounts }
-  const [status, setStatus] = useState(initialData ? "ready" : "loading");
   // The filters page.jsx loaded on the server; no need to fetch those again.
   const serverLoaded = useRef(initialData ? paramsFromFilters(initialFilters) : null);
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
   // The default columns in the server render, then the person's own choice.
   const [savedColumns, saveColumns] = useLocalSetting(COLUMNS_KEY);
   const columns = useMemo(() => new Set(parseColumns(savedColumns, CANDIDATE_COLUMNS)), [savedColumns]);
   const setColumns = useCallback((next) => saveColumns(JSON.stringify([...next])), [saveColumns]);
   const [composing, setComposing] = useState(false);
   const [sequences, setSequences] = useState([]);
-  const [bulkNotice, setBulkNotice] = useState("");
 
   useEffect(() => {
     getEmailSequences()
@@ -136,17 +133,16 @@ function CandidateDatabaseContent({ initialData }) {
   const bulkEnroll = useCallback(
     async (sequenceId) => {
       if (!sequenceId) return;
-      setBulkNotice("");
+      dispatch({ type: "bulkNotice", message: "" });
       try {
         const res = await enrollInSequence(sequenceId, [...selectedIds]);
-        setBulkNotice(`Added ${res.enrolled} to the sequence${res.skipped?.length ? ` · ${res.skipped.length} skipped (no email, already on it, or rejected/placed)` : ""}.`);
+        dispatch({ type: "bulkNotice", message: `Added ${res.enrolled} to the sequence${res.skipped?.length ? ` · ${res.skipped.length} skipped (no email, already on it, or rejected/placed)` : ""}.` });
       } catch (err) {
-        setBulkNotice(err.message || "Couldn't add them to the sequence.");
+        dispatch({ type: "bulkNotice", message: err.message || "Couldn't add them to the sequence." });
       }
     },
     [selectedIds]
   );
-  const [reloadKey, setReloadKey] = useState(0);
 
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
@@ -171,9 +167,7 @@ function CandidateDatabaseContent({ initialData }) {
 
   // Debounce the free-text search before it hits the "query".
   useEffect(() => {
-    const t = setTimeout(() => {
-      setFilters((f) => (f.search === searchInput ? f : { ...f, search: searchInput, page: 1 }));
-    }, 250);
+    const t = setTimeout(() => dispatch({ type: "commitSearch" }), 250);
     return () => clearTimeout(t);
   }, [searchInput]);
 
@@ -181,49 +175,26 @@ function CandidateDatabaseContent({ initialData }) {
     if (serverLoaded.current === paramsFromFilters(filters) && reloadKey === 0) return;
     serverLoaded.current = null;
     let cancelled = false;
-    setStatus((s) => (s === "ready" ? "ready" : "loading"));
+    dispatch({ type: "loading" });
     fetchCandidates(filters)
       .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setStatus("ready");
-        setSelectedIds(new Set());
+        if (!cancelled) dispatch({ type: "loaded", data: d });
       })
       .catch((err) => {
-        if (cancelled) return;
-        setErrorMessage(err?.message || "");
-        setStatus("error");
+        if (!cancelled) dispatch({ type: "failed", message: err?.message });
       });
     return () => {
       cancelled = true;
     };
   }, [filters, reloadKey]);
 
-  const retry = useCallback(() => {
-    setStatus("loading");
-    setReloadKey((k) => k + 1);
-  }, []);
-
-  const updateFilter = useCallback((patch) => {
-    setFilters((f) => ({ ...f, ...patch, page: 1 }));
-  }, []);
-
-  const setPage = useCallback((page) => {
-    setFilters((f) => ({ ...f, page }));
-  }, []);
-
-  const clearFilters = useCallback(() => {
-    setSearchInput("");
-    setNearInput("");
-    setFilters(DEFAULT_FILTERS);
-  }, []);
-
-  const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState("");
+  const retry = useCallback(() => dispatch({ type: "retry" }), []);
+  const updateFilter = useCallback((patch) => dispatch({ type: "filter", patch }), []);
+  const setPage = useCallback((page) => dispatch({ type: "page", page }), []);
+  const clearFilters = useCallback(() => dispatch({ type: "clearFilters" }), []);
 
   const handleExport = useCallback(async () => {
-    setExporting(true);
-    setExportError("");
+    dispatch({ type: "exportStart" });
     try {
       // Same filters currently applied to the list, minus pagination - the
       // export is "everything matching what you're looking at", not just
@@ -248,19 +219,13 @@ function CandidateDatabaseContent({ initialData }) {
         }))
       );
     } catch (err) {
-      setExportError(err?.message || "Couldn't export candidates. Please try again.");
+      dispatch({ type: "exportFailed", message: err?.message || "Couldn't export candidates. Please try again." });
     } finally {
-      setExporting(false);
+      dispatch({ type: "exportDone" });
     }
   }, [filters]);
 
-  const toggleTag = useCallback((tagId) => {
-    setFilters((f) => ({
-      ...f,
-      page: 1,
-      tagIds: f.tagIds.includes(tagId) ? f.tagIds.filter((t) => t !== tagId) : [...f.tagIds, tagId],
-    }));
-  }, []);
+  const toggleTag = useCallback((tagId) => dispatch({ type: "toggleTag", tagId }), []);
 
   const removeCustomTag = useCallback(
     async (tag) => {
@@ -268,68 +233,37 @@ function CandidateDatabaseContent({ initialData }) {
       try {
         await deleteTag(tag.id);
         setTags((list) => list.filter((t) => t.id !== tag.id));
-        setFilters((f) => (f.tagIds.includes(tag.id) ? { ...f, tagIds: f.tagIds.filter((x) => x !== tag.id), page: 1 } : f));
+        dispatch({ type: "tagDeleted", tagId: tag.id });
         retry();
       } catch (err) {
-        setExportError(err.message || "Couldn't delete the tag.");
+        dispatch({ type: "exportFailed", message: err.message || "Couldn't delete the tag." });
       }
     },
     [retry, ask]
   );
 
-  const toggleSelect = useCallback((id) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  const toggleSelect = useCallback((id) => dispatch({ type: "toggleSelect", id }), []);
+  const toggleSelectAll = useCallback(() => dispatch({ type: "toggleSelectAll" }), []);
 
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds((prev) => {
-      if (!data?.result.items.length) return prev;
-      const allSelected = data.result.items.every((c) => prev.has(c.id));
-      if (allSelected) return new Set();
-      return new Set(data.result.items.map((c) => c.id));
-    });
-  }, [data]);
-
-  const activeFilterCount = useMemo(() => {
-    let n = 0;
-    if (filters.stage !== "all") n += 1;
-    if (filters.scoreBand !== "all") n += 1;
-    if (filters.status !== "all") n += 1;
-    if (filters.recruiterId !== "all") n += 1;
-    if (filters.jobId !== "all") n += 1;
-    if (filters.dateRange !== "all") n += 1;
-    if (filters.tagIds.length > 0) n += 1;
-    if (filters.pool) n += 1;
-    if (filters.near) n += 1;
-    return n;
-  }, [filters]);
+  const activeFilterCount = useMemo(() => countActiveFilters(filters), [filters]);
 
   const hasAnyFilter = activeFilterCount > 0 || filters.search.trim().length > 0;
 
   // One request per bulk action (app/api/candidates/bulk), not one per
   // candidate, and a failure is shown rather than swallowed.
-  const [bulkBusy, setBulkBusy] = useState(false);
-  const [bulkError, setBulkError] = useState("");
   const runBulk = useCallback(
     async (payload, { clearSelection = false } = {}) => {
-      setBulkBusy(true);
-      setBulkError("");
+      dispatch({ type: "bulkStart" });
       try {
         await bulkUpdateCandidates([...selectedIds], payload);
-        if (clearSelection) setSelectedIds(new Set());
+        if (clearSelection) dispatch({ type: "clearSelection" });
       } catch (err) {
-        setBulkError(err.message || "That didn't work. Please try again.");
+        dispatch({ type: "bulkFailed", message: err.message || "That didn't work. Please try again." });
       } finally {
-        setBulkBusy(false);
-        retry();
+        dispatch({ type: "bulkDone" });
       }
     },
-    [selectedIds, retry]
+    [selectedIds]
   );
 
   const bulkChangeStage = useCallback(
@@ -357,17 +291,17 @@ function CandidateDatabaseContent({ initialData }) {
   const stageCounts = data?.stageCounts;
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       {confirmDialog}
 
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
               Candidate database
             </p>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+            <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
               Candidates
             </h1>
           </div>
@@ -395,15 +329,14 @@ function CandidateDatabaseContent({ initialData }) {
             <input
               type="search"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={(e) => dispatch({ type: "typeSearch", value: e.target.value })}
               placeholder="Search name, skill, company, job or recruiter…"
-              className="w-full text-sm px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="w-full text-sm px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               aria-label="Search candidates, jobs or recruiters"
             />
-            <p className="text-12 mt-1.5 px-2" style={{ color: INK_FAINT }}>
+            <p className="text-12 mt-1.5 px-2 text-[var(--ink-faint)]">
               {result?.searchMode === "boolean" ? (
-                <span style={{ color: "var(--forest)" }}>Boolean search across CVs and profiles. </span>
+                <span className="text-[var(--forest)]">Boolean search across CVs and profiles. </span>
               ) : null}
               Tip: <code>(java OR kotlin) AND &quot;spring boot&quot; NOT junior</code>, or <code>develop*</code>, searches every CV.
             </p>
@@ -419,7 +352,7 @@ function CandidateDatabaseContent({ initialData }) {
               </FilterChip>
             ))}
 
-            <span className="w-px h-5 mx-1 shrink-0" style={{ background: "var(--border)" }} />
+            <span className="w-px h-5 mx-1 shrink-0 bg-[var(--border)]" />
 
             <FilterChip active={filters.pool} onClick={() => updateFilter({ pool: !filters.pool })}>
               ☆ Talent pool
@@ -441,7 +374,7 @@ function CandidateDatabaseContent({ initialData }) {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-12 font-semibold px-1.5 rounded-full tabular-nums" style={{ background: "var(--forest)", color: "white" }}>
+                <span className="text-12 font-semibold px-1.5 rounded-full tabular-nums bg-[var(--forest)] text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -454,9 +387,7 @@ function CandidateDatabaseContent({ initialData }) {
               currentQuery={paramsFromFilters({ ...filters, page: 1 })}
               onApply={(qs) => {
                 const next = filtersFromParams(new URLSearchParams(qs));
-                setSearchInput(next.search);
-                setNearInput(next.near);
-                setFilters(next);
+                dispatch({ type: "applySaved", filters: next });
               }}
             />
 
@@ -464,8 +395,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50"
-              style={{ background: "white", color: INK_MUTED, border: "1px solid var(--border)" }}
+              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50 bg-white text-[var(--ink-soft)] border border-[var(--border)]"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" />
@@ -503,13 +433,12 @@ function CandidateDatabaseContent({ initialData }) {
               >
                 <input
                   value={nearInput}
-                  onChange={(e) => setNearInput(e.target.value)}
+                  onChange={(e) => dispatch({ type: "typeNear", value: e.target.value })}
                   onBlur={() => nearInput.trim() !== filters.near && updateFilter({ near: nearInput.trim() })}
                   placeholder="Near town or postcode"
                   aria-label="Near a town or postcode"
                   maxLength={100}
-                  className="text-13 px-3 py-1.5 rounded-full w-44 bg-white"
-                  style={{ border: "1px solid var(--border)", color: INK }}
+                  className="text-13 px-3 py-1.5 rounded-full w-44 bg-white border border-[var(--border)] text-[var(--ink)]"
                 />
                 <Select
                   ariaLabel="Distance"
@@ -520,7 +449,7 @@ function CandidateDatabaseContent({ initialData }) {
               </form>
               <Select ariaLabel="Filter by date" value={filters.dateRange} onChange={(v) => updateFilter({ dateRange: v })} options={DATE_RANGES} />
 
-              <span className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
+              <span className="w-px h-5 mx-1 bg-[var(--border)]" />
 
               {tags.map((t) => (
                 <TagChip
@@ -536,8 +465,7 @@ function CandidateDatabaseContent({ initialData }) {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-13 font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-                  style={{ color: "var(--forest)" }}
+                  className="text-13 font-semibold ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded text-[var(--forest)]"
                 >
                   Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
                 </button>
@@ -549,7 +477,7 @@ function CandidateDatabaseContent({ initialData }) {
         {/* Bulk action bar */}
         {selectedIds.size > 0 && (
           <div className="rounded-card p-3.5 sm:p-4 flex flex-wrap items-center gap-3" style={{ ...CARD, background: "var(--mist)" }}>
-            <span className="text-14 font-semibold" style={{ color: INK }}>
+            <span className="text-14 font-semibold text-[var(--ink)]">
               {selectedIds.size} selected
             </span>
             <Select
@@ -568,8 +496,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={() => runBulk({ action: "pool" })}
               disabled={bulkBusy}
-              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-              style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--forest)] text-[var(--forest)]"
             >
               ☆ Save to talent pool
             </button>
@@ -578,8 +505,7 @@ function CandidateDatabaseContent({ initialData }) {
                 type="button"
                 onClick={() => runBulk({ action: "unpool" }, { clearSelection: true })}
                 disabled={bulkBusy}
-                className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50"
-                style={{ color: INK_MUTED }}
+                className="text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded disabled:opacity-50 text-[var(--ink-soft)]"
               >
                 Remove from pool
               </button>
@@ -587,8 +513,7 @@ function CandidateDatabaseContent({ initialData }) {
             <button
               type="button"
               onClick={() => setComposing(true)}
-              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
             >
               Email…
             </button>
@@ -622,7 +547,7 @@ function CandidateDatabaseContent({ initialData }) {
                 Open side by side
               </Link>
             ) : selectedIds.size > 4 ? (
-              <span className="text-13" style={{ color: INK_MUTED }}>Select up to 4 to compare or open side by side</span>
+              <span className="text-13 text-[var(--ink-soft)]">Select up to 4 to compare or open side by side</span>
             ) : null}
             <button
               type="button"
@@ -633,17 +558,16 @@ function CandidateDatabaseContent({ initialData }) {
             >
               Delete…
             </button>
-            {bulkBusy && <span className="text-13" style={{ color: INK_MUTED }}>Working…</span>}
+            {bulkBusy && <span className="text-13 text-[var(--ink-soft)]">Working…</span>}
             <button
               type="button"
-              onClick={() => setSelectedIds(new Set())}
-              className="text-13 font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
-              style={{ color: INK_MUTED }}
+              onClick={() => dispatch({ type: "clearSelection" })}
+              className="text-13 font-semibold ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 rounded text-[var(--ink-soft)]"
             >
               Clear selection
             </button>
             {bulkNotice && (
-              <p role="status" className="w-full text-13" style={{ color: INK_MUTED }}>
+              <p role="status" className="w-full text-13 text-[var(--ink-soft)]">
                 {bulkNotice}
               </p>
             )}
@@ -651,7 +575,7 @@ function CandidateDatabaseContent({ initialData }) {
               <ComposeEmail
                 candidateIds={[...selectedIds]}
                 onClose={() => setComposing(false)}
-                onSent={(res) => setBulkNotice(`Sent ${res.sent} email${res.sent === 1 ? "" : "s"}.`)}
+                onSent={(res) => dispatch({ type: "bulkNotice", message: `Sent ${res.sent} email${res.sent === 1 ? "" : "s"}.` })}
               />
             )}
             {bulkError && (
@@ -665,12 +589,12 @@ function CandidateDatabaseContent({ initialData }) {
           {/* Wraps on a phone, so the count, select-all and columns don't
               push the sort menu off the edge of a single line. */}
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
-            <p className="text-13 whitespace-nowrap" style={{ color: INK_MUTED }}>
+            <p className="text-13 whitespace-nowrap text-[var(--ink-soft)]">
               {status === "ready" && result ? `Showing ${result.items.length === 0 ? 0 : (result.page - 1) * result.pageSize + 1}–${Math.min(result.page * result.pageSize, result.total)} of ${result.total}` : "\u00A0"}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               {status === "ready" && result && result.items.length > 0 && (
-                <label className="flex items-center gap-1.5 text-13 font-semibold mr-2 whitespace-nowrap" style={{ color: INK_MUTED }}>
+                <label className="flex items-center gap-1.5 text-13 font-semibold mr-2 whitespace-nowrap text-[var(--ink-soft)]">
                   <input
                     type="checkbox"
                     className="w-4 h-4 accent-[var(--forest)]"
@@ -701,25 +625,23 @@ function CandidateDatabaseContent({ initialData }) {
           )}
 
           {status === "ready" && result && result.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-5 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+            <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-t-[var(--border)]">
               <button
                 type="button"
                 disabled={result.page <= 1}
                 onClick={() => setPage(result.page - 1)}
-                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               >
                 ← Previous
               </button>
-              <span className="text-13 tabular-nums" style={{ color: INK_MUTED, fontFamily: "var(--font-mono)" }}>
+              <span className="text-13 tabular-nums text-[var(--ink-soft)] font-mono">
                 Page {result.page} of {result.totalPages}
               </span>
               <button
                 type="button"
                 disabled={result.page >= result.totalPages}
                 onClick={() => setPage(result.page + 1)}
-                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               >
                 Next →
               </button>
@@ -739,7 +661,7 @@ function CandidateDatabaseContent({ initialData }) {
 
 function CandidateDatabaseFallback() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={PAGE_FRAME_WIDE}>
         <ListSkeleton />

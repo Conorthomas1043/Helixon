@@ -40,25 +40,25 @@ export default function MarketingFooter() {
   const signedIn = isLoaded && isSignedIn;
 
   return (
-    <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+    <footer className="border-t border-[var(--border)]">
       <div className="max-w-[1100px] mx-auto px-6 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div className="col-span-2 sm:col-span-1">
           <div className="mb-3">
             <Logo size="footer" />
           </div>
-          <p className="text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs leading-relaxed text-[var(--ink-faint)]">
             Candidate screening built for recruitment agencies. GDPR-ready, Swiss-hosted.
           </p>
         </div>
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">
               {col.title}
             </p>
             {/* 13px text with a 36px-tall hit area: the links were ~13px tall,
                 too small to tap reliably on a phone. */}
-            <ul className="text-13" style={{ color: "var(--ink-soft)" }}>
+            <ul className="text-13 text-[var(--ink-soft)]">
               {col.links.map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="inline-flex items-center min-h-[36px] hover:underline">
@@ -71,9 +71,9 @@ export default function MarketingFooter() {
         ))}
       </div>
 
-      <div className="border-t" style={{ borderColor: "var(--border)" }}>
+      <div className="border-t border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-xs" style={{ color: "var(--ink-faint)" }}>
+          <span className="text-xs text-[var(--ink-faint)]">
             © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
           </span>
           <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex items-center min-h-[36px] text-xs hover:underline" style={{ color: "var(--ink-faint)" }}>

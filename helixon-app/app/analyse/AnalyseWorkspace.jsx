@@ -445,13 +445,13 @@ export default function AnalyseWorkspace() {
                 <button type="button" onClick={startNew} className="inline-flex items-center gap-1 text-14 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] mb-1.5">
                   <Icon name="arrowLeft" size={14} /> Screen another CV
                 </button>
-                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight font-display">
                   Screening report
                 </h1>
               </>
             ) : (
               <>
-                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+                <h1 className="text-24 font-semibold tracking-tight text-[var(--ink)] leading-tight font-display">
                   {comparing ? "Compare a second candidate" : rerunning ? "Re-score candidate" : "Screen a CV"}
                 </h1>
                 <p className="text-15 text-[var(--ink-soft)] mt-1">
@@ -597,7 +597,7 @@ export default function AnalyseWorkspace() {
                   role="status"
                   className="print-hide rounded-xl px-4 py-3 text-14 border"
                   style={duplicate.sameJobCandidateId
-                    ? { background: "#fff8e6", borderColor: "#f1dfb5", color: "#7a4f0a" }
+                    ? { background: "var(--ui-warn-soft)", borderColor: "var(--warn-line)", color: "var(--ui-warn)" }
                     : { background: "var(--mint)", borderColor: "var(--border)", color: "var(--ink)" }}
                 >
                   {duplicate.sameJobCandidateId ? (

@@ -25,7 +25,7 @@ function Stat({ label, value, accent }) {
       <p className="text-base font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-12 uppercase tracking-wide" style={{ color: INK_FAINT }}>
+      <p className="text-12 uppercase tracking-wide text-[var(--ink-faint)]">
         {label}
       </p>
     </div>
@@ -37,7 +37,7 @@ function Stat({ label, value, accent }) {
 function Chip({ children }) {
   if (children === null || children === undefined || children === false || children === "") return null;
   return (
-    <span className="text-12 px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+    <span className="text-12 px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
       {children}
     </span>
   );
@@ -52,10 +52,10 @@ function JobCard({ job }) {
       >
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+            <p className="text-sm font-semibold truncate text-[var(--ink)]">
               {job.title}
             </p>
-            <p className="text-13 truncate" style={{ color: INK_MUTED }}>
+            <p className="text-13 truncate text-[var(--ink-soft)]">
               {job.company} · {job.location}
             </p>
           </div>
@@ -76,7 +76,7 @@ function JobCard({ job }) {
           {job.targetDate && job.status === "open" && (() => {
             const d = daysToTarget(job.targetDate);
             return (
-              <span className="text-12 px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: d != null && d < 0 ? "var(--score-low)" : INK_MUTED }}>
+              <span className={`text-12 px-2 py-0.5 rounded-full bg-[var(--mist)] ${d != null && d < 0 ? "text-[var(--score-low)]" : "text-[var(--ink-soft)]"}`}>
                 {d == null ? null : d < 0 ? `${-d}d overdue` : d === 0 ? "Due today" : `${d}d to fill`}
               </span>
             );
@@ -87,7 +87,7 @@ function JobCard({ job }) {
           <Chip>{job.salaryRange}</Chip>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 text-center pt-3" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="grid grid-cols-4 gap-2 text-center pt-3 border-t border-t-[var(--border)]">
           <Stat label="Candidates" value={job.candidateCount} />
           <Stat label="Strong" value={job.strongMatches} accent="var(--forest)" />
           <Stat label="Interview" value={job.interviewing} />
@@ -123,17 +123,16 @@ function JobsSkeleton() {
 function ErrorState({ onRetry }) {
   return (
     <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-base font-semibold mb-1 text-[var(--ink)]">
         Unable to load jobs
       </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+      <p className="text-sm mb-5 max-w-sm text-[var(--ink-soft)]">
         Something went wrong while loading your open roles.
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         Try again
       </button>
@@ -167,9 +166,9 @@ function splitSkills(text) {
 function Field({ label, children, hint }) {
   return (
     <label className="block">
-      <span className="block text-13 font-semibold mb-1" style={{ color: INK }}>{label}</span>
+      <span className="block text-13 font-semibold mb-1 text-[var(--ink)]">{label}</span>
       {children}
-      {hint && <span className="block text-13 mt-1" style={{ color: INK_FAINT }}>{hint}</span>}
+      {hint && <span className="block text-13 mt-1 text-[var(--ink-faint)]">{hint}</span>}
     </label>
   );
 }
@@ -254,7 +253,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
         aria-labelledby="new-job-title"
         className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl p-6 bg-white shadow-xl"
       >
-        <h2 id="new-job-title" className="text-base font-semibold mb-4" style={{ color: INK }}>New job</h2>
+        <h2 id="new-job-title" className="text-base font-semibold mb-4 text-[var(--ink)]">New job</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
             <Field label="Job title">
@@ -288,22 +287,20 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
             </Field>
           </div>
         </div>
-        {error && <p role="alert" className="text-13 mt-3" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-13 mt-3 text-[var(--score-low)]">{error}</p>}
         <div className="flex justify-end gap-2 mt-5">
           <button
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--border)] text-[var(--ink)]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
           >
             {saving ? "Creating…" : "Create job"}
           </button>
@@ -384,19 +381,19 @@ function JobsContent({ initialJobs }) {
   const totalCandidates = jobs?.reduce((sum, j) => sum + j.candidateCount, 0) ?? 0;
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={`${PAGE_FRAME_WIDE} space-y-6`}>
         <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
               Job workspace
             </p>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+            <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
               Jobs
             </h1>
             {status === "ready" && (
-              <p className="text-14 mt-1" style={{ color: INK_MUTED }}>
+              <p className="text-14 mt-1 text-[var(--ink-soft)]">
                 {totalOpen} open role{totalOpen === 1 ? "" : "s"} · {totalCandidates} candidates in play
               </p>
             )}
@@ -412,8 +409,7 @@ function JobsContent({ initialJobs }) {
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "var(--forest)", color: "white" }}
+              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
             >
               New job
             </button>
@@ -432,8 +428,7 @@ function JobsContent({ initialJobs }) {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title, client or location…"
                 aria-label="Search jobs"
-                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               />
               {[
                 { value: "open", label: "Open" },
@@ -472,8 +467,7 @@ function JobsContent({ initialJobs }) {
                   value={officeFilter}
                   onChange={(e) => setOfficeFilter(e.target.value)}
                   aria-label="Office"
-                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white"
-                  style={{ border: "1px solid var(--border)", color: officeFilter ? INK : INK_MUTED }}
+                  className={`text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] ${officeFilter ? "text-[var(--ink)]" : "text-[var(--ink-soft)]"}`}
                 >
                   <option value="">All offices</option>
                   {offices.map((o) => (
@@ -504,8 +498,7 @@ function JobsContent({ initialJobs }) {
                     }))
                   )
                 }
-                className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
               >
                 Export CSV
               </button>
@@ -513,8 +506,7 @@ function JobsContent({ initialJobs }) {
                 aria-label="Sort jobs"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               >
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>

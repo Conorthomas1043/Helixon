@@ -63,7 +63,7 @@ export default function AccountPage() {
         className="mb-6"
         style={{ animation: `profileIn 700ms ${EASE} both` }}
       >
-        <h2 className="text-20 font-semibold tracking-[-0.02em]" style={{ color: "#10221d" }}>
+        <h2 className="text-20 font-semibold tracking-[-0.02em] text-[var(--ink)]">
           {copy.eyebrow}
         </h2>
         <p className="mt-1.5 max-w-[560px] text-14 leading-6 text-[var(--ink-faint)]">
@@ -128,13 +128,13 @@ export default function AccountPage() {
                 pageScrollBox: { background: "transparent", height: "auto", maxHeight: "none", overflow: "visible" },
                 profileSectionPrimaryButton: { borderRadius: "12px" },
                 formButtonPrimary: {
-                  background: "#087a5b",
+                  background: "var(--forest)",
                   borderRadius: "12px",
                   boxShadow: "0 7px 18px rgba(8,122,91,0.16)",
                 },
                 formFieldInput: {
                   borderRadius: "12px",
-                  border: "1px solid #d7e4df",
+                  border: "1px solid var(--border)",
                   background: "rgba(255,255,255,0.72)",
                 },
                 footer: { background: "transparent" },
@@ -148,7 +148,7 @@ export default function AccountPage() {
           <NotificationsInfo />
         ) : (
           <div className="px-8 py-14 text-center sm:px-14">
-            <p className="mx-auto mb-2 text-15 font-semibold text-[#10221d]">Page not found</p>
+            <p className="mx-auto mb-2 text-15 font-semibold text-[var(--ink)]">Page not found</p>
             <p className="mx-auto max-w-[420px] text-14 leading-6 text-[var(--ink-faint)]">
               This settings page doesn&apos;t exist. Use the menu to pick Profile, Security, Notifications or Delete account.
             </p>
@@ -202,7 +202,7 @@ export default function AccountPage() {
 function InfoCard({ icon, eyebrow, title, text }) {
   return (
     <div className="rounded-3xl border border-white/80 bg-white/55 p-6 shadow-[0_15px_45px_rgba(35,87,70,0.06)] backdrop-blur-xl">
-      <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6f3ef] text-[#087a5b]">
+      <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--mint)] text-[var(--forest)]">
         {icon}
       </div>
       <p className="mb-2 text-12 font-semibold uppercase tracking-[0.2em] text-[var(--ink-faint)]">

@@ -41,17 +41,16 @@ export function EmptyState({ hasFilters, onClear }) {
 export function ErrorState({ onRetry, message }) {
   return (
     <div className="flex flex-col items-center text-center py-14 px-6">
-      <p className="text-sm font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-sm font-semibold mb-1 text-[var(--ink)]">
         Unable to load candidates
       </p>
-      <p className="text-14 max-w-sm mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-14 max-w-sm mb-4 text-[var(--ink-soft)]">
         {message || "Something went wrong while loading the candidate database."}
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         Try again
       </button>

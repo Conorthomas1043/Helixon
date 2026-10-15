@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ErrorNotice, ICONS, Icon, Kpi, SectionTitle } from "./shared";
 
-export const PRESENCE_DOT = { online: "#0b6e4f", busy: "#d99a3a", offline: "#b0c4ba" };
+export const PRESENCE_DOT = { online: "var(--forest)", busy: "var(--gold)", offline: "var(--ink-mute)" };
 export const PRESENCE_LABEL = { online: "Online", busy: "Busy", offline: "Offline" };
 
 export function formatSignedIn(iso) {
@@ -43,9 +43,9 @@ export function TeamPresenceList() {
     <>
       <SectionTitle>Team</SectionTitle>
       {loading && team.length === 0 ? (
-        <p className="text-13 text-center py-4" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-13 text-center py-4 text-[var(--ink-faint)]">Loading…</p>
       ) : (
-        <div className="rounded-card" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-card bg-white border border-[var(--border)]">
           {sorted.map((person, i) => (
             <div
               key={person.id}
@@ -54,9 +54,9 @@ export function TeamPresenceList() {
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: PRESENCE_DOT[person.status] }} />
-                <span className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>{person.name}</span>
+                <span className="text-14 font-medium truncate text-[var(--ink)]">{person.name}</span>
               </div>
-              <span className="text-12 shrink-0" style={{ color: "var(--ink-faint)" }}>
+              <span className="text-12 shrink-0 text-[var(--ink-faint)]">
                 {PRESENCE_LABEL[person.status]}
                 {person.signedInSince ? ` · ${formatSignedIn(person.signedInSince)}` : ""}
               </span>
@@ -97,7 +97,7 @@ export function StatsTab() {
       <SectionTitle>Platform snapshot, today</SectionTitle>
       <ErrorNotice message={error} />
       {loading && !stats ? (
-        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-13 text-center py-6 text-[var(--ink-faint)]">
           Loading…
         </p>
       ) : (
@@ -111,8 +111,7 @@ export function StatsTab() {
       <button
         type="button"
         onClick={load}
-        className="mt-4 w-full flex items-center justify-center gap-1.5 text-13 font-medium py-2.5 rounded-btn"
-        style={{ color: "var(--ink-soft)", border: "1px solid var(--border)" }}
+        className="mt-4 w-full flex items-center justify-center gap-1.5 text-13 font-medium py-2.5 rounded-btn text-[var(--ink-soft)] border border-[var(--border)]"
       >
         <Icon path={ICONS.refresh} size={14} />
         Refresh

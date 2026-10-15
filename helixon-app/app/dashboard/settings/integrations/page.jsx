@@ -19,7 +19,7 @@ function fmt(d) {
 
 function Code({ children }) {
   return (
-    <pre className="text-12 leading-relaxed p-3 rounded-btn overflow-x-auto whitespace-pre" style={{ background: "var(--mist)", color: INK, fontFamily: "var(--font-mono)" }}>
+    <pre className="text-12 leading-relaxed p-3 rounded-btn overflow-x-auto whitespace-pre bg-[var(--mist)] text-[var(--ink)] font-mono">
       {children}
     </pre>
   );
@@ -82,16 +82,16 @@ function ApiKeys({ origin }) {
     <>
       {confirmDialog}
     <Card title="API keys" eyebrow="REST API">
-      <p className="text-13 mb-3" style={{ color: INK_MUTED }}>
+      <p className="text-13 mb-3 text-[var(--ink-soft)]">
         A key lets a script, Zapier or the LinkedIn extension read and add candidates, jobs and clients in this workspace, acting as you. Keep it secret - anyone with it can see your candidates.
       </p>
       {fresh && (
-        <div className="rounded-btn p-3 mb-3" style={{ background: "#e5f4ea" }}>
-          <p className="text-13 font-semibold mb-1" style={{ color: "#1f6f43" }}>
+        <div className="rounded-btn p-3 mb-3 bg-[var(--mint)]">
+          <p className="text-13 font-semibold mb-1 text-[var(--forest)]">
             Copy your key now - it won&apos;t be shown again.
           </p>
           <div className="flex gap-2 items-center">
-            <code className="text-13 break-all flex-1" style={{ color: INK }}>
+            <code className="text-13 break-all flex-1 text-[var(--ink)]">
               {fresh}
             </code>
             <CopyButton size="sm" text={fresh}>
@@ -108,19 +108,19 @@ function ApiKeys({ origin }) {
       </form>
       <ErrorText>{error}</ErrorText>
       {keys === null ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-14 text-[var(--ink-soft)]">Loading…</p>
       ) : keys.length === 0 ? null : (
         <ul className="divide-y">
           {keys.map((k) => (
             <li key={k.id} className="py-2.5 flex flex-wrap items-center gap-2 text-14">
-              <span className="font-semibold" style={{ color: k.revokedAt ? INK_FAINT : INK }}>
+              <span className={`font-semibold ${k.revokedAt ? "text-[var(--ink-faint)]" : "text-[var(--ink)]"}`}>
                 {k.name}
               </span>
-              <code className="text-12" style={{ color: INK_MUTED }}>
+              <code className="text-12 text-[var(--ink-soft)]">
                 {k.prefix}…
               </code>
               {k.revokedAt ? <Pill>Revoked</Pill> : null}
-              <span className="text-12 flex-1" style={{ color: INK_FAINT }}>
+              <span className="text-12 flex-1 text-[var(--ink-faint)]">
                 {k.createdBy ? `by ${k.createdBy} · ` : ""}
                 {k.lastUsedAt ? `last used ${fmt(k.lastUsedAt)}` : "never used"}
               </span>
@@ -134,10 +134,10 @@ function ApiKeys({ origin }) {
         </ul>
       )}
       <details className="mt-4">
-        <summary className="text-13 font-semibold cursor-pointer" style={{ color: "var(--forest)" }}>
+        <summary className="text-13 font-semibold cursor-pointer text-[var(--forest)]">
           How to use it
         </summary>
-        <div className="mt-2 space-y-2 text-13" style={{ color: INK_MUTED }}>
+        <div className="mt-2 space-y-2 text-13 text-[var(--ink-soft)]">
           <p>Send the key in an Authorization header. Lists are paged (?page=, ?pageSize= up to 100) and take the same filters as the Candidates page.</p>
           <Code>{`curl ${origin}/api/v1/candidates?stage=Interview \\
   -H "Authorization: Bearer hx_..."
@@ -202,7 +202,7 @@ function Webhooks() {
     <>
       {confirmDialog}
     <Card title="Webhooks" eyebrow="Zapier, Make, your own systems">
-      <p className="text-13 mb-3" style={{ color: INK_MUTED }}>
+      <p className="text-13 mb-3 text-[var(--ink-soft)]">
         When something happens here, Helixon POSTs it as JSON to your address - in Zapier, use &quot;Webhooks by Zapier → Catch Hook&quot; and paste its URL. Each delivery is signed: check the Helixon-Signature header (t=timestamp,v1=HMAC-SHA256 of &quot;timestamp.body&quot; with the signing secret).
       </p>
       <form
@@ -221,16 +221,16 @@ function Webhooks() {
         </Field>
         {data && (
           <fieldset>
-            <legend className="text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+            <legend className="text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">
               Events (none ticked = all)
             </legend>
             <div className="grid sm:grid-cols-2 gap-1">
               {Object.entries(data.events).map(([key, label]) => (
-                <label key={key} className="flex items-start gap-2 text-13" style={{ color: INK }}>
+                <label key={key} className="flex items-start gap-2 text-13 text-[var(--ink)]">
                   <input type="checkbox" className="mt-0.5" checked={events.includes(key)} onChange={(e) => setEvents((list) => (e.target.checked ? [...list, key] : list.filter((x) => x !== key)))} />
                   <span>
                     <code className="text-12">{key}</code>
-                    <span className="block text-12" style={{ color: INK_FAINT }}>
+                    <span className="block text-12 text-[var(--ink-faint)]">
                       {label}
                     </span>
                   </span>
@@ -245,7 +245,7 @@ function Webhooks() {
       </form>
       <ErrorText>{error}</ErrorText>
       {notice && (
-        <p className="text-13 mb-2" role="status" style={{ color: "var(--forest)" }}>
+        <p className="text-13 mb-2 text-[var(--forest)]" role="status">
           {notice}
         </p>
       )}
@@ -254,33 +254,33 @@ function Webhooks() {
           {data.endpoints.map((e) => (
             <li key={e.id} className="py-3 text-13 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <code className="break-all font-semibold" style={{ color: e.active ? INK : INK_FAINT }}>
+                <code className={`break-all font-semibold ${e.active ? "text-[var(--ink)]" : "text-[var(--ink-faint)]"}`}>
                   {e.url}
                 </code>
                 {!e.active && <Pill>Paused</Pill>}
                 {e.lastDeliveryAt && (
-                  <Pill color={e.lastError ? "var(--score-low)" : "#1f6f43"} background={e.lastError ? "#fbeaea" : "#e5f4ea"}>
+                  <Pill color={e.lastError ? "var(--score-low)" : "var(--forest)"} background={e.lastError ? "var(--ui-danger-soft)" : "var(--mint)"}>
                     {e.lastError ? `Failing: ${e.lastError}` : `OK ${e.lastStatus}`}
                   </Pill>
                 )}
               </div>
-              <p style={{ color: INK_MUTED }}>{e.events.length ? e.events.join(", ") : "All events"}</p>
+              <p className="text-[var(--ink-soft)]">{e.events.length ? e.events.join(", ") : "All events"}</p>
               <div className="flex flex-wrap gap-3 items-center">
-                <button type="button" disabled={busy} className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => run(() => updateWebhook(e.id, { test: true }), (r) => (r.ok ? `Test delivered (${r.status}).` : `Test failed: ${r.error}`))}>
+                <button type="button" disabled={busy} className="font-semibold text-[var(--forest)]" onClick={() => run(() => updateWebhook(e.id, { test: true }), (r) => (r.ok ? `Test delivered (${r.status}).` : `Test failed: ${r.error}`))}>
                   Send test
                 </button>
-                <button type="button" disabled={busy} style={{ color: INK_MUTED }} onClick={() => run(() => updateWebhook(e.id, { active: !e.active }))}>
+                <button type="button" disabled={busy} className="text-[var(--ink-soft)]" onClick={() => run(() => updateWebhook(e.id, { active: !e.active }))}>
                   {e.active ? "Pause" : "Resume"}
                 </button>
-                <button type="button" style={{ color: INK_MUTED }} onClick={() => setShown(shown === e.id ? null : e.id)}>
+                <button type="button" className="text-[var(--ink-soft)]" onClick={() => setShown(shown === e.id ? null : e.id)}>
                   {shown === e.id ? "Hide secret" : "Signing secret"}
                 </button>
-                <button type="button" disabled={busy} style={{ color: INK_FAINT }} onClick={async () => (await ask({ title: "Remove this webhook?", body: `${e.url} stops getting events.`, confirmLabel: "Remove webhook", danger: true })) && run(() => deleteWebhook(e.id))}>
+                <button type="button" disabled={busy} className="text-[var(--ink-faint)]" onClick={async () => (await ask({ title: "Remove this webhook?", body: `${e.url} stops getting events.`, confirmLabel: "Remove webhook", danger: true })) && run(() => deleteWebhook(e.id))}>
                   Remove
                 </button>
               </div>
               {shown === e.id && (
-                <code className="block text-12 break-all p-2 rounded" style={{ background: "var(--mist)", color: INK }}>
+                <code className="block text-12 break-all p-2 rounded bg-[var(--mist)] text-[var(--ink)]">
                   {e.secret}
                 </code>
               )}
@@ -320,7 +320,7 @@ export default function IntegrationsPage() {
       {allowed === null ? (
         <LoadingCard rows={4} />
       ) : allowed === false ? (
-        <p className="text-13" style={{ color: INK_MUTED }}>
+        <p className="text-13 text-[var(--ink-soft)]">
           API keys, webhooks and the LinkedIn extension are managed by the workspace owner or an admin.
         </p>
       ) : (
@@ -328,7 +328,7 @@ export default function IntegrationsPage() {
           <ApiKeys origin={origin} />
           <Webhooks />
           <Card title="LinkedIn extension" eyebrow="Chrome / Edge">
-            <div className="text-13 space-y-2" style={{ color: INK_MUTED }}>
+            <div className="text-13 space-y-2 text-[var(--ink-soft)]">
               <p>Save the LinkedIn profile you&apos;re looking at to Helixon in one click - name, headline, location and profile link, with a note and the job to add them to. People already on file aren&apos;t duplicated.</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>
@@ -339,7 +339,7 @@ export default function IntegrationsPage() {
                   Create an API key above named &quot;LinkedIn extension&quot;, open the extension&apos;s options and paste it with your Helixon address ({origin}).
                 </li>
               </ol>
-              <p style={{ color: INK_FAINT }}>It only reads the page when you click Save, and only sends what&apos;s shown in its popup.</p>
+              <p className="text-[var(--ink-faint)]">It only reads the page when you click Save, and only sends what&apos;s shown in its popup.</p>
             </div>
           </Card>
         </>

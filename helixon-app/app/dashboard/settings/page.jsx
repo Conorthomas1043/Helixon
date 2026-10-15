@@ -51,7 +51,7 @@ export default function SettingsPage() {
       <PageHeader eyebrow="Workspace" title="Settings" subtitle="How Helixon works for your agency." />
       {SECTIONS.map((s) => (
         <section key={s.title}>
-          <h2 className="text-12 font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>
+          <h2 className="text-12 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">
             {s.title}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -62,10 +62,10 @@ export default function SettingsPage() {
                 className="block rounded-card p-4 transition-shadow hover:shadow-[var(--shadow-sm)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={CARD}
               >
-                <p className="text-sm font-semibold" style={{ color: INK }}>
+                <p className="text-sm font-semibold text-[var(--ink)]">
                   {i.label} →
                 </p>
-                <p className="text-13 mt-1" style={{ color: INK_MUTED }}>
+                <p className="text-13 mt-1 text-[var(--ink-soft)]">
                   {i.body}
                 </p>
               </Link>

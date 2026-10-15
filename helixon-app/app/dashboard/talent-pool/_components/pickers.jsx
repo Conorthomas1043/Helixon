@@ -55,7 +55,7 @@ export function CheckInPicker({ value, onChange, disabled }) {
         className={cx(
           "relative inline-flex items-center gap-1 text-13 font-medium px-2 py-0.5 rounded-full border cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
           overdue
-            ? "bg-[#fbefed] text-[#a83226] border-transparent font-semibold"
+            ? "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-transparent font-semibold"
             : value
               ? "bg-white text-[var(--ink-soft)] border-[var(--border)]"
               : "bg-white text-[var(--ink-faint)] border-dashed border-[var(--border)]"
@@ -158,7 +158,7 @@ export function PoolExpiry({ expiresAt, onExtend, disabled }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-12 font-semibold px-2 py-0.5 rounded-full bg-[#fdf6e9] text-[#8a5a12]">
+    <span className="inline-flex items-center gap-1.5 text-12 font-semibold px-2 py-0.5 rounded-full bg-[var(--ui-warn-soft)] text-[var(--ui-warn)]">
       <Icon name="clock" size={11} />
       Leaves the pool {days <= 0 ? "today" : `in ${days} day${days === 1 ? "" : "s"}`}
       <button type="button" onClick={onExtend} disabled={disabled} className="underline underline-offset-2 disabled:opacity-50">

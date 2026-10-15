@@ -24,13 +24,13 @@ function EventRow({ event, todayKey, showDay }) {
   return (
     <li className="flex gap-3 px-5 py-2.5">
       <div className="w-[62px] shrink-0 text-right">
-        {showDay && <p className="text-12 font-semibold" style={{ color: "var(--ink-soft)" }}>{relativeDayLabel(startKey, todayKey)}</p>}
-        <p className="text-xs tabular-nums" style={{ color: "var(--ink-faint)", fontFamily: "var(--font-mono)" }}>{when}</p>
+        {showDay && <p className="text-12 font-semibold text-[var(--ink-soft)]">{relativeDayLabel(startKey, todayKey)}</p>}
+        <p className="text-xs tabular-nums text-[var(--ink-faint)] font-mono">{when}</p>
       </div>
-      <div className="min-w-0 border-l-2 pl-3" style={{ borderColor: "var(--forest)" }}>
-        <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{event.title}</p>
+      <div className="min-w-0 border-l-2 pl-3 border-[var(--forest)]">
+        <p className="text-sm font-medium truncate text-[var(--ink)]">{event.title}</p>
         {(event.location || event.creator) && (
-          <p className="text-xs truncate" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs truncate text-[var(--ink-faint)]">
             {[event.location, event.creator?.full_name || event.creator?.display_name].filter(Boolean).join(" · ")}
           </p>
         )}
@@ -55,8 +55,8 @@ export function AgendaCard({ events, loaded, todayKey }) {
             <ul className="pb-2">{today.map((e) => <EventRow key={e.id} event={e} todayKey={todayKey} />)}</ul>
           )}
           {next.length > 0 && (
-            <div className="border-t pb-2" style={{ borderColor: "var(--border-soft)" }}>
-              <p className="px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--ink-faint)" }}>Coming up</p>
+            <div className="border-t pb-2 border-[var(--border-soft)]">
+              <p className="px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em] text-[var(--ink-faint)]">Coming up</p>
               <ul>{next.map((e) => <EventRow key={e.id} event={e} todayKey={todayKey} showDay />)}</ul>
             </div>
           )}
@@ -99,9 +99,9 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
               { label: "This week", value: me?.thisWeek ?? 0 },
               { label: "Team rank", value: rank ? `#${rank}` : "-" },
             ].map((s) => (
-              <div key={s.label} className="rounded-btn px-3 py-2" style={{ background: "var(--mist)" }}>
-                <p className="text-lg font-semibold leading-tight tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>{s.value}</p>
-                <p className="text-12" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
+              <div key={s.label} className="rounded-btn px-3 py-2 bg-[var(--mist)]">
+                <p className="text-lg font-semibold leading-tight tabular-nums text-[var(--ink)] font-mono">{s.value}</p>
+                <p className="text-12 text-[var(--ink-faint)]">{s.label}</p>
               </div>
             ))}
           </div>
@@ -117,8 +117,8 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
                 return (
                   <li key={c.id} className="px-5 py-2.5 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{c.contact_name || c.company || c.phone || "Unnamed contact"}</p>
-                      <p className="text-xs truncate" style={{ color: "var(--ink-faint)" }}>
+                      <p className="text-sm font-medium truncate text-[var(--ink)]">{c.contact_name || c.company || c.phone || "Unnamed contact"}</p>
+                      <p className="text-xs truncate text-[var(--ink-faint)]">
                         {[c.contact_name ? c.company : null, OUTCOME_LABELS[c.outcome], c.phone].filter(Boolean).join(" · ")}
                       </p>
                     </div>
@@ -127,7 +127,7 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
                 );
               })}
               {due.length > 5 && (
-                <li className="px-5 py-2 text-xs" style={{ color: "var(--ink-soft)" }}>
+                <li className="px-5 py-2 text-xs text-[var(--ink-soft)]">
                   and {due.length - 5} more on the <Link href="/employee/cold-calls" className="underline">calls page</Link>
                 </li>
               )}
@@ -135,18 +135,18 @@ export function CallsCard({ stats, follow, loaded, employeeId, todayKey }) {
           )}
 
           {board.length > 1 && (
-            <div className="border-t px-5 py-3" style={{ borderColor: "var(--border-soft)" }}>
-              <p className="text-12 font-semibold uppercase tracking-[0.08em] mb-2" style={{ color: "var(--ink-faint)" }}>This week</p>
+            <div className="border-t px-5 py-3 border-[var(--border-soft)]">
+              <p className="text-12 font-semibold uppercase tracking-[0.08em] mb-2 text-[var(--ink-faint)]">This week</p>
               <ol className="space-y-1.5">
                 {board.slice(0, 3).map((r, i) => (
                   <li key={r.employeeId} className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 min-w-0" style={{ color: "var(--ink)" }}>
-                      <span className="w-5 text-xs tabular-nums" style={{ color: "var(--ink-faint)" }}>{i + 1}.</span>
+                    <span className="flex items-center gap-2 min-w-0 text-[var(--ink)]">
+                      <span className="w-5 text-xs tabular-nums text-[var(--ink-faint)]">{i + 1}.</span>
                       <span className="truncate" style={r.employeeId === employeeId ? { fontWeight: 600 } : undefined}>
                         {r.name}{r.employeeId === employeeId ? " (you)" : ""}
                       </span>
                     </span>
-                    <span className="tabular-nums text-xs font-semibold" style={{ color: "var(--ink-soft)", fontFamily: "var(--font-mono)" }}>{r.thisWeek}</span>
+                    <span className="tabular-nums text-xs font-semibold text-[var(--ink-soft)] font-mono">{r.thisWeek}</span>
                   </li>
                 ))}
               </ol>
@@ -184,19 +184,19 @@ export function GoalsCard({ goals, loaded, todayKey }) {
             return (
               <li key={g.id}>
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <p className="text-sm font-medium leading-snug" style={{ color: "var(--ink)" }}>{g.title}</p>
+                  <p className="text-sm font-medium leading-snug text-[var(--ink)]">{g.title}</p>
                   <Chip tone={status.tone}>{status.label}</Chip>
                 </div>
-                <ProgressBar pct={p.pct} tone={g.status === "blocked" ? "#c0392b" : "var(--forest)"} label={`${g.title} progress`} />
-                <p className="text-xs mt-1 flex justify-between gap-2" style={{ color: "var(--ink-faint)" }}>
+                <ProgressBar pct={p.pct} tone={g.status === "blocked" ? "var(--score-low)" : "var(--forest)"} label={`${g.title} progress`} />
+                <p className="text-xs mt-1 flex justify-between gap-2 text-[var(--ink-faint)]">
                   <span>{p.total ? `${p.done} of ${p.total} steps` : "No steps yet"}</span>
-                  {deadline && <span style={late ? { color: "#a83226", fontWeight: 600 } : undefined}>{late ? "Was due " : "Due "}{relativeDayLabel(deadline, todayKey).toLowerCase()}</span>}
+                  {deadline && <span style={late ? { color: "var(--score-low)", fontWeight: 600 } : undefined}>{late ? "Was due " : "Due "}{relativeDayLabel(deadline, todayKey).toLowerCase()}</span>}
                 </p>
               </li>
             );
           })}
           {goals.length > 4 && (
-            <li className="text-xs" style={{ color: "var(--ink-soft)" }}>
+            <li className="text-xs text-[var(--ink-soft)]">
               and {goals.length - 4} more on the <Link href="/employee/goals" className="underline">goals page</Link>
             </li>
           )}
@@ -220,9 +220,9 @@ export function PlatformCard({ stats }) {
       <CardHeader id="platform-title" eyebrow="Platform" title="Right now" action={<HeaderLink href="/employee/ops">Details</HeaderLink>} />
       <dl className="grid grid-cols-2 gap-2 px-5 pb-5">
         {items.map((s) => (
-          <div key={s.label} className="flex flex-col-reverse rounded-btn px-3 py-2" style={{ background: "var(--mist)" }}>
-            <dt className="text-12" style={{ color: "var(--ink-faint)" }}>{s.label}</dt>
-            <dd className="text-lg font-semibold leading-tight tabular-nums" style={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}>
+          <div key={s.label} className="flex flex-col-reverse rounded-btn px-3 py-2 bg-[var(--mist)]">
+            <dt className="text-12 text-[var(--ink-faint)]">{s.label}</dt>
+            <dd className="text-lg font-semibold leading-tight tabular-nums text-[var(--ink)] font-mono">
               {typeof s.value === "number" ? s.value.toLocaleString("en-GB") : "-"}
             </dd>
           </div>

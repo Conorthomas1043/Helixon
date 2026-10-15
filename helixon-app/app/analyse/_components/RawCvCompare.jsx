@@ -59,7 +59,7 @@ function Highlighted({ line, re, current }) {
   if (parts.length === 1) return line || " ";
   return parts.map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className={cx("rounded-sm px-0.5 text-[var(--ink)]", current ? "bg-[#f5c451]" : "bg-[#fbe7a6]")}>
+      <mark key={i} className={cx("rounded-sm px-0.5 text-[var(--ink)]", current ? "bg-[var(--gold)]" : "bg-[var(--ui-warn-soft)]")}>
         {part}
       </mark>
     ) : (
@@ -110,7 +110,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
           <Avatar letter={letter} size={32} />
           <div className="min-w-0 flex-1">
             <p className="text-14 font-semibold text-[var(--ink)] truncate">{hidden ? `Candidate ${letter}` : name}</p>
-            <p className={cx("text-13 truncate", find.re && parsed && !hidden && !matchLines.length ? "text-[#8a5a12]" : "text-[var(--ink-soft)]")}>{status}</p>
+            <p className={cx("text-13 truncate", find.re && parsed && !hidden && !matchLines.length ? "text-[var(--ui-warn)]" : "text-[var(--ink-soft)]")}>{status}</p>
           </div>
           {onRemove && (
             <button
@@ -169,10 +169,10 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
                   className={cx(
                     "px-1.5 -mx-1.5 rounded-sm whitespace-pre-wrap break-words min-h-[1.6em] transition-colors",
                     isHeading && "font-semibold text-14 mt-2",
-                    inSection && "bg-[#f4faf7]",
+                    inSection && "bg-[var(--mint)]",
                     target && i === target.line && "bg-[var(--mint)] text-[var(--forest-deep)]",
                     contact && "bg-[var(--mint)]",
-                    currentMatch === i && "ring-1 ring-[#e0b43a]"
+                    currentMatch === i && "ring-1 ring-[var(--gold)]"
                   )}
                 >
                   <Highlighted line={line} re={find.re} current={currentMatch === i} />

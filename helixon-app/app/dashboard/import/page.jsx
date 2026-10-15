@@ -111,7 +111,7 @@ export default function ImportPage() {
             </Button>
           ))}
         </div>
-        <p className="text-13 mt-3" style={{ color: INK_MUTED }}>
+        <p className="text-13 mt-3 text-[var(--ink-soft)]">
           {type === "candidates" && "People with their contact details, current role and skills. Notes become notes on their profile. They can be screened against a job later from the talent pool (once their CV is uploaded)."}
           {type === "clients" && "Companies, each with an optional contact on the same row. Several rows for the same company add several contacts."}
           {type === "jobs" && "Roles with their client - clients are matched to, or added to, your clients. Jobs need a description before CVs can be screened against them."}
@@ -119,9 +119,9 @@ export default function ImportPage() {
       </Card>
 
       <Card title="2. Upload the CSV">
-        <input type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" disabled={Boolean(progress)} onChange={(e) => load(e.target.files?.[0] || null)} className="text-14" style={{ color: INK }} />
+        <input type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" disabled={Boolean(progress)} onChange={(e) => load(e.target.files?.[0] || null)} className="text-14 text-[var(--ink)]" />
         {file && table && (
-          <p className="text-13 mt-2" style={{ color: INK_MUTED }}>
+          <p className="text-13 mt-2 text-[var(--ink-soft)]">
             {file.name}: {table.rows.length.toLocaleString()} rows, {table.headers.length} columns.
           </p>
         )}
@@ -134,9 +134,9 @@ export default function ImportPage() {
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
               {fields.map((f) => (
                 <label key={f.key} className="flex items-center gap-2 text-14">
-                  <span className="w-40 shrink-0" style={{ color: INK }}>
+                  <span className="w-40 shrink-0 text-[var(--ink)]">
                     {f.label}
-                    {f.required && <span style={{ color: "var(--score-low)" }}> *</span>}
+                    {f.required && <span className="text-[var(--score-low)]"> *</span>}
                   </span>
                   <select
                     value={mapping[f.key] ?? ""}
@@ -146,8 +146,7 @@ export default function ImportPage() {
                       else next[f.key] = Number(e.target.value);
                       return next;
                     })}
-                    className="flex-1 min-w-0 text-13 px-2 py-1.5 rounded-lg bg-white"
-                    style={{ border: "1px solid var(--border)", color: INK }}
+                    className="flex-1 min-w-0 text-13 px-2 py-1.5 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]"
                   >
                     <option value="">Not imported</option>
                     {table.headers.map((h, i) => (
@@ -156,14 +155,14 @@ export default function ImportPage() {
                       </option>
                     ))}
                   </select>
-                  <span className="hidden sm:block w-28 truncate text-12" style={{ color: INK_FAINT }} title={sample(mapping[f.key])}>
+                  <span className="hidden sm:block w-28 truncate text-12 text-[var(--ink-faint)]" title={sample(mapping[f.key])}>
                     {sample(mapping[f.key])}
                   </span>
                 </label>
               ))}
             </div>
             {type === "candidates" && (
-              <label className="flex items-center gap-2 text-14 mt-4" style={{ color: INK }}>
+              <label className="flex items-center gap-2 text-14 mt-4 text-[var(--ink)]">
                 <input type="checkbox" checked={talentPool} onChange={(e) => setTalentPool(e.target.checked)} className="accent-[var(--forest)]" />
                 Save everyone to the talent pool, so they come up when jobs open
               </label>
@@ -173,12 +172,12 @@ export default function ImportPage() {
           <Card
             title="4. Check and import"
             eyebrow={`${preview.mapped.length - preview.bad.length} ready · ${preview.bad.length} with problems`}
-            action={preview.bad.length > 0 && <Pill color="#92620f" background="#fdf6e9">Rows with problems are skipped</Pill>}
+            action={preview.bad.length > 0 && <Pill color="var(--ui-warn)" background="var(--ui-warn-soft)">Rows with problems are skipped</Pill>}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-13">
                 <thead>
-                  <tr className="text-left" style={{ color: INK_FAINT }}>
+                  <tr className="text-left text-[var(--ink-faint)]">
                     <th scope="col" className="py-1.5 pr-3 font-semibold">Row</th>
                     {Object.keys(preview.mapped[0]?.record ?? {})
                       .slice(0, 6)
@@ -192,8 +191,8 @@ export default function ImportPage() {
                 </thead>
                 <tbody>
                   {[...preview.bad.slice(0, 5), ...preview.mapped.filter((m) => !m.errors.length).slice(0, 8)].map((m) => (
-                    <tr key={m.row} style={{ borderTop: "1px solid var(--border)", color: INK }}>
-                      <td className="py-1.5 pr-3 tabular-nums" style={{ color: INK_FAINT }}>{m.row}</td>
+                    <tr key={m.row} className="border-t border-t-[var(--border)] text-[var(--ink)]">
+                      <td className="py-1.5 pr-3 tabular-nums text-[var(--ink-faint)]">{m.row}</td>
                       {Object.values(m.record)
                         .slice(0, 6)
                         .map((v, i) => (
@@ -201,7 +200,7 @@ export default function ImportPage() {
                             {Array.isArray(v) ? v.join(", ") : v == null ? "" : String(v)}
                           </td>
                         ))}
-                      <td className="py-1.5" style={{ color: "var(--score-low)" }}>{m.errors.join(", ")}</td>
+                      <td className="py-1.5 text-[var(--score-low)]">{m.errors.join(", ")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -215,7 +214,7 @@ export default function ImportPage() {
                 {progress ? `Importing… ${progress.done.toLocaleString()} / ${progress.total.toLocaleString()}` : `Import ${(preview.mapped.length - preview.bad.length).toLocaleString()} rows`}
               </Button>
               {progress && (
-                <div className="flex-1 min-w-[160px] h-2 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
+                <div className="flex-1 min-w-[160px] h-2 rounded-full overflow-hidden bg-[var(--mist)]">
                   <div className="h-full" style={{ width: `${Math.round((progress.done / progress.total) * 100)}%`, background: "var(--forest)" }} />
                 </div>
               )}
@@ -226,13 +225,13 @@ export default function ImportPage() {
 
       {result && (
         <Card title="Done">
-          <p className="text-14" style={{ color: INK }}>
+          <p className="text-14 text-[var(--ink)]">
             Created {result.created.toLocaleString()} {type === "clients" ? "clients" : type}
             {type === "clients" ? ` and ${result.contacts.toLocaleString()} contacts` : ""} · skipped {result.skipped.toLocaleString()} already on file
             {result.errors.length ? ` · ${result.errors.length} rows not imported` : ""}.
           </p>
           {result.errors.length > 0 && (
-            <ul className="mt-3 max-h-60 overflow-y-auto text-13 space-y-1" style={{ color: INK_MUTED }}>
+            <ul className="mt-3 max-h-60 overflow-y-auto text-13 space-y-1 text-[var(--ink-soft)]">
               {result.errors.slice(0, 200).map((e, i) => (
                 <li key={i}>
                   {e.row ? `Row ${e.row}: ` : ""}

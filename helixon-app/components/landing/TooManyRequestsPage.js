@@ -56,13 +56,13 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen flex flex-col bg-[var(--mist)]">
       {/* ── Nav (matches landing page) ─────────────────────────────────── */}
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }} aria-label="Main">
+      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group" aria-label="Helixon home">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105" style={{ background: "var(--forest)" }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 bg-[var(--forest)]">
               <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
                 <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
                 <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
@@ -70,8 +70,8 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
               </svg>
             </div>
             <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-              <span className="hidden sm:block text-11 font-medium mt-0.5" style={{ color: "var(--ink-faint)" }}>Built for recruitment agencies</span>
+              <span className="text-sm font-semibold tracking-tight text-[var(--ink)] font-display">Helixon</span>
+              <span className="hidden sm:block text-11 font-medium mt-0.5 text-[var(--ink-faint)]">Built for recruitment agencies</span>
             </span>
           </Link>
           <Link href="/login" className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Login</Link>
@@ -101,26 +101,25 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
           >
             <HourglassScene />
 
-            <span className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-5" style={{ background: "#fef2f2", color: "var(--score-low)" }}>
+            <span className="inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-5 bg-[var(--ui-danger-soft)] text-[var(--score-low)]">
               Error 429
             </span>
 
             <h1
-              className="text-2xl sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
-              style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+              className="text-2xl sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3 text-[var(--ink)] font-display"
             >
               Too many requests
             </h1>
 
-            <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-sm leading-relaxed mb-8 text-[var(--ink-soft)]">
               You&apos;ve been sending requests a little too quickly. Give it a
               moment and try again - your account and results are safe.
             </p>
 
             {remaining !== null && remaining > 0 ? (
-              <p className="text-13 mb-6" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-13 mb-6 text-[var(--ink-faint)]">
                 You can try again in{" "}
-                <span style={{ color: "var(--ink)", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
+                <span className="text-[var(--ink)] font-semibold font-mono">
                   {remaining}s
                 </span>
               </p>
@@ -146,7 +145,7 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
             </div>
           </div>
 
-          <p className="text-center text-11 mt-6" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-center text-11 mt-6 text-[var(--ink-faint)]">
             Still stuck?{" "}
             <Link href="/contact" className="font-medium hover:underline" style={{ color: "var(--ink-faint)" }}>
               Contact support
@@ -157,9 +156,9 @@ export default function TooManyRequestsPage({ retryAfterSeconds = null }) {
 
       </main>
       {/* ── Footer (matches landing page) ──────────────────────────────── */}
-      <footer className="border-t" style={{ borderColor: "var(--border)" }}>
+      <footer className="border-t border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-11" style={{ color: "var(--ink-faint)" }}>© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
+          <span className="text-11 text-[var(--ink-faint)]">© {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.</span>
           <Link href="/login" className="text-11 hover:underline" style={{ color: "var(--ink-faint)" }}>Login</Link>
         </div>
       </footer>

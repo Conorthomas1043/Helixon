@@ -469,7 +469,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
   }, [nextId, prevId, candidate, router, handleStageChange, focusNoteField]);
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       {confirmDialog}
       <DashboardNav />
       <div className={`${PAGE_FRAME_NARROW} space-y-6`}>

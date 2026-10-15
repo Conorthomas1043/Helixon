@@ -72,7 +72,7 @@ export default function CandidateCard({
             }}
             className={cx(
               "w-full flex flex-col items-center justify-center gap-2 py-12 rounded-xl border border-dashed transition-colors",
-              dragging ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+              dragging ? "border-[var(--forest)] bg-[var(--mint)]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
             )}
           >
             <span className="w-10 h-10 rounded-full bg-[var(--mist)] border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">

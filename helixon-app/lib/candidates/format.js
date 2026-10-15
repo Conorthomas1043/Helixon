@@ -22,10 +22,10 @@ export const INK = "var(--ink)";
 export const INK_MUTED = "var(--ink-soft)";
 export const INK_FAINT = "var(--ink-faint)";
 export const AMBER = "var(--score-mid)";
-export const AMBER_BG = "#fff8e6";
+export const AMBER_BG = "var(--ui-warn-soft)";
 export const RED = "var(--score-low)";
-export const RED_STRONG = "#b91c1c";
-export const RED_BG = "#fef2f2";
+export const RED_STRONG = "var(--score-low)";
+export const RED_BG = "var(--ui-danger-soft)";
 export const GREEN_BG = "var(--mint)";
 
 export const CARD = {

@@ -55,7 +55,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
   const email = session?.customer_details?.email || session?.customer_email;
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-16" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen flex items-center justify-center px-6 py-16 bg-[var(--mist)]">
       <div
         className="w-full max-w-sm rounded-panel p-8 sm:p-9 text-center"
         style={{
@@ -67,17 +67,16 @@ export default async function CheckoutSuccessPage({ searchParams }) {
         {error || !paid ? (
           <>
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-              style={{ background: "var(--signal-soft)" }}
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 bg-[var(--signal-soft)]"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--signal)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="text-24 font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 font-semibold tracking-tight mb-2 text-[var(--ink)] font-display">
               We couldn&apos;t confirm that payment
             </h1>
-            <p className="text-13 leading-relaxed mb-7" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-13 leading-relaxed mb-7 text-[var(--ink-soft)]">
               {error || "This checkout session hasn't completed yet. If you were charged, it'll be reflected on your account shortly."}
             </p>
             <Link
@@ -89,7 +88,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             </Link>
             {/* Someone who may have just been charged needs a person to
                 talk to, not only a way back to the price list. */}
-            <p className="text-12 mt-4" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-12 mt-4 text-[var(--ink-faint)]">
               Think something&apos;s gone wrong?{" "}
               <Link href="/contact" className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                 Contact us
@@ -100,22 +99,21 @@ export default async function CheckoutSuccessPage({ searchParams }) {
         ) : (
           <>
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-              style={{ background: "var(--mint)" }}
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 bg-[var(--mint)]"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             </div>
 
-            <h1 className="text-24 font-semibold tracking-tight mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 font-semibold tracking-tight mb-2 text-[var(--ink)] font-display">
               You&apos;re all set
             </h1>
-            <p className="text-13 leading-relaxed mb-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-13 leading-relaxed mb-1 text-[var(--ink-soft)]">
               Your {planLabel} plan is now active.
             </p>
             {email && (
-              <p className="text-12 mb-7" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-12 mb-7 text-[var(--ink-faint)]">
                 A receipt has been sent to {email}.
               </p>
             )}

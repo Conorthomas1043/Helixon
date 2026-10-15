@@ -3,20 +3,20 @@
 // Used by /dashboard/candidates/[id]/client-profile and a shortlist's
 // client pack, which prints one of these per page.
 
-const INK = "#13201b";
-const MUTED = "#4a6658";
-const FAINT = "#7a948a";
-const RULE = "#dfe7e2";
+const INK = "var(--ink)";
+const MUTED = "var(--ink-soft)";
+const FAINT = "var(--ink-faint)";
+const RULE = "var(--border)";
 
 const STATUS = {
-  met: { mark: "✓", color: "#0f6b4f", label: "Met" },
-  unverified: { mark: "?", color: "#92620f", label: "Not shown on CV" },
-  not_met: { mark: "✕", color: "#b42318", label: "Not met" },
+  met: { mark: "✓", color: "var(--forest)", label: "Met" },
+  unverified: { mark: "?", color: "var(--ui-warn)", label: "Not shown on CV" },
+  not_met: { mark: "✕", color: "var(--score-low)", label: "Not met" },
 };
 
 function Heading({ children }) {
   return (
-    <h3 className="text-12 font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: FAINT }}>
+    <h3 className="text-12 font-semibold uppercase tracking-[0.14em] mb-2 text-[var(--ink-faint)]">
       {children}
     </h3>
   );
@@ -36,29 +36,29 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
     <article className="client-profile-page bg-white rounded-card p-8 sm:p-10 text-14 leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
       <header className="flex items-start justify-between gap-6 pb-5 mb-6" style={{ borderBottom: `2px solid ${INK}` }}>
         <div className="min-w-0">
-          <p className="text-12 font-semibold uppercase tracking-[0.14em] mb-1" style={{ color: FAINT }}>
+          <p className="text-12 font-semibold uppercase tracking-[0.14em] mb-1 text-[var(--ink-faint)]">
             Candidate profile{p.job?.title ? ` · ${p.job.title}` : ""}{p.job?.client && !p.blind ? ` · ${p.job.client}` : ""}
           </p>
-          <h2 className="text-24 font-semibold leading-tight" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="text-24 font-semibold leading-tight font-display">
             {p.name}
           </h2>
           {(p.currentTitle || p.currentEmployer) && (
-            <p className="text-14 mt-1" style={{ color: MUTED }}>
+            <p className="text-14 mt-1 text-[var(--ink-soft)]">
               {[p.currentTitle, p.currentEmployer].filter(Boolean).join(" at ")}
             </p>
           )}
           {facts.length > 0 && (
-            <p className="text-13 mt-2" style={{ color: MUTED }}>
+            <p className="text-13 mt-2 text-[var(--ink-soft)]">
               {facts.join(" · ")}
             </p>
           )}
         </div>
         {showScore && p.score != null && (
           <div className="text-center shrink-0">
-            <div className="text-36 font-semibold leading-none tabular-nums" style={{ fontFamily: "var(--font-mono)", color: "#0f6b4f" }}>
+            <div className="text-36 font-semibold leading-none tabular-nums font-mono text-[var(--forest)]">
               {p.score}
             </div>
-            <div className="text-12 uppercase tracking-[0.12em] mt-1" style={{ color: FAINT }}>Match</div>
+            <div className="text-12 uppercase tracking-[0.12em] mt-1 text-[var(--ink-faint)]">Match</div>
           </div>
         )}
       </header>
@@ -123,9 +123,9 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
               <li key={i} className="flex justify-between gap-4">
                 <span>
                   <span className="font-semibold">{pos.title}</span>
-                  {pos.employer && <span style={{ color: MUTED }}> · {pos.employer}</span>}
+                  {pos.employer && <span className="text-[var(--ink-soft)]"> · {pos.employer}</span>}
                 </span>
-                {pos.dates && <span className="shrink-0 tabular-nums" style={{ color: FAINT }}>{pos.dates}</span>}
+                {pos.dates && <span className="shrink-0 tabular-nums text-[var(--ink-faint)]">{pos.dates}</span>}
               </li>
             ))}
           </ul>
@@ -141,8 +141,8 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
                 {p.education.map((e, i) => (
                   <li key={i}>
                     {e.qualification}
-                    {e.institution && <span style={{ color: MUTED }}> · {e.institution}</span>}
-                    {e.dates && <span style={{ color: FAINT }}> ({e.dates})</span>}
+                    {e.institution && <span className="text-[var(--ink-soft)]"> · {e.institution}</span>}
+                    {e.dates && <span className="text-[var(--ink-faint)]"> ({e.dates})</span>}
                   </li>
                 ))}
               </ul>

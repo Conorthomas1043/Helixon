@@ -62,22 +62,22 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="pricing" />
       <main id="main-content">
 
       <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-20">
         <div className="text-center mb-12">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">
             Pricing
           </p>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] mb-5 text-[var(--ink)] font-display">
             Screening without
             <br />
             the bottleneck
           </h1>
-          <p className="text-15 leading-relaxed max-w-lg mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-lg mx-auto text-[var(--ink-soft)]">
             Unlimited screening on both plans. Monthly billing, no contract, cancel anytime.
           </p>
         </div>
@@ -85,17 +85,16 @@ export default function PricingPage() {
         {lapsed && (
           <div
             role="status"
-            className="max-w-xl mx-auto mb-8 rounded-card p-5 text-left"
-            style={{ border: "1px solid #f1dfb5", background: "#fff8e6" }}
+            className="max-w-xl mx-auto mb-8 rounded-card p-5 text-left border border-[var(--warn-line)] bg-[var(--ui-warn-soft)]"
           >
-            <p className="text-15 font-semibold" style={{ color: "#7a4f0a" }}>Your Helixon subscription isn&rsquo;t active</p>
-            <p className="text-sm leading-relaxed mt-1" style={{ color: "#7a4f0a" }}>
+            <p className="text-15 font-semibold text-[var(--ui-warn)]">Your Helixon subscription isn&rsquo;t active</p>
+            <p className="text-sm leading-relaxed mt-1 text-[var(--ui-warn)]">
               If you already had a plan, the most likely cause is a renewal payment that didn&rsquo;t go through.
               Update your payment method in Billing to restore access, with no need to buy again.
             </p>
             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 text-sm font-semibold">
-              <Link href="/billing" className="underline" style={{ color: "#7a4f0a" }}>Go to Billing</Link>
-              <Link href="/contact" className="underline" style={{ color: "#7a4f0a" }}>Contact us</Link>
+              <Link href="/billing" className="underline" style={{ color: "var(--ui-warn)" }}>Go to Billing</Link>
+              <Link href="/contact" className="underline" style={{ color: "var(--ui-warn)" }}>Contact us</Link>
             </div>
           </div>
         )}
@@ -103,8 +102,7 @@ export default function PricingPage() {
         {error && (
           <div
             role="alert"
-            className="max-w-lg mx-auto mb-6 rounded-btn p-3.5 text-sm text-center"
-            style={{ border: "1px solid #fecaca", background: "#fff7f7", color: "var(--score-low)" }}
+            className="max-w-lg mx-auto mb-6 rounded-btn p-3.5 text-sm text-center border border-[var(--danger-line)] bg-[var(--ui-danger-soft)] text-[var(--score-low)]"
           >
             {error}
           </div>
@@ -125,8 +123,7 @@ export default function PricingPage() {
               >
                 {plan.highlight && (
                   <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
-                    style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
                   >
                     Recommended for agencies
                   </span>
@@ -140,7 +137,7 @@ export default function PricingPage() {
                 </p>
 
                 <div className="flex items-baseline gap-1.5 mt-2.5">
-                  <span className="text-4xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: plan.highlight ? "white" : "var(--ink)" }}>
+                  <span className={`text-4xl font-semibold font-mono ${plan.highlight ? "text-white" : "text-[var(--ink)]"}`}>
                     £{plan.price}
                   </span>
                   <span className="text-xs" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
@@ -174,7 +171,7 @@ export default function PricingPage() {
                 <ul className="grid gap-2.5 mt-6">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm" style={{ color: plan.highlight ? "rgba(255,255,255,0.92)" : "var(--ink-soft)" }}>
-                      <span aria-hidden="true" className="shrink-0 font-bold" style={{ color: plan.highlight ? "white" : "var(--forest)" }}>
+                      <span aria-hidden="true" className={`shrink-0 font-bold ${plan.highlight ? "text-white" : "text-[var(--forest)]"}`}>
                         ✓
                       </span>
                       <span>{feature}</span>
@@ -186,15 +183,15 @@ export default function PricingPage() {
           })}
         </div>
 
-        <p className="mt-7 max-w-lg mx-auto text-center text-xs leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+        <p className="mt-7 max-w-lg mx-auto text-center text-xs leading-relaxed text-[var(--ink-faint)]">
           Payment is handled securely by Stripe. No account needed first: you&rsquo;ll set one up straight after checkout.
         </p>
 
         {/* A way forward for anyone not ready to pay today, instead of a dead end. */}
-        <div className="max-w-2xl mx-auto mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="max-w-2xl mx-auto mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-[var(--border)]">
           <div>
-            <p className="text-15 font-semibold" style={{ color: "var(--ink)" }}>Not sure which plan fits?</p>
-            <p className="text-sm leading-relaxed mt-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-15 font-semibold text-[var(--ink)]">Not sure which plan fits?</p>
+            <p className="text-sm leading-relaxed mt-1 text-[var(--ink-soft)]">
               Get a demo and see Helixon run on your own CVs first. No obligation.
             </p>
           </div>
@@ -208,14 +205,14 @@ export default function PricingPage() {
         </div>
 
         <div className="max-w-2xl mx-auto mt-14">
-          <h2 className="text-lg font-semibold tracking-tight mb-5 text-center" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-lg font-semibold tracking-tight mb-5 text-center text-[var(--ink)] font-display">
             Before you choose
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
             {PRICING_FAQS.map((f) => (
               <div key={f.q}>
-                <dt className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{f.q}</dt>
-                <dd className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.a}</dd>
+                <dt className="text-sm font-semibold mb-1 text-[var(--ink)]">{f.q}</dt>
+                <dd className="text-sm leading-relaxed text-[var(--ink-soft)]">{f.a}</dd>
               </div>
             ))}
           </dl>

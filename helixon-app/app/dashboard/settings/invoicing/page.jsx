@@ -71,7 +71,7 @@ export default function InvoicingSettingsPage() {
       {status === "ready" && (
         <form onSubmit={save} className="space-y-6">
           {!canManage && (
-            <p className="text-14" style={{ color: INK_MUTED }}>
+            <p className="text-14 text-[var(--ink-soft)]">
               Only the workspace owner or an admin can change these.
             </p>
           )}
@@ -114,7 +114,7 @@ export default function InvoicingSettingsPage() {
           </fieldset>
           <ErrorText>{error}</ErrorText>
           {notice && (
-            <p className="text-13" role="status" style={{ color: "var(--forest)" }}>
+            <p className="text-13 text-[var(--forest)]" role="status">
               {notice}
             </p>
           )}

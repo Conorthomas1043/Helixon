@@ -204,7 +204,7 @@ export function CardHeader({ title, eyebrow, description, count, action, id, cla
     <div className={cx("flex items-start justify-between gap-4 px-5 pt-5", className)}>
       <div className="min-w-0">
         {eyebrow && <p className="text-12 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ui-text-faint)]">{eyebrow}</p>}
-        <h2 id={id} className="text-15 font-semibold tracking-tight flex items-center gap-2 text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
+        <h2 id={id} className="text-15 font-semibold tracking-tight flex items-center gap-2 text-[var(--ui-text)] font-display">
           {title}
           {typeof count === "number" && count > 0 && <Pill>{count}</Pill>}
         </h2>
@@ -260,7 +260,7 @@ export function SectionHeading({ eyebrow, title, action, className = "" }) {
     <div className={cx("flex items-end justify-between gap-4 mb-4", className)}>
       <div className="min-w-0">
         {eyebrow && <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ui-text-faint)]">{eyebrow}</p>}
-        <h2 className="text-base font-semibold text-[var(--ui-text)]" style={{ fontFamily: "var(--font-display)" }}>
+        <h2 className="text-base font-semibold text-[var(--ui-text)] font-display">
           {title}
         </h2>
       </div>
@@ -275,7 +275,7 @@ export function Divider() {
 
 export function Kbd({ children }) {
   return (
-    <kbd className="inline-flex items-center h-5 px-1.5 rounded-sm border border-[var(--ui-border)] bg-[var(--ui-surface)] text-12 font-medium text-[var(--ui-text-faint)]" style={{ fontFamily: "var(--font-mono)" }}>
+    <kbd className="inline-flex items-center h-5 px-1.5 rounded-sm border border-[var(--ui-border)] bg-[var(--ui-surface)] text-12 font-medium text-[var(--ui-text-faint)] font-mono">
       {children}
     </kbd>
   );

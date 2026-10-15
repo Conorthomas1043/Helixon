@@ -27,17 +27,16 @@ export function AnalyticsSkeleton() {
 export function ErrorState({ onRetry }) {
   return (
     <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-base font-semibold mb-1 text-[var(--ink)]">
         Unable to load analytics
       </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+      <p className="text-sm mb-5 max-w-sm text-[var(--ink-soft)]">
         Something went wrong while loading recruitment analytics.
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         Try again
       </button>

@@ -99,13 +99,13 @@ export default function AuditLogPage() {
           <ul className="divide-y">
             {entries.map((e) => (
               <li key={e.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 text-14">
-                <span className="tabular-nums shrink-0 sm:w-40" style={{ color: INK_FAINT }}>
+                <span className="tabular-nums shrink-0 sm:w-40 text-[var(--ink-faint)]">
                   {new Date(e.at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </span>
                 <span className="min-w-0">
-                  <span className="font-semibold" style={{ color: INK }}>{e.actor}</span>
-                  <span style={{ color: INK_MUTED }}> · {e.label}</span>
-                  {e.summary && <span className="block" style={{ color: INK_MUTED }}>{e.summary}</span>}
+                  <span className="font-semibold text-[var(--ink)]">{e.actor}</span>
+                  <span className="text-[var(--ink-soft)]"> · {e.label}</span>
+                  {e.summary && <span className="block text-[var(--ink-soft)]">{e.summary}</span>}
                 </span>
               </li>
             ))}

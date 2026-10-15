@@ -50,7 +50,7 @@ export default function PhoneActions({ candidateId, phone, firstName, onLogged }
         </a>
       )}
       {pending && (
-        <span className="inline-flex flex-wrap items-center gap-1.5 rounded-full pl-3 pr-1 py-0.5" style={{ background: "var(--mist)" }}>
+        <span className="inline-flex flex-wrap items-center gap-1.5 rounded-full pl-3 pr-1 py-0.5 bg-[var(--mist)]">
           <span>Log {LOG_TYPES[pending][1].toLowerCase()}?</span>
           <input
             aria-label="Note"
@@ -59,16 +59,15 @@ export default function PhoneActions({ candidateId, phone, firstName, onLogged }
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && log()}
-            className="text-13 px-2 py-0.5 rounded-full bg-white"
-            style={{ border: "1px solid var(--border)", width: 150 }}
+            className="text-13 px-2 py-0.5 rounded-full bg-white border border-[var(--border)] w-[150px]"
           />
-          <button type="button" disabled={busy} onClick={log} className="font-semibold px-2" style={{ color: "var(--forest)" }}>
+          <button type="button" disabled={busy} onClick={log} className="font-semibold px-2 text-[var(--forest)]">
             Log
           </button>
           <button type="button" aria-label="Don't log" onClick={() => setPending(null)} className="px-1.5">
             ×
           </button>
-          {error && <span style={{ color: "var(--score-low)" }}>{error}</span>}
+          {error && <span className="text-[var(--score-low)]">{error}</span>}
         </span>
       )}
     </span>

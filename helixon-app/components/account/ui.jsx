@@ -33,8 +33,7 @@ export function PageCard({ title, description, danger, children }) {
       style={danger ? { borderColor: "var(--ui-danger)" } : undefined}
     >
       <h2
-        className="text-base font-semibold mb-1.5"
-        style={{ color: danger ? "var(--ui-danger)" : "var(--ui-text)", fontFamily: "var(--font-display)" }}
+        className={`text-base font-semibold mb-1.5 font-display ${danger ? "text-[var(--ui-danger)]" : "text-[var(--ui-text)]"}`}
       >
         {title}
       </h2>

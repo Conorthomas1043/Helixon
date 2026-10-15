@@ -90,8 +90,7 @@ function Countdown({ iso, verb }) {
   return (
     <span className="text-right shrink-0">
       <span
-        className="inline-flex items-center gap-1 text-13 font-semibold px-2 py-0.5 rounded-full"
-        style={{ background: urgent ? "#fbefed" : "#fdf6e9", color: urgent ? "#a83226" : "#8a5a12" }}
+        className={`inline-flex items-center gap-1 text-13 font-semibold px-2 py-0.5 rounded-full ${urgent ? "bg-[var(--ui-danger-soft)]" : "bg-[var(--ui-warn-soft)]"} ${urgent ? "text-[var(--score-low)]" : "text-[var(--ui-warn)]"}`}
       >
         <Icon name="clock" size={11} />
         {days === 0 ? "Today" : `In ${days} day${days === 1 ? "" : "s"}`}
@@ -207,7 +206,7 @@ function PrivacyContent() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Workspace</p>
-            <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl font-semibold text-[var(--ink)] font-display">
               Data &amp; privacy
             </h1>
             <p className="text-14 text-[var(--ink-soft)] mt-1 max-w-2xl">
@@ -295,7 +294,7 @@ function PrivacyContent() {
                     <AllClear>No candidate reaches {months} months without activity in the next 30 days.</AllClear>
                   ) : (
                     <>
-                      <div className="flex flex-wrap items-center gap-3 px-5 sm:px-6 py-2.5 bg-[#fbfcfb] border-b border-[var(--border-soft)] text-13 text-[var(--ink-soft)]">
+                      <div className="flex flex-wrap items-center gap-3 px-5 sm:px-6 py-2.5 bg-[var(--mist)] border-b border-[var(--border-soft)] text-13 text-[var(--ink-soft)]">
                         <input
                           type="checkbox"
                           checked={allSelected}
@@ -307,7 +306,7 @@ function PrivacyContent() {
                       </div>
                       <ul className="divide-y divide-[var(--border-soft)]">
                         {deletions.map((c) => (
-                          <li key={c.id} className={cx("flex items-center gap-3 px-5 sm:px-6 py-3.5 transition-colors", selected.includes(c.id) ? "bg-[#f4faf7]" : "bg-white")}>
+                          <li key={c.id} className={cx("flex items-center gap-3 px-5 sm:px-6 py-3.5 transition-colors", selected.includes(c.id) ? "bg-[var(--mint)]" : "bg-white")}>
                             <input
                               type="checkbox"
                               checked={selected.includes(c.id)}
@@ -455,8 +454,7 @@ function PrivacyContent() {
                             data.settings.presenceEnabled ? "Team presence switched off - recorded times deleted" : "Team presence switched on"
                           )
                         }
-                        className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 mt-1"
-                        style={{ background: data.settings.presenceEnabled ? "var(--forest)" : "var(--border)" }}
+                        className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 mt-1 ${data.settings.presenceEnabled ? "bg-[var(--forest)]" : "bg-[var(--border)]"}`}
                       >
                         <span
                           className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
@@ -486,7 +484,7 @@ function PrivacyContent() {
             {/* Candidate notice */}
             <Card className="overflow-hidden">
               <div className="grid lg:grid-cols-[340px_minmax(0,1fr)]">
-                <div className="p-5 sm:p-6 lg:border-r border-b lg:border-b-0 border-[var(--border-soft)] bg-[#fbfcfb]">
+                <div className="p-5 sm:p-6 lg:border-r border-b lg:border-b-0 border-[var(--border-soft)] bg-[var(--mist)]">
                   <SectionTitle eyebrow="Transparency" title="Privacy notice for candidates" />
                   <p className="text-14 text-[var(--ink-soft)] leading-relaxed">
                     Candidates must be told how their data is used - including that software helps assess CVs. Put this on your website or in
@@ -512,14 +510,14 @@ function PrivacyContent() {
                   <div className="mx-auto max-w-[620px] bg-white rounded-xl border border-[var(--border)] shadow-[0_10px_30px_-18px_rgba(19,32,27,0.35)] px-6 sm:px-9 py-7">
                     {NOTICE_TEMPLATE.split("\n\n").map((para, i) =>
                       i === 0 ? (
-                        <h3 key={i} className="text-16 font-semibold text-[var(--ink)] mb-4" style={{ fontFamily: "var(--font-display)" }}>
+                        <h3 key={i} className="text-16 font-semibold text-[var(--ink)] mb-4 font-display">
                           {para}
                         </h3>
                       ) : (
                         <p key={i} className="text-14 leading-relaxed text-[var(--ink-soft)] mb-3 last:mb-0">
                           {para.split(/(\[[^\]]+\])/).map((part, j) =>
                             part.startsWith("[") ? (
-                              <mark key={j} className="bg-[#fdf6e9] text-[#8a5a12] rounded px-0.5 font-semibold">
+                              <mark key={j} className="bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] rounded px-0.5 font-semibold">
                                 {part}
                               </mark>
                             ) : (

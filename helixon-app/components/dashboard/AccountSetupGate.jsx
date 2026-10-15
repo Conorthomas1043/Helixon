@@ -65,7 +65,7 @@ function SetupNeeded({ email }) {
           <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--ink-soft)", margin: "0 0 22px" }}>
             {email ? (
               <>
-                You&apos;re signed in as <strong style={{ color: "var(--ink)" }}>{email}</strong>, but this account isn&apos;t
+                You&apos;re signed in as <strong className="text-[var(--ink)]">{email}</strong>, but this account isn&apos;t
                 connected to an agency or a plan yet, so there&apos;s no candidate, job or team data to show.
               </>
             ) : (
@@ -73,9 +73,9 @@ function SetupNeeded({ email }) {
             )}
           </p>
 
-          <div style={{ display: "grid", gap: 12, marginBottom: 22 }}>
-            <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>New to Helixon?</div>
+          <div className="grid gap-3 mb-5.5">
+            <div className="border border-[var(--border)] rounded-card py-4 px-4.5">
+              <div className="text-14 font-semibold text-[var(--ink)] mb-1">New to Helixon?</div>
               <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
                 Pick a plan and your workspace is created as part of checkout.
               </p>
@@ -98,8 +98,8 @@ function SetupNeeded({ email }) {
               </Link>
             </div>
 
-            <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "16px 18px" }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>Already paid or signed up?</div>
+            <div className="border border-[var(--border)] rounded-card py-4 px-4.5">
+              <div className="text-14 font-semibold text-[var(--ink)] mb-1">Already paid or signed up?</div>
               <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--ink-soft)", margin: "0 0 12px" }}>
                 Linking a new subscription can take a minute. Refresh in a moment - and if it still isn&apos;t connected,
                 tell us the email you used and we&apos;ll link it for you.

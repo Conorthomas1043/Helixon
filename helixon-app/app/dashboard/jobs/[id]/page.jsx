@@ -69,7 +69,7 @@ function ChannelRow({ channelKey, value, onSave }) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2">
-      <span className="text-14 font-medium w-full sm:w-32 shrink-0" style={{ color: INK }}>
+      <span className="text-14 font-medium w-full sm:w-32 shrink-0 text-[var(--ink)]">
         {CHANNEL_LABELS[channelKey]}
       </span>
       <div className="flex items-center gap-1.5">
@@ -80,10 +80,9 @@ function ChannelRow({ channelKey, value, onSave }) {
           onChange={(e) => setClicks(e.target.value)}
           onBlur={save}
           aria-label={`${CHANNEL_LABELS[channelKey]} clicks/applicants seen`}
-          className="w-20 text-14 px-2 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="w-20 text-14 px-2 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         />
-        <span className="text-12" style={{ color: INK_FAINT }}>clicks</span>
+        <span className="text-12 text-[var(--ink-faint)]">clicks</span>
       </div>
       <div className="flex items-center gap-1.5">
         <input
@@ -94,10 +93,9 @@ function ChannelRow({ channelKey, value, onSave }) {
           onChange={(e) => setSpend(e.target.value)}
           onBlur={save}
           aria-label={`${CHANNEL_LABELS[channelKey]} spend`}
-          className="w-24 text-14 px-2 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="w-24 text-14 px-2 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         />
-        <span className="text-12" style={{ color: INK_FAINT }}>spend {saving ? "· saving…" : ""}</span>
+        <span className="text-12 text-[var(--ink-faint)]">spend {saving ? "· saving…" : ""}</span>
       </div>
     </div>
   );
@@ -107,10 +105,10 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
   const byChannel = new Map((channels || []).map((c) => [c.channel, c]));
   return (
     <div className="rounded-card p-5 sm:p-6" style={CARD}>
-      <h2 className="text-base font-semibold mb-1" style={{ fontFamily: "var(--font-display)", color: INK }}>
+      <h2 className="text-base font-semibold mb-1 font-display text-[var(--ink)]">
         Sourcing channels
       </h2>
-      <p className="text-13 mb-4" style={{ color: INK_MUTED }}>
+      <p className="text-13 mb-4 text-[var(--ink-soft)]">
         Self-reported - whatever your job board/LinkedIn campaign dashboard shows. Combined with each candidate&apos;s
         source (set on their profile) for apply rate and cost per applicant in Analytics.
       </p>
@@ -125,7 +123,7 @@ function SourcingChannelsPanel({ channels, onSaveChannel }) {
 
 function FieldLabel({ children }) {
   return (
-    <p className="text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>
+    <p className="text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">
       {children}
     </p>
   );
@@ -133,11 +131,11 @@ function FieldLabel({ children }) {
 
 function Stat({ label, value, accent }) {
   return (
-    <div className="rounded-btn p-3 text-center" style={{ background: "var(--mist)" }}>
+    <div className="rounded-btn p-3 text-center bg-[var(--mist)]">
       <p className="text-lg font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: accent ?? INK }}>
         {value}
       </p>
-      <p className="text-12 uppercase tracking-wide mt-0.5" style={{ color: INK_FAINT }}>
+      <p className="text-12 uppercase tracking-wide mt-0.5 text-[var(--ink-faint)]">
         {label}
       </p>
     </div>
@@ -147,7 +145,7 @@ function Stat({ label, value, accent }) {
 function StageBadge({ stage, status }) {
   if (status !== "completed") {
     return (
-      <span className="text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_FAINT }}>
+      <span className="text-12 font-semibold px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-faint)]">
         {status === "failed" ? "Failed" : "Processing"}
       </span>
     );
@@ -171,15 +169,15 @@ function RankedCandidateRow({ candidate, rank }) {
         href={`/dashboard/candidates/${candidate.id}`}
         className="flex items-center gap-3 py-3 -mx-2 px-2 rounded-btn transition-colors hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <span className="w-5 text-13 tabular-nums text-right shrink-0" style={{ fontFamily: "var(--font-mono)", color: INK_FAINT }}>
+        <span className="w-5 text-13 tabular-nums text-right shrink-0 font-mono text-[var(--ink-faint)]">
           {rank}
         </span>
         <Avatar name={candidate.fullName} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+          <p className="text-sm font-semibold truncate text-[var(--ink)]">
             {candidate.fullName}
           </p>
-          <p className="text-13 truncate" style={{ color: INK_MUTED }}>
+          <p className="text-13 truncate text-[var(--ink-soft)]">
             {candidate.recruiterName ?? "Unassigned"}
           </p>
         </div>
@@ -215,10 +213,10 @@ function JobDetailSkeleton() {
 function StateMessage({ title, body, onRetry }) {
   return (
     <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-base font-semibold mb-1 text-[var(--ink)]">
         {title}
       </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+      <p className="text-sm mb-5 max-w-sm text-[var(--ink-soft)]">
         {body}
       </p>
       <div className="flex items-center gap-3">
@@ -226,8 +224,7 @@ function StateMessage({ title, body, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
           >
             Try again
           </button>
@@ -247,7 +244,7 @@ function StateMessage({ title, body, onRetry }) {
 function TextField({ label, ...props }) {
   return (
     <label className="block">
-      <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">{label}</span>
       <input
         {...props}
         className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -267,7 +264,7 @@ const SELECT_CLASS = "w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible
 function SelectField({ label, children, ...props }) {
   return (
     <label className="block">
-      <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5" style={{ color: INK_FAINT }}>{label}</span>
+      <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">{label}</span>
       <select {...props} className={SELECT_CLASS} style={{ border: "1px solid var(--border)", color: INK }}>
         {children}
       </select>
@@ -416,15 +413,14 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
       />
 
       {error && (
-        <p className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>
+        <p className="text-13 text-[var(--score-low)]">{error}</p>
       )}
 
       <div className="flex items-center gap-2 pt-1">
         <button
           type="submit"
           disabled={saving}
-          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-          style={{ background: "var(--forest)", color: "white" }}
+          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>
@@ -432,8 +428,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-          style={{ border: "1px solid var(--border)", color: INK }}
+          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--border)] text-[var(--ink)]"
         >
           Cancel
         </button>
@@ -572,7 +567,7 @@ export default function JobDetailPage({ params }) {
   return (
     <>
       {confirmDialog}
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={`${PAGE_FRAME_NARROW} space-y-6`}>
         {status === "loading" && <JobDetailSkeleton />}
@@ -615,10 +610,10 @@ export default function JobDetailPage({ params }) {
                   (the actions used to push the page 55px wider than a phone). */}
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-5">
                 <div className="min-w-0">
-                  <h1 className="text-2xl font-semibold leading-tight" style={{ fontFamily: "var(--font-display)", color: INK }}>
+                  <h1 className="text-2xl font-semibold leading-tight font-display text-[var(--ink)]">
                     {job.title}
                   </h1>
-                  <p className="text-sm mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-sm mt-1 text-[var(--ink-soft)]">
                     {job.clientId ? (
                       <Link href={`/dashboard/clients/${job.clientId}`} className="underline">
                         {job.company}
@@ -641,8 +636,7 @@ export default function JobDetailPage({ params }) {
                     type="button"
                     onClick={handleToggleStatus}
                     disabled={updatingStatus}
-                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-                    style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--border)] text-[var(--ink-soft)]"
                   >
                     {updatingStatus ? "Updating…" : job.status === "open" ? "Mark as closed" : "Reopen role"}
                   </button>
@@ -650,8 +644,7 @@ export default function JobDetailPage({ params }) {
                     <button
                       type="button"
                       onClick={() => setEditing(true)}
-                      className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                      style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                      className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
                     >
                       Edit
                     </button>
@@ -660,8 +653,7 @@ export default function JobDetailPage({ params }) {
                     type="button"
                     onClick={handleDuplicate}
                     disabled={duplicating}
-                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
-                    style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 border border-[var(--border)] text-[var(--ink-soft)]"
                   >
                     {duplicating ? "Duplicating…" : "Duplicate"}
                   </button>
@@ -670,8 +662,7 @@ export default function JobDetailPage({ params }) {
                     onClick={handleDelete}
                     disabled={deleting || job.candidateCount > 0}
                     title={job.candidateCount > 0 ? "Candidates are attached to this role - mark it closed instead of deleting it." : undefined}
-                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40"
-                    style={{ border: "1px solid var(--border)", color: "var(--score-low)" }}
+                    className="text-12 font-semibold px-2.5 py-1 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40 border border-[var(--border)] text-[var(--score-low)]"
                   >
                     {deleting ? "Deleting…" : "Delete role"}
                   </button>
@@ -679,7 +670,7 @@ export default function JobDetailPage({ params }) {
               </div>
 
               {deleteError && (
-                <p className="text-13 mb-4" style={{ color: "var(--score-low)" }}>{deleteError}</p>
+                <p className="text-13 mb-4 text-[var(--score-low)]">{deleteError}</p>
               )}
 
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
@@ -692,20 +683,20 @@ export default function JobDetailPage({ params }) {
               </div>
 
               {editing ? (
-                <div className="pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+                <div className="pt-5 border-t border-t-[var(--border)]">
                   <EditJobForm job={job} team={data.team || []} onCancel={() => setEditing(false)} onSave={handleSaveEdit} />
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+                <div className="grid sm:grid-cols-2 gap-5 pt-5 border-t border-t-[var(--border)]">
                   <div>
                     <FieldLabel>Role details</FieldLabel>
-                    <ul className="text-14 space-y-1" style={{ color: INK }}>
+                    <ul className="text-14 space-y-1 text-[var(--ink)]">
                       {(job.seniority || job.employmentType) && <li>{[job.seniority, job.employmentType].filter(Boolean).join(" · ")}</li>}
                       {job.salaryRange && <li>{job.salaryRange}</li>}
                       {job.minYearsExperience != null && <li>{job.minYearsExperience}+ years&apos; experience</li>}
                       {job.officeId && offices.some((o) => o.id === job.officeId) && <li>Office: {offices.find((o) => o.id === job.officeId).name}</li>}
                       <li>
-                        Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span style={{ color: INK_FAINT }}>not assigned</span>}
+                        Owner: {(data.team || []).find((m) => m.id === job.ownerId)?.name || <span className="text-[var(--ink-faint)]">not assigned</span>}
                         {job.priority && job.priority !== "normal" && (
                           <span className="ml-2 text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: job.priority === "urgent" || job.priority === "high" ? "rgba(192,57,43,0.10)" : "var(--mist)", color: job.priority === "urgent" || job.priority === "high" ? "var(--score-low)" : INK_MUTED }}>
                             {JOB_PRIORITIES[job.priority]}
@@ -719,18 +710,18 @@ export default function JobDetailPage({ params }) {
                           {job.targetDate ? (() => {
                             const d = daysToTarget(job.targetDate);
                             const when = new Date(`${job.targetDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-                            return <span style={{ color: d != null && d < 0 && job.status === "open" ? "var(--score-low)" : INK }}>Fill by {when}{d != null && job.status === "open" ? (d < 0 ? ` (${-d} days overdue)` : ` (${d} days left)`) : ""}</span>;
+                            return <span className={`${d != null && d < 0 && job.status === "open" ? "text-[var(--score-low)]" : "text-[var(--ink)]"}`}>Fill by {when}{d != null && job.status === "open" ? (d < 0 ? ` (${-d} days overdue)` : ` (${d} days left)`) : ""}</span>;
                           })() : null}
                         </li>
                       )}
                       {(job.feePercent != null || job.feeAmount != null) && (
                         <li>Fee: {job.feeAmount != null ? `£${job.feeAmount.toLocaleString("en-GB")}` : `${job.feePercent}% of salary`}</li>
                       )}
-                      <li style={{ color: job.clientEmail ? INK : INK_FAINT }}>
+                      <li className={`${job.clientEmail ? "text-[var(--ink)]" : "text-[var(--ink-faint)]"}`}>
                         {job.clientEmail ? (
                           <>Client contact: <a href={`mailto:${job.clientEmail}`} className="underline">{job.clientEmail}</a></>
                         ) : (
-                          <>No client contact email - <button type="button" onClick={() => setEditing(true)} className="underline font-semibold" style={{ color: "var(--forest)" }}>add one</button> so client emails and feedback requests can be sent</>
+                          <>No client contact email - <button type="button" onClick={() => setEditing(true)} className="underline font-semibold text-[var(--forest)]">add one</button> so client emails and feedback requests can be sent</>
                         )}
                       </li>
                     </ul>
@@ -739,7 +730,7 @@ export default function JobDetailPage({ params }) {
                     <FieldLabel>Required skills</FieldLabel>
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {job.requiredSkills.map((s) => (
-                        <span key={s} className="text-12 px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                        <span key={s} className="text-12 px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
                           {s}
                         </span>
                       ))}
@@ -763,7 +754,7 @@ export default function JobDetailPage({ params }) {
 
             <div className="rounded-card p-5 sm:p-6" style={CARD}>
               <div className="flex items-center justify-between gap-4 mb-4">
-                <h2 className="text-base font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+                <h2 className="text-base font-semibold font-display text-[var(--ink)]">
                   Candidates ranked by fit
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -788,8 +779,7 @@ export default function JobDetailPage({ params }) {
                   aria-label="Filter by stage"
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value)}
-                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ border: "1px solid var(--border)", color: INK }}
+                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="all">All stages</option>
                   {Object.entries(STAGE_LABELS).map(([k, label]) => (
@@ -802,7 +792,7 @@ export default function JobDetailPage({ params }) {
               </div>
 
               {filteredCandidates.length === 0 ? (
-                <p className="text-14 py-6 text-center" style={{ color: INK_MUTED }}>
+                <p className="text-14 py-6 text-center text-[var(--ink-soft)]">
                   {candidates.length === 0 ? (
                     <>
                       No candidates yet.{" "}

@@ -24,9 +24,9 @@ const EMPTY_BOARD = { deals: [], clients: [], team: [] };
 function Stat({ label, value, sub }) {
   return (
     <div className="rounded-card p-5" style={CARD}>
-      <p className="text-12 font-semibold uppercase tracking-widest mb-2" style={{ color: INK_FAINT }}>{label}</p>
-      <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: INK }}>{value}</p>
-      {sub && <p className="text-12 mt-1" style={{ color: INK_MUTED }}>{sub}</p>}
+      <p className="text-12 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">{label}</p>
+      <p className="text-2xl font-semibold tabular-nums font-mono text-[var(--ink)]">{value}</p>
+      {sub && <p className="text-12 mt-1 text-[var(--ink-soft)]">{sub}</p>}
     </div>
   );
 }
@@ -106,7 +106,7 @@ export default function BusinessDevelopmentPage() {
 
       {state.status === "loading" && <LoadingCard rows={5} />}
       {state.status === "error" && <ErrorState title="Unable to load business development" onRetry={reload} />}
-      {error && <p className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
+      {error && <p className="text-13 text-[var(--score-low)]">{error}</p>}
 
       {state.status === "ready" && (
         <>
@@ -130,39 +130,38 @@ export default function BusinessDevelopmentPage() {
                   {OPEN_STAGES.map((stage) => {
                     const list = deals.filter((d) => d.stage === stage);
                     return (
-                      <section key={stage} className="rounded-card p-3 min-w-0" style={{ background: "white", border: "1px solid var(--border)" }} aria-label={OPPORTUNITY_STAGES[stage]}>
+                      <section key={stage} className="rounded-card p-3 min-w-0 bg-white border border-[var(--border)]" aria-label={OPPORTUNITY_STAGES[stage]}>
                         <header className="flex items-baseline justify-between px-1 mb-2">
-                          <h2 className="text-13 font-semibold" style={{ color: INK }}>{OPPORTUNITY_STAGES[stage]}</h2>
-                          <span className="text-12 tabular-nums" style={{ color: INK_FAINT }}>
+                          <h2 className="text-13 font-semibold text-[var(--ink)]">{OPPORTUNITY_STAGES[stage]}</h2>
+                          <span className="text-12 tabular-nums text-[var(--ink-faint)]">
                             {list.length} · {formatMoney(summary.byStage[stage].value)}
                           </span>
                         </header>
                         <ul className="space-y-2">
-                          {list.length === 0 && <li className="text-13 px-1 py-2" style={{ color: INK_FAINT }}>None</li>}
+                          {list.length === 0 && <li className="text-13 px-1 py-2 text-[var(--ink-faint)]">None</li>}
                           {list.map((d) => {
                             const late = d.expectedClose && d.expectedClose < new Date().toISOString().slice(0, 10);
                             return (
-                              <li key={d.id} className="rounded-btn p-3" style={{ background: "var(--mist)" }}>
+                              <li key={d.id} className="rounded-btn p-3 bg-[var(--mist)]">
                                 <button type="button" onClick={() => setDialog(d)} className="w-full text-left">
-                                  <span className="block text-14 font-semibold truncate" style={{ color: INK }}>{d.title}</span>
-                                  <span className="block text-13 truncate" style={{ color: INK_MUTED }}>{d.clientName}</span>
-                                  <span className="block text-13 tabular-nums mt-1" style={{ color: INK_MUTED }}>
+                                  <span className="block text-14 font-semibold truncate text-[var(--ink)]">{d.title}</span>
+                                  <span className="block text-13 truncate text-[var(--ink-soft)]">{d.clientName}</span>
+                                  <span className="block text-13 tabular-nums mt-1 text-[var(--ink-soft)]">
                                     {d.value != null ? formatMoney(d.value) : "No value"} · {effectiveProbability(d)}%
                                   </span>
                                   {d.expectedClose && (
-                                    <span className="block text-12" style={{ color: late ? "var(--score-low)" : INK_FAINT }}>
+                                    <span className={`block text-12 ${late ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]"}`}>
                                       Close {formatDateOnly(d.expectedClose)}
                                     </span>
                                   )}
-                                  {teamName(d.ownerId) && <span className="block text-12" style={{ color: INK_FAINT }}>{teamName(d.ownerId)}</span>}
+                                  {teamName(d.ownerId) && <span className="block text-12 text-[var(--ink-faint)]">{teamName(d.ownerId)}</span>}
                                 </button>
                                 <label className="sr-only" htmlFor={`stage-${d.id}`}>Move {d.title}</label>
                                 <select
                                   id={`stage-${d.id}`}
                                   value={d.stage}
                                   onChange={(e) => move(d, e.target.value)}
-                                  className="mt-2 w-full text-12 px-2 py-1 rounded-md bg-white"
-                                  style={{ border: "1px solid var(--border)", color: INK_MUTED }}
+                                  className="mt-2 w-full text-12 px-2 py-1 rounded-md bg-white border border-[var(--border)] text-[var(--ink-soft)]"
                                 >
                                   {Object.entries(OPPORTUNITY_STAGES).map(([k, label]) => (
                                     <option key={k} value={k}>{k === d.stage ? label : `Move to ${label}`}</option>
@@ -183,7 +182,7 @@ export default function BusinessDevelopmentPage() {
                   action={closed.length > 0 && <Button size="sm" onClick={() => setShowClosed((v) => !v)}>{showClosed ? "Hide" : "Show"}</Button>}
                 >
                   {!showClosed ? (
-                    <p className="text-14" style={{ color: INK_MUTED }}>
+                    <p className="text-14 text-[var(--ink-soft)]">
                       {summary.wonCount} won and {summary.lostCount} lost this month.
                     </p>
                   ) : (
@@ -191,15 +190,15 @@ export default function BusinessDevelopmentPage() {
                       {closed.map((d) => (
                         <li key={d.id} className="py-2.5 flex items-center justify-between gap-3 text-14">
                           <button type="button" onClick={() => setDialog(d)} className="min-w-0 text-left">
-                            <span className="block font-semibold truncate" style={{ color: INK }}>{d.title}</span>
-                            <span className="block text-13 truncate" style={{ color: INK_MUTED }}>
+                            <span className="block font-semibold truncate text-[var(--ink)]">{d.title}</span>
+                            <span className="block text-13 truncate text-[var(--ink-soft)]">
                               {d.clientName}
                               {d.closedAt ? ` · ${formatDateOnly(d.closedAt)}` : ""}
                               {d.stage === "lost" && d.lostReason ? ` · ${d.lostReason}` : ""}
                             </span>
                           </button>
                           <span className="flex items-center gap-2 shrink-0">
-                            <span className="tabular-nums" style={{ color: INK_MUTED }}>{d.value != null ? formatMoney(d.value) : ""}</span>
+                            <span className="tabular-nums text-[var(--ink-soft)]">{d.value != null ? formatMoney(d.value) : ""}</span>
                             <StagePill stage={d.stage} />
                           </span>
                         </li>
@@ -211,7 +210,7 @@ export default function BusinessDevelopmentPage() {
 
               <Card title="Client follow-ups" eyebrow={`${followUps.length} set`}>
                 {followUps.length === 0 ? (
-                  <p className="text-14" style={{ color: INK_MUTED }}>No follow-ups set. Add one from a client&apos;s page.</p>
+                  <p className="text-14 text-[var(--ink-soft)]">No follow-ups set. Add one from a client&apos;s page.</p>
                 ) : (
                   <ul className="space-y-3">
                     {followUps.map((c) => {
@@ -219,12 +218,12 @@ export default function BusinessDevelopmentPage() {
                       return (
                         <li key={c.id} className="text-14">
                           <Link href={`/dashboard/clients/${c.id}`} className="font-semibold" style={{ color: INK }}>{c.name}</Link>
-                          <p style={{ color: INK_MUTED }}>{c.nextAction.label}</p>
+                          <p className="text-[var(--ink-soft)]">{c.nextAction.label}</p>
                           <p className="flex items-center justify-between gap-2 text-13">
-                            <span style={{ color: overdue ? "var(--score-low)" : INK_FAINT }}>
+                            <span className={`${overdue ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]"}`}>
                               {c.nextAction.dueAt ? `${overdue ? "Overdue · " : ""}${new Date(c.nextAction.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : "No date"}
                             </span>
-                            <button type="button" className="font-semibold" style={{ color: "var(--forest)" }} onClick={() => completeFollowUp(c)}>
+                            <button type="button" className="font-semibold text-[var(--forest)]" onClick={() => completeFollowUp(c)}>
                               Done
                             </button>
                           </p>

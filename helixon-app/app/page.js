@@ -29,11 +29,11 @@ function AnalysisExampleSection() {
     <section id="example" className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
         <div className="text-center mb-10">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>See a real analysis</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">See a real analysis</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             Not just a score — the reasons behind it
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Every candidate gets a report like this: how they meet each requirement, the line in their CV that proves it,
             what still needs checking, and what to ask at interview. Warehouse floor or boardroom.
             Helixon helps you decide &mdash; the final call is always yours.
@@ -56,14 +56,14 @@ const HELIXON_STEPS = ["Upload the CVs", "Helixon analyses each one", "Candidate
 function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
-    <div className="rounded-2xl p-7 h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <p className="text-11 font-semibold uppercase tracking-widest mb-6" style={{ color: tone === "forest" ? "var(--forest)" : "var(--ink-faint)" }}>{label}</p>
+    <div className="rounded-2xl p-7 h-full bg-white border border-[var(--border)]">
+      <p className={`text-11 font-semibold uppercase tracking-widest mb-6 ${tone === "forest" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{label}</p>
       <ol className="relative pl-5">
-        <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
+        <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
         {steps.map((step) => (
           <li key={step} className="relative pb-5 last:pb-0">
             <span className="absolute -left-5 top-1 w-3.5 h-3.5 rounded-full" style={{ background: tone === "forest" ? accent : "white", border: `2px solid ${accent}` }} aria-hidden="true" />
-            <span className="text-sm" style={{ color: "var(--ink)" }}>{step}</span>
+            <span className="text-sm text-[var(--ink)]">{step}</span>
           </li>
         ))}
       </ol>
@@ -76,10 +76,10 @@ function BeforeAfterSection() {
     <section className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             The bottleneck isn&rsquo;t hiring. It&rsquo;s everything before the shortlist.
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Most agencies still screen the way they did a decade ago — one CV, one tab,
             one spreadsheet at a time.
           </p>
@@ -107,10 +107,10 @@ function BulkScreeningSection() {
   const nodes = stages.flatMap((s, i) => {
     const items = [
       <Reveal key={`stage-${i}`} delay={i * 80}>
-        <div className="rounded-card p-6 text-center h-full" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold mb-3" style={{ background: "var(--mint)", color: "var(--forest)" }}>{i + 1}</span>
-          <p className="text-15 font-semibold mb-1.5" style={{ color: "var(--ink)" }}>{s.label}</p>
-          <p className="text-13 leading-relaxed" style={{ color: "var(--ink-soft)" }}>{s.detail}</p>
+        <div className="rounded-card p-6 text-center h-full bg-white border border-[var(--border)]">
+          <span className="inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold mb-3 bg-[var(--mint)] text-[var(--forest)]">{i + 1}</span>
+          <p className="text-15 font-semibold mb-1.5 text-[var(--ink)]">{s.label}</p>
+          <p className="text-13 leading-relaxed text-[var(--ink-soft)]">{s.detail}</p>
         </div>
       </Reveal>,
     ];
@@ -128,11 +128,11 @@ function BulkScreeningSection() {
     <section className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
         <div className="text-center mb-12">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Bulk screening</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Bulk screening</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             One role. Dozens of CVs. One ranked shortlist.
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Every candidate for a role is scored against the same spec, so the comparison
             holds up — and a weak CV never blocks the rest of the batch.
           </p>
@@ -163,22 +163,22 @@ const DASHBOARD_POINTS = [
 
 function DashboardSection() {
   return (
-    <section id="dashboard" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)", borderBottom: "1px solid var(--border-soft)" }}>
+    <section id="dashboard" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
       <div className="max-w-[1100px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center">
           <Reveal>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>The dashboard</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">The dashboard</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
               Screening is the start. This is where the desk gets run.
             </h2>
-            <p className="text-15 leading-relaxed mb-6" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-15 leading-relaxed mb-6 text-[var(--ink-soft)]">
               Scores are only useful if they turn into placements. Helixon keeps every
               role, candidate and stage in one place, so nothing sits waiting in
               someone&rsquo;s inbox.
             </p>
             <ul className="space-y-3">
               {DASHBOARD_POINTS.map((point) => (
-                <li key={point} className="flex items-start gap-2.5 text-15 leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                <li key={point} className="flex items-start gap-2.5 text-15 leading-relaxed text-[var(--ink-soft)]">
                   <svg className="shrink-0 mt-1" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
@@ -211,33 +211,33 @@ function AgencyWorkflowSection() {
     <section id="agency" className="max-w-[1100px] mx-auto px-6 py-24">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <Reveal>
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>For agencies</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">For agencies</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             Built for the way agency teams already work
           </h2>
-          <p className="text-15 leading-relaxed mb-6 max-w-md" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed mb-6 max-w-md text-[var(--ink-soft)]">
             One recruiter screens and the whole team sees the result. Notes, tags and
             shortlists stay together, with a clear record of who screened what and when.
           </p>
           <div className="flex flex-wrap gap-2 mb-7">
             {["Shared shortlists", "Notes & tags", "Audit trail", "Multi-seat access"].map((chip) => (
-              <span key={chip} className="text-13 font-medium px-3 py-1.5 rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>{chip}</span>
+              <span key={chip} className="text-13 font-medium px-3 py-1.5 rounded-full bg-[var(--mint)] text-[var(--forest)]">{chip}</span>
             ))}
           </div>
           <Button as="a" href="/demo" variant="outline" className="min-h-[44px]">Get a demo</Button>
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="rounded-2xl p-7" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-7 bg-white border border-[var(--border)]">
             <ol className="relative pl-6">
-              <div className="absolute left-[9px] top-1.5 bottom-1.5 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
+              <div className="absolute left-[9px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
               {AGENCY_FLOW.map((step, i) => (
                 <li key={`${step.role}-${i}`} className="relative pb-6 last:pb-0">
-                  <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "var(--forest)" }} aria-hidden="true">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: "white" }} />
+                  <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full flex items-center justify-center bg-[var(--forest)]" aria-hidden="true">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
                   </span>
-                  <p className="text-11 font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--forest)" }}>{step.role}</p>
-                  <p className="text-sm" style={{ color: "var(--ink)" }}>{step.action}</p>
+                  <p className="text-11 font-semibold uppercase tracking-widest mb-1 text-[var(--forest)]">{step.role}</p>
+                  <p className="text-sm text-[var(--ink)]">{step.action}</p>
                 </li>
               ))}
             </ol>
@@ -280,12 +280,12 @@ function FeatureGroups() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {FEATURE_GROUPS.map((g) => (
-        <div key={g.title} className="rounded-card p-7" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <h3 className="text-base font-semibold mb-2" style={{ color: "var(--ink)" }}>{g.title}</h3>
-          <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>{g.body}</p>
+        <div key={g.title} className="rounded-card p-7 bg-white border border-[var(--border)]">
+          <h3 className="text-base font-semibold mb-2 text-[var(--ink)]">{g.title}</h3>
+          <p className="text-sm leading-relaxed mb-5 text-[var(--ink-soft)]">{g.body}</p>
           <ul className="space-y-2.5">
             {g.items.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--ink-soft)" }}>
+              <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--ink-soft)]">
                 <svg className="shrink-0 mt-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
@@ -310,12 +310,12 @@ const TRUST_PILLARS = [
 
 function TrustSection() {
   return (
-    <section className="py-20" style={{ background: "var(--forest)" }}>
+    <section className="py-20 bg-[var(--forest)]">
       <div className="max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
             <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>Trust & compliance</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white" style={{ fontFamily: "var(--font-display)" }}>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-display">
               Candidate data, handled properly
             </h2>
           </div>
@@ -385,7 +385,7 @@ const FAQ_LD = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <div className="min-h-screen bg-[var(--mist)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD).replace(/</g, "\\u003c") }} />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="home" />
@@ -452,15 +452,15 @@ export default function LandingPage() {
         <TrustSection />
 
         {/* ── Features, grouped by outcome ─────────────────────────────────── */}
-        <section id="features" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)", borderBottom: "1px solid var(--border-soft)" }}>
+        <section id="features" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
           <div className="max-w-[1100px] mx-auto px-6">
             <Reveal>
               <div className="text-center mb-12">
-                <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Capabilities</p>
-                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Capabilities</p>
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
                   Built for the volume agency recruiters actually handle
                 </h2>
-                <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+                <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
                   The parts that matter when you&rsquo;re screening dozens of CVs a week, not
                   a demo that only holds up on one perfect candidate.
                 </p>
@@ -474,11 +474,11 @@ export default function LandingPage() {
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-24">
           <Reveal>
             <div className="text-center mb-14">
-              <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Pricing</p>
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Pricing</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
                 Plans built around how agencies actually screen
               </h2>
-              <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
                 Book a demo to see it run on your own CVs, or start on a plan today.
                 Monthly billing, no long-term contract.
               </p>
@@ -499,8 +499,7 @@ export default function LandingPage() {
                 >
                   {plan.highlight && (
                     <span
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap"
-                      style={{ background: "var(--mint)", color: "var(--forest)", border: "1px solid var(--forest)" }}
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
                     >
                       Recommended for agencies
                     </span>
@@ -509,7 +508,7 @@ export default function LandingPage() {
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-6">
-                    <span className="text-36 font-semibold leading-none" style={{ fontFamily: /\d/.test(plan.price) ? "var(--font-mono)" : "var(--font-display)", color: plan.highlight ? "white" : "var(--ink)" }}>{plan.price}</span>
+                    <span className={`text-36 font-semibold leading-none ${/\d/.test(plan.price) ? "font-mono" : "font-display"} ${plan.highlight ? "text-white" : "text-[var(--ink)]"}`}>{plan.price}</span>
                     <span className="text-13" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.period}</span>
                   </div>
                   <ul className="space-y-3 mb-7 flex-1">
@@ -542,12 +541,12 @@ export default function LandingPage() {
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-        <section id="faq" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)" }}>
+        <section id="faq" className="py-24 bg-white border-t border-t-[var(--border-soft)]">
           <div className="max-w-[1100px] mx-auto px-6">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>FAQ</p>
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">FAQ</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
                 Questions recruiters usually ask
               </h2>
             </div>

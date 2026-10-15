@@ -168,8 +168,8 @@ export function savedJobText(job) {
 export function scoreTone(score) {
   if (score == null) return { fg: "var(--ink-faint)", bg: "var(--mist)", label: "No score" };
   if (score >= STRONG_MATCH_MIN) return { fg: "var(--score-strong)", bg: "var(--mint)", label: BAND_LABELS.strong };
-  if (score >= REVIEW_MIN) return { fg: "var(--score-mid)", bg: "#fdf6e9", label: BAND_LABELS.review };
-  return { fg: "var(--score-low)", bg: "#fbefed", label: BAND_LABELS.weak };
+  if (score >= REVIEW_MIN) return { fg: "var(--score-mid)", bg: "var(--ui-warn-soft)", label: BAND_LABELS.review };
+  return { fg: "var(--score-low)", bg: "var(--ui-danger-soft)", label: BAND_LABELS.weak };
 }
 
 // Role templates, job types and the role builder live in ./roles.js.

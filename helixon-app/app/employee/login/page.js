@@ -82,12 +82,11 @@ function EmployeeLoginForm() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen flex items-center justify-center px-4 bg-[var(--mist)]">
       <div className="w-full max-w-sm">
         <Link href="/" className="flex items-center gap-3 justify-center mb-8 group" aria-label="Helixon home">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
-            style={{ background: "var(--forest)" }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 bg-[var(--forest)]"
           >
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
@@ -95,7 +94,7 @@ function EmployeeLoginForm() {
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
-          <span className="text-lg font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <span className="text-lg font-semibold tracking-tight text-[var(--ink)] font-display">
             Helixon
           </span>
         </Link>
@@ -104,30 +103,29 @@ function EmployeeLoginForm() {
           className="rounded-panel p-6 sm:p-7"
           style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.18)" }}
         >
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5" style={{ background: "var(--mint)" }}>
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 bg-[var(--mint)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="10" rx="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
           </div>
 
-          <h1 className="text-lg font-semibold tracking-tight mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-lg font-semibold tracking-tight mb-1 text-[var(--ink)] font-display">
             Employee sign in
           </h1>
-          <p className="text-14 leading-relaxed mb-5" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-14 leading-relaxed mb-5 text-[var(--ink-soft)]">
             Use your Helixon employee account.
           </p>
 
           {passwordChanged && (
             <div
               role="status"
-              className="flex items-start gap-2.5 p-3 rounded-btn mb-4"
-              style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+              className="flex items-start gap-2.5 p-3 rounded-btn mb-4 bg-[var(--mint)] border border-[var(--border)]"
             >
               <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
               </svg>
-              <p className="text-14" style={{ color: "var(--forest)" }}>
+              <p className="text-14 text-[var(--forest)]">
                 Password updated. Sign in with your new password.
               </p>
             </div>
@@ -177,7 +175,7 @@ function EmployeeLoginForm() {
                 <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
-                <p className="text-14" style={{ color: "var(--score-low)" }}>{error}</p>
+                <p className="text-14 text-[var(--score-low)]">{error}</p>
               </div>
             )}
 

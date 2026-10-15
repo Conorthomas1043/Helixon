@@ -30,8 +30,8 @@ export const OUTCOME_DOT = {
   not_interested: RED,
   wrong_number: RED,
   callback_requested: AMBER,
-  interested: "#0b6e4f",
-  meeting_booked: "#0b6e4f",
+  interested: "var(--forest)",
+  meeting_booked: "var(--forest)",
 };
 
 export function CallsTab({ employee }) {
@@ -138,44 +138,40 @@ export function CallsTab({ employee }) {
         <button
           type="button"
           onClick={showAddForm ? () => setShowAddForm(false) : () => setShowAddForm(true)}
-          className="text-12 font-semibold px-3 py-1.5 rounded-full"
-          style={{ background: "var(--mint)", color: "var(--forest)" }}
+          className="text-12 font-semibold px-3 py-1.5 rounded-full bg-[var(--mint)] text-[var(--forest)]"
         >
           {showAddForm ? "Cancel" : "+ Log call"}
         </button>
       </div>
 
       {me && (
-        <div className="rounded-card px-3.5 py-2.5 mb-3 flex items-center justify-between" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <span className="text-13 font-medium" style={{ color: "var(--ink-soft)" }}>Today</span>
-          <span className="text-14 font-semibold tabular-nums" style={{ color: "var(--ink)" }}>{me.today} calls</span>
+        <div className="rounded-card px-3.5 py-2.5 mb-3 flex items-center justify-between bg-white border border-[var(--border)]">
+          <span className="text-13 font-medium text-[var(--ink-soft)]">Today</span>
+          <span className="text-14 font-semibold tabular-nums text-[var(--ink)]">{me.today} calls</span>
         </div>
       )}
 
       {showAddForm && (
-        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5 bg-white border border-[var(--border)]">
           <input
             autoFocus
             type="text"
             value={form.contact_name}
             onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
             placeholder="Contact name"
-            className="text-14 rounded-btn px-3 py-2.5"
-            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
           />
           <input
             type="text"
             value={form.company}
             onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
             placeholder="Company (optional)"
-            className="text-14 rounded-btn px-3 py-2.5"
-            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
           />
           <select
             value={form.outcome}
             onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
-            className="text-14 rounded-btn px-3 py-2.5"
-            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
           >
             {outcomes.map((o) => (
               <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
@@ -186,17 +182,15 @@ export function CallsTab({ employee }) {
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             placeholder="Notes (optional)"
             rows={2}
-            className="text-14 rounded-btn px-3 py-2.5 resize-none"
-            style={{ border: "1px solid var(--border)", background: "white", color: "var(--ink)" }}
+            className="text-14 rounded-btn px-3 py-2.5 resize-none border border-[var(--border)] bg-white text-[var(--ink)]"
           />
           {formError && (
-            <p className="text-12 rounded-lg px-2.5 py-2" style={{ color: RED, background: "#fdf1f0", border: "1px solid #f6d6d3" }}>{formError}</p>
+            <p className="text-12 rounded-lg px-2.5 py-2" style={{ color: RED, background: "var(--ui-danger-soft)", border: "1px solid var(--danger-line)" }}>{formError}</p>
           )}
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50 bg-[var(--forest)] text-white"
           >
             {saving ? "Saving…" : "Log call"}
           </button>
@@ -206,38 +200,37 @@ export function CallsTab({ employee }) {
       <ErrorNotice message={error} />
 
       {loading ? (
-        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>Loading…</p>
+        <p className="text-13 text-center py-6 text-[var(--ink-faint)]">Loading…</p>
       ) : calls.length === 0 ? (
-        <p className="text-13 text-center py-6" style={{ color: "var(--ink-faint)" }}>No calls logged yet.</p>
+        <p className="text-13 text-center py-6 text-[var(--ink-faint)]">No calls logged yet.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {calls.map((call) => (
-            <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]">
               <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: OUTCOME_DOT[call.outcome] || GRAY }} />
               <div className="min-w-0 flex-1">
-                <div className="text-14 font-medium truncate" style={{ color: "var(--ink)" }}>
+                <div className="text-14 font-medium truncate text-[var(--ink)]">
                   {call.contact_name || call.company || "Unnamed contact"}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <select
                     value={call.outcome}
                     onChange={(e) => setOutcome(call, e.target.value)}
-                    className="text-11 font-semibold pl-1.5 pr-1 py-0.5 rounded-full"
-                    style={{ background: "var(--mist)", color: "var(--ink-soft)", border: "1px solid var(--border)" }}
+                    className="text-11 font-semibold pl-1.5 pr-1 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)] border border-[var(--border)]"
                   >
                     {outcomes.map((o) => (
                       <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
                     ))}
                   </select>
-                  <span className="text-11" style={{ color: "var(--ink-faint)" }}>
+                  <span className="text-11 text-[var(--ink-faint)]">
                     {new Date(call.called_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
                 {call.notes && (
-                  <div className="text-12 mt-1" style={{ color: "var(--ink-soft)" }}>{call.notes}</div>
+                  <div className="text-12 mt-1 text-[var(--ink-soft)]">{call.notes}</div>
                 )}
               </div>
-              <button type="button" onClick={() => handleDelete(call)} aria-label="Delete call" className="shrink-0" style={{ color: "var(--ink-faint)" }}>
+              <button type="button" onClick={() => handleDelete(call)} aria-label="Delete call" className="shrink-0 text-[var(--ink-faint)]">
                 <Icon path={ICONS.trash} size={14} />
               </button>
             </div>

@@ -175,7 +175,7 @@ export default function EmployeeFilesPage() {
 
   if (checking) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
         <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
       </main>
     );
@@ -188,26 +188,24 @@ export default function EmployeeFilesPage() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
               Files
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-sm mt-1 text-[var(--ink-soft)]">
               Shared folders and documents, visible to the whole team.
             </p>
           </div>
           <div className="flex items-center gap-2 self-start">
             <button type="button"
               onClick={() => setShowNewFolder((v) => !v)}
-              className="text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:bg-white"
-              style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+              className="text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:bg-white border border-[var(--border)] text-[var(--ink-soft)]"
             >
               + New folder
             </button>
             <button type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
-              style={{ background: "var(--forest)", color: "white" }}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 disabled:opacity-50 bg-[var(--forest)] text-white"
             >
               {uploading ? "Uploading…" : "Upload"}
             </button>
@@ -216,8 +214,8 @@ export default function EmployeeFilesPage() {
         </div>
 
         {/* ── Breadcrumb ──────────────────────────────────────────────── */}
-        <div className="flex items-center flex-wrap gap-1 mb-5 text-xs" style={{ color: "var(--ink-faint)" }}>
-          <button type="button" onClick={() => setFolderId(null)} className="font-medium hover:underline" style={{ color: folderId ? "var(--ink-soft)" : "var(--forest)" }}>
+        <div className="flex items-center flex-wrap gap-1 mb-5 text-xs text-[var(--ink-faint)]">
+          <button type="button" onClick={() => setFolderId(null)} className={`font-medium hover:underline ${folderId ? "text-[var(--ink-soft)]" : "text-[var(--forest)]"}`}>
             Files
           </button>
           {breadcrumb.map((crumb, i) => (
@@ -225,8 +223,7 @@ export default function EmployeeFilesPage() {
               <span>/</span>
               <button type="button"
                 onClick={() => setFolderId(crumb.id)}
-                className="font-medium hover:underline"
-                style={{ color: i === breadcrumb.length - 1 ? "var(--forest)" : "var(--ink-soft)" }}
+                className={`font-medium hover:underline ${i === breadcrumb.length - 1 ? "text-[var(--forest)]" : "text-[var(--ink-soft)]"}`}
               >
                 {crumb.name}
               </button>
@@ -235,12 +232,12 @@ export default function EmployeeFilesPage() {
         </div>
 
         {error && (
-          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]">
             {error}
           </div>
         )}
         {uploadError && (
-          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]">
             {uploadError}
           </div>
         )}
@@ -253,23 +250,22 @@ export default function EmployeeFilesPage() {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
-              className="flex-1 max-w-xs bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-              style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+              className="flex-1 max-w-xs bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
             />
-            <button type="submit" disabled={creatingFolder || !newFolderName.trim()} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90" style={{ background: "var(--forest)", color: "white" }}>
+            <button type="submit" disabled={creatingFolder || !newFolderName.trim()} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
               Create
             </button>
-            <button type="button" onClick={() => setShowNewFolder(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+            <button type="button" onClick={() => setShowNewFolder(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
               Cancel
             </button>
           </form>
         )}
 
-        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
           {loading ? (
-            <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</div>
+            <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
           ) : folders.length === 0 && files.length === 0 ? (
-            <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Empty - create a folder or upload a file above.</div>
+            <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Empty - create a folder or upload a file above.</div>
           ) : (
             <div className="divide-y divide-[var(--border)]">
               {folders.map((folder) => {
@@ -277,15 +273,15 @@ export default function EmployeeFilesPage() {
                 const creator = folder.creator?.full_name || folder.creator?.display_name;
                 return (
                   <div key={folder.id} className="flex items-center gap-3 px-5 py-3 group">
-                    <span style={{ color: "var(--ink-faint)" }}>{FOLDER_ICON}</span>
+                    <span className="text-[var(--ink-faint)]">{FOLDER_ICON}</span>
                     <button type="button" onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{folder.name}</p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                      <p className="text-sm font-medium truncate text-[var(--ink)]">{folder.name}</p>
+                      <p className="text-xs mt-0.5 text-[var(--ink-faint)]">
                         {creator ? `Created by ${creator} · ` : ""}{formatDate(folder.created_at)}
                       </p>
                     </button>
                     {canDelete && (
-                      <button type="button" onClick={() => handleDeleteFolder(folder)} className="text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition shrink-0" style={{ color: "#e0554f" }}>
+                      <button type="button" onClick={() => handleDeleteFolder(folder)} className="text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition shrink-0 text-[var(--score-low)]">
                         Delete
                       </button>
                     )}
@@ -297,20 +293,20 @@ export default function EmployeeFilesPage() {
                 const uploader = file.uploader?.full_name || file.uploader?.display_name;
                 return (
                   <div key={file.id} className="flex items-center gap-3 px-5 py-3 group">
-                    <span style={{ color: "var(--ink-faint)" }}>{FILE_ICON}</span>
+                    <span className="text-[var(--ink-faint)]">{FILE_ICON}</span>
                     <a
                       href={`/api/employee/files/${file.id}/download`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 min-w-0"
                     >
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{file.name}</p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                      <p className="text-sm font-medium truncate text-[var(--ink)]">{file.name}</p>
+                      <p className="text-xs mt-0.5 text-[var(--ink-faint)]">
                         {formatBytes(file.size_bytes)}{uploader ? ` · Uploaded by ${uploader}` : ""} · {formatDate(file.created_at)}
                       </p>
                     </a>
                     {canDelete && (
-                      <button type="button" onClick={() => handleDeleteFile(file)} className="text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition shrink-0" style={{ color: "#e0554f" }}>
+                      <button type="button" onClick={() => handleDeleteFile(file)} className="text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition shrink-0 text-[var(--score-low)]">
                         Delete
                       </button>
                     )}

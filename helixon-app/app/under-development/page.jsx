@@ -46,8 +46,8 @@ function DiggingScene() {
       </g>
 
       {/* hard hat - thin outline, matches icon language elsewhere on the site */}
-      <path d="M113 46 Q122 34 131 46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      <line x1="111" y1="46" x2="133" y2="46" stroke="var(--gold, #e0a72e)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M113 46 Q122 34 131 46" stroke="var(--gold)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <line x1="111" y1="46" x2="133" y2="46" stroke="var(--gold)" strokeWidth="2.2" strokeLinecap="round" />
 
       {/* shovel: handle from hand down to blade planted in the mound */}
       <g className="dig-shovel">
@@ -131,8 +131,7 @@ function GateForm() {
 
   return (
     <main
-      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: "var(--mist)" }}
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-[var(--mist)]"
     >
       <div
         aria-hidden="true"
@@ -161,8 +160,7 @@ function GateForm() {
       <div className="relative w-full max-w-[440px]">
         <div className="flex items-center justify-center gap-3 mb-10">
           <div
-            className="w-9 h-9 rounded-btn flex items-center justify-center"
-            style={{ background: "var(--forest)" }}
+            className="w-9 h-9 rounded-btn flex items-center justify-center bg-[var(--forest)]"
           >
             <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
@@ -171,8 +169,7 @@ function GateForm() {
             </svg>
           </div>
           <span
-            className="text-base font-semibold tracking-tight"
-            style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+            className="text-base font-semibold tracking-tight text-[var(--ink)] font-display"
           >
             Helixon
           </span>
@@ -191,18 +188,17 @@ function GateForm() {
         >
           {success ? (
             <>
-              <div className="mx-auto mb-5 w-14 h-14 rounded-full flex items-center justify-center pop-in" style={{ background: "var(--mint)" }}>
+              <div className="mx-auto mb-5 w-14 h-14 rounded-full flex items-center justify-center pop-in bg-[var(--mint)]">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               </div>
               <h1
-                className="text-2xl font-semibold tracking-tight mb-2"
-                style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+                className="text-2xl font-semibold tracking-tight mb-2 text-[var(--ink)] font-display"
               >
                 You&apos;re in
               </h1>
-              <p className="text-14" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-14 text-[var(--ink-soft)]">
                 Taking you through now.
               </p>
             </>
@@ -211,13 +207,12 @@ function GateForm() {
               <DiggingScene />
 
               <h1
-                className="text-28 sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3"
-                style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+                className="text-28 sm:text-3xl font-semibold tracking-tight leading-[1.1] mb-3 text-[var(--ink)] font-display"
               >
                 Under construction
               </h1>
 
-              <p className="text-14 leading-relaxed mb-8" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-14 leading-relaxed mb-8 text-[var(--ink-soft)]">
                 {siteSettings?.maintenance?.message || "We're making some changes behind the scenes."} If you have the password, you can get through now.
               </p>
 
@@ -242,8 +237,7 @@ function GateForm() {
                     disabled={loading}
                     aria-invalid={error ? "true" : "false"}
                     aria-describedby={error ? "dev-gate-error" : undefined}
-                    className="w-full bg-transparent text-sm outline-none px-4 py-3.5 text-center"
-                    style={{ color: "var(--ink)" }}
+                    className="w-full bg-transparent text-sm outline-none px-4 py-3.5 text-center text-[var(--ink)]"
                   />
                 </div>
 
@@ -251,8 +245,7 @@ function GateForm() {
                   <p
                     id="dev-gate-error"
                     role="alert"
-                    className="text-13 mb-4"
-                    style={{ color: "var(--score-low)" }}
+                    className="text-13 mb-4 text-[var(--score-low)]"
                   >
                     {error}
                   </p>
@@ -286,7 +279,7 @@ function GateForm() {
           )}
         </div>
 
-        <p className="text-center text-11 mt-6" style={{ color: "var(--ink-faint)" }}>
+        <p className="text-center text-11 mt-6 text-[var(--ink-faint)]">
           © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
         </p>
       </div>

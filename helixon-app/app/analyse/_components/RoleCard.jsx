@@ -40,12 +40,11 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                 onClick={() => onSelect(job)}
                 className={cx(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-btn text-left transition-colors border",
-                  active ? "border-[var(--forest)] bg-[#f4faf7]" : "border-transparent hover:bg-[var(--mist)]"
+                  active ? "border-[var(--forest)] bg-[var(--mint)]" : "border-transparent hover:bg-[var(--mist)]"
                 )}
               >
                 <span
-                  className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
-                  style={{ borderColor: active ? "var(--forest)" : "var(--ink-mute)", background: active ? "var(--forest)" : "white" }}
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${active ? "border-[var(--forest)]" : "border-[var(--ink-mute)]"} ${active ? "bg-[var(--forest)]" : "bg-white"}`}
                 >
                   {active && <Icon name="check" size={10} strokeWidth={3} className="text-white" />}
                 </span>
@@ -178,7 +177,7 @@ export default function RoleCard({
               }}
               className={cx(
                 "w-full flex flex-col items-center justify-center gap-2 py-10 rounded-xl border border-dashed transition-colors",
-                dragging ? "border-[var(--forest)] bg-[#f4faf7]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+                dragging ? "border-[var(--forest)] bg-[var(--mint)]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
               )}
             >
               <Icon name="upload" size={20} className="text-[var(--ink-soft)]" />

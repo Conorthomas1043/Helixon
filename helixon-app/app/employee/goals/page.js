@@ -16,10 +16,10 @@ import { formatDate as fmtDate } from "@/lib/format";
 const formatDate = (iso) => fmtDate(iso, { empty: null });
 
 const STATUS_META = {
-  not_started: { label: "Not started", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
-  in_progress: { label: "In progress", dot: "#d99a3a", bg: "#fdf5e9", color: "#b8791f" },
-  blocked: { label: "Blocked", dot: "#e0554f", bg: "#fdf1f0", color: "#c0392b" },
-  done: { label: "Done", dot: "#0b6e4f", bg: "var(--mint)", color: "var(--forest)" },
+  not_started: { label: "Not started", dot: "var(--ink-mute)", bg: "var(--mist)", color: "var(--ink-soft)" },
+  in_progress: { label: "In progress", dot: "var(--gold)", bg: "var(--ui-warn-soft)", color: "var(--ui-warn)" },
+  blocked: { label: "Blocked", dot: "var(--score-low)", bg: "var(--ui-danger-soft)", color: "var(--score-low)" },
+  done: { label: "Done", dot: "var(--forest)", bg: "var(--mint)", color: "var(--forest)" },
 };
 const STATUS_ORDER = ["not_started", "in_progress", "blocked", "done"];
 
@@ -206,7 +206,7 @@ export default function EmployeeGoalsPage() {
 
   if (checking) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
         <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
       </main>
     );
@@ -219,88 +219,83 @@ export default function EmployeeGoalsPage() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
               Goals
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-sm mt-1 text-[var(--ink-soft)]">
               Shared team goals, with a status, a deadline, notes, and a checklist of micro-goals under each one.
             </p>
           </div>
           <button type="button"
             onClick={() => setShowAddForm((v) => !v)}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
           >
             <span className="text-base leading-none">+</span> New goal
           </button>
         </div>
 
         {error && (
-          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]">
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div className="rounded-2xl p-5 mb-8" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-5 mb-8 bg-white border border-[var(--border)]">
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Goal title *</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Goal title *</label>
                   <input
                     autoFocus
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     placeholder="What are we trying to achieve?"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Notes</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Notes</label>
                   <textarea
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     placeholder="Context, success criteria, links…"
                     rows={2}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Owner</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Owner</label>
                   <select
                     value={form.assigned_to}
                     onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   >
                     <option value="">Unassigned (whole team)</option>
                     {team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Deadline</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Deadline</label>
                   <input
                     type="date"
                     value={form.deadline}
                     onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
 
               {formError && (
-                <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>{formError}</p>
+                <p className="text-xs rounded-lg px-3 py-2 text-[var(--score-low)] bg-[var(--ui-danger-soft)] border border-[var(--danger-line)]">{formError}</p>
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90" style={{ background: "var(--forest)", color: "white" }}>
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
                   {saving ? "Saving…" : "Create goal"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -313,8 +308,8 @@ export default function EmployeeGoalsPage() {
             <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-2xl px-6 py-16 text-center" style={{ background: "white", border: "1px solid var(--border)" }}>
-            <p className="text-sm" style={{ color: "var(--ink-faint)" }}>No goals yet - add the first one above.</p>
+          <div className="rounded-2xl px-6 py-16 text-center bg-white border border-[var(--border)]">
+            <p className="text-sm text-[var(--ink-faint)]">No goals yet - add the first one above.</p>
           </div>
         ) : (
           <div className="space-y-8">
@@ -326,7 +321,7 @@ export default function EmployeeGoalsPage() {
                 <div key={status}>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="w-2 h-2 rounded-full" style={{ background: meta.dot }} />
-                    <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-faint)]">
                       {meta.label} · {items.length}
                     </h2>
                   </div>
@@ -340,19 +335,19 @@ export default function EmployeeGoalsPage() {
                       const doneItems = goal.items.filter((i) => i.done).length;
 
                       return (
-                        <div key={goal.id} className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
+                        <div key={goal.id} className="rounded-2xl p-5 bg-white border border-[var(--border)]">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>{goal.title}</p>
-                              <p className="text-xs mt-1" style={{ color: "var(--ink-faint)" }}>
+                              <p className="text-sm font-semibold text-[var(--ink)]">{goal.title}</p>
+                              <p className="text-xs mt-1 text-[var(--ink-faint)]">
                                 {ownerName ? `Owned by ${ownerName}` : "Whole team"} · added by {creatorName || "—"}
                                 {goal.deadline && (
-                                  <span style={{ color: overdue ? "#e0554f" : "var(--ink-faint)" }}>
+                                  <span className={`${overdue ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]"}`}>
                                     {" "}· {overdue ? "Overdue " : "Due "}{formatDate(goal.deadline)}
                                   </span>
                                 )}
                               </p>
-                              {goal.notes && <p className="text-xs mt-2" style={{ color: "var(--ink-soft)" }}>{goal.notes}</p>}
+                              {goal.notes && <p className="text-xs mt-2 text-[var(--ink-soft)]">{goal.notes}</p>}
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
@@ -368,7 +363,7 @@ export default function EmployeeGoalsPage() {
                                 ))}
                               </select>
                               {canDelete && (
-                                <button type="button" onClick={() => handleDelete(goal.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>
+                                <button type="button" onClick={() => handleDelete(goal.id)} className="text-xs px-2 py-1 rounded-md transition text-[var(--score-low)]">
                                   Delete
                                 </button>
                               )}
@@ -376,9 +371,9 @@ export default function EmployeeGoalsPage() {
                           </div>
 
                           {/* Micro-goals */}
-                          <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+                          <div className="mt-4 pt-4 border-t border-t-[var(--border)]">
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-12 font-semibold uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>
+                              <p className="text-12 font-semibold uppercase tracking-wide text-[var(--ink-faint)]">
                                 Micro-goals {goal.items.length > 0 ? `· ${doneItems}/${goal.items.length}` : ""}
                               </p>
                             </div>
@@ -406,8 +401,7 @@ export default function EmployeeGoalsPage() {
                                     {canEdit && (
                                       <button type="button"
                                         onClick={() => deleteItem(goal, item)}
-                                        className="text-12 opacity-0 group-hover:opacity-100 transition"
-                                        style={{ color: "#e0554f" }}
+                                        className="text-12 opacity-0 group-hover:opacity-100 transition text-[var(--score-low)]"
                                       >
                                         Remove
                                       </button>
@@ -427,10 +421,9 @@ export default function EmployeeGoalsPage() {
                                   value={newItemDrafts[goal.id] || ""}
                                   onChange={(e) => setNewItemDrafts((d) => ({ ...d, [goal.id]: e.target.value }))}
                                   placeholder="Add a micro-goal…"
-                                  className="flex-1 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 transition"
-                                  style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                                  className="flex-1 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                                 />
-                                <button type="submit" className="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition" style={{ color: "var(--forest)" }}>
+                                <button type="submit" className="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition text-[var(--forest)]">
                                   Add
                                 </button>
                               </form>

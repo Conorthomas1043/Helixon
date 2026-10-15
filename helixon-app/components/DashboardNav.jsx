@@ -124,7 +124,7 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
         >
           {MORE.map((g) => (
             <div key={g.group}>
-              <p className="text-12 font-semibold uppercase tracking-widest px-2 mb-1" style={{ color: "var(--ink-faint)" }}>
+              <p className="text-12 font-semibold uppercase tracking-widest px-2 mb-1 text-[var(--ink-faint)]">
                 {g.group}
               </p>
               {g.links.map((l) => (
@@ -137,12 +137,12 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
                   <span className="flex items-center gap-1.5 text-14" style={l.href === activeHref ? { color: "var(--forest)", fontWeight: 600 } : { color: "var(--ink)", fontWeight: 500 }}>
                     {l.label}
                     {l.team && plan && plan !== "agency" && (
-                      <span className="text-12 font-semibold px-1.5 py-px rounded-full" style={{ background: "var(--mint)", color: "var(--forest)" }}>
+                      <span className="text-12 font-semibold px-1.5 py-px rounded-full bg-[var(--mint)] text-[var(--forest)]">
                         Agency plan
                       </span>
                     )}
                   </span>
-                  <span className="block text-13 leading-snug mt-0.5" style={{ color: "var(--ink-faint)" }}>{l.hint}</span>
+                  <span className="block text-13 leading-snug mt-0.5 text-[var(--ink-faint)]">{l.hint}</span>
                 </Link>
               ))}
             </div>
@@ -180,7 +180,7 @@ function TeammateStack({ teammates }) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold ring-2 ring-white" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+        <span className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold ring-2 ring-white bg-[var(--mist)] text-[var(--ink-soft)]">
           +{overflow}
         </span>
       )}
@@ -287,10 +287,10 @@ function DashboardNavContent() {
 
   return (
     <>
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b" style={{ borderColor: "var(--border)" }}>
+    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group min-w-0" aria-label="Helixon home">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 shrink-0" style={{ background: "var(--forest)" }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 shrink-0 bg-[var(--forest)]">
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
               <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
@@ -298,14 +298,14 @@ function DashboardNavContent() {
             </svg>
           </div>
           <span className="flex flex-col leading-none min-w-0">
-            <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Helixon</span>
-            <span className="hidden sm:block text-12 font-medium mt-0.5 truncate max-w-[220px]" style={{ color: "var(--ink-soft)" }}>
+            <span className="text-sm font-semibold tracking-tight text-[var(--ink)] font-display">Helixon</span>
+            <span className="hidden sm:block text-12 font-medium mt-0.5 truncate max-w-[220px] text-[var(--ink-soft)]">
               {workspaceLabel}
             </span>
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-0.5 xl:gap-1 min-w-0 mx-3 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+        <div className="hidden md:flex items-center gap-0.5 xl:gap-1 min-w-0 mx-3 text-xs font-medium text-[var(--ink-soft)]">
           {TABS.map((t) => {
             const active = t.href === activeHref;
             return (
@@ -332,22 +332,21 @@ function DashboardNavContent() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-label="Account menu"
-            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
-            style={{ border: "1px solid var(--border)" }}
+            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] border border-[var(--border)]"
           >
             <span className="relative">
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-12 font-semibold text-white" style={{ background: "var(--forest)" }}>
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-12 font-semibold text-white bg-[var(--forest)]">
                 {initialsLabel}
               </span>
               {myPresence && myPresence.state !== "hidden" && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
             </span>
-            <span className="text-12 font-medium hidden sm:block" style={{ color: "var(--ink)" }}>{userName || userEmail}</span>
+            <span className="text-12 font-medium hidden sm:block text-[var(--ink)]">{userName || userEmail}</span>
           </button>
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-xl p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
               {myPresence && (
-                <div className="pb-1.5 mb-1.5" style={{ borderBottom: "1px solid var(--border)" }}>
-                  <p className="text-12 font-semibold uppercase tracking-widest px-3 pt-1 pb-1" style={{ color: "var(--ink-faint)" }}>Your status</p>
+                <div className="pb-1.5 mb-1.5 border-b border-b-[var(--border)]">
+                  <p className="text-12 font-semibold uppercase tracking-widest px-3 pt-1 pb-1 text-[var(--ink-faint)]">Your status</p>
                   {[
                     [null, "active", "Automatic", "Active or idle, from what you're doing"],
                     ["busy", "busy", "Busy", "Heads down - teammates see you're busy"],
@@ -360,12 +359,11 @@ function DashboardNavContent() {
                         type="button"
                         onClick={() => setStatus(value)}
                         title={hint}
-                        className="w-full flex items-center gap-2 text-left text-xs px-3 py-1.5 rounded-lg hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
-                        style={{ color: "var(--ink)", fontWeight: current ? 600 : 400 }}
+                        className={`w-full flex items-center gap-2 text-left text-xs px-3 py-1.5 rounded-lg hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)] text-[var(--ink)] ${current ? "font-semibold" : "font-normal"}`}
                       >
                         <PresenceDot state={dot} size={8} />
                         {label}
-                        {current && <span className="ml-auto" style={{ color: "var(--forest)" }}>✓</span>}
+                        {current && <span className="ml-auto text-[var(--forest)]">✓</span>}
                       </button>
                     );
                   })}
@@ -389,8 +387,7 @@ function DashboardNavContent() {
                     clearLocalCandidateData();
                     clearResources();
                   }}
-                  className="w-full text-left block text-xs px-3 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)]"
-                  style={{ color: "var(--score-low)" }}
+                  className="w-full text-left block text-xs px-3 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] text-[var(--score-low)]"
                 >
                   Log out
                 </button>
@@ -401,7 +398,7 @@ function DashboardNavContent() {
       </div>
 
       {/* Mobile tab row: the tabs scroll; "More" stays put at the end. */}
-      <div className="md:hidden flex items-center gap-1 px-4 pb-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+      <div className="md:hidden flex items-center gap-1 px-4 pb-2 text-xs font-medium text-[var(--ink-soft)]">
         {/* Fades out at the right edge so a cut-off tab ("Pipelir") reads as
             "scroll for more" rather than a broken label. */}
         <div className="scroll-fade-x flex overflow-x-auto gap-1 min-w-0 pr-4">
@@ -462,13 +459,13 @@ function SignedOutBanner() {
   }, [signedOut]);
   if (!signedOut) return null;
   return (
-    <div role="alert" className="border-t" style={{ background: "#fff8e6", borderColor: "#f3d48a" }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-14" style={{ color: "var(--ink)" }}>
+    <div role="alert" className="border-t bg-[var(--ui-warn-soft)] border-[var(--warn-line)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-14 text-[var(--ink)]">
         <span>
-          <strong style={{ color: "#92620f" }}>You&apos;ve been signed out, so changes can&apos;t be saved.</strong>{" "}
+          <strong className="text-[var(--ui-warn)]">You&apos;ve been signed out, so changes can&apos;t be saved.</strong>{" "}
           Sign in again in a new tab, then come back and try again. Anything you&apos;ve typed here stays put.
         </span>
-        <a href="/login" target="_blank" rel="noopener" className="font-semibold underline" style={{ color: "#92620f" }}>
+        <a href="/login" target="_blank" rel="noopener" className="font-semibold underline text-[var(--ui-warn)]">
           Sign in again
         </a>
       </div>
@@ -483,10 +480,10 @@ function SignedOutBanner() {
 function PaymentIssueBanner({ issue }) {
   const stopped = issue.status === "unpaid";
   return (
-    <div role="alert" className="border-t" style={{ background: "#fff7f7", borderColor: "#fecaca" }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-14" style={{ color: "var(--ink)" }}>
+    <div role="alert" className="border-t bg-[var(--ui-danger-soft)] border-[var(--danger-line)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-14 text-[var(--ink)]">
         <span>
-          <strong style={{ color: "var(--score-low)" }}>Your last Helixon payment didn&apos;t go through.</strong>{" "}
+          <strong className="text-[var(--score-low)]">Your last Helixon payment didn&apos;t go through.</strong>{" "}
           {stopped
             ? "Screening and email are paused until it's paid."
             : "Everything still works for now; update the payment method to keep it that way."}
@@ -496,7 +493,7 @@ function PaymentIssueBanner({ issue }) {
             Update payment method
           </Link>
         ) : (
-          <span style={{ color: "var(--ink-soft)" }}>Ask whoever manages billing for your agency to update it.</span>
+          <span className="text-[var(--ink-soft)]">Ask whoever manages billing for your agency to update it.</span>
         )}
       </div>
     </div>
@@ -510,7 +507,7 @@ function PaymentIssueBanner({ issue }) {
 // Suspense boundary around the nav.
 function DashboardNavFallback() {
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b h-[56px]" style={{ borderColor: "var(--border)" }} aria-hidden="true" />
+    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b h-[56px] border-[var(--border)]" aria-hidden="true" />
   );
 }
 

@@ -17,10 +17,10 @@ function BarList({ items, labelKey, countKey }) {
       {items.map((item) => (
         <div key={item[labelKey]}>
           <div className="flex items-center justify-between text-xs mb-1">
-            <span style={{ color: "var(--ink-soft)" }}>{item[labelKey]}</span>
-            <span className="font-medium" style={{ color: "var(--ink)" }}>{item[countKey]}</span>
+            <span className="text-[var(--ink-soft)]">{item[labelKey]}</span>
+            <span className="font-medium text-[var(--ink)]">{item[countKey]}</span>
           </div>
-          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "var(--mist)" }}>
+          <div className="w-full h-1.5 rounded-full overflow-hidden bg-[var(--mist)]">
             <div
               className="h-full rounded-full"
               style={{ width: `${(item[countKey] / max) * 100}%`, background: "var(--forest)" }}
@@ -58,12 +58,11 @@ export default function EmployeeOpsPage() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8">
           <h1
-            className="text-2xl sm:text-3xl font-semibold tracking-tight"
-            style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+            className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display"
           >
             Platform ops
           </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-sm mt-1 text-[var(--ink-soft)]">
             A read-only company snapshot - agencies, pipeline volume, and where leads come from.
           </p>
         </div>
@@ -77,8 +76,7 @@ export default function EmployeeOpsPage() {
           </div>
         ) : error ? (
           <div
-            className="rounded-card px-4 py-3 text-sm"
-            style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}
+            className="rounded-card px-4 py-3 text-sm bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]"
           >
             {error}
           </div>
@@ -93,42 +91,42 @@ export default function EmployeeOpsPage() {
                 { label: "Analyses run", value: data.kpis.analyses },
                 { label: "Demo leads", value: data.kpis.leads },
               ].map((s) => (
-                <div key={s.label} className="rounded-card p-4" style={{ background: "white", border: "1px solid var(--border)" }}>
-                  <p className="text-xl font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+                <div key={s.label} className="rounded-card p-4 bg-white border border-[var(--border)]">
+                  <p className="text-xl font-semibold text-[var(--ink)] font-display">
                     {s.value}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>{s.label}</p>
+                  <p className="text-xs mt-0.5 text-[var(--ink-faint)]">{s.label}</p>
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* ── Agencies by plan ────────────────────────────────────── */}
-              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-                <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+                <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
                   Agencies by plan
                 </h2>
                 {data.sales.agenciesByPlan.length === 0 ? (
-                  <p className="text-xs" style={{ color: "var(--ink-faint)" }}>No agencies yet.</p>
+                  <p className="text-xs text-[var(--ink-faint)]">No agencies yet.</p>
                 ) : (
                   <BarList items={data.sales.agenciesByPlan} labelKey="plan" countKey="count" />
                 )}
               </div>
 
               {/* ── Lead acquisition channels ───────────────────────────── */}
-              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-                <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+                <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
                   Demo leads by channel
                 </h2>
                 {data.seo.channels.length === 0 ? (
-                  <p className="text-xs" style={{ color: "var(--ink-faint)" }}>No demo requests yet.</p>
+                  <p className="text-xs text-[var(--ink-faint)]">No demo requests yet.</p>
                 ) : (
                   <BarList items={data.seo.channels} labelKey="channel" countKey="count" />
                 )}
               </div>
             </div>
 
-            <p className="text-12 mt-8" style={{ color: "var(--ink-faint)" }}>
+            <p className="text-12 mt-8 text-[var(--ink-faint)]">
               Signed in as {data.employee.display_name || data.employee.username}. This view
               excludes revenue, per-agency detail, IP/security data, and audit logs - see the admin console for those.
             </p>

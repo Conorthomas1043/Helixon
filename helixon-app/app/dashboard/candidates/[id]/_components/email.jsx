@@ -111,24 +111,23 @@ export function EditDetailsDialog({ candidate, onCancel, onSaved }) {
         aria-labelledby="edit-details-title"
         className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white shadow-xl"
       >
-        <h2 id="edit-details-title" className="text-base font-semibold mb-1" style={{ color: INK }}>
+        <h2 id="edit-details-title" className="text-base font-semibold mb-1 text-[var(--ink)]">
           Edit candidate details
         </h2>
-        <p className="text-14 mb-4" style={{ color: INK_MUTED }}>
+        <p className="text-14 mb-4 text-[var(--ink-soft)]">
           Fix anything the CV reader got wrong. The change is noted on their timeline.
         </p>
         <div className="space-y-3">
           {CONTACT_FIELDS.map((f, i) => (
             <label key={f.key} className="block">
-              <span className="block text-13 font-semibold mb-1" style={{ color: INK }}>{f.label}</span>
+              <span className="block text-13 font-semibold mb-1 text-[var(--ink)]">{f.label}</span>
               <input
                 ref={i === 0 ? firstRef : undefined}
                 type={f.type || "text"}
                 value={values[f.key]}
                 required={f.required}
                 onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-                className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ border: "1px solid var(--border)", color: INK }}
+                className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
           ))}
@@ -139,16 +138,14 @@ export function EditDetailsDialog({ candidate, onCancel, onSaved }) {
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ border: "1px solid var(--border)", color: INK }}
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--border)] text-[var(--ink)]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
           >
             {saving ? "Saving…" : "Save"}
           </button>

@@ -62,7 +62,7 @@ export default function ClientPackPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className="mx-auto max-w-[860px] px-4 sm:px-6 py-8 space-y-5">
         <ClientProfileToolbar
@@ -76,7 +76,7 @@ export default function ClientPackPage({ params }) {
         {status === "loading" && <div className="rounded-card h-96 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
         {(status === "error" || status === "not-found") && (
           <div className="rounded-card p-10 text-center" style={CARD}>
-            <p className="font-semibold" style={{ color: INK }}>{status === "not-found" ? "Shortlist not found" : "Unable to build the pack"}</p>
+            <p className="font-semibold text-[var(--ink)]">{status === "not-found" ? "Shortlist not found" : "Unable to build the pack"}</p>
           </div>
         )}
         {status === "ready" && profiles.length === 0 && (
@@ -86,7 +86,7 @@ export default function ClientPackPage({ params }) {
         )}
         {status === "ready" && profiles.length > 0 && (
           <div ref={docRef} className="space-y-6">
-            <p className="print-hide text-13" style={{ color: INK_MUTED }}>
+            <p className="print-hide text-13 text-[var(--ink-soft)]">
               {shortlist.name} · {profiles.length} {profiles.length === 1 ? "profile" : "profiles"}, one per printed page
             </p>
             {profiles.map((p) => (

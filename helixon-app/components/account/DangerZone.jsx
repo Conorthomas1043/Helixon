@@ -46,11 +46,11 @@ export default function DangerZone() {
 
   return (
     <form onSubmit={deleteAccount} className="px-6 py-8 sm:px-10 sm:py-10">
-      <h3 className="text-16 font-semibold text-[#10221d]">Delete your account</h3>
+      <h3 className="text-16 font-semibold text-[var(--ink)]">Delete your account</h3>
       <p className="mt-2 max-w-[560px] text-14 leading-6 text-[var(--ink-faint)]">
         This permanently removes your Helixon sign-in - you won&apos;t be able to log in again with this email. Your agency&apos;s
         candidates, jobs and billing history stay with the agency. To have that data erased as well, email{" "}
-        <a href="mailto:support@helixon.co.uk" className="font-semibold text-[#087a5b] hover:underline">
+        <a href="mailto:support@helixon.co.uk" className="font-semibold text-[var(--forest)] hover:underline">
           support@helixon.co.uk
         </a>
         .
@@ -61,7 +61,7 @@ export default function DangerZone() {
         <li>If you pay for Helixon, cancel your subscription first - deleting your account doesn&apos;t stop billing.</li>
       </ul>
 
-      <label htmlFor="delete-confirm" className="mt-6 block text-14 font-semibold text-[#10221d]">
+      <label htmlFor="delete-confirm" className="mt-6 block text-14 font-semibold text-[var(--ink)]">
         Type <span className="font-mono">DELETE</span> to confirm
       </label>
       <input
@@ -70,15 +70,14 @@ export default function DangerZone() {
         onChange={(e) => setConfirm(e.target.value)}
         autoComplete="off"
         spellCheck={false}
-        className="mt-2 w-full max-w-[280px] rounded-xl border px-3.5 py-2.5 font-mono text-sm outline-none focus:border-[#087a5b]"
-        style={{ borderColor: "#d7e4df", background: "rgba(255,255,255,0.72)" }}
+        className="mt-2 w-full max-w-[280px] rounded-xl border px-3.5 py-2.5 font-mono text-sm outline-none focus:border-[var(--forest)]"
+        style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.72)" }}
       />
 
       {error && (
         <div
           role="alert"
-          className="mt-4 max-w-[560px] rounded-xl px-4 py-3 text-14 leading-6"
-          style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c" }}
+          className="mt-4 max-w-[560px] rounded-xl px-4 py-3 text-14 leading-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]"
         >
           {error}
           {needsBilling && (
@@ -95,8 +94,7 @@ export default function DangerZone() {
       <button
         type="submit"
         disabled={confirm !== "DELETE" || busy}
-        className="mt-6 inline-flex min-h-[44px] items-center rounded-xl px-5 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-        style={{ background: "#b91c1c" }}
+        className="mt-6 inline-flex min-h-[44px] items-center rounded-xl px-5 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40 bg-[var(--score-low)]"
       >
         {busy ? "Deleting..." : "Delete my account"}
       </button>

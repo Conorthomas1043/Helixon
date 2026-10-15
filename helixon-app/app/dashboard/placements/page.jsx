@@ -22,15 +22,15 @@ async function loadPlacements() {
 
 function Stat({ label, value, hint, tone }) {
   return (
-    <div className="rounded-xl px-4 py-3" style={{ background: "white", border: "1px solid var(--border)" }}>
-      <p className="text-12 font-semibold uppercase tracking-widest" style={{ color: INK_FAINT }}>
+    <div className="rounded-xl px-4 py-3 bg-white border border-[var(--border)]">
+      <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {label}
       </p>
       <p className="text-xl font-semibold tabular-nums mt-0.5" style={{ color: tone || INK }}>
         {value}
       </p>
       {hint && (
-        <p className="text-12" style={{ color: INK_MUTED }}>
+        <p className="text-12 text-[var(--ink-soft)]">
           {hint}
         </p>
       )}
@@ -154,7 +154,7 @@ export default function PlacementsPage() {
           </>
         }
       />
-      {exportNote && <p className="text-13" style={{ color: INK_MUTED }}>{exportNote}</p>}
+      {exportNote && <p className="text-13 text-[var(--ink-soft)]">{exportNote}</p>}
 
       {error && !data ? (
         <ErrorState body="Placements couldn't be loaded." onRetry={reload} />
@@ -246,14 +246,14 @@ export default function PlacementsPage() {
             >
               <ErrorText>{invoiceError}</ErrorText>
               {invoices.length === 0 ? (
-                <p className="text-14" style={{ color: INK_MUTED }}>
+                <p className="text-14 text-[var(--ink-soft)]">
                   No invoices here.
                 </p>
               ) : (
                 <div className="overflow-x-auto -mx-5 sm:-mx-6">
                   <table className="w-full text-14">
                     <thead>
-                      <tr className="text-left text-12 uppercase tracking-widest" style={{ color: INK_FAINT }}>
+                      <tr className="text-left text-12 uppercase tracking-widest text-[var(--ink-faint)]">
                         <th scope="col" className="px-5 sm:px-6 py-2 font-semibold">Number</th>
                         <th scope="col" className="px-2 py-2 font-semibold">Client</th>
                         <th scope="col" className="px-2 py-2 font-semibold">Issued</th>
@@ -265,13 +265,13 @@ export default function PlacementsPage() {
                     </thead>
                     <tbody>
                       {invoices.map((i) => (
-                        <tr key={i.id} style={{ borderTop: "1px solid var(--border)" }}>
+                        <tr key={i.id} className="border-t border-t-[var(--border)]">
                           <td className="px-5 sm:px-6 py-2.5">
                             <Link href={`/dashboard/invoices/${i.id}`} className="font-semibold hover:underline" style={{ color: "var(--forest)" }}>
                               {i.number}
                             </Link>
                           </td>
-                          <td className="px-2 py-2.5" style={{ color: INK }}>
+                          <td className="px-2 py-2.5 text-[var(--ink)]">
                             {i.client_id ? (
                               <Link href={`/dashboard/clients/${i.client_id}`} className="hover:underline">
                                 {i.bill_to?.name || "Client"}
@@ -280,13 +280,13 @@ export default function PlacementsPage() {
                               i.bill_to?.name || "-"
                             )}
                           </td>
-                          <td className="px-2 py-2.5 tabular-nums" style={{ color: INK_MUTED }}>
+                          <td className="px-2 py-2.5 tabular-nums text-[var(--ink-soft)]">
                             {i.issued_on}
                           </td>
-                          <td className="px-2 py-2.5 tabular-nums" style={{ color: INK_MUTED }}>
+                          <td className="px-2 py-2.5 tabular-nums text-[var(--ink-soft)]">
                             {i.due_on || "-"}
                           </td>
-                          <td className="px-2 py-2.5 text-right tabular-nums" style={{ color: INK }}>
+                          <td className="px-2 py-2.5 text-right tabular-nums text-[var(--ink)]">
                             {formatMoney(i.total, i.currency)}
                           </td>
                           <td className="px-2 py-2.5">

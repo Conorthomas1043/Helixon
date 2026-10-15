@@ -105,7 +105,7 @@ export default function EmployeeSettingsPage() {
 
   if (checking) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
         <div
           className="w-8 h-8 rounded-full animate-spin"
           style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }}
@@ -118,61 +118,60 @@ export default function EmployeeSettingsPage() {
     <EmployeeShell>
       <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
             Account settings
           </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-sm mt-1 text-[var(--ink-soft)]">
             Your profile and sign-in details.
           </p>
         </div>
 
         {/* ── Profile ───────────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-6 mb-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <div className="rounded-2xl p-6 mb-6 bg-white border border-[var(--border)]">
+          <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
             Profile
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Name</dt>
-              <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.fullName || "—"}</dd>
+              <dt className="text-12 font-medium uppercase tracking-wide text-[var(--ink-faint)]">Name</dt>
+              <dd className="text-sm mt-0.5 text-[var(--ink)]">{employee?.fullName || "—"}</dd>
             </div>
             <div>
-              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Username</dt>
-              <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{employee?.username}</dd>
+              <dt className="text-12 font-medium uppercase tracking-wide text-[var(--ink-faint)]">Username</dt>
+              <dd className="text-sm mt-0.5 text-[var(--ink)]">{employee?.username}</dd>
             </div>
             <div>
-              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Role</dt>
-              <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{ROLE_LABELS[employee?.role] || employee?.role || "—"}</dd>
+              <dt className="text-12 font-medium uppercase tracking-wide text-[var(--ink-faint)]">Role</dt>
+              <dd className="text-sm mt-0.5 text-[var(--ink)]">{ROLE_LABELS[employee?.role] || employee?.role || "—"}</dd>
             </div>
             <div>
-              <dt className="text-12 font-medium uppercase tracking-wide" style={{ color: "var(--ink-faint)" }}>Last signed in</dt>
-              <dd className="text-sm mt-0.5" style={{ color: "var(--ink)" }}>{formatDateTime(employee?.lastLogin)}</dd>
+              <dt className="text-12 font-medium uppercase tracking-wide text-[var(--ink-faint)]">Last signed in</dt>
+              <dd className="text-sm mt-0.5 text-[var(--ink)]">{formatDateTime(employee?.lastLogin)}</dd>
             </div>
           </dl>
-          <p className="text-xs mt-4" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs mt-4 text-[var(--ink-faint)]">
             Need your name or role changed? Ask an admin - that&apos;s managed from the admin console, not here.
           </p>
         </div>
 
         {/* ── Change password ──────────────────────────────────────────── */}
-        <div className="rounded-2xl p-6" style={{ background: "white", border: "1px solid var(--border)" }}>
-          <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+        <div className="rounded-2xl p-6 bg-white border border-[var(--border)]">
+          <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
             Change password
           </h2>
-          <p className="text-xs mb-5" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs mb-5 text-[var(--ink-faint)]">
             You&apos;ll be signed out everywhere afterwards, so sign back in with your new password.
           </p>
 
           {done ? (
             <div
               role="status"
-              className="flex items-center gap-2.5 rounded-xl px-4 py-3"
-              style={{ background: "var(--mint)", border: "1px solid var(--border)" }}
+              className="flex items-center gap-2.5 rounded-xl px-4 py-3 bg-[var(--mint)] border border-[var(--border)]"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
               </svg>
-              <p className="text-xs font-medium" style={{ color: "var(--forest)" }}>
+              <p className="text-xs font-medium text-[var(--forest)]">
                 Password updated. Taking you to sign in…
               </p>
             </div>
@@ -206,7 +205,7 @@ export default function EmployeeSettingsPage() {
                   required
                   className={FIELD}
                 />
-                <p className="text-12 mt-1" style={{ color: "var(--ink-faint)" }}>
+                <p className="text-12 mt-1 text-[var(--ink-faint)]">
                   At least {MIN_PASSWORD_LENGTH} characters.
                 </p>
               </div>
@@ -230,7 +229,7 @@ export default function EmployeeSettingsPage() {
                   <svg className="mt-0.5 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--score-low)" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
-                  <p className="text-14" style={{ color: "var(--score-low)" }}>{error}</p>
+                  <p className="text-14 text-[var(--score-low)]">{error}</p>
                 </div>
               )}
 

@@ -18,19 +18,19 @@ function Message({ m }) {
     <li className="py-2.5">
       <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left" aria-expanded={open}>
         <span className="flex items-center justify-between gap-2">
-          <span className="text-14 font-semibold truncate" style={{ color: INK }}>
+          <span className="text-14 font-semibold truncate text-[var(--ink)]">
             {inbound ? "↩ " : ""}
             {m.subject || "(no subject)"}
           </span>
-          <span className="text-12 shrink-0" style={{ color: INK_FAINT }}>{formatDate(m.at)}</span>
+          <span className="text-12 shrink-0 text-[var(--ink-faint)]">{formatDate(m.at)}</span>
         </span>
-        <span className="block text-12" style={{ color: INK_MUTED }}>
+        <span className="block text-12 text-[var(--ink-soft)]">
           {inbound ? `From ${m.from}` : `To ${m.to}`}
           {m.viaSequence ? " · sequence" : ""}
         </span>
       </button>
       {open && (
-        <p className="mt-2 text-13 whitespace-pre-wrap rounded-lg p-3" style={{ background: inbound ? "var(--mint)" : "var(--mist)", color: INK }}>
+        <p className={`mt-2 text-13 whitespace-pre-wrap rounded-lg p-3 text-[var(--ink)] ${inbound ? "bg-[var(--mint)]" : "bg-[var(--mist)]"}`}>
           {m.body || "(empty)"}
         </p>
       )}
@@ -113,9 +113,9 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
       }
     >
       {active.map((e) => (
-        <div key={e.id} className="flex items-center justify-between gap-2 mb-3 rounded-btn px-3 py-2 text-13" style={{ background: "var(--mist)", color: INK }}>
+        <div key={e.id} className="flex items-center justify-between gap-2 mb-3 rounded-btn px-3 py-2 text-13 bg-[var(--mist)] text-[var(--ink)]">
           <span>
-            <Pill color="#5b4bc4" background="#f1effc">Sequence</Pill> {e.sequenceName} · email {Math.min(e.nextStep + 1, e.steps)} of {e.steps}
+            <Pill color="var(--teal)" background="var(--teal-soft)">Sequence</Pill> {e.sequenceName} · email {Math.min(e.nextStep + 1, e.steps)} of {e.steps}
             {e.nextSendAt ? ` on ${formatDate(e.nextSendAt)}` : ""}
           </span>
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => stop(e.id)}>
@@ -125,9 +125,9 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
       ))}
 
       {data === null ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>Loading…</p>
+        <p className="text-14 text-[var(--ink-soft)]">Loading…</p>
       ) : data.messages.length === 0 ? (
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           {candidate.email ? "Nothing sent from Helixon yet." : "No email address on file - add one with Edit details."}
         </p>
       ) : (
@@ -139,7 +139,7 @@ export default function EmailThreadPanel({ candidate, onChanged }) {
       )}
 
       {candidate.email && sequences.length > 0 && (
-        <div className="flex items-center gap-2 mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-t-[var(--border)]">
           <Select aria-label="Sequence" value={sequenceId} onChange={(e) => setSequenceId(e.target.value)} options={[{ value: "", label: "Start a sequence…" }, ...sequences.map((s) => ({ value: s.id, label: `${s.name} (${s.steps.length} emails)` }))]} />
           <Button disabled={busy || !sequenceId} onClick={enroll}>
             Start

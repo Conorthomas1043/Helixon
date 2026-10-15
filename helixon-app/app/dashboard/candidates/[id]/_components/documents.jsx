@@ -96,19 +96,18 @@ export function DocumentsSection({ candidate }) {
       {confirmDialog}
 
       {resume ? (
-        <div className="flex flex-wrap items-center gap-4 rounded-xl p-4" style={{ background: "var(--mist)" }}>
+        <div className="flex flex-wrap items-center gap-4 rounded-xl p-4 bg-[var(--mist)]">
           <span
-            className="w-10 h-12 rounded-md flex items-center justify-center shrink-0 text-12 font-bold tracking-wide"
-            style={{ background: "white", border: "1px solid var(--border)", color: isPdf ? "#b42318" : "#1d4ed8" }}
+            className={`w-10 h-12 rounded-md flex items-center justify-center shrink-0 text-12 font-bold tracking-wide bg-white border border-[var(--border)] ${isPdf ? "text-[var(--score-low)]" : "text-[var(--info)]"}`}
             aria-hidden="true"
           >
             {isPdf ? "PDF" : "DOCX"}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold truncate" style={{ color: INK }}>
+            <p className="text-sm font-semibold truncate text-[var(--ink)]">
               {resume.name}
             </p>
-            <p className="text-13" style={{ color: INK_MUTED }}>
+            <p className="text-13 text-[var(--ink-soft)]">
               Uploaded {formatDateOnly(resume.uploadedAt)}
               {candidate.screenedBlind ? " · screened blind" : ""}
             </p>
@@ -136,7 +135,7 @@ export function DocumentsSection({ candidate }) {
           </div>
         </div>
       ) : (
-        <p className="text-14" style={{ color: INK_MUTED }}>
+        <p className="text-14 text-[var(--ink-soft)]">
           {candidate.hasCvText
             ? "The original file wasn't kept for this candidate - they were analysed before Helixon stored CVs. The CV text is below."
             : "No CV on file."}
@@ -149,17 +148,16 @@ export function DocumentsSection({ candidate }) {
             type="button"
             onClick={toggleText}
             disabled={busy === "text"}
-            className="text-13 font-semibold rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ color: "var(--forest)" }}
+            className="text-13 font-semibold rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 text-[var(--forest)]"
             aria-expanded={showText}
           >
             {busy === "text" ? "Loading…" : showText ? "Hide CV text" : "View CV text"}
           </button>
           {showText && text != null && (
-            <div className="mt-2 rounded-btn" style={{ border: "1px solid var(--border)" }}>
-              <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                <span className="text-12" style={{ color: INK_FAINT }}>Text read from the CV - formatting isn&apos;t kept</span>
-                <button type="button" onClick={copyText} className="text-12 font-semibold" style={{ color: INK_MUTED }}>
+            <div className="mt-2 rounded-btn border border-[var(--border)]">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-b-[var(--border)]">
+                <span className="text-12 text-[var(--ink-faint)]">Text read from the CV - formatting isn&apos;t kept</span>
+                <button type="button" onClick={copyText} className="text-12 font-semibold text-[var(--ink-soft)]">
                   {copied ? "Copied" : "Copy text"}
                 </button>
               </div>
@@ -175,7 +173,7 @@ export function DocumentsSection({ candidate }) {
       )}
 
       {error && (
-        <p role="alert" className="text-13 mt-3" style={{ color: "var(--score-low)" }}>
+        <p role="alert" className="text-13 mt-3 text-[var(--score-low)]">
           {error}
         </p>
       )}

@@ -40,7 +40,7 @@ export function AttentionPanel({ items: firstItems, allItems, total }) {
       {items.length === 0 ? (
         <EmptyState title="Nothing needs attention" body="No failed analyses, overdue follow-ups, stalled candidates, or unreviewed strong matches right now." />
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul className="list-none m-0 p-0">
           {items.map((item, i) => (
             <li
               key={item.id}
@@ -151,7 +151,7 @@ export function FollowUpsPanel() {
         eyebrow={loading ? "Follow-ups" : `${due} due now`}
         title="Follow-ups"
         action={
-          <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Whose follow-ups">
+          <div className="flex gap-1.5" role="group" aria-label="Whose follow-ups">
             <button type="button" aria-pressed={scope === "mine"} onClick={() => { setScope("mine"); setExpanded(false); }} style={tabStyle(scope === "mine")}>Mine</button>
             <button type="button" aria-pressed={scope === "all"} onClick={() => { setScope("all"); setExpanded(false); }} style={tabStyle(scope === "all")}>Everyone</button>
           </div>
@@ -167,7 +167,7 @@ export function FollowUpsPanel() {
           body={scope === "mine" ? "Set a next action on a candidate and it shows up here when it's due." : "Nobody on the team has a follow-up set."}
         />
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul className="list-none m-0 p-0">
           {shown.map((item) => {
             const w = WHEN_STYLE[item.when] ?? WHEN_STYLE.undated;
             return (
@@ -237,14 +237,14 @@ export function RisksPanel({ alerts }) {
         <EmptyState title="All clear" body="No overdue invoices, timesheets waiting, expiring checks, or contracts and rebate periods ending soon." />
       ) : (
         <>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+          <ul className="list-none m-0 p-0">
             {shown.map((a) => {
               const tone = ALERT_TONE[a.tone] || ALERT_TONE.neutral;
               return (
                 <li key={a.id} style={{ borderTop: `1px solid ${BORDER}` }}>
                   <Link href={a.href} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: tone.fg, flexShrink: 0 }} />
-                    <span style={{ minWidth: 0, flex: 1 }}>
+                    <span className="min-w-[0px] flex-1">
                       <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{a.title}</span>
                       {a.detail && <span style={{ display: "block", fontSize: 13, color: TEXT_SUB, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.detail}</span>}
                     </span>
@@ -288,7 +288,7 @@ export function AgendaPanel({ interviews, total, clientFollowUps }) {
       {interviews.length === 0 && clientFollowUps.length === 0 ? (
         <EmptyState title="Nothing booked" body="No interviews in the next week and no client follow-ups due." />
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ul className="list-none m-0 p-0">
           {interviews.map((i) => (
             <li key={i.id} style={{ borderTop: `1px solid ${BORDER}` }}>
               <Link href={`/dashboard/candidates/${i.candidateId}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
@@ -296,7 +296,7 @@ export function AgendaPanel({ interviews, total, clientFollowUps }) {
                   <span style={{ display: "block", fontWeight: 600, color: TEXT }}>{dayLabel(i.startsAt)}</span>
                   {new Date(i.startsAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                 </span>
-                <span style={{ minWidth: 0 }}>
+                <span className="min-w-[0px]">
                   <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{i.candidateName}</span>
                   <span style={{ display: "block", fontSize: 13, color: TEXT_SUB }}>
                     {i.round > 1 ? `Round ${i.round} · ` : ""}
@@ -310,7 +310,7 @@ export function AgendaPanel({ interviews, total, clientFollowUps }) {
             <li key={`client-${c.id}`} style={{ borderTop: `1px solid ${BORDER}` }}>
               <Link href={`/dashboard/clients/${c.id}`} className="hover:bg-[var(--mist)] transition-colors" style={{ display: "flex", gap: 12, padding: "10px 8px", margin: "0 -8px", borderRadius: 10, textDecoration: "none" }}>
                 <span style={{ width: 78, flexShrink: 0, fontSize: 13, fontWeight: 600, color: c.overdue ? RED : TEXT }}>{c.overdue ? "Overdue" : "Today"}</span>
-                <span style={{ minWidth: 0 }}>
+                <span className="min-w-[0px]">
                   <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: TEXT }}>{c.label}</span>
                   <span style={{ display: "block", fontSize: 13, color: TEXT_SUB }}>Client · {c.name}</span>
                 </span>

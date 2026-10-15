@@ -220,7 +220,7 @@ export default function EmployeeDashboard() {
     access.tasks && {
       label: "Due today",
       value: todosLoaded ? groups.today.length + groups.overdue.length : null,
-      tone: groups.overdue.length ? "#c0392b" : undefined,
+      tone: groups.overdue.length ? "var(--score-low)" : undefined,
       sub: todosLoaded ? (groups.overdue.length ? `${groups.overdue.length} overdue` : "Nothing overdue") : " ",
     },
     access.tasks && { label: "Open tasks", value: todosLoaded ? openCount : null, sub: todosLoaded ? `${doneThisWeek} done this week` : " " },
@@ -233,7 +233,7 @@ export default function EmployeeDashboard() {
     access.goals && {
       label: "Your goals",
       value: goalsLoaded ? goalsMine.length : null,
-      tone: blocked ? "#c0392b" : undefined,
+      tone: blocked ? "var(--score-low)" : undefined,
       sub: goalsLoaded ? (blocked ? `${blocked} blocked` : "None blocked") : " ",
       href: "/employee/goals",
     },
@@ -255,21 +255,21 @@ export default function EmployeeDashboard() {
             aria-hidden="true"
           />
           <div className="relative min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: "var(--forest)" }}>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] mb-2 text-[var(--forest)]">
               {justLoggedIn ? "Welcome back" : dateLine}
             </p>
-            <h1 className="text-24 sm:text-28 font-semibold tracking-tight leading-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-24 sm:text-28 font-semibold tracking-tight leading-tight text-[var(--ink)] font-display">
               {greeting()}{name ? `, ${name}` : ""}
             </h1>
-            <p className="text-15 mt-1.5" style={{ color: "var(--ink-soft)" }} aria-live="polite">{summaryText}</p>
+            <p className="text-15 mt-1.5 text-[var(--ink-soft)]" aria-live="polite">{summaryText}</p>
             <div className="flex items-center gap-3 mt-2 min-h-[20px]">
               {loadError ? (
-                <p className="text-xs" style={{ color: "#a83226" }} role="alert">
+                <p className="text-xs text-[var(--score-low)]" role="alert">
                   Some of today&rsquo;s information didn&rsquo;t load.{" "}
                   <button type="button" onClick={refresh} className="underline font-semibold">Try again</button>
                 </p>
               ) : (
-                <button type="button" onClick={refresh} disabled={refreshing} className="text-xs hover:underline disabled:no-underline" style={{ color: "var(--ink-faint)" }}>
+                <button type="button" onClick={refresh} disabled={refreshing} className="text-xs hover:underline disabled:no-underline text-[var(--ink-faint)]">
                   {refreshing ? "Refreshing…" : "Refresh ↺"}
                 </button>
               )}
@@ -280,8 +280,7 @@ export default function EmployeeDashboard() {
             <button
               type="button"
               onClick={() => { setTaskView("mine"); setTimeout(() => quickAddRef.current?.focus(), 0); }}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-full text-white"
-              style={{ background: "var(--forest)" }}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-full text-white bg-[var(--forest)]"
             >
               <span aria-hidden="true">+</span> New task
             </button>
@@ -313,8 +312,8 @@ export default function EmployeeDashboard() {
 
             {shownTaskView && (
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>Tasks</h2>
-              <div className="flex rounded-btn p-0.5 gap-0.5 bg-white" style={{ border: "1px solid var(--border)" }} role="group" aria-label="Which tasks">
+              <h2 className="text-lg font-semibold text-[var(--ink)] font-display">Tasks</h2>
+              <div className="flex rounded-btn p-0.5 gap-0.5 bg-white border border-[var(--border)]" role="group" aria-label="Which tasks">
                 {taskViews.map((t) => (
                   <button
                     key={t.key}
@@ -356,7 +355,7 @@ export default function EmployeeDashboard() {
         </div>
 
         {access.tasks && (
-          <p className="text-xs text-center mt-10" style={{ color: "var(--ink-faint)" }}>
+          <p className="text-xs text-center mt-10 text-[var(--ink-faint)]">
             Shortcuts: <kbd className="font-semibold">N</kbd> new task · <kbd className="font-semibold">/</kbd> search tasks
           </p>
         )}

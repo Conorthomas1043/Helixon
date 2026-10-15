@@ -60,7 +60,7 @@ export default function AdvertisePanel({ job, onSaved }) {
       title="Job advert"
       action={
         job.published ? (
-          <Pill color={live ? "var(--forest)" : "#92620f"} background={live ? "var(--mint)" : "#fdf6e9"}>
+          <Pill color={live ? "var(--forest)" : "var(--ui-warn)"} background={live ? "var(--mint)" : "var(--ui-warn-soft)"}>
             {live ? "Live" : job.status !== "open" ? "Published - job closed" : "Published - jobs page off"}
           </Pill>
         ) : (
@@ -69,7 +69,7 @@ export default function AdvertisePanel({ job, onSaved }) {
       }
     >
       {careers && !careers.enabled && (
-        <p className="text-13 mb-4 rounded-btn px-3 py-2" style={{ background: "#fff8e6", color: "#7a4f0a" }}>
+        <p className="text-13 mb-4 rounded-btn px-3 py-2 bg-[var(--ui-warn-soft)] text-[var(--ui-warn)]">
           Your public jobs page is switched off.{" "}
           <Link href="/dashboard/settings/careers" className="underline font-semibold">
             Set it up
@@ -84,7 +84,7 @@ export default function AdvertisePanel({ job, onSaved }) {
         <Field label="Advert" hint="What applicants see. Starts from the job description - remove anything internal, like the client's name if it's confidential.">
           <TextArea rows={10} maxLength={20000} value={f.publicDescription} onChange={(e) => setF((v) => ({ ...v, publicDescription: e.target.value }))} />
         </Field>
-        <div className="flex flex-wrap gap-4 text-14" style={{ color: INK }}>
+        <div className="flex flex-wrap gap-4 text-14 text-[var(--ink)]">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={!f.hideClient} onChange={(e) => setF((v) => ({ ...v, hideClient: !e.target.checked }))} className="accent-[var(--forest)]" />
             Show the client&apos;s name{job.company ? ` (${job.company})` : ""}
@@ -95,7 +95,7 @@ export default function AdvertisePanel({ job, onSaved }) {
           </label>
         </div>
         <ErrorText>{error}</ErrorText>
-        {notice && <p className="text-13" role="status" style={{ color: INK_MUTED }}>{notice}</p>}
+        {notice && <p className="text-13 text-[var(--ink-soft)]" role="status">{notice}</p>}
         <div className="flex flex-wrap gap-2">
           {job.published ? (
             <>
@@ -115,13 +115,13 @@ export default function AdvertisePanel({ job, onSaved }) {
       </div>
 
       {live && jobUrl && (
-        <div className="mt-5 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-13 font-semibold mb-2" style={{ color: INK }}>Share links - applications are tagged with where they came from</p>
+        <div className="mt-5 pt-5 border-t border-t-[var(--border)]">
+          <p className="text-13 font-semibold mb-2 text-[var(--ink)]">Share links - applications are tagged with where they came from</p>
           <ul className="space-y-1.5">
             {SHARE_CHANNELS.map((c) => (
               <li key={c.src || "direct"} className="flex items-center gap-2 text-13">
-                <span className="w-36 shrink-0" style={{ color: INK_MUTED }}>{c.label}</span>
-                <code className="flex-1 min-w-0 truncate rounded px-2 py-1" style={{ background: "var(--mist)", color: INK }}>
+                <span className="w-36 shrink-0 text-[var(--ink-soft)]">{c.label}</span>
+                <code className="flex-1 min-w-0 truncate rounded px-2 py-1 bg-[var(--mist)] text-[var(--ink)]">
                   {jobUrl}
                   {c.src ? `?src=${c.src}` : ""}
                 </code>
@@ -130,7 +130,7 @@ export default function AdvertisePanel({ job, onSaved }) {
             ))}
           </ul>
           {careers.feedUrl && (
-            <p className="text-12 mt-3" style={{ color: INK_MUTED }}>
+            <p className="text-12 mt-3 text-[var(--ink-soft)]">
               Job boards that take an XML feed (Indeed and most aggregators) can read all your live jobs from <code>{careers.feedUrl}</code>. Each job page is also marked up for Google for Jobs.
             </p>
           )}

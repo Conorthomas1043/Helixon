@@ -91,18 +91,18 @@ export default function PortalPage({ params }) {
   if (state === "error") {
     return (
       <PublicCard>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>Link not available</h1>
-        <p className="text-sm" style={{ color: MUTED }}>{error}</p>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">Link not available</h1>
+        <p className="text-sm text-[var(--ink-soft)]">{error}</p>
       </PublicCard>
     );
   }
 
   return (
     <PublicCard agencyName={info.agencyName} width={640}>
-      <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
+      <h1 className="text-xl font-semibold text-[var(--ink)] font-display">
         {info.firstName ? `Hi ${info.firstName}` : "Your details"}
       </h1>
-      <p className="text-14 mt-1 mb-6" style={{ color: MUTED }}>
+      <p className="text-14 mt-1 mb-6 text-[var(--ink-soft)]">
         Check what {info.agencyName || "the agency"} has on file for you, tell them when you&apos;re available, and upload documents they&apos;ve asked for.
       </p>
 
@@ -110,24 +110,24 @@ export default function PortalPage({ params }) {
         <div className="grid sm:grid-cols-2 gap-3">
           {FIELDS.map(([key, label, type, autoComplete, placeholder]) => (
             <label key={key} className="block">
-              <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>{label}</span>
+              <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">{label}</span>
               <input type={type} autoComplete={autoComplete || "off"} placeholder={placeholder} maxLength={200} value={details[key] || ""} onChange={(e) => setDetails((d) => ({ ...d, [key]: e.target.value }))} className={input} style={inputStyle} />
             </label>
           ))}
           <label className="block">
-            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>Available from</span>
+            <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">Available from</span>
             <input type="date" value={details.availableFrom || ""} onChange={(e) => setDetails((d) => ({ ...d, availableFrom: e.target.value }))} className={input} style={inputStyle} />
           </label>
         </div>
-        {saved && <p role="status" className="text-14" style={{ color: "var(--forest)" }}>{saved}</p>}
-        <button type="submit" disabled={saving} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50" style={{ background: "var(--forest)", color: "white" }}>
+        {saved && <p role="status" className="text-14 text-[var(--forest)]">{saved}</p>}
+        <button type="submit" disabled={saving} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
           {saving ? "Saving…" : "Save my details"}
         </button>
       </form>
 
-      <section className="mt-8 pt-6" style={{ borderTop: "1px solid var(--border)" }} aria-labelledby="docs">
-        <h2 id="docs" className="text-15 font-semibold mb-1" style={{ color: INK }}>Documents</h2>
-        <p className="text-14 mb-3" style={{ color: MUTED }}>PDF, JPG or PNG, up to 10MB. Only {info.agencyName || "the agency"} can see them.</p>
+      <section className="mt-8 pt-6 border-t border-t-[var(--border)]" aria-labelledby="docs">
+        <h2 id="docs" className="text-15 font-semibold mb-1 text-[var(--ink)]">Documents</h2>
+        <p className="text-14 mb-3 text-[var(--ink-soft)]">PDF, JPG or PNG, up to 10MB. Only {info.agencyName || "the agency"} can see them.</p>
         <div className="flex flex-col sm:flex-row gap-2">
           <select aria-label="What is it?" value={kind} onChange={(e) => setKind(e.target.value)} className={input} style={{ ...inputStyle, maxWidth: 260 }}>
             {Object.entries(info.documentKinds).map(([k, label]) => (
@@ -135,7 +135,7 @@ export default function PortalPage({ params }) {
             ))}
           </select>
           <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-label="Choose a file" className="text-14 flex-1" />
-          <button type="button" onClick={upload} disabled={uploading} className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50" style={{ border: "1px solid var(--forest)", color: "var(--forest)" }}>
+          <button type="button" onClick={upload} disabled={uploading} className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 border border-[var(--forest)] text-[var(--forest)]">
             {uploading ? "Uploading…" : "Upload"}
           </button>
         </div>
@@ -143,17 +143,17 @@ export default function PortalPage({ params }) {
           <ul className="mt-4 space-y-2">
             {info.documents.map((d) => (
               <li key={d.id} className="flex items-center justify-between gap-3 text-14">
-                <span className="min-w-0 truncate" style={{ color: INK }}>
+                <span className="min-w-0 truncate text-[var(--ink)]">
                   {d.kind}: {d.name}
                 </span>
-                <span className="shrink-0 text-13" style={{ color: MUTED }}>{d.status}</span>
+                <span className="shrink-0 text-13 text-[var(--ink-soft)]">{d.status}</span>
               </li>
             ))}
           </ul>
         )}
       </section>
-      {error && <p role="alert" className="mt-4 text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
-      <p className="mt-6 text-12" style={{ color: MUTED }}>
+      {error && <p role="alert" className="mt-4 text-13 text-[var(--score-low)]">{error}</p>}
+      <p className="mt-6 text-12 text-[var(--ink-soft)]">
         This link is private to you and works until {new Date(info.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
       </p>
     </PublicCard>

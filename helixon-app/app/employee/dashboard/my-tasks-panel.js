@@ -18,9 +18,9 @@ import { addDays, dayKey, groupTasks, relativeDayLabel, startOfWeekKey, toDayKey
 import { Card, Chip } from "../_shared/ui";
 
 const PRIORITIES = [
-  { key: "high", label: "High", dot: "#c0392b" },
-  { key: "medium", label: "Medium", dot: "#b45309" },
-  { key: "low", label: "Low", dot: "#8a9a92" },
+  { key: "high", label: "High", dot: "var(--score-low)" },
+  { key: "medium", label: "Medium", dot: "var(--score-mid)" },
+  { key: "low", label: "Low", dot: "var(--ink-faint)" },
 ];
 const PRIORITY_META = Object.fromEntries(PRIORITIES.map((p) => [p.key, p]));
 
@@ -62,7 +62,7 @@ function quickDates(todayKey) {
 
 function PriorityPicker({ value, onChange, name }) {
   return (
-    <div className="flex rounded-btn p-0.5 gap-0.5" style={{ background: "var(--mist)" }} role="radiogroup" aria-label="Priority">
+    <div className="flex rounded-btn p-0.5 gap-0.5 bg-[var(--mist)]" role="radiogroup" aria-label="Priority">
       {PRIORITIES.map((p) => (
         <label
           key={p.key}
@@ -118,7 +118,7 @@ function Checkbox({ checked, onChange, label }) {
     >
       <span
         className="w-5 h-5 rounded-full flex items-center justify-center transition"
-        style={checked ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: "2px solid #b9c7c0", background: "white" }}
+        style={checked ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: "2px solid var(--ink-mute)", background: "white" }}
       >
         {checked && (
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -153,8 +153,7 @@ function RescheduleMenu({ todo, todayKey, onPick }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)]"
-        style={{ color: "var(--ink-soft)" }}
+        className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)] text-[var(--ink-soft)]"
       >
         Reschedule
       </button>
@@ -166,12 +165,11 @@ function RescheduleMenu({ todo, todayKey, onPick }) {
               type="button"
               role="menuitem"
               onClick={() => { setOpen(false); onPick(todo, o.value); }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--mint)]"
-              style={{ color: "var(--ink)" }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--mint)] text-[var(--ink)]"
             >
               {o.label}
               {o.value && o.key !== "today" && o.key !== "tomorrow" && (
-                <span className="ml-1.5 text-xs" style={{ color: "var(--ink-faint)" }}>{relativeDayLabel(o.value, todayKey)}</span>
+                <span className="ml-1.5 text-xs text-[var(--ink-faint)]">{relativeDayLabel(o.value, todayKey)}</span>
               )}
             </button>
           ))}
@@ -201,15 +199,14 @@ function EditRow({ todo, todayKey, onSave, onCancel }) {
   }
 
   return (
-    <li className="px-5 py-4" style={{ background: "var(--mist)" }}>
+    <li className="px-5 py-4 bg-[var(--mist)]">
       <form onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }} className="space-y-3">
         <input
           autoFocus
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           aria-label="Task title"
-          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
-          style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink)]"
         />
         <textarea
           value={form.notes}
@@ -217,19 +214,18 @@ function EditRow({ todo, todayKey, onSave, onCancel }) {
           placeholder="Notes"
           aria-label="Notes"
           rows={2}
-          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
-          style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+          className="w-full bg-white rounded-btn px-3.5 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink)]"
         />
         <div className="flex flex-wrap items-center gap-2">
           <PriorityPicker value={form.priority} onChange={(p) => setForm((f) => ({ ...f, priority: p }))} name={`edit-priority-${todo.id}`} />
           <DuePicker value={form.due_date} onChange={(d) => setForm((f) => ({ ...f, due_date: d }))} todayKey={todayKey} />
         </div>
-        {error && <p className="text-xs" role="alert" style={{ color: "#a83226" }}>{error}</p>}
+        {error && <p className="text-xs text-[var(--score-low)]" role="alert">{error}</p>}
         <div className="flex items-center gap-2">
-          <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-btn text-white disabled:opacity-60" style={{ background: "var(--forest)" }}>
+          <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-btn text-white disabled:opacity-60 bg-[var(--forest)]">
             {saving ? "Saving…" : "Save"}
           </button>
-          <button type="button" onClick={onCancel} className="text-sm px-3 py-2 rounded-btn hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+          <button type="button" onClick={onCancel} className="text-sm px-3 py-2 rounded-btn hover:bg-white text-[var(--ink-soft)]">
             Cancel
           </button>
         </div>
@@ -246,21 +242,21 @@ function TaskRow({ todo, todayKey, bucket, onToggle, onEdit, onReschedule, onDel
   const pending = String(todo.id).startsWith("temp-");
 
   return (
-    <li className={`group flex items-start gap-3 px-5 py-3 transition hover:bg-[#fafcfb] ${pending ? "opacity-60 pointer-events-none" : ""}`} aria-busy={pending || undefined}>
+    <li className={`group flex items-start gap-3 px-5 py-3 transition hover:bg-[var(--mist)] ${pending ? "opacity-60 pointer-events-none" : ""}`} aria-busy={pending || undefined}>
       <div className="pt-0.5">
         <Checkbox checked={!!todo.done} onChange={() => onToggle(todo)} label={todo.done ? `Mark "${todo.title}" as not done` : `Mark "${todo.title}" as done`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium leading-snug break-words ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? "var(--ink-faint)" : "var(--ink)" }}>
+        <p className={`text-sm font-medium leading-snug break-words ${todo.done ? "line-through" : ""} ${todo.done ? "text-[var(--ink-faint)]" : "text-[var(--ink)]"}`}>
           {todo.title}
         </p>
         {todo.notes && !todo.done && (
-          <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--ink-soft)" }}>{todo.notes}</p>
+          <p className="text-xs mt-0.5 line-clamp-2 text-[var(--ink-soft)]">{todo.notes}</p>
         )}
         {(!todo.done || due) && (
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
             {!todo.done && (
-              <span className="inline-flex items-center gap-1 text-12 font-medium" style={{ color: "var(--ink-soft)" }}>
+              <span className="inline-flex items-center gap-1 text-12 font-medium text-[var(--ink-soft)]">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: pm.dot }} aria-hidden="true" />
                 {pm.label}
               </span>
@@ -271,10 +267,10 @@ function TaskRow({ todo, todayKey, bucket, onToggle, onEdit, onReschedule, onDel
       </div>
       <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition">
         {!todo.done && <RescheduleMenu todo={todo} todayKey={todayKey} onPick={onReschedule} />}
-        <button type="button" onClick={() => onEdit(todo)} className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)]" style={{ color: "var(--ink-soft)" }}>
+        <button type="button" onClick={() => onEdit(todo)} className="text-xs font-medium px-2 py-1.5 rounded-lg hover:bg-[var(--mist)] text-[var(--ink-soft)]">
           Edit
         </button>
-        <button type="button" onClick={() => onDelete(todo)} aria-label={`Delete "${todo.title}"`} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50" style={{ color: "#a83226" }}>
+        <button type="button" onClick={() => onDelete(todo)} aria-label={`Delete "${todo.title}"`} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-[var(--score-low)]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
           </svg>
@@ -443,9 +439,9 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
   return (
     <Card aria-labelledby="my-tasks-title">
       {/* Quick add */}
-      <form onSubmit={addTask} className="p-4 sm:p-5 border-b" style={{ borderColor: "var(--border-soft)" }}>
+      <form onSubmit={addTask} className="p-4 sm:p-5 border-b border-[var(--border-soft)]">
         <h2 id="my-tasks-title" className="sr-only">My tasks</h2>
-        <div className="flex items-center gap-2 rounded-xl pl-3.5 pr-1.5 py-1.5 bg-white focus-within:ring-2 focus-within:ring-[var(--forest)]" style={{ border: "1px solid var(--border)" }}>
+        <div className="flex items-center gap-2 rounded-xl pl-3.5 pr-1.5 py-1.5 bg-white focus-within:ring-2 focus-within:ring-[var(--forest)] border border-[var(--border)]">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             <path d="M12 5v14M5 12h14" />
           </svg>
@@ -456,15 +452,13 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             placeholder="Add a task, then press Enter"
             aria-label="New task"
             maxLength={300}
-            className="flex-1 min-w-0 text-sm py-1.5 bg-transparent focus:outline-none"
-            style={{ color: "var(--ink)" }}
+            className="flex-1 min-w-0 text-sm py-1.5 bg-transparent focus:outline-none text-[var(--ink)]"
           />
-          <kbd className="hidden sm:inline text-11 font-semibold px-1.5 py-0.5 rounded" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>N</kbd>
+          <kbd className="hidden sm:inline text-11 font-semibold px-1.5 py-0.5 rounded bg-[var(--mist)] text-[var(--ink-faint)]">N</kbd>
           <button
             type="submit"
             disabled={!draft.title.trim() || adding}
-            className="text-sm font-semibold px-3.5 py-1.5 rounded-lg text-white transition disabled:opacity-40"
-            style={{ background: "var(--forest)" }}
+            className="text-sm font-semibold px-3.5 py-1.5 rounded-lg text-white transition disabled:opacity-40 bg-[var(--forest)]"
           >
             Add
           </button>
@@ -488,8 +482,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tasks (/)"
             aria-label="Search tasks"
-            className="w-full text-sm rounded-btn pl-8 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
-            style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+            className="w-full text-sm rounded-btn pl-8 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink)]"
           />
         </div>
         <label className="sr-only" htmlFor="task-priority-filter">Filter by priority</label>
@@ -497,8 +490,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
           id="task-priority-filter"
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="text-sm rounded-btn px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)]"
-          style={{ border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+          className="text-sm rounded-btn px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--forest)] border border-[var(--border)] text-[var(--ink-soft)]"
         >
           <option value="all">All priorities</option>
           {PRIORITIES.map((p) => <option key={p.key} value={p.key}>{p.label} priority</option>)}
@@ -514,15 +506,15 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
         <div className="pb-2">
           {nothingOpen && (
             <div className="px-5 py-10 text-center">
-              <div className="w-11 h-11 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "var(--mint)" }}>
+              <div className="w-11 h-11 rounded-full mx-auto mb-3 flex items-center justify-center bg-[var(--mint)]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
+              <p className="text-sm font-semibold text-[var(--ink)]">
                 {filtering ? "No open tasks match" : openCount === 0 && todos.length > 0 ? "All clear" : "Nothing on your list"}
               </p>
-              <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+              <p className="text-sm mt-1 text-[var(--ink-soft)]">
                 {filtering ? "Try a different search or priority." : "Add a task above, or press N from anywhere on this page."}
               </p>
             </div>
@@ -533,7 +525,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
             if (list.length === 0) return null;
             return (
               <section key={s.key} aria-labelledby={`tasks-${s.key}`}>
-                <h3 id={`tasks-${s.key}`} className="flex items-center gap-2 px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em]" style={{ color: s.key === "overdue" ? "#a83226" : "var(--ink-faint)" }}>
+                <h3 id={`tasks-${s.key}`} className={`flex items-center gap-2 px-5 pt-3 pb-1 text-12 font-semibold uppercase tracking-[0.08em] ${s.key === "overdue" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]"}`}>
                   {s.title}
                   <span className="tabular-nums">{list.length}</span>
                 </h3>
@@ -543,22 +535,21 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
           })}
 
           {doneList.length > 0 && (
-            <section aria-labelledby="tasks-done" className="mt-1 border-t" style={{ borderColor: "var(--border-soft)" }}>
+            <section aria-labelledby="tasks-done" className="mt-1 border-t border-[var(--border-soft)]">
               <div className="flex items-center justify-between px-5 py-2.5">
                 <button
                   type="button"
                   id="tasks-done"
                   onClick={() => setDoneOpen((v) => !v)}
                   aria-expanded={showDone}
-                  className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-[0.08em]"
-                  style={{ color: "var(--ink-faint)" }}
+                  className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-[0.08em] text-[var(--ink-faint)]"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true" style={{ transform: showDone ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>
                     <path d="M9 6l6 6-6 6" />
                   </svg>
                   Completed <span className="tabular-nums">{doneList.length}</span>
                 </button>
-                <button type="button" onClick={clearCompleted} className="text-xs font-medium hover:underline" style={{ color: "var(--ink-soft)" }}>
+                <button type="button" onClick={clearCompleted} className="text-xs font-medium hover:underline text-[var(--ink-soft)]">
                   Clear completed
                 </button>
               </div>
@@ -566,7 +557,7 @@ export default function MyTasksPanel({ todos, setTodos, loaded, reload, notify, 
                 <>
                   <ul className="divide-y divide-[var(--border-soft)]">{renderRows(doneVisible, "done")}</ul>
                   {doneList.length > COMPLETED_PREVIEW && (
-                    <button type="button" onClick={() => setShowAllDone((v) => !v)} className="w-full text-xs font-medium py-2.5 hover:underline" style={{ color: "var(--forest)" }}>
+                    <button type="button" onClick={() => setShowAllDone((v) => !v)} className="w-full text-xs font-medium py-2.5 hover:underline text-[var(--forest)]">
                       {showAllDone ? "Show fewer" : `Show all ${doneList.length}`}
                     </button>
                   )}

@@ -20,7 +20,7 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
       <Card className="px-6 sm:px-8 py-8">
         <div className="flex items-center gap-3">
           <Spinner size={18} />
-          <h2 className="text-16 font-semibold tracking-tight text-[var(--ink)]" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="text-16 font-semibold tracking-tight text-[var(--ink)] font-display">
             {compare ? "Screening the second candidate" : "Screening candidate"}
           </h2>
           <span className="ml-auto text-14 tabular-nums text-[var(--ink-faint)]" aria-label={`${elapsed} seconds elapsed`}>
@@ -49,7 +49,7 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
                   >
                     {done ? <Icon name="check" size={12} strokeWidth={2.6} /> : current ? <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> : null}
                   </span>
-                  {i < RUN_STEPS.length - 1 && <span className="w-px flex-1 min-h-[22px] my-1" style={{ background: done ? "var(--forest)" : "var(--border)" }} />}
+                  {i < RUN_STEPS.length - 1 && <span className={`w-px flex-1 min-h-[22px] my-1 ${done ? "bg-[var(--forest)]" : "bg-[var(--border)]"}`} />}
                 </div>
                 <div className="pb-5 -mt-0.5">
                   <p className={cx("text-15", current ? "font-semibold text-[var(--ink)]" : done ? "text-[var(--ink)]" : "text-[var(--ink-faint)]")}>{s.label}</p>

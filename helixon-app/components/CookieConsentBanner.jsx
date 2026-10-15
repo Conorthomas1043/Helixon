@@ -76,7 +76,7 @@ export default function CookieConsentBanner({ embedded = false }) {
           boxShadow: "0 20px 50px -20px rgba(11,26,20,0.35)",
         }}
       >
-        <p className="text-xs leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>
+        <p className="text-xs leading-relaxed flex-1 text-[var(--ink-soft)]">
           {/* Kept short: on a phone this sits over the page until answered. */}
           Essential cookies keep Helixon running. Optional analytics, EU-hosted and never used to
           train AI, help us improve it.{" "}
@@ -96,8 +96,7 @@ export default function CookieConsentBanner({ embedded = false }) {
           <button
             type="button"
             onClick={() => setConsent("all")}
-            className="btn-forest flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-btn text-white min-h-[44px] transition-colors"
-            style={{ background: "var(--forest)" }}
+            className="btn-forest flex-1 sm:flex-none text-xs font-semibold px-4 py-2.5 rounded-btn text-white min-h-[44px] transition-colors bg-[var(--forest)]"
           >
             Accept all
           </button>

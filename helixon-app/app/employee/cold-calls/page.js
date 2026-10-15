@@ -16,18 +16,18 @@ import { formatDate as fmtDate } from "@/lib/format";
 const formatDate = (iso) => fmtDate(iso, { withYear: false, empty: null });
 
 const OUTCOME_META = {
-  no_answer: { label: "No answer", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
-  voicemail: { label: "Left voicemail", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
-  gatekeeper: { label: "Gatekeeper", dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" },
-  not_interested: { label: "Not interested", dot: "#e0554f", bg: "#fdf1f0", color: "#c0392b" },
-  wrong_number: { label: "Wrong number", dot: "#e0554f", bg: "#fdf1f0", color: "#c0392b" },
-  callback_requested: { label: "Callback requested", dot: "#d99a3a", bg: "#fdf5e9", color: "#b8791f" },
-  interested: { label: "Interested", dot: "#0b6e4f", bg: "var(--mint)", color: "var(--forest)" },
-  meeting_booked: { label: "Meeting booked", dot: "#0b6e4f", bg: "var(--mint)", color: "var(--forest)" },
+  no_answer: { label: "No answer", dot: "var(--ink-mute)", bg: "var(--mist)", color: "var(--ink-soft)" },
+  voicemail: { label: "Left voicemail", dot: "var(--ink-mute)", bg: "var(--mist)", color: "var(--ink-soft)" },
+  gatekeeper: { label: "Gatekeeper", dot: "var(--ink-mute)", bg: "var(--mist)", color: "var(--ink-soft)" },
+  not_interested: { label: "Not interested", dot: "var(--score-low)", bg: "var(--ui-danger-soft)", color: "var(--score-low)" },
+  wrong_number: { label: "Wrong number", dot: "var(--score-low)", bg: "var(--ui-danger-soft)", color: "var(--score-low)" },
+  callback_requested: { label: "Callback requested", dot: "var(--gold)", bg: "var(--ui-warn-soft)", color: "var(--ui-warn)" },
+  interested: { label: "Interested", dot: "var(--forest)", bg: "var(--mint)", color: "var(--forest)" },
+  meeting_booked: { label: "Meeting booked", dot: "var(--forest)", bg: "var(--mint)", color: "var(--forest)" },
 };
 
 function metaFor(outcome) {
-  return OUTCOME_META[outcome] || { label: outcome, dot: "#94a3b8", bg: "#f4f4f5", color: "#475569" };
+  return OUTCOME_META[outcome] || { label: outcome, dot: "var(--ink-mute)", bg: "var(--mist)", color: "var(--ink-soft)" };
 }
 
 function formatDayHeading(iso) {
@@ -239,7 +239,7 @@ export default function ColdCallsPage() {
 
   if (checking) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--mist)" }}>
+      <main className="min-h-screen flex items-center justify-center bg-[var(--mist)]">
         <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
       </main>
     );
@@ -252,75 +252,70 @@ export default function ColdCallsPage() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
               Cold calls
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--ink-soft)" }}>
+            <p className="text-sm mt-1 text-[var(--ink-soft)]">
               Import a call list, work through it together and log outcomes across the sales team. You logged <b>{todayTotal}</b> today.
             </p>
           </div>
           <button type="button"
             onClick={openAdd}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start"
-            style={{ background: "var(--forest)", color: "white" }}
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
           >
             <span className="text-base leading-none">+</span> Log call
           </button>
         </div>
 
         {error && (
-          <div className="rounded-card px-4 py-3 text-sm mb-6" style={{ background: "#fdf1f0", border: "1px solid #f4d4d2", color: "#e0554f" }}>
+          <div className="rounded-card px-4 py-3 text-sm mb-6 bg-[var(--ui-danger-soft)] border border-[var(--danger-line)] text-[var(--score-low)]">
             {error}
           </div>
         )}
 
         {showAddForm && (
-          <div ref={formRef} className="rounded-2xl p-5 mb-6 scroll-mt-20" style={{ background: "white", border: "1px solid var(--border)" }}>
+          <div ref={formRef} className="rounded-2xl p-5 mb-6 scroll-mt-20 bg-white border border-[var(--border)]">
             {callListId && (
-              <p className="text-xs font-semibold mb-3" style={{ color: "var(--forest)" }}>
+              <p className="text-xs font-semibold mb-3 text-[var(--forest)]">
                 Logging a call from the call list - saving ticks this contact off.
               </p>
             )}
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Contact name</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Contact name</label>
                   <input
                     autoFocus
                     type="text"
                     value={form.contact_name}
                     onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Company</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Company</label>
                   <input
                     type="text"
                     value={form.company}
                     onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Phone</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Phone</label>
                   <input
                     type="text"
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Outcome</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Outcome</label>
                   <select
                     value={form.outcome}
                     onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   >
                     {Object.entries(OUTCOME_META).map(([value, meta]) => (
                       <option key={value} value={value}>{meta.label}</option>
@@ -328,47 +323,44 @@ export default function ColdCallsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Called at</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Called at</label>
                   <input
                     type="datetime-local"
                     value={form.called_at}
                     onChange={(e) => setForm((f) => ({ ...f, called_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Follow up on</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Follow up on</label>
                   <input
                     type="date"
                     value={form.follow_up_at}
                     onChange={(e) => setForm((f) => ({ ...f, follow_up_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--ink-soft)" }}>Notes</label>
+                  <label className="block text-xs font-medium mb-1 text-[var(--ink-soft)]">Notes</label>
                   <textarea
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     rows={2}
                     placeholder="What came up, objections, next step…"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none"
-                    style={{ border: "1px solid var(--border)", color: "var(--ink)" }}
+                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
 
               {formError && (
-                <p className="text-xs rounded-lg px-3 py-2" style={{ color: "#e0554f", background: "#fdf1f0", border: "1px solid #f4d4d2" }}>{formError}</p>
+                <p className="text-xs rounded-lg px-3 py-2 text-[var(--score-low)] bg-[var(--ui-danger-soft)] border border-[var(--danger-line)]">{formError}</p>
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90" style={{ background: "var(--forest)", color: "white" }}>
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
                   {saving ? "Saving…" : editingId ? "Save changes" : "Log call"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -394,16 +386,16 @@ export default function ColdCallsPage() {
               ))}
             </div>
 
-            <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
+            <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
               {loading ? (
-                <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>Loading…</div>
+                <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
               ) : grouped.length === 0 ? (
-                <div className="px-6 py-14 text-center text-sm" style={{ color: "var(--ink-faint)" }}>No calls logged in the last 30 days - log one above.</div>
+                <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">No calls logged in the last 30 days - log one above.</div>
               ) : (
                 <div className="divide-y divide-[var(--border)]">
                   {grouped.map(([dayKey, dayCalls]) => (
                     <div key={dayKey} className="px-6 py-4">
-                      <p className="text-xs font-semibold mb-2.5" style={{ color: "var(--ink-faint)" }}>
+                      <p className="text-xs font-semibold mb-2.5 text-[var(--ink-faint)]">
                         {formatDayHeading(dayCalls[0].called_at)} · {dayCalls.length} call{dayCalls.length === 1 ? "" : "s"}
                       </p>
                       <div className="space-y-2.5">
@@ -413,12 +405,12 @@ export default function ColdCallsPage() {
                           const meta = metaFor(call.outcome);
                           return (
                             <div key={call.id} className="flex items-start gap-3 group">
-                              <span className="text-xs font-medium tabular-nums w-12 shrink-0 mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                              <span className="text-xs font-medium tabular-nums w-12 shrink-0 mt-0.5 text-[var(--ink-faint)]">
                                 {formatTime(call.called_at)}
                               </span>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                                  <p className="text-sm font-medium text-[var(--ink)]">
                                     {call.contact_name || call.company || "Unnamed contact"}
                                   </p>
                                   {canEdit ? (
@@ -438,18 +430,18 @@ export default function ColdCallsPage() {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-xs mt-0.5" style={{ color: "var(--ink-faint)" }}>
+                                <p className="text-xs mt-0.5 text-[var(--ink-faint)]">
                                   {call.company && call.contact_name ? `${call.company} · ` : ""}
                                   {call.phone ? `${call.phone} · ` : ""}
                                   {scope === "team" && caller ? `Called by ${caller}` : ""}
                                   {call.follow_up_at ? ` · Follow up ${formatDate(call.follow_up_at)}` : ""}
                                 </p>
-                                {call.notes && <p className="text-xs mt-1" style={{ color: "var(--ink-soft)" }}>{call.notes}</p>}
+                                {call.notes && <p className="text-xs mt-1 text-[var(--ink-soft)]">{call.notes}</p>}
                               </div>
                               {canEdit && (
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                  <button type="button" onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white" style={{ color: "var(--ink-soft)" }}>Edit</button>
-                                  <button type="button" onClick={() => handleDelete(call.id)} className="text-xs px-2 py-1 rounded-md transition" style={{ color: "#e0554f" }}>Delete</button>
+                                  <button type="button" onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white text-[var(--ink-soft)]">Edit</button>
+                                  <button type="button" onClick={() => handleDelete(call.id)} className="text-xs px-2 py-1 rounded-md transition text-[var(--score-low)]">Delete</button>
                                 </div>
                               )}
                             </div>
@@ -465,20 +457,20 @@ export default function ColdCallsPage() {
 
           {/* ── Leaderboard ─────────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-              <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <h2 className="text-sm font-semibold mb-3 text-[var(--ink)] font-display">
                 This week
               </h2>
               {!stats || stats.byEmployee.length === 0 ? (
-                <p className="text-xs" style={{ color: "var(--ink-faint)" }}>No calls logged this week yet.</p>
+                <p className="text-xs text-[var(--ink-faint)]">No calls logged this week yet.</p>
               ) : (
                 <div className="space-y-2.5">
                   {stats.byEmployee.map((row) => (
                     <div key={row.employeeId} className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-medium truncate" style={{ color: row.employeeId === employee?.id ? "var(--forest)" : "var(--ink)" }}>
+                      <span className={`text-xs font-medium truncate ${row.employeeId === employee?.id ? "text-[var(--forest)]" : "text-[var(--ink)]"}`}>
                         {row.name}
                       </span>
-                      <span className="text-xs shrink-0 tabular-nums" style={{ color: "var(--ink-faint)" }}>
+                      <span className="text-xs shrink-0 tabular-nums text-[var(--ink-faint)]">
                         {row.today} today · {row.thisWeek} this week
                       </span>
                     </div>
@@ -488,8 +480,8 @@ export default function ColdCallsPage() {
             </div>
 
             {stats && Object.keys(stats.byOutcomeThisWeek).length > 0 && (
-              <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid var(--border)" }}>
-                <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+                <h2 className="text-sm font-semibold mb-3 text-[var(--ink)] font-display">
                   Outcomes this week
                 </h2>
                 <div className="space-y-2">
@@ -499,11 +491,11 @@ export default function ColdCallsPage() {
                       const meta = metaFor(outcome);
                       return (
                         <div key={outcome} className="flex items-center justify-between gap-3">
-                          <span className="flex items-center gap-1.5 text-xs" style={{ color: "var(--ink-soft)" }}>
+                          <span className="flex items-center gap-1.5 text-xs text-[var(--ink-soft)]">
                             <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: meta.dot }} />
                             {meta.label}
                           </span>
-                          <span className="text-xs tabular-nums" style={{ color: "var(--ink-faint)" }}>{count}</span>
+                          <span className="text-xs tabular-nums text-[var(--ink-faint)]">{count}</span>
                         </div>
                       );
                     })}

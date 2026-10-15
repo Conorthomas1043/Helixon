@@ -67,35 +67,35 @@ export default function ScorecardPage({ params }) {
   if (state === "error") {
     return (
       <PublicCard>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>Link not available</h1>
-        <p className="text-sm" style={{ color: MUTED }}>{error}</p>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">Link not available</h1>
+        <p className="text-sm text-[var(--ink-soft)]">{error}</p>
       </PublicCard>
     );
   }
   if (state === "done") {
     return (
       <PublicCard agencyName={info?.agencyName}>
-        <h1 className="text-lg font-semibold mb-2" style={{ color: INK }}>Thank you</h1>
-        <p className="text-sm" style={{ color: MUTED }}>Your feedback on {info?.candidateName} has been sent to the recruiter.</p>
+        <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">Thank you</h1>
+        <p className="text-sm text-[var(--ink-soft)]">Your feedback on {info?.candidateName} has been sent to the recruiter.</p>
       </PublicCard>
     );
   }
 
   return (
     <PublicCard agencyName={info.agencyName} width={620}>
-      <h1 className="text-xl font-semibold" style={{ color: INK, fontFamily: "var(--font-display)" }}>
+      <h1 className="text-xl font-semibold text-[var(--ink)] font-display">
         Interview scorecard: {info.candidateName}
       </h1>
-      <p className="text-14 mt-1 mb-6" style={{ color: MUTED }}>
+      <p className="text-14 mt-1 mb-6 text-[var(--ink-soft)]">
         {[info.jobTitle, info.client, info.when, info.round > 1 ? `Round ${info.round}` : null].filter(Boolean).join(" · ")}
       </p>
       <form onSubmit={submit} className="space-y-5">
         <div>
-          <p className="text-14 font-semibold mb-2" style={{ color: INK }}>Overall (1 = poor, 5 = excellent)</p>
+          <p className="text-14 font-semibold mb-2 text-[var(--ink)]">Overall (1 = poor, 5 = excellent)</p>
           <RatingPicker value={overall} onChange={setOverall} label="Overall rating" />
         </div>
         <div>
-          <p className="text-14 font-semibold mb-2" style={{ color: INK }}>Recommendation</p>
+          <p className="text-14 font-semibold mb-2 text-[var(--ink)]">Recommendation</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(info.recommendations).map(([v, l]) => (
               <button
@@ -114,7 +114,7 @@ export default function ScorecardPage({ params }) {
         <div className="space-y-3">
           {info.criteria.map((name) => (
             <div key={name} className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-14" style={{ color: INK }}>{name}</span>
+              <span className="text-14 text-[var(--ink)]">{name}</span>
               <RatingPicker value={ratings[name] ?? null} onChange={(n) => setRatings((r) => ({ ...r, [name]: n }))} label={name} />
             </div>
           ))}
@@ -125,20 +125,19 @@ export default function ScorecardPage({ params }) {
           ["comments", "Anything else"],
         ].map(([k, l]) => (
           <label key={k} className="block">
-            <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>{l}</span>
+            <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">{l}</span>
             <textarea rows={3} maxLength={3000} value={text[k]} onChange={(e) => setText((t) => ({ ...t, [k]: e.target.value }))} className={input} style={inputStyle} />
           </label>
         ))}
         <label className="block">
-          <span className="block text-14 font-semibold mb-1.5" style={{ color: INK }}>Your name</span>
+          <span className="block text-14 font-semibold mb-1.5 text-[var(--ink)]">Your name</span>
           <input maxLength={200} value={text.reviewerName} onChange={(e) => setText((t) => ({ ...t, reviewerName: e.target.value }))} className={input} style={inputStyle} />
         </label>
-        {error && <p role="alert" className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
+        {error && <p role="alert" className="text-13 text-[var(--score-low)]">{error}</p>}
         <button
           type="submit"
           disabled={saving || !overall || !recommendation}
-          className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50"
-          style={{ background: "var(--forest)", color: "white" }}
+          className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
         >
           {saving ? "Sending…" : "Send scorecard"}
         </button>

@@ -4,13 +4,13 @@
 
 export default function PublicCard({ children, agencyName, width = 560, loading = false }) {
   return (
-    <main className="min-h-screen flex items-start sm:items-center justify-center px-4 py-10" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen flex items-start sm:items-center justify-center px-4 py-10 bg-[var(--mist)]">
       <div
         className="w-full rounded-panel p-6 sm:p-8"
         style={{ maxWidth: width, background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 50px -20px rgba(11,26,20,0.25)" }}
       >
         <div className="flex items-center gap-2.5 mb-6">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--forest)" }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[var(--forest)]">
             <svg width="15" height="15" viewBox="0 0 28 28" fill="none" aria-hidden="true">
               <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
               <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
@@ -18,9 +18,9 @@ export default function PublicCard({ children, agencyName, width = 560, loading 
             </svg>
           </div>
           {loading ? (
-            <span className="h-3.5 w-28 rounded-full animate-pulse motion-reduce:animate-none" style={{ background: "var(--mist)" }} />
+            <span className="h-3.5 w-28 rounded-full animate-pulse motion-reduce:animate-none bg-[var(--mist)]" />
           ) : (
-            <span className="text-sm font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+            <span className="text-sm font-semibold text-[var(--ink)] font-display">
               {agencyName || "Helixon"}
             </span>
           )}
@@ -42,7 +42,7 @@ export function PublicCardLoading({ label = "Loading…", width }) {
         {/* An h1 even while loading, so the page always has a heading. */}
         <div role="status"><h1 className="sr-only">{label}</h1></div>
         {["w-2/3 h-5", "w-full h-3", "w-5/6 h-3", "w-full h-24 mt-5", "w-full h-11 mt-5"].map((cls) => (
-          <div key={cls} className={`${cls} rounded-lg animate-pulse motion-reduce:animate-none`} style={{ background: "var(--mist)" }} />
+          <div key={cls} className={`${cls} rounded-lg animate-pulse motion-reduce:animate-none bg-[var(--mist)]`} />
         ))}
       </div>
     </PublicCard>

@@ -33,8 +33,8 @@ const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
 function scoreBg(score) {
   if (score === null || score === undefined) return "var(--mist)";
   if (score >= 80) return "var(--mint)";
-  if (score >= 60) return "#fff8e6";
-  return "#fef2f2";
+  if (score >= 60) return "var(--ui-warn-soft)";
+  return "var(--ui-danger-soft)";
 }
 
 function Select({ value, onChange, options, ariaLabel }) {
@@ -43,8 +43,7 @@ function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ border: "1px solid var(--border)", color: INK }}
+      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -76,14 +75,14 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         draggable={false}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-14 font-semibold truncate leading-tight" style={{ color: INK }}>
+          <p className="text-14 font-semibold truncate leading-tight text-[var(--ink)]">
             {candidate.fullName}
           </p>
-          <p className="text-12 truncate mt-0.5" style={{ color: INK_MUTED }}>
+          <p className="text-12 truncate mt-0.5 text-[var(--ink-soft)]">
             {candidate.jobTitle}
           </p>
           {subStage && (
-            <span className="inline-block text-12 font-semibold mt-1 px-1.5 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+            <span className="inline-block text-12 font-semibold mt-1 px-1.5 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
               {subStage}
             </span>
           )}
@@ -97,7 +96,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         </span>
       </Link>
       <div className="flex items-center justify-between mt-2.5 gap-2">
-        <span className="text-12 truncate" style={{ color: INK_FAINT }}>
+        <span className="text-12 truncate text-[var(--ink-faint)]">
           {candidate.recruiterName ?? "Unassigned"}
           {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
         </span>
@@ -107,7 +106,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
               from Rejected) by dragging, which touch and keyboard can't do. */}
           <label className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--mist)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" title="Move to…">
             <span className="sr-only">Move {candidate.fullName} to</span>
-            <span aria-hidden="true" className="text-14 leading-none" style={{ color: INK_MUTED }}>⋯</span>
+            <span aria-hidden="true" className="text-14 leading-none text-[var(--ink-soft)]">⋯</span>
             <select
               value=""
               disabled={pending}
@@ -127,8 +126,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
             disabled={!canGoBack || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx - 1])}
             aria-label={`Move ${candidate.fullName} back to ${FUNNEL_ORDER[stageIdx - 1] ?? "previous stage"}`}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-14 disabled:opacity-25 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: INK_MUTED }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-14 disabled:opacity-25 hover:bg-[var(--mist)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-[var(--ink-soft)]"
           >
             ←
           </button>
@@ -137,8 +135,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
             disabled={!canGoForward || pending}
             onClick={() => onMove(candidate.id, FUNNEL_ORDER[stageIdx + 1])}
             aria-label={`Move ${candidate.fullName} forward to ${FUNNEL_ORDER[stageIdx + 1] ?? "next stage"}`}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-14 disabled:opacity-25 hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: "var(--forest)" }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-14 disabled:opacity-25 hover:bg-[var(--mint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-[var(--forest)]"
           >
             →
           </button>
@@ -165,17 +162,16 @@ function PipelineSkeleton() {
 function ErrorState({ onRetry }) {
   return (
     <div className="rounded-2xl p-10 flex flex-col items-center text-center" style={CARD}>
-      <p className="text-base font-semibold mb-1" style={{ color: INK }}>
+      <p className="text-base font-semibold mb-1 text-[var(--ink)]">
         Unable to load pipeline
       </p>
-      <p className="text-sm mb-5 max-w-sm" style={{ color: INK_MUTED }}>
+      <p className="text-sm mb-5 max-w-sm text-[var(--ink-soft)]">
         Something went wrong while loading the candidate pipeline.
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "var(--forest)", color: "white" }}
+        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
       >
         Try again
       </button>
@@ -190,7 +186,7 @@ function FunnelStrip({ byStage }) {
   if (active === 0) return null;
   return (
     <div className="rounded-card p-4" style={CARD}>
-      <div className="flex h-2.5 rounded-full overflow-hidden" style={{ background: "var(--mist)" }} role="img" aria-label="Share of active candidates in each stage">
+      <div className="flex h-2.5 rounded-full overflow-hidden bg-[var(--mist)]" role="img" aria-label="Share of active candidates in each stage">
         {FUNNEL_ORDER.map((s) =>
           byStage[s].length ? (
             <div key={s} style={{ width: `${(byStage[s].length / active) * 100}%`, background: STAGE_ACCENT[s], transition: "width .4s cubic-bezier(0.16,1,0.3,1)" }} />
@@ -199,9 +195,9 @@ function FunnelStrip({ byStage }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-3">
         {BOARD_STAGES.map((s) => (
-          <span key={s} className="flex items-center gap-1.5 text-12" style={{ color: INK_MUTED }}>
+          <span key={s} className="flex items-center gap-1.5 text-12 text-[var(--ink-soft)]">
             <span className="w-2 h-2 rounded-full" style={{ background: STAGE_ACCENT[s] }} />
-            {STAGE_LABELS[s]} <b className="tabular-nums" style={{ color: INK }}>{byStage[s].length}</b>
+            {STAGE_LABELS[s]} <b className="tabular-nums text-[var(--ink)]">{byStage[s].length}</b>
           </span>
         ))}
       </div>
@@ -306,18 +302,18 @@ function PipelineContent() {
   const total = candidates?.length ?? 0;
 
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={`${PAGE_FRAME_WIDE} space-y-5`}>
         <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">
               Candidate pipeline
             </p>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
-              Pipeline {status === "ready" && <span className="text-base font-medium tabular-nums" style={{ color: INK_FAINT }}>· {total}</span>}
+            <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
+              Pipeline {status === "ready" && <span className="text-base font-medium tabular-nums text-[var(--ink-faint)]">· {total}</span>}
             </h1>
-            <p className="text-13 mt-1 hidden lg:block" style={{ color: INK_FAINT }}>
+            <p className="text-13 mt-1 hidden lg:block text-[var(--ink-faint)]">
               Drag a card to another column, use the arrows to move it a stage, or ⋯ to move it anywhere (including Rejected).
             </p>
           </div>
@@ -328,8 +324,7 @@ function PipelineContent() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search candidate or role"
               aria-label="Search pipeline"
-              className="text-13 px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2"
-              style={{ border: "1px solid var(--border)", color: INK }}
+              className="text-13 px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2 border border-[var(--border)] text-[var(--ink)]"
             />
             <Select ariaLabel="Filter by job" value={jobId} onChange={(v) => { setStatus("loading"); setJobId(v); }} options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]} />
             <Select
@@ -338,7 +333,7 @@ function PipelineContent() {
               onChange={(v) => { setStatus("loading"); setRecruiterId(v); }}
               options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
             />
-            <label className="flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer" style={{ border: "1px solid var(--border)", color: INK_MUTED }}>
+            <label className="flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer border border-[var(--border)] text-[var(--ink-soft)]">
               <input type="checkbox" checked={hideRejected} onChange={(e) => setHideRejected(e.target.checked)} className="accent-[var(--forest)]" />
               Hide rejected
             </label>
@@ -353,7 +348,7 @@ function PipelineContent() {
         </header>
 
         {moveError && (
-          <div role="alert" className="rounded-xl px-4 py-2.5 text-14 flex items-center justify-between gap-3" style={{ background: "#fdf1f0", color: "#c0392b", border: "1px solid #f4d4d2" }}>
+          <div role="alert" className="rounded-xl px-4 py-2.5 text-14 flex items-center justify-between gap-3 bg-[var(--ui-danger-soft)] text-[var(--score-low)] border border-[var(--danger-line)]">
             {moveError}
             <button type="button" onClick={() => setMoveError("")} aria-label="Dismiss" className="font-semibold">×</button>
           </div>
@@ -366,8 +361,8 @@ function PipelineContent() {
             <FunnelStrip byStage={byStage} />
             {total === 0 ? (
               <div className="rounded-2xl p-10 text-center" style={CARD}>
-                <p className="text-base font-semibold mb-1" style={{ color: INK }}>No candidates yet</p>
-                <p className="text-sm mb-5" style={{ color: INK_MUTED }}>Analyse a CV and the candidate will land in Screened.</p>
+                <p className="text-base font-semibold mb-1 text-[var(--ink)]">No candidates yet</p>
+                <p className="text-sm mb-5 text-[var(--ink-soft)]">Analyse a CV and the candidate will land in Screened.</p>
                 <Link href="/analyse" className="inline-flex text-14 font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "white" }}>
                   Analyse a CV
                 </Link>
@@ -405,12 +400,12 @@ function PipelineContent() {
                       }}
                     >
                       <div className="flex items-center justify-between mb-2.5 px-1.5 pt-0.5">
-                        <span className="text-13 font-semibold" style={{ color: highlighted ? "var(--forest)" : INK }}>
+                        <span className={`text-13 font-semibold ${highlighted ? "text-[var(--forest)]" : "text-[var(--ink)]"}`}>
                           {STAGE_LABELS[key]}
-                          <span className="ml-1.5 tabular-nums font-medium" style={{ color: INK_FAINT }}>{items.length}</span>
+                          <span className="ml-1.5 tabular-nums font-medium text-[var(--ink-faint)]">{items.length}</span>
                         </span>
                         {avg !== null && (
-                          <span className="text-12 tabular-nums" style={{ color: INK_FAINT }} title="Average match score">
+                          <span className="text-12 tabular-nums text-[var(--ink-faint)]" title="Average match score">
                             avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
                           </span>
                         )}
@@ -440,7 +435,7 @@ function PipelineContent() {
 
 function PipelineFallback() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={PAGE_FRAME_WIDE}>
         <PipelineSkeleton />

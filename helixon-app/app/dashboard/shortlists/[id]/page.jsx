@@ -51,8 +51,7 @@ function NoteEditor({ value, onSave }) {
       <button
         type="button"
         onClick={() => { setDraft(value || ""); setEditing(true); }}
-        className="text-left text-13 mt-1 rounded focus-visible:outline focus-visible:outline-2"
-        style={{ color: value ? INK_MUTED : INK_FAINT }}
+        className={`text-left text-13 mt-1 rounded focus-visible:outline focus-visible:outline-2 ${value ? "text-[var(--ink-soft)]" : "text-[var(--ink-faint)]"}`}
       >
         {value ? `“${value}”` : "+ Why are they on this list?"}
       </button>
@@ -68,20 +67,18 @@ function NoteEditor({ value, onSave }) {
         autoFocus
         aria-label="Shortlist note"
         placeholder="e.g. Strongest on stakeholder management; available in 4 weeks"
-        className="w-full text-13 px-2.5 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2"
-        style={{ border: "1px solid var(--border)", color: INK }}
+        className="w-full text-13 px-2.5 py-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 border border-[var(--border)] text-[var(--ink)]"
       />
       <div className="flex gap-2">
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="text-12 font-semibold px-3 py-1 rounded-full disabled:opacity-50"
-          style={{ background: "var(--forest)", color: "white" }}
+          className="text-12 font-semibold px-3 py-1 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
         >
           {saving ? "Saving…" : "Save"}
         </button>
-        <button type="button" onClick={() => { setDraft(value || ""); setEditing(false); }} className="text-12 font-semibold" style={{ color: INK_MUTED }}>
+        <button type="button" onClick={() => { setDraft(value || ""); setEditing(false); }} className="text-12 font-semibold text-[var(--ink-soft)]">
           Cancel
         </button>
       </div>
@@ -192,7 +189,7 @@ export default function ShortlistDetailPage({ params }) {
   return (
     <>
       {confirmDialog}
-    <main className="min-h-screen" style={{ background: "var(--mist)" }}>
+    <main className="min-h-screen bg-[var(--mist)]">
       <DashboardNav />
       <div className={`${PAGE_FRAME_NARROW} space-y-6`}>
         <Link href="/dashboard/shortlists" className="text-13 font-semibold" style={{ color: INK_MUTED }}>
@@ -202,13 +199,13 @@ export default function ShortlistDetailPage({ params }) {
         {status === "loading" && <div className="rounded-card h-40 animate-pulse motion-reduce:animate-none" style={CARD} aria-busy="true" />}
         {status === "not-found" && (
           <div className="rounded-card p-10 text-center" style={CARD}>
-            <p className="font-semibold" style={{ color: INK }}>Shortlist not found</p>
-            <p className="text-14 mt-1" style={{ color: INK_MUTED }}>It may have been deleted.</p>
+            <p className="font-semibold text-[var(--ink)]">Shortlist not found</p>
+            <p className="text-14 mt-1 text-[var(--ink-soft)]">It may have been deleted.</p>
           </div>
         )}
         {status === "error" && (
           <div className="rounded-card p-10 text-center" style={CARD}>
-            <p className="font-semibold mb-3" style={{ color: INK }}>Unable to load this shortlist</p>
+            <p className="font-semibold mb-3 text-[var(--ink)]">Unable to load this shortlist</p>
             <button type="button" onClick={reload} className={pill} style={{ background: "var(--forest)", color: "white" }}>Try again</button>
           </div>
         )}
@@ -218,7 +215,7 @@ export default function ShortlistDetailPage({ params }) {
             <header className="rounded-card p-5 sm:p-6 space-y-4" style={CARD}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-12 font-semibold uppercase tracking-widest mb-1" style={{ color: INK_FAINT }}>Shortlist</p>
+                  <p className="text-12 font-semibold uppercase tracking-widest mb-1 text-[var(--ink-faint)]">Shortlist</p>
                   {renaming ? (
                     <form onSubmit={saveName} className="flex items-center gap-2">
                       <input
@@ -227,26 +224,24 @@ export default function ShortlistDetailPage({ params }) {
                         maxLength={120}
                         autoFocus
                         aria-label="Shortlist name"
-                        className="text-lg font-semibold px-2 py-1 rounded-lg"
-                        style={{ border: "1px solid var(--border)", color: INK }}
+                        className="text-lg font-semibold px-2 py-1 rounded-lg border border-[var(--border)] text-[var(--ink)]"
                       />
                       <button type="submit" className={pill} style={{ background: "var(--forest)", color: "white" }}>Save</button>
-                      <button type="button" onClick={() => setRenaming(false)} className="text-13 font-semibold" style={{ color: INK_MUTED }}>Cancel</button>
+                      <button type="button" onClick={() => setRenaming(false)} className="text-13 font-semibold text-[var(--ink-soft)]">Cancel</button>
                     </form>
                   ) : (
-                    <h1 className="text-2xl font-semibold" style={{ fontFamily: "var(--font-display)", color: INK }}>
+                    <h1 className="text-2xl font-semibold font-display text-[var(--ink)]">
                       {shortlist.name}{" "}
                       <button
                         type="button"
                         onClick={() => { setNameDraft(shortlist.name); setRenaming(true); }}
-                        className="text-13 font-semibold align-middle"
-                        style={{ color: INK_MUTED }}
+                        className="text-13 font-semibold align-middle text-[var(--ink-soft)]"
                       >
                         Rename
                       </button>
                     </h1>
                   )}
-                  <p className="text-14 mt-1" style={{ color: INK_MUTED }}>
+                  <p className="text-14 mt-1 text-[var(--ink-soft)]">
                     {candidates.length} {candidates.length === 1 ? "person" : "people"}
                     {shortlist.jobId && (
                       <>
@@ -257,7 +252,7 @@ export default function ShortlistDetailPage({ params }) {
                     )}
                   </p>
                 </div>
-                <button type="button" onClick={handleDelete} className="text-13 font-semibold" style={{ color: "var(--score-low)" }}>
+                <button type="button" onClick={handleDelete} className="text-13 font-semibold text-[var(--score-low)]">
                   Delete list
                 </button>
               </div>
@@ -267,8 +262,7 @@ export default function ShortlistDetailPage({ params }) {
                   aria-label="Job this shortlist is for"
                   value={shortlist.jobId || ""}
                   onChange={(e) => changeJob(e.target.value)}
-                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white"
-                  style={{ border: "1px solid var(--border)", color: INK }}
+                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="">Not linked to a job</option>
                   {jobs.map((j) => (
@@ -295,18 +289,18 @@ export default function ShortlistDetailPage({ params }) {
                 )}
               </div>
               {shortlist.jobId && !shortlist.clientEmail && candidates.length > 0 && (
-                <p className="text-13" style={{ color: INK_FAINT }}>
+                <p className="text-13 text-[var(--ink-faint)]">
                   The job has no client contact email -{" "}
                   <Link href={`/dashboard/jobs/${shortlist.jobId}`} className="underline font-semibold" style={{ color: "var(--forest)" }}>add one</Link>{" "}
                   to address the email automatically.
                 </p>
               )}
-              {error && <p className="text-13" style={{ color: "var(--score-low)" }}>{error}</p>}
+              {error && <p className="text-13 text-[var(--score-low)]">{error}</p>}
             </header>
 
             <section className="rounded-card p-5 sm:p-6" style={CARD}>
               {candidates.length === 0 ? (
-                <p className="text-14 text-center py-6" style={{ color: INK_MUTED }}>
+                <p className="text-14 text-center py-6 text-[var(--ink-soft)]">
                   Nobody on this list yet. Use &quot;Add to client shortlist&quot; on a candidate&apos;s profile, or select people on{" "}
                   <Link href={shortlist.jobId ? `/dashboard/candidates?jobId=${shortlist.jobId}` : "/dashboard/candidates"} className="underline font-semibold" style={{ color: "var(--forest)" }}>
                     Candidates
@@ -322,15 +316,15 @@ export default function ShortlistDetailPage({ params }) {
                         <Link href={`/dashboard/candidates/${c.id}`} className="text-sm font-semibold hover:underline" style={{ color: INK }}>
                           {c.fullName}
                         </Link>
-                        <p className="text-13 truncate" style={{ color: INK_MUTED }}>
+                        <p className="text-13 truncate text-[var(--ink-soft)]">
                           {[[c.currentTitle, c.currentCompany].filter(Boolean).join(" at "), c.location].filter(Boolean).join(" · ") || "-"}
                         </p>
                         {c.jobTitle && c.jobId !== shortlist.jobId && (
-                          <p className="text-12" style={{ color: INK_FAINT }}>Screened for {c.jobTitle}</p>
+                          <p className="text-12 text-[var(--ink-faint)]">Screened for {c.jobTitle}</p>
                         )}
                         <NoteEditor value={c.note} onSave={(note) => saveNote(c.id, note)} />
                         {c.clientDecision && (
-                          <p className="text-13 mt-1.5 rounded-lg px-2.5 py-1.5" style={{ background: c.clientDecision === "reject" ? "#fef2f2" : c.clientDecision === "interview" ? "var(--mint)" : "#fdf6e9", color: INK }}>
+                          <p className="text-13 mt-1.5 rounded-lg px-2.5 py-1.5" style={{ background: c.clientDecision === "reject" ? "var(--ui-danger-soft)" : c.clientDecision === "interview" ? "var(--mint)" : "var(--ui-warn-soft)", color: INK }}>
                             <strong>{c.clientDecidedBy || "Client"}: {CLIENT_DECISIONS[c.clientDecision]}</strong>
                             {c.clientComment ? ` - "${c.clientComment}"` : ""}
                           </p>
@@ -343,14 +337,14 @@ export default function ShortlistDetailPage({ params }) {
                         {/* Stage colour as a dot, the name in readable text (the coloured
                             text was 2.4:1 for Screened). */}
                         {c.stage && (
-                          <span className="inline-flex items-center gap-1.5 text-12 font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--mist)", color: INK_MUTED }}>
+                          <span className="inline-flex items-center gap-1.5 text-12 font-semibold px-2 py-0.5 rounded-full bg-[var(--mist)] text-[var(--ink-soft)]">
                             <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full" style={{ background: STAGE_COLORS[c.stage] || INK_MUTED }} />
                             {STAGE_LABELS[c.stage] ?? c.stage}
                           </span>
                         )}
                         <div className="flex gap-2 text-12 font-semibold">
                           <Link href={`/dashboard/candidates/${c.id}/client-profile`} style={{ color: "var(--forest)" }}>Client profile</Link>
-                          <button type="button" onClick={() => remove(c.id)} style={{ color: INK_MUTED }}>Remove</button>
+                          <button type="button" onClick={() => remove(c.id)} className="text-[var(--ink-soft)]">Remove</button>
                         </div>
                       </div>
                     </li>

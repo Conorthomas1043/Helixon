@@ -92,12 +92,12 @@ export function RecruiterWorkspaceDemo() {
       aria-label="Example recruiter workspace showing ranked candidates for one role"
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{WORKSPACE_ROLE}</span>
-        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Example role</span>
+        <span className="text-xs font-semibold truncate text-[var(--ink)]">{WORKSPACE_ROLE}</span>
+        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0 bg-[var(--mint)] text-[var(--forest)]">Example role</span>
       </div>
-      <p className="text-11 mb-4" style={{ color: "var(--ink-faint)" }}>{WORKSPACE_CANDIDATES.length} candidates analysed</p>
+      <p className="text-11 mb-4 text-[var(--ink-faint)]">{WORKSPACE_CANDIDATES.length} candidates analysed</p>
 
-      <div className="rounded-xl overflow-hidden mb-5" style={{ border: "1px solid var(--border)" }}>
+      <div className="rounded-xl overflow-hidden mb-5 border border-[var(--border)]">
         {WORKSPACE_CANDIDATES.map((c, i) => {
           const shown = i < revealedCount;
           return (
@@ -109,8 +109,8 @@ export function RecruiterWorkspaceDemo() {
                 background: i % 2 === 0 ? "white" : "var(--mist)",
               }}
             >
-              <span className="text-11 font-medium truncate" style={{ color: "var(--ink)" }}>
-                {shown ? c.name : <span aria-hidden="true" className="inline-block h-2.5 w-28 rounded-full align-middle" style={{ background: "var(--border)" }} />}
+              <span className="text-11 font-medium truncate text-[var(--ink)]">
+                {shown ? c.name : <span aria-hidden="true" className="inline-block h-2.5 w-28 rounded-full align-middle bg-[var(--border)]" />}
               </span>
               <span className="flex items-center gap-2 shrink-0">
                 <span className="text-11 font-semibold" style={{ color: scoreColor(c.score) }}>{shown ? scoreLabel(c.score) : ""}</span>
@@ -132,18 +132,18 @@ export function RecruiterWorkspaceDemo() {
         }}
       >
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-11 font-semibold uppercase tracking-wide" style={{ color: "var(--ink-soft)" }}>Strongest match</span>
-          <span className="text-xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>{topCandidate.score}</span>
+          <span className="text-11 font-semibold uppercase tracking-wide text-[var(--ink-soft)]">Strongest match</span>
+          <span className="text-xl font-semibold font-mono text-[var(--forest)]">{topCandidate.score}</span>
         </div>
         <ul className="space-y-1">
           {WORKSPACE_TOP_BREAKDOWN.strengths.map((s) => (
-            <li key={s} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
-              <span style={{ color: "var(--forest)" }}>✓</span>{s}
+            <li key={s} className="text-11 flex items-center gap-1.5 text-[var(--ink-soft)]">
+              <span className="text-[var(--forest)]">✓</span>{s}
             </li>
           ))}
           {WORKSPACE_TOP_BREAKDOWN.watch.map((w) => (
-            <li key={w} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}>
-              <span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>{w}
+            <li key={w} className="text-11 flex items-center gap-1.5 text-[var(--ink-soft)]">
+              <span className="text-[var(--score-mid)]" aria-hidden="true">△</span>{w}
             </li>
           ))}
         </ul>
@@ -189,7 +189,7 @@ const DASH_ROLES = [
 
 const DASH_TONES = {
   good: { bg: "var(--mint)", fg: "var(--forest)" },
-  warn: { bg: "#fff8e6", fg: "#92620f" },
+  warn: { bg: "var(--ui-warn-soft)", fg: "var(--ui-warn)" },
   neutral: { bg: "var(--mist)", fg: "var(--ink-soft)" },
 };
 
@@ -209,11 +209,11 @@ export function DashboardPreview() {
       aria-label="Example Helixon dashboard showing pipeline metrics for one agency"
     >
       {/* Window chrome, so it reads as a product screenshot rather than a widget */}
-      <div className="flex items-center gap-1.5 px-4 py-3" style={{ borderBottom: "1px solid var(--border-soft)", background: "var(--mist)" }} aria-hidden="true">
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-        <span className="ml-2 text-11" style={{ color: "var(--ink-faint)" }}>Dashboard</span>
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-b-[var(--border-soft)] bg-[var(--mist)]" aria-hidden="true">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
+        <span className="ml-2 text-11 text-[var(--ink-faint)]">Dashboard</span>
       </div>
 
       <div className="p-5">
@@ -222,18 +222,16 @@ export function DashboardPreview() {
           {DASH_KPIS.map((k, i) => (
             <div
               key={k.label}
-              className="rounded-btn p-3"
-              style={{ border: "1px solid var(--border)", background: "white" }}
+              className="rounded-btn p-3 border border-[var(--border)] bg-white"
             >
-              <p className="text-11 font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--ink-faint)" }}>{k.label}</p>
+              <p className="text-11 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">{k.label}</p>
               <p
-                className="text-xl font-semibold tabular-nums leading-none"
-                style={{ fontFamily: "var(--font-mono)", color: k.accent ? "var(--forest)" : "var(--ink)" }}
+                className={`text-xl font-semibold tabular-nums leading-none font-mono ${k.accent ? "text-[var(--forest)]" : "text-[var(--ink)]"}`}
               >
                 <CountUp value={live ? k.value : 0} duration={900 + i * 120} />
               </p>
               {typeof k.meter === "number" && (
-                <div className="h-[3px] rounded-full mt-2 overflow-hidden" style={{ background: "var(--border-soft)" }}>
+                <div className="h-[3px] rounded-full mt-2 overflow-hidden bg-[var(--border-soft)]">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -244,7 +242,7 @@ export function DashboardPreview() {
                   />
                 </div>
               )}
-              <p className="text-11 mt-1.5" style={{ color: "var(--ink-faint)" }}>{k.sub}</p>
+              <p className="text-11 mt-1.5 text-[var(--ink-faint)]">{k.sub}</p>
             </div>
           ))}
         </div>
@@ -252,19 +250,19 @@ export function DashboardPreview() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-5">
           {/* Pipeline snapshot */}
           <div>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Where candidates stand</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Where candidates stand</p>
             <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
               {DASH_STAGES.map((s, i) => (
                 <div key={s.label} className="flex flex-col items-center min-w-0">
-                  <span className="text-13 font-semibold tabular-nums leading-none" style={{ fontFamily: "var(--font-mono)", color: "var(--ink)" }}>
+                  <span className="text-13 font-semibold tabular-nums leading-none font-mono text-[var(--ink)]">
                     <CountUp value={live ? s.count : 0} duration={900} />
                   </span>
-                  <div className="w-full flex items-end rounded-sm overflow-hidden mt-2 mb-1.5" style={{ height: 44, background: "var(--border-soft)" }}>
+                  <div className="w-full flex items-end rounded-sm overflow-hidden mt-2 mb-1.5 h-[44px] bg-[var(--border-soft)]">
                     <div
                       className="w-full rounded-b-sm"
                       style={{
                         height: live ? `${Math.max(10, (s.count / maxStage) * 100)}%` : 0,
-                        background: i === DASH_STAGES.length - 1 ? "var(--forest)" : "#a9c4b5",
+                        background: i === DASH_STAGES.length - 1 ? "var(--forest)" : "var(--chart-muted)",
                         transition: `height 0.8s ${EASE} ${i * 90}ms`,
                       }}
                     />
@@ -272,7 +270,7 @@ export function DashboardPreview() {
                   {/* Sentence case, not uppercase: at this size uppercase is
                       both wider (these five labels collided at 1440px) and
                       harder to read. */}
-                  <span className="text-11 font-medium text-center leading-tight tracking-tight" style={{ color: "var(--ink-faint)" }}>{s.label}</span>
+                  <span className="text-11 font-medium text-center leading-tight tracking-tight text-[var(--ink-faint)]">{s.label}</span>
                 </div>
               ))}
             </div>
@@ -280,7 +278,7 @@ export function DashboardPreview() {
 
           {/* Needs attention */}
           <div>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>Needs your attention</p>
+            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Needs your attention</p>
             <ul className="space-y-1.5">
               {DASH_ATTENTION.map((a, i) => (
                 <li
@@ -294,8 +292,8 @@ export function DashboardPreview() {
                   }}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-11 font-semibold truncate" style={{ color: "var(--ink)" }}>{a.name}</span>
-                    <span className="block text-11 truncate" style={{ color: "var(--ink-faint)" }}>{a.role}</span>
+                    <span className="block text-11 font-semibold truncate text-[var(--ink)]">{a.name}</span>
+                    <span className="block text-11 truncate text-[var(--ink-faint)]">{a.role}</span>
                   </span>
                   <span
                     className="text-11 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
@@ -314,9 +312,9 @@ export function DashboardPreview() {
 
         {/* Open roles - the jobs list the real dashboard leads with */}
         <div className="mt-5">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--ink-faint)" }}>Open roles</p>
-          <div className="rounded-btn overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-11 font-semibold uppercase tracking-wide" style={{ background: "var(--mist)", color: "var(--ink-faint)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">Open roles</p>
+          <div className="rounded-btn overflow-hidden border border-[var(--border)]">
+            <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_80px_64px_92px] gap-3 px-3 py-2 text-11 font-semibold uppercase tracking-wide bg-[var(--mist)] text-[var(--ink-faint)]">
               <span>Role</span>
               <span className="text-right">Candidates</span>
               <span className="text-right">Top</span>
@@ -333,15 +331,15 @@ export function DashboardPreview() {
                 }}
               >
                 <span className="min-w-0">
-                  <span className="block text-11 font-semibold truncate" style={{ color: "var(--ink)" }}>{r.title}</span>
-                  <span className="block text-11 truncate" style={{ color: "var(--ink-faint)" }}>{r.client}</span>
+                  <span className="block text-11 font-semibold truncate text-[var(--ink)]">{r.title}</span>
+                  <span className="block text-11 truncate text-[var(--ink-faint)]">{r.client}</span>
                 </span>
-                <span className="text-11 tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: "var(--ink-soft)" }}>{r.candidates}</span>
+                <span className="text-11 tabular-nums text-right font-mono text-[var(--ink-soft)]">{r.candidates}</span>
                 <span className="text-11 font-semibold tabular-nums text-right" style={{ fontFamily: "var(--font-mono)", color: scoreColor(r.top) }}>{r.top}</span>
                 <span className="hidden sm:block text-right">
                   <span
                     className="text-11 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
-                    style={r.status === "Open" ? { background: "var(--mint)", color: "var(--forest)" } : { background: "#fff8e6", color: "#92620f" }}
+                    style={r.status === "Open" ? { background: "var(--mint)", color: "var(--forest)" } : { background: "var(--ui-warn-soft)", color: "var(--ui-warn)" }}
                   >
                     {r.status}
                   </span>
@@ -390,7 +388,7 @@ export function BuyPlanButton({ plan, label, highlight }) {
         {loading ? "Redirecting…" : label}
       </button>
       {error && (
-        <p role="alert" aria-live="polite" className="text-11 text-center" style={{ color: highlight ? "#f2d7d5" /* light tint of --score-low, for contrast on the dark forest card */ : "var(--score-low)" }}>
+        <p role="alert" aria-live="polite" className={`text-11 text-center ${highlight ? "text-[var(--ui-danger-soft)]" : "text-[var(--score-low)]"}`}>
           {error}
         </p>
       )}
@@ -432,17 +430,17 @@ function UploadTabContent() {
           <path d="M12 16V4m0 0L7 9m5-5 5 5" />
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </svg>
-        <p className="text-xs font-medium" style={{ color: "var(--ink)" }}>Drop up to 50 CVs</p>
-        <p className="text-11 mt-0.5" style={{ color: "var(--ink-faint)" }}>PDF or Word (.docx)</p>
+        <p className="text-xs font-medium text-[var(--ink)]">Drop up to 50 CVs</p>
+        <p className="text-11 mt-0.5 text-[var(--ink-faint)]">PDF or Word (.docx)</p>
       </div>
       <div className="space-y-1.5">
         {files.map((f) => (
-          <div key={f} className="flex items-center gap-2 text-11 px-3 py-2 rounded-lg" style={{ background: "var(--mist)", color: "var(--ink-soft)" }}>
+          <div key={f} className="flex items-center gap-2 text-11 px-3 py-2 rounded-lg bg-[var(--mist)] text-[var(--ink-soft)]">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
             {f}
           </div>
         ))}
-        <p className="text-11 text-right" style={{ color: "var(--ink-faint)" }}>+ 9 more</p>
+        <p className="text-11 text-right text-[var(--ink-faint)]">+ 9 more</p>
       </div>
     </div>
   );
@@ -452,18 +450,18 @@ function AnalyseTabContent() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-semibold" style={{ color: "var(--ink)" }}>Match score</span>
-        <span className="text-2xl font-semibold" style={{ fontFamily: "var(--font-mono)", color: "var(--forest)" }}>92</span>
+        <span className="text-xs font-semibold text-[var(--ink)]">Match score</span>
+        <span className="text-2xl font-semibold font-mono text-[var(--forest)]">92</span>
       </div>
-      <p className="text-11 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Strong</p>
+      <p className="text-11 font-semibold uppercase tracking-wide mb-2 text-[var(--ink-faint)]">Strong</p>
       <ul className="space-y-1 mb-4">
         {["5 years' React experience", "TypeScript", "SaaS product experience"].map((s) => (
-          <li key={s} className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--forest)" }}>✓</span>{s}</li>
+          <li key={s} className="text-11 flex items-center gap-1.5 text-[var(--ink-soft)]"><span className="text-[var(--forest)]">✓</span>{s}</li>
         ))}
       </ul>
-      <p className="text-11 font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--ink-faint)" }}>Worth a second look</p>
+      <p className="text-11 font-semibold uppercase tracking-wide mb-2 text-[var(--ink-faint)]">Worth a second look</p>
       <ul className="space-y-1">
-        <li className="text-11 flex items-center gap-1.5" style={{ color: "var(--ink-soft)" }}><span style={{ color: "var(--score-mid)" }} aria-hidden="true">△</span>2-month notice period</li>
+        <li className="text-11 flex items-center gap-1.5 text-[var(--ink-soft)]"><span className="text-[var(--score-mid)]" aria-hidden="true">△</span>2-month notice period</li>
       </ul>
     </div>
   );
@@ -471,10 +469,10 @@ function AnalyseTabContent() {
 
 function CompareTabContent() {
   return (
-    <div className="rounded-btn overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+    <div className="rounded-btn overflow-hidden border border-[var(--border)]">
       {WORKSPACE_CANDIDATES.map((c, i) => (
         <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "white" : "var(--mist)" }}>
-          <span className="text-11 font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
+          <span className="text-11 font-medium text-[var(--ink)]">{c.name}</span>
           <span className="flex items-center gap-2">
             <span className="text-11 font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
             <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(c.score) }}>{c.score}</span>
@@ -490,7 +488,7 @@ function ActTabContent() {
   return (
     <div className="flex flex-wrap gap-2">
       {actions.map((a) => (
-        <span key={a} className="text-11 font-medium px-3 py-2 rounded-lg" style={{ background: "var(--mint)", color: "var(--forest)" }}>{a}</span>
+        <span key={a} className="text-11 font-medium px-3 py-2 rounded-lg bg-[var(--mint)] text-[var(--forest)]">{a}</span>
       ))}
     </div>
   );
@@ -509,15 +507,15 @@ export function ProductWorkflowSection() {
   });
 
   return (
-    <section id="how" className="py-24" style={{ background: "white", borderTop: "1px solid var(--border-soft)", borderBottom: "1px solid var(--border-soft)" }}>
+    <section id="how" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
       <div className="max-w-[1100px] mx-auto px-6">
       <Reveal>
         <div className="text-center mb-12">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--ink-faint)" }}>How it works</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
+          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">How it works</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             From CV to shortlist, in one workflow
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto" style={{ color: "var(--ink-soft)" }}>
+          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Four steps, from the first upload to the candidate you pick up the phone to.
           </p>
         </div>
@@ -526,9 +524,9 @@ export function ProductWorkflowSection() {
       <Reveal>
         <div className="rounded-2xl overflow-hidden max-w-lg mx-auto" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
           <div className="flex items-center gap-1 px-3 pt-3" aria-hidden="true">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e0e5e1" }} />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
           </div>
           <div className="flex gap-1 px-3 pt-3 overflow-x-auto" role="tablist" aria-label="Product workflow steps">
             {WORKFLOW_TABS.map((tab, i) => (
@@ -597,12 +595,12 @@ export function BulkPreviewCard() {
       aria-label="Example bulk-upload run showing several candidates queued for one role"
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-semibold truncate" style={{ color: "var(--ink)" }}>{BULK_PREVIEW_ROLE}</span>
-        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "var(--mint)", color: "var(--forest)" }}>Bulk upload</span>
+        <span className="text-xs font-semibold truncate text-[var(--ink)]">{BULK_PREVIEW_ROLE}</span>
+        <span className="text-11 font-semibold px-2 py-0.5 rounded-full shrink-0 bg-[var(--mint)] text-[var(--forest)]">Bulk upload</span>
       </div>
-      <p className="text-11 mb-4" style={{ color: "var(--ink-faint)" }}>{total} CVs · one role</p>
+      <p className="text-11 mb-4 text-[var(--ink-faint)]">{total} CVs · one role</p>
 
-      <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
+      <div className="rounded-xl overflow-hidden mb-4 border border-[var(--border)]">
         {BULK_PREVIEW_ROWS.map((row, i) => {
           const status = statusFor(row, i);
           return (
@@ -614,23 +612,23 @@ export function BulkPreviewCard() {
                 background: status === "processing" ? "var(--mint)" : i % 2 === 0 ? "white" : "var(--mist)",
               }}
             >
-              <span className="text-11 font-medium truncate" style={{ color: "var(--ink)" }}>{row.name}</span>
+              <span className="text-11 font-medium truncate text-[var(--ink)]">{row.name}</span>
               {status === "done" && (
                 <span className="text-xs font-semibold" style={{ fontFamily: "var(--font-mono)", color: scoreColor(row.score) }}>{row.score}</span>
               )}
               {status === "processing" && (
-                <span className="flex items-center gap-1.5 text-11 font-medium" style={{ color: "var(--forest)" }}>
-                  <span className="pulse-dot" aria-hidden="true" style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--forest)", display: "inline-block" }} />
+                <span className="flex items-center gap-1.5 text-11 font-medium text-[var(--forest)]">
+                  <span className="pulse-dot w-[5px] h-[5px] rounded-full bg-[var(--forest)] inline-block" aria-hidden="true" />
                   Analysing…
                 </span>
               )}
-              {status === "queued" && <span className="text-11" style={{ color: "var(--ink-faint)" }}>Queued</span>}
+              {status === "queued" && <span className="text-11 text-[var(--ink-faint)]">Queued</span>}
             </div>
           );
         })}
       </div>
 
-      <div className="h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: "var(--border-soft)" }}>
+      <div className="h-1.5 rounded-full overflow-hidden mb-1.5 bg-[var(--border-soft)]">
         <div
           className="h-full rounded-full"
           style={{
@@ -640,7 +638,7 @@ export function BulkPreviewCard() {
           }}
         />
       </div>
-      <p className="text-11" style={{ color: "var(--ink-faint)" }}>{doneCount} of {total} analysed</p>
+      <p className="text-11 text-[var(--ink-faint)]">{doneCount} of {total} analysed</p>
     </div>
   );
 }
@@ -648,7 +646,7 @@ export function BulkPreviewCard() {
 
 function FaqItem({ id, q, a, open, onToggle }) {
   return (
-    <div className="border-b" style={{ borderColor: "var(--border)" }}>
+    <div className="border-b border-[var(--border)]">
       <button
         type="button"
         id={`${id}-q`}
@@ -657,7 +655,7 @@ function FaqItem({ id, q, a, open, onToggle }) {
         aria-controls={`${id}-a`}
         className="w-full flex items-center justify-between gap-4 py-4 text-left min-h-[44px]"
       >
-        <span className="text-15 font-medium" style={{ color: "var(--ink)" }}>{q}</span>
+        <span className="text-15 font-medium text-[var(--ink)]">{q}</span>
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round"
           aria-hidden="true"
@@ -675,7 +673,7 @@ function FaqItem({ id, q, a, open, onToggle }) {
         className="overflow-hidden transition-all duration-300"
         style={{ maxHeight: open ? "400px" : "0px", opacity: open ? 1 : 0 }}
       >
-        <p className="text-sm leading-relaxed pb-5 pr-8" style={{ color: "var(--ink-soft)" }}>{a}</p>
+        <p className="text-sm leading-relaxed pb-5 pr-8 text-[var(--ink-soft)]">{a}</p>
       </div>
     </div>
   );
@@ -722,10 +720,10 @@ export function TrustStrip() {
         {TRUST_METRICS.map((m) => (
           <div key={m.label}>
             {/* Mono is for figures; the worded metrics use the display face. */}
-            <p className="text-2xl font-semibold tabular-nums" style={{ fontFamily: typeof m.val === "number" ? "var(--font-mono)" : "var(--font-display)", color: "var(--forest)" }}>
+            <p className={`text-2xl font-semibold tabular-nums text-[var(--forest)] ${typeof m.val === "number" ? "font-mono" : "font-display"}`}>
               {typeof m.val === "number" ? <CountUp value={played ? m.val : 0} duration={1000} /> : m.display}
             </p>
-            <p className="text-13 mt-1.5 leading-relaxed max-w-[15rem] mx-auto" style={{ color: "var(--ink-faint)" }}>{m.label}</p>
+            <p className="text-13 mt-1.5 leading-relaxed max-w-[15rem] mx-auto text-[var(--ink-faint)]">{m.label}</p>
           </div>
         ))}
       </div>
