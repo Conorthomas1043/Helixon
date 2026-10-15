@@ -6,8 +6,8 @@ import { apiFixture } from "./data/api.js";
 // fixture API answers (e2e/data/api.js), at desktop and phone width. Each
 // must fit the viewport without sideways scrolling and pass an axe scan
 // (WCAG 2.2 AA); a full-page screenshot is attached to the report so a
-// change can be checked by eye. Needs UI_GALLERY=1 where the app runs
-// (playwright.config.mjs sets it).
+// change can be checked by eye. Runs in the screens-* projects, against a
+// second server with UI_GALLERY=1 (playwright.config.mjs).
 
 const SCREENS = ["overview", "candidates", "candidate", "jobs", "pipeline", "screen", "clients", "talent-pool", "interviews", "placements", "settings"];
 
