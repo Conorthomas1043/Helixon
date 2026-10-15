@@ -4,7 +4,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { anonymiseDeletedUser } from "@/lib/compliance/anonymise-user";
 import { supabase } from "@/lib/supabase"; // service-role client, bypasses RLS
-import { createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/auth/create-profile";
+import { checkoutClaim, createProfileAndAgency, linkSubscriptionFromStripeSession, generateUsername } from "@/lib/auth/create-profile";
+import { PRICE_IDS } from "@/lib/billing/plans";
 import { AGENCY_SEAT_LIMIT, getOrgSeatUsage, revokeAgencyOrgInvitation } from "@/lib/auth/clerk-org";
 import { reportError } from "@/lib/report-error";
 import { revokeMemberTokens } from "@/lib/agency/member-tokens";
@@ -168,7 +169,17 @@ async function handleUserCreated(clerkUser) {
     profileUsername = await generateUsername(username);
   }
 
-  // ── Case 2: brand-new signup - create the agency + profile.
+  // ── Case 2: brand-new signup - create the agency + profile, but only
+  // for a sign-up that follows a paid checkout. /signup sends anyone else
+  // to /pricing, but that's the browser's say-so: a sign-up made any other
+  // way would otherwise get a free workspace. Without one they're signed in
+  // with no agency, and support can set one up (Admin > Users).
+  const claim = await checkoutClaim({ stripeSessionId: meta.stripeSessionId, clerkUserId, verifiedEmails });
+  if (!claim.ok) {
+    reportError(`[clerk webhook] user ${clerkUserId} signed up without a claimable paid checkout (${claim.reason}); no workspace created`);
+    return;
+  }
+
   const { profileId } = await createProfileAndAgency({
     clerkUserId,
     email,
@@ -176,7 +187,8 @@ async function handleUserCreated(clerkUser) {
     lastName,
     username: profileUsername,
     agencyName,
-    plan: meta.plan,
+    // unsafeMetadata is client-supplied: only a real plan id is kept.
+    plan: typeof meta.plan === "string" && Object.hasOwn(PRICE_IDS, meta.plan) ? meta.plan : null,
   });
 
   // Set on unsafeMetadata by app/signup when it arrived here via the

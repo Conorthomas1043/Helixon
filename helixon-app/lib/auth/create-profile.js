@@ -118,6 +118,46 @@ export async function createProfileAndAgency({
   return { profileId: profile.id, agencyId: agency.id };
 }
 
+// Whether a new account may have a workspace made for it because of this
+// checkout session: paid, not bought by someone else, paid with one of the
+// claimant's verified emails (when the session has one), and its
+// subscription not already linked to a profile - the same guards as
+// linkSubscriptionFromStripeSession below, checked before anything is
+// created. Sign-up is only meant to follow a paid checkout (or a team
+// invite); without this, any Clerk sign-up got a free workspace.
+// { ok: true } or { ok: false, reason }. A Stripe outage throws, so a
+// webhook caller answers 500 and is retried.
+export async function checkoutClaim({ stripeSessionId, clerkUserId, verifiedEmails = [] }) {
+  if (!stripeSessionId || typeof stripeSessionId !== "string" || !/^cs_[A-Za-z0-9_]{8,250}$/.test(stripeSessionId)) {
+    return { ok: false, reason: "no_session" };
+  }
+  let session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(stripeSessionId);
+  } catch (err) {
+    if (err?.code === "resource_missing" || err?.statusCode === 404) return { ok: false, reason: "no_session" };
+    throw err;
+  }
+  if (!(session.payment_status === "paid" || session.status === "complete")) return { ok: false, reason: "not_paid" };
+
+  // Bought while signed in as an existing profile: that profile gets it.
+  if (session.metadata?.userId) return { ok: false, reason: "session_belongs_to_another_user" };
+  const ownerClerkId = session.metadata?.clerkUserId || null;
+  if (ownerClerkId && ownerClerkId !== clerkUserId) return { ok: false, reason: "session_belongs_to_another_user" };
+  if (!ownerClerkId) {
+    const paidEmail = (session.customer_details?.email || session.customer_email || "").trim().toLowerCase();
+    const claimantEmails = (verifiedEmails || []).map((e) => String(e).trim().toLowerCase());
+    if (paidEmail && !claimantEmails.includes(paidEmail)) return { ok: false, reason: "email_mismatch" };
+  }
+
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+  if (!subscriptionId) return { ok: false, reason: "no_subscription" };
+  const { data: claimed, error } = await supabase.from("subscriptions").select("user_id").eq("stripe_subscription_id", subscriptionId).limit(1);
+  if (error) throw new Error(error.message);
+  if (claimed?.length) return { ok: false, reason: "session_already_claimed" };
+  return { ok: true };
+}
+
 // Retrieves a completed Stripe Checkout Session and upserts the
 // `subscriptions` row for a profile that didn't exist yet at checkout
 // time (a logged-in-but-never-finished-setup user, or a stale/failed

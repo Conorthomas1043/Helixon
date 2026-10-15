@@ -4,6 +4,7 @@ import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { PRICE_IDS } from "@/lib/billing/plans";
 import { cleanLine } from "@/lib/sanitize";
 import {
+  checkoutClaim,
   createProfileAndAgency,
   generateUsername,
   linkSubscriptionFromStripeSession,
@@ -58,6 +59,21 @@ export async function POST(request) {
       }
 
       const user = await currentUser();
+      // A workspace only comes with a paid checkout (see checkoutClaim).
+      const claim = await checkoutClaim({
+        stripeSessionId: sessionId,
+        clerkUserId,
+        verifiedEmails: (user?.emailAddresses || []).filter((e) => e.verification?.status === "verified").map((e) => e.emailAddress),
+      });
+      if (!claim.ok) {
+        const message =
+          claim.reason === "email_mismatch"
+            ? "We couldn't match this payment to your account. Please sign in with the email address you paid with, or contact support and we'll sort it out."
+            : claim.reason === "no_session" || claim.reason === "not_paid"
+              ? "Choose a plan to set up your workspace."
+              : "This payment can't be linked to your account. Please contact support and we'll sort it out.";
+        return NextResponse.json({ ok: false, error: message, ...(claim.reason === "no_session" || claim.reason === "not_paid" ? { redirectTo: "/pricing" } : {}) }, { status: 402 });
+      }
       const email = user?.primaryEmailAddress?.emailAddress || null;
       const firstName = user?.firstName || "";
       const lastName = user?.lastName || "";

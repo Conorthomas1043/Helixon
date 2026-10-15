@@ -28,12 +28,19 @@ vi.mock("@/lib/lifecycle-email", () => ({ sendWelcomeEmail: async () => {} }));
 vi.mock("next/server", () => ({ after: () => {} }));
 vi.mock("@/lib/billing/stripe", () => ({
   stripe: {
-    checkout: { sessions: { retrieve: async () => state.session } },
+    checkout: {
+      sessions: {
+        retrieve: async () => {
+          if (state.session instanceof Error) throw state.session;
+          return state.session;
+        },
+      },
+    },
     subscriptions: { retrieve: async () => state.subscription },
   },
 }));
 
-const { linkSubscriptionFromStripeSession } = await import("@/lib/auth/create-profile");
+const { checkoutClaim, linkSubscriptionFromStripeSession } = await import("@/lib/auth/create-profile");
 
 const session = (over = {}) => ({
   id: "cs_1",
@@ -90,5 +97,44 @@ describe("linkSubscriptionFromStripeSession", () => {
     state.session = session({ subscription: null });
     const result = await linkSubscriptionFromStripeSession({ profileId: "p1", stripeSessionId: "cs_1", clerkUserId: "user_1" });
     expect(result).toEqual({ linked: false, reason: "no_subscription" });
+  });
+});
+
+describe("checkoutClaim", () => {
+  const guest = (over = {}) => session({ metadata: { plan: "agency" }, customer_details: { email: "Ana@Example.com" }, ...over });
+  const claim = (over = {}) => checkoutClaim({ stripeSessionId: "cs_test_abcdefgh", clerkUserId: "user_1", verifiedEmails: ["ana@example.com"], ...over });
+
+  it("accepts a paid guest checkout made with one of the claimant's verified emails", async () => {
+    state.session = guest();
+    expect(await claim()).toEqual({ ok: true });
+  });
+
+  it("refuses a sign-up with no session, a made-up one, or an unpaid one", async () => {
+    expect(await claim({ stripeSessionId: undefined })).toEqual({ ok: false, reason: "no_session" });
+    expect(await claim({ stripeSessionId: "anything" })).toEqual({ ok: false, reason: "no_session" });
+    state.session = Object.assign(new Error("No such checkout.session"), { code: "resource_missing" });
+    expect(await claim()).toEqual({ ok: false, reason: "no_session" });
+    state.session = guest({ payment_status: "unpaid", status: "open" });
+    expect(await claim()).toEqual({ ok: false, reason: "not_paid" });
+  });
+
+  it("throws on a Stripe outage, so the webhook is retried", async () => {
+    state.session = Object.assign(new Error("Stripe is down"), { statusCode: 500 });
+    await expect(claim()).rejects.toThrow("Stripe is down");
+  });
+
+  it("refuses someone else's session", async () => {
+    state.session = guest({ metadata: { userId: "p9" } });
+    expect((await claim()).reason).toBe("session_belongs_to_another_user");
+    state.session = guest({ metadata: { clerkUserId: "user_9" } });
+    expect((await claim()).reason).toBe("session_belongs_to_another_user");
+    state.session = guest();
+    expect((await claim({ verifiedEmails: ["mallory@example.com"] })).reason).toBe("email_mismatch");
+  });
+
+  it("refuses a subscription that's already linked to a profile", async () => {
+    state.session = guest();
+    state.subscriptions = [{ user_id: "p2", stripe_subscription_id: "sub_1", status: "active" }];
+    expect((await claim()).reason).toBe("session_already_claimed");
   });
 });
