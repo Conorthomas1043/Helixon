@@ -76,7 +76,7 @@ export async function GET(request) {
       lines.push(`  ${siteUrl()}${searchHref({ ...(i.search.params || {}), sortBy: "newest" })}`, "");
     }
     lines.push("Turn these off from the saved search on the Candidates page.");
-    const res = await sendAgencyEmail({ agencyId, to, replyTo: null, fromName: "Helixon", subject: `${total} new match${total === 1 ? "" : "es"} for your saved searches`, text: lines.join("\n") });
+    const res = await sendAgencyEmail({ agencyId, to, toMember: true, replyTo: null, fromName: "Helixon", subject: `${total} new match${total === 1 ? "" : "es"} for your saved searches`, text: lines.join("\n") });
     if (!res.error) sent += 1;
   }
   return NextResponse.json({ ok: true, searches: (searches ?? []).length, emailed: sent });

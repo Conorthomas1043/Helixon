@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { requireCustomerContext } from "@/lib/auth/customer-auth";
 import { cleanLine } from "@/lib/sanitize";
 import { acquireLock, rateLimit, releaseLock } from "@/lib/ratelimit";
+import { agencySendRefusal } from "@/lib/messaging/mailer";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { reportError } from "@/lib/report-error";
@@ -223,6 +224,11 @@ export async function POST(request) {
         .replace(/["<>,;:\\\r\n]/g, "")
         .trim()
         .slice(0, 80) || "Helixon";
+
+    const refused = await agencySendRefusal(agencyId);
+    if (refused) {
+      return Response.json({ ok: false, error: refused }, { status: 429 });
+    }
 
     // Mail goes out from the no-reply sending address, so without a
     // Reply-To every reply from a candidate or client was lost. Replies now

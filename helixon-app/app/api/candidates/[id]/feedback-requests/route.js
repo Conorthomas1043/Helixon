@@ -19,6 +19,7 @@ import { customerRoute } from "@/lib/api/route";
 import { fields, id, text } from "@/lib/api/schemas";
 import { cleanEmail, cleanLine, cleanUuid } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/ratelimit";
+import { agencySendRefusal } from "@/lib/messaging/mailer";
 import { logActivity } from "@/lib/candidates/activity";
 import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
 import { agencyDisplayName } from "@/lib/agency/display";
@@ -79,6 +80,8 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 async function emailRequest({ auth, candidate, row, to }) {
   if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) return "Email isn't set up yet - copy the link instead.";
   if (!(await rateLimit(`feedback-email:${auth.userId}`, MAX_EMAILS_PER_HOUR))) return "You've sent a lot of these in the last hour - try again later.";
+  const refused = await agencySendRefusal(auth.agencyId);
+  if (refused) return refused;
 
   const [{ data: agency }, sender] = await Promise.all([
     supabase.from("agencies").select("name").eq("id", auth.agencyId).maybeSingle(),

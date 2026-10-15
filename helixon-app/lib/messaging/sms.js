@@ -32,6 +32,22 @@ export function normalisePhone(raw, countryCode = process.env.SMS_DEFAULT_COUNTR
   return /^\+[1-9]\d{7,14}$/.test(s) ? s : null;
 }
 
+// Countries texts may go to: SMS_ALLOWED_COUNTRY_CODES ("44,353"), else
+// only the default country. Texts are paid for on Helixon's Twilio account,
+// and an open destination list is what SMS-pumping fraud relies on.
+export function allowedCountryCodes(env = process.env) {
+  const listed = String(env.SMS_ALLOWED_COUNTRY_CODES || "")
+    .split(",")
+    .map((c) => c.trim().replace(/^\+/, ""))
+    .filter((c) => /^\d{1,4}$/.test(c));
+  return listed.length ? listed : [env.SMS_DEFAULT_COUNTRY_CODE || "44"];
+}
+
+// Whether an E.164 number (normalisePhone's answer) is in an allowed country.
+export function smsDestinationAllowed(e164, env = process.env) {
+  return typeof e164 === "string" && allowedCountryCodes(env).some((code) => e164.startsWith(`+${code}`));
+}
+
 const STOP_WORDS = /^\s*(stop|stopall|unsubscribe|end|quit|cancel|optout|opt out)\s*[.!]?\s*$/i;
 const START_WORDS = /^\s*(start|unstop|yes|optin|opt in)\s*[.!]?\s*$/i;
 

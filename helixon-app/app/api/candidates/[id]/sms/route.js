@@ -6,7 +6,7 @@ import { cleanText } from "@/lib/sanitize";
 import { logActivity } from "@/lib/candidates/activity";
 import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/agency/permissions";
-import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured } from "@/lib/messaging/sms";
+import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured, smsDestinationAllowed } from "@/lib/messaging/sms";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, text } from "@/lib/api/schemas";
@@ -55,6 +55,10 @@ export async function POST(request, { params }) {
   const ctx = await context(params);
   if (ctx.response) return ctx.response;
   const { auth, candidate } = ctx;
+  // Texts are paid for on Helixon's Twilio account.
+  if (!auth.hasActiveSubscription) {
+    return NextResponse.json({ error: "Texting needs an active Helixon subscription.", upgrade: true }, { status: 402 });
+  }
   if (!smsConfigured()) return NextResponse.json({ error: "Texting isn't set up yet - see Settings → Integrations." }, { status: 503 });
 
   const parsedBody = await parseBody(request, SmsInput, { allowEmpty: true });
@@ -64,6 +68,7 @@ export async function POST(request, { params }) {
   if (!body) return NextResponse.json({ error: "Write a message first." }, { status: 400 });
   const to = normalisePhone(candidate.phone);
   if (!to) return NextResponse.json({ error: "Add a mobile number to their details first." }, { status: 400 });
+  if (!smsDestinationAllowed(to)) return NextResponse.json({ error: "Texts can't be sent to numbers in that country." }, { status: 400 });
   if (!(await rateLimit(`sms:${auth.userId}`, 200))) return NextResponse.json({ error: "That's a lot of texts this hour - try again shortly." }, { status: 429 });
 
   // Respect STOP: the newest STOP/START from this number decides.

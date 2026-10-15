@@ -55,7 +55,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   const result =
     body.type === "candidates" ? await importCandidates(valid, ctx) : body.type === "clients" ? await importClients(valid, ctx) : await importJobs(valid, ctx);
   return NextResponse.json({ ...result, errors: [...errors, ...(result.errors || [])] });
-}, { body: ImportInput, optionalBody: true });
+}, { body: ImportInput, optionalBody: true, requireSubscription: true });
 
 async function importCandidates(items, { auth, actor, options }) {
   const emails = [...new Set(items.map((i) => i.record.email).filter(Boolean))];

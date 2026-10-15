@@ -131,6 +131,7 @@ export async function POST(request, { params }) {
         await sendAgencyEmail({
           agencyId: share.agency_id,
           to,
+          toMember: true,
           replyTo: null,
           fromName: "Helixon",
           subject: `${by}: ${decisionLabel} - ${name}`,

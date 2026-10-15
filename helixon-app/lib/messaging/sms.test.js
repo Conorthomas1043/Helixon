@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStopMessage, normalisePhone, optedOut, twilioSignature, verifyTwilioSignature } from "./sms";
+import { allowedCountryCodes, isStopMessage, normalisePhone, optedOut, smsDestinationAllowed, twilioSignature, verifyTwilioSignature } from "./sms";
 
 describe("sms", () => {
   it("normalises phone numbers to E.164", () => {
@@ -11,6 +11,16 @@ describe("sms", () => {
     expect(normalisePhone("12")).toBeNull();
     expect(normalisePhone("call me")).toBeNull();
     expect(normalisePhone(null)).toBeNull();
+  });
+
+  it("only texts allowed countries", () => {
+    expect(allowedCountryCodes({})).toEqual(["44"]);
+    expect(allowedCountryCodes({ SMS_DEFAULT_COUNTRY_CODE: "61" })).toEqual(["61"]);
+    expect(allowedCountryCodes({ SMS_ALLOWED_COUNTRY_CODES: "44, +353, x" })).toEqual(["44", "353"]);
+    expect(smsDestinationAllowed("+447700900123", {})).toBe(true);
+    expect(smsDestinationAllowed("+881234567890", {})).toBe(false);
+    expect(smsDestinationAllowed("+353851234567", { SMS_ALLOWED_COUNTRY_CODES: "44,353" })).toBe(true);
+    expect(smsDestinationAllowed(null, {})).toBe(false);
   });
 
   it("spots opt-outs and opt-ins, newest first", () => {

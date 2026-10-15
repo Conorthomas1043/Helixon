@@ -205,6 +205,7 @@ async function notifyRecruiter({ agency, job, candidate, score }) {
     await sendAgencyEmail({
       agencyId: agency.id,
       to,
+      toMember: true,
       replyTo: null,
       fromName: "Helixon",
       subject: `New application: ${candidate.full_name} for ${job.title}${score != null ? ` (match ${score})` : ""}`,
