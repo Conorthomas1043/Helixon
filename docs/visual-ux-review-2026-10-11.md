@@ -2,6 +2,41 @@
 
 **Date:** 11 October 2026 · **Branch:** `claude/amazing-bohr-m1a3oz` (same tree as `main` at "Typed response contracts for candidates, jobs and billing")
 
+## Fix status (15 October 2026)
+
+Every finding below has been worked on `main`. The scores in the rest of this document describe the code before the fixes and haven't been re-scored.
+
+**Checks after the fixes:** lint clean; type check at its baseline of 73 errors, strict check clean; 759 unit tests passing; production build passing; 38 end-to-end tests passing. Those 38 now include the 22 signed-in screen checks, which this review couldn't run.
+
+| Finding | What changed |
+|---|---|
+| Staff login shows only a spinner | The form renders at once and the session check runs in the background. Labels are tied to their inputs, and the page has a title |
+| No fallback if Clerk fails | Sign-in, sign-up and profile widgets show a skeleton, a "taking longer than usual" note after 6 seconds, and a message with a retry and a support link if Clerk fails |
+| Clerk widgets in Geist Mono | One shared Clerk appearance (`lib/ui/clerk-appearance.js`) in the brand colours and the body font |
+| Login hero in a different voice | It uses the homepage promise and proof points |
+| 20 font sizes, 17 radii | A twelve-step type scale and named radii are theme tokens. All 1,652 arbitrary sizes and 571 radii snapped to them, and the token test rejects new ones |
+| Uppercase field labels | Sentence case at 13px |
+| Staff portal off-palette colours | Mapped to tokens with the rest |
+| Homepage long on phones | The example report follows the hero, and the two process sections are one |
+| 404 has no title | It sets "Page not found" |
+| Dashboard nav on phones | A bottom tab bar with Overview, Screen, Candidates, Pipeline and More. More opens a sheet with every other page. The desktop top bar is unchanged |
+| Native `alert()` | Replaced with an in-panel notice |
+| `lang="en"` | Now `en-GB` |
+| Four styling methods; hex colours and inline styles | Hex colours went from 492 to 90 and inline style objects from 3,249 to 1,066. The 22 signed-in screens are pixel-identical before and after. The rest are computed values, the admin console's stylesheet, gradients or email HTML |
+| Three buttons, three toasts, four icon sets | One of each, in the kit. The marketing button, the staff and admin toasts, and the admin, staff mobile and privacy icons all render through it |
+| Very stateful screens | The Screen page's reducer had already landed on `main`. Most of `candidate-extras`' 28 hooks are spread over seven small components. The real outlier was the candidate list, with 19 in one component; it now uses a reducer with 13 tests |
+| Untyped buttons | All 163 have a type, and ESLint's `react/button-has-type` keeps it that way |
+| Focus removed without a ring | Each has a visible focus state |
+| `<th>` without scope | All have `scope="col"` |
+| Legal page bodies in three layouts | One shared header (`components/marketing/LegalHeader.jsx`) at two measures |
+| Signed-in app not screenshotted | `e2e/screens.spec.js` renders 11 signed-in screens at both widths from fixture data. It fails on sideways scrolling, an axe violation or an unanswered API call, and attaches screenshots |
+
+**Found and fixed by the new screen checks:** eleven loading skeletons labelled with `aria-label` on a plain `div`, which screen readers ignore, and two unlabelled inputs on the candidate profile.
+
+**Not changed:**
+- **Desktop navigation.** The report suggested considering a sidebar. The top bar already fits every destination with hints, and a sidebar would change every page's layout, so that is a product decision.
+- **Overview length.** Also a product decision, as the earlier audit noted.
+
 ## How this was done
 
 - **Rendered pages.** The app ran locally with CI's placeholder keys. Fourteen public routes were screenshotted in Chromium at 1440px and 390px wide, and scanned with axe-core against WCAG 2.0, 2.1 and 2.2 AA.
