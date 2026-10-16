@@ -9,7 +9,9 @@ const PasswordInput = fields({ currentPassword: text(400), newPassword: text(400
 
 // POST /api/account/password { currentPassword, newPassword } - changes the
 // signed-in person's password through Clerk's backend API, after Clerk
-// re-verifies the current one.
+// re-verifies the current one. Every session is signed out, this one
+// included, so a stolen session doesn't survive the change; the answer
+// says so and the person signs in again with the new password.
 export async function POST(request) {
   const { userId } = await auth();
 
@@ -52,12 +54,12 @@ export async function POST(request) {
   }
 
   try {
-    await client.users.updateUser(userId, { password: newPassword });
+    await client.users.updateUser(userId, { password: newPassword, signOutOfOtherSessions: true });
   } catch (err) {
     reportError("[account/password] Password update failed:", err.message);
     const message = err?.errors?.[0]?.longMessage || "Couldn't update your password. Please try again.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, signedOut: true });
 }

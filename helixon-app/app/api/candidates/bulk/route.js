@@ -11,6 +11,7 @@ import { addMonths, getAgencyPrivacy } from "@/lib/compliance/privacy-settings";
 import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 import { logAudit } from "@/lib/agency/audit";
 import { agencyDb } from "@/lib/agency-db";
+import { canManageWorkspace } from "@/lib/agency/workspace-admin";
 
 // ids above MAX_IDS get the route's own message, not a schema error.
 const BulkInput = fields({ action: text(20), ids: ids(5000), stage: text(40), tagId: id });
@@ -36,6 +37,11 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   }
 
   if (body.action === "delete") {
+    // Permanent erasure of up to MAX_IDS people and their CVs at once is for
+    // the owner and admins; a member deletes one candidate at a time.
+    if (!(await canManageWorkspace(auth))) {
+      return NextResponse.json({ error: "Only the workspace owner or an admin can delete candidates in bulk. Delete them one at a time from their profiles." }, { status: 403 });
+    }
     // Only candidates this member can see ("own candidates only").
     const access = await getAccess(auth);
     let deletable = ids;

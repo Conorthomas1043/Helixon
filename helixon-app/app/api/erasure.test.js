@@ -14,7 +14,7 @@ const OTHER = "11111111-1111-4111-8111-1111111111a3";
 const COLLEAGUES = "11111111-1111-4111-8111-1111111111a4";
 const THEIRS = "11111111-1111-4111-8111-11111111111b";
 
-const state = vi.hoisted(() => ({ db: null, auth: null, access: null }));
+const state = vi.hoisted(() => ({ db: null, auth: null, access: null, admin: true }));
 const removeCandidateCvs = vi.hoisted(() => vi.fn(async () => null));
 const logAudit = vi.hoisted(() => vi.fn());
 
@@ -30,6 +30,7 @@ vi.mock("@/lib/agency/permissions", async (importOriginal) => ({
   candidateHidden: async () => null,
   getAccess: async () => state.access,
 }));
+vi.mock("@/lib/agency/workspace-admin", () => ({ canManageWorkspace: async () => state.admin }));
 vi.mock("@/lib/candidates/files", () => ({ removeCandidateCvs: (...a) => removeCandidateCvs(...a) }));
 vi.mock("@/lib/compliance/files", () => ({ removeComplianceDocuments: async () => null }));
 vi.mock("@/lib/agency/audit", () => ({ logAudit: (...a) => logAudit(...a) }));
@@ -53,6 +54,7 @@ const ids = (table) => state.db.tables[table].map((r) => r.id).sort();
 beforeEach(() => {
   state.auth = { ok: true, agencyId: A, userId: "user_a", profile: { id: "pa" } };
   state.access = { seesAllCandidates: true, canSeeFinancials: true };
+  state.admin = true;
   state.db = fakeDb({
     candidates: [
       { id: ROOT, agency_id: A, recruiter_id: "user_a", pooled_from_id: null, cv_file_url: "cvs/root.pdf" },
@@ -122,7 +124,14 @@ describe("POST /api/candidates/bulk { action: 'delete' }", () => {
     expect(ids("scores")).toEqual(["s-root", "s-theirs"]);
   });
 
-  it("only erases what an own-candidates-only member can see", async () => {
+  it("is for the owner and admins only", async () => {
+    state.admin = false;
+    const res = await call(bulk.POST, { method: "POST", body: { action: "delete", ids: [OTHER] } });
+    expect(res.status).toBe(403);
+    expect(state.db.writes()).toEqual([]);
+  });
+
+  it("only erases what the member can see", async () => {
     state.access = { seesAllCandidates: false };
     const res = await call(bulk.POST, { method: "POST", body: { action: "delete", ids: [OTHER, COLLEAGUES] } });
     expect(await res.json()).toEqual({ ok: true, updated: 1 });
