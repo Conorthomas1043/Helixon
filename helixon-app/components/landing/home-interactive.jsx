@@ -487,10 +487,12 @@ function CompareTabContent() {
 
 function ActTabContent() {
   const actions = ["Shortlist", "Tag: Strong lead", "Send draft email", "Move to interviewing"];
+  // Neutral, not mint and green: these are a picture of the actions, and
+  // green on this page marks things that can actually be clicked.
   return (
     <div className="flex flex-wrap gap-2">
       {actions.map((a) => (
-        <span key={a} className="text-11 font-medium px-3 py-2 rounded-lg bg-[var(--mint)] text-[var(--forest)]">{a}</span>
+        <span key={a} className="text-12 font-medium px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--ink-soft)]">{a}</span>
       ))}
     </div>
   );
@@ -513,11 +515,11 @@ export function ProductWorkflowSection() {
       <div className="max-w-[1100px] mx-auto px-6">
       <Reveal>
         <div className="text-center mb-12">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">How it works</p>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">How it works</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             From CV to shortlist, in one workflow
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Four steps, from the first upload to the candidate you pick up the phone to.
           </p>
         </div>
@@ -724,8 +726,10 @@ export function TrustStrip() {
       <div ref={ref} className="max-w-[1100px] mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
         {TRUST_METRICS.map((m) => (
           <div key={m.label}>
-            {/* Mono is for figures; the worded metrics use the display face. */}
-            <p className={`text-2xl font-semibold tabular-nums text-[var(--forest)] ${typeof m.val === "number" ? "font-mono" : "font-display"}`}>
+            {/* One face for all three, so the figure and the worded metrics
+                read as a set. Ink, not brand green: green marks what can be
+                clicked. */}
+            <p className="text-2xl font-semibold tabular-nums font-display text-[var(--ink)]">
               {typeof m.val === "number" ? <CountUp value={played ? m.val : 0} duration={1000} /> : m.display}
             </p>
             <p className="text-13 mt-1.5 leading-relaxed max-w-[15rem] mx-auto text-[var(--ink-faint)]">{m.label}</p>

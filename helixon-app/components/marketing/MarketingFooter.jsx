@@ -53,7 +53,7 @@ export default function MarketingFooter() {
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">
+            <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">
               {col.title}
             </p>
             {/* 13px text with a 44px-tall hit area on phones (36px with a

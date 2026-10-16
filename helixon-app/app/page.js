@@ -29,11 +29,11 @@ function AnalysisExampleSection() {
     <section id="example" className="max-w-[1100px] mx-auto px-6 py-24">
       <Reveal>
         <div className="text-center mb-10">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">See a real analysis</p>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">See a real analysis</p>
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             Not just a score — the reasons behind it
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Every candidate gets a report like this: how they meet each requirement, the line in their CV that proves it,
             what still needs checking, and what to ask at interview. Warehouse floor or boardroom.
             Helixon helps you decide &mdash; the final call is always yours.
@@ -60,7 +60,7 @@ function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
     <div className="rounded-2xl p-7 h-full bg-white border border-[var(--border)]">
-      <p className={`text-11 font-semibold uppercase tracking-widest mb-6 ${tone === "forest" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{label}</p>
+      <p className={`text-12 font-semibold uppercase tracking-widest mb-6 ${tone === "forest" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{label}</p>
       <ol className="relative pl-5">
         <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
         {steps.map((step) => (
@@ -82,7 +82,7 @@ function ScreeningSection() {
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
             The bottleneck isn&rsquo;t hiring. It&rsquo;s everything before the shortlist.
           </h2>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Most agencies still screen the way they did a decade ago — one CV, one tab,
             one spreadsheet at a time.
           </p>
@@ -94,9 +94,9 @@ function ScreeningSection() {
       </div>
       <Reveal>
         <div className="text-center mb-8">
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Bulk screening</p>
+          <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Bulk screening</p>
           <h3 className="text-20 sm:text-24 font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">One role. Dozens of CVs. One ranked shortlist.</h3>
-          <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
             Every candidate is scored against the same spec, so the comparison holds up — and a weak CV never blocks the rest of the batch.
           </p>
         </div>
@@ -127,18 +127,18 @@ function DashboardSection() {
       <div className="max-w-[1100px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center">
           <Reveal>
-            <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">The dashboard</p>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">The dashboard</p>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
               Screening is the start. This is where the desk gets run.
             </h2>
-            <p className="text-15 leading-relaxed mb-6 text-[var(--ink-soft)]">
+            <p className="text-16 leading-relaxed mb-6 text-[var(--ink-soft)]">
               Scores are only useful if they turn into placements. Helixon keeps every
               role, candidate and stage in one place, so nothing sits waiting in
               someone&rsquo;s inbox.
             </p>
             <ul className="space-y-3">
               {DASHBOARD_POINTS.map((point) => (
-                <li key={point} className="flex items-start gap-2.5 text-15 leading-relaxed text-[var(--ink-soft)]">
+                <li key={point} className="flex items-start gap-2.5 text-16 leading-relaxed text-[var(--ink-soft)]">
                   <svg className="shrink-0 mt-1" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
@@ -220,7 +220,7 @@ function TrustSection() {
       <div className="max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
-            <p className="text-11 font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>Trust & compliance</p>
+            <p className="text-12 font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>Trust & compliance</p>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-display">
               Candidate data, handled properly
             </h2>
@@ -303,7 +303,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <span
-                className="fade-up-in inline-flex items-center gap-1.5 text-11 font-semibold px-3 py-1.5 rounded-full mb-6"
+                className="fade-up-in inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full mb-6"
                 style={{ background: "var(--mint)", color: "var(--forest)", "--stagger-delay": "0ms" }}
               >
                 <svg className="w-[0.85em] h-[0.85em] shrink-0" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
@@ -356,11 +356,11 @@ export default function LandingPage() {
           <div className="max-w-[1100px] mx-auto px-6">
             <Reveal>
               <div className="text-center mb-12">
-                <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Capabilities</p>
+                <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Capabilities</p>
                 <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
                   Built for the volume agency recruiters actually handle
                 </h2>
-                <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+                <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
                   The parts that matter when you&rsquo;re screening dozens of CVs a week, not
                   a demo that only holds up on one perfect candidate.
                 </p>
@@ -374,11 +374,11 @@ export default function LandingPage() {
         <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-24">
           <Reveal>
             <div className="text-center mb-14">
-              <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Pricing</p>
+              <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Pricing</p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
                 Plans built around how agencies actually screen
               </h2>
-              <p className="text-15 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+              <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
                 Book a demo to see it run on your own CVs, or start on a plan today.
                 Monthly billing, no long-term contract.
               </p>
@@ -399,16 +399,16 @@ export default function LandingPage() {
                 >
                   {plan.highlight && (
                     <span
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-11 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-12 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
                     >
                       Recommended for agencies
                     </span>
                   )}
-                  <h3 className="text-11 font-semibold uppercase tracking-widest mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
+                  <h3 className="text-12 font-semibold uppercase tracking-widest mb-3" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-6">
-                    <span className={`text-36 font-semibold leading-none ${/\d/.test(plan.price) ? "font-mono" : "font-display"} ${plan.highlight ? "text-white" : "text-[var(--ink)]"}`}>{plan.price}</span>
+                    <span className={`text-36 font-semibold leading-none tabular-nums font-display ${plan.highlight ? "text-white" : "text-[var(--ink)]"}`}>{plan.price}</span>
                     <span className="text-13" style={{ color: plan.highlight ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>{plan.period}</span>
                   </div>
                   <ul className="space-y-3 mb-7 flex-1">
@@ -445,7 +445,7 @@ export default function LandingPage() {
           <div className="max-w-[1100px] mx-auto px-6">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">FAQ</p>
+              <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">FAQ</p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
                 Questions recruiters usually ask
               </h2>
