@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isTextualBody, redactHeaders, redactPayload, redactQuery, stripSecretHeaders } from "./request-capture";
+import { isTextualBody, redactHeaders, redactPath, redactPayload, redactQuery, redactUrl, stripSecretHeaders } from "./request-capture";
 
 describe("redactHeaders", () => {
   it("keeps ordinary headers and hides anything that could act as the visitor", () => {
@@ -71,5 +71,25 @@ describe("isTextualBody", () => {
     expect(isTextualBody("application/x-www-form-urlencoded")).toBe(true);
     expect(isTextualBody("multipart/form-data; boundary=x")).toBe(false);
     expect(isTextualBody("application/pdf")).toBe(false);
+  });
+});
+
+describe("redactPath / redactUrl", () => {
+  const token48 = "a".repeat(20) + "0123456789abcdef0123456789";
+  const token32 = "0123456789abcdef0123456789abcdef";
+
+  it("removes link tokens from paths, keeping ids and slugs", () => {
+    expect(redactPath(`/share/${token48}`)).toBe("/share/[token]");
+    expect(redactPath(`/api/calendar/${token32}.ics`)).toBe("/api/calendar/[token].ics");
+    expect(redactPath("/dashboard/candidates/0b6e4f2a-13c4-4d1e-9f7a-1234567890ab")).toBe("/dashboard/candidates/0b6e4f2a-13c4-4d1e-9f7a-1234567890ab");
+    expect(redactPath("/jobs/acme-recruitment/senior-software-engineer-london")).toBe("/jobs/acme-recruitment/senior-software-engineer-london");
+    expect(redactPath("/x/ana%40example.com")).not.toContain("ana@");
+    expect(redactPath(null)).toBe("");
+  });
+
+  it("redacts a referer's path and query", () => {
+    expect(redactUrl(`https://www.helixon.co.uk/portal/${token48}?code=123&tab=docs`)).toBe("https://www.helixon.co.uk/portal/[token]?code=[redacted]&tab=docs");
+    expect(redactUrl(`/login?redirect_url=/book/${token48}`)).toBe("/login?redirect_url=%2Fbook%2F[token]");
+    expect(redactUrl("")).toBe("");
   });
 });

@@ -28,7 +28,7 @@ import { enforceFirewallPolicy } from "@/lib/security/firewall";
 import { scoreRequest } from "@/lib/security/threat-score";
 import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 import { blockIsActive, getFirewallRules, matchRange, matchRequestRule } from "@/lib/security/rules";
-import { redactHeaders, redactPayload, redactQuery } from "@/lib/ops/request-capture";
+import { redactHeaders, redactPath, redactPayload, redactQuery, redactUrl } from "@/lib/ops/request-capture";
 import { classifyUserAgent } from "@/lib/analytics/traffic-class";
 import { maybeCheckTraffic } from "@/lib/analytics/traffic-alerts";
 import { reportError } from "@/lib/report-error";
@@ -185,12 +185,14 @@ export async function POST(request) {
       ip,
       user_agent: ua,
       method,
-      path,
+      // Link tokens out (lib/ops/request-capture.js). Matching and scoring
+      // above used the path as requested.
+      path: redactPath(path),
       country: country || null,
       city: city || null,
       lat: hasCoords ? latitude : null,
       lon: hasCoords ? longitude : null,
-      referer: referer || null,
+      referer: redactUrl(referer) || null,
       blocked: isBlocked,
       ts: ts || new Date().toISOString(),
       uid: UUID.test(body.uid || "") ? body.uid : null,
@@ -257,7 +259,7 @@ export async function PATCH(request) {
     if (OUTCOMES.has(body.outcome)) update.outcome = body.outcome;
     const status = Number(body.statusCode);
     if (Number.isInteger(status) && status >= 100 && status < 600) update.status_code = status;
-    if (body.location) update.location = short(body.location, 300);
+    if (body.location) update.location = short(redactUrl(body.location), 300);
     if (RULES.has(body.rule)) update.rule = body.rule;
     if (body.payload) {
       const settings = await getSiteSettings();

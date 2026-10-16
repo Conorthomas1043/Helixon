@@ -84,6 +84,42 @@ function redactPairs(params) {
   return parts.join("&");
 }
 
+// The private links (/share, /portal, /sign, /book, /reference,
+// /scorecard, /feedback, the calendar feeds) carry their token in the
+// path, as 32+ hex characters, and the token is the only credential. Paths
+// and referers are stored and shown on Admin > Traffic, so the token is
+// replaced. UUIDs and slugs never have a hex run that long, so the rest of
+// the path stays readable.
+const PATH_TOKEN = /[A-Fa-f0-9]{32,}/g;
+const MAX_PATH = 2000;
+
+/** A request path as stored: link tokens and email addresses removed. */
+export function redactPath(path) {
+  const s = String(path ?? "");
+  if (!s) return "";
+  let decoded = s;
+  try {
+    decoded = decodeURIComponent(s);
+  } catch {
+    // keep it as sent
+  }
+  return clip(decoded.replace(PATH_TOKEN, "[token]").replace(EMAIL, "[email]"), MAX_PATH);
+}
+
+/** A full URL (a referer, a redirect location) as stored: path and query redacted. */
+export function redactUrl(value) {
+  const s = String(value ?? "").trim();
+  if (!s) return "";
+  try {
+    const u = new URL(s, "https://placeholder.invalid");
+    const query = redactQuery(u.search);
+    const base = u.origin === "https://placeholder.invalid" ? "" : u.origin;
+    return clip(`${base}${redactPath(u.pathname)}${query ? `?${query}` : ""}`, MAX_PATH);
+  } catch {
+    return redactPath(s);
+  }
+}
+
 /** A query string ("a=1&b=2", with or without "?") with sensitive values removed. */
 export function redactQuery(search) {
   const raw = String(search || "").replace(/^\?/, "");

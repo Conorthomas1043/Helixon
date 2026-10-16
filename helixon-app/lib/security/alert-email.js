@@ -5,6 +5,7 @@
 import "server-only";
 import { Resend } from "resend";
 import { escapeHtml } from "@/lib/format";
+import { redactPath } from "@/lib/ops/request-capture";
 import { reportError } from "@/lib/report-error";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -32,7 +33,7 @@ export async function sendFirewallAlert({ outcome, ip, path, method, country, ci
         <h2>${blocked ? "Request blocked automatically" : "Suspicious request flagged"}</h2>
         <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
         <p><strong>Location:</strong> ${escapeHtml(location)}</p>
-        <p><strong>Request:</strong> ${escapeHtml(method)} ${escapeHtml(path)}</p>
+        <p><strong>Request:</strong> ${escapeHtml(method)} ${escapeHtml(redactPath(path))}</p>
         <p><strong>User-agent:</strong> ${escapeHtml(userAgent || "-")}</p>
         <p><strong>Threat score:</strong> ${score}/100</p>
         <p><strong>Signals:</strong> ${escapeHtml((signals || []).join(", ") || "-")}</p>
