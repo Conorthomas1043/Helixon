@@ -92,6 +92,14 @@ describe("POST /api/run - refusals before any analysis", () => {
     expect((await run()).status).toBe(500);
   });
 
+  it("refuses an oversized job spec upload before reading it", async () => {
+    const big = new File([new Uint8Array(10 * 1024 * 1024 + 1)], "spec.txt", { type: "text/plain" });
+    const res = await run({ jobText: undefined, jobFile: big });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/job spec file is too large/);
+    expect(analyseCV).not.toHaveBeenCalled();
+  });
+
   it("refuses a flood from one address", async () => {
     state.limits = ["run-ip:"];
     expect((await run()).status).toBe(429);

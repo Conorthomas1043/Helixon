@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
-import parseDOCX from "@/lib/document/docxParser";
+import parseDOCX, { assertDocxExpandsWithin } from "@/lib/document/docxParser";
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -56,5 +56,21 @@ describe("extractCvText with Word files", () => {
   it("says when a .docx has no text", async () => {
     const file = new File([await makeDocx([])], "blank.docx", { type: DOCX_MIME });
     await expect(extractCvText(file)).rejects.toThrow("DOCX contained no readable text");
+  });
+});
+
+describe("assertDocxExpandsWithin", () => {
+  it("refuses an archive that inflates past the limit, whatever it declares", async () => {
+    const zip = new JSZip();
+    zip.file("word/document.xml", "0".repeat(2 * 1024 * 1024));
+    const bomb = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+    expect(bomb.length).toBeLessThan(100 * 1024);
+    expect(() => assertDocxExpandsWithin(bomb, 1024 * 1024)).toThrow(/far larger/);
+    expect(() => assertDocxExpandsWithin(bomb, 4 * 1024 * 1024)).not.toThrow();
+  });
+
+  it("lets a real CV through", async () => {
+    const cv = await makeDocx(["Jane Doe", "Senior Data Engineer at Acme"]);
+    expect(() => assertDocxExpandsWithin(cv)).not.toThrow();
   });
 });

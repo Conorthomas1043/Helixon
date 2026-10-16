@@ -67,6 +67,7 @@ export async function readScreeningForm(form) {
 
   // "Upload spec" mode sends a file instead of text.
   if (!jobText && jobFile && typeof jobFile === "object" && jobFile.size > 0) {
+    if (jobFile.size > MAX_CV_BYTES) return { status: 400, error: "The job spec file is too large. Maximum size is 10 MB." };
     try {
       jobText = (await extractJobSpecText(jobFile)).trim();
     } catch (err) {
