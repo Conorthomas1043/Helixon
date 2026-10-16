@@ -53,12 +53,24 @@ export function agoLabel(at, now = Date.now()) {
   return months === 1 ? "a month ago" : `${months} months ago`;
 }
 
-// A LinkedIn profile as a link, whatever form it was typed in.
+// A LinkedIn profile as a link, whatever form it was typed in, or null.
+// Candidates set this themselves (the jobs page, their self-service link),
+// so only an address on linkedin.com itself becomes a link: a value that
+// merely mentions linkedin.com somewhere ("https://evil.example/?linkedin.com")
+// is not one.
 export function linkedinUrl(value) {
   const v = String(value || "").trim();
   if (!v) return null;
-  if (/^https?:\/\//i.test(v)) return /linkedin\.com/i.test(v) ? v : null;
-  if (/^(www\.)?linkedin\.com\//i.test(v)) return `https://${v.replace(/^www\./i, "www.")}`;
   if (/^[\w-]{3,100}$/.test(v)) return `https://www.linkedin.com/in/${v}`;
-  return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(v) && !/^https?:\/\//i.test(v)) return null;
+  let u;
+  try {
+    u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+  } catch {
+    return null;
+  }
+  const host = u.hostname.toLowerCase();
+  if (u.username || u.password || (host !== "linkedin.com" && !host.endsWith(".linkedin.com"))) return null;
+  u.protocol = "https:";
+  return u.toString();
 }

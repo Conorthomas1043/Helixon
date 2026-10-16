@@ -4,6 +4,7 @@ import { escapeHtml } from "@/lib/messaging/demo-notification";
 import { NextResponse, after } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/ratelimit";
 import { cleanEmail, cleanLine } from "@/lib/sanitize";
+import { linkedinUrl } from "@/lib/candidates/insights";
 import { sourceFromParam } from "@/lib/jobs/careers";
 import { loadPublicJob } from "@/lib/jobs/public-jobs";
 import { acceptableCv, receiveApplication, screenApplication } from "@/lib/jobs/applications";
@@ -55,7 +56,7 @@ export async function POST(request) {
       name,
       email,
       phone: cleanLine(form.get("phone"), 40) || null,
-      linkedin: /linkedin\.com\//i.test(linkedinRaw) ? linkedinRaw : null,
+      linkedin: linkedinUrl(linkedinRaw),
     },
     source: sourceFromParam(String(form.get("src") || "")),
   });

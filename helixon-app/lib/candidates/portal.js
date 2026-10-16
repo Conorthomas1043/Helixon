@@ -3,6 +3,7 @@
 // uploads documents. Pure helpers for what they may change.
 
 import { cleanLine } from "@/lib/sanitize";
+import { linkedinUrl } from "@/lib/candidates/insights";
 
 export const PORTAL_LINK_DAYS = 30;
 
@@ -27,6 +28,7 @@ export function cleanPortalUpdate(body = {}, current = {}) {
   for (const [key, f] of Object.entries(PORTAL_FIELDS)) {
     if (body[key] === undefined) continue;
     const value = cleanLine(body[key], f.max) || null;
+    if (key === "linkedin" && value && !linkedinUrl(value)) return { error: "LinkedIn should be your linkedin.com profile address." };
     if (value !== (current[f.column] ?? null)) {
       update[f.column] = value;
       changed.push(f.label);

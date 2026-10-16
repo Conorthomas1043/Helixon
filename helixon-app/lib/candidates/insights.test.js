@@ -40,6 +40,10 @@ describe("candidate insights", () => {
     expect(linkedinUrl("linkedin.com/in/ana")).toBe("https://linkedin.com/in/ana");
     expect(linkedinUrl("ana-smith")).toBe("https://www.linkedin.com/in/ana-smith");
     expect(linkedinUrl("https://evil.example.com")).toBeNull();
+    expect(linkedinUrl("https://evil.example/?linkedin.com/in/ana")).toBeNull();
+    expect(linkedinUrl("https://linkedin.com.evil.example/in/ana")).toBeNull();
+    expect(linkedinUrl("javascript:alert(1)//linkedin.com/")).toBeNull();
+    expect(linkedinUrl("http://uk.linkedin.com/in/ana")).toBe("https://uk.linkedin.com/in/ana");
     expect(linkedinUrl("")).toBeNull();
   });
 });

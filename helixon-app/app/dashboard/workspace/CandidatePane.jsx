@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { linkedinUrl } from "@/lib/candidates/insights";
 import { Button, EmptyState, ErrorState, Icon, LoadingCard, Notice, Pill, Segmented, Spinner, cx } from "@/components/ui";
 import Report from "@/app/analyse/_components/Report";
 import { UNBLIND_CONFIRM, openOriginalCv } from "@/app/analyse/_components/compareBits";
@@ -160,7 +161,9 @@ function ProfileView({ candidate: c }) {
         <Row label="Location">{c.location}</Row>
         <Row label="Email">{c.email && <a href={`mailto:${c.email}`} className="text-[var(--forest)] hover:underline">{c.email}</a>}</Row>
         <Row label="Phone">{c.phone && <a href={`tel:${c.phone}`} className="text-[var(--forest)] hover:underline">{c.phone}</a>}</Row>
-        <Row label="LinkedIn">{c.linkedin && <a href={c.linkedin} target="_blank" rel="noreferrer" className="text-[var(--forest)] hover:underline">Profile</a>}</Row>
+        <Row label="LinkedIn">
+          {c.linkedin && (linkedinUrl(c.linkedin) ? <a href={linkedinUrl(c.linkedin)} target="_blank" rel="noopener noreferrer" className="text-[var(--forest)] hover:underline">Profile</a> : c.linkedin)}
+        </Row>
         <Row label="Stage">{[c.stage, c.subStage].filter(Boolean).join(" · ") || null}</Row>
         <Row label="Recruiter">{c.recruiterName}</Row>
         <Row label="Source">{c.source}</Row>
