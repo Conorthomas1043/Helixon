@@ -83,7 +83,7 @@ export default function MarketingNav({ active, showTagline = true }) {
   const initials = signedIn ? initialsFor(user) : "";
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
+    <nav className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
       {/* min-h, not h, and flex-wrap: with enlarged text the controls wrap onto
           a second row instead of pushing the menu button off screen. */}
       <div className="max-w-[1100px] mx-auto px-6 min-h-[56px] py-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
@@ -114,7 +114,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                 aria-expanded={accountOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
-                className="w-8 h-8 rounded-full text-white text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] bg-[var(--forest)]"
+                className="w-8 h-8 rounded-full text-[var(--on-forest)] text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] bg-[var(--forest)]"
               >
                 {initials}
               </button>
@@ -122,7 +122,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                 <div
                   role="menu"
                   className="absolute right-0 top-11 w-48 rounded-card py-1.5 z-50"
-                  style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}
+                  style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}
                   onMouseLeave={() => setAccountOpen(false)}
                 >
                   <Link href="/dashboard" role="menuitem" className="block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--mint)]" style={{ color: "var(--ink)" }}>
@@ -171,7 +171,7 @@ export default function MarketingNav({ active, showTagline = true }) {
       </div>
 
       {mobileOpen && (
-        <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-white border-[var(--border)]">
+        <div id="mobile-nav" className="md:hidden border-t px-4 py-3 flex flex-col gap-0.5 bg-[var(--bg)] border-[var(--border)]">
           {NAV_LINKS.map(([key, label, href]) => (
             <Link
               key={key}

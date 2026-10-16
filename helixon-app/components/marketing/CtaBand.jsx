@@ -1,7 +1,7 @@
 import Button from "@/components/landing/Button";
 
 /**
- * The dark-forest "final CTA" band shared by the marketing pages.
+ * The brand-green "final CTA" band shared by the marketing pages.
  * Content varies by page via props; chrome (background, radius,
  * spacing, button styling) stays identical everywhere.
  */
@@ -14,7 +14,7 @@ export default function CtaBand({
 }) {
   return (
     <section className="max-w-[1100px] mx-auto px-6 pb-24">
-      <div className="rounded-panel px-8 py-14 text-center bg-[var(--forest)]">
+      <div className="rounded-panel px-8 py-14 text-center bg-[var(--brand-surface)]">
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white font-display">
           {heading}
         </h2>

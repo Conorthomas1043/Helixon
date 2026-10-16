@@ -122,7 +122,7 @@ const STATUS_STYLE = {
   "Listed only": { bg: "var(--ui-warn-soft)", fg: "var(--ui-warn)", border: "var(--warn-line)", icon: "✓" },
   Missing: { bg: "var(--ui-danger-soft)", fg: "var(--score-low)", border: "var(--danger-line)", icon: "✕" },
   Met: { bg: "var(--mint)", fg: "var(--forest)", border: "var(--mint-line)", icon: "✓" },
-  "To confirm": { bg: "white", fg: "var(--ink-soft)", border: "var(--border)", icon: "?" },
+  "To confirm": { bg: "var(--bg)", fg: "var(--ink-soft)", border: "var(--border)", icon: "?" },
 };
 
 function Pill({ status }) {
@@ -310,15 +310,15 @@ export default function AnalysisExample() {
           <button type="button"
             key={e.id}
             {...tabProps(i)}
-            className="text-left px-3 sm:px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-w-0 break-words text-left px-3 sm:px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
-              background: active === i ? "var(--forest)" : "white",
-              color: active === i ? "white" : "var(--ink)",
+              background: active === i ? "var(--forest)" : "var(--bg)",
+              color: active === i ? "var(--on-forest)" : "var(--ink)",
               border: `1px solid ${active === i ? "var(--forest)" : "var(--border)"}`,
             }}
           >
             <span className="block text-13 font-semibold leading-tight">{e.tab}</span>
-            <span className="block text-11 leading-tight mt-0.5" style={{ color: active === i ? "rgba(255,255,255,0.85)" : "var(--ink-faint)" }}>
+            <span className={`block text-11 leading-tight mt-0.5 ${active === i ? "opacity-85" : "text-[var(--ink-faint)]"}`}>
               {e.kind}
             </span>
           </button>
@@ -328,7 +328,7 @@ export default function AnalysisExample() {
       <div
         {...panelProps}
         className="rounded-2xl overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
+        style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
       >
         <div className="flex items-center gap-1.5 px-4 py-3 border-b border-b-[var(--border-soft)] bg-[var(--mist)]">
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" aria-hidden="true" />
@@ -337,7 +337,7 @@ export default function AnalysisExample() {
           <span className="ml-2 text-11 truncate text-[var(--ink-faint)]">
             Analyse · {ex.role} · {ex.client}
           </span>
-          <span className="ml-auto text-11 font-semibold px-2 py-0.5 rounded-full shrink-0 bg-white text-[var(--ink-faint)] border border-[var(--border)]">
+          <span className="ml-auto text-11 font-semibold px-2 py-0.5 rounded-full shrink-0 bg-[var(--bg)] text-[var(--ink-faint)] border border-[var(--border)]">
             Example · sample data
           </span>
         </div>

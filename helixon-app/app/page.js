@@ -59,13 +59,13 @@ const HELIXON_STEPS = ["Upload up to 50 CVs for a role", "Helixon scores each on
 function TimelineColumn({ label, steps, tone }) {
   const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
   return (
-    <div className="rounded-2xl p-7 h-full bg-white border border-[var(--border)]">
+    <div className="rounded-2xl p-7 h-full bg-[var(--bg)] border border-[var(--border)]">
       <p className={`text-12 font-semibold uppercase tracking-widest mb-6 ${tone === "forest" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{label}</p>
       <ol className="relative pl-5">
         <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
         {steps.map((step) => (
           <li key={step} className="relative pb-5 last:pb-0">
-            <span className="absolute -left-5 top-1 w-3.5 h-3.5 rounded-full" style={{ background: tone === "forest" ? accent : "white", border: `2px solid ${accent}` }} aria-hidden="true" />
+            <span className="absolute -left-5 top-1 w-3.5 h-3.5 rounded-full" style={{ background: tone === "forest" ? accent : "var(--bg)", border: `2px solid ${accent}` }} aria-hidden="true" />
             <span className="text-sm text-[var(--ink)]">{step}</span>
           </li>
         ))}
@@ -123,7 +123,7 @@ const DASHBOARD_POINTS = [
 
 function DashboardSection() {
   return (
-    <section id="dashboard" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
+    <section id="dashboard" className="py-24 bg-[var(--bg)] border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
       <div className="max-w-[1100px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center">
           <Reveal>
@@ -186,7 +186,7 @@ function FeatureGroups() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {FEATURE_GROUPS.map((g) => (
-        <div key={g.title} className="rounded-card p-7 bg-white border border-[var(--border)]">
+        <div key={g.title} className="rounded-card p-7 bg-[var(--bg)] border border-[var(--border)]">
           <h3 className="text-base font-semibold mb-2 text-[var(--ink)]">{g.title}</h3>
           <p className="text-sm leading-relaxed mb-5 text-[var(--ink-soft)]">{g.body}</p>
           <ul className="space-y-2.5">
@@ -216,7 +216,7 @@ const TRUST_PILLARS = [
 
 function TrustSection() {
   return (
-    <section className="py-20 bg-[var(--forest)]">
+    <section className="py-20 bg-[var(--brand-surface)]">
       <div className="max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
@@ -291,7 +291,8 @@ const FAQ_LD = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[var(--mist)]">
+    // auto-theme: this page follows the system's light or dark setting (app/globals.css).
+    <div className="auto-theme min-h-screen bg-[var(--mist)] text-[var(--ink)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD).replace(/</g, "\\u003c") }} />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="home" />
@@ -352,7 +353,7 @@ export default function LandingPage() {
         <TrustSection />
 
         {/* ── Features, grouped by outcome ─────────────────────────────────── */}
-        <section id="features" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
+        <section id="features" className="py-24 bg-[var(--bg)] border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
           <div className="max-w-[1100px] mx-auto px-6">
             <Reveal>
               <div className="text-center mb-12">
@@ -390,16 +391,18 @@ export default function LandingPage() {
               // On a phone the recommended plan comes first, not below the demo card.
               <Reveal key={plan.name} className={plan.highlight ? "order-first md:order-none" : ""}>
                 <div
-                  className="rounded-2xl p-6 flex flex-col relative h-full"
+                  className={`rounded-2xl p-6 flex flex-col relative h-full ${plan.highlight ? "pt-8" : ""}`}
                   style={{
-                    background: plan.highlight ? "var(--forest)" : "white",
-                    border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
+                    background: plan.highlight ? "var(--brand-surface)" : "var(--bg)",
+                    border: plan.highlight ? "1px solid var(--brand-surface)" : "1px solid var(--border)",
                     boxShadow: plan.highlight ? "0 12px 28px -12px rgba(11,110,79,0.5)" : "none",
                   }}
                 >
+                  {/* Centred on the card's top edge and allowed to wrap, so it
+                      stays on screen at large text sizes. */}
                   {plan.highlight && (
                     <span
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 text-12 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full whitespace-nowrap bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
+                      className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-max max-w-[calc(100%-2rem)] text-center text-12 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-[var(--mint)] text-[var(--forest)] border border-[var(--forest)]"
                     >
                       Recommended for agencies
                     </span>
@@ -441,7 +444,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-        <section id="faq" className="py-24 bg-white border-t border-t-[var(--border-soft)]">
+        <section id="faq" className="py-24 bg-[var(--bg)] border-t border-t-[var(--border-soft)]">
           <div className="max-w-[1100px] mx-auto px-6">
           <Reveal>
             <div className="text-center mb-12">

@@ -88,7 +88,7 @@ export function RecruiterWorkspaceDemo() {
     <div
       ref={containerRef}
       className="rounded-2xl p-6 w-full max-w-sm mx-auto lg:mx-0"
-      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
+      style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
       aria-label="Example recruiter workspace showing ranked candidates for one role"
     >
       <div className="flex items-center justify-between mb-1">
@@ -106,7 +106,7 @@ export function RecruiterWorkspaceDemo() {
               className="flex items-center justify-between px-3 py-2.5 transition-all duration-300"
               style={{
                 borderTop: i === 0 ? "none" : "1px solid var(--border)",
-                background: i % 2 === 0 ? "white" : "var(--mist)",
+                background: i % 2 === 0 ? "var(--bg)" : "var(--mist)",
               }}
             >
               <span className="text-11 font-medium truncate text-[var(--ink)]">
@@ -205,7 +205,7 @@ export function DashboardPreview() {
     <div
       ref={containerRef}
       className="rounded-2xl overflow-hidden w-full"
-      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
+      style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
       aria-label="Example Helixon dashboard showing pipeline metrics for one agency"
     >
       {/* Window chrome, so it reads as a product screenshot rather than a widget */}
@@ -222,7 +222,7 @@ export function DashboardPreview() {
           {DASH_KPIS.map((k, i) => (
             <div
               key={k.label}
-              className="rounded-btn p-3 border border-[var(--border)] bg-white"
+              className="rounded-btn p-3 border border-[var(--border)] bg-[var(--bg)]"
             >
               <p className="text-11 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">{k.label}</p>
               <p
@@ -382,7 +382,7 @@ export function BuyPlanButton({ plan, label, highlight }) {
         className="text-center text-sm font-semibold py-3 rounded-btn transition-all w-full min-h-[44px]"
         style={{
           background: highlight ? "white" : "var(--forest)",
-          color: highlight ? "var(--forest)" : "white",
+          color: highlight ? "var(--brand-surface)" : "var(--on-forest)",
           opacity: loading ? 0.75 : 1,
           cursor: loading ? "wait" : "pointer",
         }}
@@ -473,7 +473,7 @@ function CompareTabContent() {
   return (
     <div className="rounded-btn overflow-hidden border border-[var(--border)]">
       {WORKSPACE_CANDIDATES.map((c, i) => (
-        <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "white" : "var(--mist)" }}>
+        <div key={c.name} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)", background: i % 2 === 0 ? "var(--bg)" : "var(--mist)" }}>
           <span className="text-11 font-medium text-[var(--ink)]">{c.name}</span>
           <span className="flex items-center gap-2">
             <span className="text-11 font-semibold" style={{ color: scoreColor(c.score) }}>{scoreLabel(c.score)}</span>
@@ -511,7 +511,7 @@ export function ProductWorkflowSection() {
   });
 
   return (
-    <section id="how" className="py-24 bg-white border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
+    <section id="how" className="py-24 bg-[var(--bg)] border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
       <div className="max-w-[1100px] mx-auto px-6">
       <Reveal>
         <div className="text-center mb-12">
@@ -526,7 +526,7 @@ export function ProductWorkflowSection() {
       </Reveal>
 
       <Reveal>
-        <div className="rounded-2xl overflow-hidden max-w-lg mx-auto" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
+        <div className="rounded-2xl overflow-hidden max-w-lg mx-auto" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.12)" }}>
           <div className="flex items-center gap-1 px-3 pt-3" aria-hidden="true">
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" />
@@ -595,7 +595,7 @@ export function BulkPreviewCard() {
     <div
       ref={containerRef}
       className="rounded-2xl p-6 w-full max-w-sm mx-auto"
-      style={{ background: "white", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
+      style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))" }}
       aria-label="Example bulk-upload run showing several candidates queued for one role"
     >
       <div className="flex items-center justify-between mb-1">
@@ -613,7 +613,7 @@ export function BulkPreviewCard() {
               className="flex items-center justify-between px-3 py-2.5 transition-all duration-300"
               style={{
                 borderTop: i === 0 ? "none" : "1px solid var(--border)",
-                background: status === "processing" ? "var(--mint)" : i % 2 === 0 ? "white" : "var(--mist)",
+                background: status === "processing" ? "var(--mint)" : i % 2 === 0 ? "var(--bg)" : "var(--mist)",
               }}
             >
               <span className="text-11 font-medium truncate text-[var(--ink)]">{row.name}</span>
@@ -722,7 +722,7 @@ export function TrustStrip() {
   const played = useScrollEntrance(ref, { offset: "20%" }) !== "armed";
 
   return (
-    <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "white" }}>
+    <section className="border-y" style={{ borderColor: "var(--border-soft, var(--border))", background: "var(--bg)" }}>
       <div ref={ref} className="max-w-[1100px] mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
         {TRUST_METRICS.map((m) => (
           <div key={m.label}>
