@@ -35,7 +35,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   if (!subject || !text) return NextResponse.json({ error: "Add a subject and a message." }, { status: 400 });
   const templateId = body.templateId ? cleanUuid(body.templateId) : null;
 
-  const [targets, agencyName] = await Promise.all([loadEmailTargets(auth.agencyId, ids), agencyFromName(auth.agencyId, auth.profile)]);
+  const [targets, agencyName] = await Promise.all([loadEmailTargets(auth, ids), agencyFromName(auth.agencyId, auth.profile)]);
   if (targets.length !== ids.length) return NextResponse.json({ error: "Some of those candidates weren't found." }, { status: 404 });
 
   const rendered = targets.map((c) => {

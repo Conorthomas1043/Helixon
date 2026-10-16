@@ -60,6 +60,30 @@ export function scopeCandidateQuery(query, access, auth, column = "recruiter_id"
   return query.or(`${column}.is.null,${column}.eq.${auth.userId}`);
 }
 
+// Rows (anything with a candidate id) this member may see, for lists that
+// join candidates without their recruiter_id. Rows with no candidate stay.
+/**
+ * @template T
+ * @param {any} auth
+ * @param {T[]} rows
+ * @param {(row: T) => string | null | undefined} [candidateIdOf]
+ * @returns {Promise<T[]>}
+ */
+export async function onlyVisibleCandidateRows(auth, rows, candidateIdOf = (r) => /** @type {any} */ (r).candidate_id) {
+  const access = await getAccess(auth);
+  if (access.seesAllCandidates || !rows.length) return rows;
+  const ids = [...new Set(rows.map(candidateIdOf).filter(Boolean))];
+  const visible = new Set();
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data } = await supabase.from("candidates").select("id, recruiter_id").eq("agency_id", auth.agencyId).in("id", ids.slice(i, i + 200));
+    for (const c of data ?? []) if (canSeeCandidate(access, auth, c)) visible.add(c.id);
+  }
+  return rows.filter((r) => {
+    const id = candidateIdOf(r);
+    return !id || visible.has(id);
+  });
+}
+
 // Money fields blanked for members who can't see financials.
 export function redactPlacement(p, access) {
   if (access.canSeeFinancials) return p;

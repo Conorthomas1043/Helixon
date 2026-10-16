@@ -54,6 +54,16 @@ export function cleanSignature(body = {}) {
   return { name };
 }
 
+// Terms of business, offers and contracts carry fees, salaries and rates,
+// so with "financials admin-only" on, their text (and the signing link,
+// which shows it) is for the owner, admins and whoever wrote it.
+export const MONEY_KINDS = new Set(["terms", "offer", "contract"]);
+
+/** @param {{ kind?: string, created_by?: string | null }} row @param {{ canSeeFinancials?: boolean }} access @param {{ userId?: string }} auth */
+export function documentHidden(row, access, auth) {
+  return MONEY_KINDS.has(row?.kind || "") && !access?.canSeeFinancials && row?.created_by !== auth?.userId;
+}
+
 export function toSignatureRequest(row, { includeLink = false, siteUrl = "" } = {}) {
   return {
     id: row.id,

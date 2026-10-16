@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { stepDueAt, stopReason } from "@/lib/messaging/sequences";
 import { agencyDb } from "@/lib/agency-db";
+import { getAccess, scopeCandidateQuery } from "@/lib/agency/permissions";
 
 const EnrollInput = fields({ candidateIds: ids(1000) });
 
@@ -27,7 +28,8 @@ export const POST = customerRoute(async (request, { params }, auth, body) => {
   if (!ids.length) return NextResponse.json({ error: "Choose who to add." }, { status: 400 });
 
   const [{ data: candidates }, { data: existing }] = await Promise.all([
-    (await agencyDb()).from("candidates").select("id, email, stage").eq("agency_id", auth.agencyId).in("id", ids),
+    // Only candidates this member can see ("own candidates only").
+    scopeCandidateQuery((await agencyDb()).from("candidates").select("id, email, stage").eq("agency_id", auth.agencyId).in("id", ids), await getAccess(auth), auth),
     (await agencyDb()).from("sequence_enrollments").select("candidate_id").eq("sequence_id", sequence.id).eq("status", "active").in("candidate_id", ids),
   ]);
   const already = new Set((existing ?? []).map((e) => e.candidate_id));

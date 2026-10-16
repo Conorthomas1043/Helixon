@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TOKEN_RE, cleanSignature, cleanSignatureRequest, documentHash, newToken, offerLetterText, termsOfBusinessText } from "./signatures";
+import { TOKEN_RE, cleanSignature, cleanSignatureRequest, documentHash, documentHidden, newToken, offerLetterText, termsOfBusinessText } from "./signatures";
 
 describe("signature requests", () => {
   it("validates a new request", () => {
@@ -52,5 +52,15 @@ describe("templates", () => {
     const c = offerLetterText({ kind: "contract", candidateName: "Ana", jobTitle: "Dev", payRate: 400, rateUnit: "day", startDate: "2026-11-02" });
     expect(c).toContain("Pay rate: £400 per day");
     expect(c).toContain("Start date: 2 November 2026");
+  });
+
+  it("hides money documents from members who can't see financials, except their author", () => {
+    const member = { userId: "me" };
+    const hidden = { canSeeFinancials: false };
+    expect(documentHidden({ kind: "offer", created_by: "boss" }, hidden, member)).toBe(true);
+    expect(documentHidden({ kind: "terms", created_by: "boss" }, hidden, member)).toBe(true);
+    expect(documentHidden({ kind: "contract", created_by: "me" }, hidden, member)).toBe(false);
+    expect(documentHidden({ kind: "other", created_by: "boss" }, hidden, member)).toBe(false);
+    expect(documentHidden({ kind: "offer", created_by: "boss" }, { canSeeFinancials: true }, member)).toBe(false);
   });
 });

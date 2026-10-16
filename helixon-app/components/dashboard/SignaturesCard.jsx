@@ -135,7 +135,7 @@ function ViewDialog({ id, onClose }) {
       {doc && (
         <>
           <article className="rounded-btn p-4 text-14 whitespace-pre-wrap max-h-[50vh] overflow-y-auto bg-[var(--mist)] text-[var(--ink)]">
-            {doc.body}
+            {doc.bodyHidden ? "This document includes fees or pay, which only the workspace owner and admins can see." : doc.body}
           </article>
           {doc.audit ? (
             <dl className="mt-4 text-13 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[var(--ink-soft)]">
@@ -165,7 +165,7 @@ function ViewDialog({ id, onClose }) {
                 w.document.title = doc.title;
                 const pre = w.document.createElement("pre");
                 pre.style.cssText = "white-space:pre-wrap;font:14px/1.6 system-ui;max-width:720px;margin:40px auto";
-                pre.textContent = `${doc.title}\n\n${doc.body}${doc.audit ? `\n\n---\nSigned electronically by ${doc.audit.signedName} on ${new Date(doc.audit.signedAt).toLocaleString("en-GB")}\nIP ${doc.audit.ip || "-"}\nSHA-256 ${doc.audit.documentHash}` : ""}`;
+                pre.textContent = `${doc.title}\n\n${doc.body ?? ""}${doc.audit ? `\n\n---\nSigned electronically by ${doc.audit.signedName} on ${new Date(doc.audit.signedAt).toLocaleString("en-GB")}\nIP ${doc.audit.ip || "-"}\nSHA-256 ${doc.audit.documentHash}` : ""}`;
                 w.document.body.appendChild(pre);
                 w.print();
               }}

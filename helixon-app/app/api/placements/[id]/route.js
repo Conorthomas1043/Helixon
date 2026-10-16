@@ -8,21 +8,24 @@ import { logActivity } from "@/lib/candidates/activity";
 import { cleanUuid } from "@/lib/sanitize";
 import { PLACEMENT_STATUSES, cleanPlacement, contractMargin, toPlacement } from "@/lib/placements/core";
 import { splitsAreTeammates, syncCandidate } from "@/lib/placements/sync";
-import { getAccess, placementInputFor, redactPlacement } from "@/lib/agency/permissions";
+import { candidateHidden, getAccess, placementInputFor, redactPlacement } from "@/lib/agency/permissions";
 import { agencyDb } from "@/lib/agency-db";
 
 // One placement: GET (with invoices and timesheets), PATCH, DELETE (only
 // while nothing has been invoiced).
 
-async function load(agencyId, rawId) {
+// The placement, or null when it isn't this agency's or its candidate is
+// hidden from this member by "own candidates only".
+async function load(auth, rawId) {
   const id = cleanUuid(rawId);
   if (!id) return null;
-  const { data } = await (await agencyDb()).from("placements").select("*").eq("id", id).eq("agency_id", agencyId).maybeSingle();
+  const { data } = await (await agencyDb()).from("placements").select("*").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle();
+  if (data?.candidate_id && (await candidateHidden(auth, data.candidate_id))) return null;
   return data;
 }
 
 export const GET = customerRoute(async (request, { params }, auth) => {
-  const p = await load(auth.agencyId, (await params).id);
+  const p = await load(auth, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const [{ data: invoices }, { data: timesheets }] = await Promise.all([
     (await agencyDb()).from("invoices").select("id, number, status, total, currency, issued_on, due_on, paid_on").eq("placement_id", p.id).eq("agency_id", auth.agencyId).order("issued_on", { ascending: false }),
@@ -45,7 +48,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
 });
 
 export const PATCH = customerRoute(async (request, { params }, auth, body) => {
-  const p = await load(auth.agencyId, (await params).id);
+  const p = await load(auth, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const fields = cleanPlacement(placementInputFor(body, await getAccess(auth)), p);
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
@@ -71,7 +74,7 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
 }, { body: PlacementInput, optionalBody: true });
 
 export const DELETE = customerRoute(async (request, { params }, auth) => {
-  const p = await load(auth.agencyId, (await params).id);
+  const p = await load(auth, (await params).id);
   if (!p) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { count } = await (await agencyDb()).from("invoices").select("id", { count: "exact", head: true }).eq("placement_id", p.id);
   if (count) return NextResponse.json({ error: "It has invoices, so it can't be deleted - void the invoices or mark it as fallen through." }, { status: 409 });

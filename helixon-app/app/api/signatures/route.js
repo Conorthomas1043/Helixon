@@ -7,8 +7,9 @@ import { cleanUuid } from "@/lib/sanitize";
 import { agencyFromName, sendAgencyEmail, siteUrl } from "@/lib/messaging/mailer";
 import { logActivity } from "@/lib/candidates/activity";
 import { logClientActivity } from "@/lib/clients/core";
-import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, newToken, toSignatureRequest } from "@/lib/clients/signatures";
+import { SIGNATURE_KINDS, cleanSignatureRequest, documentHash, documentHidden, newToken, toSignatureRequest } from "@/lib/clients/signatures";
 import { agencyDb } from "@/lib/agency-db";
+import { candidateHidden, getAccess, onlyVisibleCandidateRows } from "@/lib/agency/permissions";
 
 // cleanSignatureRequest (lib/clients/signatures.js) reads the document fields.
 const SignatureRequestInput = fields({
@@ -36,13 +37,20 @@ export const GET = customerRoute(async (request, _context, auth) => {
   const clientId = cleanUuid(params.get("clientId"));
   const candidateId = cleanUuid(params.get("candidateId"));
   if (!clientId && !candidateId) return NextResponse.json({ error: "Which client or candidate?" }, { status: 400 });
+  if (candidateId) {
+    const hidden = await candidateHidden(auth, candidateId);
+    if (hidden) return hidden;
+  }
 
   let q = (await agencyDb()).from("signature_requests").select("*").eq("agency_id", auth.agencyId).order("created_at", { ascending: false }).limit(100);
   if (clientId) q = q.eq("client_id", clientId);
   if (candidateId) q = q.eq("candidate_id", candidateId);
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: "Failed to load documents." }, { status: 500 });
-  return NextResponse.json({ requests: (data ?? []).map((r) => toSignatureRequest(r, { includeLink: r.status === "sent", siteUrl: siteUrl() })) });
+  const [rows, access] = await Promise.all([onlyVisibleCandidateRows(auth, data ?? []), getAccess(auth)]);
+  return NextResponse.json({
+    requests: rows.map((r) => toSignatureRequest(r, { includeLink: r.status === "sent" && !documentHidden(r, access, auth), siteUrl: siteUrl() })),
+  });
 });
 
 export const POST = customerRoute(async (request, _context, auth, input) => {
@@ -54,6 +62,10 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   const candidateId = cleanUuid(body.candidateId);
   const placementId = cleanUuid(body.placementId);
   if (!clientId && !candidateId) return NextResponse.json({ error: "A document is for a client or a candidate." }, { status: 400 });
+  if (candidateId) {
+    const hidden = await candidateHidden(auth, candidateId);
+    if (hidden) return hidden;
+  }
   const owned = async (table, id) => !id || Boolean((await supabase.from(table).select("id").eq("id", id).eq("agency_id", auth.agencyId).maybeSingle()).data);
   if (!(await owned("clients", clientId)) || !(await owned("candidates", candidateId)) || !(await owned("placements", placementId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
