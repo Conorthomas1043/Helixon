@@ -25,6 +25,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { isFeatureEnabled } from "@/lib/ops/site-settings";
 import { reportError } from "@/lib/report-error";
+import { rateLimit } from "@/lib/ratelimit";
 
 const COOKIE_NAME = "employee_session";
 const SESSION_HOURS = 12;
@@ -38,9 +39,18 @@ const LOGIN_TYPE = "employee";
 const IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 const ABSOLUTE_TIMEOUT_MS = SESSION_HOURS * 60 * 60 * 1000;
 
+// Failures in the window, counted three ways. Five wrong guesses at one
+// username from one address pause that address, not the employee: counting
+// per username alone let anyone who knew a username keep its owner locked
+// out. A much higher per-username count still stops a guess spread over
+// many addresses, and the per-address count stops one address trying many
+// usernames.
 const RATE_LIMIT_WINDOW_MINUTES = 15;
-const MAX_FAILURES_PER_USERNAME = 5;
+const MAX_FAILURES_PER_USERNAME_AND_IP = 5;
+const MAX_FAILURES_PER_USERNAME = 50;
 const MAX_FAILURES_PER_IP = 20;
+// When login_attempts can't be read: the shared Redis limiter, per hour.
+const FALLBACK_ATTEMPTS_PER_IP = 30;
 
 const GENERIC_LOGIN_ERROR = "Incorrect username or password. Please try again.";
 
@@ -124,37 +134,38 @@ export async function startEmployeeSession(employeeId, { impersonatedBy = null }
 // ── Rate limiting (shared login_attempts table, login_type = 'employee') ──
 export async function checkEmployeeRateLimit(username, ip) {
   const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
+  const failures = (filters) => {
+    let q = supabase
+      .from("login_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("login_type", LOGIN_TYPE)
+      .eq("success", false)
+      .gte("ts", since);
+    for (const [col, value] of Object.entries(filters)) q = q.eq(col, value);
+    return q;
+  };
 
   try {
-    const [{ count: userFailures }, { count: ipFailures }] = await Promise.all([
-      supabase
-        .from("login_attempts")
-        .select("id", { count: "exact", head: true })
-        .eq("login_type", LOGIN_TYPE)
-        .eq("username", username)
-        .eq("success", false)
-        .gte("ts", since),
-      ip
-        ? supabase
-            .from("login_attempts")
-            .select("id", { count: "exact", head: true })
-            .eq("login_type", LOGIN_TYPE)
-            .eq("ip", ip)
-            .eq("success", false)
-            .gte("ts", since)
-        : Promise.resolve({ count: 0 }),
+    const [pair, user, address] = await Promise.all([
+      ip ? failures({ username, ip }) : failures({ username }),
+      failures({ username }),
+      ip ? failures({ ip }) : Promise.resolve({ count: 0 }),
     ]);
+    const failed = [pair, user, address].find((r) => r?.error);
+    if (failed) throw new Error(failed.error.message);
 
-    if ((userFailures || 0) >= MAX_FAILURES_PER_USERNAME) {
+    if ((pair.count || 0) >= MAX_FAILURES_PER_USERNAME_AND_IP || (user.count || 0) >= MAX_FAILURES_PER_USERNAME) {
       return { blocked: true, reason: "Too many failed attempts. Please try again in a few minutes." };
     }
-    if ((ipFailures || 0) >= MAX_FAILURES_PER_IP) {
+    if ((address.count || 0) >= MAX_FAILURES_PER_IP) {
       return { blocked: true, reason: "Too many failed attempts from this network. Please try again shortly." };
     }
     return { blocked: false };
   } catch (e) {
-    reportError("[employee-auth] Rate limit check failed (failing open):", e.message);
-    return { blocked: false };
+    // Not "let everything through": the Redis limiter still caps attempts.
+    reportError("[employee-auth] Rate limit check failed, using the Redis limiter:", e.message);
+    const allowed = await rateLimit(`employee-login:ip:${ip || "unknown"}`, FALLBACK_ATTEMPTS_PER_IP);
+    return allowed ? { blocked: false } : { blocked: true, reason: "Too many attempts. Please try again later." };
   }
 }
 

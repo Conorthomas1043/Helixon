@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loginEmployee } from "@/lib/employee/auth";
 import { isFeatureEnabled } from "@/lib/ops/site-settings";
+import { getClientIp } from "@/lib/ratelimit";
 import { fields, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -12,7 +13,7 @@ export async function POST(request) {
   if (!(await isFeatureEnabled("employee_portal"))) {
     return NextResponse.json({ ok: false, error: "The staff portal is closed for the moment. Check with an admin." }, { status: 503 });
   }
-  const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const remoteIp = getClientIp(request);
 
   const parsed = await parseBody(request, StaffLoginInput, { respond: (status, error) => NextResponse.json({ ok: false, error }, { status }) });
   if (parsed.response) return parsed.response;
