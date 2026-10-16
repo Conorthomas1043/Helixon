@@ -4,6 +4,7 @@ import { stripe } from "@/lib/billing/stripe";
 import { planForPriceId } from "@/lib/billing/plans";
 import { agencyIdForProfile, billingEventsFor, captureAgencyEvent } from "@/lib/analytics/server";
 import { reportError } from "@/lib/report-error";
+import { markTestAccountConverted } from "@/lib/agency/test-account";
 
 // Stripe needs the RAW request body (unparsed) to verify the webhook
 // signature - this is the "raw request body access" caveat that makes
@@ -60,6 +61,8 @@ export async function POST(request) {
         // retries. A 200 here would lose the activation for good.
         if (error) throw new Error(`Failed to upsert subscription: ${error.message}`);
         after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan }));
+        // A test account that bought a plan is an ordinary customer now.
+        after(() => markTestAccountConverted(userId));
         break;
       }
 

@@ -7,6 +7,7 @@ import { WEBHOOK_EVENTS, checkWebhookUrl, deliver, webhookSecret } from "@/lib/i
 import { logAudit } from "@/lib/agency/audit";
 import { fields, flag, id, nested, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
+import { testFeatureRefusal } from "@/lib/agency/test-account";
 
 // cleanEvents (lib/integrations/webhooks.js) checks the event list.
 const WebhookInput = fields({ url: text(2000), description: text(240), events: nested });
@@ -57,6 +58,8 @@ export async function GET() {
 export async function POST(request) {
   const { auth, res } = await guard();
   if (res) return res;
+  const notHere = await testFeatureRefusal(auth.agencyId);
+  if (notHere) return NextResponse.json({ error: notHere.error }, { status: notHere.status });
   const parsedBody = await parseBody(request, WebhookInput, { allowEmpty: true });
   if (parsedBody.response) return parsedBody.response;
   const body = parsedBody.body;

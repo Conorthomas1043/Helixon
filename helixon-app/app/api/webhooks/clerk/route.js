@@ -120,6 +120,13 @@ async function handleUserCreated(clerkUser) {
     return;
   }
 
+  // Made from Admin > Test accounts, which creates the profile, agency and
+  // demo access itself (lib/admin/test-accounts.js). publicMetadata can only
+  // be set server-side, so a sign-up can't claim this.
+  if (clerkUser.public_metadata?.helixon_test_account) {
+    return;
+  }
+
   // Clerk doesn't guarantee delivery order: if organizationMembership.created
   // arrived first, it already created this user's profile in the agency
   // that invited them - don't create a second profile and agency on top.

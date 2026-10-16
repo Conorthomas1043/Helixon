@@ -7,8 +7,6 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { reportError } from "@/lib/report-error";
-import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
-import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 
 export const TEST_FEATURE_REFUSAL = "This isn't available on this account. Contact Helixon at hello@helixon.co.uk if you need it.";
 
@@ -75,8 +73,12 @@ export async function testEmailRefusal(agencyId, count = 1) {
   return `This account can send up to ${row.email_daily_cap} emails a day to people outside your workspace. Try again tomorrow.`;
 }
 
+// Loaded when an alert is sent: the mail client is built on import, and
+// this module is imported by routes (and their tests) that never alert.
 async function alertAdmins(subject, lines) {
   try {
+    const { escapeHtml, sendAdminAlert } = await import("@/lib/security/alert-email");
+    const { alertRecipients, getSiteSettings } = await import("@/lib/ops/site-settings");
     const to = alertRecipients(await getSiteSettings());
     if (!to.length) return;
     await sendAdminAlert({
@@ -131,4 +133,24 @@ export async function noteFirstScreening(agencyId) {
   } catch (err) {
     reportError("[test-account] noteFirstScreening failed:", err?.message || err);
   }
+}
+
+/**
+ * A checkout by this profile (Stripe webhook): if its agency is a test
+ * workspace, it's a customer now - the limits and banner stop.
+ */
+export async function markTestAccountConverted(profileId) {
+  try {
+    const { data: profile } = await supabase.from("profiles").select("agency_id").eq("id", profileId).maybeSingle();
+    if (!profile?.agency_id) return;
+    await supabase.from("test_accounts").update({ converted_at: new Date().toISOString() }).eq("agency_id", profile.agency_id).is("converted_at", null);
+    cache.delete(profile.agency_id);
+  } catch (err) {
+    reportError("[test-account] markTestAccountConverted failed:", err?.message || err);
+  }
+}
+
+/** { status, error } for a feature test workspaces don't get (texting, API keys, webhooks), or null. */
+export async function testFeatureRefusal(agencyId) {
+  return (await isTestAgency(agencyId)) ? { status: 403, error: TEST_FEATURE_REFUSAL } : null;
 }

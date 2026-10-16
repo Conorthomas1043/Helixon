@@ -16,6 +16,7 @@ import { SIGNED_OUT_EVENT } from "@/lib/api-client/errors";
 import { clearResources } from "@/lib/hooks/useResource";
 import WorkspaceTabs from "@/components/workspace/WorkspaceTabs";
 import { initials } from "@/lib/format";
+import { testAccountBannerText } from "@/lib/agency/test-account-copy";
 import { reportQuietly } from "@/lib/report-error";
 
 // The everyday screens are tabs; everything else sits under "More",
@@ -407,6 +408,7 @@ function DashboardNavContent() {
 
       <SignedOutBanner />
       {me?.paymentIssue && pathname !== "/billing" && <PaymentIssueBanner issue={me.paymentIssue} />}
+      {me?.testAccount && <TestAccountBanner endsAt={me.testAccount.endsAt} />}
     </nav>
     {/* Phones: the destinations are in a tab bar at the bottom instead
         (components/dashboard/MobileTabBar.jsx). Outside the top bar, whose
@@ -468,6 +470,19 @@ function SignedOutBanner() {
 // During Stripe's retries (past_due) everything keeps working, so this is
 // the only sign anything is wrong; once it's unpaid, screening has stopped.
 // Only the member who pays can fix it, so teammates are told to ask them.
+function TestAccountBanner({ endsAt }) {
+  return (
+    <div className="border-t border-[var(--border)] bg-[var(--mist)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 text-xs text-[var(--ink-soft)] flex flex-wrap items-center gap-x-3">
+        <span>{testAccountBannerText(endsAt)}</span>
+        <Link href="/pricing" className="font-semibold underline text-[var(--ink)]">
+          Choose a plan
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function PaymentIssueBanner({ issue }) {
   const stopped = issue.status === "unpaid";
   return (

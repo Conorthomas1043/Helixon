@@ -36,7 +36,7 @@ vi.mock("@/lib/ops/site-settings", () => ({
   alertRecipients: () => ["ops@example.com"],
 }));
 
-const { _clearTestAccountCache, isTestAgency, noteFirstScreening, noteSeen, testAccountStatus, testEmailRefusal } = await import("./test-account");
+const { TEST_FEATURE_REFUSAL, _clearTestAccountCache, isTestAgency, markTestAccountConverted, testFeatureRefusal, noteFirstScreening, noteSeen, testAccountStatus, testEmailRefusal } = await import("./test-account");
 
 const ROW = { id: "t1", agency_id: "a1", name: "Ana", email: "ana@example.com", ends_at: null, email_daily_cap: 20, first_seen_at: null, first_screening_at: null };
 
@@ -144,5 +144,31 @@ describe("noteFirstScreening", () => {
     await noteFirstScreening("a1");
     expect(db.chains.length).toBe(1);
     expect(alerts.sent.length).toBe(0);
+  });
+});
+
+describe("markTestAccountConverted", () => {
+  it("sets converted_at on the buyer's agency's test account, once", async () => {
+    db.respond = (table) => (table === "profiles" ? { data: { agency_id: "a1" }, error: null } : { data: null, error: null });
+    await markTestAccountConverted("p1");
+    const update = db.chains.find((c) => c.table === "test_accounts").calls;
+    expect(update.find(([m]) => m === "update")[1].converted_at).toBeTruthy();
+    expect(update).toContainEqual(["eq", "agency_id", "a1"]);
+    expect(update).toContainEqual(["is", "converted_at", null]);
+  });
+
+  it("does nothing for a profile with no agency", async () => {
+    await markTestAccountConverted("p1");
+    expect(db.chains.map((c) => c.table)).toEqual(["profiles"]);
+  });
+});
+
+describe("testFeatureRefusal", () => {
+  it("refuses texting, API keys and webhooks in a test workspace", async () => {
+    db.respond = () => ({ data: ROW, error: null });
+    expect(await testFeatureRefusal("a1")).toEqual({ status: 403, error: TEST_FEATURE_REFUSAL });
+  });
+  it("allows them everywhere else", async () => {
+    expect(await testFeatureRefusal("a1")).toBe(null);
   });
 });

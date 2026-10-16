@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { PAYMENT_ISSUE_STATUSES } from "@/lib/billing/subscription-status";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase as supabaseAdmin } from "@/lib/supabase";
 import { getAgencyPlan } from "@/lib/billing/plan";
 import { reportError } from "@/lib/report-error";
+import { isTestAgency, noteSeen } from "@/lib/agency/test-account";
 
 // Returns the currently signed-in user (email + first name from `profiles`),
 // or 401 if there's no valid session. Used by the dashboard
@@ -39,6 +40,8 @@ export async function GET() {
   // Drives the payment banner on every signed-in page - while Stripe
   // retries (past_due) access continues, so without it nobody would know.
   let paymentIssue = null;
+  // A test account (Admin > Test accounts): { endsAt } for the banner.
+  let testAccount = null;
   try {
     const { data: profile, error } = await supabaseAdmin
       .from("profiles")
@@ -59,6 +62,12 @@ export async function GET() {
       agencyName = agency?.name || null;
       plan = resolvedPlan;
       paymentIssue = await findPaymentIssue(profile.agency_id, profile.id);
+      const test = await isTestAgency(profile.agency_id);
+      if (test) {
+        testAccount = { endsAt: test.ends_at };
+        const agencyForSeen = profile.agency_id;
+        after(() => noteSeen(agencyForSeen));
+      }
     }
   } catch (e) {
     reportError("[auth/me] Profile lookup failed (non-fatal):", e.message);
@@ -69,7 +78,7 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    user: { id: userId, email, firstName, agencyName, agencyId, plan, hasAgency, paymentIssue },
+    user: { id: userId, email, firstName, agencyName, agencyId, plan, hasAgency, paymentIssue, testAccount },
   });
 }
 

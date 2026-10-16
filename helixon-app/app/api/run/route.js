@@ -12,6 +12,7 @@ import { duplicateNotice, saveScreening } from "@/lib/screening/save";
 import { reportError } from "@/lib/report-error";
 import { captureAgencyEvent } from "@/lib/analytics/server";
 import { aiWritingNotice } from "@/lib/screening/ai-writing";
+import { noteFirstScreening } from "@/lib/agency/test-account";
 
 // POST (multipart) - screen one CV against a job: check the request, run the
 // analysis (lib/cv-analysis), save it (lib/screening/save.js) and answer with
@@ -86,6 +87,8 @@ export async function POST(request) {
         flagged: Boolean(aiWritingNotice(extracted)),
       })
     );
+
+    after(() => noteFirstScreening(agencyId));
 
     return NextResponse.json({
       ok: true,

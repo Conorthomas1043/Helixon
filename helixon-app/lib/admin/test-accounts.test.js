@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 vi.mock("@/lib/security/alert-email", () => ({ escapeHtml: String, sendAdminAlert: async () => true }));
 vi.mock("@/lib/messaging/mailer", () => ({ siteUrl: () => "https://www.helixon.co.uk" }));
 
-const { applyTestAccountAction, createTestAccount, endsAtFor, mergeTimeline } = await import("./test-accounts");
+const { applyTestAccountAction, createTestAccount, digestEmail, endsAtFor, mergeTimeline } = await import("./test-accounts");
 
 // Records every query chain; `respond(table, calls)` answers it.
 function fakeDb(respond = () => ({ data: null, error: null })) {
@@ -174,5 +174,19 @@ describe("applyTestAccountAction", () => {
   it("refuses changes once the account has bought a plan", async () => {
     const result = await applyTestAccountAction({ client: fakeClerk(), supabase: fakeDb(), account: { ...account, converted_at: "2026-10-10T00:00:00Z" }, action: "end", body: {} });
     expect(result.status).toBe(409);
+  });
+});
+
+describe("digestEmail", () => {
+  const base = { name: "Ana", email: "ana@example.com", agencyName: "Silva", screenings: 0, candidates: 0, jobs: 0, seen: false, expiredToday: false };
+  it("is nothing on a quiet day", () => {
+    expect(digestEmail([base])).toBe(null);
+  });
+  it("lists active accounts and expiries, escaped", () => {
+    const mail = digestEmail([{ ...base, screenings: 3, seen: true }, { ...base, name: "<Bo>", expiredToday: true }]);
+    expect(mail.subject).toBe("Test accounts: 1 active, 1 expired in the last day");
+    expect(mail.html).toMatch(/Ana.*3 screenings/s);
+    expect(mail.html).toContain("&lt;Bo&gt;");
+    expect(mail.html).not.toContain("<Bo>");
   });
 });

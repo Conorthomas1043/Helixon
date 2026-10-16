@@ -102,7 +102,7 @@ function CreateDrawer({ open, onClose, onCreated }) {
   return (
     <Drawer open={open} onClose={close} title="New test account" subtitle="A working Helixon login with no payment. It ends on its own at the end date.">
       {created ? (
-        <div className="stack" style={{ gap: 16 }}>
+        <div className="stack">
           <dl className="kv">
             <dt>Sign in at</dt>
             <dd className="mono">{created.signInUrl}</dd>
@@ -118,7 +118,7 @@ function CreateDrawer({ open, onClose, onCreated }) {
           </div>
         </div>
       ) : (
-        <form onSubmit={submit} className="stack" style={{ gap: 18 }}>
+        <form onSubmit={submit} className="stack">
           <div className="form-grid">
             <div className="field">
               <label htmlFor="ta-name">Their name</label>
@@ -128,7 +128,7 @@ function CreateDrawer({ open, onClose, onCreated }) {
               <label htmlFor="ta-email">Their email</label>
               <input id="ta-email" type="email" value={form.email} onChange={(e) => set({ email: e.target.value })} required maxLength={254} />
             </div>
-            <div className="field" style={{ gridColumn: "1 / -1" }}>
+            <div className="field ta-wide">
               <label htmlFor="ta-agency">Agency name</label>
               <input id="ta-agency" value={form.agencyName} onChange={(e) => set({ agencyName: e.target.value })} maxLength={100} placeholder="Their agency, or leave blank" />
             </div>
@@ -143,7 +143,7 @@ function CreateDrawer({ open, onClose, onCreated }) {
               <input id="ta-cap" type="number" min={1} max={10000} value={form.screeningCap} onChange={(e) => set({ screeningCap: e.target.value })} required />
             </div>
           </div>
-          <p className="perm-desc" style={{ margin: 0 }}>
+          <p className="perm-desc ta-note">
             They get the full Agency plan. Texting, API keys and webhooks are off, and email to people outside the workspace is limited to 20 a day.
           </p>
           <div className="actions">
@@ -264,7 +264,7 @@ function AccountDrawer({ accountId, onClose, onChanged }) {
 
           <section className="drawer-section">
             <h3>Actions</h3>
-            <div className="actions" style={{ flexWrap: "wrap" }}>
+            <div className="actions">
               {live && <button type="button" className="btn small" disabled={busy} onClick={extend}><Icon name="calendar" size={13} /> {a.status === "active" ? "Change end date" : "Give access again"}</button>}
               <button type="button" className="btn small" disabled={busy} onClick={setCap}><Icon name="sparkle" size={13} /> Screening limit</button>
               {live && <button type="button" className="btn small" disabled={busy} onClick={resetPassword}><Icon name="key" size={13} /> Reset password</button>}
@@ -284,8 +284,8 @@ function AccountDrawer({ accountId, onClose, onChanged }) {
                   return (
                     <div className="tl-row" key={`${entry.at}-${i}`}>
                       <span className={`tl-dot ${tone}`}><Icon name={icon} /></span>
-                      <div style={{ minWidth: 0 }}>
-                        <div className="tl-title" style={{ fontWeight: 500 }}>{entry.text}</div>
+                      <div className="ta-cell">
+                        <div className="tl-title ta-name">{entry.text}</div>
                         <div className="tl-meta" title={formatDateTime(entry.at)}>
                           {timeAgo(entry.at)}{entry.actor ? ` · ${entry.actor}` : ""}
                         </div>
@@ -339,9 +339,9 @@ export default function TestAccountsPage() {
       render: (a) => (
         <div className="person-cell">
           <Avatar name={a.name} />
-          <div style={{ minWidth: 0 }}>
-            <div className="truncate" style={{ fontWeight: 500 }}>{a.name}</div>
-            <div className="faint truncate" style={{ fontSize: 13 }}>{a.email}{a.agencyName ? ` · ${a.agencyName}` : ""}</div>
+          <div className="ta-cell">
+            <div className="truncate ta-name">{a.name}</div>
+            <div className="faint truncate ta-sub">{a.email}{a.agencyName ? ` · ${a.agencyName}` : ""}</div>
           </div>
         </div>
       ),
@@ -378,7 +378,7 @@ export default function TestAccountsPage() {
               <button type="button" key={key} className={status === key ? "active" : ""} aria-pressed={status === key} onClick={() => setStatus(key)}>{label}</button>
             ))}
           </div>
-          <span className="faint" style={{ marginLeft: "auto", fontSize: 14 }}>{rows.length} of {accounts.length}</span>
+          <span className="faint ta-count">{rows.length} of {accounts.length}</span>
         </div>
 
         {!loading && accounts.length === 0 ? (

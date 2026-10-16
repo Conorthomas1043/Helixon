@@ -21,7 +21,9 @@ vi.mock("@/lib/supabase", () => ({
 }));
 vi.mock("@/lib/analytics/server", () => ({ agencyIdForProfile: vi.fn(), billingEventsFor: () => [], captureAgencyEvent: vi.fn() }));
 vi.mock("@/lib/report-error", () => ({ reportError: vi.fn() }));
-vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: vi.fn() }));
+vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal()), after: vi.fn((fn) => fn()) }));
+const converted = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/agency/test-account", () => ({ markTestAccountConverted: converted }));
 
 const { POST } = await import("./route");
 
@@ -41,6 +43,13 @@ describe("Stripe webhook", () => {
     const res = await POST(request());
     expect(res.status).toBe(200);
     expect(state.upserts[0]).toMatchObject({ user_id: "p1", status: "incomplete", stripe_subscription_id: "sub_1" });
+  });
+
+  it("marks a test account as converted when its owner buys a plan", async () => {
+    converted.mockReset();
+    state.event = { type: "checkout.session.completed", data: { object: { client_reference_id: "p1", subscription: "sub_1", customer: "cus_1", metadata: {} } } };
+    expect((await POST(request())).status).toBe(200);
+    expect(converted).toHaveBeenCalledWith("p1");
   });
 
   it("answers 500 when the subscription can't be saved, so Stripe retries", async () => {

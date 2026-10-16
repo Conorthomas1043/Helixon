@@ -17,6 +17,7 @@ import { createProfileAndAgency, generateUsername } from "@/lib/auth/create-prof
 import { generateEmployeePassword } from "@/lib/employee/auth";
 import { siteUrl } from "@/lib/messaging/mailer";
 import { testAccountStatus } from "@/lib/agency/test-account";
+import { escapeHtml } from "@/lib/format";
 
 export const TEST_ACCOUNT_PLAN = "agency";
 export const DEFAULT_SCREENING_CAP = 50;
@@ -302,4 +303,59 @@ export async function testAccountTimeline(supabase, account) {
     (jobs.data || []).map((r) => ({ at: r.created_at, kind: "job", text: `Created job ${r.title || "(untitled)"}` })),
     (admin.data || []).map((r) => ({ at: r.created_at, kind: "admin", text: `Admin: ${ACTIVITY_LABEL(r.action.replace(/^test_account_/, ""))}`, actor: r.admin_username })),
   ]);
+}
+
+// ── Daily summary (app/api/cron/admin-daily) ────────────────────────────────
+
+/**
+ * Each live test account's last 24 hours: what was added, whether they
+ * signed in, and whether access ran out.
+ */
+export async function testAccountDigest(supabase, now = Date.now()) {
+  const since = new Date(now - 86400e3).toISOString();
+  const { data, error } = await supabase.from("test_accounts").select("*").is("deleted_at", null).is("converted_at", null).limit(200);
+  if (error) throw new Error(error.message);
+  const rows = data || [];
+  const agencyIds = rows.map((r) => r.agency_id);
+  const { data: agencies } = agencyIds.length ? await supabase.from("agencies").select("id,name").in("id", agencyIds) : { data: [] };
+  const names = new Map((agencies || []).map((a) => [a.id, a.name]));
+  const since24h = async (table, agencyId) => {
+    const { count } = await supabase.from(table).select("id", { count: "exact", head: true }).eq("agency_id", agencyId).gte("created_at", since);
+    return count || 0;
+  };
+  const inWindow = (at) => Boolean(at) && at >= since && Date.parse(at) <= now;
+  return Promise.all(
+    rows.map(async (row) => ({
+      name: row.name,
+      email: row.email,
+      agencyName: names.get(row.agency_id) || null,
+      screenings: await since24h("scores", row.agency_id),
+      candidates: await since24h("candidates", row.agency_id),
+      jobs: await since24h("jobs", row.agency_id),
+      seen: inWindow(row.last_seen_at),
+      expiredToday: inWindow(row.ends_at) || inWindow(row.ended_at),
+    })),
+  );
+}
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+/** The summary email for testAccountDigest's entries, or null on a quiet day. */
+export function digestEmail(entries) {
+  const active = entries.filter((e) => e.seen || e.screenings || e.candidates || e.jobs);
+  const expired = entries.filter((e) => e.expiredToday);
+  if (!active.length && !expired.length) return null;
+  const who = (e) => `<strong>${escapeHtml(e.name)}</strong> (${escapeHtml(e.email)}${e.agencyName ? `, ${escapeHtml(e.agencyName)}` : ""})`;
+  const parts = [];
+  if (active.length) {
+    parts.push(
+      "<h3>Active</h3><ul>",
+      ...active.map((e) => `<li>${who(e)}: ${plural(e.screenings, "screening")}, ${plural(e.candidates, "candidate")}, ${plural(e.jobs, "job")}${e.seen ? ", signed in" : ""}</li>`),
+      "</ul>",
+    );
+  }
+  if (expired.length) parts.push("<h3>Access ended</h3><ul>", ...expired.map((e) => `<li>${who(e)}</li>`), "</ul>");
+  parts.push("<p>Admin console › Customers › Test accounts has each account's full activity.</p>");
+  const subject = [active.length ? `${active.length} active` : null, expired.length ? `${expired.length} expired` : null].filter(Boolean).join(", ");
+  return { subject: `Test accounts: ${subject} in the last day`, html: parts.join("") };
 }

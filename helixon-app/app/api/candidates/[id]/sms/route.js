@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { candidateHidden } from "@/lib/agency/permissions";
 import { SMS_MAX, normalisePhone, optedOut, sendSms, smsConfigured, smsDestinationAllowed } from "@/lib/messaging/sms";
 import { reportError } from "@/lib/report-error";
+import { testFeatureRefusal } from "@/lib/agency/test-account";
 import { agencyDb } from "@/lib/agency-db";
 import { fields, text } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
@@ -59,6 +60,8 @@ export async function POST(request, { params }) {
   if (!auth.hasActiveSubscription) {
     return NextResponse.json({ error: "Texting needs an active Helixon subscription.", upgrade: true }, { status: 402 });
   }
+  const notHere = await testFeatureRefusal(auth.agencyId);
+  if (notHere) return NextResponse.json({ error: notHere.error }, { status: notHere.status });
   if (!smsConfigured()) return NextResponse.json({ error: "Texting isn't set up yet - see Settings → Integrations." }, { status: 503 });
 
   const parsedBody = await parseBody(request, SmsInput, { allowEmpty: true });

@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { agencyDisplayName } from "@/lib/agency/display";
 import { agencyHasActiveSubscription } from "@/lib/auth/customer-auth";
 import { rateLimit } from "@/lib/ratelimit";
+import { testEmailRefusal } from "@/lib/agency/test-account";
 import { reportError } from "@/lib/report-error";
 
 export function mailConfigured() {
@@ -47,6 +48,11 @@ async function agencyPaid(agencyId) {
 export async function agencySendRefusal(agencyId, { toMember = false, count = 1 } = {}) {
   if (!agencyId) return "The email couldn't be sent.";
   if (!toMember && !(await agencyPaid(agencyId))) return SUBSCRIPTION_NEEDED_TO_SEND;
+  // A test workspace (Admin > Test accounts) has a small daily allowance.
+  if (!toMember) {
+    const limited = await testEmailRefusal(agencyId, count);
+    if (limited) return limited;
+  }
   if (!(await rateLimit(`agency-email:${agencyId}`, AGENCY_EMAILS_PER_HOUR, { cost: count }))) {
     return "This workspace has sent a lot of email in the last hour - please try again later.";
   }

@@ -1,5 +1,7 @@
 {
   "app/api/admin/stats/route.js": 2,
+  "app/api/admin/test-accounts/[id]/route.js": 1,
+  "app/api/admin/test-accounts/route.js": 1,
   "app/api/book/[token]/route.js": 7,
   "app/api/candidates/[id]/booking-links/route.js": 2,
   "app/api/candidates/[id]/client-profile/route.js": 1,

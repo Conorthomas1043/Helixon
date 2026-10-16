@@ -561,6 +561,15 @@ button.pill{cursor:pointer;font:inherit;font-size:12px}
 .finding-row{padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-raised)}
 .finding-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
+/* ── Test accounts ─────────────────────────────────────────────────────── */
+
+.ta-wide{grid-column:1/-1}
+.ta-note{margin:0}
+.ta-cell{min-width:0}
+.ta-name{font-weight:500}
+.ta-sub{font-size:13px}
+.ta-count{margin-left:auto;font-size:14px}
+
 /* ── Audit timeline ────────────────────────────────────────────────────── */
 
 .timeline{display:flex;flex-direction:column}

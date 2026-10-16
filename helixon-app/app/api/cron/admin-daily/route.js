@@ -9,6 +9,7 @@ import { HEALTH_CHECKS, OVERALL_LABEL, gradeHealth } from "@/lib/ops/health-grad
 import { alertRecipients, getSiteSettings } from "@/lib/ops/site-settings";
 import { escapeHtml, sendAdminAlert } from "@/lib/security/alert-email";
 import { reportError } from "@/lib/report-error";
+import { digestEmail, testAccountDigest } from "@/lib/admin/test-accounts";
 
 // Once a day (vercel.json), the admin console's time-based controls:
 //   1. lift bans whose end date has passed (public.timed_bans)
@@ -18,7 +19,9 @@ import { reportError } from "@/lib/report-error";
 //   3. delete IP blocks and firewall rules that expired over a week ago
 //   4. run the health checks and email the alert recipients if anything is
 //      down (Admin > Security > Who gets alerts)
-//   5. clear full request detail older than the retention set on the
+//   5. email the alert recipients what test accounts did in the last day
+//      (Admin > Test accounts), when any did anything or expired
+//   6. clear full request detail older than the retention set on the
 //      Traffic page: headers always; query strings and blocked-request
 //      bodies too, unless the request was flagged as an attack
 // Each step is independent: one failing doesn't stop the rest.
@@ -150,6 +153,14 @@ async function dailyHealthCheck(settings) {
   return { overall: grade.overall, failing: grade.failing, emailed };
 }
 
+async function testAccountSummary(settings, now) {
+  const to = alertRecipients(settings);
+  if (!to.length) return { emailed: false };
+  const mail = digestEmail(await testAccountDigest(supabase, now));
+  if (!mail) return { emailed: false };
+  return { emailed: await sendAdminAlert({ to, ...mail }) };
+}
+
 export async function GET(request) {
   if (!cronAuthorized(request)) return NextResponse.json({ ok: false }, { status: 401 });
 
@@ -170,6 +181,7 @@ export async function GET(request) {
   await step("demosEnded", () => endExpiredDemos(nowIso));
   await step("tidied", () => tidyExpiredRules(now));
   await step("health", () => dailyHealthCheck(settings));
+  await step("testAccounts", () => testAccountSummary(settings, now));
   await step("requestDetail", () => pruneRequestDetail(settings, now));
   await step("requestLogs", () => pruneRequestLogs(settings, now));
 
