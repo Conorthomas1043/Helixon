@@ -223,16 +223,17 @@ export async function listTestAccounts(supabase, now = Date.now()) {
   const { data: agencies } = agencyIds.length ? await supabase.from("agencies").select("id,name,screening_cap").in("id", agencyIds) : { data: [] };
   const agencyById = new Map((agencies || []).map((a) => [a.id, a]));
 
-  return Promise.all(
-    rows.map(async (row) => {
-      const [screenings, candidates, jobs] = await Promise.all([
-        countFor(supabase, "scores", row.agency_id),
-        countFor(supabase, "candidates", row.agency_id),
-        countFor(supabase, "jobs", row.agency_id),
-      ]);
-      return shapeAccount(row, agencyById.get(row.agency_id), { screenings, candidates, jobs, emails: row.emails_total || 0 }, now);
-    }),
-  );
+  return Promise.all(rows.map(async (row) => shapeAccount(row, agencyById.get(row.agency_id), await testAccountUsage(supabase, row), now)));
+}
+
+/** Screenings, candidates and jobs in the workspace, and emails sent to people outside it. */
+export async function testAccountUsage(supabase, row) {
+  const [screenings, candidates, jobs] = await Promise.all([
+    countFor(supabase, "scores", row.agency_id),
+    countFor(supabase, "candidates", row.agency_id),
+    countFor(supabase, "jobs", row.agency_id),
+  ]);
+  return { screenings, candidates, jobs, emails: row.emails_total || 0 };
 }
 
 export function shapeAccount(row, agency, usage, now = Date.now()) {
