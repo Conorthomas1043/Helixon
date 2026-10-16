@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/security/timing-safe";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { supabase } from "@/lib/supabase";
 import { syncAgencyPayments } from "@/lib/integrations/accounting-sync";
 import { syncMailbox } from "@/lib/integrations/mailbox";
@@ -18,9 +18,7 @@ export const maxDuration = 300;
 const BUDGET_MS = 240000;
 
 export async function GET(request) {
-  const secret = process.env.CRON_SECRET;
-  const header = request.headers.get("authorization") || "";
-  if (!secret || !timingSafeEqualStr(header, `Bearer ${secret}`)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!cronAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const started = Date.now();
   const { data: connections, error } = await supabase

@@ -149,7 +149,7 @@ export async function checkEmployeeRateLimit(username, ip) {
     const [pair, user, address] = await Promise.all([
       ip ? failures({ username, ip }) : failures({ username }),
       failures({ username }),
-      ip ? failures({ ip }) : Promise.resolve({ count: 0 }),
+      ip ? failures({ ip }) : Promise.resolve({ count: 0, error: null }),
     ]);
     const failed = [pair, user, address].find((r) => r?.error);
     if (failed) throw new Error(failed.error.message);

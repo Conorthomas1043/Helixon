@@ -107,22 +107,3 @@ export async function verifyGateCookie(cookieValue: string | undefined): Promise
 
   return true;
 }
-
-// Simple in-memory rate limit for the unlock endpoint. Resets on
-// redeploy/restart - a speed bump against script-guessing, not a
-// security boundary.
-const attempts = new Map<string, { count: number; resetAt: number }>();
-const WINDOW_MS = 60_000;
-const MAX_ATTEMPTS = 8;
-
-export function tooManyGateAttempts(ip: string): boolean {
-  const now = Date.now();
-  const entry = attempts.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS };
-  if (now > entry.resetAt) {
-    entry.count = 0;
-    entry.resetAt = now + WINDOW_MS;
-  }
-  entry.count += 1;
-  attempts.set(ip, entry);
-  return entry.count > MAX_ATTEMPTS;
-}

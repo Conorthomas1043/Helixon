@@ -18,8 +18,9 @@ const SignatureAnswerInput = fields({ name: text(400), agree: flag, decline: fla
 
 async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
-  const { data } = await supabase.from("signature_requests").select("*, agencies(name)").eq("token", token).maybeSingle();
-  return data;
+  const { data } = await supabase.from("signature_requests").select("*, agencies(name, suspended_at)").eq("token", token).maybeSingle();
+  // A suspended workspace's links stop working with the rest of it.
+  return data && !data.agencies?.suspended_at ? data : null;
 }
 
 const expired = (row) => row.expires_at && new Date(row.expires_at).getTime() < Date.now();

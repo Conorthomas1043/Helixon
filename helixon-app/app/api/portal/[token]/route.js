@@ -30,7 +30,9 @@ const CANDIDATE_COLUMNS = "id, agency_id, full_name, name, recruiter_id, phone, 
 
 async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
-  const { data: link } = await supabase.from("candidate_portal_links").select("id, candidate_id, expires_at, revoked_at, agencies(name)").eq("token", token).maybeSingle();
+  const { data: link } = await supabase.from("candidate_portal_links").select("id, candidate_id, expires_at, revoked_at, agencies(name, suspended_at)").eq("token", token).maybeSingle();
+  // A suspended workspace's links stop working with the rest of it.
+  if (link?.agencies?.suspended_at) return null;
   if (!link || link.revoked_at || new Date(link.expires_at).getTime() < Date.now()) return link ? { link, closed: true } : null;
   const { data: candidate } = await supabase.from("candidates").select(CANDIDATE_COLUMNS).eq("id", link.candidate_id).maybeSingle();
   if (!candidate) return null;

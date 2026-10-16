@@ -123,6 +123,12 @@ export async function checkAdminCredentials(username, password) {
     matches =
       actual.length === expected.length &&
       crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
+    // An unsalted SHA-256 falls to a dictionary attack if the env var ever
+    // leaks. Still accepted so nobody is locked out, but every sign-in with
+    // one says so until it's replaced.
+    if (matches) {
+      reportError(`[admin-auth] ${username} signed in with a legacy SHA-256 password hash - replace ADMIN_PASSWORD_HASH_${username.toUpperCase()} with a bcrypt hash (node scripts/hash-admin-password.js).`);
+    }
   }
 
   return matches ? { ok: true } : { ok: false, error: GENERIC_LOGIN_ERROR };

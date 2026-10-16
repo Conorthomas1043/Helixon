@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/security/timing-safe";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { mergeContext, renderTemplate } from "@/lib/messaging/email-merge";
@@ -26,10 +26,7 @@ const BATCH = 300;
 const LAPSED_RETRY_MS = 24 * 60 * 60 * 1000;
 
 export async function GET(request) {
-  const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!timingSafeEqualStr(provided, process.env.CRON_SECRET)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!cronAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!mailConfigured()) return NextResponse.json({ ok: false, error: "Email isn't configured." }, { status: 503 });
 
   const now = new Date();

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/security/timing-safe";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin/audit";
 import { purgeAgencyCandidates, sweepAllAgencies } from "@/lib/compliance/data-retention";
@@ -19,16 +19,7 @@ import { fetchAll, inChunks } from "@/lib/fetch-all";
 const RETENTION_DAYS = 90;
 
 export async function GET(request) {
-  const expected = process.env.CRON_SECRET;
-  const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-
-  if (!expected) {
-    reportError("[data-retention] CRON_SECRET is not set - refusing to run.");
-    return NextResponse.json({ ok: false }, { status: 503 });
-  }
-  if (!timingSafeEqualStr(expected, provided)) {
-    return NextResponse.json({ ok: false }, { status: 401 });
-  }
+  if (!cronAuthorized(request)) return NextResponse.json({ ok: false }, { status: 401 });
 
   // 1. Every agency: erase candidates inactive past the agency's retention
   //    period, and lapse expired talent pool entries (lib/compliance/data-retention.js).

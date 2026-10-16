@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/security/timing-safe";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { writeAdminAuditSafe } from "@/lib/admin/audit";
@@ -151,15 +151,7 @@ async function dailyHealthCheck(settings) {
 }
 
 export async function GET(request) {
-  const expected = process.env.CRON_SECRET;
-  const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!expected) {
-    reportError("[admin-daily] CRON_SECRET is not set - refusing to run.");
-    return NextResponse.json({ ok: false }, { status: 503 });
-  }
-  if (!timingSafeEqualStr(expected, provided)) {
-    return NextResponse.json({ ok: false }, { status: 401 });
-  }
+  if (!cronAuthorized(request)) return NextResponse.json({ ok: false }, { status: 401 });
 
   const now = Date.now();
   const nowIso = new Date(now).toISOString();

@@ -48,8 +48,13 @@ export async function memberForToken(token, purpose) {
   if (!TOKEN_RE.test(token || "") || !PURPOSES.includes(purpose)) return null;
   const { data } = await supabase.from("member_tokens").select("agency_id, user_id").eq("token", token).eq("purpose", purpose).maybeSingle();
   if (!data) return null;
-  const { data: profile, error } = await supabase.from("profiles").select("id").eq("clerk_user_id", data.user_id).eq("agency_id", data.agency_id).maybeSingle();
+  const [{ data: profile, error }, { data: agency }] = await Promise.all([
+    supabase.from("profiles").select("id").eq("clerk_user_id", data.user_id).eq("agency_id", data.agency_id).maybeSingle(),
+    supabase.from("agencies").select("suspended_at").eq("id", data.agency_id).maybeSingle(),
+  ]);
   if (error || !profile) return null;
+  // A suspended workspace's feeds and BCC address stop with the rest of it.
+  if (agency?.suspended_at) return null;
   return data;
 }
 

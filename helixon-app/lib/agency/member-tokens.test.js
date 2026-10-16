@@ -30,6 +30,11 @@ describe("memberForToken", () => {
     expect(await memberForToken(token, "calendar")).toMatchObject({ agency_id: "A", user_id: "user_1" });
   });
 
+  it("stops working while the workspace is suspended", async () => {
+    db.current = fakeDb({ ...seed(), agencies: [{ id: "A", suspended_at: "2026-10-01T00:00:00Z" }] });
+    expect(await memberForToken(token, "calendar")).toBeNull();
+  });
+
   it("refuses someone who has left the agency", async () => {
     const s = seed();
     s.profiles[0].agency_id = null;

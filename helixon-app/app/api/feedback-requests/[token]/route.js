@@ -32,20 +32,29 @@ const TAG_VALUES = new Set([
   "good_partnership",
 ]);
 
+// Links are made with 48 hex characters; the looser shape keeps any older
+// link working while refusing junk before it reaches the database.
+const TOKEN_RE = /^[A-Za-z0-9_-]{16,128}$/;
+
 async function loadRequest(token) {
+  if (!TOKEN_RE.test(token || "")) return null;
   const { data, error } = await supabase
     .from("feedback_requests")
     .select(
-      "id, agency_id, kind, rating, responded_at, candidates(full_name, name), jobs(title, client), agencies(name)",
+      "id, agency_id, kind, rating, responded_at, candidates(full_name, name), jobs(title, client), agencies(name, suspended_at)",
     )
     .eq("token", token)
     .maybeSingle();
   if (error || !data) return null;
-  return data;
+  // A suspended workspace's links stop working with the rest of it.
+  return data.agencies?.suspended_at ? null : data;
 }
 
 export async function GET(request, { params }) {
   const { token } = await params;
+  if (!(await rateLimit(`feedback-request-get:${getClientIp(request)}`, 120))) {
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+  }
   const row = await loadRequest(token);
   if (!row) {
     return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });

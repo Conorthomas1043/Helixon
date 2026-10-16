@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualStr } from "@/lib/security/timing-safe";
+import { cronAuthorized } from "@/lib/auth/cron-auth";
 import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
@@ -115,11 +115,7 @@ async function recipientAccess(agency, perms, userId) {
 }
 
 export async function GET(request) {
-  const expected = process.env.CRON_SECRET;
-  const provided = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!timingSafeEqualStr(provided, expected)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!cronAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
     return NextResponse.json({ ok: false, error: "Email isn't configured." }, { status: 503 });
   }

@@ -109,11 +109,14 @@ export const GET = customerRoute(async (_request, _context, auth) => {
 
     const viewer = members.find((m) => m.userId === auth.userId);
     const canManage = viewer?.role === "org:admin";
+    // Who's been invited, and seat-holders outside the workspace, are for
+    // the people who manage the team; members get the seat counts only.
     return NextResponse.json({
       ...usage,
+      pendingInvites: canManage ? usage.pendingInvites : [],
       canManage,
       unassignedCount: canManage ? await unassignedCount() : 0,
-      outsideMembers,
+      outsideMembers: canManage ? outsideMembers : [],
     });
   } catch (err) {
     reportError("[team/invite] Failed to read seat usage:", err.message);

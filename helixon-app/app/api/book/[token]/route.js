@@ -24,10 +24,11 @@ async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
   const { data } = await supabase
     .from("interview_booking_links")
-    .select("*, agencies(name), candidates(id, full_name, name, stage, recruiter_id), jobs(title, client)")
+    .select("*, agencies(name, suspended_at), candidates(id, full_name, name, stage, recruiter_id), jobs(title, client)")
     .eq("token", token)
     .maybeSingle();
-  return data;
+  // A suspended workspace's links stop working with the rest of it.
+  return data && !data.agencies?.suspended_at ? data : null;
 }
 
 export async function GET(request, { params }) {

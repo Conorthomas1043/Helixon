@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie, tooManyGateAttempts } from "@/lib/auth/site-gate";
+import crypto from "node:crypto";
+import { GATE_COOKIE_NAME, GATE_MAX_AGE_SECONDS, signGateCookie } from "@/lib/auth/site-gate";
+import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { fields, str } from "@/lib/api/schemas";
 import { parseBody } from "@/lib/api/body";
 
@@ -20,12 +22,9 @@ const GateInput = fields({ password: str(400) });
 const MAX_AGE = GATE_MAX_AGE_SECONDS;
 
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
-
-  if (tooManyGateAttempts(ip)) {
+  // The shared (Redis) limiter: an in-memory count reset on every cold
+  // start and differed per instance.
+  if (!(await rateLimit(`site-gate:${getClientIp(request)}`, 30))) {
     return NextResponse.json(
       { ok: false, error: "Whoa there. Give it a minute and try again." },
       { status: 429 }
@@ -49,9 +48,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const matches = submitted.length === correct.length && submitted === correct;
-  // (Length-then-compare is a minor timing-safety nicety; this endpoint
-  // is already rate-limited above, which matters more in practice.)
+  // Compared as fixed-length digests, in constant time, so neither the
+  // length nor any prefix of the password shows in the response time.
+  const digest = (value: string) => crypto.createHash("sha256").update(value).digest();
+  const matches = crypto.timingSafeEqual(digest(submitted), digest(correct));
 
   if (!matches) {
     return NextResponse.json({ ok: false, error: "That's not it, try again." }, { status: 401 });

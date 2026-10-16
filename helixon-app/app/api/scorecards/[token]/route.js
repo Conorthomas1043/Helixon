@@ -24,14 +24,26 @@ const ScorecardInput = fields({
 
 const TOKEN_RE = /^[a-f0-9]{48}$/;
 
+// A scorecard link stops working this long after the interview, so an old
+// link in someone's inbox isn't a way in for ever.
+const SCORECARD_LINK_DAYS_AFTER = 60;
+
+function scorecardClosed(row, now = Date.now()) {
+  const at = Date.parse(row?.interviews?.starts_at || "");
+  return Number.isFinite(at) && now > at + SCORECARD_LINK_DAYS_AFTER * 86400000;
+}
+
+const CLOSED = "This scorecard link has expired - ask the agency for a new one.";
+
 async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
   const { data } = await supabase
     .from("interview_feedback")
-    .select("id, agency_id, reviewer_name, criteria, submitted_at, interviews(id, candidate_id, round, starts_at, duration_minutes, candidates(full_name, name), jobs(title, client)), agencies(name)")
+    .select("id, agency_id, reviewer_name, criteria, submitted_at, interviews(id, candidate_id, round, starts_at, duration_minutes, candidates(full_name, name), jobs(title, client)), agencies(name, suspended_at)")
     .eq("token", token)
     .maybeSingle();
-  return data;
+  // A suspended workspace's links stop working with the rest of it.
+  return data && !data.agencies?.suspended_at ? data : null;
 }
 
 export async function GET(request, { params }) {
@@ -41,6 +53,7 @@ export async function GET(request, { params }) {
   }
   const row = await load(token);
   if (!row) return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });
+  if (!row.submitted_at && scorecardClosed(row)) return NextResponse.json({ error: CLOSED }, { status: 410 });
   const i = row.interviews;
   return NextResponse.json({
     candidateName: i?.candidates?.full_name || i?.candidates?.name || "the candidate",
@@ -64,6 +77,7 @@ export async function POST(request, { params }) {
   const row = await load(token);
   if (!row) return NextResponse.json({ error: "This link isn't valid." }, { status: 404 });
   if (row.submitted_at) return NextResponse.json({ error: "This scorecard has already been submitted." }, { status: 409 });
+  if (scorecardClosed(row)) return NextResponse.json({ error: CLOSED }, { status: 410 });
 
   const parsedBody = await parseBody(request, ScorecardInput, { allowEmpty: true });
   if (parsedBody.response) return parsedBody.response;

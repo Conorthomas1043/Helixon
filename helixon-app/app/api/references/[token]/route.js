@@ -27,10 +27,11 @@ async function load(token) {
   if (!TOKEN_RE.test(token || "")) return null;
   const { data } = await supabase
     .from("candidate_references")
-    .select("id, agency_id, candidate_id, referee_name, status, expires_at, candidates(full_name, name), agencies(name)")
+    .select("id, agency_id, candidate_id, referee_name, status, expires_at, candidates(full_name, name), agencies(name, suspended_at)")
     .eq("token", token)
     .maybeSingle();
-  return data;
+  // A suspended workspace's links stop working with the rest of it.
+  return data && !data.agencies?.suspended_at ? data : null;
 }
 
 const expired = (row) => row.expires_at && new Date(row.expires_at).getTime() < Date.now();

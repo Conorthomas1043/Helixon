@@ -29,10 +29,11 @@ async function load(token) {
   if (!SHARE_TOKEN_RE.test(token || "")) return null;
   const { data } = await supabase
     .from("shortlist_shares")
-    .select("*, shortlists(id, name, job_id, jobs(title, client, client_id)), agencies(name)")
+    .select("*, shortlists(id, name, job_id, jobs(title, client, client_id)), agencies(name, suspended_at)")
     .eq("token", token)
     .maybeSingle();
-  return data && shareActive(data) ? data : null;
+  // A suspended workspace's links stop working with the rest of it.
+  return data && shareActive(data) && !data.agencies?.suspended_at ? data : null;
 }
 
 export async function GET(request, { params }) {
