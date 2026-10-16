@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { isValidAssignee } from "@/lib/agency/team-reassign";
 import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
@@ -50,7 +51,7 @@ export const GET = customerRoute(async (_request, _context, auth) => {
     }
   }
 
-  const owners = await resolveRecruiterNames(supabase, (clients ?? []).map((c) => c.owner_id));
+  const owners = await resolveRecruiterNames(supabase, (clients ?? []).map((c) => c.owner_id), auth.agencyId);
   const { canSeeFinancials } = await getAccess(auth);
   return NextResponse.json({
     clients: (clients ?? []).map((c) => {
@@ -70,6 +71,7 @@ export const POST = customerRoute(async (request, _context, auth, body) => {
   const cleaned = cleanClientFields(body, { requireName: true });
   if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
   const fields = withoutMoney(cleaned, access, ["fee_percent"]);
+  if (fields.owner_id && !(await isValidAssignee(supabase, auth.agencyId, fields.owner_id))) return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
 
   const { data, error } = await (await agencyDb())
     .from("clients")

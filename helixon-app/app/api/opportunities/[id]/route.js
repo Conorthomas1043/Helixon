@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { isValidAssignee } from "@/lib/agency/team-reassign";
 import { customerRoute } from "@/lib/api/route";
 import { OpportunityInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
@@ -27,6 +28,9 @@ export const PATCH = customerRoute(async (request, { params }, auth, input) => {
   const body = input;
   const update = cleanOpportunity(body);
   if (update.error) return NextResponse.json({ error: update.error }, { status: 400 });
+  if (update.owner_id && update.owner_id !== current.owner_id && !(await isValidAssignee(supabase, auth.agencyId, update.owner_id))) {
+    return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
+  }
 
   // A won deal can be linked to the job it turned into.
   if (body.jobId !== undefined) {

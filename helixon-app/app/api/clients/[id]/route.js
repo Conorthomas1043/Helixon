@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { isValidAssignee } from "@/lib/agency/team-reassign";
 import { customerRoute } from "@/lib/api/route";
 import { ClientInput } from "@/lib/api/schemas";
 import { recruiterDisplayName, resolveRecruiterNames } from "@/lib/agency/recruiter-directory";
@@ -58,7 +59,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
     };
   });
 
-  const owner = await resolveRecruiterNames(supabase, [client.owner_id]);
+  const owner = await resolveRecruiterNames(supabase, [client.owner_id], auth.agencyId);
   const { canSeeFinancials } = await getAccess(auth);
   const shaped = toClient(client);
   return NextResponse.json({
@@ -83,6 +84,9 @@ export const PATCH = customerRoute(async (request, { params }, auth, body) => {
   if (cleaned.error) return NextResponse.json({ error: cleaned.error }, { status: 400 });
   const fields = withoutMoney(cleaned, access, ["fee_percent"]);
   if (Object.keys(fields).length === 0) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+  if (fields.owner_id && fields.owner_id !== client.owner_id && !(await isValidAssignee(supabase, auth.agencyId, fields.owner_id))) {
+    return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
+  }
 
   const { data, error } = await (await agencyDb())
     .from("clients")

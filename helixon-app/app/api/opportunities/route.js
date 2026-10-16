@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { isValidAssignee } from "@/lib/agency/team-reassign";
 import { customerRoute } from "@/lib/api/route";
 import { OpportunityInput } from "@/lib/api/schemas";
 import { recruiterDisplayName } from "@/lib/agency/recruiter-directory";
@@ -36,6 +37,7 @@ export const POST = customerRoute(async (request, _context, auth, input) => {
   if (!client) return NextResponse.json({ error: "Pick the client or prospect this deal is with." }, { status: 400 });
   const fields = cleanOpportunity(body, { requireTitle: true });
   if (fields.error) return NextResponse.json({ error: fields.error }, { status: 400 });
+  if (fields.owner_id && !(await isValidAssignee(supabase, auth.agencyId, fields.owner_id))) return NextResponse.json({ error: "That person isn't in your team." }, { status: 400 });
 
   const contactId = cleanUuid(body.contactId);
   if (contactId) {
