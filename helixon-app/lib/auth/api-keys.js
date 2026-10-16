@@ -8,6 +8,7 @@ import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import { getAgencyControls } from "@/lib/agency/controls";
 import { agencyHasActiveSubscription } from "@/lib/auth/customer-auth";
+import { canManageWorkspace } from "@/lib/agency/workspace-admin";
 import { rateLimit } from "@/lib/ratelimit";
 
 export const KEY_PREFIX = "hx_";
@@ -20,6 +21,27 @@ export function hashApiKey(key) {
 export function generateApiKey() {
   const key = `${KEY_PREFIX}${crypto.randomBytes(24).toString("base64url")}`;
   return { key, prefix: key.slice(0, 10), hash: hashApiKey(key) };
+}
+
+// A key acts with the whole workspace's access (every candidate, every
+// fee), which only the owner and admins have, and only they can make one.
+// So it stops working once its maker stops being one. Asking Clerk on
+// every call is slow, so the answer is kept for a minute.
+const ADMIN_CACHE_MS = 60_000;
+const adminCache = new Map(); // `${agencyId}:${userId}` -> { admin, until }
+
+async function makerIsAdmin(agencyId, userId) {
+  const key = `${agencyId}:${userId}`;
+  const hit = adminCache.get(key);
+  if (hit && hit.until > Date.now()) return hit.admin;
+  const admin = await canManageWorkspace({ agencyId, userId }).catch(() => false);
+  if (adminCache.size > 5000) adminCache.clear();
+  adminCache.set(key, { admin, until: Date.now() + ADMIN_CACHE_MS });
+  return admin;
+}
+
+export function _clearApiKeyCache() {
+  adminCache.clear();
 }
 
 // The key from "Authorization: Bearer hx_..." or "X-API-Key: hx_...".
@@ -49,6 +71,9 @@ export async function authenticateApiKey(request) {
     agencyHasActiveSubscription(row.agency_id).catch(() => false),
   ]);
   if (!owner || owner.agency_id !== row.agency_id) return { ok: false, status: 401, error: "The person who made this key has left the workspace - make a new one." };
+  if (!(await makerIsAdmin(row.agency_id, row.created_by))) {
+    return { ok: false, status: 403, error: "The person who made this key is no longer a workspace admin - an admin needs to make a new one." };
+  }
   if (controls.suspended) return { ok: false, status: 403, error: "This workspace is suspended." };
   if (!subscribed) return { ok: false, status: 402, error: "The workspace needs an active subscription to use the API." };
   if (!(await rateLimit(`api-key:${row.id}`, API_RATE_PER_HOUR))) return { ok: false, status: 429, error: "Too many requests - the limit is 1,000 an hour." };

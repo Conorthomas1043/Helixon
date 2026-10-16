@@ -7,6 +7,7 @@ import { logActivity } from "@/lib/candidates/activity";
 import { personCandidateIds } from "@/lib/candidates/person";
 import { getAgencyTags } from "@/lib/agency/tags";
 import { candidateHidden, canSeeCandidate, getAccess } from "@/lib/agency/permissions";
+import { documentHidden } from "@/lib/clients/signatures";
 import { logAudit } from "@/lib/agency/audit";
 import { reportError } from "@/lib/report-error";
 import { agencyDb } from "@/lib/agency-db";
@@ -108,7 +109,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
     optional(supabase.from("shortlist_candidates").select("candidate_id, client_decision, client_comment, client_decided_at, client_decided_by").in("candidate_id", ids).not("client_decided_at", "is", null)),
     // Documents sent to them to sign, and what they told us on their
     // self-service link (migration 20261003010000).
-    optional((await agencyDb()).from("signature_requests").select("candidate_id, kind, title, body, status, sent_at, signed_at, signed_name, signed_ip, declined_reason").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
+    optional((await agencyDb()).from("signature_requests").select("candidate_id, kind, title, body, status, sent_at, signed_at, signed_name, signed_ip, declined_reason, created_by").eq("agency_id", auth.agencyId).in("candidate_id", ids)),
     optional((await agencyDb()).from("candidates").select("id, notice_period, salary_expectation, available_from").eq("agency_id", auth.agencyId).in("id", ids)),
   ]);
   const detailsById = new Map(extraDetails.map((e) => [e.id, e]));
@@ -126,6 +127,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
       name: person.full_name || person.name || null,
       records: ids.length,
       ...(withheld ? { recordsLeftOut: withheld, recordsLeftOutNote: "Other records for this person are assigned to colleagues. Ask the workspace owner or an admin to run the export for the complete file." } : {}),
+      ...(access.canSeeFinancials ? {} : { payLeftOut: true, payLeftOutNote: "Salary, pay rates and the text of offers and contracts are left out. Ask the workspace owner or an admin to run the export for the complete file." }),
       note:
         "Each record is this person's application or screening for one job. The original CV file is listed under cvFile, and copies of compliance documents under complianceChecks[].documentKept; both can be downloaded from their profile.",
     },
@@ -190,8 +192,8 @@ export const GET = customerRoute(async (request, { params }, auth) => {
         offeredOn: p.offer_date,
         startsOn: p.start_date,
         endsOn: p.end_date,
-        salary: p.salary,
-        payRate: p.pay_rate,
+        salary: access.canSeeFinancials ? p.salary : null,
+        payRate: access.canSeeFinancials ? p.pay_rate : null,
         rateUnit: p.rate_unit,
         currency: p.currency,
         notes: p.notes,
@@ -225,7 +227,7 @@ export const GET = customerRoute(async (request, { params }, auth) => {
       documentsSentToSign: forCandidate(signatures, c.id).map((d) => ({
         kind: d.kind,
         title: d.title,
-        text: d.body,
+        text: documentHidden(d, access, auth) ? null : d.body,
         status: d.status,
         sentAt: d.sent_at,
         signedAt: d.signed_at,
