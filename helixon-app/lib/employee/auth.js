@@ -7,7 +7,7 @@
 // Tables used (see your schema):
 //   employees(id, username, password_hash, display_name, full_name, role,
 //             is_active, created_at, last_login)
-//   employee_sessions(id, employee_id, token, created_at, expires_at)
+//   employee_sessions(id, employee_id, token (a SHA-256 of it), created_at, expires_at)
 //   login_attempts(id, ts, ip, username, login_type, success)
 //     - shared with admin login via the `login_type` column; employee
 //       attempts are recorded here with login_type = 'employee'.
@@ -70,6 +70,13 @@ function generateToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
+// Only a SHA-256 of the session token is stored (migration
+// 20261016010000), so a leaked copy of employee_sessions can't be replayed
+// as a cookie. The token itself is only ever in the browser's cookie.
+export function sessionTokenHash(token) {
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+}
+
 // Readable but strong: 4 groups of 5 from an alphabet without look-alikes
 // (no 0/O, 1/l/I), ~115 bits. Shown to the admin once when they create an
 // account or reset a password with "Generate".
@@ -97,7 +104,7 @@ const IMPERSONATION_TIMEOUT_MS = 60 * 60 * 1000;
 export async function startEmployeeSession(employeeId, { impersonatedBy = null } = {}) {
   const token = generateToken();
   const lifetime = impersonatedBy ? IMPERSONATION_TIMEOUT_MS : IDLE_TIMEOUT_MS;
-  const row = { employee_id: employeeId, token, expires_at: new Date(Date.now() + lifetime).toISOString() };
+  const row = { employee_id: employeeId, token: sessionTokenHash(token), expires_at: new Date(Date.now() + lifetime).toISOString() };
   if (impersonatedBy) row.impersonated_by = impersonatedBy;
 
   const { data, error } = await supabase.from("employee_sessions").insert(row).select("id").single();
@@ -201,7 +208,7 @@ export async function loginEmployee({ username, password, ip }) {
 
   const { error: sessionError } = await supabase.from("employee_sessions").insert({
     employee_id: employee.id,
-    token,
+    token: sessionTokenHash(token),
     expires_at: expiresAt,
   });
 
@@ -255,7 +262,7 @@ export async function getEmployeeSession({ refresh = true } = {}) {
     const { data: session, error } = await supabase
       .from("employee_sessions")
       .select(SESSION_SELECT)
-      .eq("token", token)
+      .eq("token", sessionTokenHash(token))
       .maybeSingle();
     if (error) {
       reportError("[employee-auth] Session lookup failed:", error.message);
@@ -303,7 +310,7 @@ export async function logoutEmployee() {
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (token) {
     try {
-      await supabase.from("employee_sessions").delete().eq("token", token);
+      await supabase.from("employee_sessions").delete().eq("token", sessionTokenHash(token));
     } catch (e) {
       reportError("[employee-auth] Failed to delete session:", e.message);
     }

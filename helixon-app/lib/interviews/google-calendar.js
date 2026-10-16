@@ -22,6 +22,7 @@
 import "server-only";
 import { supabase } from "@/lib/supabase";
 import { reportError } from "@/lib/report-error";
+import { open, seal, secretBoxReady } from "@/lib/security/secret-box";
 
 const SCOPE = "https://www.googleapis.com/auth/calendar";
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -103,12 +104,24 @@ export async function fetchGoogleEmail(accessToken) {
   }
 }
 
+// Google tokens are sealed with INTEGRATIONS_ENCRYPTION_KEY (lib/security/secret-box.js),
+// like the agency integrations' tokens. Without the key they're stored as
+// before; a sealed value starts "v1." and anything else is read as-is.
+function sealToken(value) {
+  return value && secretBoxReady() ? seal(value) : value;
+}
+
+export function openToken(value) {
+  if (typeof value !== "string" || !value.startsWith("v1.")) return value ?? null;
+  return open(value);
+}
+
 export async function saveConnection(employeeId, tokens) {
   const email = await fetchGoogleEmail(tokens.access_token);
   const { error } = await supabase.from("employee_google_calendar_tokens").upsert({
     employee_id: employeeId,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
+    access_token: sealToken(tokens.access_token),
+    refresh_token: sealToken(tokens.refresh_token),
     expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
     google_email: email,
     connected_at: new Date().toISOString(),
@@ -155,13 +168,16 @@ async function getValidAccessToken(employeeId) {
   if (error || !row) return null;
 
   const expiresSoon = new Date(row.expires_at).getTime() - Date.now() < 5 * 60 * 1000;
-  if (!expiresSoon) return row.access_token;
+  const accessToken = openToken(row.access_token);
+  if (!expiresSoon && accessToken) return accessToken;
 
-  const refreshed = await refreshAccessToken(row.refresh_token);
+  const refreshToken = openToken(row.refresh_token);
+  if (!refreshToken) return null;
+  const refreshed = await refreshAccessToken(refreshToken);
   await supabase
     .from("employee_google_calendar_tokens")
     .update({
-      access_token: refreshed.access_token,
+      access_token: sealToken(refreshed.access_token),
       expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
     })
     .eq("employee_id", employeeId);
