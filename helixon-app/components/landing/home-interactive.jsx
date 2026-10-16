@@ -533,7 +533,7 @@ export function ProductWorkflowSection() {
               <button type="button"
                 key={tab}
                 {...tabProps(i)}
-                className="text-xs font-semibold px-3.5 py-2 rounded-t-lg whitespace-nowrap transition-colors min-h-[40px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+                className="text-xs font-semibold px-3.5 py-2 rounded-t-lg whitespace-nowrap transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
                 style={{
                   color: activeTab === i ? "var(--forest)" : "var(--ink-soft)",
                   background: activeTab === i ? "var(--mist)" : "transparent",
@@ -665,15 +665,18 @@ function FaqItem({ id, q, a, open, onToggle }) {
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
+      {/* Opens by animating the row from 0fr to 1fr, so the answer gets its
+          full height however large the text is set. */}
       <div
         id={`${id}-a`}
         role="region"
         aria-labelledby={`${id}-q`}
         inert={!open}
-        className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: open ? "400px" : "0px", opacity: open ? 1 : 0 }}
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
       >
-        <p className="text-sm leading-relaxed pb-5 pr-8 text-[var(--ink-soft)]">{a}</p>
+        <div className="overflow-hidden">
+          <p className="text-sm leading-relaxed pb-5 pr-8 text-[var(--ink-soft)]">{a}</p>
+        </div>
       </div>
     </div>
   );

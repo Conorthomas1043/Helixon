@@ -215,8 +215,8 @@ html {
   html { scroll-behavior: auto; }
 }
 
-/* Anchor targets clear the sticky nav */
-[id] { scroll-margin-top: 72px; }
+/* Anchor targets clear the sticky nav, which grows with the text size */
+[id] { scroll-margin-top: 4.5rem; }
 
 /* Skip link - visible only on keyboard focus */
 .skip-link {
@@ -274,7 +274,7 @@ body {
   background:  var(--bg);
   color:       var(--ink);
   font-family: var(--font-body);
-  font-size:   16px;
+  font-size:   1rem; /* follows the browser's text size setting */
   line-height: 1.6;
 }
 

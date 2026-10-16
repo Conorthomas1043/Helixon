@@ -56,12 +56,12 @@ export default function MarketingFooter() {
             <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">
               {col.title}
             </p>
-            {/* 13px text with a 36px-tall hit area: the links were ~13px tall,
-                too small to tap reliably on a phone. */}
+            {/* 13px text with a 44px-tall hit area on phones (36px with a
+                pointer), so stacked links can be tapped reliably. */}
             <ul className="text-13 text-[var(--ink-soft)]">
               {col.links.map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="inline-flex items-center min-h-[36px] hover:underline">
+                  <Link href={href} className="inline-flex items-center min-h-[44px] md:min-h-[36px] hover:underline">
                     {label}
                   </Link>
                 </li>
@@ -76,7 +76,7 @@ export default function MarketingFooter() {
           <span className="text-xs text-[var(--ink-faint)]">
             © {new Date().getFullYear()} Helixon. AI CV screening for recruitment agencies.
           </span>
-          <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex items-center min-h-[36px] text-xs hover:underline" style={{ color: "var(--ink-faint)" }}>
+          <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex items-center min-h-[44px] md:min-h-[36px] text-xs hover:underline text-[var(--ink-faint)]">
             {signedIn ? "Dashboard" : "Login"}
           </Link>
         </div>

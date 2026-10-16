@@ -84,7 +84,9 @@ export default function MarketingNav({ active, showTagline = true }) {
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
-      <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
+      {/* min-h, not h, and flex-wrap: with enlarged text the controls wrap onto
+          a second row instead of pushing the menu button off screen. */}
+      <div className="max-w-[1100px] mx-auto px-6 min-h-[56px] py-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
         <Logo showTagline={showTagline} />
 
         <div className="hidden md:flex items-center gap-1 text-xs font-medium text-[var(--ink-soft)]">
@@ -100,7 +102,7 @@ export default function MarketingNav({ active, showTagline = true }) {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {signedIn ? (
             <div ref={accountRef} className="hidden md:flex items-center gap-2 relative">
               <Button as="a" href="/dashboard" variant="primary" size="sm" className="min-h-[36px]">
@@ -140,7 +142,7 @@ export default function MarketingNav({ active, showTagline = true }) {
               )}
             </div>
           ) : (
-            <Button as="a" href="/demo" variant="primary" size="sm" className="hidden md:inline-flex min-h-[36px]">
+            <Button as="a" href="/demo" variant="primary" size="sm" className="min-h-[44px] md:min-h-[36px]">
               Get a demo
             </Button>
           )}
@@ -151,7 +153,7 @@ export default function MarketingNav({ active, showTagline = true }) {
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-[var(--ink)]"
+            className="md:hidden w-11 h-11 shrink-0 rounded-lg flex items-center justify-center text-[var(--ink)]"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               {mobileOpen ? (
