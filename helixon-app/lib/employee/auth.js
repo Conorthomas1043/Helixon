@@ -80,9 +80,10 @@ function generateToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
-// Only a SHA-256 of the session token is stored (migration
-// 20261016010000), so a leaked copy of employee_sessions can't be replayed
-// as a cookie. The token itself is only ever in the browser's cookie.
+// Only a SHA-256 of the session token is stored, so a leaked copy of
+// employee_sessions can't be replayed as a cookie. The token itself is only
+// ever in the browser's cookie. (Migration 20261016010000 removes the
+// expired rows from before, which held the token itself.)
 export function sessionTokenHash(token) {
   return crypto.createHash("sha256").update(String(token)).digest("hex");
 }

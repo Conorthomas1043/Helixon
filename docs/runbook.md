@@ -25,12 +25,13 @@ Once it's on, every change reaches `main` through a pull request with green chec
 
 New schema changes go in `supabase/migrations/<YYYYMMDDHHMMSS>_<name>.sql` (`supabase migration new <name>` creates one).
 
-To apply them:
-1. One-off setup: add a repository secret `SUPABASE_DB_URL` with the production Postgres connection string (Supabase dashboard → Connect → Session pooler).
-2. GitHub → Actions → **Apply database migrations** → Run workflow. Leave **dry run** ticked first: it lists which migrations are applied and which are pending.
-3. Run it again with dry run unticked to apply the pending ones.
+**How they're applied today.** Production's migrations were applied through Supabase (the MCP server or dashboard), which records each one under its **name** with the time it ran as the version. So the database's history (`supabase_migrations.schema_migrations`) has the same names as the files here but different version numbers. Apply a new migration the same way, under the file's name without the timestamp (e.g. `scrub_link_tokens_from_request_logs`), and check it's listed afterwards: `select version, name from supabase_migrations.schema_migrations order by version desc limit 5;`
 
-Never paste migration SQL into the dashboard editor: the migration history then no longer matches the database, and `db push` will try to apply it again. `supabase/manual/` holds the one historical script that had to be run by hand.
+**The "Apply database migrations" workflow doesn't work yet.** It needs a repository secret `SUPABASE_DB_URL` (Supabase dashboard → Connect → Session pooler), which isn't set, and its `supabase db push` would also stop on the version mismatch above. To switch to it, first align the history once with `supabase migration repair` (mark each repository version as applied, and the Supabase-assigned versions as reverted), confirm a dry run shows nothing pending, then use it from then on:
+1. GitHub → Actions → **Apply database migrations** → Run workflow, with **dry run** ticked: it lists applied and pending migrations.
+2. Run it again with dry run unticked to apply the pending ones.
+
+Never paste migration SQL into the dashboard's SQL editor: that runs it without recording it, so the history no longer matches the database. `supabase/manual/` holds the one historical script that had to be run by hand.
 
 ## Database-level agency separation
 
@@ -56,7 +57,19 @@ After adding a table with an `agency_id` column, re-run the migration's policy b
 
 ## Environment variables
 
-`helixon-app/.env.example` lists every variable, with comments. Set them in Vercel (Project → Settings → Environment Variables). The app needs at least Supabase, Clerk, Stripe and Resend to work. AI, Redis and integration keys switch individual features on.
+`helixon-app/.env.example` lists every variable, with comments, and `lib/env.js` checks them at startup (problems appear in the deploy log and Sentry). Set them in Vercel (Project → Settings → Environment Variables); a change applies only after a redeploy. The app needs at least Supabase, Clerk, Stripe, Resend, `CRON_SECRET` and the admin variables to work. AI, Redis and integration keys switch individual features on; [`integrations.md`](integrations.md) has the steps for each integration.
+
+Keys with rules of their own:
+- `CRON_SECRET`: Vercel Cron sends it to `/api/cron/*`. Without it every scheduled job is refused, data retention included.
+- `INTEGRATIONS_ENCRYPTION_KEY`: encrypts stored OAuth tokens. Never change it once an integration is connected; everything sealed with the old key would have to be reconnected.
+- `ADMIN_SESSION_SECRET`: 32+ random characters. Changing it signs every admin out.
+
+### Admin sign-in
+
+- Admins are listed in `ADMIN_USERS` (comma-separated; the case must match what's typed at sign-in). Each has `ADMIN_PASSWORD_HASH_<USERNAME>`, a bcrypt hash from `node scripts/hash-admin-password.js`. An old unsalted SHA-256 hash still works but is reported to Sentry at every sign-in.
+- Two-factor: `ADMIN_TOTP_SECRET_<USERNAME>` from `node scripts/generate-admin-totp.js <username>`, added to the admin's authenticator app **before** the redeploy that sets it. `ADMIN_REQUIRE_2FA=true` refuses any admin without a secret.
+- An admin locked out of two-factor (lost phone): delete their `ADMIN_TOTP_SECRET_<USERNAME>` and, if set, `ADMIN_REQUIRE_2FA`, redeploy, then give them a new secret.
+- To sign one admin out everywhere, set `ADMIN_SESSION_VALID_AFTER_<USERNAME>` to the current time and redeploy; `ADMIN_SESSIONS_VALID_AFTER` does the same for every admin.
 
 ## When something breaks
 
