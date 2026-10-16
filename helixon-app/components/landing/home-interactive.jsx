@@ -247,7 +247,9 @@ export function DashboardPreview() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-5">
+        {/* Stacked at every width: beside the attention list, the five stage
+            columns were ~44px wide and their labels ran together. */}
+        <div className="grid grid-cols-1 gap-5">
           {/* Pipeline snapshot */}
           <div>
             <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Where candidates stand</p>

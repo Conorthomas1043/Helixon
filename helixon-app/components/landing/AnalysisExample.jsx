@@ -304,12 +304,13 @@ export default function AnalysisExample() {
 
   return (
     <div>
-      <div className="flex flex-wrap justify-center gap-2 mb-6" role="tablist" aria-label="Example roles">
+      {/* Three equal columns on a phone, where wrapping left one tab alone on a second row. */}
+      <div className="grid grid-cols-3 sm:flex sm:flex-wrap sm:justify-center gap-2 mb-6" role="tablist" aria-label="Example roles">
         {EXAMPLES.map((e, i) => (
           <button type="button"
             key={e.id}
             {...tabProps(i)}
-            className="text-left px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-left px-3 sm:px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
               background: active === i ? "var(--forest)" : "white",
               color: active === i ? "white" : "var(--ink)",

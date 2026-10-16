@@ -111,13 +111,14 @@ function ScreeningSection() {
 
 /* ── Dashboard section - the "after the screening" half of the product.
    Every other section on this page is about scoring a CV; this is the one
-   that shows what the recruiter manages afterwards. ── */
+   that shows what the recruiter manages afterwards, and how a team shares
+   it. ── */
 
 const DASHBOARD_POINTS = [
   "Every open role, every candidate and every score in one view",
   "Stalled candidates and unreviewed strong matches surfaced automatically",
   "Time to fill, offer acceptance, source of hire and fee income — real agency analytics, not just a candidate list",
-  "Shared across your team, with a full audit trail of who screened what",
+  "Notes, tags and shortlists shared across your team, with a full audit trail of who screened what and when",
 ];
 
 function DashboardSection() {
@@ -145,6 +146,7 @@ function DashboardSection() {
                 </li>
               ))}
             </ul>
+            <Button as="a" href="/demo" variant="outline" className="mt-7 min-h-[44px]">Get a demo</Button>
           </Reveal>
 
           <Reveal delay={90}>
@@ -156,59 +158,9 @@ function DashboardSection() {
   );
 }
 
-/* ── Agency workflow - collaboration is visible, not a footnote ──────────── */
-
-const AGENCY_FLOW = [
-  { role: "Recruiter", action: "Screens candidates against the role" },
-  { role: "Recruiter", action: "Adds notes and tags" },
-  { role: "Team", action: "Shares the shortlist" },
-  { role: "Hiring manager", action: "Reviews and moves candidates forward" },
-];
-
-function AgencyWorkflowSection() {
-  return (
-    <section id="agency" className="max-w-[1100px] mx-auto px-6 py-24">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-        <Reveal>
-          <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">For agencies</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
-            Built for the way agency teams already work
-          </h2>
-          <p className="text-15 leading-relaxed mb-6 max-w-md text-[var(--ink-soft)]">
-            One recruiter screens and the whole team sees the result. Notes, tags and
-            shortlists stay together, with a clear record of who screened what and when.
-          </p>
-          <div className="flex flex-wrap gap-2 mb-7">
-            {["Shared shortlists", "Notes & tags", "Audit trail", "Multi-seat access"].map((chip) => (
-              <span key={chip} className="text-13 font-medium px-3 py-1.5 rounded-full bg-[var(--mint)] text-[var(--forest)]">{chip}</span>
-            ))}
-          </div>
-          <Button as="a" href="/demo" variant="outline" className="min-h-[44px]">Get a demo</Button>
-        </Reveal>
-
-        <Reveal delay={80}>
-          <div className="rounded-2xl p-7 bg-white border border-[var(--border)]">
-            <ol className="relative pl-6">
-              <div className="absolute left-[9px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
-              {AGENCY_FLOW.map((step, i) => (
-                <li key={`${step.role}-${i}`} className="relative pb-6 last:pb-0">
-                  <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full flex items-center justify-center bg-[var(--forest)]" aria-hidden="true">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                  </span>
-                  <p className="text-11 font-semibold uppercase tracking-widest mb-1 text-[var(--forest)]">{step.role}</p>
-                  <p className="text-sm text-[var(--ink)]">{step.action}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 /* ── Features - grouped by recruiter outcome, not by feature name ────────── */
 
+// No compliance group: the trust section above covers it.
 const FEATURE_GROUPS = [
   {
     title: "Screen faster",
@@ -219,11 +171,6 @@ const FEATURE_GROUPS = [
     title: "Make better screening decisions",
     body: "See more than a score \u2014 see the reasoning behind it.",
     items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Blind screening, with protected characteristics excluded from scoring"],
-  },
-  {
-    title: "Stay compliant",
-    body: "Built for candidate data from the ground up.",
-    items: ["Data stored in Switzerland", "Encryption at rest & in transit", "Full audit trail", "GDPR-ready workflow"],
   },
   // The product is a whole agency system, not only a screener; the page
   // said so in one section and the metadata not at all, so buyers looking
@@ -237,7 +184,7 @@ const FEATURE_GROUPS = [
 
 function FeatureGroups() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {FEATURE_GROUPS.map((g) => (
         <div key={g.title} className="rounded-card p-7 bg-white border border-[var(--border)]">
           <h3 className="text-base font-semibold mb-2 text-[var(--ink)]">{g.title}</h3>
@@ -398,11 +345,8 @@ export default function LandingPage() {
         {/* ── Product workflow (interactive) ──────────────────────────────── */}
         <ProductWorkflowSection />
 
-        {/* ── Dashboard (the manage-the-desk half of the product) ──────────── */}
+        {/* ── Dashboard (the manage-the-desk half, shared by the team) ─────── */}
         <DashboardSection />
-
-        {/* ── Agency workflow ──────────────────────────────────────────────── */}
-        <AgencyWorkflowSection />
 
         {/* ── Trust / GDPR ─────────────────────────────────────────────────── */}
         <TrustSection />
