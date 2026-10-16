@@ -137,17 +137,25 @@ export async function noteFirstScreening(agencyId) {
 
 /**
  * A checkout by this profile (Stripe webhook): if its agency is a test
- * workspace, it's a customer now - the limits and banner stop.
+ * workspace, it's a customer now - the limits, the test screening limit and
+ * the banner stop. Throws on a database error, so the webhook answers 500
+ * and Stripe retries rather than leaving a paying customer limited.
  */
 export async function markTestAccountConverted(profileId) {
-  try {
-    const { data: profile } = await supabase.from("profiles").select("agency_id").eq("id", profileId).maybeSingle();
-    if (!profile?.agency_id) return;
-    await supabase.from("test_accounts").update({ converted_at: new Date().toISOString() }).eq("agency_id", profile.agency_id).is("converted_at", null);
-    cache.delete(profile.agency_id);
-  } catch (err) {
-    reportError("[test-account] markTestAccountConverted failed:", err?.message || err);
-  }
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("agency_id").eq("id", profileId).maybeSingle();
+  if (profileError) throw new Error(profileError.message);
+  if (!profile?.agency_id) return;
+  const { data: converted, error } = await supabase
+    .from("test_accounts")
+    .update({ converted_at: new Date().toISOString() })
+    .eq("agency_id", profile.agency_id)
+    .is("converted_at", null)
+    .select("id");
+  if (error) throw new Error(error.message);
+  cache.delete(profile.agency_id);
+  if (!converted?.length) return;
+  const { error: capError } = await supabase.from("agencies").update({ screening_cap: null }).eq("id", profile.agency_id);
+  if (capError) throw new Error(capError.message);
 }
 
 /** { status, error } for a feature test workspaces don't get (texting, API keys, webhooks), or null. */

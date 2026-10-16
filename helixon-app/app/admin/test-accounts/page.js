@@ -214,11 +214,14 @@ function AccountDrawer({ accountId, onClose, onChanged }) {
   }
 
   async function remove() {
-    if (!(await confirmAction("Delete this test account's login? Their workspace and what they added stay, under Agencies.", { title: "Delete test account", danger: true }))) return;
+    const message = live
+      ? "Delete this test account's login? Their workspace and what they added stay, under Agencies."
+      : "Take this account off the list? They bought a plan, so their login and billing stay as they are.";
+    if (!(await confirmAction(message, { title: live ? "Delete test account" : "Remove from list", danger: live }))) return;
     setBusy(true);
     try {
       await call("DELETE", "/api/admin/test-accounts", { id: accountId }, "Couldn't delete the account.");
-      toast.success("Test account deleted");
+      toast.success(live ? "Test account deleted" : "Removed from the list");
       onChanged();
       onClose();
     } catch (err) {
@@ -269,7 +272,7 @@ function AccountDrawer({ accountId, onClose, onChanged }) {
               <button type="button" className="btn small" disabled={busy} onClick={setCap}><Icon name="sparkle" size={13} /> Screening limit</button>
               {live && <button type="button" className="btn small" disabled={busy} onClick={resetPassword}><Icon name="key" size={13} /> Reset password</button>}
               {live && a.status === "active" && <button type="button" className="btn small danger" disabled={busy} onClick={end}><Icon name="ban" size={13} /> End access now</button>}
-              <button type="button" className="btn small ghost danger" disabled={busy} onClick={remove}><Icon name="trash" size={13} /> Delete</button>
+              <button type="button" className="btn small ghost danger" disabled={busy} onClick={remove}><Icon name="trash" size={13} /> {live ? "Delete" : "Remove from list"}</button>
             </div>
           </section>
 

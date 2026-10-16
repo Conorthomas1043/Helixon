@@ -157,6 +157,19 @@ describe("markTestAccountConverted", () => {
     expect(update).toContainEqual(["is", "converted_at", null]);
   });
 
+  it("lifts the test screening limit", async () => {
+    db.respond = (table) => (table === "profiles" ? { data: { agency_id: "a1" }, error: null } : table === "test_accounts" ? { data: [{ id: "t1" }], error: null } : { data: null, error: null });
+    await markTestAccountConverted("p1");
+    const agencies = db.chains.find((c) => c.table === "agencies").calls;
+    expect(agencies.find(([m]) => m === "update")[1]).toEqual({ screening_cap: null });
+    expect(agencies).toContainEqual(["eq", "id", "a1"]);
+  });
+
+  it("throws on a database error so the Stripe webhook is retried", async () => {
+    db.respond = (table) => (table === "profiles" ? { data: { agency_id: "a1" }, error: null } : { data: null, error: { message: "down" } });
+    await expect(markTestAccountConverted("p1")).rejects.toThrow("down");
+  });
+
   it("does nothing for a profile with no agency", async () => {
     await markTestAccountConverted("p1");
     expect(db.chains.map((c) => c.table)).toEqual(["profiles"]);

@@ -18,6 +18,7 @@ import { generateEmployeePassword } from "@/lib/employee/auth";
 import { siteUrl } from "@/lib/messaging/mailer";
 import { testAccountStatus } from "@/lib/agency/test-account";
 import { escapeHtml } from "@/lib/format";
+import { reportError } from "@/lib/report-error";
 
 export const TEST_ACCOUNT_PLAN = "agency";
 export const DEFAULT_SCREENING_CAP = 50;
@@ -174,7 +175,7 @@ export async function applyTestAccountAction({ client, supabase, account, action
   if (action === "end") {
     const now = new Date().toISOString();
     await setDemoAccess(supabase, account, { status: "canceled", demo_expires_at: now });
-    await updateAccount(supabase, account, { ended_at: now });
+    await updateAccount(supabase, account, { ended_at: now, ends_at: now });
     return null;
   }
   if (action === "set_cap") {
@@ -187,7 +188,7 @@ export async function applyTestAccountAction({ client, supabase, account, action
   if (action === "reset_password") {
     if (!account.clerk_user_id) return { status: 409, error: "This account has no login." };
     const password = generateEmployeePassword();
-    await client.users.updateUser(account.clerk_user_id, { password });
+    await client.users.updateUser(account.clerk_user_id, { password, signOutOfOtherSessions: true });
     return { password };
   }
   return { status: 400, error: "Unknown test account action." };
@@ -195,11 +196,14 @@ export async function applyTestAccountAction({ client, supabase, account, action
 
 /**
  * Deletes the login and stops access. The workspace and what the tester
- * put in it stay, under Admin > Agencies, like any deleted user's.
+ * put in it stay, under Admin > Agencies, like any deleted user's. An
+ * account that bought a plan is a paying customer: it only comes off this
+ * list, and its login and billing are left alone.
  */
 export async function deleteTestAccount({ client, supabase, account }) {
   const now = new Date().toISOString();
-  if (!account.converted_at) await setDemoAccess(supabase, account, { status: "canceled", demo_expires_at: now });
+  if (account.converted_at) return updateAccount(supabase, account, { deleted_at: now });
+  await setDemoAccess(supabase, account, { status: "canceled", demo_expires_at: now });
   if (account.clerk_user_id) {
     try {
       await client.users.deleteUser(account.clerk_user_id);
@@ -268,20 +272,27 @@ const ACTIVITY_LABEL = (type) => String(type || "activity").replace(/[_.]/g, " "
 /** What the account did, newest first, from every source the console reads. */
 export async function testAccountTimeline(supabase, account) {
   const agencyId = account.agency_id;
-  const [audit, candidates, scores, jobs, admin] = await Promise.all([
+  const [audit, candidates, scores, jobs, admin, activity] = await Promise.all([
     supabase.from("agency_audit_log").select("created_at,actor_name,action,summary").eq("agency_id", agencyId).order("created_at", { ascending: false }).limit(MAX_TIMELINE),
     supabase.from("candidates").select("id,full_name,name").eq("agency_id", agencyId).limit(2000),
     supabase.from("scores").select("created_at,candidate_id,job_id,match_score").eq("agency_id", agencyId).order("created_at", { ascending: false }).limit(MAX_TIMELINE),
     supabase.from("jobs").select("id,title,created_at").eq("agency_id", agencyId).limit(2000),
     supabase.from("admin_audit_logs").select("created_at,admin_username,action").eq("target_id", account.id).order("created_at", { ascending: false }).limit(50),
+    // Through a join on the agency: a list of candidate ids would put
+    // thousands of characters in the request URL and fail.
+    supabase
+      .from("candidate_activity")
+      .select("created_at,candidate_id,type,actor,candidates!inner(agency_id)")
+      .eq("candidates.agency_id", agencyId)
+      .order("created_at", { ascending: false })
+      .limit(MAX_TIMELINE),
   ]);
+  for (const [source, result] of Object.entries({ audit, candidates, scores, jobs, admin, activity })) {
+    if (result.error) reportError(`[admin/test-accounts] timeline ${source} failed:`, result.error.message);
+  }
 
   const candidateName = new Map((candidates.data || []).map((c) => [c.id, c.full_name || c.name || "a candidate"]));
   const jobTitle = new Map((jobs.data || []).map((j) => [j.id, j.title || "a job"]));
-  const candidateIds = [...candidateName.keys()].slice(0, 1000);
-  const activity = candidateIds.length
-    ? await supabase.from("candidate_activity").select("created_at,candidate_id,type,actor").in("candidate_id", candidateIds).order("created_at", { ascending: false }).limit(MAX_TIMELINE)
-    : { data: [] };
 
   const own = [
     { at: account.created_at, kind: "account", text: `Account created${account.created_by ? ` by ${account.created_by}` : ""}` },

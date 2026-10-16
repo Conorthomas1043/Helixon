@@ -62,7 +62,8 @@ export async function POST(request) {
         if (error) throw new Error(`Failed to upsert subscription: ${error.message}`);
         after(async () => captureAgencyEvent("subscription_started", await agencyIdForProfile(userId), { plan }));
         // A test account that bought a plan is an ordinary customer now.
-        after(() => markTestAccountConverted(userId));
+        // Inline, so a failure answers 500 and Stripe retries.
+        await markTestAccountConverted(userId);
         break;
       }
 

@@ -52,6 +52,13 @@ describe("Stripe webhook", () => {
     expect(converted).toHaveBeenCalledWith("p1");
   });
 
+  it("answers 500 when the test account can't be marked converted, so Stripe retries", async () => {
+    converted.mockReset().mockRejectedValue(new Error("db down"));
+    state.event = { type: "checkout.session.completed", data: { object: { client_reference_id: "p1", subscription: "sub_1", customer: "cus_1", metadata: {} } } };
+    expect((await POST(request())).status).toBe(500);
+    converted.mockReset();
+  });
+
   it("answers 500 when the subscription can't be saved, so Stripe retries", async () => {
     state.upsertError = { message: "connection reset" };
     state.event = { type: "checkout.session.completed", data: { object: { client_reference_id: "p1", subscription: "sub_1", customer: "cus_1", metadata: {} } } };

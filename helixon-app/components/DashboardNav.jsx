@@ -466,10 +466,6 @@ function SignedOutBanner() {
   );
 }
 
-// Shown on every signed-in page while a renewal payment has failed.
-// During Stripe's retries (past_due) everything keeps working, so this is
-// the only sign anything is wrong; once it's unpaid, screening has stopped.
-// Only the member who pays can fix it, so teammates are told to ask them.
 function TestAccountBanner({ endsAt }) {
   return (
     <div className="border-t border-[var(--border)] bg-[var(--mist)]">
@@ -483,6 +479,10 @@ function TestAccountBanner({ endsAt }) {
   );
 }
 
+// Shown on every signed-in page while a renewal payment has failed.
+// During Stripe's retries (past_due) everything keeps working, so this is
+// the only sign anything is wrong; once it's unpaid, screening has stopped.
+// Only the member who pays can fix it, so teammates are told to ask them.
 function PaymentIssueBanner({ issue }) {
   const stopped = issue.status === "unpaid";
   return (

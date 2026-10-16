@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 vi.mock("@/lib/security/alert-email", () => ({ escapeHtml: String, sendAdminAlert: async () => true }));
 vi.mock("@/lib/messaging/mailer", () => ({ siteUrl: () => "https://www.helixon.co.uk" }));
 
-const { applyTestAccountAction, createTestAccount, digestEmail, endsAtFor, mergeTimeline } = await import("./test-accounts");
+const { applyTestAccountAction, createTestAccount, deleteTestAccount, digestEmail, endsAtFor, mergeTimeline, testAccountTimeline } = await import("./test-accounts");
 
 // Records every query chain; `respond(table, calls)` answers it.
 function fakeDb(respond = () => ({ data: null, error: null })) {
@@ -146,6 +146,8 @@ describe("applyTestAccountAction", () => {
     expect(sub).toContainEqual(["is", "stripe_subscription_id", null]);
     const row = db.chains.find((c) => c.table === "test_accounts").calls.find(([m]) => m === "update")[1];
     expect(row.ended_at).toBeTruthy();
+    // The banner reads ends_at, so it says the day access really ended.
+    expect(row.ends_at).toBe(row.ended_at);
   });
 
   it("extend sets a new end date and turns access back on", async () => {
@@ -160,7 +162,7 @@ describe("applyTestAccountAction", () => {
   it("reset_password sets and returns a new password", async () => {
     const client = fakeClerk();
     const result = await applyTestAccountAction({ client, supabase: fakeDb(answers), account, action: "reset_password", body: {} });
-    expect(client.users.updateUser).toHaveBeenCalledWith("user_abc", { password: "abcde-fghjk-mnpqr-stuvw" });
+    expect(client.users.updateUser).toHaveBeenCalledWith("user_abc", { password: "abcde-fghjk-mnpqr-stuvw", signOutOfOtherSessions: true });
     expect(result.password).toBe("abcde-fghjk-mnpqr-stuvw");
   });
 
@@ -188,5 +190,38 @@ describe("digestEmail", () => {
     expect(mail.html).toMatch(/Ana.*3 screenings/s);
     expect(mail.html).toContain("&lt;Bo&gt;");
     expect(mail.html).not.toContain("<Bo>");
+  });
+});
+
+describe("deleteTestAccount", () => {
+  const account = { id: "t1", agency_id: "a1", clerk_user_id: "user_abc" };
+  const answers = (table) => (table === "profiles" ? { data: { id: "p1" }, error: null } : { data: null, error: null });
+
+  it("deletes the login and ends demo access only", async () => {
+    const db = fakeDb(answers);
+    const client = fakeClerk();
+    await deleteTestAccount({ client, supabase: db, account });
+    expect(client.users.deleteUser).toHaveBeenCalledWith("user_abc");
+    expect(db.chains.find((c) => c.table === "subscriptions").calls).toContainEqual(["is", "stripe_subscription_id", null]);
+  });
+
+  it("only takes a converted (paying) account off the list: login, profile and billing untouched", async () => {
+    const db = fakeDb(answers);
+    const client = fakeClerk();
+    await deleteTestAccount({ client, supabase: db, account: { ...account, converted_at: "2026-10-10T00:00:00Z" } });
+    expect(client.users.deleteUser).not.toHaveBeenCalled();
+    expect(db.chains.some((c) => c.table === "subscriptions")).toBe(false);
+    expect(db.chains.find((c) => c.table === "test_accounts").calls.find(([m]) => m === "update")[1].deleted_at).toBeTruthy();
+  });
+});
+
+describe("testAccountTimeline", () => {
+  it("reads candidate activity through a join on the agency, not a long id list", async () => {
+    const db = fakeDb(() => ({ data: [], error: null }));
+    await testAccountTimeline(db, { id: "t1", agency_id: "a1", created_at: "2026-10-01T00:00:00Z" });
+    const activity = db.chains.find((c) => c.table === "candidate_activity").calls;
+    expect(activity.find(([m]) => m === "select")[1]).toContain("candidates!inner");
+    expect(activity).toContainEqual(["eq", "candidates.agency_id", "a1"]);
+    expect(activity.some(([m]) => m === "in")).toBe(false);
   });
 });
