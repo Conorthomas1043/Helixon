@@ -7,17 +7,17 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import AnalysisExample from "@/components/landing/AnalysisExample";
+import HeroDemo from "@/components/landing/HeroDemo";
+import LandingMotion from "@/components/landing/LandingMotion";
+import ScrollStory from "@/components/landing/ScrollStory";
 import { PLAN_FEATURES } from "@/lib/billing/plan-features";
 import {
-  BulkPreviewCard,
   BuyPlanButton,
   DashboardPreview,
   FAQSection,
   HeroActions,
   HeroBadge,
   HeroSubtitle,
-  ProductWorkflowSection,
-  RecruiterWorkspaceDemo,
   Reveal,
   TrustStrip,
 } from "@/components/landing/home-interactive";
@@ -30,7 +30,7 @@ function AnalysisExampleSection() {
       <Reveal>
         <div className="text-center mb-10">
           <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">See a real analysis</p>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display text-balance">
             Not just a score — the reasons behind it
           </h2>
           <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
@@ -48,62 +48,28 @@ function AnalysisExampleSection() {
 }
 
 
-/* ── Screening: by hand versus with Helixon, then the batch view ──────────
-   One section for the process story. It used to be two (before/after, then
-   three numbered "bulk screening" cards repeating the Helixon column), which
-   made the page several screens longer on a phone. */
+/* ── How it works: the story from a pile of CVs to a placement, told as
+   the visitor scrolls (components/landing/ScrollStory). It replaces a
+   "by hand versus with Helixon" comparison and a tabbed workflow preview,
+   which told the same story twice. ── */
 
-const MANUAL_STEPS = ["Open the CV", "Read it top to bottom", "Open the job description", "Compare by eye", "Note it down somewhere", "Decide", "Repeat, 50 times"];
-const HELIXON_STEPS = ["Upload up to 50 CVs for a role", "Helixon scores each one against the same spec", "Candidates are ranked, with the reasons", "Review the strongest matches", "Shortlist and move on"];
-
-function TimelineColumn({ label, steps, tone }) {
-  const accent = tone === "forest" ? "var(--forest)" : "var(--ink-mute)";
+function StorySection() {
   return (
-    <div className="rounded-2xl p-7 h-full bg-[var(--bg)] border border-[var(--border)]">
-      <p className={`text-12 font-semibold uppercase tracking-widest mb-6 ${tone === "forest" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{label}</p>
-      <ol className="relative pl-5">
-        <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-[var(--border)]" aria-hidden="true" />
-        {steps.map((step) => (
-          <li key={step} className="relative pb-5 last:pb-0">
-            <span className="absolute -left-5 top-1 w-3.5 h-3.5 rounded-full" style={{ background: tone === "forest" ? accent : "var(--bg)", border: `2px solid ${accent}` }} aria-hidden="true" />
-            <span className="text-sm text-[var(--ink)]">{step}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function ScreeningSection() {
-  return (
-    <section className="max-w-[1100px] mx-auto px-6 py-24">
-      <Reveal>
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
-            The bottleneck isn&rsquo;t hiring. It&rsquo;s everything before the shortlist.
-          </h2>
-          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
-            Most agencies still screen the way they did a decade ago — one CV, one tab,
-            one spreadsheet at a time.
-          </p>
-        </div>
-      </Reveal>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-14">
-        <Reveal><TimelineColumn label="Screening by hand" steps={MANUAL_STEPS} tone="muted" /></Reveal>
-        <Reveal delay={80}><TimelineColumn label="Screening with Helixon" steps={HELIXON_STEPS} tone="forest" /></Reveal>
+    <section id="how" className="py-24 bg-[var(--bg)] border-t border-t-[var(--border-soft)] border-b border-b-[var(--border-soft)]">
+      <div className="max-w-[1100px] mx-auto px-6">
+        <Reveal>
+          <div className="text-center mb-14 lg:mb-6">
+            <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">How it works</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display text-balance">
+              The bottleneck isn&rsquo;t hiring. It&rsquo;s everything before the shortlist.
+            </h2>
+            <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
+              By hand it&rsquo;s open, read, compare, note, repeat, fifty times over. Here&rsquo;s the same job in Helixon.
+            </p>
+          </div>
+        </Reveal>
+        <ScrollStory />
       </div>
-      <Reveal>
-        <div className="text-center mb-8">
-          <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Bulk screening</p>
-          <h3 className="text-20 sm:text-24 font-semibold tracking-tight mb-3 text-[var(--ink)] font-display">One role. Dozens of CVs. One ranked shortlist.</h3>
-          <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
-            Every candidate is scored against the same spec, so the comparison holds up — and a weak CV never blocks the rest of the batch.
-          </p>
-        </div>
-      </Reveal>
-      <Reveal>
-        <BulkPreviewCard />
-      </Reveal>
     </section>
   );
 }
@@ -128,7 +94,7 @@ function DashboardSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center">
           <Reveal>
             <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">The dashboard</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display text-balance">
               Screening is the start. This is where the desk gets run.
             </h2>
             <p className="text-16 leading-relaxed mb-6 text-[var(--ink-soft)]">
@@ -164,11 +130,13 @@ function DashboardSection() {
 const FEATURE_GROUPS = [
   {
     title: "Screen faster",
+    icon: "M13 2 3 14h9l-1 8 10-12h-9l1-8z",
     body: "Get through a full pile of CVs in the time it used to take to read three.",
     items: ["Bulk CV upload against one role", "PDF and Word CVs, tables and columns included", "Fast, consistent parsing"],
   },
   {
     title: "Make better screening decisions",
+    icon: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5",
     body: "See more than a score \u2014 see the reasoning behind it.",
     items: ["Match scoring against the role", "Standout factors", "Possible red flags", "Blind screening, with protected characteristics excluded from scoring"],
   },
@@ -177,6 +145,7 @@ const FEATURE_GROUPS = [
   // for an ATS/CRM didn't learn they'd found one (docs/ux-research-audit.md, R1).
   {
     title: "Run the whole desk",
+    icon: "M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18",
     body: "Everything after the shortlist, in the same place.",
     items: ["Pipeline, jobs and clients", "Client shortlists with one-tap feedback", "Interviews, offers and placements", "Invoices, targets and agency analytics"],
   },
@@ -186,7 +155,12 @@ function FeatureGroups() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {FEATURE_GROUPS.map((g) => (
-        <div key={g.title} className="rounded-card p-7 bg-[var(--bg)] border border-[var(--border)]">
+        <div key={g.title} className="lift-on-hover rounded-card p-7 bg-[var(--mist)] border border-[var(--border)]">
+          <span className="mb-5 w-10 h-10 rounded-btn flex items-center justify-center bg-[var(--mint)] text-[var(--forest)] border border-[var(--mint-line)]" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d={g.icon} />
+            </svg>
+          </span>
           <h3 className="text-base font-semibold mb-2 text-[var(--ink)]">{g.title}</h3>
           <p className="text-sm leading-relaxed mb-5 text-[var(--ink-soft)]">{g.body}</p>
           <ul className="space-y-2.5">
@@ -216,12 +190,12 @@ const TRUST_PILLARS = [
 
 function TrustSection() {
   return (
-    <section className="py-20 bg-[var(--brand-surface)]">
-      <div className="max-w-[1100px] mx-auto px-6">
+    <section className="brand-texture py-20 bg-[var(--brand-surface)]">
+      <div className="relative max-w-[1100px] mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12">
             <p className="text-12 font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.8)" }}>Trust & compliance</p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-display">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-display text-balance">
               Candidate data, handled properly
             </h2>
           </div>
@@ -296,42 +270,54 @@ export default function LandingPage() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="home" />
 
+      {/* Motion's features load after the page; see LandingMotion. */}
+      <LandingMotion>
       <main id="main-content">
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
-        <section className="max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <span
-                className="fade-up-in inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full mb-6"
-                style={{ background: "var(--mint)", color: "var(--forest)", "--stagger-delay": "0ms" }}
-              >
-                <svg className="w-[0.85em] h-[0.85em] shrink-0" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-                <HeroBadge />
-              </span>
+        <div className="relative">
+          <div className="hero-backdrop" aria-hidden="true" />
+          <section className="relative max-w-[1100px] mx-auto px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,28rem)] gap-14 items-center">
+              <div>
+                <span
+                  className="fade-up-in inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full mb-6 bg-[var(--mint)] text-[var(--forest)] border border-[var(--mint-line)]"
+                  style={{ "--stagger-delay": "0ms" }}
+                >
+                  <svg className="w-[0.85em] h-[0.85em] shrink-0" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" /><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                  <HeroBadge />
+                </span>
 
-              <h1
-                className="fade-up-in text-4xl sm:text-52 font-semibold tracking-tight leading-[1.06] mb-5"
-                style={{ color: "var(--ink)", fontFamily: "var(--font-display)", "--stagger-delay": "70ms" }}
-              >
-                Screen every CV for a role in the time it takes to read one.
-              </h1>
+                <h1
+                  className="fade-up-in text-4xl sm:text-52 font-semibold tracking-tight leading-[1.06] mb-5 text-balance text-[var(--ink)] font-display"
+                  style={{ "--stagger-delay": "70ms" }}
+                >
+                  Screen every CV for a role in the time it takes to{" "}
+                  <span className="relative inline-block text-[var(--forest)]">
+                    read one.
+                    {/* Drawn in once by CSS (.hero-underline), so it needs no JavaScript. */}
+                    <svg className="hero-underline" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+                      <path d="M3 8.5C48 3.5 120 2.5 197 6.5" pathLength="1" />
+                    </svg>
+                  </span>
+                </h1>
 
-              <p
-                className="fade-up-in text-16 leading-relaxed mb-8 max-w-lg"
-                style={{ color: "var(--ink-soft)", "--stagger-delay": "140ms" }}
-              >
-                <HeroSubtitle />
-              </p>
+                <p
+                  className="fade-up-in text-16 sm:text-lg leading-relaxed mb-8 max-w-lg text-[var(--ink-soft)]"
+                  style={{ "--stagger-delay": "140ms" }}
+                >
+                  <HeroSubtitle />
+                </p>
 
-              <HeroActions />
+                <HeroActions />
+              </div>
+
+              <div className="fade-up-in" style={{ "--stagger-delay": "160ms" }}>
+                <HeroDemo />
+              </div>
             </div>
-
-            <div className="fade-up-in" style={{ "--stagger-delay": "160ms" }}>
-              <RecruiterWorkspaceDemo />
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
         {/* ── Trust strip ─────────────────────────────────────────────────── */}
         <TrustStrip />
@@ -339,11 +325,8 @@ export default function LandingPage() {
         {/* ── Example analysis report: the strongest proof, straight after the hero ── */}
         <AnalysisExampleSection />
 
-        {/* ── Screening by hand vs with Helixon, and the batch view ───────── */}
-        <ScreeningSection />
-
-        {/* ── Product workflow (interactive) ──────────────────────────────── */}
-        <ProductWorkflowSection />
+        {/* ── How it works, told as you scroll ─────────────────────────────── */}
+        <StorySection />
 
         {/* ── Dashboard (the manage-the-desk half, shared by the team) ─────── */}
         <DashboardSection />
@@ -357,7 +340,7 @@ export default function LandingPage() {
             <Reveal>
               <div className="text-center mb-12">
                 <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Capabilities</p>
-                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display text-balance">
                   Built for the volume agency recruiters actually handle
                 </h2>
                 <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
@@ -375,7 +358,7 @@ export default function LandingPage() {
           <Reveal>
             <div className="text-center mb-14">
               <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">Pricing</p>
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display">
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-4 text-[var(--ink)] font-display text-balance">
                 Plans built around how agencies actually screen
               </h2>
               <p className="text-16 leading-relaxed max-w-xl mx-auto text-[var(--ink-soft)]">
@@ -448,7 +431,7 @@ export default function LandingPage() {
           <Reveal>
             <div className="text-center mb-12">
               <p className="text-12 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">FAQ</p>
-              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display">
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--ink)] font-display text-balance">
                 Questions recruiters usually ask
               </h2>
             </div>
@@ -466,6 +449,7 @@ export default function LandingPage() {
         </Reveal>
 
       </main>
+      </LandingMotion>
 
       <MarketingFooter />
       <ChatWidget />

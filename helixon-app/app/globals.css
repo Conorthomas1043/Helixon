@@ -392,6 +392,84 @@ body {
   .motion-safe-scale:hover { transform: none !important; }
 }
 
+/* ── Landing: hero backdrop, brand texture, headline underline ──────────────
+   All from tokens, so they follow the dark appearance. */
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 60% at 80% 35%, rgba(var(--forest-rgb), 0.14), transparent 70%),
+    radial-gradient(45% 45% at 5% 0%, rgba(var(--forest-rgb), 0.07), transparent 70%);
+}
+.hero-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(var(--forest-rgb), 0.28) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(70% 65% at 65% 35%, #000 15%, transparent 75%);
+  mask-image: radial-gradient(70% 65% at 65% 35%, #000 15%, transparent 75%);
+  opacity: 0.55;
+}
+/* On the deep-green panels (trust section, CTA band): a faint dot grid and a
+   highlight in one corner. Put it on the panel, which needs position:relative
+   and overflow:hidden; content above it needs position:relative. */
+.brand-texture { position: relative; overflow: hidden; isolation: isolate; }
+.brand-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(50% 70% at 85% 0%, rgba(255,255,255,0.12), transparent 70%),
+    radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.4px) 0 0 / 22px 22px;
+  pointer-events: none;
+}
+.hero-underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.12em;
+  width: 100%;
+  height: 0.28em;
+  overflow: visible;
+}
+.hero-underline path {
+  fill: none;
+  stroke: rgba(var(--forest-rgb), 0.45);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-underline 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.55s forwards;
+}
+@keyframes draw-underline { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-underline path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* One pass of the scan line over a CV in the hero demo
+   (components/landing/HeroDemo.jsx): the signal colour, top to bottom. */
+@keyframes scan-pass {
+  from { transform: translateY(-100%); opacity: 1; }
+  75%  { opacity: 1; }
+  to   { transform: translateY(260%); opacity: 0; }
+}
+.scan-pass {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(255,107,74,0.28), transparent);
+  animation: scan-pass 0.42s ease-in-out both;
+  pointer-events: none;
+}
+.scan-pass--slow { height: 30%; animation-duration: 1.4s; animation-delay: 0.2s; }
+@media (prefers-reduced-motion: reduce) {
+  .scan-pass { display: none; }
+}
+
 /* ── Landing: scroll reveals & cookie banner ─────────────────────────────── */
 /* Visible by default. `.reveal--armed` (the hidden starting frame) is only
    added by lib/hooks/useScrollEntrance, after hydration and only to blocks
