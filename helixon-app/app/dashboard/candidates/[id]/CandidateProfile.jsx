@@ -32,6 +32,8 @@ import { DocumentsSection } from "./_components/documents";
 import { EditDetailsDialog, EmailPanel } from "./_components/email";
 import { FeedbackRequestsPanel } from "./_components/feedback";
 import { ProfileHeader } from "./_components/header";
+import { nextStageAfter } from "./_components/utils";
+import PhoneActionBar from "@/components/dashboard/PhoneActionBar";
 import { NotesPanel } from "./_components/notes";
 import { ExperienceSection, FullAnalysis, MatchOverview } from "./_components/overview";
 import { PanelGroup, ProfileSkeleton, StateMessage } from "./_components/primitives";
@@ -582,6 +584,7 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
                 </PanelGroup>
               </div>
             </div>
+            <ProfilePhoneBar candidate={candidate} onStage={handleStageChange} onFocusNote={focusNoteField} />
           </>
         )}
       </div>
@@ -590,5 +593,32 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
       )}
       <Toasts toasts={toasts} onDismiss={dismiss} />
     </main>
+  );
+}
+
+// The header's next step, kept in reach on a phone once the header has
+// scrolled away: shortlist (or move on to the next stage), and add a note.
+function ProfilePhoneBar({ candidate, onStage, onFocusNote }) {
+  if (candidate.status !== "completed") return null;
+  const upcoming = candidate.stage === "Screened" ? "Shortlisted" : nextStageAfter(candidate.stage);
+  return (
+    <PhoneActionBar watchId="profile-actions" label="Candidate actions">
+      <button
+        type="button"
+        onClick={onFocusNote}
+        className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-full text-14 font-semibold border border-[var(--border)] text-[var(--ink)]"
+      >
+        Add note
+      </button>
+      {upcoming && (
+        <button
+          type="button"
+          onClick={() => onStage(upcoming)}
+          className="flex-1 inline-flex items-center justify-center min-h-[44px] px-4 rounded-full text-14 font-semibold bg-[var(--forest)] text-[var(--on-accent)]"
+        >
+          {upcoming === "Shortlisted" ? "Shortlist" : `Move to ${STAGE_LABELS[upcoming]}`}
+        </button>
+      )}
+    </PhoneActionBar>
   );
 }

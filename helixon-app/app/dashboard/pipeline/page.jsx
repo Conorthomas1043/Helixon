@@ -25,7 +25,7 @@ import { getPipelineCandidates, getJobs, getRecruiters, updateCandidateStage } f
 import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/candidates/stage-labels";
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
-import { Skeleton as Block } from "@/components/ui";
+import { Avatar, Skeleton as Block } from "@/components/ui";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
@@ -78,7 +78,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
           <p className="text-14 font-semibold truncate leading-tight text-[var(--ink)]">
             {candidate.fullName}
           </p>
-          <p className="text-12 truncate mt-0.5 text-[var(--ink-soft)]">
+          <p className="text-12 line-clamp-2 mt-0.5 text-[var(--ink-soft)]">
             {candidate.jobTitle}
           </p>
           {subStage && (
@@ -96,9 +96,25 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         </span>
       </Link>
       <div className="flex items-center justify-between mt-2.5 gap-2">
-        <span className="text-12 truncate text-[var(--ink-faint)]">
-          {candidate.recruiterName ?? "Unassigned"}
-          {candidate.lastActivityAt || candidate.createdAt ? ` · ${formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}` : ""}
+        {/* The recruiter as initials: a full name truncated in a narrow
+            column ("Sam Pa…") told nobody anything. Hover or a screen
+            reader still gets the name. `relative` keeps the sr-only name
+            inside the scrolling board instead of widening the page. */}
+        <span className="flex items-center gap-1.5 min-w-0 text-12 text-[var(--ink-faint)]">
+          {candidate.recruiterName ? (
+            <span title={candidate.recruiterName} className="relative inline-flex shrink-0">
+              <Avatar name={candidate.recruiterName} size={22} />
+              <span className="sr-only">{candidate.recruiterName}</span>
+            </span>
+          ) : (
+            <span className="shrink-0">Unassigned{candidate.lastActivityAt || candidate.createdAt ? " ·" : ""}</span>
+          )}
+          {candidate.lastActivityAt || candidate.createdAt ? (
+            // "6h", not "6h ago": the card is narrow and the full phrase was cut off.
+            <span className="whitespace-nowrap" title={formatRelativeTime(candidate.lastActivityAt || candidate.createdAt)}>
+              {formatRelativeTime(candidate.lastActivityAt || candidate.createdAt).replace(/ ago$/, "")}
+            </span>
+          ) : null}
         </span>
         <div className="flex items-center gap-0.5 shrink-0">
           {/* Any stage, Rejected included - the arrows only walk the funnel,

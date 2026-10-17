@@ -25,7 +25,8 @@ export function getGreeting() {
 export function GettingStarted({ hasJob, showTeam }) {
   const steps = [
     { key: "workspace", title: "Set up your workspace", body: "Your agency's Helixon is ready.", done: true },
-    { key: "analyse", title: "Screen your first CV", body: "Score a CV against a role and see the evidence behind it. It takes under a minute.", href: "/analyse", cta: "Screen a CV", primary: true },
+    // No CV to hand yet? The sample (lib/screening/sample.js) shows a whole report first.
+    { key: "analyse", title: "Screen your first CV", body: "Score a CV against a role and see the evidence behind it. No CV to hand? Try ours first.", href: "/analyse", cta: "Screen a CV", primary: true, alt: { key: "sample", href: "/analyse?sample=1", cta: "Try a sample" } },
     { key: "job", title: "Add a job you're working on", body: "Keep every candidate for a role, their scores and their stage in one pipeline.", href: "/dashboard/jobs?new=1", cta: "Add a job", done: hasJob },
     { key: "import", title: "Bring in candidates you already have", body: "Import from a spreadsheet or your old system so search covers everyone.", href: "/dashboard/import", cta: "Import" },
     showTeam && { key: "team", title: "Invite your team", body: "Shortlists, notes and scores are shared, with a record of who did what.", href: "/dashboard/team", cta: "Invite" },
@@ -49,7 +50,7 @@ export function GettingStarted({ hasJob, showTeam }) {
       </div>
       <ol className="list-none m-0 p-0">
         {steps.map((st) => (
-          <li key={st.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderTop: `1px solid ${BORDER2}` }}>
+          <li key={st.key} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, padding: "14px 0", borderTop: `1px solid ${BORDER2}` }}>
             <span aria-hidden="true" style={{
               width: 24, height: 24, flexShrink: 0, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center",
               background: st.done ? ACCENT : "transparent", border: `1.5px solid ${st.done ? ACCENT : st.primary ? ACCENT : BORDER}`,
@@ -58,12 +59,21 @@ export function GettingStarted({ hasJob, showTeam }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               )}
             </span>
-            <div className="flex-1 min-w-[0px]">
+            <div className="flex-1 basis-48 min-w-[0px]">
               <p style={{ fontSize: 14, fontWeight: 600, color: st.done ? TEXT_FAINT : TEXT, margin: 0, textDecoration: st.done ? "line-through" : "none" }}>
                 {st.title}<span className="sr-only">{st.done ? " (done)" : ""}</span>
               </p>
               {!st.done && <p style={{ fontSize: 14, color: TEXT_SUB, margin: "2px 0 0" }}>{st.body}</p>}
             </div>
+            {!st.done && st.alt && (
+              <Link
+                href={st.alt.href}
+                onClick={() => track("onboarding_step_clicked", { step: st.alt.key })}
+                className="shrink-0 inline-flex items-center min-h-[36px] px-2 text-14 font-semibold text-[var(--forest)] hover:underline"
+              >
+                {st.alt.cta}
+              </Link>
+            )}
             {!st.done && st.href && (
               <Link href={st.href} onClick={() => track("onboarding_step_clicked", { step: st.key })} style={{
                 flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 14, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",

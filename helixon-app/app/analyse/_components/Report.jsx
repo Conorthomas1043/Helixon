@@ -9,6 +9,7 @@ import { Card, Icon, Notice, cx } from "./ui";
 import { bandClasses, scoreTone } from "../_lib/analyse";
 import AiWritingNotice from "@/components/dashboard/AiWritingNotice";
 import CountUp from "@/components/dashboard/CountUp";
+import { addCandidateNote, pinCandidateNote } from "@/lib/dashboard-api";
 
 // Text and pill colours for a score band, as classes (the band colours are
 // tokens, so they follow the dark appearance).
@@ -80,6 +81,35 @@ function CopyText({ text, label, children, className = "" }) {
       <Icon name={copied ? "check" : "copy"} size={13} />
       {children}
       <span className="sr-only" role="status">{copied ? "Copied" : ""}</span>
+    </button>
+  );
+}
+
+// The interview questions as a pinned note on the candidate, so they're on
+// the profile when the interview comes round (and visible to the team).
+function SaveQuestions({ candidateId, questions }) {
+  const [state, setState] = useState("idle");
+  async function save() {
+    setState("saving");
+    try {
+      const body = `Questions to ask at interview\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`;
+      const note = await addCandidateNote(candidateId, body);
+      if (note?.id) await pinCandidateNote(candidateId, note.id, true).catch(() => {});
+      setState("saved");
+    } catch {
+      setState("error");
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={save}
+      disabled={state === "saving" || state === "saved"}
+      className="print-hide inline-flex items-center gap-1 rounded-md px-2 py-1 text-13 font-medium text-[var(--forest)] hover:bg-[var(--mist)] disabled:hover:bg-transparent transition-colors"
+    >
+      <Icon name={state === "saved" ? "check" : "plus"} size={13} />
+      {state === "saving" ? "Saving…" : state === "saved" ? "Pinned to their notes" : state === "error" ? "Couldn't save - try again" : "Save to their notes"}
+      <span className="sr-only" role="status">{state === "saved" ? "Saved to their notes" : ""}</span>
     </button>
   );
 }
@@ -256,7 +286,9 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
   const breakdown = [
     { key: "skills", label: "Skills", value: result.skill_score },
     { key: "experience", label: "Experience", value: result.experience_score },
-    { key: "culture", label: "Culture and fit", value: result.culture_score },
+    // Stored as culture_score, but it measures how relevant the candidate's
+    // industry experience is (lib/cv-analysis/scoring), so it's named for that.
+    { key: "culture", label: "Industry relevance", value: result.culture_score },
   ].filter((r) => r.value != null);
 
   const matched = result.matched_skills || [];
@@ -390,6 +422,10 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
                 </div>
               );
             })}
+            <p className="text-13 text-[var(--ink-faint)] flex items-start gap-1.5">
+              <Icon name="info" size={14} className="mt-0.5 shrink-0" />
+              Scored on the skills and work shown in the CV. The AI is told to ignore age, gender, ethnicity, religion, disability and every other protected characteristic, and can&apos;t set them as requirements.
+            </p>
           </div>
         )}
 
@@ -549,9 +585,12 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
           id={sectionId("interview")}
           title="Interview questions"
           meta={
-            <CopyText text={result.interview_questions.map((q, i) => `${i + 1}. ${q}`).join("\n")} label="Copy all interview questions" className="px-2 py-1">
-              Copy all
-            </CopyText>
+            <span className="inline-flex flex-wrap items-center gap-1">
+              {candidateId && <SaveQuestions candidateId={candidateId} questions={result.interview_questions} />}
+              <CopyText text={result.interview_questions.map((q, i) => `${i + 1}. ${q}`).join("\n")} label="Copy all interview questions" className="px-2 py-1">
+                Copy all
+              </CopyText>
+            </span>
           }
         >
           <p className="text-14 text-[var(--ink-soft)] -mt-2 mb-4">Tailored to the gaps above.</p>

@@ -132,7 +132,7 @@ export default function CandidateCard({
         </label>
 
         <div className="pt-1">
-          <Button variant="primary" size="lg" className="w-full" disabled={!canAnalyse} onClick={onAnalyse} iconRight="arrowRight">
+          <Button id="screen-candidate-button" variant="primary" size="lg" className="w-full" disabled={!canAnalyse} onClick={onAnalyse} iconRight="arrowRight">
             {compare ? "Screen and compare" : rerunOf ? "Re-score candidate" : "Screen candidate"}
           </Button>
           <p className="text-13 text-center mt-2 text-[var(--ink-faint)]">

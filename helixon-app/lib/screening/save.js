@@ -11,6 +11,7 @@ import { ensureClient } from "@/lib/clients/core";
 import { storeCandidateCv, removeCandidateCvs } from "@/lib/candidates/files";
 import { matchHighlights } from "@/lib/screening/analysis-report";
 import { reportError } from "@/lib/report-error";
+import { SAMPLE_SOURCE_DETAIL } from "@/lib/screening/sample";
 
 // jobs.role_tier allows only entry_level, skilled and senior, while job
 // extraction also says entry and executive. The full value stays in
@@ -60,7 +61,7 @@ async function newJobRow({ agencyId, userId, jobText, jobParsed, clientEmail, sa
 /**
  * @param {{
  *   db: any, supabase: any, agencyId: string, userId: string, profile: any,
- *   input: { file: File, jobText: string, requirements: string[], blind: boolean, clientEmail: string, saveJob: boolean },
+ *   input: { file: File, jobText: string, requirements: string[], blind: boolean, clientEmail: string, saveJob: boolean, sample?: boolean },
  *   existingJob: any | null, reusedJobParsed: any | null,
  *   analysis: { cvText: string, extracted: any, result: any, jobParsed: any },
  * }} args
@@ -104,6 +105,8 @@ export async function saveScreening({ db, supabase, agencyId, userId, profile, i
       extracted: ex,
       processing_status: "completed",
       pooled_from_id: existingPerson?.rootId ?? null,
+      // Labelled, so the recruiter can tell it apart and delete it.
+      ...(input.sample ? { source: "other", source_detail: SAMPLE_SOURCE_DETAIL } : {}),
     })
     .select()
     .single();
@@ -145,7 +148,7 @@ export async function saveScreening({ db, supabase, agencyId, userId, profile, i
         // Read by the candidate page to warn before opening the original CV
         // of someone screened blind.
         blind_mode: input.blind,
-        lawful_basis: { confirmed: true, by: actor, at: new Date().toISOString() },
+        lawful_basis: input.sample ? { not_needed: "fictional sample CV" } : { confirmed: true, by: actor, at: new Date().toISOString() },
       },
       source: "single",
       // scores.stage has its own check constraint with a legacy lowercase
@@ -198,7 +201,7 @@ export async function saveScreening({ db, supabase, agencyId, userId, profile, i
       job_id: job.id,
       score_id: score.id,
       match_score: matchScore,
-      lawful_basis_confirmed: true,
+      lawful_basis_confirmed: !input.sample,
       ...(existingPerson ? { linked_to: existingPerson.rootId, matched_on: existingPerson.matchedOn } : {}),
     },
   });

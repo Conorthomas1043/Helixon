@@ -12,6 +12,7 @@ import { Card as SurfaceCard, cx } from "@/components/ui";
 import { PAGE_WIDTHS } from "./page-frame";
 
 export {
+  ActionMenu,
   Button,
   Dialog,
   EmptyState,

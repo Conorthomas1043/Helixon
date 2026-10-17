@@ -125,7 +125,7 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
                         }}
                       />
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: TEXT_FAINT, textAlign: "center", lineHeight: 1.3 }}>
+                    <span className="text-13 font-medium text-center leading-snug text-[var(--ink-soft)]">
                       {STAGE_LABELS[stageKey]}
                     </span>
                   </Link>
@@ -336,7 +336,7 @@ export function RecentAnalyses({ analyses }) {
                   <th key={h} scope="col" style={{
                     padding: h === "Date" ? "8px 0 8px 12px" : "8px 12px 8px 0",
                     textAlign: h === "Score" || h === "Date" ? "right" : "left",
-                    fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT,
+                    fontSize: 13, fontWeight: 500, color: TEXT_SUB,
                     borderBottom: `1px solid ${BORDER}`,
                   }}>
                     {h}

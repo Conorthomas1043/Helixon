@@ -20,9 +20,12 @@ import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
 import CvPane from "./_components/CvPane";
+import { SAMPLE_CV_NAME, SAMPLE_CV_PATH, SAMPLE_REQUIREMENTS, SAMPLE_ROLE } from "@/lib/screening/sample";
 import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
+import PhoneActionBar from "@/components/dashboard/PhoneActionBar";
+import { updateCandidateStage } from "@/lib/dashboard-api";
 import { printSection } from "@/lib/ui/print";
 import { BUTTON_BASE, BUTTON_SIZES, BUTTON_VARIANTS, Button, Card, Icon, Notice, Segmented, Toasts, cx, useToasts } from "./_components/ui";
 import {
@@ -179,6 +182,14 @@ export default function AnalyseWorkspace() {
   // The CV side panel: null when closed, else { skill } to scroll to.
   const [cvPane, setCvPane] = useState(null);
   const closeCvPane = useCallback(() => setCvPane(null), []);
+  // The sample run (lib/screening/sample.js): idle | loading | ready | error.
+  // "ready" while the sample CV is the one chosen; any other CV ends it.
+  const [sampleStatus, setSampleStatus] = useState("idle");
+  const autoRunRef = useRef(false);
+  // The report's candidate's stage, held here so the rail's stage card and
+  // the phone action bar move them in step. A new analysis starts at
+  // "Screened" (see app/api/run).
+  const [heldStage, setHeldStage] = useState({ id: null, stage: "Screened" });
 
   const { email, reset: resetEmail } = useEmailComposer({
     candidateId,
@@ -233,11 +244,14 @@ export default function AnalyseWorkspace() {
 
   const roleReady = !!jobFile || jobText.trim().length >= 50;
   const activeFile = comparing ? compareFile : file;
+  // The sample is fictional, so it needs no lawful basis (the server checks
+  // it really is the sample before skipping that).
+  const sampleRun = sampleStatus === "ready" && !comparing && file?.name === SAMPLE_CV_NAME;
   const missing = !roleReady
     ? "Add the job - pick a saved one, build one, paste an advert or upload a spec."
     : !activeFile
       ? "Add the candidate's CV."
-      : !consent
+      : !consent && !sampleRun
         ? "Confirm your lawful basis to continue."
         : null;
   const canAnalyse = !missing && !loading;
@@ -266,6 +280,7 @@ export default function AnalyseWorkspace() {
 
   function onCvFile(chosen) {
     if (!chosen) return;
+    setSampleStatus("idle");
     const problem = cvFileProblem(chosen);
     if (problem) {
       toast(problem, "error");
@@ -284,10 +299,30 @@ export default function AnalyseWorkspace() {
     toast("Saved to your templates");
   }
 
+  // "Try a sample CV": the sample role and CV filled in, then screened for
+  // real, so a new account sees a whole report before uploading anything.
+  async function startSample() {
+    setSampleStatus("loading");
+    try {
+      const res = await fetch(SAMPLE_CV_PATH);
+      if (!res.ok) throw new Error(String(res.status));
+      const cv = new File([await res.blob()], SAMPLE_CV_NAME, { type: "application/pdf" });
+      dispatch({ type: "jobTextFromFile", text: SAMPLE_ROLE });
+      dispatch({ type: "set", field: "requirements", value: SAMPLE_REQUIREMENTS });
+      dispatch({ type: "cvFile", file: cv });
+      autoRunRef.current = true;
+      setSampleStatus("ready");
+      track("sample_screening_started");
+    } catch {
+      setSampleStatus("error");
+      toast("Couldn't load the sample CV. Please try again.", "error");
+    }
+  }
+
   async function analyse(opts = {}) {
     const isCompare = comparing;
     const cv = isCompare ? compareFile : file;
-    if (!cv || !roleReady || !consent) return;
+    if (!cv || !roleReady || (!consent && !sampleRun)) return;
     lastRunRef.current = opts;
 
     const startedAt = Date.now();
@@ -299,8 +334,10 @@ export default function AnalyseWorkspace() {
     if (jobFile && !jobId) form.append("jobFile", jobFile);
     if (clientEmail.trim()) form.append("clientEmail", clientEmail.trim());
     form.append("blind", blind ? "true" : "false");
-    // Recorded with the analysis - the lawful-basis checkbox is required to get here.
+    // Recorded with the analysis - the lawful-basis checkbox is required to get
+    // here, except for the fictional sample.
     form.append("lawfulBasisConfirmed", consent ? "true" : "false");
+    if (sampleRun && !isCompare) form.append("sample", "true");
     form.append("requirements", JSON.stringify(requirements));
     // Re-runs and comparisons reuse the job the first analysis created, so
     // they don't each add another copy of the same role.
@@ -370,6 +407,38 @@ export default function AnalyseWorkspace() {
     analyseRef.current = analyse;
   });
   const showSetup = !result || comparing || rerunning;
+  const stage = heldStage.id === candidateId ? heldStage.stage : "Screened";
+  const setStage = useCallback((next) => setHeldStage({ id: candidateId, stage: next }), [candidateId]);
+
+  async function shortlistFromBar() {
+    if (!candidateId || stage === "Shortlisted") return;
+    const previous = stage;
+    setStage("Shortlisted");
+    try {
+      await updateCandidateStage(candidateId, "Shortlisted");
+      toast("Moved to Shortlisted");
+    } catch {
+      setStage(previous);
+      toast("Couldn't update the stage - try again", "error");
+    }
+  }
+
+  // The sample starts itself once its role and CV are in.
+  useEffect(() => {
+    if (!autoRunRef.current || !sampleRun || !roleReady || loading) return undefined;
+    autoRunRef.current = false;
+    const t = setTimeout(() => analyseRef.current(), 0);
+    return () => clearTimeout(t);
+  }, [sampleRun, roleReady, loading]);
+
+  // /analyse?sample=1, from the first-run checklist on the overview.
+  useEffect(() => {
+    if (searchParams?.get("sample") !== "1") return undefined;
+    const t = setTimeout(() => startSample(), 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
+  const emptySetup = !comparing && !rerunning && !file && !jobFile && !existingJobId && !jobText.trim() && sampleStatus !== "loading";
 
   // Ctrl/Cmd+Enter analyses from the setup view.
   useEffect(() => {
@@ -384,12 +453,14 @@ export default function AnalyseWorkspace() {
   }, [mode, showSetup, canAnalyse, rerunning]);
 
   function startNew() {
+    setSampleStatus("idle");
     dispatch({ type: "startNew" });
     resetEmail();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function newCandidateSameRole() {
+    setSampleStatus("idle");
     dispatch({ type: "nextCandidate", savedJobIds: savedJobs.map((j) => j.id) });
     resetEmail();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -534,6 +605,20 @@ export default function AnalyseWorkspace() {
                 {error}
               </Notice>
             )}
+            {emptySetup && (
+              <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-card border border-[var(--mint-line)] bg-[var(--mint)] px-5 py-4">
+                <span className="w-10 h-10 rounded-btn bg-[var(--bg)] border border-[var(--mint-line)] flex items-center justify-center text-[var(--forest)] shrink-0" aria-hidden="true">
+                  <Icon name="file" size={18} />
+                </span>
+                <div className="min-w-0 flex-1 basis-60">
+                  <p className="text-15 font-semibold text-[var(--ink)]">See it work on a sample CV first</p>
+                  <p className="text-14 text-[var(--ink-soft)]">A fictional warehouse team leader, scored against a sample role. About a minute, nothing to upload.</p>
+                </div>
+                <Button variant="primary" size="sm" icon="arrowRight" onClick={startSample}>
+                  Try a sample CV
+                </Button>
+              </div>
+            )}
             <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start">
               {comparing ? (
                 <Card className="px-5 py-5">
@@ -592,6 +677,13 @@ export default function AnalyseWorkspace() {
                 )}
               </div>
             </div>
+            {/* On a phone the Screen button is far down the page, under the role. */}
+            <PhoneActionBar watchId="screen-candidate-button" label="Screen candidate">
+              <p className="min-w-0 flex-1 text-13 leading-snug text-[var(--ink-soft)]">{missing || "Ready to screen."}</p>
+              <Button variant="primary" disabled={!canAnalyse} onClick={() => analyse({ rerun: rerunning })} iconRight="arrowRight">
+                {comparing ? "Screen and compare" : rerunning ? "Re-score" : "Screen"}
+              </Button>
+            </PhoneActionBar>
           </>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
@@ -620,6 +712,18 @@ export default function AnalyseWorkspace() {
                   )}
                 </div>
               )}
+              {sampleRun && candidateId && (
+                <Notice tone="info" className="print-hide">
+                  Amy Clarke is fictional. She&apos;s saved to your pipeline as a sample candidate so you can see the rest of Helixon - delete her from{" "}
+                  <Link href={`/dashboard/candidates/${candidateId}`} className="font-semibold underline underline-offset-2">
+                    her profile
+                  </Link>{" "}
+                  any time. Ready for a real one?{" "}
+                  <button type="button" onClick={startNew} className="font-semibold underline underline-offset-2">
+                    Screen your own CV
+                  </button>
+                </Notice>
+              )}
               <Report result={result} roleLabel={roleLabel} candidateId={candidateId} onShowInCv={candidateId && !result.blind_mode ? (skill) => setCvPane({ skill }) : null} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">
@@ -631,7 +735,7 @@ export default function AnalyseWorkspace() {
               <Button variant="secondary" size="sm" icon="printer" className="w-full" onClick={() => printSection("analysis-report")}>
                 Print / save as PDF
               </Button>
-              {candidateId && <StageCard key={`stage-${candidateId}`} candidateId={candidateId} toast={toast} />}
+              {candidateId && <StageCard key={`stage-${candidateId}`} candidateId={candidateId} toast={toast} stage={stage} onStageChange={setStage} />}
               {candidateId && <NotesCard key={`notes-${candidateId}`} candidateId={candidateId} toast={toast} />}
               <EmailCard email={email} />
               <FeedbackCard feedback={{ ...feedback, submit: submitFeedback }} />
@@ -642,6 +746,21 @@ export default function AnalyseWorkspace() {
                 </Link>
               </p>
             </aside>
+            {candidateId && (
+              <PhoneActionBar label="Candidate actions">
+                {!result.blind_mode && (
+                  <Button variant="secondary" icon="file" onClick={() => setCvPane({ skill: null })}>
+                    CV
+                  </Button>
+                )}
+                <Button variant="secondary" icon="plus" onClick={newCandidateSameRole} className="flex-1">
+                  Next
+                </Button>
+                <Button variant="primary" icon="check" disabled={stage === "Shortlisted"} onClick={shortlistFromBar} className="flex-1">
+                  {stage === "Shortlisted" ? "Shortlisted" : "Shortlist"}
+                </Button>
+              </PhoneActionBar>
+            )}
             {cvPane && candidateId && (
               <CvPane
                 key={`${candidateId}-${cvPane.skill || ""}`}

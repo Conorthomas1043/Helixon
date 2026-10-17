@@ -189,6 +189,109 @@ export const Button = forwardRef(function Button(
   );
 });
 
+const menuItemsIn = (el) => [...(el?.querySelectorAll("[role=menuitem]:not(:disabled)") ?? [])];
+
+// A menu button: for actions ("Export", "More"), where a <select> would
+// pick a value. Enter, Space or ArrowDown opens it on the first item (ArrowUp
+// on the last); the arrows, Home and End move; Escape closes and returns
+// focus to the button; Tab or a click outside closes it.
+// items: [{ label, icon?, onSelect, disabled? }]
+export function ActionMenu({ label, items, icon, variant = "secondary", size = "sm", loading = false, disabled = false, align = "right" }) {
+  const [open, setOpen] = useState(false);
+  const [start, setStart] = useState(0);
+  const wrapRef = useRef(null);
+  const buttonRef = useRef(null);
+  const menuId = useId();
+
+  const close = useCallback((refocus) => {
+    setOpen(false);
+    if (refocus) buttonRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    menuItemsIn(wrapRef.current).at(start)?.focus();
+    function onPointer(e) {
+      if (!wrapRef.current?.contains(e.target)) close(false);
+    }
+    document.addEventListener("pointerdown", onPointer);
+    return () => document.removeEventListener("pointerdown", onPointer);
+  }, [open, start, close]);
+
+  function openAt(index) {
+    setStart(index);
+    setOpen(true);
+  }
+
+  function onMenuKey(e) {
+    const list = menuItemsIn(wrapRef.current);
+    const i = list.indexOf(document.activeElement);
+    const go = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (go !== undefined) {
+      e.preventDefault();
+      list[(go + list.length) % list.length]?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      close(true);
+    } else if (e.key === "Tab") {
+      close(false);
+    }
+  }
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <Button
+        ref={buttonRef}
+        variant={variant}
+        size={size}
+        icon={icon}
+        loading={loading}
+        disabled={disabled}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={() => (open ? close(false) : openAt(0))}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            openAt(e.key === "ArrowDown" ? 0 : -1);
+          }
+        }}
+      >
+        {label}
+        <Icon name="chevronRight" size={13} className={cx("transition-transform", open ? "-rotate-90" : "rotate-90")} />
+      </Button>
+      {open && (
+        <div
+          id={menuId}
+          role="menu"
+          aria-label={typeof label === "string" ? label : undefined}
+          onKeyDown={onMenuKey}
+          className={cx("absolute top-full mt-1 z-30 min-w-64 rounded-xl py-1.5 bg-[var(--ui-surface)] border border-[var(--ui-border)] shadow-lg", align === "left" ? "left-0" : "right-0")}
+        >
+          {items.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              role="menuitem"
+              tabIndex={-1}
+              disabled={item.disabled}
+              onClick={() => {
+                close(true);
+                item.onSelect();
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-14 text-[var(--ui-text)] hover:bg-[var(--ui-surface-muted)] focus:bg-[var(--ui-surface-muted)] outline-none disabled:opacity-50"
+            >
+              {item.icon && <Icon name={item.icon} size={15} />}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Surfaces ────────────────────────────────────────────────────────────────
 
 export function Card({ as: Tag = "section", className = "", children, ...props }) {

@@ -197,7 +197,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-t-[var(--border)]">
+      <div id="profile-actions" className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-t-[var(--border)]">
         {candidate.status === "completed" && candidate.stage !== "Shortlisted" && (
           <button
             type="button"

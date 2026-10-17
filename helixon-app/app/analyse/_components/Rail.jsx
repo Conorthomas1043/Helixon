@@ -26,8 +26,12 @@ function RailCard({ title, children, action }) {
 // A new analysis always lands at "Screened" (see app/api/run), so that's
 // the starting value. Keyed by candidateId where it's rendered, so the next
 // candidate starts fresh.
-export function StageCard({ candidateId, toast }) {
-  const [stage, setStage] = useState("Screened");
+// The stage can be held by the page (`stage` + `onStageChange`), so another
+// control on it - the phone action bar - moves the same candidate in step.
+export function StageCard({ candidateId, toast, stage: heldStage, onStageChange }) {
+  const [ownStage, setOwnStage] = useState("Screened");
+  const stage = heldStage ?? ownStage;
+  const setStage = onStageChange ?? setOwnStage;
   const [saving, setSaving] = useState(false);
   const [pooled, setPooled] = useState(false);
   const [pooling, setPooling] = useState(false);

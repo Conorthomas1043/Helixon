@@ -156,7 +156,7 @@
   },
   "app/analyse/_components/BulkFlow.jsx": {
     "hex": 0,
-    "inlineStyles": 2,
+    "inlineStyles": 1,
     "fontSizes": 0
   },
   "app/analyse/_components/CandidateChooser.jsx": {
@@ -181,15 +181,10 @@
   },
   "app/analyse/_components/Report.jsx": {
     "hex": 0,
-    "inlineStyles": 7,
+    "inlineStyles": 6,
     "fontSizes": 0
   },
   "app/analyse/_components/RoleInputs.jsx": {
-    "hex": 0,
-    "inlineStyles": 1,
-    "fontSizes": 0
-  },
-  "app/analyse/_components/RunningPanel.jsx": {
     "hex": 0,
     "inlineStyles": 1,
     "fontSizes": 0
@@ -245,12 +240,12 @@
     "fontSizes": 0
   },
   "app/dashboard/_components/attention.jsx": {
-    "hex": 1,
+    "hex": 0,
     "inlineStyles": 41,
     "fontSizes": 0
   },
   "app/dashboard/_components/header.jsx": {
-    "hex": 4,
+    "hex": 0,
     "inlineStyles": 47,
     "fontSizes": 0
   },
@@ -261,16 +256,16 @@
   },
   "app/dashboard/_components/kpis.jsx": {
     "hex": 0,
-    "inlineStyles": 28,
+    "inlineStyles": 25,
     "fontSizes": 0
   },
   "app/dashboard/_components/pipeline.jsx": {
-    "hex": 1,
-    "inlineStyles": 51,
+    "hex": 0,
+    "inlineStyles": 50,
     "fontSizes": 0
   },
   "app/dashboard/_components/states.jsx": {
-    "hex": 1,
+    "hex": 0,
     "inlineStyles": 14,
     "fontSizes": 0
   },
@@ -406,7 +401,7 @@
   },
   "app/dashboard/placements/page.jsx": {
     "hex": 0,
-    "inlineStyles": 3,
+    "inlineStyles": 2,
     "fontSizes": 0
   },
   "app/dashboard/privacy/page.jsx": {
@@ -540,7 +535,7 @@
     "fontSizes": 0
   },
   "app/employee/dashboard/page.js": {
-    "hex": 1,
+    "hex": 0,
     "inlineStyles": 4,
     "fontSizes": 0
   },
@@ -631,7 +626,7 @@
   },
   "app/page.js": {
     "hex": 0,
-    "inlineStyles": 13,
+    "inlineStyles": 12,
     "fontSizes": 0
   },
   "app/portal/[token]/page.jsx": {
@@ -724,11 +719,6 @@
     "inlineStyles": 3,
     "fontSizes": 0
   },
-  "components/SiteAnnouncement.jsx": {
-    "hex": 1,
-    "inlineStyles": 0,
-    "fontSizes": 0
-  },
   "components/account/DangerZone.jsx": {
     "hex": 0,
     "inlineStyles": 1,
@@ -740,8 +730,8 @@
     "fontSizes": 0
   },
   "components/auth/AuthShell.jsx": {
-    "hex": 5,
-    "inlineStyles": 7,
+    "hex": 2,
+    "inlineStyles": 6,
     "fontSizes": 0
   },
   "components/dashboard/AccountSetupGate.jsx": {
@@ -821,7 +811,7 @@
   },
   "components/landing/AnalysisExample.jsx": {
     "hex": 0,
-    "inlineStyles": 7,
+    "inlineStyles": 6,
     "fontSizes": 0
   },
   "components/landing/ChatWidget.jsx": {
@@ -836,15 +826,10 @@
   },
   "components/landing/home-interactive.jsx": {
     "hex": 0,
-    "inlineStyles": 30,
+    "inlineStyles": 13,
     "fontSizes": 0
   },
   "components/marketing/CtaBand.jsx": {
-    "hex": 0,
-    "inlineStyles": 1,
-    "fontSizes": 0
-  },
-  "components/marketing/MarketingFooter.jsx": {
     "hex": 0,
     "inlineStyles": 1,
     "fontSizes": 0

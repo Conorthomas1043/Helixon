@@ -28,7 +28,7 @@ export function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
       className="fade-up-in lift-on-hover"
       style={{ ...CARD, padding: 20, "--stagger-delay": `${index * 70}ms` }}
     >
-      <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginBottom: 10, marginTop: 0 }}>
+      <p className="text-13 font-medium mb-2.5 text-[var(--ink-soft)]">
         {label}
       </p>
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
@@ -82,7 +82,7 @@ export function UsageSummary({ plan, analyses }) {
 
   return (
     <div style={{ ...CARD, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
-      <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, marginTop: 0, marginBottom: 6 }}>Your plan</p>
+      <p className="text-13 font-medium mb-1.5 text-[var(--ink-soft)]">Your plan</p>
       <p style={{ fontSize: 18, fontWeight: 600, color: TEXT, margin: 0, fontFamily: "var(--font-display)" }}>{plan?.name ? `${plan.name}` : "No active plan"}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
         <div>
@@ -125,7 +125,7 @@ export function BusinessKpis({ kpis }) {
           className="fade-up-in lift-on-hover"
           style={{ ...CARD, padding: 18, textDecoration: "none", display: "block", "--stagger-delay": `${i * 60}ms` }}
         >
-          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "0 0 8px" }}>{it.label}</p>
+          <p className="text-13 font-medium mb-2 text-[var(--ink-soft)]">{it.label}</p>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
             {typeof it.value === "number" ? formatNumber(it.value) : it.value}
           </p>

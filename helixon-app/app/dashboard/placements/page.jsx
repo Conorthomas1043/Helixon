@@ -9,7 +9,7 @@ import Link from "next/link";
 import { getAccountingExport, getInvoices, getPlacements, updateInvoice } from "@/lib/dashboard-api";
 import { downloadCsv } from "@/lib/csv";
 import { PLACEMENT_STATUSES, contractMargin } from "@/lib/placements/core";
-import { Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
+import { ActionMenu, Page, PageHeader, Card, Button, EmptyState, ErrorState, LoadingCard, Select, ErrorText, formatMoney, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 import { InvoiceStatusPill, PlacementItem } from "@/components/dashboard/placements";
 import { useConfirm } from "@/components/dashboard/use-confirm";
 import { useResource } from "@/lib/hooks/useResource";
@@ -134,18 +134,15 @@ export default function PlacementsPage() {
         actions={
           <>
             {!data?.financialsHidden && (
-              <Select
-                aria-label="Export for your accounts"
-                value=""
-                onChange={(e) => exportFor(e.target.value)}
-                options={[
-                  { value: "", label: exporting ? "Exporting…" : "Export…" },
-                  { value: "xero", label: "Invoices for Xero (CSV)" },
-                  { value: "quickbooks", label: "Invoices for QuickBooks (CSV)" },
-                  { value: "payroll", label: "Contractor payroll (CSV)" },
+              <ActionMenu
+                label={exporting ? "Exporting…" : "Export"}
+                icon="download"
+                loading={exporting}
+                items={[
+                  { label: "Invoices for Xero (CSV)", onSelect: () => exportFor("xero") },
+                  { label: "Invoices for QuickBooks (CSV)", onSelect: () => exportFor("quickbooks") },
+                  { label: "Contractor payroll (CSV)", onSelect: () => exportFor("payroll") },
                 ]}
-                disabled={exporting}
-                style={{ width: "auto" }}
               />
             )}
             <Button href="/dashboard/settings/invoicing" size="sm">

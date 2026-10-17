@@ -4,6 +4,7 @@
 // before any model call or database write.
 
 import extractCvText from "@/lib/cv-analysis/extraction/cvTextExtractor";
+import { isSampleCv } from "./sample";
 
 export const MAX_JOB_TEXT = 50000;
 export const MIN_JOB_TEXT = 50;
@@ -52,15 +53,18 @@ function parseRequirements(raw) {
  * @param {FormData} form
  */
 export async function readScreeningForm(form) {
-  // The recruiter confirms a lawful basis for screening this CV (the checkbox
-  // on /analyse). It's recorded with the analysis: who confirmed it, and when.
-  if (form.get("lawfulBasisConfirmed") !== "true") {
-    return { status: 400, error: "Confirm you have a lawful basis to screen this CV before analysing it." };
-  }
-
   // A form field can be a string; only a real upload counts.
   const cv = form.get("cv");
   const file = cv && typeof cv === "object" ? cv : null;
+  // The bundled sample CV (lib/screening/sample.js), recognised by its bytes.
+  const sample = form.get("sample") === "true" && (await isSampleCv(file));
+
+  // The recruiter confirms a lawful basis for screening this CV (the checkbox
+  // on /analyse). It's recorded with the analysis: who confirmed it, and when.
+  // The sample is fictional, so it's no one's personal data and needs none.
+  if (!sample && form.get("lawfulBasisConfirmed") !== "true") {
+    return { status: 400, error: "Confirm you have a lawful basis to screen this CV before analysing it." };
+  }
   const jobFile = form.get("jobFile");
   const requirements = parseRequirements(form.get("requirements"));
   let jobText = String(form.get("jobText") || "").trim();
@@ -98,6 +102,7 @@ export async function readScreeningForm(form) {
       clientEmail: String(form.get("clientEmail") || "").trim(),
       existingJobId: form.get("jobId") || null,
       saveJob: form.get("saveJob") === "true",
+      sample,
     },
   };
 }
