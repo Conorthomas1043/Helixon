@@ -13,7 +13,9 @@ import { DashboardFooter, DashboardHeader, GettingStarted, ScopeToggle, TeamWelc
 import { ActiveJobs, RecruiterPerformance } from "./_components/jobs-team";
 import { BusinessKpis, DashboardKpis, TargetsCard, UsageSummary } from "./_components/kpis";
 import { ActivityOverview, PipelineSnapshot, RecentAnalyses, TopCandidates } from "./_components/pipeline";
-import { BG, CARD, TEXT_FAINT } from "./_components/shared";
+import { TodayStrip } from "./_components/today";
+import { todayBriefing } from "@/lib/dashboard/today";
+import { BG, CARD } from "./_components/shared";
 import { DashboardError, DashboardSkeleton, EmptyState } from "./_components/states";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
@@ -223,15 +225,23 @@ export default function DashboardHome({ initialStats = null }) {
 
             {isNewAccount && <GettingStarted hasJob={hasOpenJob} showTeam={plan?.name === "Agency"} />}
 
-            {/* All zeros and "All clear" on day one say nothing; they come
+            {/* The three things most worth doing now (lib/dashboard/today.js).
+                Not on day one, when there's nothing yet to prompt. */}
+            {!isNewAccount && (
+              <TodayStrip
+                cards={todayBriefing({
+                  interviews: ops?.interviews,
+                  alerts: ops?.alerts,
+                  clientFollowUps: ops?.clientFollowUps,
+                  attentionItems: model.attentionItemsAll ?? model.attentionItems,
+                })}
+              />
+            )}
+
+            {/* One row of figures. All zeros on day one say nothing; they come
                 back as soon as there's anything to report. */}
             {ops && !(isNewAccount && !hasOpenJob) && <BusinessKpis kpis={ops.kpis} />}
-            {ops && !(isNewAccount && !hasOpenJob) && (
-              <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
-                <RisksPanel alerts={ops.alerts} />
-                <AgendaPanel interviews={ops.interviews} total={ops.interviewsTotal} clientFollowUps={ops.clientFollowUps} />
-              </div>
-            )}
+            {!ops && model.analyses.length > 0 && <DashboardKpis totals={model.totals} />}
 
             {isNewAccount ? (
               ops && ops.activeJobsTotal > 0 && (
@@ -255,31 +265,35 @@ export default function DashboardHome({ initialStats = null }) {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: TEXT_FAINT, margin: "8px 0 -8px" }}>Screening</p>
-                <DashboardKpis totals={model.totals} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-                  <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} />
-                  <div className="flex flex-col gap-6">
-                    {/* Plan usage is the agency's, whichever view is on. */}
-                    <UsageSummary plan={plan} analyses={model.everyone} />
-                    <TargetsCard scope={model.mineOnly ? "mine" : "team"} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+                {/* Pairs below share a row; when one has nothing to show it
+                    renders nothing and the other takes the full width. */}
+                <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start lg:[&>*:only-child]:col-span-2">
                   <AttentionPanel items={model.attentionItems} allItems={model.attentionItemsAll ?? model.attentionItems} total={model.attentionItemsTotal} />
-                  <FollowUpsPanel />
+                  {ops && <AgendaPanel interviews={ops.interviews} total={ops.interviewsTotal} clientFollowUps={ops.clientFollowUps} />}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start lg:[&>*:only-child]:col-span-2">
+                  <PipelineSnapshot stageOrder={stageOrder} stageCounts={model.stageCounts} maxCount={model.maxStageCount} rejected={model.totals.rejected} totals={model.totals} />
                   <TopCandidates candidates={model.topCandidates} total={model.topCandidatesTotal} strongCount={model.totals.strongMatches} />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start lg:[&>*:only-child]:col-span-2">
+                  {ops && ops.alerts.length > 0 && <RisksPanel alerts={ops.alerts} />}
+                  <FollowUpsPanel hideWhenEmpty />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start lg:[&>*:only-child]:col-span-2">
+                  {ops && <ActiveJobs jobs={ops.activeJobs} total={ops.activeJobsTotal} statsByJob={model.jobStats} />}
                   <ActivityOverview analyses={model.analyses} />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {ops ? <ActiveJobs jobs={ops.activeJobs} total={ops.activeJobsTotal} statsByJob={model.jobStats} /> : <div />}
+                {/* Plan usage, targets and the team's numbers: worth a look,
+                    not first thing. */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                   <RecruiterPerformance recruiters={model.recruiters} />
+                  {/* Plan usage is the agency's, whichever view is on. */}
+                  <UsageSummary plan={plan} analyses={model.everyone} />
+                  <TargetsCard scope={model.mineOnly ? "mine" : "team"} hideWhenEmpty />
                 </div>
 
                 <RecentAnalyses analyses={model.analyses.slice(0, 8)} />

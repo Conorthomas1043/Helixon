@@ -4,8 +4,7 @@
 
 import Link from "next/link";
 import { CARD, INK, INK_FAINT, INK_MUTED } from "@/lib/candidates/format";
-import { track } from "@/lib/analytics/track";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Avatar as KitAvatar, SectionHeading, Skeleton as Block } from "@/components/ui";
 
 export { Block, SectionHeading };
@@ -200,40 +199,3 @@ export function StateMessage({ title, body, retryLabel, onRetry }) {
  * screening, rebuilt from the saved analysis so it can be read again after
  * leaving that screen.
  * ---------------------------------------------------------------------- */
-
-// A titled, collapsible group of panels on the candidate profile. Showing
-// the everyday groups open and the occasional ones closed is progressive
-// disclosure (Nielsen, 2006, Nielsen Norman Group): fewer visible options
-// make the frequent ones faster to find, as choice time grows with the
-// number of alternatives (Hick, 1952, Quarterly Journal of Experimental
-// Psychology 4(1); Hyman, 1953, Journal of Experimental Psychology 45(3)).
-// Group titles name the task, which is what people scan for (Pirolli &
-// Card, 1999, "Information foraging", Psychological Review 106(4)).
-// Opening a group and using a panel in it are recorded, so the order can
-// be revisited with data (docs/ux-research-audit.md, R4).
-export function PanelGroup({ id, title, summary, defaultOpen = false, children }) {
-  const usedRef = useRef(false);
-  return (
-    <details
-      open={defaultOpen}
-      className="group/panel space-y-4"
-      onToggle={(e) => track("profile_group_toggled", { group: id, open: e.currentTarget.open })}
-      onClickCapture={(e) => {
-        if (usedRef.current || e.target.closest("summary")) return;
-        usedRef.current = true;
-        track("profile_panel_used", { group: id });
-      }}
-    >
-      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-xl px-4 py-3 min-h-[44px] bg-[var(--bg)] border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
-        <span className="min-w-0">
-          <span className="block text-14 font-semibold text-[var(--ink)]">{title}</span>
-          {summary && <span className="block text-13 group-open/panel:hidden text-[var(--ink-faint)]">{summary}</span>}
-        </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 transition-transform group-open/panel:rotate-180 text-[var(--ink-faint)]">
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </summary>
-      {children}
-    </details>
-  );
-}

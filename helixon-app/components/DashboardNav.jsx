@@ -12,6 +12,7 @@ import { setMyPresence } from "@/lib/dashboard-api";
 import { clearLocalCandidateData } from "@/lib/compliance/clear-local-data";
 import { KeyboardShortcuts, NotificationsBell, SearchPalette } from "@/components/dashboard/NavTools";
 import MobileTabBar, { MOBILE_PRIMARY_HREFS } from "@/components/dashboard/MobileTabBar";
+import PlacedMoment from "@/components/dashboard/PlacedMoment";
 import { SIGNED_OUT_EVENT } from "@/lib/api-client/errors";
 import { clearResources } from "@/lib/hooks/useResource";
 import WorkspaceTabs from "@/components/workspace/WorkspaceTabs";
@@ -415,6 +416,7 @@ function DashboardNavContent() {
         backdrop blur would otherwise pin it to the top bar. */}
     <MobileTabBar activeHref={activeHref} groups={MOBILE_GROUPS} plan={me?.plan} />
     <WorkspaceTabs />
+    <PlacedMoment />
     </>
   );
 }

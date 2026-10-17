@@ -62,7 +62,9 @@ export function StageBadge({ stage }) {
 // stage and every stage before it (someone in Interview has, by definition,
 // been Screened and Shortlisted), so the conversion between two stages is
 // reached(next) / reached(this).
-export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0 }) {
+// `totals` (optional): the screening figures, as one line under the heading,
+// so they don't need a row of cards of their own.
+export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected = 0, totals = null }) {
   // Bars grow in from 0 on mount instead of appearing at final height -
   // same two-step pattern as KpiCard's meter.
   const [grown, setGrown] = useState(false);
@@ -85,6 +87,13 @@ export function PipelineSnapshot({ stageOrder, stageCounts, maxCount, rejected =
           </Link>
         }
       />
+      {totals && totals.total > 0 && (
+        <p className="-mt-2 mb-4 text-14 text-[var(--ink-soft)]">
+          {formatNumber(totals.total)} screened ({formatNumber(totals.last7)} this week) ·{" "}
+          <span className="text-[var(--score-strong)] font-medium">{formatNumber(totals.strongMatches)} strong</span>
+          {totals.completed > 0 ? ` · average score ${totals.avgScore}` : ""}
+        </p>
+      )}
       {maxCount === 0 ? (
         <EmptyState title="No candidates in progress" body="Candidates will appear here once analyses complete." actionLabel="Screen a CV" actionHref="/analyse" />
       ) : (

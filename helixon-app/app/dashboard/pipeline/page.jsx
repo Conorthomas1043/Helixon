@@ -26,6 +26,7 @@ import { STAGE_LABELS, FUNNEL_ORDER, STAGE_COLORS as STAGE_ACCENT } from "@/lib/
 import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from "@/lib/candidates/format";
 import { reportQuietly } from "@/lib/report-error";
 import { Avatar, Skeleton as Block } from "@/components/ui";
+import { celebratePlacement } from "@/components/dashboard/PlacedMoment";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
@@ -288,6 +289,9 @@ function PipelineContent() {
       setCandidates((list) => list.map((c) => (c.id === id ? { ...c, stage: newStage } : c)));
       setPendingIds((s) => new Set(s).add(id));
       updateCandidateStage(id, newStage)
+        .then(() => {
+          if (newStage === "Placed") celebratePlacement({ candidateId: id, name: current.fullName, jobTitle: current.jobTitle, company: current.company });
+        })
         .catch((err) => {
           setCandidates((list) => list.map((c) => (c.id === id ? { ...c, stage: previousStage } : c)));
           setMoveError(`Couldn't move ${current.fullName} to ${STAGE_LABELS[newStage]}: ${err.message || "please try again"}.`);

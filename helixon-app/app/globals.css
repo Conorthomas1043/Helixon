@@ -716,3 +716,20 @@ body {
    when the helixon_ws_tabs cookie says this browser has tabs. */
 .ws-tabs-slot { display: none; }
 html[data-ws-tabs] .ws-tabs-slot { display: block; height: 41px; border-bottom: 1px solid var(--border); background: var(--mist); }
+
+/* ── The placement moment (components/dashboard/PlacedMoment.jsx) ────────────
+   A card slides up and a ring draws round the tick: once, when a candidate
+   is moved to Placed. Reduced motion shows the finished card. */
+@keyframes placed-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes placed-ring { to { stroke-dashoffset: 0; } }
+@keyframes placed-tick { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+.placed-in { animation: placed-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.placed-ring { stroke-dasharray: 126; stroke-dashoffset: 126; animation: placed-ring 0.7s 0.15s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+.placed-tick { transform-origin: center; animation: placed-tick 0.3s 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .placed-in, .placed-tick { animation: none; }
+  .placed-ring { animation: none; stroke-dashoffset: 0; }
+}

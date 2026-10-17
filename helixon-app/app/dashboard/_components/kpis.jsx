@@ -31,7 +31,7 @@ export function KpiCard({ label, value, sub, meter, accent, index = 0 }) {
       <p className="text-13 font-medium mb-2.5 text-[var(--ink-soft)]">
         {label}
       </p>
-      <p style={{ fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+      <p style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 600, color: accent || TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
         <CountUp value={value} format={formatNumber} />
       </p>
       {typeof meter === "number" && (
@@ -101,6 +101,8 @@ export function UsageSummary({ plan, analyses }) {
   );
 }
 
+// Figures use the display face with tabular numbers: the mono face's wide
+// comma made "£5,184" read as "£5 , 184".
 export function BusinessKpis({ kpis }) {
   const items = [
     { label: "Open jobs", value: kpis.openJobs, sub: kpis.openings > kpis.openJobs ? `${formatNumber(kpis.openings)} openings` : "Roles you're filling", href: "/dashboard/jobs" },
@@ -126,8 +128,8 @@ export function BusinessKpis({ kpis }) {
           style={{ ...CARD, padding: 18, textDecoration: "none", display: "block", "--stagger-delay": `${i * 60}ms` }}
         >
           <p className="text-13 font-medium mb-2 text-[var(--ink-soft)]">{it.label}</p>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
-            {typeof it.value === "number" ? formatNumber(it.value) : it.value}
+          <p style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 600, color: TEXT, margin: 0, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            {typeof it.value === "number" ? <CountUp value={it.value} format={formatNumber} /> : it.value}
           </p>
           <p style={{ fontSize: 13, color: it.tone || TEXT_FAINT, margin: "8px 0 0" }}>{it.sub}</p>
         </Link>
@@ -145,7 +147,8 @@ export function formatMetric(key, n) {
 
 // This month against target - the same figures as /dashboard/performance,
 // for you or for the team depending on the Mine/Team switch.
-export function TargetsCard({ scope }) {
+// `hideWhenEmpty`: on the overview, no card at all until targets are set.
+export function TargetsCard({ scope, hideWhenEmpty = false }) {
   const [state, setState] = useState({ status: "loading", data: null });
   useEffect(() => {
     let cancelled = false;
@@ -172,6 +175,7 @@ export function TargetsCard({ scope }) {
           return { key: k, label: METRICS[k].label, actual, target, pct: Math.min(100, Math.round((actual / target) * 100)) };
         })
     : [];
+  if (hideWhenEmpty && state.status === "ready" && rows.length === 0) return null;
 
   return (
     <section style={{ ...CARD, padding: 24 }} aria-busy={state.status === "loading"}>

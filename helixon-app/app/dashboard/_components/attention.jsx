@@ -110,7 +110,9 @@ export function formatDue(dueAt) {
 // Every open next action and talent-pool check-in, most urgent first -
 // "mine" (assigned to me) or the whole team. The one place to see what's
 // due across all candidates; done here or on the candidate.
-export function FollowUpsPanel() {
+// `hideWhenEmpty`: on the overview, an empty "Mine" list renders nothing
+// rather than taking a panel's worth of space to say so.
+export function FollowUpsPanel({ hideWhenEmpty = false }) {
   const [scope, setScope] = useState("mine");
   const [state, setState] = useState({ scope: null, items: [], error: false, truncated: false });
   const [expanded, setExpanded] = useState(false);
@@ -144,6 +146,8 @@ export function FollowUpsPanel() {
     fontSize: 13, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, cursor: "pointer",
     border: `1px solid ${on ? ACCENT : BORDER}`, background: on ? ACCENT : SURFACE, color: on ? "var(--on-accent)" : TEXT_SUB,
   });
+
+  if (hideWhenEmpty && !loading && !state.error && scope === "mine" && state.items.length === 0) return null;
 
   return (
     <div style={{ ...CARD, padding: "20px 24px" }}>

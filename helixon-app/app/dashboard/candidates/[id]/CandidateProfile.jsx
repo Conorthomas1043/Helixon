@@ -34,9 +34,12 @@ import { FeedbackRequestsPanel } from "./_components/feedback";
 import { ProfileHeader } from "./_components/header";
 import { nextStageAfter } from "./_components/utils";
 import PhoneActionBar from "@/components/dashboard/PhoneActionBar";
+import { celebratePlacement } from "@/components/dashboard/PlacedMoment";
 import { NotesPanel } from "./_components/notes";
 import { ExperienceSection, FullAnalysis, MatchOverview } from "./_components/overview";
-import { PanelGroup, ProfileSkeleton, StateMessage } from "./_components/primitives";
+import { ProfileSkeleton, StateMessage } from "./_components/primitives";
+import { NextStepStrip, RailTabs } from "./_components/rail";
+import { nextStepFor } from "@/lib/candidates/next-step";
 import { TalentPoolPanel } from "./_components/talent-pool";
 import { pushRecentlyViewed } from "./_components/utils";
 import { OutcomeReportingPanel, RecruiterWorkspace } from "./_components/workspace";
@@ -194,6 +197,9 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
         }
         setCandidate((c) => (c ? { ...c, stage: updated.stage ?? stage, subStage: updated.sub_stage ?? null } : c));
         const moved = updated.stage ?? stage;
+        if (moved === "Placed" && previousStage !== "Placed") {
+          celebratePlacement({ candidateId: id, name: candidate?.fullName, jobTitle: candidate?.jobTitle, company: candidate?.company });
+        }
         // "Shortlisted" (a stage) and a client shortlist (what the client
         // sees) share a word; say so at the moment someone could confuse
         // them (docs/glossary.md).
@@ -444,9 +450,38 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
     [id, failed, toast, refreshActivity, router]
   );
 
+  // The side column's tab (./_components/rail.jsx). Until someone picks one,
+  // it follows the stage: an offer or placement opens on Placement.
+  const [railTab, setRailTab] = useState(null);
+  const tab = railTab ?? (candidate?.stage === "Offer" || candidate?.stage === "Placed" ? "place" : "work");
+
   const focusNoteField = useCallback(() => {
-    document.getElementById("candidate-note-input")?.focus();
+    setRailTab("work");
+    // A tick later, once the Work tab is showing.
+    setTimeout(() => document.getElementById("candidate-note-input")?.focus(), 0);
   }, []);
+
+  // /dashboard/candidates/[id]#placement (the placement moment's "Record fee").
+  const hasCandidate = !!candidate;
+  useEffect(() => {
+    if (!hasCandidate || window.location.hash !== "#placement") return undefined;
+    const t = setTimeout(() => {
+      setRailTab("place");
+      document.getElementById("placement")?.scrollIntoView({ block: "start" });
+    }, 0);
+    return () => clearTimeout(t);
+  }, [hasCandidate]);
+
+  const actOnNextStep = useCallback(
+    (action) => {
+      if (action.stage) handleStageChange(action.stage);
+      else if (action.tab) {
+        setRailTab(action.tab);
+        setTimeout(() => document.getElementById(`rail-${action.tab}`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 0);
+      } else if (action.scrollTo) document.getElementById(action.scrollTo)?.scrollIntoView({ block: "start", behavior: "smooth" });
+    },
+    [handleStageChange]
+  );
 
   // Keyboard shortcuts - ignored while typing in a field, per the brief's
   // note not to fight normal browser/input behaviour.
@@ -498,13 +533,18 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
               onEdit={() => setEditingDetails(true)}
               onActivityLogged={refreshActivity}
             />
+            <NextStepStrip step={nextStepFor(candidate)} onAct={actOnNextStep} />
 
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               {/* Main column: the assessment and the record. */}
               <div className="space-y-4 lg:space-y-6 order-2 lg:order-1">
                 <MatchOverview candidate={candidate} />
                 <FullAnalysis analysis={candidate.analysis} candidateName={candidate.screenedBlind ? null : candidate.fullName} candidateId={candidate.id} />
-                {candidate.status === "completed" && <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />}
+                {candidate.status === "completed" && (
+                  <div id="interviews" className="scroll-mt-24">
+                    <InterviewsPanel candidate={candidate} onChanged={refreshCandidate} />
+                  </div>
+                )}
                 <ExperienceSection candidate={candidate} />
                 <DocumentsSection candidate={candidate} />
                 <CustomFieldsCard key={candidate.id} entity="candidate" recordId={candidate.id} values={candidate.customFields} onSaved={refreshActivity} />
@@ -514,74 +554,92 @@ export default function CandidateProfile({ id, initialCandidate = null }) {
                   they were built. On a phone it comes first, so stage and
                   notes are on the first screen rather than ~20 panels down. */}
               <div className="space-y-4 lg:space-y-6 order-1 lg:order-2">
-                <PanelGroup id="work" title="Work on this candidate" defaultOpen>
-                  <RecruiterWorkspace
-                    candidate={candidate}
-                    recruiters={recruiters}
-                    tags={tags}
-                    onStageChange={handleStageChange}
-                    onSubStageChange={handleSubStageChange}
-                    onAssign={handleAssign}
-                    onAddTag={handleAddTag}
-                    onRemoveTag={handleRemoveTag}
-                    onCreateTag={handleCreateTag}
-                    onSetNextAction={handleSetNextAction}
-                    onCompleteNextAction={handleCompleteNextAction}
-                    onLogActivity={handleLogActivity}
-                    loggingActivity={loggingActivity}
-                  />
-                  <NotesPanel candidateId={candidate.id} notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
-                  <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
-                </PanelGroup>
-                <PanelGroup id="contact" title="Contact" summary="Email, texts, booking links and feedback requests" defaultOpen>
-                  <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
-                  {/* A rejected candidate is offered the rejection email first.
-                      Timely, explained outcomes are a core rule of perceived
-                      fairness in selection (Gilliland, 1993, Academy of
-                      Management Review 18(4)), and fairness perceptions shape
-                      whether applicants recommend or reapply (Hausknecht, Day
-                      & Thomas, 2004, Personnel Psychology 57(3)). Never sent
-                      automatically: the recruiter reviews and sends it. */}
-                  <EmailPanel
-                    key={`email-${candidate.id}-${candidate.stage === "Rejected" ? "rejection" : "default"}`}
-                    candidate={candidate}
-                    onSent={refreshActivity}
-                    initialPurpose={candidate.stage === "Rejected" ? "rejection" : undefined}
-                  />
-                  <SmsPanel candidate={candidate} onSent={refreshActivity} />
-                  {candidate.status === "completed" && <BookingLinksCard candidate={candidate} onBooked={refreshActivity} />}
-                  <FeedbackRequestsPanel
-                    requests={feedbackRequests}
-                    onCreate={handleCreateFeedbackRequest}
-                    onEmail={handleEmailFeedbackRequest}
-                    creating={creatingFeedbackRequest}
-                    candidateEmail={candidate.email}
-                    clientEmail={candidate.job?.client_email}
-                  />
-                  <SelfServiceCard candidate={candidate} />
-                </PanelGroup>
-                <PanelGroup
-                  id="place"
-                  title="Placement & compliance"
-                  summary="Offer, placement, right to work and documents"
-                  defaultOpen={candidate.stage === "Offer" || candidate.stage === "Placed"}
-                >
-                  {candidate.status === "completed" && <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />}
-                  <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
-                  <CompliancePanel candidate={candidate} onChanged={refreshActivity} />
-                  {candidate.status === "completed" && <CandidateDocumentsCard candidate={candidate} />}
-                </PanelGroup>
-                <PanelGroup id="later" title="Keep for later & tidy up" summary="Talent pool and merging duplicates">
-                  <TalentPoolPanel
-                    candidate={candidate}
-                    jobs={jobs}
-                    onSave={handleSaveToPool}
-                    onUpdate={handleUpdatePool}
-                    onRemove={handleRemoveFromPool}
-                    onRescreen={handleRescreen}
-                  />
-                  <MergeDuplicateCard candidate={candidate} />
-                </PanelGroup>
+                <RailTabs
+                  tab={tab}
+                  onTab={setRailTab}
+                  panels={{
+                    work: (
+                      <>
+                          <RecruiterWorkspace
+                            candidate={candidate}
+                            recruiters={recruiters}
+                            tags={tags}
+                            onStageChange={handleStageChange}
+                            onSubStageChange={handleSubStageChange}
+                            onAssign={handleAssign}
+                            onAddTag={handleAddTag}
+                            onRemoveTag={handleRemoveTag}
+                            onCreateTag={handleCreateTag}
+                            onSetNextAction={handleSetNextAction}
+                            onCompleteNextAction={handleCompleteNextAction}
+                            onLogActivity={handleLogActivity}
+                            loggingActivity={loggingActivity}
+                          />
+                          <NotesPanel candidateId={candidate.id} notes={candidate.notes} currentUserId={currentUserId} onAddNote={handleAddNote} onEditNote={handleEditNote} onDeleteNote={handleDeleteNote} onPinNote={handlePinNote} />
+                          <CallNotesCard candidate={candidate} onSaved={refreshCandidate} />
+                
+                      </>
+                    ),
+                    contact: (
+                      <>
+                          <EmailThreadPanel candidate={candidate} onChanged={refreshActivity} />
+                          {/* A rejected candidate is offered the rejection email first.
+                              Timely, explained outcomes are a core rule of perceived
+                              fairness in selection (Gilliland, 1993, Academy of
+                              Management Review 18(4)), and fairness perceptions shape
+                              whether applicants recommend or reapply (Hausknecht, Day
+                              & Thomas, 2004, Personnel Psychology 57(3)). Never sent
+                              automatically: the recruiter reviews and sends it. */}
+                          <EmailPanel
+                            key={`email-${candidate.id}-${candidate.stage === "Rejected" ? "rejection" : "default"}`}
+                            candidate={candidate}
+                            onSent={refreshActivity}
+                            initialPurpose={candidate.stage === "Rejected" ? "rejection" : undefined}
+                          />
+                          <SmsPanel candidate={candidate} onSent={refreshActivity} />
+                          {candidate.status === "completed" && <BookingLinksCard candidate={candidate} onBooked={refreshActivity} />}
+                          <FeedbackRequestsPanel
+                            requests={feedbackRequests}
+                            onCreate={handleCreateFeedbackRequest}
+                            onEmail={handleEmailFeedbackRequest}
+                            creating={creatingFeedbackRequest}
+                            candidateEmail={candidate.email}
+                            clientEmail={candidate.job?.client_email}
+                          />
+                          <SelfServiceCard candidate={candidate} />
+                
+                      </>
+                    ),
+                    place: (
+                      <>
+                          {candidate.status === "completed" && (
+                            // #placement: where the placement moment's "Record fee" lands.
+                            <div id="placement" className="scroll-mt-24">
+                              <PlacementPanel candidate={candidate} onChanged={refreshCandidate} />
+                            </div>
+                          )}
+                          <OutcomeReportingPanel candidate={candidate} onUpdateDetails={handleUpdateDetails} />
+                          <CompliancePanel candidate={candidate} onChanged={refreshActivity} />
+                          {candidate.status === "completed" && <CandidateDocumentsCard candidate={candidate} />}
+                
+                      </>
+                    ),
+                    later: (
+                      <>
+                          <TalentPoolPanel
+                            candidate={candidate}
+                            jobs={jobs}
+                            onSave={handleSaveToPool}
+                            onUpdate={handleUpdatePool}
+                            onRemove={handleRemoveFromPool}
+                            onRescreen={handleRescreen}
+                          />
+                          <MergeDuplicateCard candidate={candidate} />
+                
+                      </>
+                    ),
+                  }}
+                />
               </div>
             </div>
             <ProfilePhoneBar candidate={candidate} onStage={handleStageChange} onFocusNote={focusNoteField} />

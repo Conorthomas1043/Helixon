@@ -198,11 +198,14 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
       </div>
 
       <div id="profile-actions" className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-t-[var(--border)]">
-        {candidate.status === "completed" && candidate.stage !== "Shortlisted" && (
+        {/* Only before they're shortlisted: further on, "Shortlist" would move
+            them backwards. Not filled - the next-step strip below carries
+            the page's one primary action. */}
+        {candidate.status === "completed" && (!candidate.stage || candidate.stage === "Screened") && (
           <button
             type="button"
             onClick={onQuickShortlist}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           >
             Shortlist
           </button>

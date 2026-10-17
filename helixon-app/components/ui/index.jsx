@@ -500,9 +500,12 @@ export function Switch({ checked, onChange, label, description, disabled = false
 }
 
 // Segmented control - for switching between a few peer views.
-export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) {
+// `fill`: stretch to the container's width, the options sharing it equally.
+// `idPrefix`: gives each option an id (`${idPrefix}-${value}`) and points it
+// at its panel (`${idPrefix}-${value}-panel`), for tabs that switch panels.
+export function Segmented({ value, onChange, options, ariaLabel, size = "md", fill = false, idPrefix }) {
   return (
-    <div role="tablist" aria-label={ariaLabel} className="inline-flex p-0.5 rounded-lg bg-[var(--ui-surface-muted)] border border-[var(--ui-border)]">
+    <div role="tablist" aria-label={ariaLabel} className={cx("p-0.5 rounded-lg bg-[var(--ui-surface-muted)] border border-[var(--ui-border)]", fill ? "flex" : "inline-flex")}>
       {options.map((o) => {
         const active = value === o.value;
         return (
@@ -510,10 +513,13 @@ export function Segmented({ value, onChange, options, ariaLabel, size = "md" }) 
             key={o.value}
             type="button"
             role="tab"
+            id={idPrefix ? `${idPrefix}-${o.value}` : undefined}
+            aria-controls={idPrefix ? `${idPrefix}-${o.value}-panel` : undefined}
             aria-selected={active}
             onClick={() => onChange(o.value)}
             className={cx(
               "inline-flex items-center gap-1.5 rounded-md font-medium transition-colors",
+              fill && "flex-1 justify-center",
               size === "sm" ? "h-7 px-2.5 text-13" : "h-8 px-3 text-14",
               active ? "bg-[var(--ui-surface)] text-[var(--ui-text)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ui-text-soft)] hover:text-[var(--ui-text)]"
             )}
