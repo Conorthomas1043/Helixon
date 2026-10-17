@@ -6,8 +6,83 @@
 
 import { useEffect, useState } from "react";
 import { Card, Icon, Notice, cx } from "./ui";
-import { scoreTone } from "../_lib/analyse";
+import { bandClasses, scoreTone } from "../_lib/analyse";
 import AiWritingNotice from "@/components/dashboard/AiWritingNotice";
+import CountUp from "@/components/dashboard/CountUp";
+
+// Text and pill colours for a score band, as classes (the band colours are
+// tokens, so they follow the dark appearance).
+// The verdict: a ring that fills to the score while the number counts up,
+// once, when the report opens (CountUp and motion-reduce keep it still for
+// anyone who asks for less motion).
+function ScoreRing({ score, stroke, grown }) {
+  const r = 46;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative w-[112px] h-[112px] shrink-0" aria-hidden="true">
+      <svg width="112" height="112" viewBox="0 0 112 112" className="-rotate-90">
+        <circle cx="56" cy="56" r={r} fill="none" stroke="var(--border-soft)" strokeWidth="9" />
+        <circle
+          cx="56"
+          cy="56"
+          r={r}
+          fill="none"
+          stroke={stroke}
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={grown ? c * (1 - Math.max(0, Math.min(100, score)) / 100) : c}
+          className="transition-[stroke-dashoffset] duration-[1100ms] ease-out motion-reduce:transition-none"
+        />
+      </svg>
+      <span className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className={`text-36 leading-none font-semibold tabular-nums tracking-tight font-display ${bandClasses(score).text}`}>
+          <CountUp value={grown ? score : 0} duration={1000} />
+        </span>
+        <span className="text-12 text-[var(--ink-faint)] mt-1">out of 100</span>
+      </span>
+    </div>
+  );
+}
+
+// A must-have's three states (scoreCandidate): met and not met are read
+// from the CV; "unverified" means the CV can't say either way (right to
+// work, a clearance), so it's something to ask, not a fail.
+const REQUIREMENT_STATUS = {
+  met: { label: "Met", icon: "check", pill: "bg-[var(--mint)] text-[var(--forest)] border-[var(--mint-line)]" },
+  not_met: { label: "Not met", icon: "x", pill: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]" },
+  unverified: { label: "To confirm", icon: "info", pill: "bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] border-[var(--warn-line)]" },
+};
+
+function requirementStatus(r) {
+  return r.status && REQUIREMENT_STATUS[r.status] ? r.status : r.met ? "met" : "not_met";
+}
+
+// "location: Leeds" reads better as "Location: Leeds".
+function requirementText(text = "") {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+// Copies one line, or all of them, and says so for a moment.
+function CopyText({ text, label, children, className = "" }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Clipboard blocked: nothing to do but leave the text selectable.
+    }
+  }
+  return (
+    <button type="button" onClick={copy} aria-label={label} className={cx("print-hide inline-flex items-center gap-1 rounded-md text-13 font-medium text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)] transition-colors", className)}>
+      <Icon name={copied ? "check" : "copy"} size={13} />
+      {children}
+      <span className="sr-only" role="status">{copied ? "Copied" : ""}</span>
+    </button>
+  );
+}
 
 // Salary estimates carry their own currency and pay period - the role can
 // be anywhere, and hourly work is shown as an hourly rate.
@@ -105,6 +180,48 @@ function SkillList({ title, items, tone, empty }) {
   );
 }
 
+// The CV's own words behind the matched skills (lib/screening/analysis-report
+// skillEvidence): the line that earned the credit, so a recruiter can check
+// the match instead of trusting it.
+function CvQuotes({ quotes, onShowInCv }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? quotes : quotes.slice(0, 4);
+  return (
+    <div className="mb-7">
+      <p className="text-13 font-medium text-[var(--ink-soft)] mb-3">Where the CV shows it</p>
+      <ul className="grid gap-2.5 sm:grid-cols-2">
+        {shown.map((q) => (
+          <li key={q.skill} className="rounded-xl border border-[var(--border-soft)] bg-[var(--mist)] px-3.5 py-3">
+            <p className="text-13 font-semibold text-[var(--forest)] flex items-center gap-1.5">
+              <Icon name="check" size={12} strokeWidth={2.6} />
+              {q.skill}
+            </p>
+            <blockquote className="mt-1.5 text-14 leading-relaxed text-[var(--ink)] border-l-2 border-[var(--mint-line)] pl-2.5">
+              &ldquo;{q.quote}&rdquo;
+            </blockquote>
+            {onShowInCv && (
+              <button
+                type="button"
+                onClick={() => onShowInCv(q.skill)}
+                aria-label={`Show ${q.skill} in the CV`}
+                className="print-hide mt-1.5 -ml-1 inline-flex items-center gap-1 min-h-[32px] px-1 rounded text-13 font-medium text-[var(--forest)] hover:underline"
+              >
+                Show in CV
+                <Icon name="arrowRight" size={12} />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {quotes.length > 4 && (
+        <button type="button" onClick={() => setAll((v) => !v)} className="print-hide mt-2.5 text-14 font-medium text-[var(--forest)] hover:underline">
+          {all ? "Show fewer" : `Show all ${quotes.length}`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ContactRow({ icon, label, children }) {
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-[var(--border-soft)] last:border-b-0">
@@ -118,7 +235,8 @@ function ContactRow({ icon, label, children }) {
 // `embedded`: shown inside a split-view pane (app/dashboard/workspace), which
 // scrolls on its own - the sticky section menu would float mid-pane there.
 // `candidateId`, when known, lets the AI-writing notice ask whether it's right.
-export default function Report({ result, roleLabel, embedded = false, candidateId = null }) {
+// `onShowInCv(skill)`, when given, adds a "Show in CV" link to each quote.
+export default function Report({ result, roleLabel, embedded = false, candidateId = null, onShowInCv = null }) {
   const [grown, setGrown] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setGrown(true), 120);
@@ -147,7 +265,8 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
   // Older results only have a flat missing list.
   const missingFlat = !missingRequired.length && !missingPreferred.length ? result.missing_skills || [] : [];
   const requirements = result.requirements_met || [];
-  const metCount = requirements.filter((r) => r.met).length;
+  const metCount = requirements.filter((r) => requirementStatus(r) === "met").length;
+  const quotes = result.skill_evidence || [];
   const capped = result.score_rationale?.capped || result.floor_capped || !!result.score_rationale?.cap_reason;
   const capReason = result.score_rationale?.cap_reason || result.cap_reason;
 
@@ -172,19 +291,15 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
       {/* ── Verdict ─────────────────────────────────────────────────── */}
       <header className="px-6 sm:px-8 pt-7 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-          <div className="sm:w-[132px] shrink-0">
-            <div className="flex items-baseline gap-1">
-              <span className="text-52 leading-none font-semibold tabular-nums tracking-tight" style={{ color: tone.fg, fontFamily: "var(--font-display)" }}>
-                {result.match_score}
-              </span>
-              <span className="text-14 text-[var(--ink-faint)]">/100</span>
-            </div>
-            <div className="mt-3">
-              <Meter value={result.match_score} tone={tone.fg} grown={grown} />
-            </div>
-            <p className="text-13 font-medium mt-2" style={{ color: tone.fg }}>
+          <div className="shrink-0 flex sm:flex-col items-center gap-4 sm:gap-3">
+            <ScoreRing score={result.match_score} stroke={tone.fg} grown={grown} />
+            <span className={`inline-flex items-center gap-1.5 text-13 font-semibold px-2.5 py-1 rounded-full border ${bandClasses(result.match_score).pill}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
               {result.recommendation || tone.label}
-            </p>
+            </span>
+            <span className="sr-only">
+              Match score {result.match_score} out of 100: {result.recommendation || tone.label}.
+            </span>
           </div>
 
           <div className="min-w-0 flex-1">
@@ -304,26 +419,28 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
       {requirements.length > 0 && (
         <Section id={sectionId("requirements")} title="Must-haves" meta={`${metCount} of ${requirements.length} met`}>
           <ul className="divide-y divide-[var(--border-soft)] border-y border-[var(--border-soft)]">
-            {requirements.map((r, i) => (
-              <li key={`${r.requirement}-${i}`} className="flex gap-3 py-3">
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${r.met ? "bg-[var(--mint)]" : "bg-[var(--ui-danger-soft)]"} ${r.met ? "text-[var(--forest)]" : "text-[var(--score-low)]"}`}
-                  aria-label={r.met ? "Met" : "Not met"}
-                >
-                  <Icon name={r.met ? "check" : "x"} size={11} strokeWidth={2.6} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-15 font-medium text-[var(--ink)]">{r.requirement}</p>
-                  {r.evidence && <p className="text-14 leading-relaxed text-[var(--ink-soft)] mt-0.5">{r.evidence}</p>}
-                </div>
-              </li>
-            ))}
+            {requirements.map((r, i) => {
+              const st = REQUIREMENT_STATUS[requirementStatus(r)];
+              return (
+                <li key={`${r.requirement}-${i}`} className="fade-up-in flex items-start justify-between gap-3 py-3" style={{ "--stagger-delay": `${300 + i * 120}ms` }}>
+                  <div className="min-w-0">
+                    <p className="text-15 font-medium text-[var(--ink)]">{requirementText(r.requirement)}</p>
+                    {r.evidence && <p className="text-14 leading-relaxed text-[var(--ink-soft)] mt-0.5">{r.evidence}</p>}
+                  </div>
+                  <span className={`inline-flex items-center gap-1 shrink-0 text-13 font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${st.pill}`}>
+                    <Icon name={st.icon} size={12} strokeWidth={2.6} />
+                    {st.label}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </Section>
       )}
 
       {/* ── Skills ──────────────────────────────────────────────────── */}
       <Section id={sectionId("skills")} title="Skills">
+        {quotes.length > 0 && <CvQuotes quotes={quotes} onShowInCv={onShowInCv} />}
         <div className="grid gap-6 sm:grid-cols-3">
           <SkillList title="Matched" items={matched} tone="var(--forest)" empty="None matched." />
           {missingFlat.length ? (
@@ -428,12 +545,22 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
 
       {/* ── Interview questions ─────────────────────────────────────── */}
       {result.interview_questions?.length > 0 && (
-        <Section id={sectionId("interview")} title="Interview questions" meta="Tailored to the gaps above">
-          <ol className="space-y-3.5">
+        <Section
+          id={sectionId("interview")}
+          title="Interview questions"
+          meta={
+            <CopyText text={result.interview_questions.map((q, i) => `${i + 1}. ${q}`).join("\n")} label="Copy all interview questions" className="px-2 py-1">
+              Copy all
+            </CopyText>
+          }
+        >
+          <p className="text-14 text-[var(--ink-soft)] -mt-2 mb-4">Tailored to the gaps above.</p>
+          <ol className="space-y-2">
             {result.interview_questions.map((q, i) => (
-              <li key={i} className="flex gap-3 text-15 leading-relaxed text-[var(--ink)]">
+              <li key={i} className="group flex items-start gap-3 rounded-lg -mx-2 px-2 py-1.5 text-15 leading-relaxed text-[var(--ink)] hover:bg-[var(--mist)]">
                 <span className="w-5 shrink-0 text-right tabular-nums text-[var(--ink-faint)] font-medium">{i + 1}.</span>
-                <span>{q}</span>
+                <span className="flex-1">{q}</span>
+                <CopyText text={q} label={`Copy question ${i + 1}`} className="p-1.5 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100" />
               </li>
             ))}
           </ol>
@@ -476,8 +603,8 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
             </div>
           )}
           {result.salary_estimate && (
-            <div>
-              <p className="text-13 font-medium text-[var(--ink-soft)] mb-1">{result.salary_estimate.period === "hour" || result.salary_estimate.period === "day" ? "Estimated pay" : "Estimated salary"}</p>
+            <div className="rounded-xl bg-[var(--mist)] border border-[var(--border-soft)] px-5 py-4">
+              <p className="text-13 font-medium text-[var(--ink-soft)] mb-1 flex items-center gap-1.5"><Icon name="briefcase" size={13} />{result.salary_estimate.period === "hour" || result.salary_estimate.period === "day" ? "Pay guide" : "Salary guide"}</p>
               <p className="text-24 font-semibold tracking-tight text-[var(--ink)] tabular-nums font-display">
                 {fmtSalary(result.salary_estimate.low, result.salary_estimate.currency, result.salary_estimate.period)}
                 {result.salary_estimate.high !== result.salary_estimate.low && <> – {fmtSalary(result.salary_estimate.high, result.salary_estimate.currency, result.salary_estimate.period)}</>}

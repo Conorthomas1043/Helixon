@@ -172,4 +172,11 @@ export function scoreTone(score) {
   return { fg: "var(--score-low)", bg: "var(--ui-danger-soft)", label: BAND_LABELS.weak };
 }
 
+// The same bands as classes, for text and for a bordered pill.
+export function bandClasses(score) {
+  if (score >= STRONG_MATCH_MIN) return { text: "text-[var(--score-strong)]", pill: "bg-[var(--mint)] text-[var(--forest)] border-[var(--mint-line)]" };
+  if (score >= REVIEW_MIN) return { text: "text-[var(--score-mid)]", pill: "bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] border-[var(--warn-line)]" };
+  return { text: "text-[var(--score-low)]", pill: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]" };
+}
+
 // Role templates, job types and the role builder live in ./roles.js.

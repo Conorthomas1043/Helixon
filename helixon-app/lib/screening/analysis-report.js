@@ -29,6 +29,18 @@ export function redactExtracted(ex = {}) {
   };
 }
 
+// The CV line behind each matched skill (scoreCandidate's evidence), so the
+// report can quote it rather than paraphrase. Withheld for a blind screen: a
+// line from the CV can name the candidate's employer or university.
+export function skillEvidence(result, { blind = false } = {}) {
+  if (blind || !result) return [];
+  return (result.evidence || [])
+    .filter((e) => e?.supported && e.skill)
+    .map((e) => ({ skill: e.skill, quote: String(e.evidence?.[0]?.evidence || "").trim().slice(0, 240) }))
+    .filter((e) => e.quote)
+    .slice(0, 12);
+}
+
 export function buildReport(result = {}, extracted = {}, { salary = null, blind = false } = {}) {
   const r = result || {};
   const ex = blind ? redactExtracted(extracted || {}) : extracted || {};
@@ -55,6 +67,7 @@ export function buildReport(result = {}, extracted = {}, { salary = null, blind 
     standout_factors: r.standout_factors || [],
     interview_questions: r.interview_questions || [],
     requirements_met: r.requirements_met || [],
+    skill_evidence: skillEvidence(r, { blind }),
     // Why this score may be less reliable than usual (vague job, AI
     // assessment unavailable, CV cut short) - see scoreCandidate.
     warnings: r.warnings || [],

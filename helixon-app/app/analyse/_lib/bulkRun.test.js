@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bulkResultRows, pendingInRun, serialiseQueue } from "./bulkRun";
+import { bulkResultRows, leaderboard, oneLine, pendingInRun, serialiseQueue } from "./bulkRun";
 
 const file = (name) => ({ name, size: 2048, isBlob: true });
 const queue = [
@@ -41,5 +41,27 @@ describe("the AI-writing flag in a bulk run", () => {
     expect(serialiseQueue(queue)[0].aiWritten).toBe(true);
     expect(bulkResultRows(queue)[0]["Possibly AI-written"]).toBe("Yes");
     expect(bulkResultRows([{ ...queue[0], aiWritten: false }])[0]["Possibly AI-written"]).toBe("");
+  });
+});
+
+describe("leaderboard", () => {
+  it("puts scored candidates first, best first, then the one being analysed, then the rest in upload order", () => {
+    const q = [
+      { id: "a", status: "queued" },
+      { id: "b", status: "done", score: 71 },
+      { id: "c", status: "failed" },
+      { id: "d", status: "processing" },
+      { id: "e", status: "done", score: 93 },
+      { id: "f", status: "queued" },
+    ];
+    expect(leaderboard(q).map((it) => it.id)).toEqual(["e", "b", "d", "a", "f", "c"]);
+  });
+});
+
+describe("oneLine", () => {
+  it("keeps the first sentence and trims long ones", () => {
+    expect(oneLine("Six years leading night shifts. Also drives.")).toBe("Six years leading night shifts.");
+    expect(oneLine("x".repeat(200), 20)).toHaveLength(20);
+    expect(oneLine("")).toBeNull();
   });
 });

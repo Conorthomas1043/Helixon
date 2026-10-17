@@ -9,18 +9,26 @@
 // create a duplicate job. After that, BULK_CONCURRENCY workers drain the
 // queue. A 429 stops the run and leaves the rest paused for Retry.
 //
+// The results list is a live leaderboard: it re-sorts as each score lands
+// (_lib/bulkRun.js leaderboard), with a line under the strong matches and
+// one button to shortlist them all. Once a run starts, the role card folds
+// into a one-line summary so the ranking has the room.
+//
 // CVs can be added one by one or as a .zip (_lib/zip.js). The run is kept
 // in this browser as it goes (_lib/bulkRun.js), so a closed tab or dropped
 // connection can be resumed instead of starting again.
 
 import { track } from "@/lib/analytics/track";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getJobById } from "@/lib/dashboard-api";
+import { m } from "motion/react";
+import { bulkUpdateCandidates, getJobById } from "@/lib/dashboard-api";
+import MotionProvider from "@/components/motion/MotionProvider";
+import { STRONG_MATCH_MIN } from "@/lib/screening/scoreBands";
 import { downloadCsv } from "@/lib/csv";
 import { splitViewHref } from "@/lib/workspace/panes";
 import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
 import { isZipFile, unzipCvs } from "../_lib/zip";
-import { bulkResultRows, clearSavedRun, loadSavedRun, pendingInRun, saveRun, serialiseQueue } from "../_lib/bulkRun";
+import { bulkResultRows, clearSavedRun, leaderboard, loadSavedRun, oneLine, pendingInRun, saveRun, serialiseQueue } from "../_lib/bulkRun";
 import { Card, CardHeader, Select, Textarea, Button, Icon, Notice, Switch, cx } from "./ui";
 import { MethodPicker, RoleBuilder, SpecChecklist, TemplateGallery } from "./RoleInputs";
 import { EMPTY_ROLE_DRAFT, composeRoleText } from "../_lib/roles";
@@ -33,11 +41,14 @@ import {
   formatBytes,
   isTextFile,
   jobFileProblem,
+  bandClasses,
   savedJobText,
   scoreTone,
 } from "../_lib/analyse";
 
 const STATUS_LABEL = { queued: "Queued", processing: "Analysing", done: "Done", failed: "Failed", rate_limited: "Paused" };
+
+const ROW_SPRING = { type: "spring", stiffness: 380, damping: 34 };
 
 export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent }) {
   const [jobPickMode, setJobPickMode] = useState(savedJobs.length > 0 ? "saved" : "paste");
@@ -56,6 +67,10 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
   const [rateLimited, setRateLimited] = useState(false);
   const [queueError, setQueueError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  // The role card, folded once a run starts; reopened with "Change role".
+  const [editingSetup, setEditingSetup] = useState(false);
+  // "Shortlist the strong matches": idle | saving | done | error.
+  const [shortlist, setShortlist] = useState({ status: "idle", count: 0 });
   const [unzipping, setUnzipping] = useState(false);
   // An unfinished run from an earlier visit, until resumed or discarded.
   // Nothing new is saved while it's on offer, so it can't be overwritten.
@@ -286,7 +301,15 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
         return { outcome: "rate_limited" };
       }
       if (data?.ok) {
-        updateItem(item.id, { status: "done", candidateId: data.candidateId, score: data.result?.match_score ?? null, name: data.result?.name || null, duplicate: data.duplicate || null, aiWritten: Boolean(data.result?.ai_writing) });
+        updateItem(item.id, {
+          status: "done",
+          candidateId: data.candidateId,
+          score: data.result?.match_score ?? null,
+          name: data.result?.name || null,
+          duplicate: data.duplicate || null,
+          aiWritten: Boolean(data.result?.ai_writing),
+          summary: oneLine(data.result?.summary),
+        });
         return { outcome: "ok", jobId: data.jobId };
       }
       updateItem(item.id, { status: "failed", errorMessage: data?.error || "Analysis failed." });
@@ -317,6 +340,8 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     // Starting a new run replaces the earlier unfinished one.
     if (savedRun) discardSavedRun();
     setRunning(true);
+    setEditingSetup(false);
+    setShortlist({ status: "idle", count: 0 });
     setRateLimited(false);
     abortRef.current = false;
     track("bulk_analysis_started", { cv_count: items.length, job_source: bulkJobId ? "saved" : bulkJobFile ? "file" : "text" });
@@ -386,306 +411,418 @@ export default function BulkFlow({ savedJobs, prefilledJob, consent, setConsent 
     }
   }
 
-  const ranked = useMemo(() => {
-    if (!allSettled) return queue;
-    return [...queue].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  }, [queue, allSettled]);
+  const ranked = useMemo(() => leaderboard(queue), [queue]);
+  const strong = ranked.filter((it) => it.status === "done" && it.candidateId && (it.score ?? -1) >= STRONG_MATCH_MIN);
+  // Where the line under the strong matches goes: after the last of them,
+  // and only when something ranks below it.
+  const cutAfter = strong.length && strong.length < ranked.length ? strong[strong.length - 1].id : null;
+  const setupFolded = (running || settledCount > 0) && !editingSetup;
+  const roleSummary = bulkJobId
+    ? savedJobs.find((j) => j.id === bulkJobId)?.title || "Saved job"
+    : bulkJobFileName || bulkJobText.trim().split("\n")[0]?.replace(/^job title:\s*/i, "").slice(0, 80) || "Your role";
+
+  async function shortlistStrong() {
+    const ids = strong.map((it) => it.candidateId);
+    if (!ids.length) return;
+    setShortlist({ status: "saving", count: ids.length });
+    try {
+      await bulkUpdateCandidates(ids, { action: "stage", stage: "Shortlisted" });
+      setShortlist({ status: "done", count: ids.length });
+      track("bulk_shortlisted", { count: ids.length });
+    } catch {
+      setShortlist({ status: "error", count: ids.length });
+    }
+  }
 
   const progress = queue.length ? Math.round((settledCount / queue.length) * 100) : 0;
   const missing = !jobReady ? "Add the job first." : !queue.length ? "Add at least one CV." : !consent ? "Confirm your lawful basis to continue." : null;
 
+  // Above the list until a run starts, then below it so the ranking leads.
+  const dropzone =
+    !running && queue.length < BULK_MAX_FILES && (
+      <button
+        type="button"
+        onClick={() => cvInputRef.current?.click()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
+        onDragLeave={() => setDragActive(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragActive(false);
+          addFiles(e.dataTransfer.files);
+        }}
+        className={cx(
+          "w-full flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed transition-colors",
+          queue.length ? "py-5" : "py-12",
+          dragActive ? "border-[var(--forest)] bg-[var(--mint)]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+        )}
+      >
+        <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
+        <span className="text-15 font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
+        <span className="text-13 text-[var(--ink-faint)]">PDF or Word, up to 10 MB each, or a .zip of them</span>
+      </button>
+    );
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] items-start">
-      <Card className={cx(running && "opacity-60 pointer-events-none")}>
-        <CardHeader title="What are you hiring for?" description="Every CV in this run is scored against it - any kind of job." />
-        <div className="px-5 pt-4">
-          <MethodPicker
-            value={jobPickMode}
-            onChange={setJobPickMode}
-            methods={[...(savedJobs.length ? ["saved"] : []), "build", "paste", "upload", "template"]}
-            counts={{ saved: savedJobs.length }}
-          />
-        </div>
-        <div className="px-5 py-4 space-y-4">
-          {jobPickMode === "saved" && (
-            <Select value={bulkJobId || ""} onChange={(e) => selectSavedJob(e.target.value)} aria-label="Choose a job">
-              <option value="">Choose one of your jobs…</option>
-              {savedJobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.title}
-                  {j.company ? ` · ${j.company}` : ""}
-                </option>
-              ))}
-            </Select>
-          )}
-          {jobPickMode === "build" && (
-            <RoleBuilder
-              draft={roleDraft}
-              onChange={(next) => {
-                setRoleDraft(next);
-                setBulkJobText(composeRoleText(next));
-                setBulkJobId(null);
-              }}
-              onEditAsText={(text) => {
-                setBulkJobText(text);
-                setBulkJobId(null);
-                setJobPickMode("paste");
-              }}
-            />
-          )}
-          {jobPickMode === "paste" && (
-            <div className="space-y-3">
-              <Textarea
-                value={bulkJobText}
-                onChange={(e) => {
-                  setBulkJobText(e.target.value);
-                  setBulkJobId(null);
-                }}
-                rows={9}
-                placeholder={"Paste the job advert or description - any format works.\n\nFor example:\nCare Assistant, nights - £12/hour\nSupporting residents with personal care.\nMust have: Enhanced DBS."}
-                aria-label="Job description"
-              />
-              <SpecChecklist text={bulkJobText} />
+    <MotionProvider>
+      <div className={cx("grid gap-5 items-start", !setupFolded && "lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]")}>
+        {setupFolded ? (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-[var(--border)] bg-[var(--mist)] px-4 py-3">
+            <span className="w-9 h-9 rounded-btn bg-[var(--bg)] border border-[var(--border-soft)] flex items-center justify-center text-[var(--forest)] shrink-0">
+              <Icon name="briefcase" size={16} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-13 text-[var(--ink-faint)]">Every CV scored against</p>
+              <p className="text-15 font-semibold text-[var(--ink)] truncate">{roleSummary}</p>
             </div>
-          )}
-          {jobPickMode === "upload" && (
-            <div>
-              <button
-                type="button"
-                onClick={() => jobInputRef.current?.click()}
-                className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-[var(--ink-mute)] hover:bg-[var(--mist)] hover:border-[var(--forest)] transition-colors text-left"
-              >
-                <span className="w-9 h-9 rounded-btn bg-[var(--mist)] flex items-center justify-center text-[var(--ink-soft)] shrink-0">
-                  <Icon name={bulkJobFileName ? "file" : "upload"} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-14 font-medium text-[var(--ink)] truncate">{bulkJobFileName || "Choose the job spec"}</span>
-                  <span className="block text-13 text-[var(--ink-faint)]">{bulkJobFileName ? "Click to replace" : "PDF, Word or .txt · up to 10 MB"}</span>
-                </span>
-              </button>
-              <input ref={jobInputRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { handleBulkJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
-            </div>
-          )}
-          {jobPickMode === "template" && (
-            <TemplateGallery
-              onPick={(text) => {
-                setBulkJobText(text);
-                setBulkJobId(null);
-                setJobPickMode("paste");
-              }}
-            />
-          )}
-          <div className="pt-4 border-t border-[var(--border-soft)] space-y-4">
-            <Switch id="bulk-blind" checked={bulkBlind} onChange={setBulkBlind} label="Blind screening" description="Hide names, contact details and institutions when scoring." />
-            <label className="flex items-start gap-2.5 cursor-pointer select-none">
-              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]" />
-              <span className="text-14 leading-relaxed text-[var(--ink-soft)]">I have a lawful basis (for example consent or legitimate interest under UK GDPR) to screen these CVs.</span>
-            </label>
-          </div>
-        </div>
-      </Card>
-
-      <Card>
-        <CardHeader
-          title="Candidates"
-          description={`${queue.length} of ${BULK_MAX_FILES} CVs`}
-          action={
-            queue.length > 0 && !running && !allSettled ? (
-              <Button size="sm" variant="ghost" onClick={() => setQueue((q) => q.filter((it) => it.status !== "queued"))}>
-                Clear queued
+            {bulkBlind && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-13 font-medium bg-[var(--bg)] border border-[var(--border-soft)] text-[var(--ink-soft)]">
+                <Icon name="eyeOff" size={13} /> Blind screening
+              </span>
+            )}
+            {!running && (
+              <Button size="sm" variant="ghost" onClick={() => setEditingSetup(true)}>
+                Change role
               </Button>
-            ) : null
-          }
-        />
-        <div className="px-5 py-4 space-y-4">
-          {savedRun && (
-            <Notice tone="info">
-              <span className="block">
-                You have an unfinished run from{" "}
-                {new Date(savedRun.savedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}:{" "}
-                {(savedRun.queue || []).length - pendingInRun(savedRun)} of {(savedRun.queue || []).length} CVs done.
-              </span>
-              <span className="flex gap-2 mt-2">
-                <Button size="sm" variant="primary" onClick={resumeSavedRun} disabled={running || queue.length > 0}>
-                  Pick up where it stopped
-                </Button>
-                <Button size="sm" variant="ghost" onClick={discardSavedRun}>
-                  Discard it
-                </Button>
-              </span>
-              {queue.length > 0 && <span className="block text-13 mt-1">Clear the CVs below to pick it up.</span>}
-            </Notice>
-          )}
-          {!running && queue.length < BULK_MAX_FILES && (
-            <button
-              type="button"
-              onClick={() => cvInputRef.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragActive(true);
-              }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragActive(false);
-                addFiles(e.dataTransfer.files);
-              }}
-              className={cx(
-                "w-full flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed transition-colors",
-                queue.length ? "py-5" : "py-12",
-                dragActive ? "border-[var(--forest)] bg-[var(--mint)]" : "border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+            )}
+          </div>
+        ) : (
+          <Card className={cx(running && "opacity-60 pointer-events-none")}>
+            <CardHeader title="What are you hiring for?" description="Every CV in this run is scored against it - any kind of job." />
+            <div className="px-5 pt-4">
+              <MethodPicker
+                value={jobPickMode}
+                onChange={setJobPickMode}
+                methods={[...(savedJobs.length ? ["saved"] : []), "build", "paste", "upload", "template"]}
+                counts={{ saved: savedJobs.length }}
+              />
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              {jobPickMode === "saved" && (
+                <Select value={bulkJobId || ""} onChange={(e) => selectSavedJob(e.target.value)} aria-label="Choose a job">
+                  <option value="">Choose one of your jobs…</option>
+                  {savedJobs.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title}
+                      {j.company ? ` · ${j.company}` : ""}
+                    </option>
+                  ))}
+                </Select>
               )}
-            >
-              <Icon name="upload" size={18} className="text-[var(--ink-soft)]" />
-              <span className="text-15 font-medium text-[var(--ink)]">{queue.length ? "Add more CVs" : "Drop CVs here, or browse"}</span>
-              <span className="text-13 text-[var(--ink-faint)]">PDF or Word, up to 10 MB each, or a .zip of them</span>
-            </button>
-          )}
-          <input ref={cvInputRef} type="file" multiple accept={`${CV_ACCEPT},.zip,application/zip`} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
-          {unzipping && <p className="text-14 text-[var(--ink-soft)]" role="status">Opening zip…</p>}
-          {queueError && <Notice tone="warn" onDismiss={() => setQueueError(null)}>{queueError}</Notice>}
+              {jobPickMode === "build" && (
+                <RoleBuilder
+                  draft={roleDraft}
+                  onChange={(next) => {
+                    setRoleDraft(next);
+                    setBulkJobText(composeRoleText(next));
+                    setBulkJobId(null);
+                  }}
+                  onEditAsText={(text) => {
+                    setBulkJobText(text);
+                    setBulkJobId(null);
+                    setJobPickMode("paste");
+                  }}
+                />
+              )}
+              {jobPickMode === "paste" && (
+                <div className="space-y-3">
+                  <Textarea
+                    value={bulkJobText}
+                    onChange={(e) => {
+                      setBulkJobText(e.target.value);
+                      setBulkJobId(null);
+                    }}
+                    rows={9}
+                    placeholder={"Paste the job advert or description - any format works.\n\nFor example:\nCare Assistant, nights - £12/hour\nSupporting residents with personal care.\nMust have: Enhanced DBS."}
+                    aria-label="Job description"
+                  />
+                  <SpecChecklist text={bulkJobText} />
+                </div>
+              )}
+              {jobPickMode === "upload" && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => jobInputRef.current?.click()}
+                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-[var(--ink-mute)] hover:bg-[var(--mist)] hover:border-[var(--forest)] transition-colors text-left"
+                  >
+                    <span className="w-9 h-9 rounded-btn bg-[var(--mist)] flex items-center justify-center text-[var(--ink-soft)] shrink-0">
+                      <Icon name={bulkJobFileName ? "file" : "upload"} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-14 font-medium text-[var(--ink)] truncate">{bulkJobFileName || "Choose the job spec"}</span>
+                      <span className="block text-13 text-[var(--ink-faint)]">{bulkJobFileName ? "Click to replace" : "PDF, Word or .txt · up to 10 MB"}</span>
+                    </span>
+                  </button>
+                  <input ref={jobInputRef} type="file" accept={JOB_ACCEPT} className="hidden" onChange={(e) => { handleBulkJobFile(e.target.files?.[0] || null); e.target.value = ""; }} />
+                </div>
+              )}
+              {jobPickMode === "template" && (
+                <TemplateGallery
+                  onPick={(text) => {
+                    setBulkJobText(text);
+                    setBulkJobId(null);
+                    setJobPickMode("paste");
+                  }}
+                />
+              )}
+              <div className="pt-4 border-t border-[var(--border-soft)] space-y-4">
+                <Switch id="bulk-blind" checked={bulkBlind} onChange={setBulkBlind} label="Blind screening" description="Hide names, contact details and institutions when scoring." />
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[3px] w-4 h-4 shrink-0 accent-[var(--forest)]" />
+                  <span className="text-14 leading-relaxed text-[var(--ink-soft)]">I have a lawful basis (for example consent or legitimate interest under UK GDPR) to screen these CVs.</span>
+                </label>
+              </div>
+              {settledCount > 0 && !running && (
+                <div className="flex justify-end">
+                  <Button size="sm" variant="ghost" onClick={() => setEditingSetup(false)}>
+                    Done
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
-          {(running || settledCount > 0) && (
-            <div>
-              <div className="flex justify-between text-14 mb-1.5">
-                <span className="text-[var(--ink-soft)]">{running ? "Analysing…" : allSettled ? "Run complete" : "Paused"}</span>
-                <span className="tabular-nums text-[var(--ink)]">
-                  {settledCount} / {queue.length}
+        <Card>
+          <CardHeader
+            title={settledCount > 0 ? "Ranked shortlist" : "Candidates"}
+            description={running ? "Re-ranking as each score lands" : `${queue.length} of ${BULK_MAX_FILES} CVs`}
+            action={
+              queue.length > 0 && !running && !allSettled ? (
+                <Button size="sm" variant="ghost" onClick={() => setQueue((q) => q.filter((it) => it.status !== "queued"))}>
+                  Clear queued
+                </Button>
+              ) : null
+            }
+          />
+          <div className="px-5 py-4 space-y-4">
+            {savedRun && (
+              <Notice tone="info">
+                <span className="block">
+                  You have an unfinished run from{" "}
+                  {new Date(savedRun.savedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}:{" "}
+                  {(savedRun.queue || []).length - pendingInRun(savedRun)} of {(savedRun.queue || []).length} CVs done.
+                </span>
+                <span className="flex gap-2 mt-2">
+                  <Button size="sm" variant="primary" onClick={resumeSavedRun} disabled={running || queue.length > 0}>
+                    Pick up where it stopped
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={discardSavedRun}>
+                    Discard it
+                  </Button>
+                </span>
+                {queue.length > 0 && <span className="block text-13 mt-1">Clear the CVs below to pick it up.</span>}
+              </Notice>
+            )}
+            {settledCount === 0 && dropzone}
+            <input ref={cvInputRef} type="file" multiple accept={`${CV_ACCEPT},.zip,application/zip`} className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
+            {unzipping && <p className="text-14 text-[var(--ink-soft)]" role="status">Opening zip…</p>}
+            {queueError && <Notice tone="warn" onDismiss={() => setQueueError(null)}>{queueError}</Notice>}
+
+            {(running || settledCount > 0) && (
+              <div>
+                <div className="flex justify-between text-14 mb-1.5">
+                  <span className="text-[var(--ink-soft)]">{running ? "Analysing…" : allSettled ? "Run complete" : "Paused"}</span>
+                  <span className="tabular-nums text-[var(--ink)]">
+                    {settledCount} / {queue.length}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-[var(--border-soft)] overflow-hidden">
+                  <div className="h-full rounded-full bg-[var(--forest)] transition-[width] duration-500" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+            )}
+
+            {rateLimited && (
+              <Notice tone="warn">
+                Hourly analysis limit reached - {doneCount} of {queue.length} finished. The rest are paused; press Retry on them later.
+              </Notice>
+            )}
+            {allSettled && strong.length > 0 && (
+              <div className="rounded-xl border border-[var(--mint-line)] bg-[var(--mint)] px-4 py-3.5 flex flex-wrap items-center gap-3 fade-up-in">
+                <div className="min-w-0 flex-1">
+                  <p className="text-15 font-semibold text-[var(--ink)]">
+                    {strong.length} strong match{strong.length === 1 ? "" : "es"} out of {doneCount}
+                  </p>
+                  <p className="text-13 text-[var(--ink-soft)]" role="status">
+                    {shortlist.status === "done"
+                      ? `${shortlist.count} moved to Shortlisted.`
+                      : shortlist.status === "error"
+                        ? "Couldn't move them. Try again."
+                        : `Scored ${STRONG_MATCH_MIN} or more against this role${failedCount ? ` · ${failedCount} couldn't be read` : ""}.`}
+                  </p>
+                </div>
+                {shortlist.status === "done" ? (
+                  bulkJobId && (
+                    <Button size="sm" variant="secondary" href={`/dashboard/jobs/${bulkJobId}`} icon="arrowRight">
+                      Open the job
+                    </Button>
+                  )
+                ) : (
+                  <Button size="sm" variant="primary" icon="check" loading={shortlist.status === "saving"} onClick={shortlistStrong}>
+                    {shortlist.status === "saving" ? "Shortlisting…" : `Shortlist ${strong.length === 1 ? "them" : `all ${strong.length}`}`}
+                  </Button>
+                )}
+              </div>
+            )}
+            {doneCount >= 2 && !running && (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-btn border border-[var(--border)] bg-[var(--mist)] px-3 py-2">
+                <span className="text-14 text-[var(--ink-soft)]">
+                  {compareIds.length ? `${compareIds.length} of 4 ticked to compare` : "Tick 2-4 candidates to compare them side by side"}
+                </span>
+                <span className="flex gap-2">
+                  {compareIds.length === 0 && (
+                    <Button size="sm" icon="compare" onClick={() => openCompare(ranked.filter((it) => it.status === "done").slice(0, 3).map((it) => it.candidateId))}>
+                      Compare top {Math.min(3, doneCount)}
+                    </Button>
+                  )}
+                  {compareIds.length > 0 && (
+                    <Button size="sm" variant="primary" icon="compare" disabled={compareIds.length < 2} onClick={() => openCompare(compareIds)}>
+                      Compare {compareIds.length}
+                    </Button>
+                  )}
+                  {/* Each candidate's own report, CV or profile in panes - in a new
+                      tab, so this run's results stay open here. */}
+                  <Button
+                    size="sm"
+                    icon="layers"
+                    onClick={() => {
+                      const ids = compareIds.length ? compareIds : ranked.filter((it) => it.status === "done").slice(0, 4).map((it) => it.candidateId);
+                      window.open(splitViewHref(ids), "_blank", "noopener");
+                    }}
+                  >
+                    Open side by side
+                  </Button>
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-[var(--border-soft)] overflow-hidden">
-                <div className="h-full rounded-full bg-[var(--forest)] transition-[width] duration-500" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          )}
-
-          {rateLimited && (
-            <Notice tone="warn">
-              Hourly analysis limit reached - {doneCount} of {queue.length} finished. The rest are paused; press Retry on them later.
-            </Notice>
-          )}
-          {doneCount >= 2 && !running && (
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-btn border border-[var(--border)] bg-[var(--mist)] px-3 py-2">
-              <span className="text-14 text-[var(--ink-soft)]">
-                {compareIds.length ? `${compareIds.length} of 4 ticked to compare` : "Tick 2-4 candidates to compare them side by side"}
-              </span>
-              <span className="flex gap-2">
-                {compareIds.length === 0 && (
-                  <Button size="sm" icon="compare" onClick={() => openCompare(ranked.filter((it) => it.status === "done").slice(0, 3).map((it) => it.candidateId))}>
-                    Compare top {Math.min(3, doneCount)}
-                  </Button>
-                )}
-                {compareIds.length > 0 && (
-                  <Button size="sm" variant="primary" icon="compare" disabled={compareIds.length < 2} onClick={() => openCompare(compareIds)}>
-                    Compare {compareIds.length}
-                  </Button>
-                )}
-                {/* Each candidate's own report, CV or profile in panes - in a new
-                    tab, so this run's results stay open here. */}
+            )}
+            {doneCount > 0 && !running && (
+              <div className="flex justify-end">
                 <Button
                   size="sm"
-                  icon="layers"
-                  onClick={() => {
-                    const ids = compareIds.length ? compareIds : ranked.filter((it) => it.status === "done").slice(0, 4).map((it) => it.candidateId);
-                    window.open(splitViewHref(ids), "_blank", "noopener");
-                  }}
+                  icon="download"
+                  onClick={() => downloadCsv(`bulk-screening-${new Date().toISOString().slice(0, 10)}.csv`, bulkResultRows(queue, window.location.origin))}
                 >
-                  Open side by side
+                  Download results (CSV)
                 </Button>
-              </span>
-            </div>
-          )}
-          {doneCount > 0 && !running && (
-            <div className="flex justify-end">
-              <Button
-                size="sm"
-                icon="download"
-                onClick={() => downloadCsv(`bulk-screening-${new Date().toISOString().slice(0, 10)}.csv`, bulkResultRows(queue, window.location.origin))}
-              >
-                Download results (CSV)
-              </Button>
-            </div>
-          )}
-          {allSettled && (
-            <Notice tone="ok">
-              {doneCount} scored{failedCount ? `, ${failedCount} failed` : ""}. Ranked by score below.{" "}
-              {bulkJobId && (
-                <a href={`/dashboard/jobs/${bulkJobId}`} className="font-semibold underline underline-offset-2">
-                  Open the job
-                </a>
-              )}
-            </Notice>
-          )}
+              </div>
+            )}
+            {allSettled && strong.length === 0 && (
+              <Notice tone="ok">
+                {doneCount} scored{failedCount ? `, ${failedCount} failed` : ""}. Ranked by score below.{" "}
+                {bulkJobId && (
+                  <a href={`/dashboard/jobs/${bulkJobId}`} className="font-semibold underline underline-offset-2">
+                    Open the job
+                  </a>
+                )}
+              </Notice>
+            )}
 
-          {queue.length > 0 && (
-            <ul className="divide-y divide-[var(--border-soft)] border-y border-[var(--border-soft)]">
-              {ranked.map((item) => {
-                const tone = scoreTone(item.score);
-                return (
-                  <li key={item.id} className={cx("flex items-center gap-3 py-2.5", item.status === "processing" && "bg-[var(--mint)] -mx-5 px-5")}>
-                    {item.status === "done" && item.candidateId && !running ? (
-                      <input
-                        type="checkbox"
-                        checked={compareIds.includes(item.candidateId)}
-                        disabled={!compareIds.includes(item.candidateId) && compareIds.length >= 4}
-                        onChange={() => toggleCompare(item.candidateId)}
-                        aria-label={`Tick ${item.name || item.file.name} to compare`}
-                        className="w-4 h-4 shrink-0 accent-[var(--forest)]"
-                      />
-                    ) : (
-                      <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-15 text-[var(--ink)] truncate">{item.name || item.file.name}</p>
-                      <p className={cx("text-13 truncate", item.status === "failed" ? "text-[var(--score-low)]" : "text-[var(--ink-faint)]")}>
-                        {item.status === "failed" || item.status === "rate_limited" ? item.errorMessage : item.name ? item.file.name : formatBytes(item.file.size)}
-                      </p>
-                      {item.aiWritten && <AiWritingBadge className="mt-1" />}
-                      {item.duplicate && (
-                        <p className={`text-13 truncate ${item.duplicate.sameJobCandidateId ? "text-[var(--score-mid)]" : "text-[var(--forest)]"}`}>
-                          {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}
-                        </p>
+            {queue.length > 0 && (
+              <ul className="divide-y divide-[var(--border-soft)] border-y border-[var(--border-soft)]">
+                {ranked.flatMap((item) => {
+                  const tone = scoreTone(item.score);
+                  const band = bandClasses(item.score);
+                  const row = (
+                    <m.li
+                      key={item.id}
+                      layout="position"
+                      transition={{ layout: ROW_SPRING }}
+                      className={cx("relative flex items-center gap-3 py-2.5", item.status === "processing" ? "bg-[var(--mint)] -mx-5 px-5" : "bg-[var(--ui-surface)]")}
+                    >
+                      {item.status === "done" && item.candidateId && !running ? (
+                        <input
+                          type="checkbox"
+                          checked={compareIds.includes(item.candidateId)}
+                          disabled={!compareIds.includes(item.candidateId) && compareIds.length >= 4}
+                          onChange={() => toggleCompare(item.candidateId)}
+                          aria-label={`Tick ${item.name || item.file.name} to compare`}
+                          className="w-4 h-4 shrink-0 accent-[var(--forest)]"
+                        />
+                      ) : (
+                        <Icon name="file" size={15} className="text-[var(--ink-faint)]" />
                       )}
-                    </div>
-                    {item.status === "done" ? (
-                      <a href={`/dashboard/candidates/${item.candidateId}`} className="flex items-center gap-2 group" aria-label={`Open ${item.name || item.file.name}, score ${item.score}`}>
-                        <span className="h-6 min-w-[36px] px-1.5 rounded-md text-14 font-semibold tabular-nums flex items-center justify-center" style={{ background: tone.bg, color: tone.fg }}>
-                          {item.score ?? "–"}
-                        </span>
-                        <Icon name="arrowRight" size={14} className="text-[var(--ink-faint)] group-hover:text-[var(--ink)]" />
-                      </a>
-                    ) : item.status === "processing" ? (
-                      <span className="text-13 text-[var(--forest)] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> Analysing
-                      </span>
-                    ) : (item.status === "failed" || item.status === "rate_limited") && !running ? (
-                      <Button size="sm" onClick={() => retryOne(item.id)} icon="refresh">
-                        Retry
-                      </Button>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <span className="text-13 text-[var(--ink-faint)]">{STATUS_LABEL[item.status]}</span>
-                        {item.status === "queued" && !running && (
-                          <button type="button" onClick={() => setQueue((q) => q.filter((it) => it.id !== item.id))} aria-label={`Remove ${item.file.name}`} className="p-1 rounded text-[var(--ink-faint)] hover:text-[var(--ink)]">
-                            <Icon name="x" size={13} />
-                          </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-15 text-[var(--ink)] truncate">{item.name || item.file.name}</p>
+                        <p className={cx("text-13 truncate", item.status === "failed" ? "text-[var(--score-low)]" : item.summary ? "text-[var(--ink-soft)]" : "text-[var(--ink-faint)]")}>
+                          {item.status === "failed" || item.status === "rate_limited"
+                            ? item.errorMessage
+                            : item.status === "done" && item.summary
+                              ? item.summary
+                              : item.name
+                                ? item.file.name
+                                : formatBytes(item.file.size)}
+                        </p>
+                        {item.aiWritten && <AiWritingBadge className="mt-1" />}
+                        {item.duplicate && (
+                          <p className={`text-13 truncate ${item.duplicate.sameJobCandidateId ? "text-[var(--score-mid)]" : "text-[var(--forest)]"}`}>
+                            {item.duplicate.sameJobCandidateId ? "Already in this job's pipeline - check for a duplicate" : "Already on file - linked to their earlier record"}
+                          </p>
                         )}
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+                      </div>
+                      {item.status === "done" ? (
+                        <a href={`/dashboard/candidates/${item.candidateId}`} className="flex items-center gap-2 group" aria-label={`Open ${item.name || item.file.name}, score ${item.score}, ${tone.label}`}>
+                          <span className={cx("hidden sm:inline text-13 font-medium", band.text)}>{tone.label}</span>
+                          <m.span
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                            className={cx("h-6 min-w-[36px] px-1.5 rounded-md border text-14 font-semibold tabular-nums flex items-center justify-center", item.score == null ? "bg-[var(--mist)] text-[var(--ink-faint)] border-[var(--border)]" : band.pill)}
+                          >
+                            {item.score ?? "–"}
+                          </m.span>
+                          <Icon name="arrowRight" size={14} className="text-[var(--ink-faint)] group-hover:text-[var(--ink)]" />
+                        </a>
+                      ) : item.status === "processing" ? (
+                        <span className="text-13 text-[var(--forest)] flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> Analysing
+                        </span>
+                      ) : (item.status === "failed" || item.status === "rate_limited") && !running ? (
+                        <Button size="sm" onClick={() => retryOne(item.id)} icon="refresh">
+                          Retry
+                        </Button>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <span className="text-13 text-[var(--ink-faint)]">{STATUS_LABEL[item.status]}</span>
+                          {item.status === "queued" && !running && (
+                            <button type="button" onClick={() => setQueue((q) => q.filter((it) => it.id !== item.id))} aria-label={`Remove ${item.file.name}`} className="p-1 rounded text-[var(--ink-faint)] hover:text-[var(--ink)]">
+                              <Icon name="x" size={13} />
+                            </button>
+                          )}
+                        </span>
+                      )}
+                    </m.li>
+                  );
+                  if (item.id !== cutAfter) return [row];
+                  return [
+                    row,
+                    <m.li key="strong-cut" layout="position" transition={{ layout: ROW_SPRING }} className="flex items-center gap-2 py-1.5 text-12 font-semibold text-[var(--forest)]">
+                      <span className="h-px flex-1 bg-[var(--mint-line)]" aria-hidden="true" />
+                      Strong matches above · {STRONG_MATCH_MIN}+
+                      <span className="h-px flex-1 bg-[var(--mint-line)]" aria-hidden="true" />
+                    </m.li>,
+                  ];
+                })}
+              </ul>
+            )}
 
-          <div>
-            <Button variant="primary" size="lg" className="w-full" disabled={!canStart} onClick={startBulk}>
-              {running ? `Screening ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Screen ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
-            </Button>
-            {missing && !running && <p className="text-13 text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
+            {settledCount > 0 && dropzone}
+            {/* Hidden once every CV in the run is settled: there's nothing left
+                to screen until more are added, and the leaderboard is the result. */}
+            {(running || pendingCount > 0 || settledCount === 0) && (
+              <div>
+                <Button variant="primary" size="lg" className="w-full" disabled={!canStart} onClick={startBulk}>
+                  {running ? `Screening ${settledCount + 1 > queue.length ? queue.length : settledCount + 1} of ${queue.length}…` : `Screen ${pendingCount || ""} candidate${pendingCount === 1 ? "" : "s"}`}
+                </Button>
+                {missing && !running && <p className="text-13 text-center mt-2 text-[var(--ink-faint)]">{missing}</p>}
+              </div>
+            )}
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </MotionProvider>
   );
 }

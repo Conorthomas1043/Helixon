@@ -8,7 +8,7 @@ import MarketingFooter from "@/components/marketing/MarketingFooter";
 import CtaBand from "@/components/marketing/CtaBand";
 import AnalysisExample from "@/components/landing/AnalysisExample";
 import HeroDemo from "@/components/landing/HeroDemo";
-import LandingMotion from "@/components/landing/LandingMotion";
+import MotionProvider from "@/components/motion/MotionProvider";
 import ScrollStory from "@/components/landing/ScrollStory";
 import { PLAN_FEATURES } from "@/lib/billing/plan-features";
 import {
@@ -270,8 +270,8 @@ export default function LandingPage() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="home" />
 
-      {/* Motion's features load after the page; see LandingMotion. */}
-      <LandingMotion>
+      {/* Motion's features load after the page; see MotionProvider. */}
+      <MotionProvider>
       <main id="main-content">
 
         {/* ── Hero ────────────────────────────────────────────────────────── */}
@@ -449,7 +449,7 @@ export default function LandingPage() {
         </Reveal>
 
       </main>
-      </LandingMotion>
+      </MotionProvider>
 
       <MarketingFooter />
       <ChatWidget />

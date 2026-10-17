@@ -80,12 +80,35 @@ export function serialiseQueue(queue) {
       errorMessage: it.errorMessage ?? null,
       duplicate: it.duplicate ?? null,
       aiWritten: Boolean(it.aiWritten),
+      summary: it.summary ?? null,
     };
   });
 }
 
 export function pendingInRun(run) {
   return (run?.queue || []).filter((it) => it.status !== "done").length;
+}
+
+// The live leaderboard's order, re-sorted as each score lands: scored
+// candidates best first, then the one being analysed, then the rest in the
+// order they were added (queued, paused, failed).
+const WAITING_ORDER = { processing: 0, queued: 1, rate_limited: 2, failed: 3 };
+export function leaderboard(queue) {
+  const scored = queue.filter((it) => it.status === "done").sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  const waiting = queue
+    .map((it, i) => ({ it, i }))
+    .filter(({ it }) => it.status !== "done")
+    .sort((a, b) => (WAITING_ORDER[a.it.status] ?? 9) - (WAITING_ORDER[b.it.status] ?? 9) || a.i - b.i)
+    .map(({ it }) => it);
+  return [...scored, ...waiting];
+}
+
+// The first line of a summary, short enough for one row of the leaderboard.
+export function oneLine(text, max = 140) {
+  const s = String(text || "").trim().replace(/\s+/g, " ");
+  if (!s) return null;
+  const first = s.match(/^.+?[.!?](?=\s|$)/)?.[0] || s;
+  return first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
 }
 
 // The run's results as CSV rows, best score first.

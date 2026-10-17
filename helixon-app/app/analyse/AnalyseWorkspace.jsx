@@ -19,6 +19,7 @@ import { splitViewHref } from "@/lib/workspace/panes";
 import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
+import CvPane from "./_components/CvPane";
 import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
 import { StageCard, NotesCard, EmailCard, FeedbackCard } from "./_components/Rail";
@@ -175,6 +176,9 @@ export default function AnalyseWorkspace() {
   const roleMode = roleModeFor(state, savedJobs.length);
 
   const [consent, setConsentState] = useState(false);
+  // The CV side panel: null when closed, else { skill } to scroll to.
+  const [cvPane, setCvPane] = useState(null);
+  const closeCvPane = useCallback(() => setCvPane(null), []);
 
   const { email, reset: resetEmail } = useEmailComposer({
     candidateId,
@@ -513,7 +517,7 @@ export default function AnalyseWorkspace() {
         {mode === "bulk" ? (
           <BulkFlow savedJobs={savedJobs} prefilledJob={prefilledJob} consent={consent} setConsent={setConsent} />
         ) : loading ? (
-          <RunningPanel fileName={activeFile?.name} roleLabel={roleLabel} step={step} compare={comparing} />
+          <RunningPanel fileName={activeFile?.name} roleLabel={roleLabel} step={step} compare={comparing} requirements={requirements} />
         ) : showSetup ? (
           <>
             {error && (
@@ -616,9 +620,14 @@ export default function AnalyseWorkspace() {
                   )}
                 </div>
               )}
-              <Report result={result} roleLabel={roleLabel} candidateId={candidateId} />
+              <Report result={result} roleLabel={roleLabel} candidateId={candidateId} onShowInCv={candidateId && !result.blind_mode ? (skill) => setCvPane({ skill }) : null} />
             </div>
             <aside className="space-y-4 lg:sticky lg:top-[76px]" aria-label="Actions">
+              {candidateId && !result.blind_mode && (
+                <Button variant="secondary" size="sm" icon="file" className="w-full" onClick={() => setCvPane({ skill: null })}>
+                  View the CV
+                </Button>
+              )}
               <Button variant="secondary" size="sm" icon="printer" className="w-full" onClick={() => printSection("analysis-report")}>
                 Print / save as PDF
               </Button>
@@ -633,6 +642,16 @@ export default function AnalyseWorkspace() {
                 </Link>
               </p>
             </aside>
+            {cvPane && candidateId && (
+              <CvPane
+                key={`${candidateId}-${cvPane.skill || ""}`}
+                candidateId={candidateId}
+                name={result.name && result.name !== "Candidate" ? result.name : ""}
+                quotes={result.skill_evidence || []}
+                focusSkill={cvPane.skill}
+                onClose={closeCvPane}
+              />
+            )}
           </div>
         )}
       </div>

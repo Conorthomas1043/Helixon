@@ -27,7 +27,7 @@ All colours come from the tokens, so light and dark both work.
 
 ## Decisions
 
-- **Motion library.** Motion 13.5.1 (Framer Motion), loaded through `LazyMotion` with `m` components (`components/landing/LandingMotion.jsx`). Its features arrive as a separate chunk after the page, so they aren't in the first bundle. Chosen over hand-built animation for the layout re-sorts and the scroll story's polish, at the cost of one dependency.
+- **Motion library.** Motion 13.5.1 (Framer Motion), loaded through `LazyMotion` with `m` components (`components/motion/MotionProvider.jsx`, shared with the app since). Its features arrive as a separate chunk after the page, so they aren't in the first bundle. Chosen over hand-built animation for the layout re-sorts and the scroll story's polish, at the cost of one dependency.
 - **Content never blanks in front of the visitor.** The server renders the finished state:
   - the ranked shortlist in the hero;
   - every story step stacked, each view finished.
