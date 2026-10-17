@@ -72,7 +72,7 @@ function MoreActions({ children }) {
       {open && (
         <div
           id="candidate-more-actions"
-          className="absolute right-0 top-full mt-2 z-20 w-56 p-1.5 rounded-xl bg-white border shadow-[0_16px_40px_-16px_rgba(19,32,27,0.3)]"
+          className="absolute right-0 top-full mt-2 z-20 w-56 p-1.5 rounded-xl bg-[var(--bg)] border shadow-[0_16px_40px_-16px_rgba(19,32,27,0.3)]"
           onClick={(e) => {
             if (e.target.closest("a,button")) setOpen(false);
           }}
@@ -202,7 +202,7 @@ export function ProfileHeader({ candidate, prevId, nextId, onQuickShortlist, onM
           <button
             type="button"
             onClick={onQuickShortlist}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             Shortlist
           </button>

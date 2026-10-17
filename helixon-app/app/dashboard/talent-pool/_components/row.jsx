@@ -68,7 +68,7 @@ export function RoleLink({ role }) {
   return (
     <Link
       href={`/dashboard/candidates/${role.candidateId}`}
-      className="inline-flex items-center gap-1.5 text-13 px-2 py-0.5 rounded-full border border-[var(--border)] bg-white hover:bg-[var(--mist)]"
+      className="inline-flex items-center gap-1.5 text-13 px-2 py-0.5 rounded-full border border-[var(--border)] bg-[var(--bg)] hover:bg-[var(--mist)]"
       title={`Screened for ${role.jobTitle}`}
     >
       <span className="truncate max-w-[160px] text-[var(--ink-soft)]">{role.jobTitle}</span>
@@ -109,7 +109,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
   const canPick = job ? !screened && item.hasCv && !screening : true;
 
   return (
-    <li className={cx("px-4 sm:px-5 py-4 transition-colors", selected ? "bg-[var(--mint)]" : "bg-white hover:bg-[var(--mist)]")}>
+    <li className={cx("px-4 sm:px-5 py-4 transition-colors", selected ? "bg-[var(--mint)]" : "bg-[var(--bg)] hover:bg-[var(--mist)]")}>
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
@@ -217,7 +217,7 @@ export function PoolRow({ item, job, selected, onToggle, screening, onUpdate, on
               <summary className="list-none cursor-pointer px-2 py-1 rounded-full text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--mist)]" aria-label={`More for ${item.name}`}>
                 <span aria-hidden="true" className="text-16 leading-none">⋯</span>
               </summary>
-              <div className="absolute right-0 mt-1 w-48 rounded-btn p-1 z-20 bg-white border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
+              <div className="absolute right-0 mt-1 w-48 rounded-btn p-1 z-20 bg-[var(--bg)] border border-[var(--border)] shadow-[0_12px_32px_rgba(19,32,27,0.14)]">
                 <Link href={`/dashboard/candidates/${item.id}`} className="block text-14 px-2.5 py-1.5 rounded-lg hover:bg-[var(--mist)]">
                   Open profile
                 </Link>

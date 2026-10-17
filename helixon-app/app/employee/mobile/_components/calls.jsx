@@ -145,33 +145,33 @@ export function CallsTab({ employee }) {
       </div>
 
       {me && (
-        <div className="rounded-card px-3.5 py-2.5 mb-3 flex items-center justify-between bg-white border border-[var(--border)]">
+        <div className="rounded-card px-3.5 py-2.5 mb-3 flex items-center justify-between bg-[var(--bg)] border border-[var(--border)]">
           <span className="text-13 font-medium text-[var(--ink-soft)]">Today</span>
           <span className="text-14 font-semibold tabular-nums text-[var(--ink)]">{me.today} calls</span>
         </div>
       )}
 
       {showAddForm && (
-        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5 bg-white border border-[var(--border)]">
+        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5 bg-[var(--bg)] border border-[var(--border)]">
           <input
             autoFocus
             type="text"
             value={form.contact_name}
             onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
             placeholder="Contact name"
-            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           />
           <input
             type="text"
             value={form.company}
             onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
             placeholder="Company (optional)"
-            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           />
           <select
             value={form.outcome}
             onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
-            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           >
             {outcomes.map((o) => (
               <option key={o} value={o}>{OUTCOME_LABEL[o] || o}</option>
@@ -182,7 +182,7 @@ export function CallsTab({ employee }) {
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             placeholder="Notes (optional)"
             rows={2}
-            className="text-14 rounded-btn px-3 py-2.5 resize-none border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="text-14 rounded-btn px-3 py-2.5 resize-none border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           />
           {formError && (
             <p className="text-12 rounded-lg px-2.5 py-2" style={{ color: RED, background: "var(--ui-danger-soft)", border: "1px solid var(--danger-line)" }}>{formError}</p>
@@ -190,7 +190,7 @@ export function CallsTab({ employee }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50 bg-[var(--forest)] text-white"
+            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Saving…" : "Log call"}
           </button>
@@ -206,7 +206,7 @@ export function CallsTab({ employee }) {
       ) : (
         <div className="flex flex-col gap-2">
           {calls.map((call) => (
-            <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]">
+            <div key={call.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
               <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: OUTCOME_DOT[call.outcome] || GRAY }} />
               <div className="min-w-0 flex-1">
                 <div className="text-14 font-medium truncate text-[var(--ink)]">
@@ -241,7 +241,7 @@ export function CallsTab({ employee }) {
       <Link
         href="/employee/cold-calls"
         className="flex items-center justify-between px-3.5 py-3 rounded-xl mt-4"
-        style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+        style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
         <span className="text-13 font-medium">Full team log & leaderboard</span>
         <Icon path={ICONS.chevronRight} size={16} />

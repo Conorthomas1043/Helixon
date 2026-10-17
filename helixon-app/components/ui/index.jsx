@@ -376,7 +376,7 @@ export function Switch({ checked, onChange, label, description, disabled = false
       style={{ background: checked ? "var(--ui-accent)" : "var(--ui-border-strong)" }}
     >
       <span
-        className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform motion-reduce:transition-none"
+        className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--bg)] shadow transition-transform motion-reduce:transition-none"
         style={{ transform: checked ? "translateX(16px)" : "translateX(0)" }}
       />
     </button>

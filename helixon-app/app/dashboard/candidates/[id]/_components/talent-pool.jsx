@@ -59,7 +59,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
               <select
                 value={pool.status || ""}
                 onChange={(e) => onUpdate({ status: e.target.value || null })}
-                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
               >
                 <option value="">Unknown</option>
                 <option value="available">Available</option>
@@ -73,7 +73,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
                 type="date"
                 value={pool.checkIn || ""}
                 onChange={(e) => onUpdate({ checkIn: e.target.value || null })}
-                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+                className="mt-1 w-full text-13 font-semibold normal-case tracking-normal px-2.5 py-1 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
           </div>
@@ -105,7 +105,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
             <button type="button" onClick={() => setNoting(false)} className="text-13 font-semibold px-3 py-1.5 rounded-full text-[var(--ink-soft)]">
               Cancel
             </button>
-            <button type="button" onClick={save} disabled={busy} className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
+            <button type="button" onClick={save} disabled={busy} className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
               {busy ? "Saving…" : "Save to pool"}
             </button>
           </div>
@@ -152,7 +152,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
             onChange={(e) => setJobId(e.target.value)}
             disabled={screening}
             aria-label="Job to screen them for"
-            className="min-w-0 flex-1 text-14 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+            className="min-w-0 flex-1 text-14 px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
           >
             <option value="">{availableJobs.length ? "Choose a job…" : "No other jobs yet"}</option>
             {openJobs.length > 0 && (
@@ -179,7 +179,7 @@ export function TalentPoolPanel({ candidate, jobs, onSave, onUpdate, onRemove, o
               setScreening(false);
               if (ok) setJobId("");
             }}
-            className="text-13 font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40 bg-[var(--forest)] text-white"
+            className="text-13 font-semibold px-3.5 py-1.5 rounded-full shrink-0 disabled:opacity-40 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {screening ? "Screening…" : "Screen"}
           </button>

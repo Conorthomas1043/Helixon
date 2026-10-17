@@ -48,7 +48,7 @@ export default function MobileTabBar({ activeHref, groups, plan = null }) {
 
   return (
     <>
-      <nav aria-label="Pages" className="mobile-tabbar md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-white/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label="Pages" className="mobile-tabbar md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
         <ul className="grid grid-cols-5">
           {PRIMARY.map((t) => {
             const active = t.href === activeHref;
@@ -93,13 +93,13 @@ export default function MobileTabBar({ activeHref, groups, plan = null }) {
 
       {open && (
         <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
-          <button type="button" aria-label="Close menu" tabIndex={-1} onClick={() => setOpen(false)} className="absolute inset-0 bg-[var(--ink)]/40 fade-up-in" />
+          <button type="button" aria-label="Close menu" tabIndex={-1} onClick={() => setOpen(false)} className="absolute inset-0 bg-black/40 fade-up-in" />
           <div
             ref={sheetRef}
             role="dialog"
             aria-modal="true"
             aria-label="All pages"
-            className="relative max-h-[80vh] overflow-y-auto rounded-t-2xl bg-white px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_-12px_rgba(19,32,27,0.3)] fade-up-in"
+            className="relative max-h-[80vh] overflow-y-auto rounded-t-2xl bg-[var(--bg)] px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_-12px_rgba(19,32,27,0.3)] fade-up-in"
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-15 font-semibold font-display text-[var(--ink)]">All pages</p>

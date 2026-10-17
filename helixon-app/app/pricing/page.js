@@ -116,8 +116,8 @@ export default function PricingPage() {
                 key={plan.id}
                 className="rounded-2xl p-7 relative flex flex-col"
                 style={{
-                  background: plan.highlight ? "var(--forest)" : "white",
-                  border: plan.highlight ? "1px solid var(--forest)" : "1px solid var(--border)",
+                  background: plan.highlight ? "var(--brand-surface)" : "var(--bg)",
+                  border: plan.highlight ? "1px solid var(--brand-surface)" : "1px solid var(--border)",
                   boxShadow: plan.highlight ? "0 18px 40px -14px rgba(11,110,79,0.35)" : "none",
                 }}
               >
@@ -157,7 +157,7 @@ export default function PricingPage() {
                   className="w-full mt-6 rounded-btn py-3.5 text-sm font-semibold transition-colors min-h-[48px]"
                   style={{
                     background: plan.highlight ? "white" : "var(--forest)",
-                    color: plan.highlight ? "var(--forest)" : "white",
+                    color: plan.highlight ? "var(--brand-surface)" : "var(--on-accent)",
                     opacity: loading ? 0.75 : 1,
                     cursor: loading ? "wait" : "pointer",
                   }}
@@ -188,7 +188,7 @@ export default function PricingPage() {
         </p>
 
         {/* A way forward for anyone not ready to pay today, instead of a dead end. */}
-        <div className="max-w-2xl mx-auto mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-[var(--border)]">
+        <div className="max-w-2xl mx-auto mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[var(--bg)] border border-[var(--border)]">
           <div>
             <p className="text-15 font-semibold text-[var(--ink)]">Not sure which plan fits?</p>
             <p className="text-sm leading-relaxed mt-1 text-[var(--ink-soft)]">

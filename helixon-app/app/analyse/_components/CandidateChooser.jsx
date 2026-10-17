@@ -22,13 +22,13 @@ function Row({ c, picked, disabled, onToggle }) {
         aria-pressed={picked}
         className={cx(
           "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-45 disabled:cursor-not-allowed",
-          picked ? "bg-[var(--mint)]" : "bg-white hover:bg-[var(--mist)]"
+          picked ? "bg-[var(--mint)]" : "bg-[var(--bg)] hover:bg-[var(--mist)]"
         )}
       >
         <span
           className={cx(
             "w-5 h-5 rounded-md border flex items-center justify-center shrink-0",
-            picked ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "border-[var(--ink-mute)] bg-white"
+            picked ? "bg-[var(--forest)] border-[var(--forest)] text-[var(--on-accent)]" : "border-[var(--ink-mute)] bg-[var(--bg)]"
           )}
           aria-hidden="true"
         >
@@ -110,7 +110,7 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search candidates by name…"
           aria-label="Search candidates"
-          className="w-full text-14 px-5 py-3 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
+          className="w-full text-14 px-5 py-3 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
         />
       </div>
 
@@ -155,7 +155,7 @@ export default function CandidateChooser({ selected, max, onToggle, onCompare, p
               selected.map((id) => (
                 <span key={id} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-[var(--mint)] text-14 font-semibold text-[var(--forest-deep)]">
                   {nameOf(id)}
-                  <button type="button" onClick={() => onToggle(id)} aria-label={`Remove ${nameOf(id)}`} className="p-0.5 rounded-full hover:bg-white/60">
+                  <button type="button" onClick={() => onToggle(id)} aria-label={`Remove ${nameOf(id)}`} className="p-0.5 rounded-full hover:bg-[var(--bg)]/60">
                     <Icon name="x" size={12} />
                   </button>
                 </span>

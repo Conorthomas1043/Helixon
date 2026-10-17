@@ -261,7 +261,7 @@ export default function ColdCallsPage() {
           </div>
           <button type="button"
             onClick={openAdd}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-[var(--on-accent)]"
           >
             <span className="text-base leading-none">+</span> Log call
           </button>
@@ -274,7 +274,7 @@ export default function ColdCallsPage() {
         )}
 
         {showAddForm && (
-          <div ref={formRef} className="rounded-2xl p-5 mb-6 scroll-mt-20 bg-white border border-[var(--border)]">
+          <div ref={formRef} className="rounded-2xl p-5 mb-6 scroll-mt-20 bg-[var(--bg)] border border-[var(--border)]">
             {callListId && (
               <p className="text-xs font-semibold mb-3 text-[var(--forest)]">
                 Logging a call from the call list - saving ticks this contact off.
@@ -289,7 +289,7 @@ export default function ColdCallsPage() {
                     type="text"
                     value={form.contact_name}
                     onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -298,7 +298,7 @@ export default function ColdCallsPage() {
                     type="text"
                     value={form.company}
                     onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -307,7 +307,7 @@ export default function ColdCallsPage() {
                     type="text"
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -315,7 +315,7 @@ export default function ColdCallsPage() {
                   <select
                     value={form.outcome}
                     onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   >
                     {Object.entries(OUTCOME_META).map(([value, meta]) => (
                       <option key={value} value={value}>{meta.label}</option>
@@ -328,7 +328,7 @@ export default function ColdCallsPage() {
                     type="datetime-local"
                     value={form.called_at}
                     onChange={(e) => setForm((f) => ({ ...f, called_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -337,7 +337,7 @@ export default function ColdCallsPage() {
                     type="date"
                     value={form.follow_up_at}
                     onChange={(e) => setForm((f) => ({ ...f, follow_up_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -347,7 +347,7 @@ export default function ColdCallsPage() {
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     rows={2}
                     placeholder="What came up, objections, next step…"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
@@ -357,10 +357,10 @@ export default function ColdCallsPage() {
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]">
                   {saving ? "Saving…" : editingId ? "Save changes" : "Log call"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -379,14 +379,14 @@ export default function ColdCallsPage() {
                   key={s}
                   onClick={() => setScope(s)}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
-                  style={scope === s ? { background: "var(--forest)", color: "white" } : { background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+                  style={scope === s ? { background: "var(--forest)", color: "var(--on-accent)" } : { background: "var(--bg)", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
                 >
                   {s === "team" ? "Whole team" : "Just me"}
                 </button>
               ))}
             </div>
 
-            <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
+            <div className="rounded-2xl overflow-hidden bg-[var(--bg)] border border-[var(--border)]">
               {loading ? (
                 <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
               ) : grouped.length === 0 ? (
@@ -440,7 +440,7 @@ export default function ColdCallsPage() {
                               </div>
                               {canEdit && (
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                  <button type="button" onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white text-[var(--ink-soft)]">Edit</button>
+                                  <button type="button" onClick={() => openEdit(call)} className="text-xs px-2 py-1 rounded-md transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">Edit</button>
                                   <button type="button" onClick={() => handleDelete(call.id)} className="text-xs px-2 py-1 rounded-md transition text-[var(--score-low)]">Delete</button>
                                 </div>
                               )}
@@ -457,7 +457,7 @@ export default function ColdCallsPage() {
 
           {/* ── Leaderboard ─────────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+            <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
               <h2 className="text-sm font-semibold mb-3 text-[var(--ink)] font-display">
                 This week
               </h2>
@@ -480,7 +480,7 @@ export default function ColdCallsPage() {
             </div>
 
             {stats && Object.keys(stats.byOutcomeThisWeek).length > 0 && (
-              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
                 <h2 className="text-sm font-semibold mb-3 text-[var(--ink)] font-display">
                   Outcomes this week
                 </h2>

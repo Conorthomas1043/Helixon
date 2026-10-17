@@ -21,8 +21,9 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(__dirname, "..");
 const BASELINE = path.join(__dirname, "design-tokens.baseline.json");
 // lib/ui/clerk-appearance.js: Clerk computes shades from its colours, so it
-// needs literal values (the same as the tokens).
-const EXEMPT = [/^app\/admin\/_shared\/styles\.js$/, /^emails\//, /^app\/opengraph-image\.js$/, /^lib\/ui\/clerk-appearance\.js$/, /\.test\.jsx?$/];
+// needs literal values (the same as the tokens). app/manifest.js: browsers
+// read its colours outside any stylesheet.
+const EXEMPT = [/^app\/admin\/_shared\/styles\.js$/, /^emails\//, /^app\/opengraph-image\.js$/, /^lib\/ui\/clerk-appearance\.js$/, /^app\/manifest\.js$/, /\.test\.jsx?$/];
 
 function files(dir, out = []) {
   for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {

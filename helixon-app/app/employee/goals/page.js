@@ -228,7 +228,7 @@ export default function EmployeeGoalsPage() {
           </div>
           <button type="button"
             onClick={() => setShowAddForm((v) => !v)}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-[var(--on-accent)]"
           >
             <span className="text-base leading-none">+</span> New goal
           </button>
@@ -241,7 +241,7 @@ export default function EmployeeGoalsPage() {
         )}
 
         {showAddForm && (
-          <div className="rounded-2xl p-5 mb-8 bg-white border border-[var(--border)]">
+          <div className="rounded-2xl p-5 mb-8 bg-[var(--bg)] border border-[var(--border)]">
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -252,7 +252,7 @@ export default function EmployeeGoalsPage() {
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     placeholder="What are we trying to achieve?"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -262,7 +262,7 @@ export default function EmployeeGoalsPage() {
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     placeholder="Context, success criteria, links…"
                     rows={2}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -270,7 +270,7 @@ export default function EmployeeGoalsPage() {
                   <select
                     value={form.assigned_to}
                     onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   >
                     <option value="">Unassigned (whole team)</option>
                     {team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -282,7 +282,7 @@ export default function EmployeeGoalsPage() {
                     type="date"
                     value={form.deadline}
                     onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
@@ -292,10 +292,10 @@ export default function EmployeeGoalsPage() {
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]">
                   {saving ? "Saving…" : "Create goal"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -308,7 +308,7 @@ export default function EmployeeGoalsPage() {
             <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--border)", borderTopColor: "var(--forest)" }} />
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-2xl px-6 py-16 text-center bg-white border border-[var(--border)]">
+          <div className="rounded-2xl px-6 py-16 text-center bg-[var(--bg)] border border-[var(--border)]">
             <p className="text-sm text-[var(--ink-faint)]">No goals yet - add the first one above.</p>
           </div>
         ) : (
@@ -335,7 +335,7 @@ export default function EmployeeGoalsPage() {
                       const doneItems = goal.items.filter((i) => i.done).length;
 
                       return (
-                        <div key={goal.id} className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+                        <div key={goal.id} className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-[var(--ink)]">{goal.title}</p>
@@ -390,7 +390,7 @@ export default function EmployeeGoalsPage() {
                                       aria-label={item.done ? "Mark not done" : "Mark done"}
                                     >
                                       {item.done && (
-                                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                                        <svg className="w-2.5 h-2.5 text-[var(--on-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
                                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                         </svg>
                                       )}

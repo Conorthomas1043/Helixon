@@ -2,7 +2,8 @@
 
 import { UserProfile } from "@clerk/nextjs";
 import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
-import { CLERK_COLORS } from "@/lib/ui/clerk-appearance";
+import { CLERK_COLORS, clerkVariables } from "@/lib/ui/clerk-appearance";
+import usePrefersDark from "@/lib/hooks/usePrefersDark";
 import { usePathname } from "next/navigation";
 import DangerZone from "@/components/account/DangerZone";
 import NotificationsInfo from "@/components/account/NotificationsInfo";
@@ -50,6 +51,7 @@ const TAB_COPY = {
 const CLERK_ROUTES = new Set(["/account", "/account/security"]);
 
 export default function AccountPage() {
+  const dark = usePrefersDark();
   const pathname = usePathname();
   const copy = TAB_COPY[pathname] || TAB_COPY["/account"];
   const isClerkRoute = CLERK_ROUTES.has(pathname);
@@ -73,7 +75,7 @@ export default function AccountPage() {
 
       {/* Clerk (Profile / Security) or an honest placeholder (Notifications / Danger zone) */}
       <div
-        className="overflow-hidden rounded-3xl border border-white/80 bg-white/65 shadow-[0_25px_80px_rgba(35,87,70,0.10)] backdrop-blur-[28px]"
+        className="overflow-hidden rounded-3xl border border-white/80 bg-[var(--bg)]/65 shadow-[0_25px_80px_rgba(35,87,70,0.10)] backdrop-blur-[28px]"
         style={{ animation: `profileIn 800ms ${EASE} 80ms both` }}
       >
         {isClerkRoute ? (
@@ -83,7 +85,7 @@ export default function AccountPage() {
             path="/account"
             routing="path"
             appearance={{
-              variables: {
+              variables: clerkVariables(dark, {
                 colorPrimary: CLERK_COLORS.primary,
                 colorText: CLERK_COLORS.text,
                 colorTextSecondary: CLERK_COLORS.textSecondary,
@@ -92,7 +94,7 @@ export default function AccountPage() {
                 colorInputText: CLERK_COLORS.text,
                 borderRadius: "14px",
                 fontFamily: "inherit",
-              },
+              }),
               elements: {
                 rootBox: { width: "100%" },
                 cardBox: {
@@ -135,7 +137,7 @@ export default function AccountPage() {
                 formFieldInput: {
                   borderRadius: "12px",
                   border: "1px solid var(--border)",
-                  background: "rgba(255,255,255,0.72)",
+                  background: "var(--glass-bg)",
                 },
                 footer: { background: "transparent" },
               },
@@ -201,7 +203,7 @@ export default function AccountPage() {
 
 function InfoCard({ icon, eyebrow, title, text }) {
   return (
-    <div className="rounded-3xl border border-white/80 bg-white/55 p-6 shadow-[0_15px_45px_rgba(35,87,70,0.06)] backdrop-blur-xl">
+    <div className="rounded-3xl border border-white/80 bg-[var(--bg)]/55 p-6 shadow-[0_15px_45px_rgba(35,87,70,0.06)] backdrop-blur-xl">
       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--mint)] text-[var(--forest)]">
         {icon}
       </div>

@@ -247,7 +247,7 @@ export default function EmployeeDashboard() {
         {/* ── Header ──────────────────────────────────────────────────── */}
         <header
           className="relative overflow-hidden rounded-2xl p-6 sm:p-7 mb-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5"
-          style={{ background: "linear-gradient(135deg, #ffffff 0%, rgba(var(--forest-rgb),0.07) 100%)", border: "1px solid var(--border)" }}
+          style={{ background: "linear-gradient(135deg, var(--bg) 0%, rgba(var(--forest-rgb),0.07) 100%)", border: "1px solid var(--border)" }}
         >
           <div
             className="ambient-glow absolute -top-1/2 -right-16 w-[320px] h-[320px] rounded-full pointer-events-none"
@@ -280,18 +280,18 @@ export default function EmployeeDashboard() {
             <button
               type="button"
               onClick={() => { setTaskView("mine"); setTimeout(() => quickAddRef.current?.focus(), 0); }}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-full text-white bg-[var(--forest)]"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-full text-[var(--on-accent)] bg-[var(--forest)]"
             >
               <span aria-hidden="true">+</span> New task
             </button>
             )}
             {access.callsEdit && (
-            <Link href="/employee/cold-calls" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-white" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
+            <Link href="/employee/cold-calls" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-[var(--bg)]" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
               Log a call
             </Link>
             )}
             {access.calendarEdit && (
-            <Link href="/employee/calendar" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-white" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
+            <Link href="/employee/calendar" className="inline-flex items-center text-sm font-semibold px-4 py-2.5 rounded-full bg-[var(--bg)]" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>
               Add an event
             </Link>
             )}
@@ -313,7 +313,7 @@ export default function EmployeeDashboard() {
             {shownTaskView && (
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-[var(--ink)] font-display">Tasks</h2>
-              <div className="flex rounded-btn p-0.5 gap-0.5 bg-white border border-[var(--border)]" role="group" aria-label="Which tasks">
+              <div className="flex rounded-btn p-0.5 gap-0.5 bg-[var(--bg)] border border-[var(--border)]" role="group" aria-label="Which tasks">
                 {taskViews.map((t) => (
                   <button
                     key={t.key}
@@ -321,7 +321,7 @@ export default function EmployeeDashboard() {
                     onClick={() => setTaskView(t.key)}
                     aria-pressed={shownTaskView === t.key}
                     className="text-sm px-3.5 py-1.5 rounded-lg font-medium transition"
-                    style={shownTaskView === t.key ? { background: "var(--forest)", color: "white" } : { color: "var(--ink-soft)" }}
+                    style={shownTaskView === t.key ? { background: "var(--forest)", color: "var(--on-accent)" } : { color: "var(--ink-soft)" }}
                   >
                     {t.label}
                   </button>

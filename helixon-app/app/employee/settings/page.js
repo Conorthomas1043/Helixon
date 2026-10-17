@@ -127,7 +127,7 @@ export default function EmployeeSettingsPage() {
         </div>
 
         {/* ── Profile ───────────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-6 mb-6 bg-white border border-[var(--border)]">
+        <div className="rounded-2xl p-6 mb-6 bg-[var(--bg)] border border-[var(--border)]">
           <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
             Profile
           </h2>
@@ -155,7 +155,7 @@ export default function EmployeeSettingsPage() {
         </div>
 
         {/* ── Change password ──────────────────────────────────────────── */}
-        <div className="rounded-2xl p-6 bg-white border border-[var(--border)]">
+        <div className="rounded-2xl p-6 bg-[var(--bg)] border border-[var(--border)]">
           <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
             Change password
           </h2>
@@ -237,7 +237,7 @@ export default function EmployeeSettingsPage() {
                 type="submit"
                 disabled={saving}
                 aria-busy={saving}
-                className="btn-forest text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+                className="btn-forest text-[var(--on-accent)] font-semibold py-2.5 px-5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
                 style={{
                   background: saving ? "var(--ink-mute)" : "var(--forest)",
                   cursor: saving ? "not-allowed" : "pointer",

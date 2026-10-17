@@ -43,8 +43,8 @@ function LogoMark() {
   return (
     <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 bg-[var(--forest)]">
       <svg width="18" height="18" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-        <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+        <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+        <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
         <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
       </svg>
     </span>
@@ -110,7 +110,7 @@ function EmployeeNav({ employee }) {
   const sections = visibleSections(employee);
 
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Employee portal">
+    <nav className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]" aria-label="Employee portal">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-4">
         <Link href="/employee/dashboard" className="flex items-center gap-2.5 group shrink-0" aria-label="Employee portal home">
           <LogoMark />
@@ -147,7 +147,7 @@ function EmployeeNav({ employee }) {
               aria-label="Account menu"
               className="flex items-center gap-2 rounded-full pl-1 pr-2.5 py-1 transition hover:bg-[var(--mist)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
             >
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-12 font-semibold text-white bg-[var(--forest)]" aria-hidden="true">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-12 font-semibold text-[var(--on-accent)] bg-[var(--forest)]" aria-hidden="true">
                 {initialsOf(name)}
               </span>
               <span className="hidden sm:block text-14 font-medium max-w-[120px] truncate text-[var(--ink)]">
@@ -158,7 +158,7 @@ function EmployeeNav({ employee }) {
               </svg>
             </button>
             {menuOpen && (
-              <div role="menu" className="absolute right-0 top-11 w-56 rounded-card py-1.5 z-50" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
+              <div role="menu" className="absolute right-0 top-11 w-56 rounded-card py-1.5 z-50" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 16px 32px -14px rgba(19,32,27,0.25)" }}>
                 {name && (
                   <div className="px-3.5 pt-1.5 pb-2.5 mb-1 border-b border-[var(--border-soft)]">
                     <p className="text-sm font-semibold truncate text-[var(--ink)]">{name}</p>
@@ -175,7 +175,7 @@ function EmployeeNav({ employee }) {
                   Helixon website
                 </Link>
                 <div className="border-t mt-1 pt-1 border-[var(--border-soft)]">
-                  <button type="button" role="menuitem" onClick={signOut} className="w-full text-left px-3.5 py-2 text-sm hover:bg-red-50 text-[var(--score-low)]">
+                  <button type="button" role="menuitem" onClick={signOut} className="w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--ui-danger-soft)] text-[var(--score-low)]">
                     Sign out
                   </button>
                 </div>
@@ -199,7 +199,7 @@ function EmployeeNav({ employee }) {
       </div>
 
       {mobileOpen && (
-        <ul id="employee-mobile-nav" className="lg:hidden border-t px-4 py-2 grid grid-cols-2 gap-1 bg-white border-[var(--border)]">
+        <ul id="employee-mobile-nav" className="lg:hidden border-t px-4 py-2 grid grid-cols-2 gap-1 bg-[var(--bg)] border-[var(--border)]">
           {sections.map((s) => (
             <li key={s.href}>
               <Link
@@ -260,7 +260,7 @@ function NoAccess({ label }) {
       <p className="text-15 mt-2 text-[var(--ink-soft)]">
         Your account doesn&rsquo;t have access to this part of the portal. If you need it, ask an admin to change your permissions.
       </p>
-      <Link href="/employee/dashboard" className="inline-flex mt-6 text-sm font-semibold px-4 py-2.5 rounded-full text-white" style={{ background: "var(--forest)" }}>
+      <Link href="/employee/dashboard" className="inline-flex mt-6 text-sm font-semibold px-4 py-2.5 rounded-full text-[var(--on-accent)]" style={{ background: "var(--forest)" }}>
         Back to Today
       </Link>
     </div>
@@ -287,7 +287,7 @@ export default function EmployeeShell({ employee: employeeProp, section, childre
       <main id="main-content">
         {readOnly && (
           <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-5">
-            <p className="text-14 rounded-btn px-3.5 py-2.5 bg-white border border-[var(--border)] text-[var(--ink-soft)]">
+            <p className="text-14 rounded-btn px-3.5 py-2.5 bg-[var(--bg)] border border-[var(--border)] text-[var(--ink-soft)]">
               <b className="text-[var(--ink)]">View only.</b> You can look around {meta?.label ? `in ${meta.label}` : "here"}, but changes are turned off for your account.
             </p>
           </div>

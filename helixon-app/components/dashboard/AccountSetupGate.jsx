@@ -20,7 +20,7 @@ import DashboardNav from "@/components/DashboardNav";
 // as normal.
 
 const CARD = {
-  background: "white",
+  background: "var(--bg)",
   border: "1px solid var(--border)",
   borderRadius: 18,
   boxShadow: "0 18px 40px -24px rgba(19,32,27,0.25)",
@@ -88,7 +88,7 @@ function SetupNeeded({ email }) {
                   padding: "0 18px",
                   borderRadius: 10,
                   background: "var(--forest)",
-                  color: "white",
+                  color: "var(--on-accent)",
                   fontSize: 14,
                   fontWeight: 600,
                   textDecoration: "none",
@@ -113,7 +113,7 @@ function SetupNeeded({ email }) {
                     padding: "0 18px",
                     borderRadius: 10,
                     border: "1px solid var(--border)",
-                    background: "white",
+                    background: "var(--bg)",
                     color: "var(--ink)",
                     fontSize: 14,
                     fontWeight: 600,
@@ -131,7 +131,7 @@ function SetupNeeded({ email }) {
                     padding: "0 18px",
                     borderRadius: 10,
                     border: "1px solid var(--border)",
-                    background: "white",
+                    background: "var(--bg)",
                     color: "var(--ink)",
                     fontSize: 14,
                     fontWeight: 600,

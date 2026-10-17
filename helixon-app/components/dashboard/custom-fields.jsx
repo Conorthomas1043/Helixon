@@ -47,7 +47,7 @@ export function SubStagePicker({ stage, subStage, onChange, disabled, className 
       value={current}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value || null)}
-      className={`w-full text-sm px-3 py-2 rounded-btn bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${className} border border-[var(--border)] text-[var(--ink)]`}
+      className={`w-full text-sm px-3 py-2 rounded-btn bg-[var(--bg)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${className} border border-[var(--border)] text-[var(--ink)]`}
     >
       <option value="">No sub-stage</option>
       {options.map((o) => (

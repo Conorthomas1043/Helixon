@@ -60,7 +60,7 @@ export function SelectField({ value, onChange, options, ariaLabel, disabled }) {
       value={value ?? ""}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full text-sm px-3 py-2 rounded-btn bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+      className="w-full text-sm px-3 py-2 rounded-btn bg-[var(--bg)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -174,7 +174,7 @@ export function StateMessage({ title, body, retryLabel, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {retryLabel ?? "Try again"}
           </button>
@@ -224,7 +224,7 @@ export function PanelGroup({ id, title, summary, defaultOpen = false, children }
         track("profile_panel_used", { group: id });
       }}
     >
-      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-xl px-4 py-3 min-h-[44px] bg-white border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
+      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 rounded-xl px-4 py-3 min-h-[44px] bg-[var(--bg)] border border-[var(--border)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--forest)] [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
           <span className="block text-14 font-semibold text-[var(--ink)]">{title}</span>
           {summary && <span className="block text-13 group-open/panel:hidden text-[var(--ink-faint)]">{summary}</span>}

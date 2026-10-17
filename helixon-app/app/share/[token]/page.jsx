@@ -47,7 +47,7 @@ function Decision({ token, candidate, decisions, name, onSaved }) {
 
   const commentDirty = comment !== savedComment;
   return (
-    <div className="rounded-card bg-white p-4 sm:p-5 space-y-3 border border-[var(--border)]">
+    <div className="rounded-card bg-[var(--bg)] p-4 sm:p-5 space-y-3 border border-[var(--border)]">
       <p className="text-14 font-semibold text-[var(--ink)]" id={`q-${candidate.candidateId}`}>
         Would you like to meet {candidate.profile.name}?
       </p>
@@ -63,7 +63,7 @@ function Decision({ token, candidate, decisions, name, onSaved }) {
               save(v);
             }}
             className="text-14 font-semibold px-4 rounded-full min-h-[44px]"
-            style={decision === v ? { background: v === "reject" ? "var(--score-low)" : "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
+            style={decision === v ? { background: v === "reject" ? "var(--score-low)" : "var(--forest)", color: "var(--on-accent)" } : { border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
           >
             {l}
           </button>
@@ -90,7 +90,7 @@ function Decision({ token, candidate, decisions, name, onSaved }) {
               type="button"
               onClick={() => save(decision, comment)}
               disabled={state === "saving"}
-              className="mt-2 text-14 font-semibold px-4 rounded-full min-h-[40px] bg-[var(--forest)] text-white"
+              className="mt-2 text-14 font-semibold px-4 rounded-full min-h-[40px] bg-[var(--forest)] text-[var(--on-accent)]"
             >
               Save comment
             </button>
@@ -123,7 +123,7 @@ export default function SharedShortlistPage({ params }) {
   if (error) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6 bg-[var(--mist)]">
-        <div className="max-w-md rounded-2xl bg-white p-8 text-center border border-[var(--border)]">
+        <div className="max-w-md rounded-2xl bg-[var(--bg)] p-8 text-center border border-[var(--border)]">
           <h1 className="text-lg font-semibold mb-2 text-[var(--ink)]">Link not available</h1>
           <p className="text-sm text-[var(--ink-soft)]">{error} Ask your recruiter for a new one.</p>
         </div>
@@ -135,9 +135,9 @@ export default function SharedShortlistPage({ params }) {
       <main className="min-h-screen bg-[var(--mist)]" aria-busy="true">
         <div className="mx-auto max-w-[860px] px-4 sm:px-6 py-10 space-y-4">
           <div role="status"><h1 className="sr-only">Loading the shortlist…</h1></div>
-          <div className="h-3 w-32 rounded-full bg-white" />
-          <div className="h-8 w-2/3 rounded-lg bg-white" />
-          <div className="h-64 rounded-card bg-white" />
+          <div className="h-3 w-32 rounded-full bg-[var(--bg)]" />
+          <div className="h-8 w-2/3 rounded-lg bg-[var(--bg)]" />
+          <div className="h-64 rounded-card bg-[var(--bg)]" />
         </div>
       </main>
     );
@@ -158,7 +158,7 @@ export default function SharedShortlistPage({ params }) {
           </p>
           <label className="mt-4 flex items-center gap-2 text-14 text-[var(--ink)]">
             Your name
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} className="text-14 px-3 py-1.5 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]" />
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} className="text-14 px-3 py-1.5 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]" />
           </label>
         </header>
         {data.candidates.length === 0 && <p className="text-sm text-[var(--ink-soft)]">Nobody on this shortlist yet.</p>}
@@ -184,7 +184,7 @@ export default function SharedShortlistPage({ params }) {
           2006, "The goal-gradient hypothesis resurrected", Journal of
           Marketing Research 43(1)). */}
       {total > 1 && (
-        <div className="sticky bottom-0 border-t bg-white/95 backdrop-blur border-[var(--border)]">
+        <div className="sticky bottom-0 border-t bg-[var(--bg)]/95 backdrop-blur border-[var(--border)]">
           <div className="mx-auto max-w-[860px] px-4 sm:px-6 py-3 flex items-center gap-3">
             <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[var(--border-soft)]" role="progressbar" aria-label="Answered" aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
               <div className="h-full rounded-full" style={{ width: `${(answered / total) * 100}%`, background: "var(--forest)" }} />

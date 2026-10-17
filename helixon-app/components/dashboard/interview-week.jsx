@@ -82,7 +82,7 @@ export function InterviewWeek({ scope }) {
                   {byDay[index].map((i) => (
                     <li
                       key={i.id}
-                      className="rounded-md bg-white px-2 py-1.5"
+                      className="rounded-md bg-[var(--bg)] px-2 py-1.5"
                       style={{ borderLeft: `3px solid ${STATUS_COLOUR[i.status] || INK_MUTED}`, opacity: i.status === "cancelled" ? 0.6 : 1 }}
                     >
                       <p className="text-12 font-semibold text-[var(--ink-soft)]">

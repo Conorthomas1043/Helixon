@@ -30,11 +30,11 @@ export const GREEN_FG  = "var(--score-strong)";
 export const GREEN_BG  = "var(--mint)";
 
 export const AMBER_FG  = "var(--score-mid)";
-export const AMBER_BG  = "rgba(180,83,9,0.10)";
+export const AMBER_BG  = "var(--ui-warn-soft)";
 
 export const RED       = "var(--score-low)";
 export const RED_STRONG= "var(--score-low)";
-export const RED_BG    = "rgba(192,57,43,0.10)";
+export const RED_BG    = "var(--ui-danger-soft)";
 
 export const CARD = {
   background: SURFACE,

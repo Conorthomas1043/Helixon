@@ -43,7 +43,7 @@ export default function EmployeeMobileApp({ employee }) {
         style={{
           height: 52,
           paddingTop: "env(safe-area-inset-top)",
-          background: "white",
+          background: "var(--bg)",
           borderBottom: "1px solid var(--border)",
           position: "sticky",
           top: 0,
@@ -52,7 +52,7 @@ export default function EmployeeMobileApp({ employee }) {
       >
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[var(--forest)]">
-            <span className="text-white text-12 font-bold">H</span>
+            <span className="text-[var(--on-accent)] text-12 font-bold">H</span>
           </div>
           <div className="leading-none">
             <div className="text-14 font-semibold text-[var(--ink)]">
@@ -99,7 +99,7 @@ export default function EmployeeMobileApp({ employee }) {
           left: 0,
           right: 0,
           bottom: 0,
-          background: "white",
+          background: "var(--bg)",
           borderTop: "1px solid var(--border)",
           paddingBottom: "env(safe-area-inset-bottom)",
           zIndex: 20,

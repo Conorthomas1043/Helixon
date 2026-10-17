@@ -20,7 +20,7 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
           onChange={(e) => setText(e.target.value)}
           rows={3}
           aria-label="Edit note"
-          className="w-full text-sm p-2.5 rounded-lg resize-none bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+          className="w-full text-sm p-2.5 rounded-lg resize-none bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         />
         <div className="flex justify-end gap-2 mt-2">
           <button type="button" onClick={() => { setEditing(false); setText(note.body); }} className="text-13 font-semibold px-3 py-1 rounded-full text-[var(--ink-soft)]">
@@ -35,7 +35,7 @@ export function NoteItem({ note, mine, onEdit, onDelete, onPin }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-13 font-semibold px-3 py-1 rounded-full disabled:opacity-40 bg-[var(--forest)] text-white"
+            className="text-13 font-semibold px-3 py-1 rounded-full disabled:opacity-40 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Saving…" : "Save"}
           </button>
@@ -120,7 +120,7 @@ export function NotesPanel({ candidateId, notes, currentUserId, onAddNote, onEdi
           <button
             type="submit"
             disabled={!draft.trim() || saving}
-            className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+            className="text-13 font-semibold px-3.5 py-1.5 rounded-full disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Saving…" : "Add note"}
           </button>

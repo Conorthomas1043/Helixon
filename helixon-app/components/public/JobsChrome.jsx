@@ -3,7 +3,7 @@ import Link from "next/link";
 // Header and footer around an agency's public jobs pages.
 export function JobsHeader({ agency }) {
   return (
-    <header className="bg-white border-b border-b-[var(--border)]">
+    <header className="bg-[var(--bg)] border-b border-b-[var(--border)]">
       <div className="mx-auto max-w-[900px] px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link href={`/jobs/${agency.careers_slug}`} className="text-16 font-semibold" style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}>
           {agency.name}

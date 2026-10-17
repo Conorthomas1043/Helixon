@@ -44,9 +44,9 @@ function SavedJobList({ jobs, selectedId, onSelect }) {
                 )}
               >
                 <span
-                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${active ? "border-[var(--forest)]" : "border-[var(--ink-mute)]"} ${active ? "bg-[var(--forest)]" : "bg-white"}`}
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${active ? "border-[var(--forest)]" : "border-[var(--ink-mute)]"} ${active ? "bg-[var(--forest)]" : "bg-[var(--bg)]"}`}
                 >
-                  {active && <Icon name="check" size={10} strokeWidth={3} className="text-white" />}
+                  {active && <Icon name="check" size={10} strokeWidth={3} className="text-[var(--on-accent)]" />}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-15 font-medium text-[var(--ink)] truncate">{job.title}</span>
@@ -150,7 +150,7 @@ export default function RoleCard({
         {mode === "upload" &&
           (jobFile ? (
             <div className="flex items-center gap-3 px-3.5 py-3 rounded-btn border border-[var(--border)] bg-[var(--mist)]">
-              <span className="w-9 h-9 rounded-lg bg-white border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
+              <span className="w-9 h-9 rounded-lg bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[var(--ink-soft)]">
                 <Icon name="file" />
               </span>
               <span className="min-w-0 flex-1">

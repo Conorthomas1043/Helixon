@@ -79,7 +79,7 @@ const TONES = {
 function ExampleReport() {
   return (
     <div
-      className="rounded-2xl p-6 w-full max-w-sm mx-auto lg:mx-0 bg-white"
+      className="rounded-2xl p-6 w-full max-w-sm mx-auto lg:mx-0 bg-[var(--bg)]"
       style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-raise)" }}
     >
       <div className="flex items-center justify-between gap-3 mb-5">
@@ -161,7 +161,7 @@ export default function AboutPage() {
       {/* ── Story / approach ────────────────────────────────────────────── */}
 
       <section
-        className="border-y border-[var(--border)] bg-white"
+        className="border-y border-[var(--border)] bg-[var(--bg)]"
       >
         <div className="max-w-[1100px] mx-auto px-6 py-20">
           <div className="text-center mb-12">
@@ -234,7 +234,7 @@ export default function AboutPage() {
           {VALUES.map((v) => (
             <div
               key={v.title}
-              className="rounded-card p-6 bg-white border border-[var(--border)]"
+              className="rounded-card p-6 bg-[var(--bg)] border border-[var(--border)]"
             >
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center mb-4 bg-[var(--mint)]"
@@ -281,7 +281,7 @@ export default function AboutPage() {
       {/* ── About / team ────────────────────────────────────────────────── */}
 
       <section
-        className="border-y border-[var(--border)] bg-white"
+        className="border-y border-[var(--border)] bg-[var(--bg)]"
       >
         <div className="max-w-[1100px] mx-auto px-6 py-16 text-center">
           <p

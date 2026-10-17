@@ -22,7 +22,7 @@ const PILL =
 export function PillButton({ href, primary, icon, children, className = "", ...props }) {
   const cls = cx(
     PILL,
-    primary ? "bg-[var(--forest)] text-white hover:bg-[var(--forest-deep)]" : "bg-white border border-[var(--border)] text-[var(--ink)] hover:bg-[var(--mist)]",
+    primary ? "bg-[var(--forest)] text-[var(--on-accent)] hover:bg-[var(--forest-deep)]" : "bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)] hover:bg-[var(--mist)]",
     className
   );
   const body = (
@@ -57,7 +57,7 @@ export function PillTabs({ value, onChange, options, ariaLabel }) {
             onClick={() => onChange(o.value)}
             className={cx(
               "inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
-              on ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "bg-white border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
+              on ? "bg-[var(--forest)] border-[var(--forest)] text-[var(--on-accent)]" : "bg-[var(--bg)] border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
             )}
           >
             {o.icon && <Icon name={o.icon} size={14} />}
@@ -116,7 +116,7 @@ export function StagePicker({ candidateId, stage, onChanged }) {
           value={stage || ""}
           disabled={saving}
           onChange={(e) => change(e.target.value)}
-          className="appearance-none text-13 font-semibold pl-6 pr-7 py-1.5 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:border-[var(--ink-mute)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer"
+          className="appearance-none text-13 font-semibold pl-6 pr-7 py-1.5 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] hover:border-[var(--ink-mute)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer"
         >
           {!stage && <option value="">Set stage…</option>}
           {Object.entries(STAGE_LABELS).map(([k, label]) => (

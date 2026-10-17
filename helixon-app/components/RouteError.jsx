@@ -41,7 +41,7 @@ export default function RouteError({ error, retry, reset }) {
             <button
               type="button"
               onClick={() => tryAgain()}
-              className="px-4 py-2 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="px-4 py-2 text-sm font-semibold text-[var(--on-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: "var(--forest)", borderRadius: "var(--radius-btn)" }}
             >
               Try again

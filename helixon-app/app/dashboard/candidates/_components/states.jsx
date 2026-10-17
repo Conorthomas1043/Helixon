@@ -50,7 +50,7 @@ export function ErrorState({ onRetry, message }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         Try again
       </button>

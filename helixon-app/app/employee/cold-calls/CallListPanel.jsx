@@ -180,7 +180,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
   }
 
   return (
-    <section className="rounded-2xl mb-6 overflow-hidden bg-white border border-[var(--border)]" aria-label="Call list">
+    <section className="rounded-2xl mb-6 overflow-hidden bg-[var(--bg)] border border-[var(--border)]" aria-label="Call list">
       {confirmDialog}
       <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-b-[var(--border-soft)]">
         <div>
@@ -225,7 +225,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
               : "No header row found - reading columns as Name, Company, Phone."}
           </p>
           <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--border)]">
-            <table className="w-full text-xs bg-white">
+            <table className="w-full text-xs bg-[var(--bg)]">
               <thead>
                 <tr className="text-[var(--ink-faint)]">
                   {["Name", "Company", "Phone", "Email"].map((h) => (
@@ -255,11 +255,11 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                 type="text"
                 value={preview.batchLabel}
                 onChange={(e) => setPreview((p) => ({ ...p, batchLabel: e.target.value }))}
-                className="w-full bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
+                className="w-full bg-[var(--bg)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
             <div className="flex gap-2">
-              <button type="button" onClick={confirmImport} disabled={importing} className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50 bg-[var(--forest)] text-white">
+              <button type="button" onClick={confirmImport} disabled={importing} className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
                 {importing ? "Importing…" : `Import ${preview.contacts.length}`}
               </button>
               <button type="button" onClick={() => setPreview(null)} className="text-sm px-4 py-2 rounded-lg text-[var(--ink-soft)]">
@@ -282,7 +282,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
               type="button"
               onClick={() => { setFilter(value); setShown(PAGE); }}
               className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
-              style={filter === value ? { background: "var(--forest)", color: "white" } : { background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+              style={filter === value ? { background: "var(--forest)", color: "var(--on-accent)" } : { background: "var(--bg)", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
             >
               {label}
             </button>
@@ -293,7 +293,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShown(PAGE); }}
           placeholder="Search name, company or number"
-          className="sm:ml-auto w-full sm:w-64 bg-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
+          className="sm:ml-auto w-full sm:w-64 bg-[var(--bg)] rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 border border-[var(--border)] text-[var(--ink)]"
         />
       </div>
 
@@ -344,7 +344,7 @@ export default function CallListPanel({ employee, onLogCall, refreshKey }) {
                     {row.phone}
                   </a>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button type="button" disabled={busy || takenByOther} onClick={() => logOutcome(row)} className={btn} style={{ background: "var(--forest)", color: "white" }}>
+                    <button type="button" disabled={busy || takenByOther} onClick={() => logOutcome(row)} className={btn} style={{ background: "var(--forest)", color: "var(--on-accent)" }}>
                       Log outcome
                     </button>
                     {mine ? (

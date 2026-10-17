@@ -7,7 +7,7 @@ export const PRESENCE_COLORS = {
   offline: "transparent",
 };
 
-export default function PresenceDot({ state = "offline", size = 10, ring = "white", className = "" }) {
+export default function PresenceDot({ state = "offline", size = 10, ring = "var(--bg)", className = "" }) {
   const offline = state === "offline" || state === "hidden";
   return (
     <span

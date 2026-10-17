@@ -66,12 +66,12 @@ export default function SavedSearches({ currentQuery, onApply }) {
           setOpen(!open);
         }}
         className={btn}
-        style={{ background: "white", color: INK_MUTED, border: "1px solid var(--border)" }}
+        style={{ background: "var(--bg)", color: INK_MUTED, border: "1px solid var(--border)" }}
       >
         ★ Saved searches
       </button>
       {open && (
-        <div className="absolute z-40 mt-2 w-80 right-0 rounded-xl bg-white p-3 shadow-xl border border-[var(--border)]">
+        <div className="absolute z-40 mt-2 w-80 right-0 rounded-xl bg-[var(--bg)] p-3 shadow-xl border border-[var(--border)]">
           {list === null ? (
             <p className="text-13 text-[var(--ink-soft)]">Loading…</p>
           ) : list.length === 0 ? (

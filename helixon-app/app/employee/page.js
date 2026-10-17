@@ -37,13 +37,13 @@ export default function EmployeeLanding() {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--mist)]">
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
+      <nav className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
         <div className="max-w-[1100px] mx-auto px-6 h-[60px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group" aria-label="Helixon home">
             <span className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 bg-[var(--forest)]">
               <svg width="18" height="18" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
                 <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
               </svg>
             </span>
@@ -76,7 +76,7 @@ export default function EmployeeLanding() {
 
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-12">
             {FEATURES.map((f) => (
-              <li key={f.title} className="rounded-card p-5 bg-white flex gap-3.5 border border-[var(--border)]">
+              <li key={f.title} className="rounded-card p-5 bg-[var(--bg)] flex gap-3.5 border border-[var(--border)]">
                 <span className="w-9 h-9 rounded-btn flex items-center justify-center shrink-0 bg-[var(--mint)]">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     {f.icon}

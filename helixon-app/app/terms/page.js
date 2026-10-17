@@ -59,7 +59,7 @@ export default function TermsPage() {
       />
 
       <section className={`${LEGAL_WIDTH.narrow} mx-auto px-6 py-14`}>
-        <div className="rounded-2xl p-8 bg-white border border-[var(--border)]">
+        <div className="rounded-2xl p-8 bg-[var(--bg)] border border-[var(--border)]">
           <div className="space-y-10">
             {SECTIONS.map((s) => (
               <div key={s.id} id={s.id}>

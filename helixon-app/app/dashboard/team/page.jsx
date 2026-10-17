@@ -216,7 +216,7 @@ export default function TeamPage() {
           <Link
             href="/dashboard"
             className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 self-start"
-            style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+            style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
           >
             ← Dashboard
           </Link>
@@ -253,7 +253,7 @@ export default function TeamPage() {
                       onClick={() => setFilter(k)}
                       aria-pressed={on}
                       className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                      style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
+                      style={{ background: on ? "var(--forest)" : "var(--bg)", color: on ? "var(--on-accent)" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                     >
                       {label}
                       <span className="text-12 tabular-nums px-1.5 rounded-full" style={{ background: on ? "rgba(0,0,0,0.2)" : "var(--mist)" }}>

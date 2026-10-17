@@ -144,7 +144,7 @@ export function FunnelChart({ funnel }) {
                 className="h-full rounded-md flex items-center justify-end px-2"
                 style={{ width: `${pct}%`, background: stage.key === "Placed" ? "var(--forest)" : MUTED_BAR }}
               >
-                <span className={`text-12 font-semibold tabular-nums ${stage.key === "Placed" ? "text-white" : "text-[var(--ink)]"}`}>{stage.count}</span>
+                <span className={`text-12 font-semibold tabular-nums ${stage.key === "Placed" ? "text-[var(--on-accent)]" : "text-[var(--ink)]"}`}>{stage.count}</span>
               </div>
             </div>
             <span className="text-12 w-16 text-right shrink-0 text-[var(--ink-faint)]">
@@ -254,7 +254,7 @@ export function ScoreCalibration({ calibration }) {
                   className="h-full rounded-md flex items-center justify-end px-2"
                   style={{ width: `${Math.max(4, band.placementRate)}%`, background: "var(--forest)" }}
                 >
-                  <span className="text-12 font-semibold tabular-nums text-white">
+                  <span className="text-12 font-semibold tabular-nums text-[var(--on-accent)]">
                     {band.placementRate}%
                   </span>
                 </div>

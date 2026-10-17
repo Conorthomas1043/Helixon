@@ -12,8 +12,24 @@ export const CLERK_COLORS = {
   textSecondary: "#4a6658", // --ink-soft
 };
 
+// The dark appearance's values for the same tokens. Clerk can't follow the
+// media query itself, so the widgets pick a set with usePrefersDark().
+// colorNeutral drives Clerk's borders and dividers, which are near-black by
+// default and vanish on a dark card.
+const CLERK_DARK_VARIABLES = {
+  colorPrimary: "#5cc79c", // --forest
+  colorText: "#e8efeb", // --ink
+  colorTextSecondary: "#a8bcb2", // --ink-soft
+  colorTextOnPrimaryBackground: "#06120d", // --on-accent
+  colorNeutral: "#e8efeb",
+  colorDanger: "#f2877a", // --score-low
+  colorInputText: "#e8efeb",
+};
+
 // Provider-wide defaults: modals, popovers and any widget without its own
 // appearance. Set in the body font, the same as the page around them.
+// The provider renders on the server, so it stays light; the widgets on
+// /login, /signup and /account choose their colours in the browser.
 export const CLERK_PROVIDER_APPEARANCE = {
   variables: {
     colorPrimary: CLERK_COLORS.primary,
@@ -25,9 +41,15 @@ export const CLERK_PROVIDER_APPEARANCE = {
   },
 };
 
+// Clerk's colours for one appearance. `light` is what the widget used before
+// there was a dark appearance; in dark the same keys are overridden.
+export function clerkVariables(dark, light) {
+  return dark ? { ...light, ...CLERK_DARK_VARIABLES, colorInputBackground: "rgba(12,20,17,0.6)" } : light;
+}
+
 // The sign-in and sign-up cards on /login and /signup, which sit on a
 // translucent glass panel and take the page's font.
-export const AUTH_CARD_VARIABLES = {
+const AUTH_CARD_VARIABLES = {
   colorPrimary: CLERK_COLORS.primary,
   colorText: CLERK_COLORS.text,
   colorTextSecondary: CLERK_COLORS.textSecondary,
@@ -36,6 +58,8 @@ export const AUTH_CARD_VARIABLES = {
   borderRadius: "12px",
   fontFamily: "inherit",
 };
+
+export const authCardVariables = (dark) => clerkVariables(dark, AUTH_CARD_VARIABLES);
 
 export const AUTH_CARD_ELEMENTS = {
   rootBox: "!w-full !min-w-0",

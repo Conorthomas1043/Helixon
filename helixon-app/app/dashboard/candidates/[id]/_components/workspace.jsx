@@ -30,7 +30,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
               type="button"
               onClick={() => onLogActivity(a.type)}
               disabled={loggingActivity === a.type}
-              className="text-12 font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+              className="text-12 font-semibold px-2.5 py-1.5 rounded-full transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
             >
               {loggingActivity === a.type ? "Logging…" : a.label}
             </button>
@@ -88,7 +88,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
                   type="button"
                   onClick={() => onRemoveTag(tagId)}
                   aria-label={`Remove tag ${t?.label ?? tagId}`}
-                  className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   ×
                 </button>
@@ -137,7 +137,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
             <button
               type="button"
               onClick={onCompleteNextAction}
-              className="text-12 font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+              className="text-12 font-semibold px-2.5 py-1 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
             >
               Mark done
             </button>
@@ -172,7 +172,7 @@ export function RecruiterWorkspace({ candidate, recruiters, tags, onStageChange,
               <button
                 type="submit"
                 disabled={!nextActionLabel.trim()}
-                className="text-13 font-semibold px-3 py-2 rounded-btn disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+                className="text-13 font-semibold px-3 py-2 rounded-btn disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
               >
                 Add
               </button>
@@ -229,8 +229,8 @@ export function RetentionToggle({ value, onChange }) {
           className="text-13 font-semibold px-3 py-1.5 rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={
             value === o.value
-              ? { background: o.value === "retained" ? "var(--forest)" : RED, color: "white" }
-              : { border: "1px solid var(--border)", color: INK_MUTED, background: "white" }
+              ? { background: o.value === "retained" ? "var(--forest)" : RED, color: "var(--on-accent)" }
+              : { border: "1px solid var(--border)", color: INK_MUTED, background: "var(--bg)" }
           }
         >
           {o.label}

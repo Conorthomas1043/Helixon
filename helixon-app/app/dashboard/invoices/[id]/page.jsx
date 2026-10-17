@@ -157,7 +157,7 @@ export default function InvoicePage({ params }) {
         </p>
       )}
 
-      <div ref={docRef} className="bg-white rounded-card p-8 sm:p-12 border border-[var(--border)] text-[var(--ink)]">
+      <div ref={docRef} className="bg-[var(--bg)] rounded-card p-8 sm:p-12 border border-[var(--border)] text-[var(--ink)]">
         <div className="flex flex-col sm:flex-row justify-between gap-6">
           <div className="text-14 leading-relaxed">
             <p className="text-lg font-semibold mb-1">{from.companyName}</p>

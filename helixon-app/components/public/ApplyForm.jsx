@@ -17,7 +17,7 @@ function cvProblem(file) {
   return null;
 }
 
-const input = "w-full text-14 px-3.5 py-2.5 rounded-btn bg-white focus-visible:outline focus-visible:outline-2";
+const input = "w-full text-14 px-3.5 py-2.5 rounded-btn bg-[var(--bg)] focus-visible:outline focus-visible:outline-2";
 const inputStyle = { border: "1px solid var(--border)", color: "var(--ink)" };
 
 export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
@@ -66,7 +66,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
 
   if (state === "done") {
     return (
-      <div id="apply" role="status" className="rounded-card bg-white p-6 border border-[var(--border)]">
+      <div id="apply" role="status" className="rounded-card bg-[var(--bg)] p-6 border border-[var(--border)]">
         <h2 className="text-lg font-semibold mb-1 text-[var(--ink)]">Application sent</h2>
         <p className="text-14 text-[var(--ink-soft)]">
           Thanks for applying for {jobTitle}. A recruiter at {agencyName} will review your application
@@ -82,7 +82,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
   }
 
   return (
-    <form id="apply" onSubmit={submit} className="rounded-card bg-white p-6 space-y-4 scroll-mt-6 border border-[var(--border)]">
+    <form id="apply" onSubmit={submit} className="rounded-card bg-[var(--bg)] p-6 space-y-4 scroll-mt-6 border border-[var(--border)]">
       <h2 className="text-lg font-semibold text-[var(--ink)]">Apply for this job</h2>
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="block">
@@ -144,7 +144,7 @@ export default function ApplyForm({ slug, jobId, jobTitle, src, agencyName }) {
       <button
         type="submit"
         disabled={state === "sending"}
-        className="w-full sm:w-auto text-14 font-semibold px-6 py-3 rounded-full disabled:opacity-60 bg-[var(--forest)] text-white"
+        className="w-full sm:w-auto text-14 font-semibold px-6 py-3 rounded-full disabled:opacity-60 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         {state === "sending" ? "Sending…" : "Send application"}
       </button>

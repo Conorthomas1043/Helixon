@@ -67,7 +67,7 @@ function ToggleRow({ category }) {
   }
 
   return (
-    <div className="rounded-xl border p-5 border-[var(--border)] bg-white">
+    <div className="rounded-xl border p-5 border-[var(--border)] bg-[var(--bg)]">
       <div className="flex items-start justify-between gap-4 mb-2">
         <div>
           <h3 className="text-13 font-semibold text-[var(--ink)]">{category.name}</h3>
@@ -88,7 +88,7 @@ function ToggleRow({ category }) {
           style={{ background: on ? "var(--forest)" : "var(--border)", opacity: category.required ? 0.6 : 1, cursor: category.required ? "not-allowed" : "pointer" }}
         >
           <span
-            className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"
+            className="absolute top-0.5 w-5 h-5 rounded-full bg-[var(--bg)] transition-transform"
             style={{ transform: on ? "translateX(18px)" : "translateX(2px)" }}
           />
         </button>

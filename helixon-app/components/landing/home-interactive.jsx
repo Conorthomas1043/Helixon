@@ -382,7 +382,7 @@ export function BuyPlanButton({ plan, label, highlight }) {
         className="text-center text-sm font-semibold py-3 rounded-btn transition-all w-full min-h-[44px]"
         style={{
           background: highlight ? "white" : "var(--forest)",
-          color: highlight ? "var(--brand-surface)" : "var(--on-forest)",
+          color: highlight ? "var(--brand-surface)" : "var(--on-accent)",
           opacity: loading ? 0.75 : 1,
           cursor: loading ? "wait" : "pointer",
         }}

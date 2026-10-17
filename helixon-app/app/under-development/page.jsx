@@ -163,8 +163,8 @@ function GateForm() {
             className="w-9 h-9 rounded-btn flex items-center justify-center bg-[var(--forest)]"
           >
             <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
@@ -178,10 +178,10 @@ function GateForm() {
         <div
           className="rounded-panel p-8 sm:p-10 text-center transition-all duration-500"
           style={{
-            background: "rgba(255,255,255,0.92)",
+            background: "color-mix(in srgb, var(--bg) 92%, transparent)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.7)",
+            border: "1px solid var(--glass-line)",
             boxShadow: "0 50px 100px -30px rgba(11,26,20,0.25)",
             transform: success ? "scale(1.02)" : "scale(1)",
           }}
@@ -255,7 +255,7 @@ function GateForm() {
                   type="submit"
                   disabled={loading}
                   aria-busy={loading}
-                  className="btn-forest w-full text-white font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+                  className="btn-forest w-full text-[var(--on-accent)] font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
                   style={{
                     background: loading ? "var(--ink-mute)" : "var(--forest)",
                     boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",

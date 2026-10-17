@@ -128,7 +128,7 @@ export default function BlogPage() {
                 key={category}
                 type="button"
                 onClick={() => setActive(category)}
-                className={`text-xs font-semibold px-3.5 py-2 rounded-full transition-colors ${active === category ? "bg-[var(--forest)]" : "bg-white"} ${active === category ? "text-white" : "text-[var(--ink-soft)]"} ${active === category ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
+                className={`text-xs font-semibold px-3.5 py-2 rounded-full transition-colors ${active === category ? "bg-[var(--forest)]" : "bg-[var(--bg)]"} ${active === category ? "text-[var(--on-accent)]" : "text-[var(--ink-soft)]"} ${active === category ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
               >
                 {category}
               </button>
@@ -146,7 +146,7 @@ export default function BlogPage() {
                 key={post.title}
                 className="rounded-2xl p-6 flex flex-col"
                 style={{
-                  background: "white",
+                  background: "var(--bg)",
                   border: "1px solid var(--border)",
                   boxShadow:
                     "0 12px 24px -18px rgba(19,32,27,0.25)",
@@ -185,7 +185,7 @@ export default function BlogPage() {
 
         <section className="max-w-[1100px] mx-auto px-6 pb-24">
           <div
-            className="rounded-panel px-8 py-14 text-center bg-[var(--forest)]"
+            className="rounded-panel px-8 py-14 text-center bg-[var(--brand-surface)]"
           >
             <h2
               className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-white font-display"
@@ -207,7 +207,7 @@ export default function BlogPage() {
               <Link
                 href="/updates"
                 className="inline-flex items-center justify-center min-h-[44px] text-sm font-semibold px-5 rounded-btn transition-transform hover:scale-[1.02]"
-                style={{ background: "white", color: "var(--forest)" }}
+                style={{ background: "white", color: "var(--brand-surface)" }}
               >
                 Product updates
               </Link>

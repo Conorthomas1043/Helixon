@@ -454,7 +454,7 @@ export function InterviewItem({ interview, onChanged, showCandidate = false }) {
               value={interview.outcome ?? ""}
               disabled={busy}
               onChange={(e) => patch({ outcome: e.target.value || null })}
-              className="text-12 font-semibold px-2 py-1 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+              className="text-12 font-semibold px-2 py-1 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
             >
               <option value="">Outcome…</option>
               {Object.entries(INTERVIEW_OUTCOMES).map(([v, l]) => (

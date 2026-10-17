@@ -13,7 +13,7 @@ import { AiWritingBadge } from "@/components/dashboard/AiWritingNotice";
 export function TagChip({ label, active, onClick, onDelete }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full transition-colors ${active ? "bg-[var(--forest)]" : "bg-[var(--mist)]"} ${active ? "text-white" : "text-[var(--ink-soft)]"}`}
+      className={`inline-flex items-center rounded-full transition-colors ${active ? "bg-[var(--forest)]" : "bg-[var(--mist)]"} ${active ? "text-[var(--on-accent)]" : "text-[var(--ink-soft)]"}`}
     >
       <button
         type="button"
@@ -29,7 +29,7 @@ export function TagChip({ label, active, onClick, onDelete }) {
           onClick={onDelete}
           aria-label={`Delete the tag ${label}`}
           title="Delete this tag"
-          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-12 hover:bg-white/40 focus-visible:outline focus-visible:outline-2"
+          className="w-4 h-4 mr-1 rounded-full flex items-center justify-center text-12 hover:bg-[var(--bg)]/40 focus-visible:outline focus-visible:outline-2"
         >
           ×
         </button>

@@ -30,7 +30,7 @@ export default function ClientProfileToolbar({ backHref, backLabel, options, onO
         type="button"
         onClick={onPrint}
         disabled={disabled || printing}
-        className="ml-auto text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="ml-auto text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         Print / Save as PDF
       </button>

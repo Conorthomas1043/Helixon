@@ -45,14 +45,14 @@ function fmtPay(salary) {
 const MUST_HAVE = {
   met: { label: "Met", icon: "check", cls: "bg-[var(--mint)] text-[var(--forest-deep)] border-[var(--mint-line)]" },
   not_met: { label: "Not met", icon: "x", cls: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]" },
-  unverified: { label: "To confirm", icon: "info", cls: "bg-white text-[var(--ink-soft)] border-[var(--border)]" },
+  unverified: { label: "To confirm", icon: "info", cls: "bg-[var(--bg)] text-[var(--ink-soft)] border-[var(--border)]" },
 };
 
 const SKILL = {
   strong: "bg-[var(--mint)] text-[var(--forest-deep)] border-[var(--mint-line)]",
   weak: "bg-[var(--ui-warn-soft)] text-[var(--ui-warn)] border-[var(--warn-line)]",
   missing: "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-[var(--danger-line)]",
-  unknown: "bg-white text-[var(--ink-faint)] border-[var(--border)]",
+  unknown: "bg-[var(--bg)] text-[var(--ink-faint)] border-[var(--border)]",
 };
 
 // ── Layout pieces ───────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ function gridStyle(n) {
 
 function RowLabel({ children, hint }) {
   return (
-    <div className="sticky left-0 z-[1] bg-white px-4 py-3 border-t border-[var(--border-soft)]">
+    <div className="sticky left-0 z-[1] bg-[var(--bg)] px-4 py-3 border-t border-[var(--border-soft)]">
       <p className="text-14 font-medium text-[var(--ink)] leading-snug">{children}</p>
       {hint && <p className="text-12 text-[var(--ink-faint)] mt-0.5">{hint}</p>}
     </div>
@@ -158,7 +158,7 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
     <div className={cx("px-4 pt-4 pb-4 min-w-0 relative", isLeader && "bg-[var(--mint)]")}>
       {confirmDialog}
       <div className="flex items-start gap-2.5">
-        <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-white text-13 font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
+        <span className="w-7 h-7 rounded-full bg-[var(--ink)] text-[var(--on-accent)] text-13 font-semibold flex items-center justify-center shrink-0">{LETTERS[index]}</span>
         <div className="min-w-0 flex-1">
           <Link href={`/dashboard/candidates/${c.id}`} className="block text-14 font-semibold text-[var(--ink)] truncate hover:underline" title={label}>
             {label}
@@ -180,7 +180,7 @@ function CandidateHeader({ c, label, index, onRemove, canRemove, isLeader, onSta
           </span>
           <span className="text-13 text-[var(--ink-faint)] ml-1">/100</span>
         </div>
-        {isLeader && <Pill className="bg-[var(--forest)] text-white border-[var(--forest)]" icon="check">Top match</Pill>}
+        {isLeader && <Pill className="bg-[var(--forest)] text-[var(--on-accent)] border-[var(--forest)]" icon="check">Top match</Pill>}
       </div>
       <p className="text-13 font-medium mt-1.5" style={{ color: tone.fg }}>{c.recommendation || tone.label}</p>
       {c.aiWritten && <AiWritingBadge className="mt-1.5" />}
@@ -465,7 +465,7 @@ export default function CompareWorkspace() {
               <div className="overflow-x-auto">
                 <div className="grid w-full" style={gridStyle(n)}>
                   {/* Header */}
-                  <div className="sticky left-0 z-[1] bg-white px-4 pt-4 pb-4 flex items-end">
+                  <div className="sticky left-0 z-[1] bg-[var(--bg)] px-4 pt-4 pb-4 flex items-end">
                     <p className="text-13 text-[var(--ink-faint)]">{n} candidates · best in each row highlighted</p>
                   </div>
                   {candidates.map((c, i) => (

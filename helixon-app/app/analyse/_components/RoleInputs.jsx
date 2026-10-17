@@ -46,14 +46,14 @@ export function MethodPicker({ value, onChange, methods, counts = {} }) {
               "group text-left rounded-xl border px-3 py-2.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]",
               active
                 ? "border-[var(--forest)] bg-[var(--mint)] shadow-[0_0_0_3px_rgba(11,110,79,0.10)]"
-                : "border-[var(--border)] bg-white hover:border-[var(--ink-mute)] hover:bg-[var(--mist)]"
+                : "border-[var(--border)] bg-[var(--bg)] hover:border-[var(--ink-mute)] hover:bg-[var(--mist)]"
             )}
           >
             <span className="flex items-center justify-between gap-2">
               <span
                 className={cx(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                  active ? "bg-[var(--forest)] text-white" : "bg-[var(--mist)] text-[var(--ink-soft)] group-hover:bg-white"
+                  active ? "bg-[var(--forest)] text-[var(--on-accent)]" : "bg-[var(--mist)] text-[var(--ink-soft)] group-hover:bg-[var(--bg)]"
                 )}
               >
                 <Icon name={meta.icon} size={15} />
@@ -84,8 +84,8 @@ export function ChoiceChip({ active, onClick, icon, children, className = "" }) 
       className={cx(
         "inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-14 font-medium transition-colors",
         active
-          ? "border-[var(--forest)] bg-[var(--forest)] text-white"
-          : "border-[var(--border)] bg-white text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]",
+          ? "border-[var(--forest)] bg-[var(--forest)] text-[var(--on-accent)]"
+          : "border-[var(--border)] bg-[var(--bg)] text-[var(--ink-soft)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]",
         className
       )}
     >
@@ -111,11 +111,11 @@ export function ChipInput({ id, label, hint, values, onChange, suggestions = [],
   return (
     <div>
       {label && <Label htmlFor={id} hint={hint}>{label}</Label>}
-      <div className="flex flex-wrap items-center gap-1.5 min-h-10 px-1.5 py-1.5 rounded-btn border border-[var(--border)] focus-within:border-[var(--forest)] focus-within:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] bg-white">
+      <div className="flex flex-wrap items-center gap-1.5 min-h-10 px-1.5 py-1.5 rounded-btn border border-[var(--border)] focus-within:border-[var(--forest)] focus-within:shadow-[0_0_0_3px_rgba(11,110,79,0.14)] bg-[var(--bg)]">
         {values.map((v) => (
           <span key={v} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-[var(--mint)] border border-[var(--mint-line)] text-14 text-[var(--forest-deep)]">
             {v}
-            <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} aria-label={`Remove ${v}`} className="p-0.5 rounded-full hover:bg-white/70">
+            <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} aria-label={`Remove ${v}`} className="p-0.5 rounded-full hover:bg-[var(--bg)]/70">
               <Icon name="x" size={11} />
             </button>
           </span>
@@ -182,7 +182,7 @@ export function SpecChecklist({ text }) {
             title={i.done ? undefined : i.tip}
             className={cx(
               "inline-flex items-center gap-1 h-6 px-2 rounded-full text-13 border",
-              i.done ? "bg-[var(--mint)] border-[var(--mint-line)] text-[var(--forest-deep)]" : "bg-white border-dashed border-[var(--ink-mute)] text-[var(--ink-faint)]"
+              i.done ? "bg-[var(--mint)] border-[var(--mint-line)] text-[var(--forest-deep)]" : "bg-[var(--bg)] border-dashed border-[var(--ink-mute)] text-[var(--ink-faint)]"
             )}
           >
             <Icon name={i.done ? "check" : "circle"} size={11} strokeWidth={i.done ? 2.6 : 1.7} />
@@ -289,7 +289,7 @@ export function RoleBuilder({ draft, onChange, onEditAsText }) {
                 role="radio"
                 aria-checked={draft.payPeriod === v}
                 onClick={() => set({ payPeriod: v })}
-                className={cx("h-7 px-2.5 rounded-md text-13 font-medium", draft.payPeriod === v ? "bg-white text-[var(--ink)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ink-soft)]")}
+                className={cx("h-7 px-2.5 rounded-md text-13 font-medium", draft.payPeriod === v ? "bg-[var(--bg)] text-[var(--ink)] shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-[var(--ink-soft)]")}
               >
                 {l}
               </button>
@@ -351,18 +351,18 @@ export function RoleBuilder({ draft, onChange, onEditAsText }) {
             {ready ? "Ready - this is what the CV will be scored against" : "Add a job title and a little detail to continue"}
           </span>
           <span className="flex items-center gap-1">
-            <button type="button" onClick={() => setShowPreview((v) => !v)} className="inline-flex items-center gap-1 h-7 px-2 rounded-md text-13 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-white">
+            <button type="button" onClick={() => setShowPreview((v) => !v)} className="inline-flex items-center gap-1 h-7 px-2 rounded-md text-13 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--bg)]">
               <Icon name="eye" size={13} /> {showPreview ? "Hide" : "Preview"}
             </button>
             {text && (
-              <button type="button" onClick={() => onEditAsText(text)} className="inline-flex items-center gap-1 h-7 px-2 rounded-md text-13 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-white">
+              <button type="button" onClick={() => onEditAsText(text)} className="inline-flex items-center gap-1 h-7 px-2 rounded-md text-13 font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--bg)]">
                 <Icon name="text" size={13} /> Edit as text
               </button>
             )}
           </span>
         </div>
         {showPreview && (
-          <pre className="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-lg bg-white border border-[var(--border)] px-3 py-2.5 text-13 leading-relaxed text-[var(--ink-soft)] font-mono">
+          <pre className="mt-3 max-h-[220px] overflow-auto whitespace-pre-wrap rounded-lg bg-[var(--bg)] border border-[var(--border)] px-3 py-2.5 text-13 leading-relaxed text-[var(--ink-soft)] font-mono">
             {text || "Nothing yet - start with the kind of work and a job title."}
           </pre>
         )}
@@ -425,7 +425,7 @@ export function TemplateGallery({ onPick }) {
                 key={t.id}
                 type="button"
                 onClick={() => onPick(t.text)}
-                className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white hover:border-[var(--forest)] hover:bg-[var(--mint)] transition-colors"
+                className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--forest)] hover:bg-[var(--mint)] transition-colors"
               >
                 <span className="w-9 h-9 rounded-btn bg-[var(--mist)] text-[var(--ink-soft)] flex items-center justify-center shrink-0">
                   <Icon name={type?.icon || "briefcase"} size={17} />

@@ -119,7 +119,7 @@ function Row({ item, canManage, onChanged }) {
           // A full page visit - the service's consent screen, then back here.
           <a
             href={`/api/integrations/oauth/${item.provider}/connect`}
-            className="inline-flex items-center text-12 font-semibold px-2.5 py-1 rounded-full bg-[var(--forest)] text-white border border-[var(--forest)]"
+            className="inline-flex items-center text-12 font-semibold px-2.5 py-1 rounded-full bg-[var(--forest)] text-[var(--on-accent)] border border-[var(--forest)]"
           >
             Connect
           </a>

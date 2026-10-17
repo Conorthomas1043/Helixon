@@ -22,7 +22,7 @@ async function loadPlacements() {
 
 function Stat({ label, value, hint, tone }) {
   return (
-    <div className="rounded-xl px-4 py-3 bg-white border border-[var(--border)]">
+    <div className="rounded-xl px-4 py-3 bg-[var(--bg)] border border-[var(--border)]">
       <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {label}
       </p>

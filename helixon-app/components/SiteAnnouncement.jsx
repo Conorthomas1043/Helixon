@@ -12,7 +12,7 @@ const HIDDEN_ON = ["/admin", "/employee", "/under-development"];
 const DISMISS_KEY = "helixon_announcement_dismissed";
 
 const TONE_STYLES = {
-  info: { background: "var(--forest)", color: "#ffffff" },
+  info: { background: "var(--forest)", color: "var(--on-accent)" },
   warn: { background: "var(--ui-warn-soft)", color: "var(--ink)", borderBottom: "1px solid var(--warn-line)" },
   success: { background: "var(--mint)", color: "var(--forest)", borderBottom: "1px solid var(--border)" },
 };

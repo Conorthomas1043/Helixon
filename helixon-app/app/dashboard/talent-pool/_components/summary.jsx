@@ -12,7 +12,7 @@ export function StatCard({ label, value, sub, accent, onClick, active }) {
       onClick={onClick}
       aria-pressed={onClick ? active : undefined}
       className={cx(
-        "text-left rounded-card p-4 sm:p-5 bg-white border transition-colors",
+        "text-left rounded-card p-4 sm:p-5 bg-[var(--bg)] border transition-colors",
         active ? "border-[var(--forest)] ring-1 ring-[var(--forest)]" : "border-[var(--border)]",
         onClick && "hover:border-[var(--ink-mute)]"
       )}

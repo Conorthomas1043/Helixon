@@ -42,9 +42,9 @@ export default function RunningPanel({ fileName, roleLabel, step, compare }) {
                   <span
                     className={cx("w-6 h-6 rounded-full flex items-center justify-center border transition-colors")}
                     style={{
-                      background: done ? "var(--forest)" : "white",
+                      background: done ? "var(--forest)" : "var(--bg)",
                       borderColor: done || current ? "var(--forest)" : "var(--border)",
-                      color: done ? "white" : "var(--forest)",
+                      color: done ? "var(--on-accent)" : "var(--forest)",
                     }}
                   >
                     {done ? <Icon name="check" size={12} strokeWidth={2.6} /> : current ? <span className="w-1.5 h-1.5 rounded-full bg-[var(--forest)] animate-pulse motion-reduce:animate-none" /> : null}

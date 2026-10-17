@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignUp, useUser } from "@clerk/nextjs";
 import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
-import { AUTH_CARD_VARIABLES } from "@/lib/ui/clerk-appearance";
+import { authCardVariables } from "@/lib/ui/clerk-appearance";
+import usePrefersDark from "@/lib/hooks/usePrefersDark";
 import AuthShell from "@/components/auth/AuthShell";
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // signature "expo-out" easing used across the flow
@@ -72,7 +73,7 @@ function FloatField({ label, value, onChange, autoFocus, autoComplete }) {
       className="relative rounded-xl transition-all"
       style={{
         border: `1.5px solid ${focused ? "var(--forest)" : "var(--border)"}`,
-        background: "rgba(255,255,255,0.6)",
+        background: "var(--glass-field)",
         boxShadow: focused ? "0 0 0 4px var(--mint)" : "none",
         transitionTimingFunction: EASE,
         transitionDuration: "0.25s",
@@ -136,7 +137,7 @@ function MagneticButton({ children, disabled }) {
       disabled={disabled}
       onMouseMove={handleMouseMove}
       onMouseLeave={reset}
-      className="flex-1 relative text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 overflow-hidden"
+      className="flex-1 relative text-[var(--on-accent)] font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2 overflow-hidden"
       style={{
         background: "var(--forest)",
         opacity: disabled ? 0.55 : 1,
@@ -154,6 +155,7 @@ function MagneticButton({ children, disabled }) {
 }
 
 export default function SignupPage() {
+  const dark = usePrefersDark();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [animating, setAnimating] = useState(false);
@@ -226,7 +228,7 @@ export default function SignupPage() {
                   <path d="M22 34c1.1-5.6 4.6-8.5 9.5-8.5S39 28.4 40 34" stroke="rgba(255,255,255,0.9)" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
               </div>
-              <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--mint)]">Team invite</p>
+              <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--on-brand-soft)]">Team invite</p>
               <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4 font-display">
                 Join your<br />team on Helixon.
               </h1>
@@ -240,11 +242,11 @@ export default function SignupPage() {
         <div
           className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden"
           style={{
-            background: "rgba(255,255,255,0.68)",
+            background: "var(--glass-bg)",
             backdropFilter: "blur(26px)",
             WebkitBackdropFilter: "blur(26px)",
-            border: "1px solid rgba(255,255,255,0.65)",
-            boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
+            border: "1px solid var(--glass-line)",
+            boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 var(--glass-shine) inset",
           }}
         >
           <ClerkWidgetStates what="Sign-up" />
@@ -255,7 +257,7 @@ export default function SignupPage() {
             unsafeMetadata={{ viaOrgInvite: true }}
             appearance={{
               layout: { socialButtonsPlacement: "top" },
-              variables: AUTH_CARD_VARIABLES,
+              variables: authCardVariables(dark),
               elements: {
                 rootBox: "!w-full !min-w-0",
                 cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",
@@ -325,7 +327,7 @@ export default function SignupPage() {
             <div className="w-14 h-14 rounded-card flex items-center justify-center mb-7" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
               <StepMark step={step} />
             </div>
-            <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--mint)]">{copy.eyebrow}</p>
+            <p className="text-11 font-semibold tracking-[0.18em] uppercase mb-4 text-[var(--on-brand-soft)]">{copy.eyebrow}</p>
             <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight mb-4 font-display">{copy.title}</h1>
             <p className="text-15 leading-relaxed max-w-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{copy.body}</p>
           </div>
@@ -337,7 +339,7 @@ export default function SignupPage() {
             <div
               key={s.key}
               className="rounded-full transition-all"
-              style={{ width: i === step ? "22px" : "6px", height: "6px", background: i <= step ? "var(--mint)" : "rgba(255,255,255,0.2)", transitionDuration: "0.4s", transitionTimingFunction: EASE }}
+              style={{ width: i === step ? "22px" : "6px", height: "6px", background: i <= step ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.2)", transitionDuration: "0.4s", transitionTimingFunction: EASE }}
             />
           ))}
           <span className="text-11 ml-1 tabular-nums" style={{ color: "rgba(255,255,255,0.4)" }}>{step + 1}/{STEPS.length}</span>
@@ -349,16 +351,16 @@ export default function SignupPage() {
         onMouseMove={handleCardMouseMove}
         className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden"
         style={{
-          background: "rgba(255,255,255,0.68)",
+          background: "var(--glass-bg)",
           backdropFilter: "blur(26px)",
           WebkitBackdropFilter: "blur(26px)",
-          border: "1px solid rgba(255,255,255,0.65)",
-          boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
+          border: "1px solid var(--glass-line)",
+          boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 var(--glass-shine) inset",
         }}
       >
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-          style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.5), transparent 60%)` }}
+          style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, var(--glass-spot), transparent 60%)` }}
         />
 
         <div className="relative">
@@ -441,7 +443,7 @@ export default function SignupPage() {
                     layout: {
                       socialButtonsPlacement: "top",
                     },
-                    variables: AUTH_CARD_VARIABLES,
+                    variables: authCardVariables(dark),
                     elements: {
                       rootBox: "!w-full !min-w-0",
                       cardBox: "!w-full !min-w-0 !shadow-none !bg-transparent",

@@ -58,7 +58,7 @@ function daysUntil(iso) {
 
 function StatCard({ label, value, sub, accent, icon }) {
   return (
-    <div className="rounded-card p-4 sm:p-5 bg-white border border-[var(--border)]">
+    <div className="rounded-card p-4 sm:p-5 bg-[var(--bg)] border border-[var(--border)]">
       <p className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
         {icon && <Icon name={icon} size={12} />}
         {label}
@@ -306,7 +306,7 @@ function PrivacyContent() {
                       </div>
                       <ul className="divide-y divide-[var(--border-soft)]">
                         {deletions.map((c) => (
-                          <li key={c.id} className={cx("flex items-center gap-3 px-5 sm:px-6 py-3.5 transition-colors", selected.includes(c.id) ? "bg-[var(--mint)]" : "bg-white")}>
+                          <li key={c.id} className={cx("flex items-center gap-3 px-5 sm:px-6 py-3.5 transition-colors", selected.includes(c.id) ? "bg-[var(--mint)]" : "bg-[var(--bg)]")}>
                             <input
                               type="checkbox"
                               checked={selected.includes(c.id)}
@@ -344,7 +344,7 @@ function PrivacyContent() {
                   ) : (
                     <ul className="divide-y divide-[var(--border-soft)]">
                       {expiries.map((c) => (
-                        <li key={c.id} className="flex items-center gap-3 px-5 sm:px-6 py-3.5 bg-white">
+                        <li key={c.id} className="flex items-center gap-3 px-5 sm:px-6 py-3.5 bg-[var(--bg)]">
                           <span className="hidden sm:inline-flex">
                               <Avatar name={c.name} size={38} />
                             </span>
@@ -374,7 +374,7 @@ function PrivacyContent() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {REQUESTS.map((r) => (
-                    <div key={r.title} className="rounded-card bg-white border border-[var(--border)] p-5">
+                    <div key={r.title} className="rounded-card bg-[var(--bg)] border border-[var(--border)] p-5">
                       <span className="w-10 h-10 rounded-btn bg-[var(--mint)] text-[var(--forest)] flex items-center justify-center">
                         <Icon name={r.icon} size={18} />
                       </span>
@@ -408,7 +408,7 @@ function PrivacyContent() {
                           onClick={() => !on && save({ retentionMonths: m }, `Candidates are now kept for ${m} months without activity`)}
                           className={cx(
                             "text-14 font-semibold py-2 rounded-full transition-colors disabled:cursor-not-allowed",
-                            on ? "bg-[var(--forest)] text-white shadow-sm" : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
+                            on ? "bg-[var(--forest)] text-[var(--on-accent)] shadow-sm" : "text-[var(--ink-soft)] hover:text-[var(--ink)]"
                           )}
                         >
                           {m} mo
@@ -457,7 +457,7 @@ function PrivacyContent() {
                         className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0 mt-1 ${data.settings.presenceEnabled ? "bg-[var(--forest)]" : "bg-[var(--border)]"}`}
                       >
                         <span
-                          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-[var(--bg)] shadow transition-transform"
                           style={{ transform: data.settings.presenceEnabled ? "translateX(20px)" : "none" }}
                         />
                       </button>
@@ -507,7 +507,7 @@ function PrivacyContent() {
                   </div>
                 </div>
                 <div className="p-5 sm:p-8 bg-[var(--mist)]">
-                  <div className="mx-auto max-w-[620px] bg-white rounded-xl border border-[var(--border)] shadow-[0_10px_30px_-18px_rgba(19,32,27,0.35)] px-6 sm:px-9 py-7">
+                  <div className="mx-auto max-w-[620px] bg-[var(--bg)] rounded-xl border border-[var(--border)] shadow-[0_10px_30px_-18px_rgba(19,32,27,0.35)] px-6 sm:px-9 py-7">
                     {NOTICE_TEMPLATE.split("\n\n").map((para, i) =>
                       i === 0 ? (
                         <h3 key={i} className="text-16 font-semibold text-[var(--ink)] mb-4 font-display">
@@ -538,9 +538,9 @@ function PrivacyContent() {
       {/* Selection tray, like the talent pool's */}
       {selected.length > 0 && tab === "deletions" && (
         <div className="fixed bottom-[calc(1.25rem+var(--tabbar-h))] inset-x-0 z-30 px-4 flex justify-center pointer-events-none">
-          <div className="pointer-events-auto w-full max-w-[560px] flex items-center gap-3 rounded-2xl bg-[var(--ink)] text-white pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
+          <div className="pointer-events-auto w-full max-w-[560px] flex items-center gap-3 rounded-2xl bg-[var(--ink)] text-[var(--on-accent)] pl-5 pr-2.5 py-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]">
             <span className="text-14 font-semibold">{selected.length} selected</span>
-            <button type="button" onClick={() => setSelected([])} className="text-13 font-medium text-white/70 hover:text-white">
+            <button type="button" onClick={() => setSelected([])} className="text-13 font-medium text-[var(--on-accent)]/70 hover:text-[var(--on-accent)]">
               Clear
             </button>
             <button

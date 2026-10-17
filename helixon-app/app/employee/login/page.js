@@ -89,8 +89,8 @@ function EmployeeLoginForm() {
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 bg-[var(--forest)]"
           >
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
@@ -101,7 +101,7 @@ function EmployeeLoginForm() {
 
         <div
           className="rounded-panel p-6 sm:p-7"
-          style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.18)" }}
+          style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 20px 40px -20px rgba(19,32,27,0.18)" }}
         >
           <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 bg-[var(--mint)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -183,7 +183,7 @@ function EmployeeLoginForm() {
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              className="btn-forest w-full text-white font-semibold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+              className="btn-forest w-full text-[var(--on-accent)] font-semibold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
               style={{
                 background: loading ? "var(--ink-mute)" : "var(--forest)",
                 cursor: loading ? "not-allowed" : "pointer",

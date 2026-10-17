@@ -104,7 +104,7 @@ export function KeyboardShortcuts() {
   if (!help) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && setHelp(false)}>
-      <div role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" className="w-full max-w-[420px] rounded-2xl bg-white shadow-xl p-6">
+      <div role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" className="w-full max-w-[420px] rounded-2xl bg-[var(--bg)] shadow-xl p-6">
         <h2 className="text-base font-semibold mb-4 text-[var(--ink)]">Keyboard shortcuts</h2>
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14 text-[var(--ink-soft)]">
           <dt><kbd>Ctrl/⌘ K</kbd> or <kbd>/</kbd></dt>
@@ -217,7 +217,7 @@ export function SearchPalette() {
       </button>
       {open && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4" style={{ background: "rgba(19,32,27,0.4)" }} onMouseDown={(e) => e.target === e.currentTarget && close()}>
-          <div role="dialog" aria-modal="true" aria-label="Search" className="w-full max-w-[560px] rounded-2xl bg-white shadow-xl overflow-hidden">
+          <div role="dialog" aria-modal="true" aria-label="Search" className="w-full max-w-[560px] rounded-2xl bg-[var(--bg)] shadow-xl overflow-hidden">
             <input
               ref={inputRef}
               value={q}
@@ -347,13 +347,13 @@ export function NotificationsBell() {
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
         {state.unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-12 font-bold flex items-center justify-center text-white bg-[var(--score-low)]">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-12 font-bold flex items-center justify-center text-[var(--on-accent)] bg-[var(--score-low)]">
             {state.unread > 9 ? "9+" : state.unread}
           </span>
         )}
       </button>
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl bg-white overflow-hidden" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+        <div className="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl bg-[var(--bg)] overflow-hidden" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-b-[var(--border)]">
             <p className="text-13 font-semibold text-[var(--ink)]">Notifications</p>
             {state.unread > 0 && (

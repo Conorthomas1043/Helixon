@@ -149,14 +149,14 @@ export function CalendarTab({ employee }) {
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5 bg-white border border-[var(--border)]">
+        <form onSubmit={handleSave} className="rounded-card p-3.5 mb-3 flex flex-col gap-2.5 bg-[var(--bg)] border border-[var(--border)]">
           <input
             autoFocus
             type="text"
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Event title"
-            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           />
           <label className="flex items-center gap-2 text-13 font-medium text-[var(--ink-soft)]">
             <input type="checkbox" checked={form.all_day} onChange={(e) => setForm((f) => ({ ...f, all_day: e.target.checked }))} />
@@ -167,13 +167,13 @@ export function CalendarTab({ employee }) {
               type={form.all_day ? "date" : "datetime-local"}
               value={form.start_at}
               onChange={(e) => setForm((f) => ({ ...f, start_at: e.target.value }))}
-              className="text-13 rounded-btn px-2.5 py-2 border border-[var(--border)] bg-white text-[var(--ink)]"
+              className="text-13 rounded-btn px-2.5 py-2 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
             />
             <input
               type={form.all_day ? "date" : "datetime-local"}
               value={form.end_at}
               onChange={(e) => setForm((f) => ({ ...f, end_at: e.target.value }))}
-              className="text-13 rounded-btn px-2.5 py-2 border border-[var(--border)] bg-white text-[var(--ink)]"
+              className="text-13 rounded-btn px-2.5 py-2 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
             />
           </div>
           {formError && (
@@ -182,7 +182,7 @@ export function CalendarTab({ employee }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50 bg-[var(--forest)] text-white"
+            className="text-14 font-semibold py-2.5 rounded-btn disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Saving…" : "Add event"}
           </button>
@@ -206,7 +206,7 @@ export function CalendarTab({ employee }) {
                 {dayEvents.map((ev) => {
                   const canDelete = ev.created_by === employee?.id;
                   return (
-                    <div key={ev.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]">
+                    <div key={ev.id} className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                       <span className="text-12 font-medium tabular-nums w-12 shrink-0 mt-0.5 text-[var(--ink-faint)]">
                         {formatEventTime(ev.start_at, ev.all_day)}
                       </span>
@@ -236,7 +236,7 @@ export function CalendarTab({ employee }) {
       <Link
         href="/employee/calendar"
         className="flex items-center justify-between px-3.5 py-3 rounded-xl mt-4"
-        style={{ background: "white", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
+        style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--ink-soft)" }}
       >
         <span className="text-13 font-medium">Subscribe (Google/Apple) or connect Google Calendar</span>
         <Icon path={ICONS.chevronRight} size={16} />

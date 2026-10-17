@@ -56,7 +56,7 @@ export default function ComplaintsPolicyPage() {
       />
 
       <section className={`${LEGAL_WIDTH.narrow} mx-auto px-6 py-14`}>
-        <div className="rounded-2xl p-2 sm:p-4" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+        <div className="rounded-2xl p-2 sm:p-4" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
           {SECTIONS.map((s, i) => (
             <div
               key={s.n}

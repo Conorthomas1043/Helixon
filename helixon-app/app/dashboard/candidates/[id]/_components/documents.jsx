@@ -98,7 +98,7 @@ export function DocumentsSection({ candidate }) {
       {resume ? (
         <div className="flex flex-wrap items-center gap-4 rounded-xl p-4 bg-[var(--mist)]">
           <span
-            className={`w-10 h-12 rounded-md flex items-center justify-center shrink-0 text-12 font-bold tracking-wide bg-white border border-[var(--border)] ${isPdf ? "text-[var(--score-low)]" : "text-[var(--info)]"}`}
+            className={`w-10 h-12 rounded-md flex items-center justify-center shrink-0 text-12 font-bold tracking-wide bg-[var(--bg)] border border-[var(--border)] ${isPdf ? "text-[var(--score-low)]" : "text-[var(--info)]"}`}
             aria-hidden="true"
           >
             {isPdf ? "PDF" : "DOCX"}
@@ -118,7 +118,7 @@ export function DocumentsSection({ candidate }) {
               onClick={() => openFile(false)}
               disabled={busy !== null}
               className={buttonClass}
-              style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+              style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
               title={isPdf ? "Open in a new tab" : "Word files download to open in Word"}
             >
               {busy === "view" ? "Opening…" : "Open"}
@@ -128,7 +128,7 @@ export function DocumentsSection({ candidate }) {
               onClick={() => openFile(true)}
               disabled={busy !== null}
               className={buttonClass}
-              style={{ background: "var(--forest)", color: "white" }}
+              style={{ background: "var(--forest)", color: "var(--on-accent)" }}
             >
               {busy === "download" ? "Preparing…" : "Download"}
             </button>

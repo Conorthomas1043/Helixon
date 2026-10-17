@@ -151,7 +151,7 @@ function Rows({ rows, head }) {
         <span>{head[1]}</span>
       </div>
       {rows.map(([k, v], i) => (
-        <div key={k} className={`grid sm:grid-cols-[200px_1fr] gap-1 sm:gap-4 px-5 py-3.5 text-14 ${i % 2 ? "bg-[var(--mist)]" : "bg-white"}`}>
+        <div key={k} className={`grid sm:grid-cols-[200px_1fr] gap-1 sm:gap-4 px-5 py-3.5 text-14 ${i % 2 ? "bg-[var(--mist)]" : "bg-[var(--bg)]"}`}>
           <span className="font-semibold text-[var(--ink)]">
             {k}
           </span>
@@ -208,7 +208,7 @@ export default function Privacy() {
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {GLANCE.map((g) => (
-            <div key={g.title} className="rounded-2xl bg-white border p-5 flex gap-4 border-[var(--border)]">
+            <div key={g.title} className="rounded-2xl bg-[var(--bg)] border p-5 flex gap-4 border-[var(--border)]">
               <span className="w-10 h-10 rounded-btn flex items-center justify-center shrink-0 bg-[var(--mint)] text-[var(--forest)]">
                 <Glyph name={g.icon} />
               </span>
@@ -232,7 +232,7 @@ export default function Privacy() {
           <PrivacyToc sections={SECTIONS} />
         </aside>
 
-        <article className="bg-white rounded-panel border px-6 sm:px-10 py-10 min-w-0 border-[var(--border)]">
+        <article className="bg-[var(--bg)] rounded-panel border px-6 sm:px-10 py-10 min-w-0 border-[var(--border)]">
           <Section id="who" index={1} title="Who we are">
             <p>
               Helixon provides AI-assisted CV screening and recruitment workflow software to recruitment agencies. Where this notice says
@@ -327,7 +327,7 @@ export default function Privacy() {
                 <span>Where</span>
               </div>
               {PROCESSORS.map(([name, purpose, where], i) => (
-                <div key={name} className={`grid sm:grid-cols-[170px_1fr_150px] gap-1 sm:gap-4 items-center px-5 py-3 text-14 ${i % 2 ? "bg-[var(--mist)]" : "bg-white"}`}>
+                <div key={name} className={`grid sm:grid-cols-[170px_1fr_150px] gap-1 sm:gap-4 items-center px-5 py-3 text-14 ${i % 2 ? "bg-[var(--mist)]" : "bg-[var(--bg)]"}`}>
                   <span className="font-semibold text-[var(--ink)]">
                     {name}
                   </span>
@@ -364,7 +364,7 @@ export default function Privacy() {
           <Section id="rights" index={9} title="Your rights">
             <div className="flex flex-wrap gap-2">
               {RIGHTS.map((r) => (
-                <span key={r} className="text-13 font-semibold px-3 py-1.5 rounded-full border bg-white border-[var(--border)] text-[var(--ink)]">
+                <span key={r} className="text-13 font-semibold px-3 py-1.5 rounded-full border bg-[var(--bg)] border-[var(--border)] text-[var(--ink)]">
                   {r}
                 </span>
               ))}
@@ -416,7 +416,7 @@ export default function Privacy() {
           </Section>
 
           <Section id="contact" index={13} title="Contact us">
-            <div className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--forest)] text-white">
+            <div className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--brand-surface)] text-white">
               <div>
                 <p className="text-16 font-semibold">Privacy questions or requests</p>
                 <p className="text-14 mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -425,7 +425,7 @@ export default function Privacy() {
               </div>
               <a
                 href={`mailto:${CONTACT}`}
-                className="inline-flex items-center justify-center text-14 font-semibold px-5 py-2.5 rounded-full bg-white shrink-0 text-[var(--forest)]"
+                className="inline-flex items-center justify-center text-14 font-semibold px-5 py-2.5 rounded-full bg-white shrink-0 text-[var(--brand-surface)]"
               >
                 {CONTACT}
               </a>

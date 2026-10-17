@@ -132,7 +132,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         Try again
       </button>
@@ -241,7 +241,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
   }
 
   const input = "w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
-  const inputStyle = { border: "1px solid var(--border)", color: INK, background: "white" };
+  const inputStyle = { border: "1px solid var(--border)", color: INK, background: "var(--bg)" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
@@ -251,7 +251,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-job-title"
-        className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl p-6 bg-white shadow-xl"
+        className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl p-6 bg-[var(--bg)] shadow-xl"
       >
         <h2 id="new-job-title" className="text-base font-semibold mb-4 text-[var(--ink)]">New job</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -300,7 +300,7 @@ function NewJobDialog({ onCancel, onCreated, initialClient = null }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Creating…" : "Create job"}
           </button>
@@ -409,7 +409,7 @@ function JobsContent({ initialJobs }) {
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+              className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
             >
               New job
             </button>
@@ -428,7 +428,7 @@ function JobsContent({ initialJobs }) {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title, client or location…"
                 aria-label="Search jobs"
-                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+                className="text-14 px-4 py-2 rounded-full bg-[var(--bg)] w-full sm:w-72 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               />
               {[
                 { value: "open", label: "Open" },
@@ -444,7 +444,7 @@ function JobsContent({ initialJobs }) {
                     onClick={() => setStatusFilter(o.value)}
                     aria-pressed={on}
                     className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
+                    style={{ background: on ? "var(--forest)" : "var(--bg)", color: on ? "var(--on-accent)" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
                   >
                     {o.label}
                     <span className="tabular-nums text-12 px-1.5 rounded-full" style={{ background: on ? "rgba(255,255,255,0.25)" : "var(--mist)" }}>
@@ -458,7 +458,7 @@ function JobsContent({ initialJobs }) {
                 onClick={() => setMineOnly((v) => !v)}
                 aria-pressed={mineOnly}
                 className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: mineOnly ? "var(--forest)" : "white", color: mineOnly ? "white" : INK_MUTED, border: `1px solid ${mineOnly ? "var(--forest)" : "var(--border)"}` }}
+                style={{ background: mineOnly ? "var(--forest)" : "var(--bg)", color: mineOnly ? "var(--on-accent)" : INK_MUTED, border: `1px solid ${mineOnly ? "var(--forest)" : "var(--border)"}` }}
               >
                 My jobs
               </button>
@@ -467,7 +467,7 @@ function JobsContent({ initialJobs }) {
                   value={officeFilter}
                   onChange={(e) => setOfficeFilter(e.target.value)}
                   aria-label="Office"
-                  className={`text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] ${officeFilter ? "text-[var(--ink)]" : "text-[var(--ink-soft)]"}`}
+                  className={`text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] ${officeFilter ? "text-[var(--ink)]" : "text-[var(--ink-soft)]"}`}
                 >
                   <option value="">All offices</option>
                   {offices.map((o) => (
@@ -498,7 +498,7 @@ function JobsContent({ initialJobs }) {
                     }))
                   )
                 }
-                className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
+                className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
               >
                 Export CSV
               </button>
@@ -506,7 +506,7 @@ function JobsContent({ initialJobs }) {
                 aria-label="Sort jobs"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+                className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               >
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>

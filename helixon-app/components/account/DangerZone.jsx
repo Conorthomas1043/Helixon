@@ -71,7 +71,7 @@ export default function DangerZone() {
         autoComplete="off"
         spellCheck={false}
         className="mt-2 w-full max-w-[280px] rounded-xl border px-3.5 py-2.5 font-mono text-sm outline-none focus:border-[var(--forest)]"
-        style={{ borderColor: "var(--border)", background: "rgba(255,255,255,0.72)" }}
+        style={{ borderColor: "var(--border)", background: "var(--glass-bg)" }}
       />
 
       {error && (
@@ -94,7 +94,7 @@ export default function DangerZone() {
       <button
         type="submit"
         disabled={confirm !== "DELETE" || busy}
-        className="mt-6 inline-flex min-h-[44px] items-center rounded-xl px-5 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40 bg-[var(--score-low)]"
+        className="mt-6 inline-flex min-h-[44px] items-center rounded-xl px-5 text-sm font-semibold text-[var(--on-accent)] transition-opacity disabled:cursor-not-allowed disabled:opacity-40 bg-[var(--score-low)]"
       >
         {busy ? "Deleting..." : "Delete my account"}
       </button>

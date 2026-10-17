@@ -44,7 +44,7 @@ function NewShortlistForm({ jobs, onCreated }) {
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           placeholder="e.g. Acme - Senior Engineer, round 1"
-          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+          className="w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         />
       </label>
       <label className="min-w-[180px]">
@@ -52,7 +52,7 @@ function NewShortlistForm({ jobs, onCreated }) {
         <select
           value={jobId}
           onChange={(e) => setJobId(e.target.value)}
-          className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+          className="w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
         >
           <option value="">No job</option>
           {jobs.map((j) => (
@@ -65,7 +65,7 @@ function NewShortlistForm({ jobs, onCreated }) {
       <button
         type="submit"
         disabled={saving || !name.trim()}
-        className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         {saving ? "Creating…" : "Create"}
       </button>
@@ -128,7 +128,7 @@ export default function ShortlistsPage() {
             <button
               type="button"
               onClick={retry}
-              className="mt-3 text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+              className="mt-3 text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
             >
               Try again
             </button>
@@ -151,7 +151,7 @@ export default function ShortlistsPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search shortlists, jobs or clients…"
                 aria-label="Search shortlists"
-                className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+                className="text-14 px-4 py-2 rounded-full bg-[var(--bg)] w-full sm:w-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
               />
             )}
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

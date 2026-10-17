@@ -105,7 +105,7 @@ function MoreActions({ actions }) {
         </svg>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-[40px] z-30 min-w-[240px] rounded-xl bg-white border border-[var(--border)] shadow-lg py-1.5">
+        <div role="menu" className="absolute right-0 top-[40px] z-30 min-w-[240px] rounded-xl bg-[var(--bg)] border border-[var(--border)] shadow-lg py-1.5">
           {actions.map((a) => (
             <button
               key={a.label}

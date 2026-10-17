@@ -6,7 +6,7 @@ import { Icon, cx } from "@/app/analyse/_components/ui";
 import { useState } from "react";
 import { AVAILABILITY, todayIso } from "./shared";
 
-export const UNKNOWN = { label: "Availability?", fg: "var(--ink-faint)", bg: "white", dot: "var(--border)" };
+export const UNKNOWN = { label: "Availability?", fg: "var(--ink-faint)", bg: "var(--bg)", dot: "var(--border)" };
 
 export function daysUntil(iso) {
   return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
@@ -57,8 +57,8 @@ export function CheckInPicker({ value, onChange, disabled }) {
           overdue
             ? "bg-[var(--ui-danger-soft)] text-[var(--score-low)] border-transparent font-semibold"
             : value
-              ? "bg-white text-[var(--ink-soft)] border-[var(--border)]"
-              : "bg-white text-[var(--ink-faint)] border-dashed border-[var(--border)]"
+              ? "bg-[var(--bg)] text-[var(--ink-soft)] border-[var(--border)]"
+              : "bg-[var(--bg)] text-[var(--ink-faint)] border-dashed border-[var(--border)]"
         )}
         title={value ? "Change the check-in date" : "Set a date to check in with them"}
       >
@@ -113,7 +113,7 @@ export function NoteEditor({ note, onSave }) {
               setSaving(false);
               if (ok) setEditing(false);
             }}
-            className="text-13 font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-white disabled:opacity-50"
+            className="text-13 font-semibold px-3 py-1 rounded-full bg-[var(--forest)] text-[var(--on-accent)] disabled:opacity-50"
           >
             {saving ? "…" : "Save"}
           </button>

@@ -43,7 +43,7 @@ const PERIODS = [
   { value: "custom", label: "Custom range…" },
 ];
 
-const DATE_INPUT_CLASS = "text-14 px-3 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+const DATE_INPUT_CLASS = "text-14 px-3 py-2 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 function fmtDay(iso) {
   return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
@@ -55,7 +55,7 @@ function FilterSelect({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-14 font-semibold px-3.5 py-2 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="text-14 font-semibold px-3.5 py-2 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ border: `1px solid ${value !== "all" ? "var(--forest)" : "var(--border)"}`, color: INK }}
     >
       {options.map((o) => (
@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
             type="button"
             disabled={status !== "ready"}
             onClick={() => printSection("analytics-report")}
-            className="ml-auto inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
+            className="ml-auto inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-[var(--bg)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z" />
@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
             onClick={() =>
               downloadCsv(`analytics-${new Date().toISOString().slice(0, 10)}.csv`, analyticsCsvRows(snapshot, filterLabel || "All time"))
             }
-            className="inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
+            className="inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full bg-[var(--bg)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink-soft)]"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" />

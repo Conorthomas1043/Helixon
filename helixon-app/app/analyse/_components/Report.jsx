@@ -243,7 +243,7 @@ export default function Report({ result, roleLabel, embedded = false, candidateI
       </header>
 
       {!embedded && sections.length > 1 && (
-        <nav aria-label="Report sections" className="sticky top-[56px] z-10 bg-white/95 backdrop-blur border-t border-[var(--border-soft)] px-4 sm:px-6 overflow-x-auto">
+        <nav aria-label="Report sections" className="sticky top-[56px] z-10 bg-[var(--bg)]/95 backdrop-blur border-t border-[var(--border-soft)] px-4 sm:px-6 overflow-x-auto">
           <ul className="flex gap-1">
             {sections.map((s) => (
               <li key={s.id}>

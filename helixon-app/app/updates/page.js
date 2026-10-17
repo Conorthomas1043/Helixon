@@ -95,7 +95,7 @@ export default function AppUpdatesPage() {
       <main id="main-content">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="border-b bg-white border-[var(--border)]">
+      <header className="border-b bg-[var(--bg)] border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 pt-14 pb-8">
           <p className="text-11 font-medium mb-3 text-[var(--ink-faint)]">
             <Link href="/" className="hover:underline">Helixon</Link> <span className="mx-1">/</span> What&apos;s new
@@ -110,14 +110,14 @@ export default function AppUpdatesPage() {
       </header>
 
       {/* ── Filters ─────────────────────────────────────────────────────── */}
-      <div className="sticky top-[56px] z-30 bg-white/95 backdrop-blur border-b border-[var(--border)]">
+      <div className="sticky top-[56px] z-30 bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]">
         <div className="max-w-[1100px] mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
           <button type="button"
             onClick={() => setFilter("all")}
             className="text-11 font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
             style={{
               background: filter === "all" ? "var(--ink)" : "transparent",
-              color: filter === "all" ? "white" : "var(--ink-soft)",
+              color: filter === "all" ? "var(--on-accent)" : "var(--ink-soft)",
               border: filter === "all" ? "none" : "1px solid var(--border)",
             }}
           >
@@ -130,7 +130,7 @@ export default function AppUpdatesPage() {
               className="text-11 font-semibold px-3 py-1.5 rounded-full transition-colors shrink-0"
               style={{
                 background: filter === key ? t.color : "transparent",
-                color: filter === key ? "white" : t.color,
+                color: filter === key ? "var(--on-accent)" : t.color,
                 border: filter === key ? "none" : `1px solid ${t.color}`,
               }}
             >
@@ -158,7 +158,7 @@ export default function AppUpdatesPage() {
                 return (
                   <article
                     key={u.version}
-                    className="rounded-card p-6 bg-white border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)] border-[var(--border)]"
+                    className="rounded-card p-6 bg-[var(--bg)] border transition-shadow hover:shadow-[0_12px_28px_-16px_rgba(19,32,27,0.18)] border-[var(--border)]"
                   >
                     <div className="flex items-center gap-2.5 mb-3">
                       <span

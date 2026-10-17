@@ -56,7 +56,7 @@ export function SummaryTile({ label, value, sub, dot, active, onClick }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="text-left rounded-card p-4 bg-white border transition-colors hover:border-[var(--ink-mute)]"
+      className="text-left rounded-card p-4 bg-[var(--bg)] border transition-colors hover:border-[var(--ink-mute)]"
       style={{ borderColor: active ? "var(--forest)" : "var(--border)", boxShadow: active ? "0 0 0 1px var(--forest)" : "none" }}
     >
       <p className="flex items-center gap-1.5 text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">

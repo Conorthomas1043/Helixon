@@ -12,8 +12,10 @@ export default function manifest() {
     scope: "/",
     display: "standalone",
     orientation: "any",
-    background_color: "var(--mist)",
-    theme_color: "var(--forest)",
+    // Literal colours: browsers read these from the manifest file, where a
+    // CSS variable means nothing. They are --mist and --forest.
+    background_color: "#f3f6f4",
+    theme_color: "#0b6e4f",
     categories: ["business", "productivity"],
     icons: [
       { src: "/icon.png", sizes: "192x192", type: "image/png", purpose: "any" },

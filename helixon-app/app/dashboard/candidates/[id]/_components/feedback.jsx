@@ -31,12 +31,12 @@ export function FeedbackSendForm({ defaultTo, busy, onSend, onLinkOnly, onCancel
         placeholder="name@example.com"
         aria-label="Send the link to"
         autoFocus
-        className="flex-1 min-w-[180px] text-13 px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 border border-[var(--border)] text-[var(--ink)]"
+        className="flex-1 min-w-[180px] text-13 px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 border border-[var(--border)] text-[var(--ink)]"
       />
       <button
         type="submit"
         disabled={busy || !to.trim()}
-        className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         {busy ? "Sending…" : "Send email"}
       </button>
@@ -86,7 +86,7 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
             onClick={() => setOpen(open === kind ? null : kind)}
             aria-expanded={open === kind}
             className="text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ border: `1px solid ${open === kind ? "var(--forest)" : "var(--border)"}`, color: INK, background: "white" }}
+            style={{ border: `1px solid ${open === kind ? "var(--forest)" : "var(--border)"}`, color: INK, background: "var(--bg)" }}
           >
             {k.button}
           </button>
@@ -124,14 +124,14 @@ export function FeedbackRequestsPanel({ requests, onCreate, onEmail, creating, c
                     <button
                       type="button"
                       onClick={() => setOpen(open === req.id ? null : req.id)}
-                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
                     >
                       Email
                     </button>
                     <button
                       type="button"
                       onClick={() => copy(req)}
-                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+                      className="text-12 font-semibold px-2.5 py-1 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
                     >
                       {copiedId === req.id ? "Copied" : "Copy link"}
                     </button>

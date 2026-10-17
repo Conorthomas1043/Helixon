@@ -95,7 +95,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
         <Link
           href="/billing"
           className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: "var(--forest)", color: "white" }}
+          style={{ background: "var(--forest)", color: "var(--on-accent)" }}
         >
           Upgrade to Agency
         </Link>
@@ -161,7 +161,7 @@ export function TeamInvitePanel({ usage, state, loadError, reload, onRemoveSeat,
         <button
           type="submit"
           disabled={full || sending || !email.trim()}
-          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {sending ? "Sending…" : "Send invite"}
         </button>
@@ -285,7 +285,7 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
           value={to}
           onChange={(e) => setTo(e.target.value)}
           aria-label="Assign unassigned candidates to"
-          className="flex-1 text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+          className="flex-1 text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
         >
           {members.map((m) => (
             <option key={m.id} value={m.id}>{m.name}</option>
@@ -295,7 +295,7 @@ export function UnassignedCandidates({ count, members, onAssigned }) {
           type="button"
           onClick={assign}
           disabled={busy || !to}
-          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
+          className="inline-flex items-center justify-center text-14 font-semibold px-4 py-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {busy ? "Assigning…" : `Assign ${count === 1 ? "it" : `all ${count}`}`}
         </button>
@@ -327,7 +327,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(19,32,27,0.45)" }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-2xl p-6 bg-white shadow-xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="remove-title" className="w-full max-w-md rounded-2xl p-6 bg-[var(--bg)] shadow-xl">
         <h2 id="remove-title" className="text-base font-semibold mb-1 text-[var(--ink)]">
           Remove {target.name}?
         </h2>
@@ -343,7 +343,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
             <select
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-white"
+              className="w-full text-sm px-3 py-2 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]"
             >
               {others.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}{m.id === viewerId ? " (you)" : ""}</option>
@@ -368,7 +368,7 @@ export function RemoveDialog({ target, members, viewerId, busy, onCancel, onConf
             onClick={() => onConfirm(owns > 0 ? to || null : undefined)}
             disabled={busy}
             className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: RED_STRONG, color: "white" }}
+            style={{ background: RED_STRONG, color: "var(--on-accent)" }}
           >
             {busy ? "Removing…" : "Remove"}
           </button>

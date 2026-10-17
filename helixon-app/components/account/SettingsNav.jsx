@@ -32,7 +32,7 @@ export default function SettingsNav() {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={`flex items-center gap-2.5 text-sm px-3 py-2.5 rounded-btn whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] ${
-              !isActive ? (isDanger ? "hover:bg-red-50" : "hover:bg-[var(--mint)]") : ""
+              !isActive ? (isDanger ? "hover:bg-[var(--ui-danger-soft)]" : "hover:bg-[var(--mint)]") : ""
             }`}
             style={{
               color: isActive ? COLORS.ink : isDanger ? COLORS.dangerText : COLORS.muted,

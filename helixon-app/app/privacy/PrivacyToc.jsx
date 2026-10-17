@@ -63,7 +63,7 @@ export default function PrivacyToc({ sections }) {
   return (
     <>
       {/* Phones and tablets: a collapsible bar under the nav. */}
-      <div className="lg:hidden -mx-6 mb-6 bg-white border-y shadow-[0_6px_16px_-12px_rgba(19,32,27,0.35)] print:hidden border-[var(--border)]">
+      <div className="lg:hidden -mx-6 mb-6 bg-[var(--bg)] border-y shadow-[0_6px_16px_-12px_rgba(19,32,27,0.35)] print:hidden border-[var(--border)]">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}

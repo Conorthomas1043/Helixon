@@ -130,7 +130,7 @@ export default function BusinessDevelopmentPage() {
                   {OPEN_STAGES.map((stage) => {
                     const list = deals.filter((d) => d.stage === stage);
                     return (
-                      <section key={stage} className="rounded-card p-3 min-w-0 bg-white border border-[var(--border)]" aria-label={OPPORTUNITY_STAGES[stage]}>
+                      <section key={stage} className="rounded-card p-3 min-w-0 bg-[var(--bg)] border border-[var(--border)]" aria-label={OPPORTUNITY_STAGES[stage]}>
                         <header className="flex items-baseline justify-between px-1 mb-2">
                           <h2 className="text-13 font-semibold text-[var(--ink)]">{OPPORTUNITY_STAGES[stage]}</h2>
                           <span className="text-12 tabular-nums text-[var(--ink-faint)]">
@@ -161,7 +161,7 @@ export default function BusinessDevelopmentPage() {
                                   id={`stage-${d.id}`}
                                   value={d.stage}
                                   onChange={(e) => move(d, e.target.value)}
-                                  className="mt-2 w-full text-12 px-2 py-1 rounded-md bg-white border border-[var(--border)] text-[var(--ink-soft)]"
+                                  className="mt-2 w-full text-12 px-2 py-1 rounded-md bg-[var(--bg)] border border-[var(--border)] text-[var(--ink-soft)]"
                                 >
                                   {Object.entries(OPPORTUNITY_STAGES).map(([k, label]) => (
                                     <option key={k} value={k}>{k === d.stage ? label : `Move to ${label}`}</option>

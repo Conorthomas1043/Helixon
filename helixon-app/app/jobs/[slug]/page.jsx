@@ -39,7 +39,7 @@ export default async function AgencyJobsPage({ params, searchParams }) {
           </p>
         )}
         {jobs.length === 0 ? (
-          <p className="text-15 rounded-card bg-white p-8 text-center text-[var(--ink-soft)] border border-[var(--border)]">
+          <p className="text-15 rounded-card bg-[var(--bg)] p-8 text-center text-[var(--ink-soft)] border border-[var(--border)]">
             No open vacancies right now - check back soon.
           </p>
         ) : (
@@ -48,7 +48,7 @@ export default async function AgencyJobsPage({ params, searchParams }) {
               <li key={j.id}>
                 <Link
                   href={`/jobs/${slug}/${j.id}${srcQuery}`}
-                  className="block rounded-card bg-white p-5 transition-shadow hover:shadow-md"
+                  className="block rounded-card bg-[var(--bg)] p-5 transition-shadow hover:shadow-md"
                   style={{ border: "1px solid var(--border)" }}
                 >
                   <h2 className="text-16 font-semibold text-[var(--ink)]">{j.title}</h2>

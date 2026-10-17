@@ -316,7 +316,7 @@ function CandidateDatabaseContent({ initialData }) {
             <Link
               href="/analyse"
               className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "var(--forest)", color: "white" }}
+              style={{ background: "var(--forest)", color: "var(--on-accent)" }}
             >
               + Screen a CV
             </Link>
@@ -364,7 +364,7 @@ function CandidateDatabaseContent({ initialData }) {
               aria-expanded={filtersOpen}
               className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0"
               style={{
-                background: activeFilterCount > 0 ? "var(--mint)" : "white",
+                background: activeFilterCount > 0 ? "var(--mint)" : "var(--bg)",
                 color: activeFilterCount > 0 ? "var(--forest)" : INK_MUTED,
                 border: `1px solid ${activeFilterCount > 0 ? "var(--forest)" : "var(--border)"}`,
               }}
@@ -374,7 +374,7 @@ function CandidateDatabaseContent({ initialData }) {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-12 font-semibold px-1.5 rounded-full tabular-nums bg-[var(--forest)] text-white">
+                <span className="text-12 font-semibold px-1.5 rounded-full tabular-nums bg-[var(--forest)] text-[var(--on-accent)]">
                   {activeFilterCount}
                 </span>
               )}
@@ -395,7 +395,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50 bg-white text-[var(--ink-soft)] border border-[var(--border)]"
+              className="inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 disabled:opacity-50 bg-[var(--bg)] text-[var(--ink-soft)] border border-[var(--border)]"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3v13m0 0-4-4m4 4 4-4M5 21h14" />
@@ -438,7 +438,7 @@ function CandidateDatabaseContent({ initialData }) {
                   placeholder="Near town or postcode"
                   aria-label="Near a town or postcode"
                   maxLength={100}
-                  className="text-13 px-3 py-1.5 rounded-full w-44 bg-white border border-[var(--border)] text-[var(--ink)]"
+                  className="text-13 px-3 py-1.5 rounded-full w-44 bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
                 />
                 <Select
                   ariaLabel="Distance"
@@ -496,7 +496,7 @@ function CandidateDatabaseContent({ initialData }) {
               type="button"
               onClick={() => runBulk({ action: "pool" })}
               disabled={bulkBusy}
-              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--forest)] text-[var(--forest)]"
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border border-[var(--forest)] text-[var(--forest)]"
             >
               ☆ Save to talent pool
             </button>
@@ -513,7 +513,7 @@ function CandidateDatabaseContent({ initialData }) {
             <button
               type="button"
               onClick={() => setComposing(true)}
-              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+              className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
             >
               Email…
             </button>
@@ -533,7 +533,7 @@ function CandidateDatabaseContent({ initialData }) {
             {selectedIds.size >= 2 && selectedIds.size <= 4 && (
               <Link
                 href={`/analyse/compare?ids=${[...selectedIds].join(",")}`}
-                className="text-13 font-semibold px-3 py-1.5 rounded-full text-white bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-13 font-semibold px-3 py-1.5 rounded-full text-[var(--on-accent)] bg-[var(--forest)] hover:bg-[var(--forest-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 Compare
               </Link>

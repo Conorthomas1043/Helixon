@@ -9,7 +9,7 @@ export const LEGAL_WIDTH = { wide: "max-w-[1100px]", narrow: "max-w-[720px]" };
 
 export default function LegalHeader({ title, intro, meta, width = "narrow" }) {
   return (
-    <header className="border-b bg-white border-[var(--border)]">
+    <header className="border-b bg-[var(--bg)] border-[var(--border)]">
       <div className={`${LEGAL_WIDTH[width]} mx-auto px-6 pt-14 pb-10`}>
         <p className="text-12 font-medium mb-3 text-[var(--ink-faint)]">
           <Link href="/" className="hover:underline">

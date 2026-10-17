@@ -81,7 +81,7 @@ export default function InterviewsPage() {
       aria-pressed={on}
       onClick={onClick}
       className="text-13 font-semibold px-3 py-1.5 rounded-full"
-      style={{ background: on ? "var(--forest)" : "white", color: on ? "white" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
+      style={{ background: on ? "var(--forest)" : "var(--bg)", color: on ? "var(--on-accent)" : INK_MUTED, border: `1px solid ${on ? "var(--forest)" : "var(--border)"}` }}
     >
       {l}
     </button>

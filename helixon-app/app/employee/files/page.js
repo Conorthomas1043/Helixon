@@ -198,14 +198,14 @@ export default function EmployeeFilesPage() {
           <div className="flex items-center gap-2 self-start">
             <button type="button"
               onClick={() => setShowNewFolder((v) => !v)}
-              className="text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:bg-white border border-[var(--border)] text-[var(--ink-soft)]"
+              className="text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:bg-[var(--bg)] border border-[var(--border)] text-[var(--ink-soft)]"
             >
               + New folder
             </button>
             <button type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 disabled:opacity-50 bg-[var(--forest)] text-white"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
             >
               {uploading ? "Uploading…" : "Upload"}
             </button>
@@ -250,18 +250,18 @@ export default function EmployeeFilesPage() {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
-              className="flex-1 max-w-xs bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+              className="flex-1 max-w-xs bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
             />
-            <button type="submit" disabled={creatingFolder || !newFolderName.trim()} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
+            <button type="submit" disabled={creatingFolder || !newFolderName.trim()} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]">
               Create
             </button>
-            <button type="button" onClick={() => setShowNewFolder(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
+            <button type="button" onClick={() => setShowNewFolder(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">
               Cancel
             </button>
           </form>
         )}
 
-        <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
+        <div className="rounded-2xl overflow-hidden bg-[var(--bg)] border border-[var(--border)]">
           {loading ? (
             <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
           ) : folders.length === 0 && files.length === 0 ? (

@@ -95,7 +95,7 @@ export default function WorkspaceDemo() {
         <CandidatePicker exclude={["demo-a"]} onPick={setPicked} />
         <span className="text-sm text-[var(--ink-soft)]" data-testid="picked">{picked ? `Picked ${picked}` : "Nothing picked"}</span>
       </div>
-      <div className="rounded-xl border border-[var(--border)] bg-white">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)]">
         <WorkspaceTabStrip tabs={tabs} activeKey="candidate:demo-a" onClose={(key) => setTabs((t) => t.filter((x) => `${x.kind}:${x.id}` !== key))} onCloseAll={() => setTabs([])} />
       </div>
       <div className="grid lg:h-[720px] grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-1">

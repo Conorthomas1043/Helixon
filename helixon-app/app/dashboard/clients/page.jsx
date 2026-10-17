@@ -70,7 +70,7 @@ function NewClientDialog({ onClose, onCreated }) {
             <TextInput type="number" min={0} max={100} step="0.5" value={f.feePercent} onChange={set("feePercent")} />
           </Field>
           <Field label="Status">
-            <select value={f.status} onChange={set("status")} className="w-full text-14 px-3 py-2 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]">
+            <select value={f.status} onChange={set("status")} className="w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]">
               <option value="active">Active</option>
               <option value="prospect">Prospect</option>
               <option value="inactive">Inactive</option>
@@ -185,7 +185,7 @@ export default function ClientsPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients, industries or owners…"
               aria-label="Search clients"
-              className="text-14 px-4 py-2 rounded-full bg-white w-full sm:w-72 border border-[var(--border)] text-[var(--ink)]"
+              className="text-14 px-4 py-2 rounded-full bg-[var(--bg)] w-full sm:w-72 border border-[var(--border)] text-[var(--ink)]"
             />
             {[
               ["current", "Current"],
@@ -200,7 +200,7 @@ export default function ClientsPage() {
                 onClick={() => setFilter(v)}
                 aria-pressed={filter === v}
                 className="text-13 font-semibold px-3 py-1.5 rounded-full"
-                style={{ background: filter === v ? "var(--forest)" : "white", color: filter === v ? "white" : INK_MUTED, border: `1px solid ${filter === v ? "var(--forest)" : "var(--border)"}` }}
+                style={{ background: filter === v ? "var(--forest)" : "var(--bg)", color: filter === v ? "var(--on-accent)" : INK_MUTED, border: `1px solid ${filter === v ? "var(--forest)" : "var(--border)"}` }}
               >
                 {l}
               </button>
@@ -209,7 +209,7 @@ export default function ClientsPage() {
               aria-label="Sort clients"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+              className="sm:ml-auto text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
             >
               <option value="name">Name A–Z</option>
               <option value="openJobs">Most open jobs</option>

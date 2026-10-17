@@ -128,7 +128,7 @@ function MoreMenu({ activeHref, compact = false, plan = null }) {
       </button>
       {open && (
         <div
-          className={`absolute right-0 top-[calc(100%+6px)] z-50 w-[min(92vw,680px)] max-h-[80vh] overflow-y-auto rounded-xl p-3 bg-white grid grid-cols-1 sm:grid-cols-3 gap-3`}
+          className={`absolute right-0 top-[calc(100%+6px)] z-50 w-[min(92vw,680px)] max-h-[80vh] overflow-y-auto rounded-xl p-3 bg-[var(--bg)] grid grid-cols-1 sm:grid-cols-3 gap-3`}
           style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}
         >
           {MORE.map((g) => (
@@ -180,7 +180,7 @@ function TeammateStack({ teammates }) {
       {shown.map((t) => (
         <span key={t.id} className="relative">
           <span
-            className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold text-white ring-2 ring-white"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold text-[var(--on-accent)] ring-2 ring-[var(--bg)]"
             style={{ background: "var(--forest)", opacity: t.presence?.online ? 1 : 0.55 }}
           >
             {initials(t.name)}
@@ -189,7 +189,7 @@ function TeammateStack({ teammates }) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold ring-2 ring-white bg-[var(--mist)] text-[var(--ink-soft)]">
+        <span className="w-7 h-7 rounded-full flex items-center justify-center text-11 font-semibold ring-2 ring-[var(--bg)] bg-[var(--mist)] text-[var(--ink-soft)]">
           +{overflow}
         </span>
       )}
@@ -296,13 +296,13 @@ function DashboardNavContent() {
 
   return (
     <>
-    <nav aria-label="Workspace" className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]">
+    <nav aria-label="Workspace" className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group min-w-0" aria-label="Helixon home">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 shrink-0 bg-[var(--forest)]">
             <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
-              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="white" opacity="0.55" />
-              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="white" />
+              <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+              <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
               <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
             </svg>
           </div>
@@ -344,7 +344,7 @@ function DashboardNavContent() {
             className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] border border-[var(--border)]"
           >
             <span className="relative">
-              <span className="w-6 h-6 rounded-full flex items-center justify-center text-12 font-semibold text-white bg-[var(--forest)]">
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-12 font-semibold text-[var(--on-accent)] bg-[var(--forest)]">
                 {initialsLabel}
               </span>
               {myPresence && myPresence.state !== "hidden" && <PresenceDot state={myPresence.state === "offline" ? "active" : myPresence.state} size={8} className="absolute -bottom-0.5 -right-0.5" />}
@@ -352,7 +352,7 @@ function DashboardNavContent() {
             <span className="text-12 font-medium hidden sm:block text-[var(--ink)]">{userName || userEmail}</span>
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-xl p-1.5 bg-white" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
+            <div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-xl p-1.5 bg-[var(--bg)]" style={{ border: "1px solid var(--border)", boxShadow: "0 12px 24px -12px rgba(19,32,27,0.25)" }}>
               {myPresence && (
                 <div className="pb-1.5 mb-1.5 border-b border-b-[var(--border)]">
                   <p className="text-12 font-semibold uppercase tracking-widest px-3 pt-1 pb-1 text-[var(--ink-faint)]">Your status</p>
@@ -513,7 +513,7 @@ function PaymentIssueBanner({ issue }) {
 // Suspense boundary around the nav.
 function DashboardNavFallback() {
   return (
-    <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b h-[56px] border-[var(--border)]" aria-hidden="true" />
+    <nav className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b h-[56px] border-[var(--border)]" aria-hidden="true" />
   );
 }
 

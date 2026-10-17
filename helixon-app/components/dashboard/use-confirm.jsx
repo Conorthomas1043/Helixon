@@ -22,7 +22,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Button, Dialog, Field, TextArea, TextInput } from "./ui";
 
-const DANGER = { background: "var(--score-low)", color: "white", border: "1px solid var(--score-low)" };
+const DANGER = { background: "var(--score-low)", color: "var(--on-accent)", border: "1px solid var(--score-low)" };
 
 export function useConfirm() {
   const [request, setRequest] = useState(null);

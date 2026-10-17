@@ -14,8 +14,8 @@ export default function Logo({ size = "nav", showTagline = false, href = "/" }) 
         className={`${box} flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-105 bg-[var(--forest)]`}
       >
         <svg width={icon} height={icon} viewBox="0 0 28 28" fill="none" aria-hidden="true">
-          <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-forest)" opacity="0.55" />
-          <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-forest)" />
+          <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+          <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
           <circle cx="22.5" cy="10.5" r="1.8" fill="var(--signal)" />
         </svg>
       </div>

@@ -33,7 +33,7 @@ export default function ClientProfileDocument({ profile, agencyName, preparedBy,
   ].filter(Boolean);
 
   return (
-    <article className="client-profile-page bg-white rounded-card p-8 sm:p-10 text-14 leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
+    <article className="client-profile-page bg-[var(--bg)] rounded-card p-8 sm:p-10 text-14 leading-relaxed" style={{ color: INK, border: `1px solid ${RULE}` }}>
       <header className="flex items-start justify-between gap-6 pb-5 mb-6" style={{ borderBottom: `2px solid ${INK}` }}>
         <div className="min-w-0">
           <p className="text-12 font-semibold uppercase tracking-[0.14em] mb-1 text-[var(--ink-faint)]">

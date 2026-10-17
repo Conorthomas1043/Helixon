@@ -109,7 +109,7 @@ export default function BookPage({ params }) {
                   aria-checked={pick === s}
                   onClick={() => setPick(s)}
                   className="text-14 font-semibold px-4 py-2 rounded-full tabular-nums focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={pick === s ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
+                  style={pick === s ? { background: "var(--forest)", color: "var(--on-accent)" } : { border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
                 >
                   {time(s)}
                 </button>
@@ -119,7 +119,7 @@ export default function BookPage({ params }) {
         ))}
       </div>
       {error && <p role="alert" className="mt-4 text-13 text-[var(--score-low)]">{error}</p>}
-      <button type="button" onClick={book} disabled={!pick || saving} className="mt-6 w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
+      <button type="button" onClick={book} disabled={!pick || saving} className="mt-6 w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
         {saving ? "Booking…" : pick ? `Book ${dayKey(pick)} at ${time(pick)}` : "Choose a time"}
       </button>
       <p className="mt-3 text-12 text-center text-[var(--ink-soft)]">None of these work? Reply to the email and the agency will suggest others.</p>

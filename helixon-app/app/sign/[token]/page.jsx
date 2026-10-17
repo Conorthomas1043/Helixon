@@ -127,7 +127,7 @@ export default function SignPage({ params }) {
           <span>I&apos;ve read this document and agree to it. I understand typing my name here is my electronic signature.</span>
         </label>
         {error && <p role="alert" className="text-13 text-[var(--score-low)]">{error}</p>}
-        <button type="submit" disabled={saving || !agree || name.trim().length < 2} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
+        <button type="submit" disabled={saving || !agree || name.trim().length < 2} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
           {saving ? "Signing…" : "Sign"}
         </button>
         {/* Declining asks in place: a native prompt() box can't be labelled,
@@ -141,14 +141,14 @@ export default function SignPage({ params }) {
                 maxLength={1000}
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
-                className="w-full text-14 px-3 py-2 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]"
+                className="w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
               />
             </label>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full border border-[var(--border)] text-[var(--ink)] bg-white">
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]">
                 Go back
               </button>
-              <button type="button" disabled={saving} onClick={() => send({ decline: true, reason: declineReason.trim() })} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50 bg-[var(--score-low)] text-white">
+              <button type="button" disabled={saving} onClick={() => send({ decline: true, reason: declineReason.trim() })} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50 bg-[var(--score-low)] text-[var(--on-accent)]">
                 {saving ? "Sending…" : "Tell the agency I won't sign"}
               </button>
             </div>

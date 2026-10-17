@@ -91,7 +91,7 @@ export default function EmployeeOpsPage() {
                 { label: "Analyses run", value: data.kpis.analyses },
                 { label: "Demo leads", value: data.kpis.leads },
               ].map((s) => (
-                <div key={s.label} className="rounded-card p-4 bg-white border border-[var(--border)]">
+                <div key={s.label} className="rounded-card p-4 bg-[var(--bg)] border border-[var(--border)]">
                   <p className="text-xl font-semibold text-[var(--ink)] font-display">
                     {s.value}
                   </p>
@@ -102,7 +102,7 @@ export default function EmployeeOpsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* ── Agencies by plan ────────────────────────────────────── */}
-              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
                 <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
                   Agencies by plan
                 </h2>
@@ -114,7 +114,7 @@ export default function EmployeeOpsPage() {
               </div>
 
               {/* ── Lead acquisition channels ───────────────────────────── */}
-              <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+              <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
                 <h2 className="text-sm font-semibold mb-4 text-[var(--ink)] font-display">
                   Demo leads by channel
                 </h2>

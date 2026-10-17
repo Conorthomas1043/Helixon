@@ -74,7 +74,7 @@ export default function HowItWorksPage() {
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
         <div className="space-y-5">
           {STEPS.map((s, i) => (
-            <div key={s.n} className="rounded-2xl p-7 flex flex-col sm:flex-row gap-6 items-start" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+            <div key={s.n} className="rounded-2xl p-7 flex flex-col sm:flex-row gap-6 items-start" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
               <div className="flex items-center gap-4 sm:flex-col sm:items-start shrink-0">
                 <span className="w-10 h-10 rounded-btn flex items-center justify-center text-sm font-bold bg-[var(--mint)] text-[var(--forest)]">
                   {s.n}
@@ -107,7 +107,7 @@ export default function HowItWorksPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {DETAILS.map((d) => (
-            <div key={d.title} className="rounded-card p-6 bg-white border border-[var(--border)]">
+            <div key={d.title} className="rounded-card p-6 bg-[var(--bg)] border border-[var(--border)]">
               <h3 className="text-sm font-semibold mb-1.5 text-[var(--ink)]">{d.title}</h3>
               <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{d.body}</p>
             </div>

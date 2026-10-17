@@ -39,7 +39,7 @@ export default async function NotFound() {
           We scored a lot of CVs, but not whatever page you were looking for. It may have moved, or the link&apos;s out of date.
         </p>
         <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
-          <Link href={primary.href} className="text-sm font-semibold px-5 py-3 rounded-btn text-white transition-colors" style={{ background: "var(--forest)" }}>
+          <Link href={primary.href} className="text-sm font-semibold px-5 py-3 rounded-btn text-[var(--on-accent)] transition-colors" style={{ background: "var(--forest)" }}>
             {primary.label}
           </Link>
           <Link href={secondary.href} className="text-sm font-semibold px-5 py-3 rounded-btn transition-colors" style={{ border: "1px solid var(--border)", color: "var(--ink)" }}>

@@ -55,7 +55,7 @@ export function GettingStarted({ hasJob, showTeam }) {
               background: st.done ? ACCENT : "transparent", border: `1.5px solid ${st.done ? ACCENT : st.primary ? ACCENT : BORDER}`,
             }}>
               {st.done && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               )}
             </span>
             <div className="flex-1 min-w-[0px]">
@@ -67,7 +67,7 @@ export function GettingStarted({ hasJob, showTeam }) {
             {!st.done && st.href && (
               <Link href={st.href} onClick={() => track("onboarding_step_clicked", { step: st.key })} style={{
                 flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 14, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
-                background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+                background: st.primary ? ACCENT : "transparent", color: st.primary ? "var(--on-accent)" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
               }}>
                 {st.cta}
               </Link>
@@ -109,7 +109,7 @@ export function TeamWelcome({ agencyName, onDismiss }) {
             </div>
             <Link href={st.href} onClick={() => track("team_welcome_step_clicked", { step: st.key })} style={{
               flexShrink: 0, display: "inline-flex", alignItems: "center", minHeight: 36, fontSize: 14, fontWeight: 600, padding: "0 14px", borderRadius: 10, textDecoration: "none",
-              background: st.primary ? ACCENT : "transparent", color: st.primary ? "#fff" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
+              background: st.primary ? ACCENT : "transparent", color: st.primary ? "var(--on-accent)" : TEXT, border: st.primary ? "none" : `1.5px solid ${BORDER}`,
             }}>
               {st.cta}
             </Link>
@@ -223,7 +223,7 @@ export function DashboardHeader({ greetingName, agencyName, plan, subtitle, isRe
         <Link href="/analyse" style={{
           display: "inline-flex", alignItems: "center", fontSize: 14, fontWeight: 600,
           padding: "10px 16px", borderRadius: 9999,
-          background: ACCENT, color: "#fff", textDecoration: "none",
+          background: ACCENT, color: "var(--on-accent)", textDecoration: "none",
         }}>
           + Screen a CV
         </Link>

@@ -105,7 +105,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
   return (
     <div className="min-w-0 flex flex-col border-l first:border-l-0 border-[var(--border)]">
       {confirmDialog}
-      <div className="px-4 py-3.5 border-b border-[var(--border)] bg-white space-y-2.5">
+      <div className="px-4 py-3.5 border-b border-[var(--border)] bg-[var(--bg)] space-y-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Avatar letter={letter} size={32} />
           <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
         </div>
       </div>
 
-      <div ref={scrollerRef} onScroll={() => onScroll(c.id)} className="relative h-[68vh] print:h-auto overflow-y-auto bg-white px-4 py-3">
+      <div ref={scrollerRef} onScroll={() => onScroll(c.id)} className="relative h-[68vh] print:h-auto overflow-y-auto bg-[var(--bg)] px-4 py-3">
         {!entry ? (
           <div className="flex items-center gap-2 text-14 text-[var(--ink-soft)] py-6">
             <Spinner /> Loading CV…
@@ -151,7 +151,7 @@ function CvColumn({ c, letter, name, entry, parsed, active, find, findStep, reve
             <button
               type="button"
               onClick={onReveal}
-              className="mt-4 inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--mist)]"
+              className="mt-4 inline-flex items-center text-14 font-semibold px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] hover:bg-[var(--mist)]"
             >
               Show the CV
             </button>
@@ -327,7 +327,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
               }}
               placeholder="Find in all CVs - e.g. Salesforce, team of, GCSE…"
               aria-label="Find in all CVs"
-              className="flex-1 min-w-0 text-14 px-5 py-2.5 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
+              className="flex-1 min-w-0 text-14 px-5 py-2.5 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]"
             />
             {findRe && (
               <>
@@ -339,7 +339,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
                   onClick={() => setFindStep((s) => Math.max(0, s - 1))}
                   disabled={!totalMatches || findStep === 0}
                   aria-label="Previous match"
-                  className="p-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--mist)] disabled:opacity-40"
+                  className="p-2 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] hover:bg-[var(--mist)] disabled:opacity-40"
                 >
                   <Icon name="arrowRight" size={13} className="-rotate-90" />
                 </button>
@@ -347,7 +347,7 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
                   type="submit"
                   disabled={!totalMatches}
                   aria-label="Next match"
-                  className="p-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--mist)] disabled:opacity-40"
+                  className="p-2 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] hover:bg-[var(--mist)] disabled:opacity-40"
                 >
                   <Icon name="arrowRight" size={13} className="rotate-90" />
                 </button>
@@ -382,12 +382,12 @@ export default function RawCvCompare({ candidates, labels, onRemove, onStageChan
                   title={count === 0 ? `No ${s.label} section in these CVs` : `Found in ${count} of ${n}`}
                   className={cx(
                     "inline-flex items-center gap-1.5 text-14 font-semibold px-3.5 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
-                    on ? "bg-[var(--forest)] border-[var(--forest)] text-white" : "bg-white border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
+                    on ? "bg-[var(--forest)] border-[var(--forest)] text-[var(--on-accent)]" : "bg-[var(--bg)] border-[var(--border)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
                   )}
                 >
                   {s.label}
                   {loaded > 0 && (
-                    <span className={cx("text-12 font-medium px-1.5 rounded-full tabular-nums", on ? "bg-white/20 text-white" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
+                    <span className={cx("text-12 font-medium px-1.5 rounded-full tabular-nums", on ? "bg-white/20 text-[var(--on-accent)]" : "bg-[var(--mist)] text-[var(--ink-faint)]")}>
                       {count}
                     </span>
                   )}

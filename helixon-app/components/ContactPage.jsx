@@ -15,7 +15,7 @@ const inputStyle = {
   padding: "10px 14px",
   fontSize: "0.875rem",
   color: "var(--ink)",
-  background: "white",
+  background: "var(--bg)",
 };
 
 function inputFocus(e) {
@@ -115,7 +115,7 @@ export default function ContactPage({ role = "" }) {
           <div className="space-y-4">
             <h2 className="sr-only">Email us directly</h2>
             {CHANNELS.map((c) => (
-              <div key={c.title} className="rounded-card p-5 bg-white border border-[var(--border)]">
+              <div key={c.title} className="rounded-card p-5 bg-[var(--bg)] border border-[var(--border)]">
                 <div className="flex items-start gap-3.5">
                   <div className="w-9 h-9 rounded-btn flex items-center justify-center shrink-0 bg-[var(--mint)]">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{c.icon}</svg>
@@ -131,7 +131,7 @@ export default function ContactPage({ role = "" }) {
           </div>
 
           {/* ── Form ──────────────────────────────────────────────────── */}
-          <div className="rounded-2xl p-7" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+          <div className="rounded-2xl p-7" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
             {sent ? (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-[var(--mint)]">
@@ -204,7 +204,7 @@ export default function ContactPage({ role = "" }) {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="text-sm font-semibold px-5 py-3 rounded-btn text-white transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
+                  className="text-sm font-semibold px-5 py-3 rounded-btn text-[var(--on-accent)] transition-all hover:scale-[1.01] disabled:opacity-50 disabled:hover:scale-100"
                   style={{ background: "var(--forest)", boxShadow: "0 8px 20px -8px rgba(11,110,79,0.5)" }}
                   onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = "var(--forest-deep)"; }}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "var(--forest)")}

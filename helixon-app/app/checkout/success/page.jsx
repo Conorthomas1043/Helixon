@@ -59,7 +59,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
       <div
         className="w-full max-w-sm rounded-panel p-8 sm:p-9 text-center"
         style={{
-          background: "white",
+          background: "var(--bg)",
           border: "1px solid var(--border)",
           boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))",
         }}
@@ -81,7 +81,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             </p>
             <Link
               href="/#pricing"
-              className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm transition-all"
+              className="btn-forest inline-flex items-center justify-center gap-2 w-full text-[var(--on-accent)] font-semibold py-3 rounded-xl text-sm transition-all"
               style={{ background: "var(--forest)" }}
             >
               Back to pricing
@@ -122,7 +122,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             <div className="flex flex-col gap-2.5">
               <Link
                 href="/analyse"
-                className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm transition-all"
+                className="btn-forest inline-flex items-center justify-center gap-2 w-full text-[var(--on-accent)] font-semibold py-3 rounded-xl text-sm transition-all"
                 style={{ background: "var(--forest)" }}
               >
                 Start screening candidates

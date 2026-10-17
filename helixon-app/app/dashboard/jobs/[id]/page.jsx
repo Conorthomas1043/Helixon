@@ -224,7 +224,7 @@ function StateMessage({ title, body, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+            className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             Try again
           </button>
@@ -247,7 +247,7 @@ function TextField({ label, ...props }) {
       <span className="block text-12 font-semibold uppercase tracking-widest mb-1.5 text-[var(--ink-faint)]">{label}</span>
       <input
         {...props}
-        className="w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ border: "1px solid var(--border)", color: INK }}
       />
     </label>
@@ -259,7 +259,7 @@ function TextField({ label, ...props }) {
 // seniority, employment type, minimum experience, skills) - not the raw job spec text, which every future
 // analysis against this job re-parses fresh rather than reading back from
 // here (see api/jobs/[id]'s PATCH handler comment).
-const SELECT_CLASS = "w-full text-14 px-3 py-2 rounded-lg bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+const SELECT_CLASS = "w-full text-14 px-3 py-2 rounded-lg bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 function SelectField({ label, children, ...props }) {
   return (
@@ -420,7 +420,7 @@ function EditJobForm({ job, team = [], onCancel, onSave }) {
         <button
           type="submit"
           disabled={saving}
-          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
+          className="text-13 font-semibold px-4 py-2 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>
@@ -598,7 +598,7 @@ export default function JobDetailPage({ params }) {
                 <Link
                   href={`/analyse?jobId=${job.id}`}
                   className="inline-flex items-center text-13 font-semibold px-3.5 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ background: "var(--forest)", color: "white" }}
+                  style={{ background: "var(--forest)", color: "var(--on-accent)" }}
                 >
                   Analyse a candidate →
                 </Link>
@@ -761,7 +761,7 @@ export default function JobDetailPage({ params }) {
                 <Link
                   href={`/dashboard/talent-pool?jobId=${job.id}`}
                   className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ border: "1px solid var(--forest)", color: "var(--forest)", background: "white" }}
+                  style={{ border: "1px solid var(--forest)", color: "var(--forest)", background: "var(--bg)" }}
                   title="See who in your talent pool fits this job, and screen them without re-uploading CVs"
                 >
                   ☆ Find in talent pool
@@ -770,7 +770,7 @@ export default function JobDetailPage({ params }) {
                   <Link
                     href={`/analyse/compare?jobId=${job.id}`}
                     className="inline-flex items-center text-13 font-semibold px-3 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ border: "1px solid var(--border)", color: INK, background: "white" }}
+                    style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
                   >
                     Compare candidates
                   </Link>
@@ -779,7 +779,7 @@ export default function JobDetailPage({ params }) {
                   aria-label="Filter by stage"
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value)}
-                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="all">All stages</option>
                   {Object.entries(STAGE_LABELS).map(([k, label]) => (

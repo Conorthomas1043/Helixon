@@ -76,7 +76,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
   const onlineCount = team.filter((t) => t.status !== "offline").length;
 
   return (
-    <section className="rounded-2xl bg-white border border-[var(--border)]" aria-labelledby="team-presence-title">
+    <section className="rounded-2xl bg-[var(--bg)] border border-[var(--border)]" aria-labelledby="team-presence-title">
       <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
         <div>
           <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--ink-faint)]">Team</p>
@@ -124,7 +124,7 @@ export default function TeamPresencePanel({ currentEmployeeId }) {
                   >
                     {initials}
                   </span>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white" style={{ background: meta.dot }} aria-hidden="true" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--bg)]" style={{ background: meta.dot }} aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block text-sm font-medium truncate ${person.status === "offline" ? "text-[var(--ink-soft)]" : "text-[var(--ink)]"}`}>

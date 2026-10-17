@@ -51,7 +51,7 @@ export function ErrorNotice({ message }) {
 
 export function Kpi({ label, value }) {
   return (
-    <div className="rounded-card p-3.5 bg-white border border-[var(--border)]">
+    <div className="rounded-card p-3.5 bg-[var(--bg)] border border-[var(--border)]">
       <div className="text-11 font-medium mb-1 text-[var(--ink-faint)]">
         {label}
       </div>

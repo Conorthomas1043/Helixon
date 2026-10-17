@@ -142,7 +142,7 @@ export function FollowUpsPanel() {
   const shown = expanded ? state.items : state.items.slice(0, 7);
   const tabStyle = (on) => ({
     fontSize: 13, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, cursor: "pointer",
-    border: `1px solid ${on ? ACCENT : BORDER}`, background: on ? ACCENT : SURFACE, color: on ? "#fff" : TEXT_SUB,
+    border: `1px solid ${on ? ACCENT : BORDER}`, background: on ? ACCENT : SURFACE, color: on ? "var(--on-accent)" : TEXT_SUB,
   });
 
   return (

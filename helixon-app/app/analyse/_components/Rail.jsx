@@ -93,7 +93,7 @@ export function StageCard({ candidateId, toast }) {
               >
                 <span
                   className="w-3 h-3 rounded-full border-2 shrink-0"
-                  style={{ background: reached ? STAGE_COLORS[s] : "white", borderColor: reached ? STAGE_COLORS[s] : "var(--border)" }}
+                  style={{ background: reached ? STAGE_COLORS[s] : "var(--bg)", borderColor: reached ? STAGE_COLORS[s] : "var(--border)" }}
                 />
                 {s}
                 {current && <span className="ml-auto text-12 text-[var(--ink-faint)]">Current</span>}

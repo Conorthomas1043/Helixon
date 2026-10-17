@@ -112,7 +112,7 @@ export default function DpaPage() {
       />
 
       {/* ── Mobile TOC toggle ───────────────────────────────────────────── */}
-      <div className="lg:hidden sticky top-[56px] z-30 bg-white border-b border-[var(--border)]">
+      <div className="lg:hidden sticky top-[56px] z-30 bg-[var(--bg)] border-b border-[var(--border)]">
         <button
           type="button"
           onClick={() => setTocOpenMobile((v) => !v)}
@@ -158,7 +158,7 @@ export default function DpaPage() {
         </aside>
 
         {/* Content */}
-        <article className="max-w-[640px] bg-white rounded-2xl border p-8 sm:p-10 border-[var(--border)]">
+        <article className="max-w-[640px] bg-[var(--bg)] rounded-2xl border p-8 sm:p-10 border-[var(--border)]">
 
           <Section id="parties" title="1. Parties & scope">
             <p>This Data Processing Agreement (“DPA”) is entered into between the organisation using the Helixon
@@ -291,7 +291,7 @@ export default function DpaPage() {
                 ["Data subjects", "Job candidates; Customer personnel"],
                 ["Categories of data", "CV contents, contact details, employment history"],
               ].map(([k, v], i) => (
-                <div key={k} className={`grid grid-cols-[130px_1fr] text-12 ${i % 2 === 0 ? "bg-[var(--mist)]" : "bg-white"}`}>
+                <div key={k} className={`grid grid-cols-[130px_1fr] text-12 ${i % 2 === 0 ? "bg-[var(--mist)]" : "bg-[var(--bg)]"}`}>
                   <div className="px-4 py-3 font-semibold text-[var(--ink)]">{k}</div>
                   <div className="px-4 py-3 border-l text-[var(--ink-soft)] border-[var(--border)]">{v}</div>
                 </div>
@@ -305,7 +305,7 @@ export default function DpaPage() {
                 <span>Sub-processor</span><span>Purpose</span><span>Location</span>
               </div>
               {SUBPROCESSORS.map((sp, i) => (
-                <div key={sp.name} className={`grid grid-cols-[1fr_1fr_120px] text-12 px-4 py-3 text-[var(--ink-soft)] ${i % 2 === 0 ? "bg-white" : "bg-[var(--mist)]"}`}>
+                <div key={sp.name} className={`grid grid-cols-[1fr_1fr_120px] text-12 px-4 py-3 text-[var(--ink-soft)] ${i % 2 === 0 ? "bg-[var(--bg)]" : "bg-[var(--mist)]"}`}>
                   <span className="text-[var(--ink)] font-medium">{sp.name}</span>
                   <span>{sp.purpose}</span>
                   <span>{sp.location}</span>

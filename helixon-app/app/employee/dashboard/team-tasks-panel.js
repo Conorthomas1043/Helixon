@@ -146,7 +146,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
             type="button"
             onClick={() => setShowAddForm((v) => !v)}
             aria-expanded={showAddForm}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-btn transition hover:opacity-90 bg-[var(--forest)] text-white"
+            className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-btn transition hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             <span className="text-base leading-none" aria-hidden="true">+</span> Add team task
           </button>
@@ -165,7 +165,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="What needs doing?"
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                  className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 />
               </div>
               <div>
@@ -173,7 +173,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                 <select
                   value={form.assigned_to}
                   onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                  className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="">Unassigned (team)</option>
                   {team.map((member) => (
@@ -186,7 +186,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                 <select
                   value={form.priority}
                   onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                  className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -199,7 +199,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
                   type="date"
                   value={form.due_date}
                   onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
-                  className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                  className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                 />
               </div>
             </div>
@@ -214,14 +214,14 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
               <button
                 type="submit"
                 disabled={saving}
-                className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white"
+                className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]"
               >
                 {saving ? "Saving…" : "Add task"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]"
+                className="text-sm px-4 py-2 rounded-lg transition hover:bg-[var(--bg)] text-[var(--ink-soft)]"
               >
                 Cancel
               </button>
@@ -259,10 +259,10 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
               >
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: `2px solid ${canEdit ? "var(--ink-mute)" : "var(--border)"}`, background: canEdit ? "white" : "var(--mist)" }}
+                  style={todo.done ? { background: "var(--forest)", border: "2px solid var(--forest)" } : { border: `2px solid ${canEdit ? "var(--ink-mute)" : "var(--border)"}`, background: canEdit ? "var(--bg)" : "var(--mist)" }}
                 >
                   {todo.done && (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--on-accent)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -284,7 +284,7 @@ export default function TeamTasksPanel({ currentEmployeeId, notify }) {
 
               {canDelete && (
                 <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition shrink-0">
-                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-lg transition hover:bg-red-50 text-[var(--score-low)]">
+                  <button type="button" onClick={() => handleDelete(todo.id)} className="text-xs font-medium px-2 py-1.5 rounded-lg transition hover:bg-[var(--ui-danger-soft)] text-[var(--score-low)]">
                     Delete
                   </button>
                 </div>

@@ -5,7 +5,8 @@ import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import ClerkWidgetStates from "@/components/auth/ClerkWidgetStates";
-import { AUTH_CARD_ELEMENTS, AUTH_CARD_VARIABLES } from "@/lib/ui/clerk-appearance";
+import { AUTH_CARD_ELEMENTS, authCardVariables } from "@/lib/ui/clerk-appearance";
+import usePrefersDark from "@/lib/hooks/usePrefersDark";
 
 // Clerk's hosted <SignIn/> replaces the old custom login form + api/auth/login
 // + api/auth/mfa-verify. reCAPTCHA/bot-detection, rate limiting, "forgot
@@ -28,6 +29,7 @@ import { AUTH_CARD_ELEMENTS, AUTH_CARD_VARIABLES } from "@/lib/ui/clerk-appearan
 // supplies the branding panel's content and drops Clerk's component into
 // the card.
 function LoginContent() {
+  const dark = usePrefersDark();
   const cardRef = useRef(null);
   const [spot, setSpot] = useState({ x: 50, y: 0 });
   const searchParams = useSearchParams();
@@ -45,7 +47,7 @@ function LoginContent() {
       brandMiddle={
         <div className="relative z-10 space-y-9 auth-panel-in" style={{ animationDuration: "0.6s" }}>
           <div className="space-y-4">
-            <p className="text-11 font-semibold tracking-[0.18em] uppercase text-[var(--mint)]">
+            <p className="text-11 font-semibold tracking-[0.18em] uppercase text-[var(--on-brand-soft)]">
               AI CV screening for agencies
             </p>
             <h1 className="text-white text-40 font-semibold leading-[1.08] tracking-tight font-display">
@@ -99,16 +101,16 @@ function LoginContent() {
         onMouseMove={handleCardMouseMove}
         className="w-full max-w-sm relative rounded-panel p-7 sm:p-9 overflow-hidden auth-panel-in"
         style={{
-          background: "rgba(255,255,255,0.68)",
+          background: "var(--glass-bg)",
           backdropFilter: "blur(26px)",
           WebkitBackdropFilter: "blur(26px)",
-          border: "1px solid rgba(255,255,255,0.65)",
-          boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 rgba(255,255,255,0.85) inset",
+          border: "1px solid var(--glass-line)",
+          boxShadow: "0 40px 80px -32px rgba(19,32,27,0.28), 0 1px 0 var(--glass-shine) inset",
         }}
       >
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-          style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.5), transparent 60%)` }}
+          style={{ background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, var(--glass-spot), transparent 60%)` }}
         />
 
         <div className="relative flex justify-center">
@@ -117,7 +119,7 @@ function LoginContent() {
             path="/login"
             signUpUrl="/pricing"
             fallbackRedirectUrl="/dashboard?welcome=1"
-            appearance={{ layout: { socialButtonsPlacement: "top" }, variables: AUTH_CARD_VARIABLES, elements: AUTH_CARD_ELEMENTS }}
+            appearance={{ layout: { socialButtonsPlacement: "top" }, variables: authCardVariables(dark), elements: AUTH_CARD_ELEMENTS }}
           />
         </div>
       </div>

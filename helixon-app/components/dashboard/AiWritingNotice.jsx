@@ -80,10 +80,10 @@ function Verdict({ candidateId, where }) {
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
       <span>Does this look right?</span>
-      <button type="button" disabled={state === "sending"} onClick={() => send("right")} className="rounded-full border border-current px-2.5 py-0.5 font-semibold hover:bg-white/60 disabled:opacity-50">
+      <button type="button" disabled={state === "sending"} onClick={() => send("right")} className="rounded-full border border-current px-2.5 py-0.5 font-semibold hover:bg-[var(--bg)]/60 disabled:opacity-50">
         Yes
       </button>
-      <button type="button" disabled={state === "sending"} onClick={() => send("wrong")} className="rounded-full border border-current px-2.5 py-0.5 font-semibold hover:bg-white/60 disabled:opacity-50">
+      <button type="button" disabled={state === "sending"} onClick={() => send("wrong")} className="rounded-full border border-current px-2.5 py-0.5 font-semibold hover:bg-[var(--bg)]/60 disabled:opacity-50">
         No, it reads as written by them
       </button>
       {state === "failed" && <span>Couldn&apos;t save that - try again.</span>}

@@ -223,7 +223,7 @@ export default function DemoRequestPage() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       {/* Deliberately a stripped-down nav: this is the page the whole site
           funnels to, so it offers no detours away from the form. */}
-      <nav className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
+      <nav className="sticky top-0 z-40 w-full bg-[var(--bg)]/95 backdrop-blur border-b border-[var(--border)]" aria-label="Main">
         <div className="max-w-[1100px] mx-auto px-6 h-[56px] flex items-center justify-between">
           <Logo showTagline />
           <Link href="/login" className="inline-flex items-center min-h-[44px] text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
@@ -268,7 +268,7 @@ export default function DemoRequestPage() {
               </ol>
               <ul className="flex flex-wrap gap-2 mt-8">
                 {["Swiss-hosted", "GDPR-ready", "Never used to train AI"].map((chip) => (
-                  <li key={chip} className="inline-flex items-center gap-1.5 text-12 font-medium px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink-soft)]">
+                  <li key={chip} className="inline-flex items-center gap-1.5 text-12 font-medium px-3 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink-soft)]">
                     <CheckIcon size={12} />
                     {chip}
                   </li>
@@ -280,7 +280,7 @@ export default function DemoRequestPage() {
               <div
                 className="rounded-panel p-8 sm:p-10"
                 style={{
-                  background: "white",
+                  background: "var(--bg)",
                   border: "1px solid var(--border)",
                   boxShadow: "var(--shadow-raise, 0 20px 40px -20px rgba(19,32,27,0.18))",
                 }}
@@ -309,7 +309,7 @@ export default function DemoRequestPage() {
                     <div className="flex flex-col gap-2.5">
                       <Link
                         href="/#example"
-                        className="btn-forest inline-flex items-center justify-center gap-2 w-full text-white font-semibold py-3 rounded-xl text-sm min-h-[44px]"
+                        className="btn-forest inline-flex items-center justify-center gap-2 w-full text-[var(--on-accent)] font-semibold py-3 rounded-xl text-sm min-h-[44px]"
                         style={{ background: "var(--forest)" }}
                       >
                         See an example analysis
@@ -403,7 +403,7 @@ export default function DemoRequestPage() {
                         type="submit"
                         disabled={loading}
                         aria-busy={loading}
-                        className="btn-forest w-full text-white font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 mt-2 min-h-[48px]"
+                        className="btn-forest w-full text-[var(--on-accent)] font-semibold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 mt-2 min-h-[48px]"
                         style={{
                           background: "var(--forest)",
                           boxShadow: loading ? "none" : "0 12px 24px -10px rgba(11,58,42,0.5)",

@@ -136,7 +136,7 @@ export function FilesTab({ employee }) {
           <button
             type="button"
             onClick={() => setShowNewFolder((v) => !v)}
-            className="text-12 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink-soft)]"
+            className="text-12 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink-soft)]"
           >
             + Folder
           </button>
@@ -174,9 +174,9 @@ export function FilesTab({ employee }) {
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder="Folder name"
-            className="flex-1 text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+            className="flex-1 text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
           />
-          <button type="submit" className="text-13 font-semibold px-3 py-2 rounded-btn bg-[var(--forest)] text-white">
+          <button type="submit" className="text-13 font-semibold px-3 py-2 rounded-btn bg-[var(--forest)] text-[var(--on-accent)]">
             Add
           </button>
         </form>
@@ -193,7 +193,7 @@ export function FilesTab({ employee }) {
           {folders.map((folder) => {
             const canDelete = folder.created_by === employee?.id;
             return (
-              <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]">
+              <div key={folder.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                 <span className="text-[var(--ink-faint)]"><Icon path={ICONS.folder} size={16} /></span>
                 <button type="button" onClick={() => setFolderId(folder.id)} className="flex-1 min-w-0 text-left">
                   <div className="text-14 font-medium truncate text-[var(--ink)]">{folder.name}</div>
@@ -209,7 +209,7 @@ export function FilesTab({ employee }) {
           {files.map((file) => {
             const canDelete = file.uploaded_by === employee?.id;
             return (
-              <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]">
+              <div key={file.id} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                 <span className="text-[var(--ink-faint)]"><Icon path={ICONS.file} size={16} /></span>
                 <a href={`/api/employee/files/${file.id}/download`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0">
                   <div className="text-14 font-medium truncate text-[var(--ink)]">{file.name}</div>

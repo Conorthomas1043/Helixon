@@ -74,7 +74,7 @@ export default function FaqPage() {
           {FAQ_GROUPS.map((group) => (
             <div key={group.group}>
               <p className="text-11 font-semibold uppercase tracking-widest mb-3 text-[var(--ink-faint)]">{group.group}</p>
-              <div className="rounded-card px-6 bg-white border border-[var(--border)]">
+              <div className="rounded-card px-6 bg-[var(--bg)] border border-[var(--border)]">
                 {group.items.map((item, i) => {
                   const key = `${group.group}-${i}`;
                   return (

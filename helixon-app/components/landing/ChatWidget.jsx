@@ -140,7 +140,7 @@ export default function ChatWidget() {
         aria-expanded={open}
         aria-hidden={!showLauncher}
         tabIndex={showLauncher ? 0 : -1}
-        className="fixed right-4 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-forest text-[var(--on-forest)] shadow-raise flex items-center justify-center hover:bg-forest-deep transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2"
+        className="fixed right-4 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-forest text-[var(--on-accent)] shadow-raise flex items-center justify-center hover:bg-forest-deep transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2"
         style={{
           bottom: `calc(1.25rem + ${footerOffset}px)`,
           opacity: showLauncher ? 1 : 0,
@@ -176,8 +176,8 @@ export default function ChatWidget() {
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border bg-mist shrink-0">
             <div className="w-8 h-8 rounded-btn flex items-center justify-center bg-forest shrink-0">
               <svg width="16" height="16" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-forest)" opacity="0.55" />
-                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-forest)" />
+                <rect x="4" y="9" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" opacity="0.55" />
+                <rect x="12" y="15.5" width="12" height="4.5" rx="2.25" fill="var(--on-accent)" />
                 <circle cx="22.5" cy="10.5" r="1.8" className="fill-signal" />
               </svg>
             </div>
@@ -213,7 +213,7 @@ export default function ChatWidget() {
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[85%] text-xs leading-relaxed rounded-btn px-3.5 py-2.5 ${
-                    m.role === "user" ? "bg-forest text-[var(--on-forest)]" : "bg-mist text-ink"
+                    m.role === "user" ? "bg-forest text-[var(--on-accent)]" : "bg-mist text-ink"
                   }`}
                 >
                   {m.content}
@@ -249,7 +249,7 @@ export default function ChatWidget() {
               type="submit"
               disabled={loading || !input.trim()}
               aria-label="Send message"
-              className="w-9 h-9 shrink-0 rounded-btn bg-forest text-[var(--on-forest)] flex items-center justify-center hover:bg-forest-deep disabled:bg-border disabled:text-ink/40 disabled:cursor-not-allowed transition-colors"
+              className="w-9 h-9 shrink-0 rounded-btn bg-forest text-[var(--on-accent)] flex items-center justify-center hover:bg-forest-deep disabled:bg-border disabled:text-ink/40 disabled:cursor-not-allowed transition-colors"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />

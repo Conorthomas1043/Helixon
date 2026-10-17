@@ -9,7 +9,7 @@ import { getPerformanceSettings, savePerformanceSettings } from "@/lib/dashboard
 import { METRICS, METRIC_KEYS } from "@/lib/analytics/performance";
 import { Page, PageHeader, Card, Button, ErrorState, ErrorText, Field, LoadingCard, Select, TextInput, INK, INK_MUTED, INK_FAINT } from "@/components/dashboard/ui";
 
-const cell = "w-full text-13 px-2 py-1.5 rounded-md bg-white text-right tabular-nums";
+const cell = "w-full text-13 px-2 py-1.5 rounded-md bg-[var(--bg)] text-right tabular-nums";
 const cellStyle = { border: "1px solid var(--border)", color: INK, minWidth: 70 };
 
 export default function TargetsSettingsPage() {

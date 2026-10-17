@@ -81,8 +81,8 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
                   className={cx(
                     "group flex items-center rounded-lg border text-sm",
                     active
-                      ? "border-[var(--border)] bg-white text-[var(--ink)] shadow-sm"
-                      : "border-transparent text-[var(--ink-soft)] hover:bg-white hover:text-[var(--ink)]"
+                      ? "border-[var(--border)] bg-[var(--bg)] text-[var(--ink)] shadow-sm"
+                      : "border-transparent text-[var(--ink-soft)] hover:bg-[var(--bg)] hover:text-[var(--ink)]"
                   )}
                 >
                   <Link
@@ -112,7 +112,7 @@ export function WorkspaceTabStrip({ tabs, activeKey, onClose, onCloseAll }) {
         {splitIds.length >= 2 && (
           <Link
             href={splitViewHref(splitIds)}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-semibold text-[var(--forest)] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-semibold text-[var(--forest)] hover:bg-[var(--bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest)]"
           >
             <Icon name="compare" size={14} />
             <span className="hidden sm:inline">Split view</span>

@@ -62,7 +62,7 @@ export default function PerformancePage() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {METRIC_KEYS.map((k) => (
-              <div key={k} className="rounded-xl px-3 py-2.5 bg-white border border-[var(--border)]">
+              <div key={k} className="rounded-xl px-3 py-2.5 bg-[var(--bg)] border border-[var(--border)]">
                 <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
                   {METRICS[k].short}
                 </p>

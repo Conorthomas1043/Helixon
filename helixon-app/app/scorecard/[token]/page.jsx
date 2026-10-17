@@ -104,7 +104,7 @@ export default function ScorecardPage({ params }) {
                 aria-pressed={recommendation === v}
                 onClick={() => setRecommendation(v)}
                 className="text-13 font-semibold px-3 py-1.5 rounded-full"
-                style={recommendation === v ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
+                style={recommendation === v ? { background: "var(--forest)", color: "var(--on-accent)" } : { border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
               >
                 {l}
               </button>
@@ -137,7 +137,7 @@ export default function ScorecardPage({ params }) {
         <button
           type="submit"
           disabled={saving || !overall || !recommendation}
-          className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
+          className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {saving ? "Sending…" : "Send scorecard"}
         </button>

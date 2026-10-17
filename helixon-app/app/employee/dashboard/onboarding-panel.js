@@ -73,7 +73,7 @@ export default function OnboardingPanel() {
   }
 
   return (
-    <section className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]" aria-labelledby="onboarding-title">
+    <section className="rounded-2xl overflow-hidden bg-[var(--bg)] border border-[var(--border)]" aria-labelledby="onboarding-title">
       <div className="px-5 py-4 border-b flex items-center justify-between gap-3 border-[var(--border-soft)]">
         <div>
           <p className="text-11 font-semibold uppercase tracking-[0.1em] mb-0.5 text-[var(--forest)]">Getting started</p>
@@ -109,7 +109,7 @@ export default function OnboardingPanel() {
               aria-label={task.label}
             >
               {task.completed && (
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="w-3 h-3 text-[var(--on-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}

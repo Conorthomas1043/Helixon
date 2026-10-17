@@ -146,7 +146,7 @@ export default function ImportPage() {
                       else next[f.key] = Number(e.target.value);
                       return next;
                     })}
-                    className="flex-1 min-w-0 text-13 px-2 py-1.5 rounded-lg bg-white border border-[var(--border)] text-[var(--ink)]"
+                    className="flex-1 min-w-0 text-13 px-2 py-1.5 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
                   >
                     <option value="">Not imported</option>
                     {table.headers.map((h, i) => (

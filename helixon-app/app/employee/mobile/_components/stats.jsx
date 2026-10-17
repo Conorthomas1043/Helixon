@@ -45,7 +45,7 @@ export function TeamPresenceList() {
       {loading && team.length === 0 ? (
         <p className="text-13 text-center py-4 text-[var(--ink-faint)]">Loading…</p>
       ) : (
-        <div className="rounded-card bg-white border border-[var(--border)]">
+        <div className="rounded-card bg-[var(--bg)] border border-[var(--border)]">
           {sorted.map((person, i) => (
             <div
               key={person.id}

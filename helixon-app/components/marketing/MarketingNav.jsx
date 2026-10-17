@@ -114,7 +114,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                 aria-expanded={accountOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
-                className="w-8 h-8 rounded-full text-[var(--on-forest)] text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] bg-[var(--forest)]"
+                className="w-8 h-8 rounded-full text-[var(--on-accent)] text-11 font-semibold flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--forest)] bg-[var(--forest)]"
               >
                 {initials}
               </button>
@@ -133,7 +133,7 @@ export default function MarketingNav({ active, showTagline = true }) {
                   </Link>
                   <div className="border-t mt-1 pt-1 border-[var(--border)]">
                     <SignOutButton redirectUrl="/login">
-                      <button type="button" role="menuitem" onClick={clearLocalCandidateData} className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-red-50 text-[var(--score-low)]">
+                      <button type="button" role="menuitem" onClick={clearLocalCandidateData} className="w-full text-left block px-3.5 py-2 text-sm transition-colors hover:bg-[var(--ui-danger-soft)] text-[var(--score-low)]">
                         Log out
                       </button>
                     </SignOutButton>

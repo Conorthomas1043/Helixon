@@ -109,7 +109,7 @@ export function EditDetailsDialog({ candidate, onCancel, onSaved }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-details-title"
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-white shadow-xl"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-[var(--bg)] shadow-xl"
       >
         <h2 id="edit-details-title" className="text-base font-semibold mb-1 text-[var(--ink)]">
           Edit candidate details
@@ -145,7 +145,7 @@ export function EditDetailsDialog({ candidate, onCancel, onSaved }) {
           <button
             type="submit"
             disabled={saving}
-            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-white"
+            className="text-14 font-semibold px-4 py-2.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
           >
             {saving ? "Saving…" : "Save"}
           </button>

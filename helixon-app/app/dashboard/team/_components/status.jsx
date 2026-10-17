@@ -121,7 +121,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
                 setStatus(c.value);
                 if (!c.value) save(null);
               }}
-              className={`flex items-center justify-center gap-1.5 text-14 font-semibold px-2 py-2 rounded-btn border transition-colors ${on ? "border-[var(--forest)]" : "border-[var(--border)]"} ${on ? "bg-[var(--mint)]" : "bg-white"} ${on ? "text-[var(--forest-deep)]" : "text-[var(--ink-soft)]"}`}
+              className={`flex items-center justify-center gap-1.5 text-14 font-semibold px-2 py-2 rounded-btn border transition-colors ${on ? "border-[var(--forest)]" : "border-[var(--border)]"} ${on ? "bg-[var(--mint)]" : "bg-[var(--bg)]"} ${on ? "text-[var(--forest-deep)]" : "text-[var(--ink-soft)]"}`}
             >
               <PresenceDot state={c.dot} size={8} ring="transparent" />
               {c.label}
@@ -158,7 +158,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               value={clearAfter}
               onChange={(e) => setClearAfter(e.target.value)}
               aria-label="Clear status"
-              className="flex-1 text-14 font-semibold px-3 py-2 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+              className="flex-1 text-14 font-semibold px-3 py-2 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
             >
               {CLEAR_AFTER.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -170,7 +170,7 @@ export function MyStatusEditor({ me, presence, onSaved }) {
               type="button"
               onClick={() => save()}
               disabled={saving}
-              className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
+              className="text-14 font-semibold px-4 py-2 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
             >
               {saving ? "Saving…" : saved ? "Saved ✓" : "Set status"}
             </button>

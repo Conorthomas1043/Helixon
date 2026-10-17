@@ -111,7 +111,7 @@ export default function ReferencePage({ params }) {
                     aria-pressed={answers[q.id] === o}
                     onClick={() => set(q.id, o)}
                     className="text-13 font-semibold px-3 py-1.5 rounded-full"
-                    style={answers[q.id] === o ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: INK, background: "white" }}
+                    style={answers[q.id] === o ? { background: "var(--forest)", color: "var(--on-accent)" } : { border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}
                   >
                     {o}
                   </button>
@@ -139,17 +139,17 @@ export default function ReferencePage({ params }) {
           <span>To the best of my knowledge this reference is accurate, and I&apos;m happy for it to be shared with a prospective employer.</span>
         </label>
         {error && <p role="alert" className="text-13 text-[var(--score-low)]">{error}</p>}
-        <button type="submit" disabled={saving || !confirm} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
+        <button type="submit" disabled={saving || !confirm} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
           {saving ? "Sending…" : "Send reference"}
         </button>
         {declining ? (
           <div className="rounded-xl p-4 space-y-3 border border-[var(--border)] bg-[var(--mist)]" role="group" aria-label="Decline the reference">
             <p className="text-14 text-[var(--ink)]">Let the agency know you won&apos;t be giving a reference?</p>
             <div className="flex flex-col-reverse sm:flex-row gap-2">
-              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full border border-[var(--border)] text-[var(--ink)] bg-white">
+              <button type="button" disabled={saving} onClick={() => setDeclining(false)} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full border border-[var(--border)] text-[var(--ink)] bg-[var(--bg)]">
                 Go back
               </button>
-              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50 bg-[var(--score-low)] text-white">
+              <button type="button" disabled={saving} onClick={() => send({ decline: true }, "declined")} className="flex-1 text-14 font-semibold px-4 py-2.5 rounded-full disabled:opacity-50 bg-[var(--score-low)] text-[var(--on-accent)]">
                 {saving ? "Sending…" : "Yes, let them know"}
               </button>
             </div>

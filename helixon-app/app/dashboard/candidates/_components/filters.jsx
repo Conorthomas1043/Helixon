@@ -14,7 +14,7 @@ export function FilterChip({ active, onClick, children, count }) {
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 ${active ? "bg-[var(--forest)]" : "bg-white"} ${active ? "text-white" : "text-[var(--ink-soft)]"} ${active ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
+      className={`inline-flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 shrink-0 ${active ? "bg-[var(--forest)]" : "bg-[var(--bg)]"} ${active ? "text-[var(--on-accent)]" : "text-[var(--ink-soft)]"} ${active ? "border border-[var(--forest)]" : "border border-[var(--border)]"}`}
     >
       {children}
       {typeof count === "number" && (
@@ -22,7 +22,7 @@ export function FilterChip({ active, onClick, children, count }) {
           className="text-12 font-semibold px-1.5 rounded-full tabular-nums"
           style={{
             background: active ? "rgba(0,0,0,0.2)" : "var(--mist)", // white on 25% white over forest was 3.7:1
-            color: active ? "white" : INK_FAINT,
+            color: active ? "var(--on-accent)" : INK_FAINT,
           }}
         >
           {count}
@@ -38,7 +38,7 @@ export function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -58,7 +58,7 @@ export function ColumnsMenu({ columns, onChange }) {
       >
         Columns
       </summary>
-      <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-btn bg-white p-2 shadow-lg border border-[var(--border)]">
+      <div className="absolute right-0 z-20 mt-1.5 w-48 rounded-btn bg-[var(--bg)] p-2 shadow-lg border border-[var(--border)]">
         {CANDIDATE_COLUMNS.map((c) => (
           <label key={c.key} className="flex items-center gap-2 px-1.5 py-1 text-13 rounded hover:bg-[var(--mist)] text-[var(--ink)]">
             <input

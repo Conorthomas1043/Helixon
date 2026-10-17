@@ -269,7 +269,7 @@ export function ActivityOverview({ analyses }) {
               <button key={d} type="button" onClick={() => setWindowDays(d)} aria-pressed={windowDays === d} style={{
                 fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 9999,
                 background: windowDays === d ? ACCENT : "transparent",
-                color: windowDays === d ? "#fff" : TEXT_FAINT,
+                color: windowDays === d ? "var(--on-accent)" : TEXT_FAINT,
                 border: "none", cursor: "pointer",
               }}>{d}D</button>
             ))}

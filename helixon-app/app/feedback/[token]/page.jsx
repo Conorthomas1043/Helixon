@@ -44,8 +44,8 @@ function TagPicker({ options, selected, onToggle }) {
             className="text-13 font-medium px-3 py-1.5 rounded-full transition"
             style={
               active
-                ? { background: "var(--forest)", color: "white" }
-                : { border: "1px solid var(--border)", color: "var(--ink-soft)", background: "white" }
+                ? { background: "var(--forest)", color: "var(--on-accent)" }
+                : { border: "1px solid var(--border)", color: "var(--ink-soft)", background: "var(--bg)" }
             }
           >
             {t.label}
@@ -68,8 +68,8 @@ function NpsScale({ value, onChange }) {
           className="aspect-square rounded-lg text-13 font-semibold transition flex items-center justify-center"
           style={
             value === n
-              ? { background: "var(--forest)", color: "white" }
-              : { border: "1px solid var(--border)", color: "var(--ink)", background: "white" }
+              ? { background: "var(--forest)", color: "var(--on-accent)" }
+              : { border: "1px solid var(--border)", color: "var(--ink)", background: "var(--bg)" }
           }
         >
           {n}
@@ -91,8 +91,8 @@ function StarScale({ value, onChange }) {
           className="w-11 h-11 rounded-btn text-base font-semibold transition"
           style={
             value !== null && n <= value
-              ? { background: "var(--forest)", color: "white" }
-              : { border: "1px solid var(--border)", color: "var(--ink)", background: "white" }
+              ? { background: "var(--forest)", color: "var(--on-accent)" }
+              : { border: "1px solid var(--border)", color: "var(--ink)", background: "var(--bg)" }
           }
         >
           {n}
@@ -241,7 +241,7 @@ export default function FeedbackPage({ params }) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-60 bg-[var(--forest)] text-white"
+          className="w-full font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-60 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {submitting ? "Sending…" : "Send feedback"}
         </button>

@@ -54,7 +54,7 @@ export default async function PublicJobPage({ params, searchParams }) {
         <Link href={`/jobs/${slug}`} className="text-13 underline" style={{ color: "var(--ink-soft)" }}>
           ← All vacancies
         </Link>
-        <article className="rounded-card bg-white p-6 sm:p-8 border border-[var(--border)]">
+        <article className="rounded-card bg-[var(--bg)] p-6 sm:p-8 border border-[var(--border)]">
           <h1 className="text-3xl font-semibold text-[var(--ink)] font-display">
             {publicJob.title}
           </h1>
@@ -65,7 +65,7 @@ export default async function PublicJobPage({ params, searchParams }) {
               long scroll before an applicant sees any way to apply. */}
           <a
             href="#apply"
-            className="inline-flex items-center justify-center mt-5 min-h-[44px] text-14 font-semibold px-6 rounded-full bg-[var(--forest)] text-white"
+            className="inline-flex items-center justify-center mt-5 min-h-[44px] text-14 font-semibold px-6 rounded-full bg-[var(--forest)] text-[var(--on-accent)]"
           >
             Apply for this job
           </a>

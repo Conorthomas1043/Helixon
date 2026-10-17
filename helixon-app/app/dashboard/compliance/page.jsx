@@ -92,7 +92,7 @@ export default function CompliancePage() {
               ["Privacy notices due", data.notices.length, data.notices.some((n) => n.overdue)],
               ["References awaited", data.references.length, false],
             ].map(([label, n, alarm]) => (
-              <div key={label} className="rounded-xl px-4 py-3 bg-white border border-[var(--border)]">
+              <div key={label} className="rounded-xl px-4 py-3 bg-[var(--bg)] border border-[var(--border)]">
                 <p className="text-12 font-semibold uppercase tracking-widest text-[var(--ink-faint)]">
                   {label}
                 </p>

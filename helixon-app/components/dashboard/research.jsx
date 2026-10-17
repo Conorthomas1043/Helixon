@@ -90,7 +90,7 @@ export function PulseSurvey({ analysesCount }) {
   }
 
   return (
-    <section className="rounded-card p-5 sm:p-6 bg-white border border-[var(--border)]" aria-labelledby="pulse-title">
+    <section className="rounded-card p-5 sm:p-6 bg-[var(--bg)] border border-[var(--border)]" aria-labelledby="pulse-title">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 id="pulse-title" className="text-16 font-semibold text-[var(--ink)] font-display">
@@ -126,7 +126,7 @@ export function PulseSurvey({ analysesCount }) {
                   />
                   <span
                     className="inline-flex items-center justify-center w-10 h-10 rounded-full text-14 font-semibold peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--forest)]"
-                    style={answers[item.key] === n ? { background: "var(--forest)", color: "white" } : { border: "1px solid var(--border)", color: "var(--ink)" }}
+                    style={answers[item.key] === n ? { background: "var(--forest)", color: "var(--on-accent)" } : { border: "1px solid var(--border)", color: "var(--ink)" }}
                   >
                     {n}
                   </span>
@@ -149,7 +149,7 @@ export function PulseSurvey({ analysesCount }) {
             {error}
           </p>
         )}
-        <button type="submit" disabled={busy} className="text-14 font-semibold px-5 rounded-btn min-h-[44px] text-white" style={{ background: "var(--forest)", opacity: busy ? 0.7 : 1 }}>
+        <button type="submit" disabled={busy} className="text-14 font-semibold px-5 rounded-btn min-h-[44px] text-[var(--on-accent)]" style={{ background: "var(--forest)", opacity: busy ? 0.7 : 1 }}>
           {busy ? "Sending…" : "Send"}
         </button>
       </form>
@@ -197,7 +197,7 @@ export function ResearchOptIn() {
   }
 
   return (
-    <section className="rounded-card p-5 bg-white border border-[var(--border)]">
+    <section className="rounded-card p-5 bg-[var(--bg)] border border-[var(--border)]">
       <h2 className="text-sm font-semibold text-[var(--ink)]">
         Help shape Helixon
       </h2>

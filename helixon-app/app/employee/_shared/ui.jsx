@@ -71,7 +71,7 @@ export function Kpi({ label, value, sub, tone, index = 0, href }) {
       {sub && <p className="text-xs mt-2 text-[var(--ink-faint)]">{sub}</p>}
     </>
   );
-  const className = "fade-up-in block rounded-2xl bg-white p-4 sm:p-5";
+  const className = "fade-up-in block rounded-2xl bg-[var(--bg)] p-4 sm:p-5";
   const style = { border: "1px solid var(--border)", "--stagger-delay": `${index * 60}ms` };
   if (href) {
     return (

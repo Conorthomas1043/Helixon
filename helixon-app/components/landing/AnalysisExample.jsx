@@ -313,7 +313,7 @@ export default function AnalysisExample() {
             className="min-w-0 break-words text-left px-3 sm:px-4 py-2.5 rounded-xl transition-colors min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
               background: active === i ? "var(--forest)" : "var(--bg)",
-              color: active === i ? "var(--on-forest)" : "var(--ink)",
+              color: active === i ? "var(--on-accent)" : "var(--ink)",
               border: `1px solid ${active === i ? "var(--forest)" : "var(--border)"}`,
             }}
           >

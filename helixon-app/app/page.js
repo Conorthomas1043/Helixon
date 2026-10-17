@@ -291,8 +291,7 @@ const FAQ_LD = {
 
 export default function LandingPage() {
   return (
-    // auto-theme: this page follows the system's light or dark setting (app/globals.css).
-    <div className="auto-theme min-h-screen bg-[var(--mist)] text-[var(--ink)]">
+    <div className="min-h-screen bg-[var(--mist)] text-[var(--ink)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD).replace(/</g, "\\u003c") }} />
       <a href="#main-content" className="skip-link">Skip to content</a>
       <MarketingNav active="home" />

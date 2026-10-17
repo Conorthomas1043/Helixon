@@ -43,7 +43,7 @@ function Select({ value, onChange, options, ariaLabel }) {
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
+      className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border border-[var(--border)] text-[var(--ink)]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -66,7 +66,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
         e.dataTransfer.setData("text/plain", candidate.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className="group rounded-xl p-3 bg-white cursor-grab active:cursor-grabbing transition-shadow hover:shadow-[var(--shadow-sm)]"
+      className="group rounded-xl p-3 bg-[var(--bg)] cursor-grab active:cursor-grabbing transition-shadow hover:shadow-[var(--shadow-sm)]"
       style={{ border: "1px solid var(--border)", opacity: pending ? 0.6 : 1 }}
     >
       <Link
@@ -171,7 +171,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+        className="inline-flex items-center text-14 font-semibold px-4 py-2.5 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
       >
         Try again
       </button>
@@ -324,7 +324,7 @@ function PipelineContent() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search candidate or role"
               aria-label="Search pipeline"
-              className="text-13 px-3 py-1.5 rounded-full bg-white w-full sm:w-52 focus:outline-none focus-visible:ring-2 border border-[var(--border)] text-[var(--ink)]"
+              className="text-13 px-3 py-1.5 rounded-full bg-[var(--bg)] w-full sm:w-52 focus:outline-none focus-visible:ring-2 border border-[var(--border)] text-[var(--ink)]"
             />
             <Select ariaLabel="Filter by job" value={jobId} onChange={(v) => { setStatus("loading"); setJobId(v); }} options={[{ value: "all", label: "Any job" }, ...jobs.map((j) => ({ value: j.id, label: j.title }))]} />
             <Select
@@ -333,14 +333,14 @@ function PipelineContent() {
               onChange={(v) => { setStatus("loading"); setRecruiterId(v); }}
               options={[{ value: "all", label: "Any recruiter" }, ...recruiters.map((r) => ({ value: r.id, label: r.name }))]}
             />
-            <label className="flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full bg-white cursor-pointer border border-[var(--border)] text-[var(--ink-soft)]">
+            <label className="flex items-center gap-1.5 text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] cursor-pointer border border-[var(--border)] text-[var(--ink-soft)]">
               <input type="checkbox" checked={hideRejected} onChange={(e) => setHideRejected(e.target.checked)} className="accent-[var(--forest)]" />
               Hide rejected
             </label>
             <Link
               href="/analyse"
               className="inline-flex items-center text-13 font-semibold px-3.5 py-1.5 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "var(--forest)", color: "white" }}
+              style={{ background: "var(--forest)", color: "var(--on-accent)" }}
             >
               + Screen a CV
             </Link>
@@ -363,7 +363,7 @@ function PipelineContent() {
               <div className="rounded-2xl p-10 text-center" style={CARD}>
                 <p className="text-base font-semibold mb-1 text-[var(--ink)]">No candidates yet</p>
                 <p className="text-sm mb-5 text-[var(--ink-soft)]">Analyse a CV and the candidate will land in Screened.</p>
-                <Link href="/analyse" className="inline-flex text-14 font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "white" }}>
+                <Link href="/analyse" className="inline-flex text-14 font-semibold px-4 py-2.5 rounded-full" style={{ background: "var(--forest)", color: "var(--on-accent)" }}>
                   Analyse a CV
                 </Link>
               </div>
@@ -394,7 +394,7 @@ function PipelineContent() {
                       }}
                       className="rounded-card p-2.5 w-[264px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-0 transition-colors"
                       style={{
-                        background: over ? "var(--mint)" : "rgba(255,255,255,0.6)",
+                        background: over ? "var(--mint)" : "color-mix(in srgb, var(--bg) 60%, transparent)",
                         border: highlighted || over ? "1.5px solid var(--forest)" : "1px solid var(--border)",
                         borderTop: `3px solid ${STAGE_ACCENT[key]}`,
                       }}

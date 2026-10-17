@@ -56,7 +56,7 @@ export default function CareersPage() {
         <h2 className="sr-only">How we work</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {VALUES.map((v) => (
-            <div key={v.title} className="rounded-card p-6 bg-white border border-[var(--border)]">
+            <div key={v.title} className="rounded-card p-6 bg-[var(--bg)] border border-[var(--border)]">
               <div className="w-9 h-9 rounded-btn flex items-center justify-center mb-4 bg-[var(--mint)]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--forest)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{v.icon}</svg>
               </div>
@@ -69,12 +69,12 @@ export default function CareersPage() {
 
       {/* ── Benefits ─────────────────────────────────────────────────── */}
       <section className="max-w-[1100px] mx-auto px-6 pb-20">
-        <div className="rounded-2xl p-8 bg-[var(--forest)]">
+        <div className="rounded-2xl p-8 bg-[var(--brand-surface)]">
           <h2 className="text-lg font-semibold mb-5 text-white font-display">What you get</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
             {BENEFITS.map((b) => (
               <div key={b} className="flex items-center gap-2.5 text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--mint)" strokeWidth="2.5" strokeLinecap="round" className="shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" className="shrink-0">
                   <path d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
                 {b}
@@ -93,7 +93,7 @@ export default function CareersPage() {
           </h2>
         </div>
 
-        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 12px 24px -18px rgba(19,32,27,0.25)" }}>
           {ROLES.map((role, i) => (
             <a
               key={role.title}

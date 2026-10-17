@@ -295,7 +295,7 @@ function CalendarPageContent() {
           </div>
           <button type="button"
             onClick={openAdd}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-white"
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg transition hover:opacity-90 self-start bg-[var(--forest)] text-[var(--on-accent)]"
           >
             <span className="text-base leading-none">+</span> New event
           </button>
@@ -318,7 +318,7 @@ function CalendarPageContent() {
         )}
 
         {showAddForm && (
-          <div className="rounded-2xl p-5 mb-6 bg-white border border-[var(--border)]">
+          <div className="rounded-2xl p-5 mb-6 bg-[var(--bg)] border border-[var(--border)]">
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -328,7 +328,7 @@ function CalendarPageContent() {
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <label className="sm:col-span-2 flex items-center gap-2 text-xs font-medium text-[var(--ink-soft)]">
@@ -341,7 +341,7 @@ function CalendarPageContent() {
                     type={form.all_day ? "date" : "datetime-local"}
                     value={form.start_at}
                     onChange={(e) => setForm((f) => ({ ...f, start_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -350,7 +350,7 @@ function CalendarPageContent() {
                     type={form.all_day ? "date" : "datetime-local"}
                     value={form.end_at}
                     onChange={(e) => setForm((f) => ({ ...f, end_at: e.target.value }))}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div>
@@ -360,7 +360,7 @@ function CalendarPageContent() {
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                     placeholder="Optional"
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -369,7 +369,7 @@ function CalendarPageContent() {
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                     rows={2}
-                    className="w-full bg-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
+                    className="w-full bg-[var(--bg)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none border border-[var(--border)] text-[var(--ink)]"
                   />
                 </div>
               </div>
@@ -379,10 +379,10 @@ function CalendarPageContent() {
               )}
 
               <div className="flex gap-2">
-                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-white">
+                <button type="submit" disabled={saving} className="text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 hover:opacity-90 bg-[var(--forest)] text-[var(--on-accent)]">
                   {saving ? "Saving…" : editingId ? "Save changes" : "Add event"}
                 </button>
-                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-white text-[var(--ink-soft)]">
+                <button type="button" onClick={() => setShowAddForm(false)} className="text-sm px-4 py-2 rounded-lg transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">
                   Cancel
                 </button>
               </div>
@@ -392,7 +392,7 @@ function CalendarPageContent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* ── Agenda ──────────────────────────────────────────────────── */}
-          <div className="rounded-2xl overflow-hidden bg-white border border-[var(--border)]">
+          <div className="rounded-2xl overflow-hidden bg-[var(--bg)] border border-[var(--border)]">
             {loading ? (
               <div className="px-6 py-14 text-center text-sm text-[var(--ink-faint)]">Loading…</div>
             ) : grouped.length === 0 ? (
@@ -422,7 +422,7 @@ function CalendarPageContent() {
                             </div>
                             {canEdit && (
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                <button type="button" onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-white text-[var(--ink-soft)]">Edit</button>
+                                <button type="button" onClick={() => openEdit(ev)} className="text-xs px-2 py-1 rounded-md transition hover:bg-[var(--bg)] text-[var(--ink-soft)]">Edit</button>
                                 <button type="button" onClick={() => handleDelete(ev.id)} className="text-xs px-2 py-1 rounded-md transition text-[var(--score-low)]">Delete</button>
                               </div>
                             )}
@@ -438,7 +438,7 @@ function CalendarPageContent() {
 
           {/* ── Connect panel ───────────────────────────────────────────── */}
           <div className="space-y-4">
-            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+            <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
               <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
                 Subscribe from Google or Apple
               </h2>
@@ -472,7 +472,7 @@ function CalendarPageContent() {
               )}
             </div>
 
-            <div className="rounded-2xl p-5 bg-white border border-[var(--border)]">
+            <div className="rounded-2xl p-5 bg-[var(--bg)] border border-[var(--border)]">
               <h2 className="text-sm font-semibold mb-1 text-[var(--ink)] font-display">
                 Google Calendar (two-way)
               </h2>
@@ -509,7 +509,7 @@ function CalendarPageContent() {
                   </p>
                   <a
                     href="/api/employee/calendar/google/connect"
-                    className="inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg bg-[var(--forest)] text-white"
+                    className="inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg bg-[var(--forest)] text-[var(--on-accent)]"
                   >
                     Connect Google Calendar
                   </a>

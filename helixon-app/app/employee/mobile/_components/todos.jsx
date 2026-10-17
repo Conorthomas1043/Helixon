@@ -107,12 +107,12 @@ export function TodosTab() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="What needs doing?"
-          className="flex-1 text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-white text-[var(--ink)]"
+          className="flex-1 text-14 rounded-btn px-3 py-2.5 border border-[var(--border)] bg-[var(--bg)] text-[var(--ink)]"
         />
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="w-11 h-11 flex items-center justify-center rounded-btn shrink-0 bg-[var(--forest)] text-white"
+          className="w-11 h-11 flex items-center justify-center rounded-btn shrink-0 bg-[var(--forest)] text-[var(--on-accent)]"
           aria-label="Add task"
         >
           <Icon path={ICONS.plus} size={18} />
@@ -155,7 +155,7 @@ export function TodosTab() {
 export function TodoRow({ todo, onToggle, onDelete }) {
   return (
     <div
-      className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white border border-[var(--border)]"
+      className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]"
     >
       <button
         type="button"
@@ -165,7 +165,7 @@ export function TodoRow({ todo, onToggle, onDelete }) {
         style={{
           border: `1.5px solid ${todo.done ? "var(--forest)" : "var(--border)"}`,
           background: todo.done ? "var(--forest)" : "transparent",
-          color: "white",
+          color: "var(--on-accent)",
         }}
       >
         {todo.done && <Icon path={ICONS.check} size={13} strokeWidth={3} />}

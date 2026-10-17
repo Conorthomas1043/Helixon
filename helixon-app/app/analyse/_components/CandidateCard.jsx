@@ -43,7 +43,7 @@ export default function CandidateCard({
 
         {file ? (
           <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl border border-[var(--border)] bg-[var(--mist)]">
-            <span className="w-10 h-10 rounded-lg bg-white border border-[var(--border)] flex items-center justify-center text-[var(--forest)]">
+            <span className="w-10 h-10 rounded-lg bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[var(--forest)]">
               <Icon name="file" size={18} />
             </span>
             <span className="min-w-0 flex-1">

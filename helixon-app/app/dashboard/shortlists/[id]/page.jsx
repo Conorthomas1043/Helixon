@@ -74,7 +74,7 @@ function NoteEditor({ value, onSave }) {
           type="button"
           onClick={save}
           disabled={saving}
-          className="text-12 font-semibold px-3 py-1 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white"
+          className="text-12 font-semibold px-3 py-1 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]"
         >
           {saving ? "Saving…" : "Save"}
         </button>
@@ -206,7 +206,7 @@ export default function ShortlistDetailPage({ params }) {
         {status === "error" && (
           <div className="rounded-card p-10 text-center" style={CARD}>
             <p className="font-semibold mb-3 text-[var(--ink)]">Unable to load this shortlist</p>
-            <button type="button" onClick={reload} className={pill} style={{ background: "var(--forest)", color: "white" }}>Try again</button>
+            <button type="button" onClick={reload} className={pill} style={{ background: "var(--forest)", color: "var(--on-accent)" }}>Try again</button>
           </div>
         )}
 
@@ -226,7 +226,7 @@ export default function ShortlistDetailPage({ params }) {
                         aria-label="Shortlist name"
                         className="text-lg font-semibold px-2 py-1 rounded-lg border border-[var(--border)] text-[var(--ink)]"
                       />
-                      <button type="submit" className={pill} style={{ background: "var(--forest)", color: "white" }}>Save</button>
+                      <button type="submit" className={pill} style={{ background: "var(--forest)", color: "var(--on-accent)" }}>Save</button>
                       <button type="button" onClick={() => setRenaming(false)} className="text-13 font-semibold text-[var(--ink-soft)]">Cancel</button>
                     </form>
                   ) : (
@@ -262,7 +262,7 @@ export default function ShortlistDetailPage({ params }) {
                   aria-label="Job this shortlist is for"
                   value={shortlist.jobId || ""}
                   onChange={(e) => changeJob(e.target.value)}
-                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-white border border-[var(--border)] text-[var(--ink)]"
+                  className="text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] border border-[var(--border)] text-[var(--ink)]"
                 >
                   <option value="">Not linked to a job</option>
                   {jobs.map((j) => (
@@ -271,19 +271,19 @@ export default function ShortlistDetailPage({ params }) {
                 </select>
                 {candidates.length > 0 && (
                   <>
-                    <button type="button" onClick={() => setSharing(true)} className={pill} style={{ background: "var(--forest)", color: "white" }}>
+                    <button type="button" onClick={() => setSharing(true)} className={pill} style={{ background: "var(--forest)", color: "var(--on-accent)" }}>
                       Share with client
                     </button>
-                    <Link href={`/dashboard/shortlists/${id}/client-pack`} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+                    <Link href={`/dashboard/shortlists/${id}/client-pack`} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}>
                       Client pack (PDF)
                     </Link>
-                    <a href={clientEmailHref(shortlist, candidates)} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+                    <a href={clientEmailHref(shortlist, candidates)} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}>
                       Email {shortlist.clientEmail ? "client" : "summary"}
                     </a>
                   </>
                 )}
                 {candidates.length >= 2 && candidates.length <= 4 && (
-                  <Link href={`/analyse/compare?ids=${candidates.map((c) => c.id).join(",")}`} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "white" }}>
+                  <Link href={`/analyse/compare?ids=${candidates.map((c) => c.id).join(",")}`} className={pill} style={{ border: "1px solid var(--border)", color: INK, background: "var(--bg)" }}>
                     Compare side by side
                   </Link>
                 )}

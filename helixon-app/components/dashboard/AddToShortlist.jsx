@@ -100,7 +100,7 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
         aria-haspopup="true"
         className={
           className ||
-          "text-13 font-semibold px-3 py-1.5 rounded-full bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          "text-13 font-semibold px-3 py-1.5 rounded-full bg-[var(--bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         }
         style={className ? undefined : { border: "1px solid var(--border)", color: INK }}
       >
@@ -110,7 +110,7 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
         <div
           role="dialog"
           aria-label="Add to a client shortlist"
-          className="absolute z-40 mt-2 w-72 rounded-xl bg-white p-3 shadow-xl right-0 sm:left-0 sm:right-auto border border-[var(--border)]"
+          className="absolute z-40 mt-2 w-72 rounded-xl bg-[var(--bg)] p-3 shadow-xl right-0 sm:left-0 sm:right-auto border border-[var(--border)]"
         >
           <p className="text-12 font-semibold uppercase tracking-widest mb-2 text-[var(--ink-faint)]">
             {candidateIds.length === 1 ? "Client shortlists" : `Add ${candidateIds.length} people to`}
@@ -156,7 +156,7 @@ export default function AddToShortlist({ candidateIds, jobId = null, defaultName
             <button
               type="submit"
               disabled={busy || !newName.trim()}
-              className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-white"
+              className="text-13 font-semibold px-3 py-1.5 rounded-full disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-[var(--forest)] text-[var(--on-accent)]"
             >
               Create
             </button>

@@ -179,7 +179,7 @@ export default function BillingPage() {
               <p className="text-sm mb-4" style={{ color: COLORS.muted }}>
                 You&apos;re not on a paid plan yet.
               </p>
-              <Link href="/pricing" className="inline-flex items-center justify-center rounded-btn font-semibold text-sm px-4 py-2.5 text-white" style={{ background: "var(--forest)" }}>View plans</Link>
+              <Link href="/pricing" className="inline-flex items-center justify-center rounded-btn font-semibold text-sm px-4 py-2.5 text-[var(--on-accent)]" style={{ background: "var(--forest)" }}>View plans</Link>
             </>
           ) : (
             <div className="space-y-4 max-w-sm">

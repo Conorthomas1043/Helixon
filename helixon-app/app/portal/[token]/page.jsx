@@ -10,7 +10,7 @@ import PublicCard, { PublicCardLoading } from "@/components/public/PublicCard";
 const INK = "var(--ink)";
 const MUTED = "var(--ink-soft)";
 const input = "w-full text-14 px-3 py-2.5 rounded-btn focus-visible:outline focus-visible:outline-2";
-const inputStyle = { border: "1px solid var(--border)", color: INK, background: "white" };
+const inputStyle = { border: "1px solid var(--border)", color: INK, background: "var(--bg)" };
 
 const FIELDS = [
   ["phone", "Phone", "tel", "tel"],
@@ -120,7 +120,7 @@ export default function PortalPage({ params }) {
           </label>
         </div>
         {saved && <p role="status" className="text-14 text-[var(--forest)]">{saved}</p>}
-        <button type="submit" disabled={saving} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-white">
+        <button type="submit" disabled={saving} className="w-full text-14 font-semibold px-4 py-3 rounded-full disabled:opacity-50 bg-[var(--forest)] text-[var(--on-accent)]">
           {saving ? "Saving…" : "Save my details"}
         </button>
       </form>

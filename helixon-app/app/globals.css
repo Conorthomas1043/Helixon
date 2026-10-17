@@ -90,31 +90,33 @@
   --ui-warn:           #8a5a12;
   --ui-warn-soft:      #fdf6e9;
 
-  /* Text and icons on a --forest fill (buttons, the logo mark), and the
-     large brand-green panels (trust section, CTA band, highlighted plan),
-     which always carry white text. In light they are white and --forest;
-     the dark appearance below changes them. */
-  --on-forest:     #ffffff;
+  /* Text and icons on an accent fill: buttons, badges and chips in
+     --forest, --score-low, --gold and the like, and the inverse --ink
+     bars. White in light; near-black in dark, where those fills are light.
+     --brand-surface is the large brand-green panels (trust section, CTA
+     band, highlighted plan, the sign-in hero), which stay deep green and
+     keep white text in both appearances. */
+  --on-accent:     #ffffff;
   --brand-surface: var(--forest);
+  --on-brand-soft: #e8f3ee; /* pale mint labels on --brand-surface, in both appearances */
+
+  /* The frosted panels the sign-in and sign-up cards sit on. */
+  --glass-bg:    rgba(255,255,255,0.68);
+  --glass-line:  rgba(255,255,255,0.65);
+  --glass-shine: rgba(255,255,255,0.85);
+  --glass-spot:  rgba(255,255,255,0.5);
+  --glass-field: rgba(255,255,255,0.6);
 }
 
 /* ── Dark appearance ──────────────────────────────────────────────────────
-   Opt-in per page with the .auto-theme class, which follows the system
-   setting. Only the homepage has it: the signed-in app still has literal
-   whites and would come out half dark.
-
-   Custom properties resolve where they are declared, so the --ui-* tokens
-   and Tailwind's --color-* theme are re-declared here: declared once on
-   :root, they would keep the light values. --forest gets lighter, so as
-   text and icons it reads on dark surfaces (8:1 on --bg); a button on it
-   takes dark text through --on-forest. --brand-surface stays deep green
-   with white text. */
+   Follows the system setting. Redefining the palette on :root is enough:
+   the --ui-* kit tokens and Tailwind's --color-* theme refer to it, so they
+   resolve to these values too. Only tokens with literal values need a dark
+   value of their own. --forest gets lighter so that, as text and icons, it
+   reads on dark surfaces (8:1 on --bg); fills in it take --on-accent text.
+   The admin console sets its own dark theme on :root after this sheet. */
 @media (prefers-color-scheme: dark) {
-  body:has(.auto-theme) {
-    background: #0c1411;
-    color-scheme: dark;
-  }
-  .auto-theme {
+  :root {
     color-scheme: dark;
 
     --forest:       #5cc79c;
@@ -122,6 +124,7 @@
     --forest-rgb:   92, 199, 156;
     --mint:         #12291f;
     --gold:         #d9a94f;
+    --gold-deep:    #e8c27a;
     --ink:          #e8efeb;
     --mist:         #0c1411;
     --bg:           #141e1a;
@@ -131,9 +134,12 @@
     --ink-faint:    #8fa69a;
     --ink-mute:     #4e6258;
     --signal-soft:  #3a1d16;
-    --score-strong: var(--forest);
+    --score-strong: #5cc79c;
     --score-mid:    #f0a957;
     --score-low:    #f2877a;
+    --stage-screened:    #6f8479;
+    --stage-shortlisted: #3fae82;
+    --stage-interview:   #3aa39c;
     --teal:         #5cbcb5;
     --teal-soft:    #12292a;
     --info:         #7aa2ff;
@@ -145,48 +151,21 @@
     --shadow-sm:    0 1px 2px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
     --shadow-raise: 0 2px 6px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.35);
 
-    --on-forest:     #06120d;
+    --on-accent:     #06120d;
     --brand-surface: #0f3a2b;
 
-    --ui-surface:        var(--bg);
-    --ui-surface-muted:  var(--mist);
-    --ui-border:         var(--border);
+    --glass-bg:    rgba(20,30,26,0.72);
+    --glass-line:  rgba(255,255,255,0.08);
+    --glass-shine: rgba(255,255,255,0.06);
+    --glass-spot:  rgba(255,255,255,0.05);
+    --glass-field: rgba(12,20,17,0.6);
+
     --ui-border-strong:  #5f7a6d;
-    --ui-text:           var(--ink);
-    --ui-text-soft:      var(--ink-soft);
-    --ui-text-faint:     var(--ink-faint);
-    --ui-accent:         var(--forest);
-    --ui-accent-hover:   var(--forest-deep);
-    --ui-accent-soft:    var(--mint);
-    --ui-on-accent:      var(--on-forest);
-    --ui-danger:         var(--score-low);
+    --ui-on-accent:      var(--on-accent);
     --ui-danger-soft:    #2e1816;
-    --ui-on-danger:      #06120d;
+    --ui-on-danger:      var(--on-accent);
     --ui-warn:           #f0b765;
     --ui-warn-soft:      #2b2213;
-
-    --color-forest:        var(--forest);
-    --color-forest-deep:   var(--forest-deep);
-    --color-mint:          var(--mint);
-    --color-gold:          var(--gold);
-    --color-ink:           var(--ink);
-    --color-ink-soft:      var(--ink-soft);
-    --color-ink-faint:     var(--ink-faint);
-    --color-ink-mute:      var(--ink-mute);
-    --color-mist:          var(--mist);
-    --color-border:        var(--border);
-    --color-border-soft:   var(--border-soft);
-    --color-signal-soft:   var(--signal-soft);
-    --color-score-strong:  var(--score-strong);
-    --color-score-mid:     var(--score-mid);
-    --color-score-low:     var(--score-low);
-    --color-teal:          var(--teal);
-    --color-teal-soft:     var(--teal-soft);
-    --color-info:          var(--info);
-    --color-mint-line:     var(--mint-line);
-    --color-chart-muted:   var(--chart-muted);
-    --color-warn-line:     var(--warn-line);
-    --color-danger-line:   var(--danger-line);
   }
 }
 
@@ -326,7 +305,7 @@ html {
   padding: 0.5rem 1rem;
   border-radius: var(--radius-btn);
   background: var(--forest);
-  color: var(--on-forest);
+  color: var(--on-accent);
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
@@ -492,6 +471,11 @@ body {
 @keyframes auth-panel-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes auth-drift-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-34px, 28px) scale(1.09); } }
 @keyframes auth-drift-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(28px, -22px) scale(1.06); } }
+/* The pale green wash behind the sign-in card, and its dark counterpart. */
+.auth-backdrop { background: linear-gradient(135deg, #eef4f0 0%, #e7f0ea 45%, #dcebe0 100%); }
+@media (prefers-color-scheme: dark) {
+  .auth-backdrop { background: linear-gradient(135deg, #0c1411 0%, #0f1b16 45%, #11241c 100%); }
+}
 .auth-panel-in { animation: auth-panel-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 .auth-drift-a { animation: auth-drift-a 20s ease-in-out infinite; }
 .auth-drift-b { animation: auth-drift-b 24s ease-in-out infinite; }

@@ -58,7 +58,7 @@ export function DashboardError({ onRetry }) {
     <div style={{ ...CARD, padding: 40, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
       <p style={{ fontSize: 15, fontWeight: 600, color: TEXT, marginBottom: 6 }}>Unable to load dashboard</p>
       <p style={{ fontSize: 14, color: TEXT_SUB, maxWidth: 320, marginBottom: 20 }}>Something went wrong while loading your recruitment data.</p>
-      <button type="button" onClick={onRetry} style={{ fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: ACCENT, color: "#fff", border: "none", cursor: "pointer" }}>
+      <button type="button" onClick={onRetry} style={{ fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: 9999, background: ACCENT, color: "var(--on-accent)", border: "none", cursor: "pointer" }}>
         Try again
       </button>
     </div>
