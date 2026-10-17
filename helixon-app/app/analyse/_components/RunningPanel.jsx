@@ -2,9 +2,9 @@
 
 // Shown while /api/run works. The CV page on the left is scanned as the steps
 // advance, and the must-haves the recruiter asked for are listed as what the
-// run is looking for. The steps advance on a timer (the server doesn't stream
-// progress) and describe the real pipeline order; the elapsed clock is honest
-// about how long it's taking.
+// run is looking for. The steps follow the analysis as /api/run streams its
+// progress (a timer stands in until the first update arrives, or if it never
+// does); the elapsed clock is honest about how long it's taking.
 
 import { useEffect, useState } from "react";
 import { Card, Icon, Spinner, cx } from "./ui";

@@ -27,6 +27,8 @@ import { INK, INK_MUTED, INK_FAINT, CARD, scoreColor, formatRelativeTime } from 
 import { reportQuietly } from "@/lib/report-error";
 import { Avatar, Skeleton as Block } from "@/components/ui";
 import { celebratePlacement } from "@/components/dashboard/PlacedMoment";
+import MotionProvider from "@/components/motion/MotionProvider";
+import { m } from "motion/react";
 import { PAGE_FRAME_WIDE } from "@/components/dashboard/page-frame";
 
 const BOARD_STAGES = [...FUNNEL_ORDER, "Rejected"];
@@ -61,7 +63,12 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
   const canGoForward = stageIdx >= 0 && stageIdx < FUNNEL_ORDER.length - 1;
 
   return (
-    <div
+    // layoutId: on a stage change the card glides from its old column to
+    // its new one (Motion; still for anyone who asks for less motion).
+    <m.div
+      layoutId={`pipeline-card-${candidate.id}`}
+      layout="position"
+      transition={{ type: "spring", stiffness: 420, damping: 36 }}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", candidate.id);
@@ -158,7 +165,7 @@ function PipelineCard({ candidate, subStage, onMove, pending }) {
           </button>
         </div>
       </div>
-    </div>
+    </m.div>
   );
 }
 
@@ -388,63 +395,67 @@ function PipelineContent() {
                 </Link>
               </div>
             ) : (
-              <div className="flex gap-3 items-start overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
-                {columns.map((key) => {
-                  const items = byStage[key];
-                  const scored = items.filter((c) => c.score != null);
-                  const avg = scored.length ? Math.round(scored.reduce((n, c) => n + c.score, 0) / scored.length) : null;
-                  const highlighted = key === highlightStage;
-                  const over = dragOver === key;
-                  return (
-                    <section
-                      key={key}
-                      ref={(el) => (columnRefs.current[key] = el)}
-                      aria-label={`${STAGE_LABELS[key]} - ${items.length} candidates`}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (dragOver !== key) setDragOver(key);
-                      }}
-                      onDragLeave={(e) => {
-                        if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null);
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setDragOver(null);
-                        handleMove(e.dataTransfer.getData("text/plain"), key);
-                      }}
-                      className="rounded-card p-2.5 w-[264px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-0 transition-colors"
-                      style={{
-                        background: over ? "var(--mint)" : "color-mix(in srgb, var(--bg) 60%, transparent)",
-                        border: highlighted || over ? "1.5px solid var(--forest)" : "1px solid var(--border)",
-                        borderTop: `3px solid ${STAGE_ACCENT[key]}`,
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2.5 px-1.5 pt-0.5">
-                        <span className={`text-13 font-semibold ${highlighted ? "text-[var(--forest)]" : "text-[var(--ink)]"}`}>
-                          {STAGE_LABELS[key]}
-                          <span className="ml-1.5 tabular-nums font-medium text-[var(--ink-faint)]">{items.length}</span>
-                        </span>
-                        {avg !== null && (
-                          <span className="text-12 tabular-nums text-[var(--ink-faint)]" title="Average match score">
-                            avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
+              <MotionProvider>
+                {/* layoutScroll: the board scrolls sideways, and the cards'
+                    glide has to allow for it. */}
+                <m.div layoutScroll className="flex gap-3 items-start overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
+                  {columns.map((key) => {
+                    const items = byStage[key];
+                    const scored = items.filter((c) => c.score != null);
+                    const avg = scored.length ? Math.round(scored.reduce((n, c) => n + c.score, 0) / scored.length) : null;
+                    const highlighted = key === highlightStage;
+                    const over = dragOver === key;
+                    return (
+                      <section
+                        key={key}
+                        ref={(el) => (columnRefs.current[key] = el)}
+                        aria-label={`${STAGE_LABELS[key]} - ${items.length} candidates`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          if (dragOver !== key) setDragOver(key);
+                        }}
+                        onDragLeave={(e) => {
+                          if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null);
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setDragOver(null);
+                          handleMove(e.dataTransfer.getData("text/plain"), key);
+                        }}
+                        className="rounded-card p-2.5 w-[264px] shrink-0 snap-start lg:flex-1 lg:w-auto lg:min-w-0 transition-colors"
+                        style={{
+                          background: over ? "var(--mint)" : "color-mix(in srgb, var(--bg) 60%, transparent)",
+                          border: highlighted || over ? "1.5px solid var(--forest)" : "1px solid var(--border)",
+                          borderTop: `3px solid ${STAGE_ACCENT[key]}`,
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2.5 px-1.5 pt-0.5">
+                          <span className={`text-13 font-semibold ${highlighted ? "text-[var(--forest)]" : "text-[var(--ink)]"}`}>
+                            {STAGE_LABELS[key]}
+                            <span className="ml-1.5 tabular-nums font-medium text-[var(--ink-faint)]">{items.length}</span>
                           </span>
-                        )}
-                      </div>
-                      <div className="space-y-2 min-h-[64px] max-h-[70vh] overflow-y-auto">
-                        {items.length === 0 ? (
-                          <p className="text-12 text-center py-6 rounded-btn" style={{ color: INK_FAINT, border: "1px dashed var(--border)" }}>
-                            {over ? "Drop here" : "No candidates"}
-                          </p>
-                        ) : (
-                          items.map((c) => (
-                            <PipelineCard key={c.id} candidate={c} subStage={subStageLabel(customisation, c.stage, c.subStage)} onMove={handleMove} pending={pendingIds.has(c.id)} />
-                          ))
-                        )}
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
+                          {avg !== null && (
+                            <span className="text-12 tabular-nums text-[var(--ink-faint)]" title="Average match score">
+                              avg <b style={{ color: scoreColor(avg) }}>{avg}</b>
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-2 min-h-[64px] max-h-[70vh] overflow-y-auto">
+                          {items.length === 0 ? (
+                            <p className="text-12 text-center py-6 rounded-btn" style={{ color: INK_FAINT, border: "1px dashed var(--border)" }}>
+                              {over ? "Drop here" : "No candidates"}
+                            </p>
+                          ) : (
+                            items.map((c) => (
+                              <PipelineCard key={c.id} candidate={c} subStage={subStageLabel(customisation, c.stage, c.subStage)} onMove={handleMove} pending={pendingIds.has(c.id)} />
+                            ))
+                          )}
+                        </div>
+                      </section>
+                    );
+                  })}
+                </m.div>
+              </MotionProvider>
             )}
           </>
         )}

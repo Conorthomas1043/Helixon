@@ -1,17 +1,19 @@
 "use client";
 
-// The nav's search (⌘K / Ctrl+K, or "/") across candidates, jobs, clients
-// and contacts (app/api/search), the notifications bell
+// The nav's command palette (⌘K / Ctrl+K, or "/"): actions to run
+// (lib/ui/commands.js) and search across candidates, jobs, clients and
+// contacts (app/api/search); the notifications bell
 // (app/api/notifications), and the background mailbox sync.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { timeAgo as fmtTimeAgo } from "@/lib/format";
 import { reportQuietly } from "@/lib/report-error";
+import { matchCommands } from "@/lib/ui/commands";
 
 const timeAgo = (iso) => fmtTimeAgo(iso, { style: "compact" });
 
-const KIND_LABEL = { candidate: "Candidate", job: "Job", client: "Client", contact: "Contact" };
+const KIND_LABEL = { candidate: "Candidate", job: "Job", client: "Client", contact: "Contact", action: "Action" };
 
 // Recently opened candidates, jobs and clients - per browser, shown in the
 // search box before anything's typed.
@@ -70,9 +72,26 @@ const GO_KEYS = {
 };
 const GO_LABELS = { o: "Overview", a: "Analyse", c: "Candidates", p: "Pipeline", j: "Jobs", l: "Clients", i: "Interviews", b: "Business development", t: "Talent pool", n: "Analytics" };
 
+// Shortcuts that only work on some pages, listed in the "?" overlay there.
+const PAGE_SHORTCUTS = [
+  {
+    match: /^\/dashboard\/candidates\/[^/]+$/,
+    title: "On this candidate",
+    keys: [
+      ["j", "Next candidate"],
+      ["k", "Previous candidate"],
+      ["s", "Shortlist"],
+      ["n", "Add a note"],
+    ],
+  },
+  { match: /^\/analyse/, title: "On this page", keys: [["Ctrl/⌘ Enter", "Screen the CV"]] },
+];
+
 export function KeyboardShortcuts() {
   const router = useRouter();
+  const pathname = usePathname();
   const [help, setHelp] = useState(false);
+  const pageShortcuts = PAGE_SHORTCUTS.find((p) => p.match.test(pathname || ""));
   useRememberPage();
 
   useEffect(() => {
@@ -118,6 +137,19 @@ export function KeyboardShortcuts() {
           <dt><kbd>?</kbd></dt>
           <dd>This list</dd>
         </dl>
+        {pageShortcuts && (
+          <>
+            <h3 className="text-14 font-semibold mt-5 mb-2 text-[var(--ink)]">{pageShortcuts.title}</h3>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14 text-[var(--ink-soft)]">
+              {pageShortcuts.keys.map(([k, label]) => (
+                <div key={k} className="contents">
+                  <dt><kbd>{k}</kbd></dt>
+                  <dd>{label}</dd>
+                </div>
+              ))}
+            </dl>
+          </>
+        )}
         <button type="button" className="mt-5 text-13 font-semibold text-[var(--forest)]" onClick={() => setHelp(false)}>Close</button>
       </div>
     </div>
@@ -197,7 +229,15 @@ export function SearchPalette() {
     router.push(r.href);
   }
 
-  const shown = q.trim().length >= 2 ? results : recent.map((r) => ({ ...r, subtitle: "Recently viewed" }));
+  // While typing: the matching actions (with "Screen a CV for" the first
+  // job found), then what the search found. Before typing: the recently
+  // viewed, then the everyday actions.
+  const term = q.trim();
+  const actions = matchCommands(term, term ? 4 : 3).map((c) => ({ kind: "action", id: c.id, title: c.title, subtitle: c.hint, href: c.href }));
+  const firstJob = term.length >= 2 ? results.find((r) => r.kind === "job") : null;
+  if (firstJob) actions.unshift({ kind: "action", id: `screen-${firstJob.id}`, title: `Screen a CV for ${firstJob.title}`, subtitle: "Opens Screen a CV with this job picked", href: `/analyse?jobId=${firstJob.id}` });
+  const found = term ? results : recent.map((r) => ({ ...r, subtitle: "Recently viewed" }));
+  const shown = term ? [...actions, ...(term.length >= 2 ? found : [])] : [...found, ...actions];
 
   return (
     <>
@@ -221,7 +261,10 @@ export function SearchPalette() {
             <input
               ref={inputRef}
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setActive(0);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Escape") close();
                 else if (e.key === "ArrowDown") {
@@ -232,8 +275,8 @@ export function SearchPalette() {
                   setActive((a) => Math.max(a - 1, 0));
                 } else if (e.key === "Enter") go(shown[active]);
               }}
-              placeholder="Search candidates, jobs, clients and contacts…"
-              aria-label="Search"
+              placeholder="Search, or type a command…"
+              aria-label="Search or run a command"
               role="combobox"
               aria-expanded={shown.length > 0}
               aria-controls="search-results"
@@ -241,7 +284,6 @@ export function SearchPalette() {
               className="w-full px-5 py-4 text-15 outline-none focus-visible:shadow-[inset_0_-2px_0_var(--forest)] border-b border-b-[var(--border)] text-[var(--ink)]"
             />
             <ul id="search-results" role="listbox" className="max-h-[50vh] overflow-y-auto py-1">
-              {q.trim().length < 2 && shown.length === 0 && <li className="px-5 py-4 text-14 text-[var(--ink-faint)]">Type at least two letters. ↑↓ to move, Enter to open. Press ? for shortcuts.</li>}
               {q.trim().length >= 2 && !loading && shown.length === 0 && <li className="px-5 py-4 text-14 text-[var(--ink-faint)]">Nothing found for “{q.trim()}”.</li>}
               {shown.map((r, i) => (
                 <li
@@ -256,7 +298,7 @@ export function SearchPalette() {
                   }}
                   className={`flex items-center gap-3 px-5 py-2.5 cursor-pointer ${i === active ? "bg-[var(--mist)]" : "bg-transparent"}`}
                 >
-                  <span className="text-12 font-semibold uppercase tracking-wide w-16 shrink-0 text-[var(--ink-faint)]">{KIND_LABEL[r.kind]}</span>
+                  <span className={`text-12 font-medium w-16 shrink-0 ${r.kind === "action" ? "text-[var(--forest)]" : "text-[var(--ink-faint)]"}`}>{KIND_LABEL[r.kind]}</span>
                   <span className="min-w-0">
                     <span className="block text-14 font-semibold truncate text-[var(--ink)]">{r.title}</span>
                     {r.subtitle && <span className="block text-13 truncate text-[var(--ink-soft)]">{r.subtitle}</span>}
@@ -264,6 +306,7 @@ export function SearchPalette() {
                 </li>
               ))}
             </ul>
+            <p className="px-5 py-2.5 border-t border-t-[var(--border-soft)] text-12 text-[var(--ink-faint)]">↑↓ to move · Enter to open · ? for shortcuts</p>
           </div>
         </div>
       )}

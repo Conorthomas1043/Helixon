@@ -42,14 +42,27 @@ async function parseJob(jobText, knownJob) {
 
 
 
+// onProgress(step): called as each stage finishes, with the index of the
+// stage now under way (1 reading the role, 2 weighing the evidence, 3
+// writing the assessment - app/analyse's RUN_STEPS), so /api/run can stream
+// real progress. A callback that throws never stops the analysis.
+//
 // cvText/extracted: a CV already on file (screening a saved candidate
 // against another job) - its stored text and extraction are reused, so
 // there's no file to read and one Claude round trip fewer.
 export default async function analyseCV(
     file,
     jobText,
-    { blind = false, jobParsed: knownJob = null, cvText: knownCvText = null, extracted: knownExtracted = null } = {}
+    { blind = false, jobParsed: knownJob = null, cvText: knownCvText = null, extracted: knownExtracted = null, onProgress = null } = {}
 ){
+
+    const progress = (step) => {
+        try {
+            onProgress?.(step);
+        } catch {
+            // Progress is a courtesy; the analysis carries on regardless.
+        }
+    };
 
 
 
@@ -96,6 +109,8 @@ export default async function analyseCV(
 
     const cvText =
         knownCvText || await extractCvText(file);
+
+    progress(1);
 
 
 
@@ -147,6 +162,8 @@ export default async function analyseCV(
 
 
 
+
+    progress(2);
 
     // Contains name/email/phone/education - shape only, never the full
     // extracted candidate (see utils/logger.js).
@@ -213,6 +230,8 @@ export default async function analyseCV(
             jobParsed,
             scoringText
         );
+
+    progress(3);
 
     // The stored result keeps the real extraction (the recruiter can
     // unblind later); only what scoring saw and said was redacted.

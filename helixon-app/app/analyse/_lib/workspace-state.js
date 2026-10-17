@@ -35,6 +35,7 @@ export const initialWorkspace = {
   // The run.
   loading: false,
   step: 0,
+  liveProgress: false,
   error: null,
   comparing: false,
   rerunning: false,
@@ -95,10 +96,14 @@ export function workspaceReducer(state, action) {
 
     // ── The run ──────────────────────────────────────────────────────────
     case "runStarted":
-      return { ...state, loading: true, step: 0, error: null };
+      return { ...state, loading: true, step: 0, liveProgress: false, error: null };
+    // Real progress streamed from /api/run: from then on the timer stops
+    // guessing, and the steps only ever move forward.
+    case "progress":
+      return { ...state, liveProgress: true, step: Math.max(state.step, Math.min(action.step, action.lastStep)) };
     // The progress steps advance on a timer while the request is in flight.
     case "tick":
-      return { ...state, step: Math.min(state.step + 1, action.lastStep) };
+      return state.liveProgress ? state : { ...state, step: Math.min(state.step + 1, action.lastStep) };
     case "runFailed":
       return { ...state, error: action.error };
     case "runFinished":

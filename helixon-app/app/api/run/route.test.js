@@ -199,3 +199,32 @@ describe("POST /api/run - a screening", () => {
     expect((await res.json()).error).toMatch(/couldn't read this PDF/);
   });
 });
+
+describe("POST /api/run - streamed progress", () => {
+  const stream = (fields) =>
+    POST(new Request("http://x.test/api/run", { method: "POST", body: form(fields), headers: { "X-Run-Progress": "ndjson" } }));
+  const lines = async (res) => (await res.text()).trim().split("\n").map((l) => JSON.parse(l));
+
+  it("sends each stage as it finishes, then the same answer as a plain request", async () => {
+    analyseCV.mockImplementation(async (_file, _job, opts) => {
+      [1, 2, 3].forEach((s) => opts.onProgress(s));
+      return ANALYSIS;
+    });
+    const res = await stream();
+    expect(res.headers.get("content-type")).toContain("ndjson");
+    const got = await lines(res);
+    expect(got.slice(0, 3)).toEqual([1, 2, 3].map((step) => ({ type: "progress", step })));
+    expect(got[3]).toMatchObject({ type: "done", status: 200, body: { ok: true, stage: "Screened" } });
+  });
+
+  it("carries a refusal's status in the last line", async () => {
+    state.limits = ["run-ip:"];
+    const got = await lines(await stream());
+    expect(got).toEqual([{ type: "done", status: 429, body: expect.objectContaining({ ok: false }) }]);
+  });
+
+  it("answers plain JSON without the header", async () => {
+    const res = await run();
+    expect(res.headers.get("content-type")).toContain("application/json");
+  });
+});

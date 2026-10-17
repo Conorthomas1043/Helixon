@@ -20,6 +20,7 @@ import RoleCard from "./_components/RoleCard";
 import CandidateCard from "./_components/CandidateCard";
 import RunningPanel from "./_components/RunningPanel";
 import CvPane from "./_components/CvPane";
+import { RUN_PROGRESS_HEADERS, readRunResponse } from "./_lib/runStream";
 import { SAMPLE_CV_NAME, SAMPLE_CV_PATH, SAMPLE_REQUIREMENTS, SAMPLE_ROLE } from "@/lib/screening/sample";
 import Report from "./_components/Report";
 import BulkFlow from "./_components/BulkFlow";
@@ -226,7 +227,8 @@ export default function AnalyseWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- when the jobs arrive
   }, [savedJobs]);
 
-  // Progress steps advance on a timer while the request is in flight.
+  // Progress steps advance on a timer while the request is in flight, until
+  // real progress streams in (the reducer then ignores the ticks).
   useEffect(() => {
     if (!loading) return undefined;
     const t = setInterval(() => dispatch({ type: "tick", lastStep: RUN_STEPS.length - 1 }), 6000);
@@ -345,8 +347,10 @@ export default function AnalyseWorkspace() {
     if (attachJobId) form.append("jobId", attachJobId);
 
     try {
-      const response = await fetch("/api/run", { method: "POST", body: form });
-      const data = await response.json().catch(() => null);
+      // Progress streams back as the analysis goes (_lib/runStream.js).
+      const raw = await fetch("/api/run", { method: "POST", body: form, headers: RUN_PROGRESS_HEADERS });
+      const { status, data } = await readRunResponse(raw, (s) => dispatch({ type: "progress", step: s, lastStep: RUN_STEPS.length - 1 }));
+      const response = { status };
       if (redirectForStatus(response, data)) return;
 
       if (!data?.ok) {

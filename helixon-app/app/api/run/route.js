@@ -32,7 +32,28 @@ const RUN_LIMIT_PER_IP_PER_HOUR = 300;
 
 const refuse = (status, error, extra) => NextResponse.json({ ok: false, error, ...extra }, { status });
 
+// With `X-Run-Progress: ndjson` the answer is streamed as lines of JSON:
+// { type: "progress", step } as each stage of the analysis finishes, then
+// { type: "done", status, body } with what the plain request would have
+// answered. The screening view shows real progress that way; without the
+// header (the public API, older clients) it's the same JSON as ever.
 export async function POST(request) {
+  if (request.headers.get("x-run-progress") !== "ndjson") return screen(request, null);
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (line) => controller.enqueue(encoder.encode(`${JSON.stringify(line)}\n`));
+      const response = await screen(request, (step) => send({ type: "progress", step }));
+      send({ type: "done", status: response.status, body: await response.json().catch(() => null) });
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no" },
+  });
+}
+
+async function screen(request, onProgress) {
   try {
     if (!process.env.ANTHROPIC_API_KEY) return refuse(500, "Screening service is not configured.");
     if (!(await rateLimit(`run-ip:${getClientIp(request)}`, RUN_LIMIT_PER_IP_PER_HOUR))) {
@@ -71,7 +92,7 @@ export async function POST(request) {
     }
 
     const reusedJobParsed = reusableJobParsed(existingJob, input);
-    const analysis = await analyseCV(input.file, input.jobText, { blind: input.blind, jobParsed: reusedJobParsed });
+    const analysis = await analyseCV(input.file, input.jobText, { blind: input.blind, jobParsed: reusedJobParsed, onProgress });
 
     const saved = await saveScreening({ db, supabase, agencyId, userId, profile, input, existingJob, reusedJobParsed, analysis });
     const { candidate, job, score, salary, existingPerson, extracted } = saved;
