@@ -21,6 +21,9 @@ export default defineConfig({
     { name: "phone", testIgnore: SCREENS, use: { ...devices["Pixel 7"] } },
     { name: "screens-desktop", testMatch: SCREENS, use: { ...devices["Desktop Chrome"], baseURL: `http://127.0.0.1:${GALLERY_PORT}` } },
     { name: "screens-phone", testMatch: SCREENS, use: { ...devices["Pixel 7"], baseURL: `http://127.0.0.1:${GALLERY_PORT}` } },
+    // The same screens with the system set to dark (app/globals.css).
+    { name: "screens-desktop-dark", testMatch: SCREENS, use: { ...devices["Desktop Chrome"], colorScheme: "dark", baseURL: `http://127.0.0.1:${GALLERY_PORT}` } },
+    { name: "screens-phone-dark", testMatch: SCREENS, use: { ...devices["Pixel 7"], colorScheme: "dark", baseURL: `http://127.0.0.1:${GALLERY_PORT}` } },
   ],
   webServer: [
     {
