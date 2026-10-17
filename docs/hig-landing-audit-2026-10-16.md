@@ -14,7 +14,7 @@ Every finding below is fixed on `main`. The rest of this document describes the 
 | Phone nav loses its menu button at 200% text | The nav bar has a minimum height instead of a fixed one, and wraps |
 | FAQ answers cut off at large text | The accordion animates its grid row from `0fr` to `1fr`, so an answer always gets its full height |
 | Much of the text at 11px | Section labels, footer headings and plan names are 12px, the hero badge 13px, and section lead paragraphs 16px. Product mock-ups keep 11px |
-| No dark mode | The homepage follows the system setting (`.auto-theme` in `globals.css`). Two new tokens, `--on-forest` and `--brand-surface`, split the brand green's two jobs. Other pages stay light until the signed-in app loses its literal whites |
+| No dark mode | The whole site follows the system setting (17 October). The dark palette is on `:root` in `globals.css`, and about 550 hard-coded whites in 150 files became theme tokens. `--on-accent` is text on accent fills, and `--brand-surface` is the deep-green panels, which keep white text. Clerk's widgets get a dark colour set through `usePrefersDark()`. The admin console keeps its own dark theme. e2e now scans every public page and signed-in screen in dark as well as light |
 | Green means button, label and good score | The trust strip figures are ink. The "Act" tab's example actions are neutral tags. The agency chips went with their section |
 | Page about 17 screens long on a phone | The agency section is folded into the dashboard section, and the "Stay compliant" card is gone. The phone page is 13,562px, down from 14,554px. That is about one screen shorter, not the two estimated, because the larger lead text adds some height back |
 | Pipeline labels run together at 1440px | The pipeline and attention list are stacked at every width |
@@ -22,6 +22,8 @@ Every finding below is fixed on `main`. The rest of this document describes the 
 | Three typefaces, and figures switch between them | Marketing figures and prices use the display face with tabular numbers. Mono stays in the product mock-ups |
 | Body size fixed in pixels | `body` is `1rem`, and the hero badge icon and anchor offset scale with the text |
 | Role tabs wrap unevenly on a phone | A three-column grid below `sm` |
+
+**Follow-ups (17 October):** the phone nav no longer shows "Get a demo" next to the menu button (the menu and hero have it), and the example report's header wraps so its badge isn't cut off at 200% text.
 
 **Found while checking:** at 200% text the "Recommended for agencies" badge and the "Care Assistant" tab label ran off a phone screen. The badge now wraps, and the tab labels break inside their columns. The nav's "Get a demo" was marked hidden on phones, but the button's own `inline-flex` beat `hidden`, so it has always shown there. That is now the stated behaviour.
 
