@@ -11,6 +11,10 @@ const PAGES = ["/", "/pricing", "/how-it-works", "/about", "/faq", "/contact", "
 for (const path of PAGES) {
   test(`public page: ${path}`, async ({ page, baseURL }, testInfo) => {
     await page.context().addCookies([{ name: "helixon_cookie_consent", value: "essential-only", url: baseURL }]);
+    // Scan the settled page, not whichever frame of the homepage's hero or
+    // scroll story happens to be on screen: with reduced motion they render
+    // finished.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(path);
     await page.waitForLoadState("networkidle");
     await expect(page.locator("main").first()).toBeVisible();

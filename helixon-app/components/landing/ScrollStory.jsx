@@ -275,7 +275,7 @@ function ActView({ stage }) {
         {STAGES.map((s, i) => (
           <m.li
             key={s}
-            {...reveal(stage, 1.4 + i * 0.22, { opacity: 0.35, y: 0 })}
+            {...reveal(stage, 1.4 + i * 0.22, { opacity: 0, y: 6 })}
             className={`text-center rounded-md py-1.5 text-11 font-semibold truncate ${i === STAGES.length - 1 ? "bg-[var(--forest)] text-[var(--on-accent)]" : "bg-[var(--mint)] text-[var(--forest)]"}`}
           >
             {s}
@@ -389,9 +389,11 @@ export default function ScrollStory() {
               >
                 {i + 1}
               </span>
-              <div className={`transition-opacity duration-500 ${hydrated && !current ? "lg:opacity-45" : ""}`}>
-                <h3 className="text-20 sm:text-24 font-semibold tracking-tight mb-2 text-[var(--ink)] font-display text-balance">{s.title}</h3>
-                <p className="text-16 leading-relaxed max-w-md text-[var(--ink-soft)]">{s.body}</p>
+              {/* Steps other than the active one recede in colour, not opacity,
+                  so their text keeps 4.5:1 contrast. */}
+              <div className={hydrated && !current ? "lg:[&_*]:text-[var(--ink-faint)]" : ""}>
+                <h3 className="text-20 sm:text-24 font-semibold tracking-tight mb-2 text-[var(--ink)] font-display text-balance transition-colors duration-500">{s.title}</h3>
+                <p className="text-16 leading-relaxed max-w-md text-[var(--ink-soft)] transition-colors duration-500">{s.body}</p>
               </div>
               <div className={`mt-6 ${hydrated ? "lg:hidden" : ""}`}>
                 <InlineView View={s.View} />
