@@ -29,9 +29,17 @@ export const ROLE_METHODS = {
   template: { label: "Templates", hint: "Start from a common role", icon: "layers" },
 };
 
+// On a phone the five tiles were two screens of scrolling before the CV:
+// there they're one row of compact pills (icon and name) that scrolls
+// sideways (contain keeps the row from widening the page to fit it); from
+// sm up, the tiles with their hints.
 export function MethodPicker({ value, onChange, methods, counts = {} }) {
   return (
-    <div role="tablist" aria-label="How to add the role" className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(112px,1fr))]">
+    <div
+      role="tablist"
+      aria-label="How to add the role"
+      className="flex gap-2 overflow-x-auto scroll-fade-x pr-6 pb-0.5 [contain:inline-size] sm:[contain:none] sm:grid sm:grid-cols-[repeat(auto-fit,minmax(112px,1fr))] sm:overflow-visible sm:pr-0 sm:pb-0 sm:[mask-image:none]"
+    >
       {methods.map((m) => {
         const meta = ROLE_METHODS[m];
         const active = value === m;
@@ -43,13 +51,13 @@ export function MethodPicker({ value, onChange, methods, counts = {} }) {
             aria-selected={active}
             onClick={() => onChange(m)}
             className={cx(
-              "group text-left rounded-xl border px-3 py-2.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]",
+              "group shrink-0 flex items-center gap-2 sm:block text-left rounded-xl border px-3 py-2 sm:py-2.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forest)]",
               active
                 ? "border-[var(--forest)] bg-[var(--mint)] shadow-[0_0_0_3px_rgba(11,110,79,0.10)]"
                 : "border-[var(--border)] bg-[var(--bg)] hover:border-[var(--ink-mute)] hover:bg-[var(--mist)]"
             )}
           >
-            <span className="flex items-center justify-between gap-2">
+            <span className="flex items-center justify-between gap-2 shrink-0">
               <span
                 className={cx(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
@@ -64,8 +72,8 @@ export function MethodPicker({ value, onChange, methods, counts = {} }) {
                 </span>
               )}
             </span>
-            <span className="block text-14 font-semibold text-[var(--ink)] leading-tight mt-2">{meta.label}</span>
-            <span className="block text-13 leading-snug text-[var(--ink-faint)] mt-0.5">{meta.hint}</span>
+            <span className="block text-14 font-semibold text-[var(--ink)] leading-tight whitespace-nowrap sm:whitespace-normal sm:mt-2">{meta.label}</span>
+            <span className="hidden sm:block text-13 leading-snug text-[var(--ink-faint)] mt-0.5">{meta.hint}</span>
           </button>
         );
       })}

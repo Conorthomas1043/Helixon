@@ -2,6 +2,19 @@
 
 **Date:** 17 October 2026 · **Scope:** the signed-in app (`/dashboard/*`) and the screening flow (`/analyse`, single CV and bulk)
 
+> **Status: built, 17 October 2026.**
+>
+> **All ten opportunities and five quick wins are in.**
+>
+> **Where the build differs from the proposals:**
+> - **Interview questions (quick win 4):** they're pinned to the candidate's notes rather than added to a scorecard. Scorecards belong to a booked interview, which a freshly screened candidate doesn't have yet.
+> - **Running view (#1):** it shows a drawing of the CV page being read, not the CV's own text. The CV text is only extracted on the server.
+> - **Candidate list (#10):** no re-sort animation. Changing the sort reloads the list, so an animation would never be seen.
+>
+> **Still open:**
+> - **Profile (#7):** activity, notes and emails are still separate rather than one timeline.
+> - **Offers (#6):** there's no quieter moment for a client accepting an offer.
+
 ## Summary
 
 **Rating: Good, not yet awesome.** The app is accessible, consistent and honest. axe found **no WCAG violations** on any rendered screen, in light or dark, at desktop or phone width. The tokens hold, dark mode works, and the AI is disclosed with a feedback loop that asks *why* a score is wrong.

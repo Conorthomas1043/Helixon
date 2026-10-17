@@ -10,6 +10,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { timeAgo as fmtTimeAgo } from "@/lib/format";
 import { reportQuietly } from "@/lib/report-error";
 import { matchCommands } from "@/lib/ui/commands";
+import { FUNNEL_ORDER, STAGE_LABELS } from "@/lib/candidates/stage-labels";
+import { updateCandidateStage } from "@/lib/dashboard-api";
+import { celebratePlacement } from "@/components/dashboard/PlacedMoment";
 
 const timeAgo = (iso) => fmtTimeAgo(iso, { style: "compact" });
 
@@ -167,6 +170,10 @@ export function SearchPalette() {
   const [results, setResults] = useState([]);
   const [active, setActive] = useState(0);
   const [loading, setLoading] = useState(false);
+  // "Move <candidate> to…": the candidate whose stages are listed, and the
+  // outcome once one's picked ({ ok, text }).
+  const [moving, setMoving] = useState(null);
+  const [moved, setMoved] = useState(null);
   const inputRef = useRef(null);
 
   const close = useCallback(() => {
@@ -174,6 +181,8 @@ export function SearchPalette() {
     setQ("");
     setResults([]);
     setActive(0);
+    setMoving(null);
+    setMoved(null);
   }, []);
 
   useEffect(() => {
@@ -225,8 +234,29 @@ export function SearchPalette() {
 
   function go(r) {
     if (!r) return;
+    if (r.pickStageFor) {
+      setMoving(r.pickStageFor);
+      setActive(0);
+      inputRef.current?.focus();
+      return;
+    }
+    if (r.toStage) {
+      moveTo(moving, r.toStage);
+      return;
+    }
     close();
     router.push(r.href);
+  }
+
+  async function moveTo(candidate, stage) {
+    try {
+      await updateCandidateStage(candidate.id, stage);
+      setMoved({ ok: true, text: `Moved ${candidate.title} to ${STAGE_LABELS[stage]}` });
+      if (stage === "Placed") celebratePlacement({ candidateId: candidate.id, name: candidate.title });
+      setTimeout(close, 1100);
+    } catch {
+      setMoved({ ok: false, text: `Couldn't move ${candidate.title}. Try again from their profile.` });
+    }
   }
 
   // While typing: the matching actions (with "Screen a CV for" the first
@@ -236,8 +266,21 @@ export function SearchPalette() {
   const actions = matchCommands(term, term ? 4 : 3).map((c) => ({ kind: "action", id: c.id, title: c.title, subtitle: c.hint, href: c.href }));
   const firstJob = term.length >= 2 ? results.find((r) => r.kind === "job") : null;
   if (firstJob) actions.unshift({ kind: "action", id: `screen-${firstJob.id}`, title: `Screen a CV for ${firstJob.title}`, subtitle: "Opens Screen a CV with this job picked", href: `/analyse?jobId=${firstJob.id}` });
+  const firstCandidate = term.length >= 2 ? results.find((r) => r.kind === "candidate") : null;
+  if (firstCandidate) {
+    actions.push({
+      kind: "action",
+      id: `move-${firstCandidate.id}`,
+      title: `Move ${firstCandidate.title} to…`,
+      subtitle: "Pick a stage",
+      pickStageFor: firstCandidate,
+    });
+  }
   const found = term ? results : recent.map((r) => ({ ...r, subtitle: "Recently viewed" }));
-  const shown = term ? [...actions, ...(term.length >= 2 ? found : [])] : [...found, ...actions];
+  const stages = moving
+    ? [...FUNNEL_ORDER, "Rejected"].map((st) => ({ kind: "action", id: `stage-${st}`, title: STAGE_LABELS[st], subtitle: `Move ${moving.title} here`, toStage: st }))
+    : null;
+  const shown = moved ? [] : stages ?? (term ? [...actions, ...(term.length >= 2 ? found : [])] : [...found, ...actions]);
 
   return (
     <>
@@ -266,7 +309,10 @@ export function SearchPalette() {
                 setActive(0);
               }}
               onKeyDown={(e) => {
-                if (e.key === "Escape") close();
+                if (e.key === "Escape") {
+                  if (moving) setMoving(null);
+                  else close();
+                }
                 else if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setActive((a) => Math.min(a + 1, shown.length - 1));
@@ -283,6 +329,12 @@ export function SearchPalette() {
               aria-activedescendant={shown[active] ? `search-${shown[active].kind}-${shown[active].id}` : undefined}
               className="w-full px-5 py-4 text-15 outline-none focus-visible:shadow-[inset_0_-2px_0_var(--forest)] border-b border-b-[var(--border)] text-[var(--ink)]"
             />
+            {moving && !moved && <p className="px-5 pt-3 text-13 font-medium text-[var(--ink-soft)]">Move {moving.title} to… <span className="text-[var(--ink-faint)]">(Esc to go back)</span></p>}
+            {moved && (
+              <p role="status" className={`px-5 py-4 text-14 font-medium ${moved.ok ? "text-[var(--forest)]" : "text-[var(--score-low)]"}`}>
+                {moved.text}
+              </p>
+            )}
             <ul id="search-results" role="listbox" className="max-h-[50vh] overflow-y-auto py-1">
               {q.trim().length >= 2 && !loading && shown.length === 0 && <li className="px-5 py-4 text-14 text-[var(--ink-faint)]">Nothing found for “{q.trim()}”.</li>}
               {shown.map((r, i) => (
