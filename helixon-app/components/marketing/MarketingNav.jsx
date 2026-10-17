@@ -142,7 +142,10 @@ export default function MarketingNav({ active, showTagline = true }) {
               )}
             </div>
           ) : (
-            <Button as="a" href="/demo" variant="primary" size="sm" className="min-h-[44px] md:min-h-[36px]">
+            // Phones get "Get a demo" from the menu and the page itself. max-md:
+            // rather than hidden md:inline-flex, which the button's own
+            // inline-flex overrides.
+            <Button as="a" href="/demo" variant="primary" size="sm" className="max-md:hidden min-h-[36px]">
               Get a demo
             </Button>
           )}

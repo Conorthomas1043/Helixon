@@ -330,11 +330,13 @@ export default function AnalysisExample() {
         className="rounded-2xl overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: "var(--bg)", border: "1px solid var(--border)", boxShadow: "0 24px 48px -24px rgba(19,32,27,0.22)" }}
       >
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-b-[var(--border-soft)] bg-[var(--mist)]">
+        {/* Wraps so the badge drops to its own line, rather than being cut
+            off, when the text is set large. */}
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 px-4 py-3 border-b border-b-[var(--border-soft)] bg-[var(--mist)]">
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" aria-hidden="true" />
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" aria-hidden="true" />
           <span className="w-2.5 h-2.5 rounded-full bg-[var(--border)]" aria-hidden="true" />
-          <span className="ml-2 text-11 truncate text-[var(--ink-faint)]">
+          <span className="ml-2 min-w-0 flex-1 basis-32 truncate text-11 text-[var(--ink-faint)]">
             Analyse · {ex.role} · {ex.client}
           </span>
           <span className="ml-auto text-11 font-semibold px-2 py-0.5 rounded-full shrink-0 bg-[var(--bg)] text-[var(--ink-faint)] border border-[var(--border)]">
